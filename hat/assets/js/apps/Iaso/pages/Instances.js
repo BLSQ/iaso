@@ -244,11 +244,11 @@ class Instances extends Component {
                             }
                             <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
 
-                                <Grid xs={6} container justify="flex-start">
+                                <Grid xs={6} item className={classes.textAlignLeft}>
                                     <BackButton goBack={() => this.goBack()} />
                                 </Grid>
 
-                                <Grid xs={6} container justify="flex-end">
+                                <Grid xs={6} item className={classes.textAlignRight}>
                                     {tab === 'list'
                                         && (
                                             <DownloadButtonsComponent

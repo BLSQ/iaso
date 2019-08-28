@@ -6,14 +6,14 @@ import {
 import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
-import { withStyles } from '@material-ui/core';
-import Button from '@material-ui/core/Button';
-import Grid from '@material-ui/core/Grid';
+import { withStyles, Button, Grid } from '@material-ui/core';
+
 import Edit from '@material-ui/icons/Edit';
 import AddLocation from '@material-ui/icons/AddLocation';
 import FormatShapes from '@material-ui/icons/FormatShapes';
 import Check from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
+import Cancel from '@material-ui/icons/Cancel';
 
 import L from 'leaflet';
 import PropTypes from 'prop-types';
@@ -262,7 +262,7 @@ class OrgUnitMapComponent extends Component {
                                     this.onChange();
                                 }}
                                 className={classes.button}
-                                color="secondary"
+                                color="primary"
                             >
                                 <Check className={classes.buttonIcon} />
                                 <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
@@ -270,7 +270,25 @@ class OrgUnitMapComponent extends Component {
                         )
                     }
                     {
+                        (editEnabled && orgUnit.geo_json)
+                        && (
+                            <Button
+                                variant="contained"
+                                className={classes.button}
+                                onClick={() => {
+                                    this.toggleEditShape();
+                                    this.mapGeoJson(orgUnit.geo_json);
+                                }}
+                            >
+                                <Cancel className={classes.buttonIcon} fontSize="small" />
+                                <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                            </Button>
+                        )
+                    }
+
+                    {
                         orgUnit.geo_json
+                        && !editEnabled
                         && (
                             <Button
                                 variant="contained"

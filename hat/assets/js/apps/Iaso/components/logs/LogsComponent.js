@@ -47,6 +47,7 @@ class Logs extends Component {
             intl: { formatMessage },
             load,
             params,
+            goToRevision,
         } = this.props;
         const { tableUrl, tableColumns } = this.state;
         return (
@@ -77,7 +78,7 @@ class Logs extends Component {
                                 dataKey="list"
                                 multiSort
                                 canSelect={false}
-                                SubComponent={({ original }) => (original ? <LogsDetails logId={original.id} /> : null)}
+                                SubComponent={({ original }) => (original ?<LogsDetails logId={original.id} goToRevision={goToRevision} /> : null)}
                             />
                         </div>
                     )
@@ -92,6 +93,7 @@ Logs.propTypes = {
     params: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     logObjectId: PropTypes.number.isRequired,
+    goToRevision: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

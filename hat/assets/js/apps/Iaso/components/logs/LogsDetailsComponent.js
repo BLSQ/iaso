@@ -1,16 +1,16 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import moment from 'moment';
 
-import { withStyles, Container, Grid } from '@material-ui/core';
+import {
+    withStyles, Container, Grid, Button, Divider,
+} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
 import LoadingSpinner from '../LoadingSpinnerComponent';
-import LogCompareComponent from '../../../Management/components/LogCompareComponent';
+import LogCompareComponent from './LogCompareComponent';
 
-import getDisplayName from '../../utils/usersUtils';
 
 import commonStyles from '../../styles/common';
 
@@ -61,160 +61,118 @@ class LogsDetails extends Component {
 
     render() {
         const {
-            intl: { formatMessage }, classes,
+            intl: { formatMessage }, classes, goToRevision,
         } = this.props;
         const { log, loading } = this.state;
-        const isDuplicateLog = log && log.past_value[0] && log.past_value[0].model === 'patient.patientduplicatespair';
         return (
-            <Container maxWidth={false} className={classes.root}>
-                {
-                    loading && (
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
-                    )
-                }
+            <Fragment>
+                <Divider />
+                <Container maxWidth={false} className={classes.root}>
+                    {
+                        loading && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
+                    }
 
-                {
-                    log && (
-                        <Fragment>
-                            <Grid container spacing={0}>
-                                <Grid item xs={6}>
-                                    <table className="margin-bottom">
-                                        <tbody>
-                                            <tr>
-                                                <th>
+                    {
+                        log && (
+                            <Fragment>
+                                {
+                                    log.past_value.length > 0
+                                    && log.new_value.length > 0
+                                    && (
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={6}>
+                                                <h4 className="margin-bottom">
                                                     <FormattedMessage
-                                                        id="main.label.date"
-                                                        defaultMessage="Date"
+                                                        id="main.label.before"
+                                                        defaultMessage="Before"
                                                     />
-                                                </th>
-                                                <td>{moment(log.created_at).format('YYYY-MM-DD HH:mm')}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>
+
+                                                    <Button
+                                                        className={classes.floatRight}
+                                                        variant="contained"
+                                                        color="primary"
+                                                        size="small"
+                                                        onClick={() => goToRevision(log.past_value[0])}
+                                                    >
+                                                        <FormattedMessage
+                                                            id="iaso.logs.goToRevision"
+                                                            defaultMessage="Reset to this revision"
+                                                        />
+                                                    </Button>
+
+                                                </h4>
+                                                {<LogCompareComponent log={log.past_value} compareLog={log.new_value} />}
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                                <h4 className="margin-bottom">
                                                     <FormattedMessage
-                                                        id="main.label.user"
-                                                        defaultMessage="User"
+                                                        id="main.label.after"
+                                                        defaultMessage="After"
                                                     />
-                                                </th>
-                                                <td>
-                                                    {log.user.userName}
-                                                    {getDisplayName(log.user)}
-                                                </td>
-                                            </tr>
-                                            <tr>
-                                                <th>
+
+                                                    <Button
+                                                        className={classes.floatRight}
+                                                        variant="contained"
+                                                        color="primary"
+                                                        size="small"
+                                                        onClick={() => goToRevision(log.new_value[0])}
+                                                    >
+                                                        <FormattedMessage
+                                                            id="iaso.logs.goToRevision"
+                                                            defaultMessage="Reset to this revision"
+                                                        />
+                                                    </Button>
+                                                </h4>
+                                                {<LogCompareComponent log={log.new_value} compareLog={log.past_value} />}
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                }
+                                {
+                                    log.past_value.length > 0
+                                    && log.new_value.length === 0
+                                    && (
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={6}>
+                                                <h4 className="margin-bottom">
                                                     <FormattedMessage
-                                                        id="main.label.type"
-                                                        defaultMessage="Type"
+                                                        id="logs.label.delete"
+                                                        defaultMessage="Deleted"
                                                     />
-                                                </th>
-                                                <td>{log.content_type}</td>
-                                            </tr>
-                                            <tr>
-                                                <th>
+                                                </h4>
+                                                {<LogCompareComponent log={log.past_value} />}
+                                            </Grid>
+                                        </Grid>
+                                    )
+                                }
+                                {
+                                    log.past_value.length === 0
+                                    && log.new_value.length > 0
+                                    && (
+                                        <Grid container spacing={2}>
+                                            <Grid item xs={6}>
+                                                <h4 className="margin-bottom">
                                                     <FormattedMessage
-                                                        id="main.label.source"
-                                                        defaultMessage="source"
+                                                        id="logs.label.create"
+                                                        defaultMessage="Creation"
                                                     />
-                                                </th>
-                                                <td>{log.source}</td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </Grid>
-                            </Grid>
-                            {
-                                log.past_value.length > 0
-                                && log.new_value.length > 0
-                                && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                {
-                                                    !isDuplicateLog && (
-                                                        <FormattedMessage
-                                                            id="main.label.before"
-                                                            defaultMessage="Before"
-                                                        />
-                                                    )
-                                                }
-                                                {
-                                                    isDuplicateLog && (
-                                                        <FormattedMessage
-                                                            id="logs.label.duplicate_erased"
-                                                            defaultMessage="Duplicate erased"
-                                                        />
-                                                    )
-                                                }
-                                            </h4>
-                                            {<LogCompareComponent log={log.past_value} compareLog={log.new_value} />}
+                                                </h4>
+                                                {<LogCompareComponent log={log.new_value} />}
+                                            </Grid>
                                         </Grid>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                {
-                                                    !isDuplicateLog && (
-                                                        <FormattedMessage
-                                                            id="main.label.after"
-                                                            defaultMessage="After"
-                                                        />
-                                                    )
-                                                }
-                                                {
-                                                    isDuplicateLog && (
-                                                        <FormattedMessage
-                                                            id="logs.label.patient_saved"
-                                                            defaultMessage="Saved patient"
-                                                        />
-                                                    )
-                                                }
-                                            </h4>
-                                            {<LogCompareComponent log={log.new_value} compareLog={log.past_value} />}
-                                        </Grid>
-                                    </Grid>
-                                )
-                            }
-                            {
-                                log.past_value.length > 0
-                                && log.new_value.length === 0
-                                && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                <FormattedMessage
-                                                    id="logs.label.delete"
-                                                    defaultMessage="Delted"
-                                                />
-                                            </h4>
-                                            {<LogCompareComponent log={log.past_value} />}
-                                        </Grid>
-                                    </Grid>
-                                )
-                            }
-                            {
-                                log.past_value.length === 0
-                                && log.new_value.length > 0
-                                && (
-                                    <Grid container spacing={2}>
-                                        <Grid item xs={6}>
-                                            <h4 className="margin-bottom">
-                                                <FormattedMessage
-                                                    id="logs.label.create"
-                                                    defaultMessage="Creation"
-                                                />
-                                            </h4>
-                                            {<LogCompareComponent log={log.new_value} />}
-                                        </Grid>
-                                    </Grid>
-                                )
-                            }
-                        </Fragment>
-                    )
-                }
-            </Container>
+                                    )
+                                }
+                            </Fragment>
+                        )
+                    }
+                </Container>
+            </Fragment>
         );
     }
 }
@@ -224,6 +182,7 @@ LogsDetails.propTypes = {
     intl: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     logId: PropTypes.number.isRequired,
+    goToRevision: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

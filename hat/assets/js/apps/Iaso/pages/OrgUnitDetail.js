@@ -26,6 +26,7 @@ import {
     fetchOrgUnitDetail,
     saveOrgUnit,
 } from '../utils/requests';
+import { getAliasesArrayFromString } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
@@ -57,7 +58,7 @@ class OrgUnitDetail extends Component {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.fetchDetail();
         if (this.props.orgUnitTypes.length === 0) {
             fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -138,6 +139,25 @@ class OrgUnitDetail extends Component {
             orgUnitModified: false,
             currentOrgUnit: this.props.currentOrgUnit,
         });
+    }
+
+    goToRevision(orgUnitRevision) {
+        const mappedRevision = {
+            ...orgUnitRevision.fields,
+            geo_json: null,
+            aliases: getAliasesArrayFromString(orgUnitRevision.fields.aliases),
+            id: orgUnitRevision.pk,
+        };
+        saveOrgUnit(this.props.dispatch, mappedRevision).then(
+            (currentOrgUnit) => {
+                this.setState({
+                    orgUnitModified: false,
+                    currentOrgUnit,
+                });
+                this.props.resetOrgUnits();
+                this.props.setCurrentOrgUnit(currentOrgUnit);
+            },
+        );
     }
 
     goBack() {
@@ -246,15 +266,16 @@ class OrgUnitDetail extends Component {
                                         <Logs
                                             params={params}
                                             logObjectId={currentOrgUnit.id}
+                                            goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
                                         />
                                     )
                                 }
                                 <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
 
-                                    <Grid xs={6} container justify="flex-start">
+                                    <Grid xs={6} item className={classes.textAlignLeft}>
                                         <BackButton goBack={() => this.goBack()} />
                                     </Grid>
-                                    <Grid xs={6} container justify="flex-end">
+                                    <Grid xs={6} item className={classes.textAlignRight}>
                                         {
                                             tab !== 'history' && (
                                                 <Fragment>

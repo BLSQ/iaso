@@ -98,6 +98,7 @@
     "iaso.label.with": "Avec",
     "iaso.label.without": "Sans",
     "iaso.logout": "Se déconnecter",
+    "iaso.logs.goToRevision": "Rétablir cette révision",
     "iaso.map.shape.addShape": "Ajouter une forme",
     "iaso.map.shape.addLocation": "Ajouter un point",
     "iaso.orgUnits.actions": "Action",

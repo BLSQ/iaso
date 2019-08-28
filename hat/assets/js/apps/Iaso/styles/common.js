@@ -42,6 +42,12 @@ const commonStyles = theme => ({
         height: '70vh',
         marginBottom: theme.spacing(2),
     },
+    textAlignLeft: {
+        textAlign: 'left',
+    },
+    textAlignRight: {
+        textAlign: 'right',
+    },
 });
 
 export default commonStyles;

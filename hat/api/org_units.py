@@ -1,4 +1,5 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, status
+from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
 from iaso.models import OrgUnit, Project, OrgUnitType
 from hat.vector_control.models import APIImport
@@ -151,8 +152,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
         org_unit.validated = request.data.get("status", True)
-        # TO-DO: save geo-json to simplified_geom
-        org_unit.simplified_geom = request.data.get("geo_json", None)
+        geo_json = request.data.get("geo_json", None)
+        simplified_geom = request.data.get("simplified_geom", None)
+        if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
+            if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
+                org_unit.simplified_geom = Polygon(geo_json["features"][0]["geometry"]["coordinates"][0])
+            else:
+                # DB has a single Polygon, refuse if we have more, or less.
+                return Response("Only one polygon should be saved in the geo_json shape",
+                                status=status.HTTP_400_BAD_REQUEST)
+        elif simplified_geom:
+            org_unit.simplified_geom = simplified_geom
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
         if latitude and str(latitude) != str(org_unit.latitude):

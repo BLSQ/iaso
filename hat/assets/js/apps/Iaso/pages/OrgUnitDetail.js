@@ -141,11 +141,13 @@ class OrgUnitDetail extends Component {
 
     goToRevision(orgUnitRevision) {
         const mappedRevision = {
+            ...this.props.currentOrgUnit,
             ...orgUnitRevision.fields,
             geo_json: null,
-            aliases: getAliasesArrayFromString(orgUnitRevision.fields.aliases),
-            id: orgUnitRevision.pk,
+            aliases: orgUnitRevision.fields.aliases ? getAliasesArrayFromString(orgUnitRevision.fields.aliases) : this.props.currentOrgUnit.aliases,
+            id: this.props.currentOrgUnit.id,
         };
+        console.log(mappedRevision);
         return saveOrgUnit(this.props.dispatch, mappedRevision).then(
             (currentOrgUnit) => {
                 this.setState({

@@ -7,9 +7,11 @@ import Button from '@material-ui/core/Button';
 import Dialog from '@material-ui/core/Dialog';
 import DialogActions from '@material-ui/core/DialogActions';
 import DialogTitle from '@material-ui/core/DialogTitle';
+import DialogContent from '@material-ui/core/DialogContent';
+import DialogContentText from '@material-ui/core/DialogContentText';
 
 const ConfirmDialog = ({
-    btnMessage, message, confirm, reject,
+    btnMessage, message, question, confirm, reject,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -40,7 +42,12 @@ const ConfirmDialog = ({
                 open={open}
                 onClick={() => handleClose(false)}
             >
-                <DialogTitle>{message}</DialogTitle>
+                <DialogTitle>{question}</DialogTitle>
+                <DialogContent>
+                    <DialogContentText id="alert-dialog-description">
+                        {message}
+                    </DialogContentText>
+                </DialogContent>
                 <DialogActions>
                     <Button onClick={() => handleClose(false)} color="primary">
                         <FormattedMessage
@@ -65,8 +72,9 @@ ConfirmDialog.defaultProps = {
 };
 
 ConfirmDialog.propTypes = {
-    message: PropTypes.string.isRequired,
-    btnMessage: PropTypes.string.isRequired,
+    question: PropTypes.object.isRequired,
+    message: PropTypes.object.isRequired,
+    btnMessage: PropTypes.object.isRequired,
     confirm: PropTypes.func.isRequired,
     reject: PropTypes.func,
 };

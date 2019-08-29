@@ -3,6 +3,7 @@ import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import { IconButton, Tooltip } from '@material-ui/core';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
+import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 
 import MESSAGES from '../components/forms/messages';
@@ -77,6 +78,14 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             width: 150,
             Cell: settings => (
                 <section>
+                    <Tooltip title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}>
+                        <IconButton
+                            color="primary"
+                            onClick={() => component.selectOrgUnit(settings.original)}
+                        >
+                            <RemoveRedEye />
+                        </IconButton>
+                    </Tooltip>
                     {
                         (settings.original.has_geo_json
                             || (settings.original.latitude && settings.original.longitude))
@@ -85,7 +94,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                             <Tooltip title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}>
                                 <IconButton
                                     color="primary"
-                                    onClick={() => component.selectOrgUnit(settings.original, true)}
+                                    onClick={() => component.selectOrgUnit(settings.original, 'map')}
                                 >
                                     <Map />
                                 </IconButton>
@@ -93,12 +102,12 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                         )
                     }
 
-                    <Tooltip title={<FormattedMessage id="iaso.orgUnits.details" defaultMessage="Details" />}>
+                    <Tooltip title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}>
                         <IconButton
                             color="primary"
-                            onClick={() => component.selectOrgUnit(settings.original)}
+                            onClick={() => component.selectOrgUnit(settings.original, 'history')}
                         >
-                            <RemoveRedEye />
+                            <History />
                         </IconButton>
                     </Tooltip>
                 </section>

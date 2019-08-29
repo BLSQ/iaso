@@ -80,7 +80,7 @@ class OrgUnits extends Component {
         });
     }
 
-    selectOrgUnit(orgUnit, isMap) {
+    selectOrgUnit(orgUnit, tab) {
         const { redirectTo, params } = this.props;
         const newParams = {
             orgUnitId: orgUnit.id,
@@ -92,8 +92,8 @@ class OrgUnits extends Component {
         delete newParams.page;
         delete newParams.pageSize;
         delete newParams.order;
-        if (isMap) {
-            newParams.tab = 'map';
+        if (tab) {
+            newParams.tab = tab;
         }
         redirectTo('orgunits/detail', newParams);
     }

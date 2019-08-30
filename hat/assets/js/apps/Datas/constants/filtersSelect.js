@@ -23,7 +23,7 @@ import {
     images,
     videos,
     screeningType,
-    stade,
+    stage,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -34,7 +34,7 @@ const filtersCases = (formatMessage, devices) => (
         confirmationResult(formatMessage),
         source(formatMessage),
         device(devices),
-        stade(formatMessage),
+        stage(formatMessage),
     ]
 );
 
@@ -84,7 +84,7 @@ const filtersPatients2 = formatMessage => (
         testType(formatMessage),
         screeningResult(formatMessage),
         confirmationResult(formatMessage),
-        stade(formatMessage),
+        stage(formatMessage),
         images(formatMessage),
         videos(formatMessage),
     ]

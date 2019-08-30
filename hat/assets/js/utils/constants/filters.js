@@ -1152,7 +1152,7 @@ const screeningType = formatMessage => (
     }
 );
 
-const stade = formatMessage => (
+const stage = formatMessage => (
     {
         name: 'stage',
         urlKey: 'stage',
@@ -1225,5 +1225,5 @@ export {
     institutions,
     screeningType,
     problems,
-    stade,
+    stage,
 };

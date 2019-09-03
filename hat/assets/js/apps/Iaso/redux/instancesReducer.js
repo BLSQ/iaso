@@ -1,5 +1,6 @@
 const SET_INSTANCES = 'SET_INSTANCES';
 const SET_INSTANCES_LOCATIONS = 'SET_INSTANCES_LOCATIONS';
+const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 
 
 export const setInstances = (list, showPagination, params, count, pages) => ({
@@ -19,8 +20,14 @@ export const setInstancesLocations = instances => ({
 });
 
 
+export const setInstancesFetching = isFetching => ({
+    type: SET_INSTANCES_FETCHING,
+    payload: isFetching,
+});
+
+
 export const instancesInitialState = {
-    fetching: true,
+    fetching: false,
     instancesLocations: [],
     instancesPage: {
         list: null,
@@ -39,7 +46,6 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
             } = action.payload;
             return {
                 ...state,
-                fetching: false,
                 instancesPage: {
                     list,
                     showPagination,
@@ -53,6 +59,11 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
         case SET_INSTANCES_LOCATIONS: {
             const instancesLocations = action.payload;
             return { ...state, instancesLocations };
+        }
+
+        case SET_INSTANCES_FETCHING: {
+            const fetching = action.payload;
+            return { ...state, fetching };
         }
 
         default:

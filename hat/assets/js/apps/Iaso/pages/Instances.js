@@ -3,21 +3,24 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
-import Tabs from '@material-ui/core/Tabs';
-import Grid from '@material-ui/core/Grid';
-import Tab from '@material-ui/core/Tab';
-import Paper from '@material-ui/core/Paper';
+import {
+    withStyles, Divider, Tabs, Grid, Tab, Paper,
+} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { setInstances, setInstancesLocations } from '../redux/instancesReducer';
+import { setInstances, setInstancesLocations, setInstancesFetching } from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
+import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
+import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
 
 import {
     fetchInstancesAsDict,
     fetchInstancesAsLocations,
     fetchFormDetail,
+    fetchOrgUnitsTypes,
+    fetchDevices,
+    fetchDevicesOwnerships,
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -29,6 +32,7 @@ import DownloadButtonsComponent from '../components/buttons/DownloadButtonsCompo
 import InstancesMap from '../components/maps/InstancesMapComponent';
 import BackButton from '../components/buttons/BackButtonComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
+import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 
 import commonStyles from '../styles/common';
 
@@ -52,6 +56,16 @@ class Instances extends Component {
             tab: props.params.tab ? props.params.tab : 'list',
         };
     }
+
+    componentWillMount() {
+        fetchOrgUnitsTypes(this.props.dispatch)
+            .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchDevices(this.props.dispatch)
+            .then(devices => this.props.setDevicesList(devices));
+        fetchDevicesOwnerships(this.props.dispatch)
+            .then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
+    }
+
 
     componentDidMount() {
         const {
@@ -94,6 +108,10 @@ class Instances extends Component {
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
             form_id: params.formId,
+            withLocation: params.withLocation,
+            orgUnitTypeId: params.orgUnitTypeId,
+            deviceId: params.deviceId,
+            deviceOwnershipId: params.deviceOwnershipId,
         };
         if (toExport) {
             urlParams[exportType] = true;
@@ -149,19 +167,26 @@ class Instances extends Component {
             },
             dispatch,
         } = this.props;
-        const url = this.getEndpointUrl();
-        fetchInstancesAsDict(dispatch, url).then((data) => {
-            const instances = {
-                ...data.instances,
-            };
-            this.props.setInstances(data.instances, params, data.count, data.pages);
-            this.setState({
-                tableColumns: getInstancesColumns(formatMessage, instances, this),
-            });
-        });
 
+        const url = this.getEndpointUrl();
         const urlLocation = this.getEndpointUrl(false, '', true);
-        fetchInstancesAsLocations(dispatch, urlLocation).then(data => this.props.setInstancesLocations(data));
+
+        dispatch(this.props.setInstancesFetching(true));
+        Promise.all([
+            fetchInstancesAsDict(dispatch, url).then((data) => {
+                const instances = {
+                    ...data.instances,
+                };
+                this.props.setInstances(data.instances, params, data.count, data.pages);
+                this.setState({
+                    tableColumns: getInstancesColumns(formatMessage, instances, this),
+                });
+            }),
+            fetchInstancesAsLocations(dispatch, urlLocation)
+                .then(data => this.props.setInstancesLocations(data)),
+        ]).then(() => {
+            dispatch(this.props.setInstancesFetching(false));
+        });
     }
 
     render() {
@@ -180,7 +205,7 @@ class Instances extends Component {
             tab,
         } = this.state;
         return (
-            <section className="instances">
+            <section className={classes.relativeContainer}>
                 <TopBar
                     title={`${formatMessage({
                         defaultMessage: 'Record(s) for the form',
@@ -216,51 +241,56 @@ class Instances extends Component {
                     fetching
                     && <LoadingSpinner />
                 }
-                {!fetching
-                    && (
-                        <Paper className={classes.paperContainer}>
-                            {
-                                tab === 'list' && (
-                                    <CustomTableComponent
-                                        isSortable
-                                        pageSize={50}
-                                        showPagination
-                                        columns={this.state.tableColumns}
-                                        defaultSorted={[{ id: 'updated_at', desc: false }]}
-                                        params={params}
-                                        defaultPath={baseUrl}
-                                        dataKey="instances"
-                                        multiSort={false}
-                                        fetchDatas={false}
-                                        canSelect={false}
-                                        reduxPage={reduxPage}
+                <Paper className={classes.paperContainer}>
+                    <InstancesFiltersComponent
+                        baseUrl={baseUrl}
+                        params={params}
+                        onSearch={() => this.fetchInstances()}
+                    />
+
+                    <Divider className={classes.dividerMarginNeg} />
+                    <div className={classes.marginTopBig}>
+                        {
+                            tab === 'list' && (
+                                <CustomTableComponent
+                                    isSortable
+                                    pageSize={50}
+                                    showPagination
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                    params={params}
+                                    defaultPath={baseUrl}
+                                    dataKey="instances"
+                                    multiSort={false}
+                                    fetchDatas={false}
+                                    canSelect={false}
+                                    reduxPage={reduxPage}
+                                />
+                            )
+                        }
+                        {
+                            tab === 'map' && (
+                                <InstancesMap instances={instancesLocations} />
+                            )
+                        }
+                    </div>
+                    <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+
+                        <Grid xs={6} item className={classes.textAlignLeft}>
+                            <BackButton goBack={() => this.goBack()} />
+                        </Grid>
+
+                        <Grid xs={6} item className={classes.textAlignRight}>
+                            {tab === 'list'
+                                && (
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(true, 'csv')}
+                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
                                     />
-                                )
-                            }
-                            {
-                                tab === 'map' && (
-                                    <InstancesMap instances={instancesLocations} />
-                                )
-                            }
-                            <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-
-                                <Grid xs={6} item className={classes.textAlignLeft}>
-                                    <BackButton goBack={() => this.goBack()} />
-                                </Grid>
-
-                                <Grid xs={6} item className={classes.textAlignRight}>
-                                    {tab === 'list'
-                                        && (
-                                            <DownloadButtonsComponent
-                                                csvUrl={this.getEndpointUrl(true, 'csv')}
-                                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                                            />
-                                        )}
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    )
-                }
+                                )}
+                        </Grid>
+                    </Grid>
+                </Paper>
             </section>
         );
     }
@@ -283,6 +313,10 @@ Instances.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
+    setOrgUnitTypes: PropTypes.func.isRequired,
+    setInstancesFetching: PropTypes.func.isRequired,
+    setDevicesList: PropTypes.func.isRequired,
+    setDevicesOwnershipList: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -297,7 +331,11 @@ const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
     setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),
+    setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
+    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setDevicesList: devices => dispatch(setDevicesList(devices)),
+    setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
 });
 
 

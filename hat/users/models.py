@@ -291,6 +291,15 @@ class Profile(models.Model):
             "level": self.level,
             "screening_type": self.screening_type,
         }
+    def as_short_dict(self):
+        return {
+            "id": self.id,
+            "firstName": self.user.first_name,
+            "userName": self.user.username,
+            "lastName": self.user.last_name,
+            "email": self.user.email,
+            "phone": self.phone,
+        }
 
     def __str__(self):
         return "%s - %s" % (self.user, self.institution)

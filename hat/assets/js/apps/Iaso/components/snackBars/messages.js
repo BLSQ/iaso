@@ -43,9 +43,21 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchOrgUnitTypesError',
         defaultMessage: 'An error occured while fetching org unit types list',
     },
+    fetchOrgUnitsError: {
+        id: 'iaso.snackBar.fetchOrgUnitsError',
+        defaultMessage: 'An error occured while fetching org unit list',
+    },
     fetchLogDetailError: {
         id: 'iaso.snackBar.fetchLogDetailError',
         defaultMessage: 'An error occured while fetching log detail',
+    },
+    fetchDevicesError: {
+        id: 'iaso.snackBar.fetchDevicesError',
+        defaultMessage: 'An error occured while fetching devices list',
+    },
+    fetchDevicesOwnershipError: {
+        id: 'iaso.snackBar.fetchDevicesOwnershipError',
+        defaultMessage: 'An error occured while fetching devices ownerships list',
     },
 };
 

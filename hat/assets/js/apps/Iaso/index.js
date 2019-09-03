@@ -21,6 +21,7 @@ import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
+import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 
 import App from '../App';
 
@@ -47,7 +48,8 @@ export default function datasApp(element, baseUrl) {
         />,
         <Route
             path={'/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)'
-            + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)'}
+            + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)'
+            + '(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -92,6 +94,7 @@ export default function datasApp(element, baseUrl) {
         instances: instancesInitialState,
         snackBar: snackBarsInitialState,
         map: mapInitialState,
+        devices: devicesInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -101,6 +104,7 @@ export default function datasApp(element, baseUrl) {
         instances: instancesReducer,
         snackBar: snackBarsReducer,
         map: mapReducer,
+        devices: devicesReducer,
     }, [
         routerMiddleware(history),
     ]);

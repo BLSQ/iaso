@@ -6,7 +6,9 @@ from rest_framework.response import Response
 
 from hat.vector_control.models import APIImport
 from .catches import timestamp_to_utc_datetime
-from iaso.models import Instance, OrgUnit
+from iaso.models import Instance, OrgUnit, DeviceOwnership
+from django.db.models import Q
+from django.shortcuts import get_object_or_404
 
 from django.core.paginator import Paginator
 
@@ -82,6 +84,10 @@ class InstancesViewSet(viewsets.ViewSet):
         form_id = request.GET.get("form_id", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        with_location = request.GET.get("withLocation", None)
+        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
+        device_id = request.GET.get("deviceId", None)
+        device_ownership_id = request.GET.get("deviceOwnershipId", None)
 
         queryset = (
             queryset.exclude(file="")
@@ -92,6 +98,22 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
+        if org_unit_type_id:
+            queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
+
+        if with_location == 'true':
+            queryset = queryset.filter(location__isnull=False)
+
+        if with_location == 'false':
+            queryset = queryset.filter(location__isnull=True)
+
+        if device_id:
+            queryset = queryset.filter(device__id=device_id)
+
+        if device_ownership_id:
+            device_ownership = get_object_or_404(DeviceOwnership, pk=device_ownership_id)
+            queryset = queryset.filter(device__id=device_ownership.device.id)
+
 
         if form_id:
             queryset = queryset.filter(form_id=form_id)

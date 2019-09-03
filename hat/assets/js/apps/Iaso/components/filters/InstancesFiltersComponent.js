@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -14,22 +14,21 @@ import Search from '@material-ui/icons/Search';
 import commonStyles from '../../styles/common';
 
 import {
-    search,
-    status,
     orgUnitType,
-    source,
-    shape,
     location,
+    device,
+    deviceOwnership,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
+import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
-class OrgUnitsFiltersComponent extends Component {
+class InstancesFiltersComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -66,11 +65,12 @@ class OrgUnitsFiltersComponent extends Component {
                 formatMessage,
             },
             orgUnitTypes,
-            sourceTypes,
+            devices,
+            devicesOwnerships,
         } = this.props;
         const { filtersUpdated } = this.state;
         return (
-            <Fragment>
+            <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
                         <FiltersComponent
@@ -78,34 +78,25 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                search(),
-                                source(formatMessage, sourceTypes),
-                            ]}
-                            onEnterPressed={() => this.onSearch()}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
                                 location(formatMessage),
-                                shape(formatMessage),
-                            ]}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                status(formatMessage),
                                 orgUnitType(formatMessage, orgUnitTypes),
                             ]}
                         />
                     </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                device(devices),
+                                deviceOwnership(devicesOwnerships),
+                            ]}
+                        />
+                    </Grid>
+                    {/* <Grid item xs={4}>
+                        <OrgUnitsLevelsFiltersComponent params={params} />
+                    </Grid> */}
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
@@ -121,30 +112,35 @@ class OrgUnitsFiltersComponent extends Component {
                         </Button>
                     </Grid>
                 </Grid>
-            </Fragment>
+            </div>
         );
     }
 }
-OrgUnitsFiltersComponent.defaultProps = {
+InstancesFiltersComponent.defaultProps = {
     baseUrl: '',
 };
 
-OrgUnitsFiltersComponent.propTypes = {
+InstancesFiltersComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
+    devices: PropTypes.array.isRequired,
+    devicesOwnerships: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
+    devices: state.devices.list,
+    devicesOwnerships: state.devices.ownershipList,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(InstancesFiltersComponent)));

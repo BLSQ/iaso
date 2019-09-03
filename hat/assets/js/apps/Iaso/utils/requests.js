@@ -3,6 +3,14 @@ import { getRequest, patchRequest } from '../libs/Api';
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../components/snackBars';
 
+const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}`)
+    .then(res => res.orgUnits)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
+        console.error('Error while fetching org unit list:', error);
+        throw error;
+    });
+
 const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
     .then(res => res.orgUnitTypes)
     .catch((error) => {
@@ -16,6 +24,23 @@ const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes')
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchSourceTypesError')));
         console.error('Error while fetching source types list:', error);
+        throw error;
+    });
+
+
+const fetchDevices = dispatch => getRequest('/api/iasodevices')
+    .then(devices => devices)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesError')));
+        console.error('Error while fetching devices list:', error);
+        throw error;
+    });
+
+const fetchDevicesOwnerships = dispatch => getRequest('/api/iasodevicesownership')
+    .then(devicesOwnerships => devicesOwnerships)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesOwnershipError')));
+        console.error('Error while fetching devices ownership list:', error);
         throw error;
     });
 
@@ -79,4 +104,7 @@ export {
     fetchFormDetail,
     saveOrgUnit,
     fetchLogDetail,
+    fetchDevices,
+    fetchDevicesOwnerships,
+    fetchOrgUnits,
 };

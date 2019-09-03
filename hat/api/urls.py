@@ -48,6 +48,8 @@ from .instances import InstancesViewSet
 from .forms import FormsViewSet
 from .logs import LogsViewSet
 from .source_types import SourceTypeViewSet
+from .iaso_devices import IasoDevicesViewSet
+from .iaso_devices_ownership import IasoDevicesOwnershipViewSet
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -107,6 +109,8 @@ router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
 router.register(r"logs", LogsViewSet, base_name="logs")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
+router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
+router.register(r"iasodevicesownership", IasoDevicesOwnershipViewSet, base_name="iasodevicesownership")
 
 
 urlpatterns = [url(r"^", include(router.urls))]

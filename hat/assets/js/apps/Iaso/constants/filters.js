@@ -1,4 +1,5 @@
 import MESSAGES from '../components/forms/messages';
+import getDisplayName from '../utils/usersUtils';
 
 export const search = () => (
     {
@@ -55,6 +56,34 @@ export const source = (formatMessage, sourceList) => (
             value: t[0],
         })),
         label: MESSAGES.source,
+        type: 'select',
+    }
+);
+
+export const device = deviceList => (
+    {
+        urlKey: 'deviceId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: deviceList.map(d => ({
+            label: d.imei,
+            value: d.id,
+        })),
+        label: MESSAGES.device,
+        type: 'select',
+    }
+);
+
+export const deviceOwnership = deviceOnershipList => (
+    {
+        urlKey: 'deviceOwnershipId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: deviceOnershipList.map(o => ({
+            label: `${getDisplayName(o.user)} - IMEI:${o.device.imei}`,
+            value: o.id,
+        })),
+        label: MESSAGES.deviceOwnership,
         type: 'select',
     }
 );

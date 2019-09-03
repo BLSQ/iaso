@@ -5,7 +5,7 @@ const MESSAGES = {
     },
     org_unit_type_id: {
         id: 'iaso.forms.org_unit_type_id',
-        defaultMessage: 'Type',
+        defaultMessage: 'Org unit type',
     },
     source_ref: {
         id: 'iaso.forms.source_ref',
@@ -94,6 +94,14 @@ const MESSAGES = {
     location: {
         id: 'iaso.forms.location',
         defaultMessage: 'Location',
+    },
+    device: {
+        id: 'iaso.forms.device',
+        defaultMessage: 'Device',
+    },
+    deviceOwnership: {
+        id: 'iaso.forms.deviceOwnership',
+        defaultMessage: 'Device ownership',
     },
 };
 

@@ -316,6 +316,14 @@ class Device(models.Model):
     def __str__(self):
         return "%s " % (self.imei,)
 
+    def as_dict(self):
+        return {
+            "imei": self.imei,
+            "test_device": self.test_device,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
 
 class DeviceOwnership(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
@@ -327,3 +335,12 @@ class DeviceOwnership(models.Model):
 
     def __str__(self):
         return "%s - %s" % (self.device, self.user)
+
+    def as_dict(self):
+        return {
+            "device": self.device.as_dict(),
+            "user": self.user.profile.as_short_dict(),
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }

@@ -19,6 +19,9 @@ const commonStyles = theme => ({
     marginBottom: {
         marginBottom: theme.spacing(2),
     },
+    marginBottomBig: {
+        marginBottom: theme.spacing(4),
+    },
     marginLeft: {
         marginLeft: theme.spacing(2),
     },
@@ -50,6 +53,9 @@ const commonStyles = theme => ({
     },
     dividerMarginNeg: {
         margin: theme.spacing(0, -4, 0, -4),
+    },
+    relativeContainer: {
+        position: 'relative',
     },
 });
 

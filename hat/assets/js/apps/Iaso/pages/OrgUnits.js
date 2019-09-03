@@ -13,7 +13,9 @@ import {
 } from '../utils/requests';
 
 
-import { setOrgUnits, setOrgUnitTypes, setSourceTypes } from '../redux/orgUnitsReducer';
+import {
+    setOrgUnits, setOrgUnitTypes, setSourceTypes, setOrgUnitsListFetching,
+} from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
@@ -21,6 +23,7 @@ import { createUrl } from '../../../utils/fetchData';
 
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
+import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from '../components/filters/OrgUnitsFiltersComponent';
 
 import commonStyles from '../styles/common';
@@ -106,8 +109,10 @@ class OrgUnits extends Component {
             intl: {
                 formatMessage,
             },
+            dispatch,
             orgUnitTypes,
             sourceTypes,
+            fetchingList,
         } = this.props;
         const {
             tableUrl,
@@ -115,6 +120,10 @@ class OrgUnits extends Component {
         } = this.state;
         return (
             <Fragment>
+                {
+                    fetchingList
+                    && <LoadingSpinner />
+                }
                 <TopBar title={formatMessage({
                     defaultMessage: 'Org units',
                     id: 'iaso.orgUnits.title',
@@ -143,7 +152,11 @@ class OrgUnits extends Component {
                                     dataKey="orgunits"
                                     canSelect={false}
                                     multiSort
-                                    onDataLoaded={(orgUnitsList, count, pages) => this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages)}
+                                    onDataStartLoaded={() => dispatch(this.props.setOrgUnitsListFetching(true))}
+                                    onDataLoaded={(orgUnitsList, count, pages) => {
+                                        dispatch(this.props.setOrgUnitsListFetching(false));
+                                        this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages);
+                                    }}
                                     reduxPage={reduxPage}
                                 />
                             </div>
@@ -170,12 +183,15 @@ OrgUnits.propTypes = {
     setSourceTypes: PropTypes.func.isRequired,
     sourceTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
+    setOrgUnitsListFetching: PropTypes.func.isRequired,
+    fetchingList: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sourceTypes: state.orgUnits.sourceTypes,
+    fetchingList: state.orgUnits.fetchingList,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -184,6 +200,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
+    setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
 });
 
 export default withStyles(styles)(

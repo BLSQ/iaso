@@ -55,10 +55,6 @@ def import_data(org_units, user, api_import):
 
             new_org_units.append(org_unit_db)
             org_unit_db.save()
-        else:
-            api_import.has_problem = True
-            api_import.save()
-            print("not created")
     return new_org_units
 
 

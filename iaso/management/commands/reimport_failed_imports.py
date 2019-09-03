@@ -18,8 +18,8 @@ class Command(BaseCommand):
                 i.has_problem = False
                 i.save()
                 unit_count = unit_count + 1
-            except:
-                print("An error happened")
+            except Exception as e:
+                print("An error happened", e)
 
         failed_instance_imports = APIImport.objects.filter(has_problem=True).filter(
             import_type="instance"
@@ -31,7 +31,7 @@ class Command(BaseCommand):
                 i.has_problem = False
                 i.save()
                 instance_count = instance_count + 1
-            except:
-                print("An error happened")
+            except Exception as e:
+                print("An error happened", e)
 
         print("Imported: units", unit_count, "instances", instance_count)

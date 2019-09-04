@@ -33,7 +33,7 @@ class OrgUnitsFiltersComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            filtersUpdated: false,
+            filtersUpdated: true,
         };
     }
 

@@ -15,16 +15,16 @@ import { setOrgUnitsLevel } from '../../redux/orgUnitsLevelsReducer';
 class OrgUnitsLevelsFiltersComponent extends Component {
     constructor(props) {
         super(props);
-        const orgUnitLevelsIds = props.params.orgUnitLevelsIds ? props.params.orgUnitLevelsIds.split(',') : [];
+        const levels = props.params.levels ? props.params.levels.split(',') : [];
         this.state = {
-            orgUnitLevelsIds,
+            levels,
         };
         const {
             dispatch,
         } = props;
         fetchOrgUnits(dispatch, '&parent_id=0').then((orgUnits) => {
             this.props.setOrgUnitsLevel(orgUnits, 0);
-            if (orgUnitLevelsIds[0]) {
+            if (levels[0]) {
                 this.fetchTree(1);
             }
         });
@@ -42,10 +42,10 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             baseUrl,
         } = this.props;
         const {
-            orgUnitLevelsIds,
+            levels,
         } = this.state;
         const newOrgUnitLevelsIds = [];
-        orgUnitLevelsIds.forEach((l, i) => {
+        levels.forEach((l, i) => {
             if (parseInt(i, 10) < level) {
                 newOrgUnitLevelsIds.push(l);
             } else if (parseInt(i, 10) > level) {
@@ -56,11 +56,11 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             newOrgUnitLevelsIds[level] = value;
         }
         this.setState({
-            orgUnitLevelsIds: newOrgUnitLevelsIds,
+            levels: newOrgUnitLevelsIds,
         });
         const newParams = {
             ...params,
-            orgUnitLevelsIds: newOrgUnitLevelsIds.toString(),
+            levels: newOrgUnitLevelsIds.toString(),
         };
         redirectTo(baseUrl, newParams);
         if (value) {
@@ -75,11 +75,11 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             dispatch,
         } = this.props;
         const {
-            orgUnitLevelsIds,
+            levels,
         } = this.state;
-        fetchOrgUnits(dispatch, `&parent_id=${orgUnitLevelsIds[level - 1]}`).then((orgUnits) => {
+        fetchOrgUnits(dispatch, `&parent_id=${levels[level - 1]}`).then((orgUnits) => {
             this.props.setOrgUnitsLevel(orgUnits, level);
-            if (orgUnitLevelsIds[level]) {
+            if (levels[level]) {
                 this.fetchTree(level + 1);
             }
         });
@@ -88,12 +88,14 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     fetchLatestOrgUnit() {
         const {
             params: {
-                orgUnitLevelsIds,
+                levels,
             },
         } = this.props;
-        const levelsIds = orgUnitLevelsIds.split(',');
-        const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
-        console.log(latestId);
+        if (levels) {
+            const levelsIds = levels.split(',');
+            const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
+            console.log(latestId);
+        }
     }
 
     render() {
@@ -103,7 +105,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             orgUnitsLevels,
         } = this.props;
         const {
-            orgUnitLevelsIds,
+            levels,
         } = this.state;
         return (
             <div>
@@ -121,7 +123,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                                         orgUnitsLevels[index] || [],
                                         index,
                                         value => this.onFilterChanged(value, index),
-                                        orgUnitLevelsIds[index] ? parseInt(orgUnitLevelsIds[index], 10) : null,
+                                        levels[index] ? parseInt(levels[index], 10) : null,
                                     ),
                                 ]}
                             />

@@ -34,7 +34,7 @@ export const status = formatMessage => (
 
 export const orgUnitLevel = (orgunitList, level, callback, value) => (
     {
-        urlKey: 'orgUnitLevelsIds',
+        urlKey: 'levels',
         isMultiSelect: false,
         isClearable: true,
         options: orgunitList.map(o => ({

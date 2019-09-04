@@ -50,7 +50,7 @@ export default function datasApp(element, baseUrl) {
         <Route
             path={'/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)'
             + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)'
-            + '(/orgUnitLevelsIds/:orgUnitLevelsIds)'
+            + '(/levels/:levels)'
             + '(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)'}
             component={props => (
                 <Fragment>

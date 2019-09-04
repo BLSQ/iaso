@@ -21,7 +21,7 @@ class FiltersComponent extends React.Component {
                 ...params,
             };
             newParams[urlKey] = value;
-            this.props.onFilterChanged();
+            this.props.onFilterChanged(value);
             redirectTo(baseUrl, newParams);
         }
     }

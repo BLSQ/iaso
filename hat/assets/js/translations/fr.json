@@ -60,6 +60,8 @@
     "iaso.forms.noInstance": "Aucun enregistrement",
     "iaso.forms.notValidated": "Non validé",
     "iaso.forms.org_unit_type_id": "Type d'org unit",
+    "iaso.forms.root_org_unit": "Org unit principale",
+    "iaso.forms.child_org_unit": "Org unit enfant",
     "iaso.forms.records": "Enregistrement(s)",
     "iaso.forms.shape": "Forme",
     "iaso.forms.source": "Source",

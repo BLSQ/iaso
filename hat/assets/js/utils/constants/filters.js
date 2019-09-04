@@ -4,7 +4,7 @@ import {
     selectZone,
     selectArea,
 } from '../selectGeo';
-import { treatmentsMedecineMessages } from '../../utils/constants/treatmentsMessages';
+import { treatmentsMedecineMessages } from './treatmentsMessages';
 
 const tempTreatmentsMedecineMessages = {
     ...treatmentsMedecineMessages,

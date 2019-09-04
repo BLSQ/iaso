@@ -84,7 +84,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         source_id = request.GET.get("sourceId", None)
         with_shape = request.GET.get("withShape", None)
         with_location = request.GET.get("withLocation", None)
-        root_org_units = request.GET.get("root", None)
+        parent_id = request.GET.get("parent_id", None)
         order = request.GET.get("order", "id").split(",")
 
         if validated == "true":
@@ -122,8 +122,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 Q(location__isnull=True) & Q(latitude__isnull=True) & Q(longitude__isnull=True)
             )
 
-        if root_org_units == 'true':
-            queryset = queryset.filter(parent__isnull=True)
+        if parent_id:
+            if parent_id == '0':
+                queryset = queryset.filter(parent__isnull=True)
+            else:
+                queryset = queryset.filter(parent__id=parent_id)
 
         if source_id:
             queryset = queryset.filter(source=source_id)

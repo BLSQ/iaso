@@ -79,15 +79,6 @@ class InstancesFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 location(formatMessage),
-                            ]}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
                                 orgUnitType(formatMessage, orgUnitTypes),
                             ]}
                         />
@@ -103,9 +94,9 @@ class InstancesFiltersComponent extends Component {
                             ]}
                         />
                     </Grid>
-                    {/* <Grid item xs={4}>
-                        <OrgUnitsLevelsFiltersComponent params={params} />
-                    </Grid> */}
+                    <Grid item xs={4}>
+                        <OrgUnitsLevelsFiltersComponent params={params} baseUrl={baseUrl} />
+                    </Grid>
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">

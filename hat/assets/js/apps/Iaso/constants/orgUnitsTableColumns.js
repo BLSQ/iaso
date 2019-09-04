@@ -43,7 +43,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             Cell: settings => (
                 <section>
                     {
-                        settings.original.source && formatMessage(MESSAGES[settings.original.source])
+                        settings.original.source
                     }
                 </section>
             ),

@@ -16,7 +16,7 @@ export const status = formatMessage => (
     {
         urlKey: 'validated',
         isMultiSelect: false,
-        isClearable: false,
+        isClearable: true,
         options: [
             {
                 label: formatMessage(MESSAGES.validated),
@@ -38,7 +38,7 @@ export const orgUnitType = (formatMessage, orgunitTypesList) => (
         isMultiSelect: false,
         isClearable: true,
         options: orgunitTypesList.map(t => ({
-            label: formatMessage(MESSAGES[t.short_name]),
+            label: t.name,
             value: t.id,
         })),
         label: MESSAGES.org_unit_type_id,

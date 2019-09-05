@@ -108,6 +108,7 @@ class OrgUnitMapComponent extends Component {
             }
             if (e.layerType === 'marker') {
                 this.props.onChangeLocation(e.layer.getLatLng());
+                this.map.leafletElement.removeLayer(e.layer);
             }
         });
 
@@ -308,7 +309,7 @@ class OrgUnitMapComponent extends Component {
                                 variant="contained"
                                 color="secondary"
                                 className={classes.button}
-                                onClick={() => this.props.onChangeLocation({ latitude: null, longitude: null })}
+                                onClick={() => this.props.onChangeLocation({ lat: null, lng: null })}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
                                 <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />

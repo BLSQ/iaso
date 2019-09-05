@@ -58,7 +58,8 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path="/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/withShape/:withShape)(/withLocation/:withLocation)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/back/:back)"
+            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/withShape/:withShape)'
+            + '(/withLocation/:withLocation)(/search/:search)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />

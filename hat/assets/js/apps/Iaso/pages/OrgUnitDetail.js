@@ -119,6 +119,17 @@ class OrgUnitDetail extends Component {
         });
     }
 
+    handleChangeLocation(location) {
+        this.setState({
+            orgUnitModified: true,
+            currentOrgUnit: {
+                ...this.state.currentOrgUnit,
+                latitude: location.lat ? parseFloat(location.lat.toFixed(8)) : null,
+                longitude: location.lng ? parseFloat(location.lng.toFixed(8)) : null,
+            },
+        });
+    }
+
     saveOrgUnit() {
         saveOrgUnit(this.props.dispatch, this.state.currentOrgUnit).then(
             (currentOrgUnit) => {
@@ -147,7 +158,6 @@ class OrgUnitDetail extends Component {
             aliases: orgUnitRevision.fields.aliases ? getAliasesArrayFromString(orgUnitRevision.fields.aliases) : this.props.currentOrgUnit.aliases,
             id: this.props.currentOrgUnit.id,
         };
-        console.log(mappedRevision);
         return saveOrgUnit(this.props.dispatch, mappedRevision).then(
             (currentOrgUnit) => {
                 this.setState({
@@ -254,8 +264,7 @@ class OrgUnitDetail extends Component {
                                         <OrgUnitMap
                                             orgUnit={currentOrgUnit}
                                             onChangeLocation={(location) => {
-                                                this.handleChangeInfo('latitude', parseFloat(location.lat.toFixed(8)));
-                                                this.handleChangeInfo('longitude', parseFloat(location.lng.toFixed(8)));
+                                                this.handleChangeLocation(location);
                                             }}
                                             onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
                                         />

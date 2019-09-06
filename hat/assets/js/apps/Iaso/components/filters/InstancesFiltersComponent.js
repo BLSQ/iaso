@@ -95,7 +95,11 @@ class InstancesFiltersComponent extends Component {
                         />
                     </Grid>
                     <Grid item xs={4}>
-                        <OrgUnitsLevelsFiltersComponent params={params} baseUrl={baseUrl} />
+                        <OrgUnitsLevelsFiltersComponent
+                            onLatestIdChanged={() => this.onFilterChanged()}
+                            params={params}
+                            baseUrl={baseUrl}
+                        />
                     </Grid>
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">

@@ -25,6 +25,7 @@ import {
 
 import { createUrl } from '../../../utils/fetchData';
 import getInstancesColumns from '../utils/instancesUtils';
+import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -112,6 +113,7 @@ class Instances extends Component {
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
             deviceOwnershipId: params.deviceOwnershipId,
+            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
         if (toExport) {
             urlParams[exportType] = true;

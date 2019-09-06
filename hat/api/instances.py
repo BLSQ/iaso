@@ -88,6 +88,7 @@ class InstancesViewSet(viewsets.ViewSet):
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
         device_id = request.GET.get("deviceId", None)
         device_ownership_id = request.GET.get("deviceOwnershipId", None)
+        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
 
         queryset = (
             queryset.exclude(file="")
@@ -100,6 +101,12 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         if org_unit_type_id:
             queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
+
+        if org_unit_parent_id:
+            # TO-DO get non direct parent too
+            queryset = queryset.filter(
+                Q(org_unit__id=org_unit_parent_id) | Q(org_unit__parent__id=org_unit_parent_id) | Q(org_unit__parent__parent__id=org_unit_parent_id)
+            )
 
         if with_location == 'true':
             queryset = queryset.filter(location__isnull=False)
@@ -156,6 +163,8 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Longitude", "width": 20},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
+                {"title": "Org unit", "width": 20},
+                {"title": "Org unit id", "width": 20},
             ]
             file_content_template = queryset.first().as_dict()["file_content"]
             for title in file_content_template:
@@ -166,12 +175,15 @@ class InstancesViewSet(viewsets.ViewSet):
                 idict = instance.as_dict()
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
+                org_unit = idict.get("org_unit")
                 instance_values = [
                     idict.get("form_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
                     created_at,
                     updated_at,
+                    org_unit.get("name") if org_unit else None,
+                    org_unit.get("id") if org_unit else None,
                 ]
 
                 for k in file_content_template:

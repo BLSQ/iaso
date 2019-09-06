@@ -27,6 +27,19 @@ const instancesTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Org unit',
+                id: 'iaso.instance.org_unit',
+            }),
+            accessor: 'org_unit__id',
+            Cell: settings => (
+                <span>
+                    {settings.original.org_unit ? settings.original.org_unit.name : '/'}
+                </span>
+            ),
+            width: 200,
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Created at',
                 id: 'iaso.instance.created_at',
             }),

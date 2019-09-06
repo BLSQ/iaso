@@ -41,6 +41,7 @@ $primary-color: #2372BA;
             font-size: 16px !important;
         }
 
+
         .Select-clear {
             font-size: 30px;
             font-weight: lighter;
@@ -51,5 +52,10 @@ $primary-color: #2372BA;
 
     .Select-menu-outer {
         z-index: 100;
+    }
+
+    .Select-value-label {
+        width: 90%;
+        overflow: hidden;
     }
 }

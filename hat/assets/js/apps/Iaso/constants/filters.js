@@ -32,7 +32,7 @@ export const status = formatMessage => (
     }
 );
 
-export const orgUnitLevel = (orgunitList, level, callback, value) => (
+export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage) => (
     {
         urlKey: 'levels',
         isMultiSelect: false,
@@ -41,7 +41,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value) => (
             label: `${o.name} (${o.org_unit_type_name})`,
             value: o.id,
         })),
-        label: level === 0 ? MESSAGES.root_org_unit : MESSAGES.child_org_unit,
+        labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,
         type: 'select',
         callback,
         value,

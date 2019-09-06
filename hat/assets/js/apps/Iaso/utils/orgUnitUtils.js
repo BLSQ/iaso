@@ -9,4 +9,13 @@ export const getPolygonPositionsFromSimplifiedGeom = (field) => {
     return polygonPositions;
 };
 
+export const fetchLatestOrgUnitLevelId = (levels) => {
+    if (levels) {
+        const levelsIds = levels.split(',');
+        const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
+        return latestId;
+    }
+    return null;
+};
+
 export const getAliasesArrayFromString = aliasString => aliasString.replace('[', '').replace(']', '').replace(/"/gi, '').split(',');

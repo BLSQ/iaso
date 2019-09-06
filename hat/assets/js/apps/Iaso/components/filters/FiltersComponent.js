@@ -98,6 +98,7 @@ class FiltersComponent extends React.Component {
                                                 type="select"
                                                 options={filter.options}
                                                 label={filter.label}
+                                                labelString={filter.labelString}
                                             />
                                         )
                                     }

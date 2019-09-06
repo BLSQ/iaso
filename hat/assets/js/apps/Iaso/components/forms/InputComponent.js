@@ -23,6 +23,7 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
     },
     inputLabel: {
+        color: 'rgba(0, 0, 0, 0.4)',
         paddingLeft: 3,
         paddingRight: 3,
         transition: theme.transitions.create(['all'], {
@@ -100,6 +101,7 @@ class InputComponent extends Component {
             disabled,
             clearable,
             label,
+            labelString,
             onEnterPressed,
             checked,
         } = this.props;
@@ -145,7 +147,10 @@ class InputComponent extends Component {
                         htmlFor={`input-select-${keyValue}`}
                     >
                         {
-                            label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])
+                            label && labelString === '' ? formatMessage(label) : null
+                        }
+                        {
+                            labelString !== '' ? labelString : null
                         }
                     </InputLabel>
                     <Select
@@ -237,6 +242,7 @@ InputComponent.defaultProps = {
     disabled: false,
     clearable: true,
     label: undefined,
+    labelString: '',
     checked: false,
     onEnterPressed: () => null,
 };
@@ -252,6 +258,7 @@ InputComponent.propTypes = {
     disabled: PropTypes.bool,
     clearable: PropTypes.bool,
     label: PropTypes.object,
+    labelString: PropTypes.string,
     checked: PropTypes.bool,
     onEnterPressed: PropTypes.func,
 };

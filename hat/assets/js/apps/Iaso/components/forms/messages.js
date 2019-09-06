@@ -7,13 +7,9 @@ const MESSAGES = {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
-    root_org_unit: {
-        id: 'iaso.forms.root_org_unit',
-        defaultMessage: 'Main org unit',
-    },
-    child_org_unit: {
-        id: 'iaso.forms.child_org_unit',
-        defaultMessage: 'Children org unit',
+    level: {
+        id: 'iaso.forms.level',
+        defaultMessage: 'Level',
     },
     source_ref: {
         id: 'iaso.forms.source_ref',

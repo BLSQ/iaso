@@ -1,13 +1,15 @@
 import React, { Component } from 'react';
 import { push } from 'react-router-redux';
+import { connect } from 'react-redux';
+import { injectIntl } from 'react-intl';
 
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
 
 import FiltersComponent from './FiltersComponent';
 
 import { fetchOrgUnits } from '../../utils/requests';
 import { createUrl } from '../../../../utils/fetchData';
+import { fetchLatestOrgUnitLevelId } from '../../utils/orgUnitUtils';
 
 import { orgUnitLevel } from '../../constants/filters';
 import { setOrgUnitsLevel } from '../../redux/orgUnitsLevelsReducer';
@@ -30,8 +32,18 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         });
     }
 
-    componentDidUpdate() {
-        this.fetchLatestOrgUnit();
+    componentDidUpdate(prevProps) {
+        const {
+            params: {
+                levels,
+            },
+            onLatestIdChanged,
+        } = this.props;
+        const newLastId = fetchLatestOrgUnitLevelId(levels);
+        const oldLastId = fetchLatestOrgUnitLevelId(prevProps.params.levels);
+        if (newLastId !== oldLastId) {
+            onLatestIdChanged(newLastId);
+        }
     }
 
     onFilterChanged(value, level) {
@@ -54,6 +66,9 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         });
         if (value) {
             newOrgUnitLevelsIds[level] = value;
+        }
+        if (!value && level === 0) {
+            this.props.setOrgUnitsLevel(null, 1);
         }
         this.setState({
             levels: newOrgUnitLevelsIds,
@@ -85,28 +100,19 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         });
     }
 
-    fetchLatestOrgUnit() {
-        const {
-            params: {
-                levels,
-            },
-        } = this.props;
-        if (levels) {
-            const levelsIds = levels.split(',');
-            const latestId = parseInt(levelsIds[levelsIds.length - 1], 10);
-            console.log(latestId);
-        }
-    }
-
     render() {
         const {
             params,
             baseUrl,
             orgUnitsLevels,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         const {
             levels,
         } = this.state;
+        console.log(orgUnitsLevels);
         return (
             <div>
                 {
@@ -124,6 +130,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                                         index,
                                         value => this.onFilterChanged(value, index),
                                         levels[index] ? parseInt(levels[index], 10) : null,
+                                        formatMessage,
                                     ),
                                 ]}
                             />
@@ -139,12 +146,14 @@ OrgUnitsLevelsFiltersComponent.defaultProps = {
 };
 
 OrgUnitsLevelsFiltersComponent.propTypes = {
+    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsLevel: PropTypes.func.isRequired,
     baseUrl: PropTypes.string,
     orgUnitsLevels: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    onLatestIdChanged: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -158,4 +167,4 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitsLevel: (orgUnitItem, level) => dispatch(setOrgUnitsLevel(orgUnitItem, level)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(OrgUnitsLevelsFiltersComponent);
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitsLevelsFiltersComponent));

@@ -105,22 +105,25 @@ class InstancesViewSet(viewsets.ViewSet):
         if org_unit_parent_id:
             # TO-DO get non direct parent too
             queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id) | Q(org_unit__parent__id=org_unit_parent_id) | Q(org_unit__parent__parent__id=org_unit_parent_id)
+                Q(org_unit__id=org_unit_parent_id)
+                | Q(org_unit__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__id=org_unit_parent_id)
             )
 
-        if with_location == 'true':
+        if with_location == "true":
             queryset = queryset.filter(location__isnull=False)
 
-        if with_location == 'false':
+        if with_location == "false":
             queryset = queryset.filter(location__isnull=True)
 
         if device_id:
             queryset = queryset.filter(device__id=device_id)
 
         if device_ownership_id:
-            device_ownership = get_object_or_404(DeviceOwnership, pk=device_ownership_id)
+            device_ownership = get_object_or_404(
+                DeviceOwnership, pk=device_ownership_id
+            )
             queryset = queryset.filter(device__id=device_ownership.device.id)
-
 
         if form_id:
             queryset = queryset.filter(form_id=form_id)
@@ -165,6 +168,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Date de modification", "width": 20},
                 {"title": "Org unit", "width": 20},
                 {"title": "Org unit id", "width": 20},
+                {"title": "Référence externe", "width": 20},
             ]
             file_content_template = queryset.first().as_dict()["file_content"]
             for title in file_content_template:
@@ -184,6 +188,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     updated_at,
                     org_unit.get("name") if org_unit else None,
                     org_unit.get("id") if org_unit else None,
+                    org_unit.get("source_ref") if org_unit else None,
                 ]
 
                 for k in file_content_template:

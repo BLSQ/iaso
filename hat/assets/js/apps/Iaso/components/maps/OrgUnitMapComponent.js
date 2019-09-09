@@ -25,6 +25,8 @@ import { MESSAGES } from '../../../../utils/map/mapUtils';
 
 import TileSwitch from './TileSwitchComponent';
 
+import { resetMapReducer } from '../../redux/mapReducer';
+
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const zoom = 5;
@@ -49,6 +51,14 @@ const styles = theme => ({
     button: {
         width: '100%',
         marginBottom: theme.spacing(2),
+    },
+    mapContainer: {
+        '& .marker-cluster': {
+            backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
+        },
+        '& .marker-cluster.primary > div': {
+            backgroundColor: theme.palette.primary.main,
+        },
     },
 });
 
@@ -133,6 +143,7 @@ class OrgUnitMapComponent extends Component {
     }
 
     componentWillUnmount() {
+        this.props.resetMapReducer();
         if (this.state.editEnabled) {
             this.toggleEditShape();
         }
@@ -209,8 +220,9 @@ class OrgUnitMapComponent extends Component {
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         return (
             <Grid container spacing={4}>
-                <Grid item xs={10} className={classes.mapContainer}>
+                <Grid item xs={9} xl={10} className={classes.mapContainer}>
                     <Map
+                        scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
                         ref={(ref) => {
@@ -237,7 +249,7 @@ class OrgUnitMapComponent extends Component {
                         }
                     </Map>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={3} xl={2}>
                     <TileSwitch />
                     {
                         !editEnabled && orgUnit.geo_json
@@ -355,11 +367,16 @@ OrgUnitMapComponent.propTypes = {
     onChange: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
+    resetMapReducer: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
 });
 
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
+});
 
-export default withStyles(styles)(connect(MapStateToProps)(injectIntl(OrgUnitMapComponent)));
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitMapComponent)));

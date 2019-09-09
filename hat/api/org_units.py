@@ -134,11 +134,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(parent__id=parent_id)
 
         if org_unit_parent_id:
-            # TO-DO get non direct parent too
             queryset = queryset.filter(
                 Q(id=org_unit_parent_id)
                 | Q(parent__id=org_unit_parent_id)
                 | Q(parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
             )
 
         if source_id:

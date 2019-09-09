@@ -26,3 +26,10 @@ export const getLatLngBounds = (items) => {
     const bounds = L.latLngBounds(latLngs);
     return bounds;
 };
+
+export const createClusterCustomIcon = cluster => (L.divIcon({
+    html: `<div><span>${cluster.getChildCount()}</span></div>`,
+    className: 'marker-cluster primary',
+    iconSize: L.point(40, 40, true),
+})
+);

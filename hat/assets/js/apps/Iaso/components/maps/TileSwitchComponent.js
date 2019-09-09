@@ -73,7 +73,7 @@ function TileSwitchComponent(props) {
     } = props;
     return (
         <Card className={classes.card}>
-            <Typography variant="h6" component="h6" className={classes.title}>
+            <Typography variant="h6" component="h6" className={classes.title} color="primary">
                 {formatMessage(MESSAGES.title)}
             </Typography>
             <Divider />
@@ -129,5 +129,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(TileSwitchComponent))
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(TileSwitchComponent)),
 );

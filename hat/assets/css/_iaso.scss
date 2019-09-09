@@ -1,21 +1,11 @@
 $primary-color: #2372BA;
 
+@import "iaso/select";
+@import "iaso/reactTable";
+@import "iaso/leafletCluster";
+
 .iaso {
     background-color: $background-gray !important;
-
-    .ReactTable .rt-tbody .rt-td {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .ReactTable .rt-tr {
-        background-color: white;
-    }
-
-    .leaflet-container {
-        height: 80vh;
-    }
 
     &.instances {
         .ReactTable .rt-tbody {
@@ -23,39 +13,8 @@ $primary-color: #2372BA;
         }
     }
 
-    .filter__container__select.date-select .filter__container__select__label {
-        width: 75px;
+    .leaflet-container {
+        height: 80vh;
     }
 
-    .Select-control {
-        height: 55px;
-
-        .Select-value,
-        .Select-placeholder,
-        .Select-input {
-            display: flex !important;
-            align-items: center;
-            height: 55px;
-            padding-left: 16px !important;
-            padding-right: 16px !important;
-            font-size: 16px !important;
-        }
-
-
-        .Select-clear {
-            font-size: 30px;
-            font-weight: lighter;
-            margin-top: -5px;
-            margin-right: 5px;
-        }
-    }
-
-    .Select-menu-outer {
-        z-index: 100;
-    }
-
-    .Select-value-label {
-        width: 90%;
-        overflow: hidden;
-    }
 }

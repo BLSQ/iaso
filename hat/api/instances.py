@@ -101,11 +101,15 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
 
         if org_unit_parent_id:
-            # TO-DO get non direct parent too
             queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
+                Q(id=org_unit_parent_id)
+                | Q(parent__id=org_unit_parent_id)
+                | Q(parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
+                | Q(parent_parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
             )
 
         if with_location == "true":

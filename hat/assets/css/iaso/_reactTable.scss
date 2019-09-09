@@ -1,0 +1,15 @@
+.iaso {
+    .ReactTable .rt-tbody .rt-td {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .ReactTable .rt-tr {
+        background-color: white;
+    }
+
+    .filter__container__select.date-select .filter__container__select__label {
+        width: 75px;
+    }
+}

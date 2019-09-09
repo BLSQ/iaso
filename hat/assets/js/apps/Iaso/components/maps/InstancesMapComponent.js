@@ -1,87 +1,51 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
-    Map, TileLayer, Marker, Popup,
+    Map, TileLayer,
 } from 'react-leaflet';
-import { FormattedMessage } from 'react-intl';
+import MarkerClusterGroup from 'react-leaflet-markercluster';
 
 import {
     withStyles,
     Grid,
-    CardMedia,
-    CardContent,
-    Card,
-    Hidden,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import moment from 'moment';
 
-import { getLatLngBounds, isValidCoordinate } from '../../utils/mapUtils';
+import { getLatLngBounds, createClusterCustomIcon } from '../../utils/mapUtils';
+
+import { resetMapReducer } from '../../redux/mapReducer';
 
 import TileSwitch from './TileSwitchComponent';
+import ClusterSwitch from './ClusterSwitchComponent';
+import InstancesMarkersComponent from './InstancesMarkersComponent';
 
 import commonStyles from '../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    popup: {
-        margin: 0,
-        '& .leaflet-popup-content': {
-            margin: 0,
-        },
-        '& .leaflet-popup-close-button': {
-            color: 'white !important',
-        },
-    },
-    link: {
-        wordBreak: 'break-all',
-    },
-    listItemLabel: {
-        textAlign: 'right',
-        fontWeight: 'bold',
-        display: 'inline-block',
-        paddingRight: theme.spacing(1) / 2,
-    },
-    listItem: {
-        textAlign: 'left',
-    },
-    card: {
-        height: '100%',
-        width: '100%',
-        borderRadius: 12,
-        overflow: 'hidden',
-        boxShadow: 'none',
-    },
-    cardMedia: {
-        height: 120,
-    },
-    cardContent: {
-        margin: theme.spacing(2),
-        overflow: 'hidden',
-        wordBreak: 'break-all',
-        padding: '0 !important',
-    },
-    fileList: {
-        paddingLeft: theme.spacing(2),
-    },
-    fileItem: {
-        position: 'relative',
-        left: -theme.spacing(1) / 2,
-    },
 });
 
+const boundsOptions = { padding: [50, 50] };
+
 class InstancesMap extends Component {
+    componentWillUnmount() {
+        this.props.resetMapReducer();
+    }
+
     render() {
-        const { instances, classes, currentTile } = this.props;
+        const {
+            instances, classes, currentTile, isClusterActive,
+        } = this.props;
         return (
             <Grid container spacing={4}>
-                <Grid item xs={10} className={classes.mapContainer}>
+                <Grid item xs={9} xl={10} className={classes.mapContainer}>
                     <Map
+                        scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
                         bounds={getLatLngBounds(instances)}
-                        boundsOptions={{ padding: [50, 50] }}
+                        boundsOptions={boundsOptions}
                         zoom={13}
                     >
                         <TileLayer
@@ -89,106 +53,22 @@ class InstancesMap extends Component {
                             url={currentTile.url}
                         />
                         {
-                            instances.map((i) => {
-                                if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
-                                return (
-                                    <Marker position={[i.latitude, i.longitude]} key={i.id}>
-                                        <Popup className={classes.popup}>
-                                            <Card className={classes.card}>
-                                                {
-                                                    i.files && i.files.length > 0
-                                                    && (
-                                                        <CardMedia
-                                                            className={classes.cardMedia}
-                                                            image={i.files[0]}
-                                                            href={i.files[0]}
-                                                        />
-                                                    )
-                                                }
-                                                <CardContent className={classes.cardContent}>
-                                                    <Grid container spacing={0}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.label.name" defaultMessage="Name" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            {i.org_unit.name}
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid container spacing={0}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.label.type" defaultMessage="Type" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            {i.org_unit.org_unit_type_name}
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid container spacing={0}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.instance.device" defaultMessage="IMEI device" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            {i.device_id ? i.device_id : '/'}
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid container spacing={1}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.instance.coordinate" defaultMessage="Coordinates" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            {' '}
-                                                            Long:
-                                                            {' '}
-                                                            {i.longitude}
-                                                            {' '}
-                                                            <br />
-                                                            {' '}
-                                                            Lat:
-                                                            {' '}
-                                                            {i.latitude}
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid container spacing={0}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.instance.created_at" defaultMessage="Created at" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            {moment.unix(i.created_at).format('DD/MM/YYYY HH:mm')}
-                                                        </Grid>
-                                                    </Grid>
-                                                    <Grid container spacing={0}>
-                                                        <Grid item xs={4} className={classes.listItemLabel}>
-                                                            <FormattedMessage id="iaso.instance.files" defaultMessage="Files" />
-                                                            :
-                                                        </Grid>
-                                                        <Grid item xs={8} className={classes.listItem}>
-                                                            <ul className={classes.fileList}>
-                                                                <li>
-                                                                    <a className={classes.fileItem} target="_blank" rel="noopener noreferrer" href={i.file_url}>{i.file_name}</a>
-                                                                </li>
-                                                                {i.files.map(f => (
-                                                                    <li key={f}>
-                                                                        <a className={classes.fileItem} target="_blank" rel="noopener noreferrer" href={f}>{f.toString()}</a>
-                                                                    </li>
-                                                                ))}
-                                                            </ul>
-                                                        </Grid>
-                                                    </Grid>
-                                                </CardContent>
-                                            </Card>
-                                        </Popup>
-                                    </Marker>
-                                );
-                            })
+                            isClusterActive
+                            && (
+                                <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
+                                    <InstancesMarkersComponent instances={instances} />
+                                </MarkerClusterGroup>
+                            )
+                        }
+                        {
+                            !isClusterActive
+                            && <InstancesMarkersComponent instances={instances} />
                         }
                     </Map>
                 </Grid>
-                <Grid item xs={2}>
+                <Grid item xs={3} xl={2}>
                     <TileSwitch />
+                    <ClusterSwitch />
                 </Grid>
             </Grid>
         );
@@ -200,10 +80,19 @@ InstancesMap.propTypes = {
     classes: PropTypes.object.isRequired,
     instances: PropTypes.array.isRequired,
     currentTile: PropTypes.object.isRequired,
+    resetMapReducer: PropTypes.func.isRequired,
+    isClusterActive: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
+    isClusterActive: state.map.isClusterActive,
 });
 
-export default withStyles(styles)(connect(MapStateToProps)(InstancesMap));
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
+});
+
+
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(InstancesMap));

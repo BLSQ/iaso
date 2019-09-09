@@ -27,18 +27,18 @@ def import_data(org_units, user, api_import):
         if latitude and longitude:
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
         if created:
             org_unit_db.custom = True
             org_unit_db.validated = False
             org_unit_db.name = org_unit.get("name", None)
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
-            if str.isdigit(parent_id):
-                org_unit_db.parent_id = org_unit.get("parentId", None)
-            else:
-                parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                org_unit.parent_id = parent_org_unit.id
+            if parent_id is not None:
+                if str.isdigit(parent_id):
+                    org_unit_db.parent_id = parent_id
+                else:
+                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
+                    org_unit.parent_id = parent_org_unit.id
             org_unit_db.org_unit_type_id = org_unit.get("orgUnitTypeId", None)
 
             t = org_unit.get("created_at", None)
@@ -107,24 +107,27 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
 
-        if with_shape == 'true':
+        if with_shape == "true":
             queryset = queryset.filter(simplified_geom__isnull=False)
 
-        if with_shape == 'false':
+        if with_shape == "false":
             queryset = queryset.filter(simplified_geom__isnull=True)
 
-        if with_location == 'true':
+        if with_location == "true":
             queryset = queryset.filter(
-                Q(location__isnull=False) | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+                Q(location__isnull=False)
+                | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
             )
 
-        if with_location == 'false':
+        if with_location == "false":
             queryset = queryset.filter(
-                Q(location__isnull=True) & Q(latitude__isnull=True) & Q(longitude__isnull=True)
+                Q(location__isnull=True)
+                & Q(latitude__isnull=True)
+                & Q(longitude__isnull=True)
             )
 
         if parent_id:
-            if parent_id == '0':
+            if parent_id == "0":
                 queryset = queryset.filter(parent__isnull=True)
             else:
                 queryset = queryset.filter(parent__id=parent_id)
@@ -132,7 +135,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if org_unit_parent_id:
             # TO-DO get non direct parent too
             queryset = queryset.filter(
-                Q(id=org_unit_parent_id) | Q(parent__id=org_unit_parent_id) | Q(parent__parent__id=org_unit_parent_id)
+                Q(id=org_unit_parent_id)
+                | Q(parent__id=org_unit_parent_id)
+                | Q(parent__parent__id=org_unit_parent_id)
             )
 
         if source_id:
@@ -168,13 +173,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.validated = request.data.get("status", True)
         geo_json = request.data.get("geo_json", None)
         simplified_geom = request.data.get("simplified_geom", None)
-        if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
+        if (
+            geo_json
+            and geo_json["features"][0]["geometry"]
+            and geo_json["features"][0]["geometry"]["coordinates"]
+        ):
             if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                org_unit.simplified_geom = Polygon(geo_json["features"][0]["geometry"]["coordinates"][0])
+                org_unit.simplified_geom = Polygon(
+                    geo_json["features"][0]["geometry"]["coordinates"][0]
+                )
             else:
                 # DB has a single Polygon, refuse if we have more, or less.
-                return Response("Only one polygon should be saved in the geo_json shape",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    "Only one polygon should be saved in the geo_json shape",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
         elif simplified_geom:
             org_unit.simplified_geom = simplified_geom
         else:
@@ -182,14 +195,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
         if latitude and str(latitude) != str(org_unit.latitude):
-            org_unit.latitude = latitude;
+            org_unit.latitude = latitude
         if longitude and str(longitude) != str(org_unit.longitude):
-            org_unit.longitude = longitude;
+            org_unit.longitude = longitude
 
         if latitude and longitude:
-            org_unit.location = Point(
-                x=latitude, y=longitude, srid=4326
-            )
+            org_unit.location = Point(x=latitude, y=longitude, srid=4326)
         org_unit.aliases = request.data.get("aliases", "")
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
@@ -197,14 +208,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
 
-        log_modification(original_copy, org_unit, source=ORG_UNIT_API, user=request.user)
+        log_modification(
+            original_copy, org_unit, source=ORG_UNIT_API, user=request.user
+        )
         org_unit.save()
 
         res = org_unit.as_dict()
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
-            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
+            res["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
 
         return Response(res)
 
@@ -221,7 +236,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         try:
             new_org_units = import_data(org_units, request.user, api_import)
             return Response([org_unit.as_dict() for org_unit in new_org_units])
-        except:
+        except Exception as exe:
+            print("Excpetion", exe)
             return Response({"res": "a problem happened, but your data was saved"})
 
     def retrieve(self, request, pk=None):
@@ -230,5 +246,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
-            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
+            res["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
         return Response(res)

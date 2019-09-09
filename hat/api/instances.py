@@ -1,5 +1,3 @@
-import json
-
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -152,7 +150,7 @@ class InstancesViewSet(viewsets.ViewSet):
                         instance.as_location()
                         for instance in queryset.filter(
                             location__isnull=False
-                        ).prefetch_related("instancefile_set")
+                        ).prefetch_related("instancefile_set").prefetch_related("device").defer("json")
                     ]
                 )
             else:

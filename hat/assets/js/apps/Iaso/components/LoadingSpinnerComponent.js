@@ -8,7 +8,7 @@ import classNames from 'classnames';
 
 const styles = () => ({
     root: {
-        position: 'absolute',
+        position: 'fixed',
         top: 0,
         left: 0,
         width: '100%',

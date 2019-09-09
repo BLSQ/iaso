@@ -102,14 +102,14 @@ class InstancesViewSet(viewsets.ViewSet):
 
         if org_unit_parent_id:
             queryset = queryset.filter(
-                Q(id=org_unit_parent_id)
-                | Q(parent__id=org_unit_parent_id)
-                | Q(parent__parent__id=org_unit_parent_id)
-                | Q(parent_parent__parent__id=org_unit_parent_id)
-                | Q(parent_parent_parent__parent__id=org_unit_parent_id)
-                | Q(parent_parent_parent_parent__parent__id=org_unit_parent_id)
-                | Q(parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
-                | Q(parent_parent_parent_parent_parent_parent__parent__id=org_unit_parent_id)
+                Q(org_unit__id=org_unit_parent_id)
+                | Q(org_unit__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
             )
 
         if with_location == "true":

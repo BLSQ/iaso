@@ -33,7 +33,9 @@ const instancesTableColumns = (formatMessage, component) => (
             accessor: 'org_unit__id',
             Cell: settings => (
                 <span>
-                    {settings.original.org_unit ? settings.original.org_unit.name : '/'}
+                    {settings.original.org_unit
+                        ? `${settings.original.org_unit.name} (${settings.original.org_unit.org_unit_type_name})`
+                        : '/'}
                 </span>
             ),
             width: 200,

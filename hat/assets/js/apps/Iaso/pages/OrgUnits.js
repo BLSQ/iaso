@@ -20,6 +20,7 @@ import {
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
+import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
@@ -74,7 +75,11 @@ class OrgUnits extends Component {
         Object.keys(params).forEach((key) => {
             const value = params[key];
             if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
+                if (key === 'levels') {
+                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
+                } else {
+                    url += `&${key}=${value}`;
+                }
             }
         });
 

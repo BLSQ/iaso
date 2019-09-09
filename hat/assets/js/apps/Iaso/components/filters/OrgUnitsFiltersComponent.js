@@ -23,6 +23,8 @@ import {
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
+import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+
 import { createUrl } from '../../../../utils/fetchData';
 
 const styles = theme => ({
@@ -80,6 +82,7 @@ class OrgUnitsFiltersComponent extends Component {
                             filters={[
                                 search(),
                                 source(formatMessage, sourceTypes),
+                                status(formatMessage),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
@@ -92,18 +95,15 @@ class OrgUnitsFiltersComponent extends Component {
                             filters={[
                                 location(formatMessage),
                                 shape(formatMessage),
+                                orgUnitType(formatMessage, orgUnitTypes),
                             ]}
                         />
                     </Grid>
                     <Grid item xs={4}>
-                        <FiltersComponent
+                        <OrgUnitsLevelsFiltersComponent
+                            onLatestIdChanged={() => this.onFilterChanged()}
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                status(formatMessage),
-                                orgUnitType(formatMessage, orgUnitTypes),
-                            ]}
                         />
                     </Grid>
                 </Grid>

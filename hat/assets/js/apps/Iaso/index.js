@@ -50,8 +50,8 @@ export default function datasApp(element, baseUrl) {
         <Route
             path={'/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)'
             + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)'
-            + '(/levels/:levels)'
-            + '(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)'}
+            + '(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)'
+            + '(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -60,8 +60,9 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/withShape/:withShape)'
-            + '(/withLocation/:withLocation)(/search/:search)(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
+            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)'
+            + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)'
+            + '(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -70,8 +71,10 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/orgUnitsOrder/:orgUnitsOrder)'
-            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)(/page/:page)(/tab/:tab)'}
+            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)'
+            + '(/sourceId/:sourceId)(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/orgUnitsOrder/:orgUnitsOrder)'
+            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)'
+            + '(/page/:page)(/tab/:tab)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />

@@ -17,7 +17,7 @@ import { setOrgUnitsLevel } from '../../redux/orgUnitsLevelsReducer';
 class OrgUnitsLevelsFiltersComponent extends Component {
     constructor(props) {
         super(props);
-        const levels = props.params.levels ? props.params.levels.split(',') : [];
+        const levels = props.params[props.paramKey] ? props.params[props.paramKey].split(',') : [];
         this.state = {
             levels,
         };
@@ -33,14 +33,10 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {
-            params: {
-                levels,
-            },
-            onLatestIdChanged,
-        } = this.props;
+        const { onLatestIdChanged } = this.props;
+        const levels = this.props.params[this.props.paramKey];
         const newLastId = fetchLatestOrgUnitLevelId(levels);
-        const oldLastId = fetchLatestOrgUnitLevelId(prevProps.params.levels);
+        const oldLastId = fetchLatestOrgUnitLevelId(prevProps.params[prevProps.paramKey]);
         if (newLastId !== oldLastId) {
             onLatestIdChanged(newLastId);
         }
@@ -52,13 +48,16 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             params,
             redirectTo,
             baseUrl,
+            orgUnitsLevels,
+            paramKey,
         } = this.props;
         const {
             levels,
         } = this.state;
         const newOrgUnitLevelsIds = [];
-        levels.forEach((l, i) => {
+        orgUnitsLevels.forEach((o, i) => {
             if (parseInt(i, 10) < level) {
+                const l = levels[i];
                 newOrgUnitLevelsIds.push(l);
             } else if (parseInt(i, 10) > level) {
                 this.props.setOrgUnitsLevel(null, i);
@@ -67,15 +66,12 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         if (value) {
             newOrgUnitLevelsIds[level] = value;
         }
-        if (!value && level === 0) {
-            this.props.setOrgUnitsLevel(null, 1);
-        }
         this.setState({
             levels: newOrgUnitLevelsIds,
         });
         const newParams = {
             ...params,
-            levels: newOrgUnitLevelsIds.toString(),
+            [paramKey]: newOrgUnitLevelsIds.toString(),
         };
         redirectTo(baseUrl, newParams);
         if (value) {
@@ -112,7 +108,6 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         const {
             levels,
         } = this.state;
-        console.log(orgUnitsLevels);
         return (
             <div>
                 {
@@ -143,6 +138,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
 }
 OrgUnitsLevelsFiltersComponent.defaultProps = {
     baseUrl: '',
+    paramKey: 'levels',
 };
 
 OrgUnitsLevelsFiltersComponent.propTypes = {
@@ -154,6 +150,7 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     orgUnitsLevels: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
     onLatestIdChanged: PropTypes.func.isRequired,
+    paramKey: PropTypes.string,
 };
 
 const MapStateToProps = state => ({

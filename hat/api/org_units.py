@@ -86,6 +86,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_location = request.GET.get("withLocation", None)
         parent_id = request.GET.get("parent_id", None)
         order = request.GET.get("order", "id").split(",")
+        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
 
         if validated == "true":
             validated = True
@@ -127,6 +128,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(parent__isnull=True)
             else:
                 queryset = queryset.filter(parent__id=parent_id)
+
+        if org_unit_parent_id:
+            # TO-DO get non direct parent too
+            queryset = queryset.filter(
+                Q(id=org_unit_parent_id) | Q(parent__id=org_unit_parent_id) | Q(parent__parent__id=org_unit_parent_id)
+            )
 
         if source_id:
             queryset = queryset.filter(source=source_id)

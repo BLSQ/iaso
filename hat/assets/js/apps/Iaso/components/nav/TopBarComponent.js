@@ -20,7 +20,7 @@ const styles = theme => ({
     },
     menuButton: {
         marginRight: theme.spacing(2),
-        marginLeft: -theme.spacing(2),
+        marginLeft: theme.spacing(1),
     },
 });
 

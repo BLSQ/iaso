@@ -88,6 +88,29 @@ class BasicAPITestCase(TestCase):
         json_response = json.loads(response.content)
         self.assertEqual(len(json_response["orgUnits"]), 0)
 
+        # inserting a child org_unit
+        uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f0"
+        name2 = "Hopital Sous Fifre"
+        unit_body_2 = {
+            "id": uuid2,
+            "latitude": 0,
+            "created_at": 1565194077699,
+            "updated_at": 1565194077800,
+            "orgUnitTypeId": hospital_unit_type.id,
+            "parentId": uuid,
+            "longitude": 0,
+            "accuracy": 0,
+            "altitude": 0,
+            "time": 0,
+            "name": name2,
+        }
+
+        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        self.assertEqual(response.status_code, 200)
+
+        fifre_model = OrgUnit.objects.get(uuid=uuid2)
+        self.assertEqual(fifre_model.name, name2)
+
     def test_instance_insertion(self):
         """Creating Instance Units through the API"""
         c = APIClient()

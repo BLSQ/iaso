@@ -27,6 +27,7 @@ def import_data(org_units, user, api_import):
         if latitude and longitude:
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+
         if created:
             org_unit_db.custom = True
             org_unit_db.validated = False
@@ -38,7 +39,7 @@ def import_data(org_units, user, api_import):
                     org_unit_db.parent_id = parent_id
                 else:
                     parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit.parent_id = parent_org_unit.id
+                    org_unit_db.parent_id = parent_org_unit.id
             org_unit_db.org_unit_type_id = org_unit.get("orgUnitTypeId", None)
 
             t = org_unit.get("created_at", None)

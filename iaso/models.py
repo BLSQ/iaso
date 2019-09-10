@@ -212,12 +212,13 @@ class Instance(models.Model):
 
         if self.json and f:
             location = self.json[f]
-            latitude, longitude, altitude, accuracy = [
-                float(x) for x in location.split(" ")
-            ]
-            self.location = Point(x=longitude, y=latitude, srid=4326)
-            self.accuracy = accuracy
-            self.save()
+            if location:
+                latitude, longitude, altitude, accuracy = [
+                    float(x) for x in location.split(" ")
+                ]
+                self.location = Point(x=longitude, y=latitude, srid=4326)
+                self.accuracy = accuracy
+                self.save()
 
     def convert_device(self):
         if self.json and not self.device:
@@ -324,6 +325,7 @@ class Device(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
 
 class DeviceOwnership(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)

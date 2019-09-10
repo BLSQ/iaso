@@ -113,7 +113,7 @@ class Instances extends Component {
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
             deviceOwnershipId: params.deviceOwnershipId,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+            levels: params.levels,
         };
         if (toExport) {
             urlParams[exportType] = true;

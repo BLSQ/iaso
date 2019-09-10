@@ -86,7 +86,7 @@ class InstancesViewSet(viewsets.ViewSet):
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
         device_id = request.GET.get("deviceId", None)
         device_ownership_id = request.GET.get("deviceOwnershipId", None)
-        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
+        levels = request.GET.get("levels", None)
 
         queryset = (
             queryset.exclude(file="")
@@ -100,18 +100,17 @@ class InstancesViewSet(viewsets.ViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
 
-        if org_unit_parent_id:
-            queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            )
-
+        if levels:
+            levels = levels.split(',')
+            level = len(levels) + 1
+            org_unit_parent_id = levels[-1]
+            queryset_base = queryset.filter(org_unit__id=org_unit_parent_id)
+            for i in range(level):
+                kwargs = {
+                    "org_unit__" + "parent__" * i + "parent_id": org_unit_parent_id,
+                }
+                queryset_base = queryset_base | queryset.filter(Q(**kwargs))
+            queryset = queryset & queryset_base
         if with_location == "true":
             queryset = queryset.filter(location__isnull=False)
 

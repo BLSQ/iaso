@@ -75,11 +75,7 @@ class OrgUnits extends Component {
         Object.keys(params).forEach((key) => {
             const value = params[key];
             if (value && !url.includes(key)) {
-                if (key === 'levels') {
-                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
-                } else {
-                    url += `&${key}=${value}`;
-                }
+                url += `&${key}=${value}`;
             }
         });
 

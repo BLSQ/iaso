@@ -87,7 +87,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_location = request.GET.get("withLocation", None)
         parent_id = request.GET.get("parent_id", None)
         order = request.GET.get("order", "id").split(",")
-        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
+        levels = request.GET.get("levels", None)
 
         if validated == "true":
             validated = True
@@ -133,17 +133,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 queryset = queryset.filter(parent__id=parent_id)
 
-        if org_unit_parent_id:
-            queryset = queryset.filter(
-                Q(id=org_unit_parent_id)
-                | Q(parent__id=org_unit_parent_id)
-                | Q(parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            )
+
+        if levels:
+            levels = levels.split(',')
+            level = len(levels) + 1
+            org_unit_parent_id = levels[-1]
+            queryset_base = queryset.filter(id=org_unit_parent_id)
+            for i in range(level):
+                kwargs = {
+                    "parent__" * i + "parent_id": org_unit_parent_id,
+                }
+                queryset_base = queryset_base | queryset.filter(Q(**kwargs))
+            queryset = queryset & queryset_base
+
 
         if source_id:
             queryset = queryset.filter(source=source_id)

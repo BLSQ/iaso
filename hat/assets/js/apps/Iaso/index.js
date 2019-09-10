@@ -12,8 +12,8 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 import theme from './utils/theme';
 
 import createStore from '../../redux/createStore';
-import { loadReducer } from '../../redux/load';
 
+import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './redux/formsReducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';

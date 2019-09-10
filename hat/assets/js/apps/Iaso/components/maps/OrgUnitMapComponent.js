@@ -220,7 +220,7 @@ class OrgUnitMapComponent extends Component {
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         return (
             <Grid container spacing={4}>
-                <Grid item xs={9} xl={10} className={classes.mapContainer}>
+                <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>
                     <Map
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
@@ -249,7 +249,7 @@ class OrgUnitMapComponent extends Component {
                         }
                     </Map>
                 </Grid>
-                <Grid item xs={3} xl={2}>
+                <Grid item xs={4} md={3} lg={2}>
                     <TileSwitch />
                     {
                         !editEnabled && orgUnit.geo_json

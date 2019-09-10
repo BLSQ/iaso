@@ -1,4 +1,4 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import {

@@ -1,3 +1,4 @@
+/* globals STATIC_URL */
 import L from 'leaflet';
 
 export const isValidCoordinate = (latitude, longitude) => {
@@ -23,13 +24,16 @@ export const getLatLngBounds = (items) => {
         }
         return null;
     });
+    if (latLngs.length === 0) {
+        return null;
+    }
     const bounds = L.latLngBounds(latLngs);
     return bounds;
 };
 
 export const createClusterCustomIcon = cluster => (L.divIcon({
-    html: `<div><span>${cluster.getChildCount()}</span></div>`,
-    className: 'marker-cluster primary',
-    iconSize: L.point(40, 40, true),
+    html: `<div><img src="${STATIC_URL}images/marker-icon-cluster.png" alt="" /><span>${cluster.getChildCount()} </span></div>`,
+    className: 'marker-cluster with-icon',
+    iconSize: L.point(45, 45),
 })
 );

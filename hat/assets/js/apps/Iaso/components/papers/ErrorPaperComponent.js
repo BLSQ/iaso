@@ -3,7 +3,6 @@ import React from 'react';
 import { withStyles } from '@material-ui/core';
 import Paper from '@material-ui/core/Paper';
 import Typography from '@material-ui/core/Typography';
-import { fade } from '@material-ui/core/styles/colorManipulator';
 import Warning from '@material-ui/icons/Warning';
 
 import PropTypes from 'prop-types';
@@ -13,7 +12,7 @@ import commonStyles from '../../styles/common';
 const styles = theme => ({
     ...commonStyles(theme),
     root: {
-        backgroundColor: fade(theme.palette.error.main, 0.35),
+        backgroundColor: theme.palette.error.background,
         padding: theme.spacing(3, 2),
     },
     paragraph: {

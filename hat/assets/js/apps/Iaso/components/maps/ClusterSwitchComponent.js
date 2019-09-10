@@ -6,9 +6,8 @@ import {
     withStyles,
     Grid,
     Card,
-    Typography,
     Switch,
-    Divider,
+    Typography,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -30,15 +29,7 @@ const styles = theme => ({
 const MESSAGES = {
     title: {
         id: 'iaso.map.title.markerClustering',
-        defaultMessage: 'Marker clustering',
-    },
-    with: {
-        id: 'iaso.label.with_no_caps',
-        defaultMessage: 'with',
-    },
-    without: {
-        id: 'iaso.label.without_no_caps',
-        defaultMessage: 'without',
+        defaultMessage: 'Clustering',
     },
 };
 
@@ -52,13 +43,11 @@ function ClusterSwitchComponent(props) {
     } = props;
     return (
         <Card className={classes.card}>
-            <Typography variant="h6" component="h6" className={classes.title} color="primary">
-                {formatMessage(MESSAGES.title)}
-            </Typography>
-            <Divider />
             <Grid component="label" container alignItems="center" justify="center" spacing={1}>
                 <Grid item>
-                    {formatMessage(MESSAGES.without)}
+                    <Typography variant="span" component="span" color={isClusterActive ? 'primary' : ''}>
+                        {formatMessage(MESSAGES.title)}
+                    </Typography>
                 </Grid>
                 <Grid item>
                     <Switch
@@ -66,9 +55,6 @@ function ClusterSwitchComponent(props) {
                         onChange={() => props.toggleCluster()}
                         color="primary"
                     />
-                </Grid>
-                <Grid item>
-                    {formatMessage(MESSAGES.with)}
                 </Grid>
             </Grid>
         </Card>

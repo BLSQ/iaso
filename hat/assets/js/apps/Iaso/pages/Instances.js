@@ -227,14 +227,14 @@ class Instances extends Component {
                             value="list"
                             label={formatMessage({
                                 defaultMessage: 'List',
-                                id: 'iaso.instande.list',
+                                id: 'iaso.instance.list',
                             })}
                         />
                         <Tab
                             value="map"
                             label={formatMessage({
                                 defaultMessage: 'Map',
-                                id: 'iaso.instande.map',
+                                id: 'iaso.instance.map',
                             })}
                         />
                     </Tabs>

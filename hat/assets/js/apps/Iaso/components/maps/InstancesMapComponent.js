@@ -4,6 +4,7 @@ import {
     Map, TileLayer,
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
+import { injectIntl, intlShape } from 'react-intl';
 
 import {
     withStyles,
@@ -19,6 +20,7 @@ import { resetMapReducer } from '../../redux/mapReducer';
 import TileSwitch from './TileSwitchComponent';
 import ClusterSwitch from './ClusterSwitchComponent';
 import InstancesMarkersComponent from './InstancesMarkersComponent';
+import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -35,16 +37,38 @@ class InstancesMap extends Component {
 
     render() {
         const {
-            instances, classes, currentTile, isClusterActive,
+            instances,
+            classes,
+            currentTile,
+            isClusterActive,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
+        const bounds = getLatLngBounds(instances);
+        if (!bounds && instances.length > 0) {
+            return (
+                <Grid container spacing={0}>
+                    <Grid item xs={3} />
+                    <Grid item xs={6}>
+                        <ErrorPaperComponent message={formatMessage({
+                            defaultMessage: 'cannot find an instance with geolocation',
+                            id: 'iaso.instance.missingGeolocation',
+                        })}
+                        />
+                    </Grid>
+                    <Grid item xs={3} />
+                </Grid>
+            );
+        }
         return (
             <Grid container spacing={4}>
-                <Grid item xs={9} xl={10} className={classes.mapContainer}>
+                <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>
                     <Map
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
-                        bounds={getLatLngBounds(instances)}
+                        bounds={bounds}
                         boundsOptions={boundsOptions}
                         zoom={13}
                     >
@@ -66,7 +90,7 @@ class InstancesMap extends Component {
                         }
                     </Map>
                 </Grid>
-                <Grid item xs={3} xl={2}>
+                <Grid item xs={4} md={3} lg={2}>
                     <TileSwitch />
                     <ClusterSwitch />
                 </Grid>
@@ -82,6 +106,7 @@ InstancesMap.propTypes = {
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
+    intl: intlShape.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -95,4 +120,4 @@ const MapDispatchToProps = dispatch => ({
 });
 
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(InstancesMap));
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstancesMap)));

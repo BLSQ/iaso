@@ -16,6 +16,10 @@ const theme = createMuiTheme({
             main: 'rgb(215, 25, 28)',
             background: 'rgba(215, 25, 28, 0.2)',
         },
+        success: {
+            main: '#4caf50',
+            background: 'rgba(#4caf50, 0.2)',
+        },
     },
 });
 

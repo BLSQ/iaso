@@ -6,8 +6,8 @@ import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
 import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
-import CheckBox from '@material-ui/icons/CheckBox';
-import CheckBoxOutlineBlankOutlined from '@material-ui/icons/CheckBoxOutlineBlankOutlined';
+import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
+import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
 import Card from '@material-ui/core/Card';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
@@ -91,11 +91,11 @@ function TileSwitchComponent(props) {
                             >
                                 {
                                     isCurrentTile
-                                    && <CheckBox color="primary" className={classes.icon} />
+                                    && <RadioButtonChecked color="primary" className={classes.icon} />
                                 }
                                 {
                                     !isCurrentTile
-                                    && <CheckBoxOutlineBlankOutlined className={classes.icon} />
+                                    && <RadioButtonUnchecked className={classes.icon} />
                                 }
                                 <ListItemText
                                     primary={formatMessage(MESSAGES[key])}

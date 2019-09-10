@@ -59,6 +59,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchDevicesOwnershipError',
         defaultMessage: 'An error occured while fetching devices ownerships list',
     },
+    fetchInstanceError: {
+        id: 'iaso.snackBar.fetchInstanceError',
+        defaultMessage: 'An error occured while fetching instance detail',
+    },
 };
 
 export default MESSAGES;

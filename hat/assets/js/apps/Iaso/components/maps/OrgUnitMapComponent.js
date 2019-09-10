@@ -53,6 +53,7 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
     mapContainer: {
+        ...commonStyles(theme).mapContainer,
         '& .marker-cluster': {
             backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
         },

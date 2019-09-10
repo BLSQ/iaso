@@ -264,7 +264,7 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
         }
 
-    def as_location(self):
+    def as_full_model(self):
         return {
             "id": self.id,
             "device_id": self.device.imei if self.device else None,
@@ -280,6 +280,14 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
+        }
+
+    def as_location(self):
+        return {
+            "id": self.id,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
         }
 
 

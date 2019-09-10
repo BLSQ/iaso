@@ -228,3 +228,8 @@ class InstancesViewSet(viewsets.ViewSet):
             api_import.has_problem = True
             api_import.save()
             return Response({"result": "ok"})
+
+    def retrieve(self, request, pk=None):
+        instance = get_object_or_404(Instance, pk=pk)
+        res = instance.as_full_model()
+        return Response(res)

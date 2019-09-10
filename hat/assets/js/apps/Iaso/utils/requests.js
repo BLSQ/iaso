@@ -95,6 +95,15 @@ const fetchLogDetail = (dispatch, logId) => getRequest(`/api/logs/${logId}`)
         throw error;
     });
 
+const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/instances/${instanceId}`)
+    .then(instance => instance)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError')));
+        console.error('Error while fetching instance detail:', error);
+        throw error;
+    });
+
+
 export {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
@@ -107,4 +116,5 @@ export {
     fetchDevices,
     fetchDevicesOwnerships,
     fetchOrgUnits,
+    fetchInstanceDetail,
 };

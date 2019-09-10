@@ -144,6 +144,7 @@
     "iaso.snackBar.fetchOrgUnitError": "Une erreur est survenue en récupérant les details du de l'org unit",
     "iaso.snackBar.fetchInstanceLocationError": "Une erreur est survenue en récupérant les localisations des instances",
     "iaso.snackBar.fetchInstanceDictError": "Une erreur est survenue en récupérant la liste des instances",
+    "iaso.snackBar.fetchInstanceError": "Une erreur est survenue en récupérant le detail de l'instance",
     "iaso.snackBar.fetchLogDetailError": "Une erreur est survenue en récupérant le detail de la modification",
     "iaso.snackBar.fetchSourceTypesError": "Une erreur est survenue en récupérant la liste des sources",
     "iaso.snackBar.fetchOrgUnitTypesError": "Une erreur est survenue en récupérant la liste des type l'org unit",

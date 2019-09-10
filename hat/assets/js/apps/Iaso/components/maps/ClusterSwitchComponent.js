@@ -45,7 +45,7 @@ function ClusterSwitchComponent(props) {
         <Card className={classes.card}>
             <Grid component="label" container alignItems="center" justify="center" spacing={1}>
                 <Grid item>
-                    <Typography variant="span" component="span" color={isClusterActive ? 'primary' : ''}>
+                    <Typography variant="inherit" component="span" color={isClusterActive ? 'primary' : ''}>
                         {formatMessage(MESSAGES.title)}
                     </Typography>
                 </Grid>

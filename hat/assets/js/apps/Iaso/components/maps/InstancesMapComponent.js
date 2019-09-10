@@ -16,12 +16,14 @@ import PropTypes from 'prop-types';
 import { getLatLngBounds, createClusterCustomIcon } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
+import { setCurrentInstance } from '../../redux/instancesReducer';
 
 import TileSwitch from './TileSwitchComponent';
 import ClusterSwitch from './ClusterSwitchComponent';
 import InstancesMarkersComponent from './InstancesMarkersComponent';
 import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 
+import { fetchInstanceDetail } from '../../utils/requests';
 import commonStyles from '../../styles/common';
 
 const styles = theme => ({
@@ -33,6 +35,14 @@ const boundsOptions = { padding: [50, 50] };
 class InstancesMap extends Component {
     componentWillUnmount() {
         this.props.resetMapReducer();
+    }
+
+    fetchDetail(instance) {
+        const {
+            dispatch,
+        } = this.props;
+        this.props.setCurrentInstance(null);
+        fetchInstanceDetail(dispatch, instance.id).then(i => this.props.setCurrentInstance(i));
     }
 
     render() {
@@ -80,13 +90,13 @@ class InstancesMap extends Component {
                             isClusterActive
                             && (
                                 <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-                                    <InstancesMarkersComponent instances={instances} />
+                                    <InstancesMarkersComponent items={instances} onMarkerClick={i => this.fetchDetail(i)} />
                                 </MarkerClusterGroup>
                             )
                         }
                         {
                             !isClusterActive
-                            && <InstancesMarkersComponent instances={instances} />
+                            && <InstancesMarkersComponent tems={instances} onMarkerClick={i => this.fetchDetail(i)} />
                         }
                     </Map>
                 </Grid>
@@ -107,6 +117,8 @@ InstancesMap.propTypes = {
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
     intl: intlShape.isRequired,
+    setCurrentInstance: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -117,6 +129,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
+    setCurrentInstance: currentTile => dispatch(setCurrentInstance(currentTile)),
 });
 
 

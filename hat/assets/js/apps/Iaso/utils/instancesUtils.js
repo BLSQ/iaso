@@ -3,8 +3,8 @@ import React from 'react';
 import instancesTableColumns from '../constants/instancesTableColumns';
 
 
-const getInstancesColumns = (formatMessage, instances, component) => {
-    let tableColumns = [...instancesTableColumns(formatMessage, component)];
+const getInstancesColumns = (formatMessage, instances) => {
+    let tableColumns = [...instancesTableColumns(formatMessage)];
     if (instances[0]) {
         const childrenArray = [];
 

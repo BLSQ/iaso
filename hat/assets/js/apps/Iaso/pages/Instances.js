@@ -36,6 +36,7 @@ import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 
 import commonStyles from '../styles/common';
+import reactTable from '../styles/reactTable';
 
 
 const baseUrl = 'instances';
@@ -45,6 +46,10 @@ const styles = theme => ({
     paperContainer: {
         ...commonStyles(theme).paperContainer,
         marginTop: 0,
+    },
+    reactTable: {
+        ...reactTable(theme).reactTable,
+        marginTop: theme.spacing(4),
     },
 });
 
@@ -181,7 +186,7 @@ class Instances extends Component {
                 };
                 this.props.setInstances(data.instances, params, data.count, data.pages);
                 this.setState({
-                    tableColumns: getInstancesColumns(formatMessage, instances, this),
+                    tableColumns: getInstancesColumns(formatMessage, instances),
                 });
             }),
             fetchInstancesAsLocations(dispatch, urlLocation)
@@ -251,7 +256,7 @@ class Instances extends Component {
                     />
 
                     <Divider className={classes.dividerMarginNeg} />
-                    <div className={classes.marginTopBig}>
+                    <div className={classes.reactTable}>
                         {
                             tab === 'list' && (
                                 <CustomTableComponent

@@ -2,35 +2,35 @@ import React, { Fragment } from 'react';
 
 import PropTypes from 'prop-types';
 
-import { isValidCoordinate } from '../../utils/mapUtils';
+import { isValidCoordinate } from '../../../utils/mapUtils';
 
 import MarkerComponent from './MarkerComponent';
-import InstancePopupComponent from './InstancePopupComponent';
 
-const InstancesMarkersComponent = (props) => {
+const MarkersListComponent = (props) => {
     const {
         items,
         onMarkerClick,
+        PopupComponent,
     } = props;
-
 
     return items.map((i) => {
         if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
         return (
             <Fragment key={i.id}>
-                <MarkerComponent item={i} onMarkerClick={onMarkerClick} PopupComponent={InstancePopupComponent} />
+                <MarkerComponent item={i} onMarkerClick={onMarkerClick} PopupComponent={PopupComponent} />
             </Fragment>
         );
     });
 };
 
-InstancesMarkersComponent.defaultProps = {
+MarkersListComponent.defaultProps = {
     items: [],
 };
 
-InstancesMarkersComponent.propTypes = {
+MarkersListComponent.propTypes = {
     items: PropTypes.array,
     onMarkerClick: PropTypes.func.isRequired,
+    PopupComponent: PropTypes.object.isRequired,
 };
 
-export default InstancesMarkersComponent;
+export default MarkersListComponent;

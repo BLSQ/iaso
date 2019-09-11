@@ -28,11 +28,16 @@ import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from '../components/filters/OrgUnitsFiltersComponent';
 
 import commonStyles from '../styles/common';
+import reactTable from '../styles/reactTable';
 
 const baseUrl = 'orgunits';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    reactTable: {
+        ...reactTable(theme).reactTable,
+        marginTop: theme.spacing(4),
+    },
     buttonIcon: {
         marginRight: theme.spacing(1),
         width: 15,
@@ -144,7 +149,7 @@ class OrgUnits extends Component {
                     />
                     {
                         tableUrl && (
-                            <div className={classes.marginTopBig}>
+                            <div className={classes.reactTable}>
                                 <CustomTableComponent
                                     isSortable
                                     pageSize={50}

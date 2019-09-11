@@ -7,12 +7,6 @@ $primary-color: #2372BA;
 .iaso {
     background-color: $background-gray !important;
 
-    &.instances {
-        .ReactTable .rt-tbody {
-            padding-bottom: 16px;
-        }
-    }
-
     .leaflet-container {
         height: 80vh;
     }

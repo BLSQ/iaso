@@ -3,10 +3,29 @@ import React from 'react';
 import moment from 'moment';
 
 import Button from '@material-ui/core/Button';
-import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 
-const instancesTableColumns = (formatMessage, component) => (
+const instancesTableColumns = formatMessage => (
     [
+        {
+            Header: formatMessage({
+                defaultMessage: 'File',
+                id: 'iaso.instance.file',
+            }),
+            sortable: false,
+            accessor: 'file_url',
+            Cell: settings => (
+                <span>
+                    <Button
+                        onClick={() => window.open(settings.original.file_url, '_blank')}
+                        size="small"
+                        variant="outlined"
+                    >
+                        XML
+                    </Button>
+                </span>
+            ),
+            width: 150,
+        },
         {
             Header: formatMessage({
                 defaultMessage: 'Updated at',
@@ -52,28 +71,6 @@ const instancesTableColumns = (formatMessage, component) => (
                 </span>
             ),
             width: 200,
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'File',
-                id: 'iaso.instance.file',
-            }),
-            sortable: false,
-            accessor: 'file_url',
-            Cell: settings => (
-                <span>
-                    <Button
-                        onClick={() => window.open(settings.original.file_url, '_blank')}
-                        size="small"
-                        variant="contained"
-                        color="primary"
-                    >
-                        <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
-                        XML
-                    </Button>
-                </span>
-            ),
-            width: 150,
         },
     ]
 );

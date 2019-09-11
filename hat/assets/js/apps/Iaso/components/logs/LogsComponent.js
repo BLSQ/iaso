@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
-import { withStyles} from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -12,9 +12,14 @@ import LoadingSpinner from '../LoadingSpinnerComponent';
 import orgUnitsLogsColumns from '../../constants/orgUnitsLogsColumns';
 import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
+import reactTable from '../../styles/reactTable';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    reactTable: {
+        ...reactTable(theme).reactTable,
+        marginBottom: theme.spacing(2),
+    },
 });
 
 const baseUrl = 'orgunits/detail';
@@ -69,7 +74,7 @@ class Logs extends Component {
         } = this.props;
         const { tableUrl, tableColumns } = this.state;
         return (
-            <section className={classes.marginBottom}>
+            <section className={classes.reactTable}>
                 {
                     load.loading && (
                         <LoadingSpinner message={formatMessage({

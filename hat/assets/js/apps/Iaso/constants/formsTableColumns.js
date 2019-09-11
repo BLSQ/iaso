@@ -2,7 +2,6 @@ import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import Button from '@material-ui/core/Button';
-import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -12,6 +11,7 @@ const formsTableColumns = (formatMessage, component) => (
                 id: 'iaso.forms.name',
             }),
             accessor: 'name',
+            className: 'justify-left',
         },
         {
             Header: formatMessage({
@@ -60,29 +60,42 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Record(s)',
                 id: 'iaso.forms.records',
             }),
+            accessor: 'instances_count',
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.instances_count > 0
+                        && settings.original.instances_count}
+                    {
+                        !settings.original.instances_count
+                        && (
+                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="No record" />
+                        )}
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Action(s)',
+                id: 'iaso.forms.actions',
+            }),
             resizable: false,
             width: 250,
-            accessor: 'instances_count',
+            sortable: false,
             Cell: settings => (
                 <section>
                     {
                         settings.original.instances_count > 0
                         && (
                             <Button
+                                variant="outlined"
                                 size="small"
-                                variant="contained"
-                                color="primary"
                                 onClick={() => component.selectForm(settings.original)}
                             >
-                                <RemoveRedEye className={component.props.classes.buttonIcon} fontSize="small" />
-                                {settings.original.instances_count}
+                                <FormattedMessage id="iaso.forms.view" defaultMessage="View" />
                             </Button>
-                        )}
-                    {
-                        !settings.original.instances_count
-                        && (
-                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="No record" />
-                        )}
+                        )
+                    }
                 </section>
             ),
         },

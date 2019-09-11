@@ -18,10 +18,11 @@ import { getLatLngBounds, createClusterCustomIcon } from '../../utils/mapUtils';
 import { resetMapReducer } from '../../redux/mapReducer';
 import { setCurrentInstance } from '../../redux/instancesReducer';
 
-import TileSwitch from './TileSwitchComponent';
-import ClusterSwitch from './ClusterSwitchComponent';
-import InstancesMarkersComponent from './InstancesMarkersComponent';
+import TileSwitch from './tools/TileSwitchComponent';
+import ClusterSwitch from './tools/ClusterSwitchComponent';
+import MarkersListComponent from './markers/MarkersListComponent';
 import ErrorPaperComponent from '../papers/ErrorPaperComponent';
+import InstancePopupComponent from './popups/InstancePopupComponent';
 
 import { fetchInstanceDetail } from '../../utils/requests';
 import commonStyles from '../../styles/common';
@@ -62,7 +63,7 @@ class InstancesMap extends Component {
                     <Grid item xs={3} />
                     <Grid item xs={6}>
                         <ErrorPaperComponent message={formatMessage({
-                            defaultMessage: 'cannot find an instance with geolocation',
+                            defaultMessage: 'Cannot find an instance with geolocation',
                             id: 'iaso.instance.missingGeolocation',
                         })}
                         />
@@ -90,13 +91,23 @@ class InstancesMap extends Component {
                             isClusterActive
                             && (
                                 <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
-                                    <InstancesMarkersComponent items={instances} onMarkerClick={i => this.fetchDetail(i)} />
+                                    <MarkersListComponent
+                                        items={instances}
+                                        onMarkerClick={i => this.fetchDetail(i)}
+                                        PopupComponent={InstancePopupComponent}
+                                    />
                                 </MarkerClusterGroup>
                             )
                         }
                         {
                             !isClusterActive
-                            && <InstancesMarkersComponent tems={instances} onMarkerClick={i => this.fetchDetail(i)} />
+                            && (
+                                <MarkersListComponent
+                                    items={instances}
+                                    onMarkerClick={i => this.fetchDetail(i)}
+                                    PopupComponent={InstancePopupComponent}
+                                />
+                            )
                         }
                     </Map>
                 </Grid>

@@ -23,7 +23,7 @@ import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { MESSAGES } from '../../../../utils/map/mapUtils';
 
-import TileSwitch from './TileSwitchComponent';
+import TileSwitch from './tools/TileSwitchComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 

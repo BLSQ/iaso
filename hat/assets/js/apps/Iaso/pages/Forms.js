@@ -21,11 +21,16 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 
 import commonStyles from '../styles/common';
+import reactTable from '../styles/reactTable';
 
 const baseUrl = 'forms';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    reactTable: {
+        ...reactTable(theme).reactTable,
+        marginTop: theme.spacing(4),
+    },
 });
 
 class Forms extends Component {
@@ -100,7 +105,7 @@ class Forms extends Component {
                             date_to: dateTo,
                         })}
                     />
-                    <div className={classes.marginTopBig}>
+                    <div className={classes.reactTable}>
                         <CustomTableComponent
                             isSortable
                             pageSize={50}

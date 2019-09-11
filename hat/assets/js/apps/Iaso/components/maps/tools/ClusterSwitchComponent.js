@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { toggleCluster } from '../../redux/mapReducer';
+import { toggleCluster } from '../../../redux/mapReducer';
 
 
 const styles = theme => ({
@@ -33,7 +33,7 @@ const MESSAGES = {
     },
 };
 
-function ClusterSwitchComponent(props) {
+const ClusterSwitchComponent = (props) => {
     const {
         isClusterActive,
         classes,
@@ -45,7 +45,7 @@ function ClusterSwitchComponent(props) {
         <Card className={classes.card}>
             <Grid component="label" container alignItems="center" justify="center" spacing={1}>
                 <Grid item>
-                    <Typography variant="inherit" component="span" color={isClusterActive ? 'primary' : ''}>
+                    <Typography variant="inherit" component="span" color={isClusterActive ? 'primary' : 'inherit'}>
                         {formatMessage(MESSAGES.title)}
                     </Typography>
                 </Grid>
@@ -59,7 +59,7 @@ function ClusterSwitchComponent(props) {
             </Grid>
         </Card>
     );
-}
+};
 
 ClusterSwitchComponent.propTypes = {
     intl: PropTypes.object.isRequired,

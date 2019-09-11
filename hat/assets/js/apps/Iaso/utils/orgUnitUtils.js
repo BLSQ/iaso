@@ -18,4 +18,24 @@ export const fetchLatestOrgUnitLevelId = (levels) => {
     return null;
 };
 
+export const getOrgUnitsTree = (orgUnit) => {
+    let tree = [orgUnit];
+
+    const orgUnitLoop = (parent, tempTree) => {
+        let treeCopy = [
+            parent,
+            ...tempTree,
+        ];
+        if (parent.parent) {
+            treeCopy = orgUnitLoop(parent.parent, treeCopy);
+        }
+        return treeCopy;
+    };
+
+    if (orgUnit.parent) {
+        tree = orgUnitLoop(orgUnit.parent, tree);
+    }
+    return tree;
+};
+
 export const getAliasesArrayFromString = aliasString => aliasString.replace('[', '').replace(']', '').replace(/"/gi, '').split(',');

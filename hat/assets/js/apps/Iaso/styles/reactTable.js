@@ -6,6 +6,9 @@ const reactTableStyles = theme => ({
         '& .ReactTable .rt-thead .rt-th.-sort-desc,.rt-thead .rt-td.-sort-desc': {
             boxShadow: `inset 0 -3px 0 0 ${theme.palette.primary.main}`,
         },
+        '& .ReactTable .-pagination .-btn': {
+            backgroundColor: `${theme.palette.primary.main} !important`,
+        },
     },
 });
 

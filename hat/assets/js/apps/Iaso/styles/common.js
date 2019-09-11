@@ -1,5 +1,9 @@
+import { fade } from '@material-ui/core/styles/colorManipulator';
+
+import mapStyles from './map';
 
 const commonStyles = theme => ({
+    ...mapStyles(theme),
     paperContainer: {
         padding: theme.spacing(4),
         margin: theme.spacing(4),
@@ -40,10 +44,6 @@ const commonStyles = theme => ({
     },
     tabs: {
         padding: theme.spacing(0, 4),
-    },
-    mapContainer: {
-        height: '70vh',
-        marginBottom: theme.spacing(2),
     },
     textAlignLeft: {
         textAlign: 'left',

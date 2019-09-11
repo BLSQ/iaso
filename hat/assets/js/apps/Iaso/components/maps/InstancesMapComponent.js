@@ -13,7 +13,7 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { getLatLngBounds, createClusterCustomIcon } from '../../utils/mapUtils';
+import { getLatLngBounds, clusterCustomMarker } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 import { setCurrentInstance } from '../../redux/instancesReducer';
@@ -90,7 +90,7 @@ class InstancesMap extends Component {
                         {
                             isClusterActive
                             && (
-                                <MarkerClusterGroup iconCreateFunction={createClusterCustomIcon}>
+                                <MarkerClusterGroup iconCreateFunction={clusterCustomMarker}>
                                     <MarkersListComponent
                                         items={instances}
                                         onMarkerClick={i => this.fetchDetail(i)}

@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { injectIntl } from 'react-intl';
 import Select from 'react-select';
 
-import { fade } from '@material-ui/core/styles';
 import { withStyles } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
 import InputLabel from '@material-ui/core/InputLabel';

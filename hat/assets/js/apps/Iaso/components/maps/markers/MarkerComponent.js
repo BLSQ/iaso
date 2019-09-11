@@ -6,6 +6,8 @@ import {
 
 import PropTypes from 'prop-types';
 
+import { customMarker } from '../../../utils/mapUtils';
+
 const MarkerComponent = (props) => {
     const {
         item,
@@ -14,6 +16,7 @@ const MarkerComponent = (props) => {
     } = props;
     return (
         <Marker
+            icon={customMarker}
             position={[item.latitude, item.longitude]}
             onClick={() => onMarkerClick(item)}
         >

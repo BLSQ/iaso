@@ -8,6 +8,7 @@ const reactTableStyles = theme => ({
         },
         '& .ReactTable .-pagination .-btn': {
             backgroundColor: `${theme.palette.primary.main} !important`,
+            color: `${theme.palette.primary.contrastText} !important`,
         },
     },
 });

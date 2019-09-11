@@ -7,7 +7,7 @@ const mapPopupStyles = theme => ({
         '& .leaflet-popup-content': {
             margin: 0,
             minHeight: 150,
-            width: 400,
+            width: '320px !important',
         },
         '& a.leaflet-popup-close-button': {
             color: 'white',

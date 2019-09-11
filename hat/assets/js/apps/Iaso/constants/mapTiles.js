@@ -3,7 +3,7 @@ const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/M
 const tiles = {
     osm: {
         maxZoom: 18,
-        url: 'http://{s}.tile.osm.org/{z}/{x}/{y}.png',
+        url: 'https://{s}.tile.osm.org/{z}/{x}/{y}.png',
         attribution: '&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors',
     },
     'arcgis-street': {

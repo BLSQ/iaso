@@ -131,8 +131,8 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "status": False if self.validated is None else self.validated,
-            "latitude": self.location.x if self.location else self.longitude,
-            "longitude": self.location.y if self.location else self.longitude,
+            "latitude": self.location.y if self.location else self.latitude,
+            "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
         }
 
@@ -152,8 +152,8 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "status": False if self.validated is None else self.validated,
-            "latitude": self.location.x if self.location else self.longitude,
-            "longitude": self.location.y if self.location else self.longitude,
+            "latitude": self.location.y if self.location else self.latitude,
+            "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
         }
 

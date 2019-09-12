@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import moment from 'moment';
 
 import InputComponent from '../forms/InputComponent';
+import OrgUnitsLevelsFiltersComponent from '../filters/OrgUnitsLevelsFiltersComponent';
 
 import MESSAGES from '../forms/messages';
 
@@ -19,6 +20,8 @@ function OrgUnitInfosComponent(props) {
         intl: {
             formatMessage,
         },
+        baseUrl,
+        params,
     } = props;
     return (
         <Grid container spacing={4}>
@@ -79,6 +82,12 @@ function OrgUnitInfosComponent(props) {
                         ]
                     }
                 />
+
+                <OrgUnitsLevelsFiltersComponent
+                    onLatestIdChanged={latestId => console.log(latestId)}
+                    params={params}
+                    baseUrl={baseUrl}
+                />
             </Grid>
             <Grid item xs={4}>
                 <InputComponent
@@ -102,6 +111,8 @@ function OrgUnitInfosComponent(props) {
 }
 
 OrgUnitInfosComponent.propTypes = {
+    params: PropTypes.object.isRequired,
+    baseUrl: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,

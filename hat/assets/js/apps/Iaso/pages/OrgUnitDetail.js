@@ -251,6 +251,8 @@ class OrgUnitDetail extends Component {
                                 {
                                     tab === 'infos' && (
                                         <OrgUnitInfos
+                                            params={params}
+                                            baseUrl={baseUrl}
                                             orgUnitModified={orgUnitModified}
                                             orgUnit={currentOrgUnit}
                                             orgUnitTypes={orgUnitTypes}

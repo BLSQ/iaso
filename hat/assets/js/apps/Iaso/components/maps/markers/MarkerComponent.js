@@ -11,24 +11,39 @@ import { customMarker } from '../../../utils/mapUtils';
 const MarkerComponent = (props) => {
     const {
         item,
-        onMarkerClick,
+        onClick,
         PopupComponent,
+        draggable,
+        onDragend,
     } = props;
     return (
         <Marker
+            draggable={draggable}
             icon={customMarker}
             position={[item.latitude, item.longitude]}
-            onClick={() => onMarkerClick(item)}
+            onClick={() => onClick(item)}
+            onDragend={e => onDragend(e.target)}
         >
-            <PopupComponent itemId={item.id} />
+            {
+                PopupComponent && <PopupComponent itemId={item.id} />
+            }
         </Marker>
     );
 };
 
+MarkerComponent.defaultProps = {
+    onClick: () => null,
+    onDragend: () => null,
+    PopupComponent: undefined,
+    draggable: false,
+};
+
 MarkerComponent.propTypes = {
     item: PropTypes.object.isRequired,
-    onMarkerClick: PropTypes.func.isRequired,
-    PopupComponent: PropTypes.object.isRequired,
+    onClick: PropTypes.func,
+    PopupComponent: PropTypes.object,
+    onDragend: PropTypes.func,
+    draggable: PropTypes.bool,
 };
 
 export default MarkerComponent;

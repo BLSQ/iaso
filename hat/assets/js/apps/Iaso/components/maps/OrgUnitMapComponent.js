@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
-    Map, TileLayer, Marker,
+    Map, TileLayer,
 } from 'react-leaflet';
 import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -21,9 +21,10 @@ import isEqual from 'lodash/isEqual';
 
 import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
-import { MESSAGES } from '../../../../utils/map/mapUtils';
+import { customMarker, customZoomBar } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
+import MarkerComponent from './markers/MarkerComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 
@@ -37,6 +38,8 @@ const polygonDrawOpiton = {
 };
 
 let editToolbar;
+let editHandler;
+let drawControl;
 
 const shapeOptions = () => ({
     onEachFeature: (feature, layer) => {
@@ -52,7 +55,7 @@ const styles = theme => ({
         width: '100%',
         marginBottom: theme.spacing(2),
     },
-    mapContainer: {
+    mapContainerNoDraw: {
         ...commonStyles(theme).mapContainer,
         '& .marker-cluster': {
             backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
@@ -60,11 +63,16 @@ const styles = theme => ({
         '& .marker-cluster.primary > div': {
             backgroundColor: theme.palette.primary.main,
         },
+        '& .leaflet-draw.leaflet-control': {
+            display: 'none',
+        },
     },
 });
 
+const addMarker = () => {
+    drawControl._toolbars.draw._modes.marker.handler.enable();
+};
 const editableFeatureGroup = new L.FeatureGroup();
-let editHandler;
 
 class OrgUnitMapComponent extends Component {
     constructor(props) {
@@ -82,13 +90,7 @@ class OrgUnitMapComponent extends Component {
                 formatMessage,
             },
         } = this.props;
-        const zoomBar = L.control.zoombar({
-            zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
-            zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
-            fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
-            fitToBounds: () => this.fitToBounds(),
-            position: 'topleft',
-        });
+        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
         const options = {
             position: 'topright',
@@ -96,7 +98,9 @@ class OrgUnitMapComponent extends Component {
                 polyline: false,
                 polygon: false,
                 circle: false,
-                marker: false,
+                marker: {
+                    icon: customMarker,
+                },
                 circlemarker: false,
                 featureGroup: editableFeatureGroup,
                 rectangle: false,
@@ -109,7 +113,7 @@ class OrgUnitMapComponent extends Component {
         };
         setDrawMessages(formatMessage);
 
-        const drawControl = new L.Control.Draw(options);
+        drawControl = new L.Control.Draw(options);
         this.map.leafletElement.addControl(drawControl);
         this.map.leafletElement.addLayer(editableFeatureGroup);
         this.map.leafletElement.on('draw:created', (e) => {
@@ -122,7 +126,6 @@ class OrgUnitMapComponent extends Component {
                 this.map.leafletElement.removeLayer(e.layer);
             }
         });
-
         editToolbar = new L.EditToolbar({
             featureGroup: editableFeatureGroup,
         });
@@ -209,10 +212,6 @@ class OrgUnitMapComponent extends Component {
         new L.Draw.Polygon(this.map.leafletElement, polygonDrawOpiton).enable();
     }
 
-    addMarker() {
-        new L.Draw.Marker(this.map.leafletElement).enable();
-    }
-
     render() {
         const {
             classes, orgUnit, currentTile,
@@ -221,7 +220,7 @@ class OrgUnitMapComponent extends Component {
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         return (
             <Grid container spacing={4}>
-                <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>
+                <Grid item xs={8} md={9} lg={10} className={classes.mapContainerNoDraw}>
                     <Map
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
@@ -241,10 +240,10 @@ class OrgUnitMapComponent extends Component {
                         {
                             hasMarker
                             && (
-                                <Marker
-                                    position={[orgUnit.latitude, orgUnit.longitude]}
+                                <MarkerComponent
+                                    item={orgUnit}
                                     draggable
-                                    onDragend={e => this.props.onChangeLocation(e.target.getLatLng())}
+                                    onDragend={newMarker => this.props.onChangeLocation(newMarker.getLatLng())}
                                 />
                             )
                         }
@@ -345,7 +344,7 @@ class OrgUnitMapComponent extends Component {
                                 </Button>
                                 <Button
                                     variant="contained"
-                                    onClick={() => this.addMarker()}
+                                    onClick={() => addMarker()}
                                     className={classes.button}
                                     color="primary"
                                 >

@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import isEqual from 'lodash/isEqual';
 
 import {
-    withStyles, Table, TableBody, TableCell, TableRow, Paper, IconButton, Tooltip, Grid,
+    withStyles, Table, TableBody, TableCell, TableRow, Paper, IconButton, Tooltip, Grid, Typography,
 } from '@material-ui/core';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 
@@ -39,7 +39,7 @@ const styles = theme => ({
 });
 
 const LogCompareComponent = ({
-    log, compareLog, classes, goToRevision,
+    log, compareLog, classes, goToRevision, title,
 }) => {
     const [allFields, seeAllFields] = React.useState(false);
 
@@ -52,21 +52,28 @@ const LogCompareComponent = ({
                 <Paper className={classes.paper} key={l.pk}>
                     {!isEqual(l.fields, compareLog[i].fields)
                         && (
-                            <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.seeAll}>
-                                <Tooltip title={
-                                    allFields
-                                        ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
-                                        : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
-                                }
-                                >
-                                    <IconButton
-                                        className={classes.deleteIcon}
-                                        color="inherit"
-                                        onClick={() => seeAllFields(!allFields)}
+                            <Grid container spacing={0} className={classes.seeAll}>
+                                <Grid container item xs={6} justify="flex-start" alignItems="center">
+                                    <Typography variant="h6" component="h6" color="primary">
+                                        {title}
+                                    </Typography>
+                                </Grid>
+                                <Grid container item xs={6} justify="flex-end" alignItems="center">
+                                    <Tooltip title={
+                                        allFields
+                                            ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
+                                            : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
+                                    }
                                     >
-                                        <RemoveRedEye />
-                                    </IconButton>
-                                </Tooltip>
+                                        <IconButton
+                                            className={classes.deleteIcon}
+                                            color="inherit"
+                                            onClick={() => seeAllFields(!allFields)}
+                                        >
+                                            <RemoveRedEye />
+                                        </IconButton>
+                                    </Tooltip>
+                                </Grid>
                             </Grid>
                         )
                     }
@@ -126,7 +133,7 @@ const LogCompareComponent = ({
                                     </TableBody>
                                 </Table>
 
-                                <Grid container spacing={0} alignItems="center" justify="center">
+                                <Grid container spacing={2} alignItems="center" justify="center">
                                     <Grid xs={6} item>
                                         <ConfirmDialog
                                             btnMessage={(
@@ -188,6 +195,7 @@ const LogCompareComponent = ({
 
 LogCompareComponent.defaultProps = {
     compareLog: [],
+    title: '',
 };
 
 LogCompareComponent.propTypes = {
@@ -195,6 +203,7 @@ LogCompareComponent.propTypes = {
     log: PropTypes.array.isRequired,
     compareLog: PropTypes.array,
     goToRevision: PropTypes.func.isRequired,
+    title: PropTypes.string.isRequired,
 };
 
 export default withStyles(styles)(LogCompareComponent);

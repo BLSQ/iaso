@@ -17,7 +17,7 @@ const MarkersListComponent = (props) => {
         if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
         return (
             <Fragment key={i.id}>
-                <MarkerComponent item={i} onMarkerClick={onMarkerClick} PopupComponent={PopupComponent} />
+                <MarkerComponent item={i} onClick={onMarkerClick} PopupComponent={PopupComponent} />
             </Fragment>
         );
     });

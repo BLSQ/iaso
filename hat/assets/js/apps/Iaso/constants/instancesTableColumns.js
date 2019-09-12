@@ -18,7 +18,6 @@ const instancesTableColumns = formatMessage => (
                     <Button
                         onClick={() => window.open(settings.original.file_url, '_blank')}
                         size="small"
-                        variant="outlined"
                     >
                         XML
                     </Button>

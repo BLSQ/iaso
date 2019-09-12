@@ -13,15 +13,30 @@ const mapStyles = theme => ({
         },
         '& .marker-custom.primary span': {
             position: 'relative',
+            display: 'block',
+            height: '100%',
+            width: '100%',
         },
         '& .marker-custom.primary svg': {
             fill: theme.palette.primary.main,
+            position: 'absolute',
+            bottom: 0,
+            left: -5,
+            pointerEvents: 'none',
+        },
+        '& path': {
+            fill: fade(theme.palette.primary.main, 0.6),
+            stroke: theme.palette.primary.main,
+        },
+        '& .leaflet-draw-guide-dash': {
+            backgroundColor: `${theme.palette.primary.main} !important`,
         },
         '& .marker-custom.primary img': {
             position: 'absolute',
-            bottom: 5,
-            left: 7,
+            bottom: 2,
+            left: -1,
             zIndex: -1,
+            pointerEvents: 'none',
         },
     },
 });

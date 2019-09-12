@@ -13,7 +13,7 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { getLatLngBounds, clusterCustomMarker } from '../../utils/mapUtils';
+import { getLatLngBounds, clusterCustomMarker, customZoomBar } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 import { setCurrentInstance } from '../../redux/instancesReducer';
@@ -34,6 +34,16 @@ const styles = theme => ({
 const boundsOptions = { padding: [50, 50] };
 
 class InstancesMap extends Component {
+    componentDidMount() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
+        zoomBar.addTo(this.map.leafletElement);
+    }
+
     componentWillUnmount() {
         this.props.resetMapReducer();
     }
@@ -44,6 +54,17 @@ class InstancesMap extends Component {
         } = this.props;
         this.props.setCurrentInstance(null);
         fetchInstanceDetail(dispatch, instance.id).then(i => this.props.setCurrentInstance(i));
+    }
+
+    fitToBounds() {
+        const {
+            currentTile,
+            instances,
+        } = this.props;
+        const bounds = getLatLngBounds(instances);
+        this.map.leafletElement.fitBounds(bounds, {
+            maxZoom: currentTile.maxZoom, padding: boundsOptions.padding,
+        });
     }
 
     render() {
@@ -76,12 +97,16 @@ class InstancesMap extends Component {
             <Grid container spacing={4}>
                 <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>
                     <Map
+                        ref={(ref) => {
+                            this.map = ref;
+                        }}
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
                         bounds={bounds}
                         boundsOptions={boundsOptions}
                         zoom={13}
+                        zoomControl={false}
                     >
                         <TileLayer
                             attribution={currentTile.attribution ? currentTile.attribution : ''}

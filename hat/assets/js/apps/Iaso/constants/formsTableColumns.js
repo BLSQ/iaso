@@ -88,7 +88,6 @@ const formsTableColumns = (formatMessage, component) => (
                         settings.original.instances_count > 0
                         && (
                             <Button
-                                variant="outlined"
                                 size="small"
                                 onClick={() => component.selectForm(settings.original)}
                             >

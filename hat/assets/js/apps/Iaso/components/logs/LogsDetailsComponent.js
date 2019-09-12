@@ -88,6 +88,10 @@ class LogsDetails extends Component {
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
                                                 <LogCompareComponent
+                                                    title={formatMessage({
+                                                        id: 'main.label.before',
+                                                        defaultMessage: 'Before',
+                                                    })}
                                                     log={log.past_value}
                                                     compareLog={log.new_value}
                                                     goToRevision={goToRevision}
@@ -95,6 +99,10 @@ class LogsDetails extends Component {
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <LogCompareComponent
+                                                    title={formatMessage({
+                                                        id: 'main.label.after',
+                                                        defaultMessage: 'After',
+                                                    })}
                                                     log={log.new_value}
                                                     compareLog={log.past_value}
                                                     goToRevision={goToRevision}

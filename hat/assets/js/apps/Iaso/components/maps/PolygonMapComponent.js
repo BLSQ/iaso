@@ -2,13 +2,17 @@ import React, { Component } from 'react';
 import {
     Map, TileLayer, Polygon,
 } from 'react-leaflet';
+import { injectIntl, intlShape } from 'react-intl';
+
 import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { getLatLngBounds } from '../../utils/mapUtils';
+import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
+
+const boundsOptions = { padding: [20, 20] };
 
 const styles = () => ({
     mapContainer: {
@@ -18,6 +22,26 @@ const styles = () => ({
 });
 
 class PolygonMap extends Component {
+    componentDidMount() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
+        zoomBar.addTo(this.map.leafletElement);
+    }
+
+    fitToBounds() {
+        const {
+            polygonPositions,
+        } = this.props;
+        const bounds = getLatLngBounds(polygonPositions);
+        this.map.leafletElement.fitBounds(bounds, {
+            maxZoom: tiles.osm.maxZoom, padding: boundsOptions.padding,
+        });
+    }
+
     render() {
         const { classes, polygonPositions } = this.props;
         const currentTile = tiles.osm;
@@ -29,7 +53,11 @@ class PolygonMap extends Component {
                     style={{ height: '100%' }}
                     center={[0, 0]}
                     bounds={getLatLngBounds(polygonPositions)}
-                    boundsOptions={{ padding: [20, 20] }}
+                    boundsOptions={boundsOptions}
+                    ref={(ref) => {
+                        this.map = ref;
+                    }}
+                    zoomControl={false}
                 >
                     <TileLayer
                         attribution={currentTile.attribution ? currentTile.attribution : ''}
@@ -45,6 +73,7 @@ class PolygonMap extends Component {
 PolygonMap.propTypes = {
     classes: PropTypes.object.isRequired,
     polygonPositions: PropTypes.array.isRequired,
+    intl: intlShape.isRequired,
 };
 
-export default withStyles(styles)(PolygonMap);
+export default withStyles(styles)(injectIntl(PolygonMap));

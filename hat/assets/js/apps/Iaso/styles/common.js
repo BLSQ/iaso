@@ -1,5 +1,3 @@
-import { fade } from '@material-ui/core/styles/colorManipulator';
-
 import mapStyles from './map';
 
 const commonStyles = theme => ({

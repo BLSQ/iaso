@@ -1,4 +1,5 @@
 const SET_ORG_UNITS_LEVEL = 'SET_ORG_UNITS_LEVEL';
+const RESET_ORG_UNITS_LEVELS = 'RESET_ORG_UNITS_LEVELS';
 
 export const setOrgUnitsLevel = (orgUnitlist, level) => ({
     type: SET_ORG_UNITS_LEVEL,
@@ -6,6 +7,10 @@ export const setOrgUnitsLevel = (orgUnitlist, level) => ({
         orgUnitlist,
         level,
     },
+});
+
+export const resetOrgUnitsLevels = () => ({
+    type: RESET_ORG_UNITS_LEVELS,
 });
 
 export const orgUnitsLevelsInitialState = {
@@ -30,6 +35,9 @@ export const orgUnitsLevelsReducer = (state = orgUnitsLevelsInitialState, action
                 ...state,
                 list,
             };
+        }
+        case RESET_ORG_UNITS_LEVELS: {
+            return orgUnitsLevelsInitialState;
         }
 
         default:

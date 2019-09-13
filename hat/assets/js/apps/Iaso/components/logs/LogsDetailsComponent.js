@@ -11,7 +11,6 @@ import PropTypes from 'prop-types';
 import LoadingSpinner from '../LoadingSpinnerComponent';
 import LogCompareComponent from './LogCompareComponent';
 
-
 import commonStyles from '../../styles/common';
 
 import {

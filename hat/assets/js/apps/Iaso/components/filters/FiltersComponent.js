@@ -82,6 +82,10 @@ class FiltersComponent extends React.Component {
             <section>
                 {
                     filters.map((filter) => {
+                        let filterValue = filter.value || params[filter.urlKey];
+                        if (filter.useKeyParam === false) {
+                            filterValue = filter.value;
+                        }
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
                                 <Fragment key={filter.urlKey}>
@@ -94,7 +98,7 @@ class FiltersComponent extends React.Component {
                                                 disabled={filter.isDisabled || false}
                                                 keyValue={filter.urlKey}
                                                 onChange={(key, value) => this.onChange(filter.urlKey, value, filter.callback)}
-                                                value={filter.value || params[filter.urlKey]}
+                                                value={filterValue}
                                                 type="select"
                                                 options={filter.options}
                                                 label={filter.label}
@@ -110,7 +114,7 @@ class FiltersComponent extends React.Component {
                                                 disabled={filter.isDisabled || false}
                                                 keyValue={filter.urlKey}
                                                 onChange={(key, value) => this.onSearchChange(key, value, true)}
-                                                value={filter.value || params[filter.urlKey]}
+                                                value={filterValue}
                                                 type="search"
                                                 label={filter.label}
                                                 onEnterPressed={onEnterPressed}
@@ -129,7 +133,7 @@ class FiltersComponent extends React.Component {
                                                     this.props.params[filter.urlKey] === 'true'
                                                         ? 'checked' : ''
                                                 }
-                                                value={filter.value || params[filter.urlKey]}
+                                                value={filterValue}
                                                 type="checkbox"
                                                 label={filter.label}
                                             />

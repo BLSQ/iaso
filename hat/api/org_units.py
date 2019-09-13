@@ -182,6 +182,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.validated = request.data.get("status", True)
         geo_json = request.data.get("geo_json", None)
         simplified_geom = request.data.get("simplified_geom", None)
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+        parent_id = request.data.get("parent_id", None)
         if (
             geo_json
             and geo_json["features"][0]["geometry"]
@@ -212,17 +214,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.location = Point(x=longitude, y=latitude, srid=4326)
         org_unit.aliases = request.data.get("aliases", "")
 
-        org_unit_type_id = request.data.get("org_unit_type_id", None)
         if org_unit_type_id:
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
+        if parent_id:
+            parent_org_unit = get_object_or_404(OrgUnit, id=parent_id)
+            org_unit.parent = parent_org_unit
 
         log_modification(
             original_copy, org_unit, source=ORG_UNIT_API, user=request.user
         )
         org_unit.save()
 
-        res = org_unit.as_dict()
+        res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
@@ -251,7 +255,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
-        res = org_unit.as_dict()
+        res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)

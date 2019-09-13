@@ -16,6 +16,7 @@ import PropTypes from 'prop-types';
 import {
     setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes, resetOrgUnits,
 } from '../redux/orgUnitsReducer';
+import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
 import { createUrl } from '../../../utils/fetchData';
 import {
@@ -24,7 +25,7 @@ import {
     fetchOrgUnitDetail,
     saveOrgUnit,
 } from '../utils/requests';
-import { getAliasesArrayFromString } from '../utils/orgUnitUtils';
+import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
@@ -91,6 +92,16 @@ class OrgUnitDetail extends Component {
                 this.setState({
                     currentOrgUnit: orgUnit,
                 });
+                const orgUnitTree = getOrgUnitsTree(orgUnit);
+                if (orgUnitTree.length > 0) {
+                    const { redirectTo, params } = this.props;
+                    const levels = orgUnitTree.map(o => o.id);
+                    const newParams = {
+                        ...params,
+                        levels,
+                    };
+                    redirectTo(baseUrl, newParams);
+                }
             });
         }
     }
@@ -181,8 +192,11 @@ class OrgUnitDetail extends Component {
         delete tempParams.orgUnitsPageSize;
         delete tempParams.orgUnitsOrder;
         delete tempParams.orgUnitsPage;
+        delete tempParams.orgUnitsLevels;
+        this.props.resetOrgUnitsLevels();
         redirectTo('orgunits', {
             ...tempParams,
+            levels: params.orgUnitsLevels,
             order: params.orgUnitsOrder,
             pageSize: params.orgUnitsPageSize,
             page: params.orgUnitsPage,
@@ -248,39 +262,41 @@ class OrgUnitDetail extends Component {
                     && (
                         <section>
                             <Paper className={classes.paperContainer}>
-                                {
-                                    tab === 'infos' && (
-                                        <OrgUnitInfos
-                                            params={params}
-                                            baseUrl={baseUrl}
-                                            orgUnitModified={orgUnitModified}
-                                            orgUnit={currentOrgUnit}
-                                            orgUnitTypes={orgUnitTypes}
-                                            sourceTypes={sourceTypes}
-                                            onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
-                                        />
-                                    )
-                                }
-                                {
-                                    tab === 'map' && (
-                                        <OrgUnitMap
-                                            orgUnit={currentOrgUnit}
-                                            onChangeLocation={(location) => {
-                                                this.handleChangeLocation(location);
-                                            }}
-                                            onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
-                                        />
-                                    )
-                                }
-                                {
-                                    tab === 'history' && (
-                                        <Logs
-                                            params={params}
-                                            logObjectId={currentOrgUnit.id}
-                                            goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
-                                        />
-                                    )
-                                }
+                                <div className={classes.marginBottom}>
+                                    {
+                                        tab === 'infos' && (
+                                            <OrgUnitInfos
+                                                params={params}
+                                                baseUrl={baseUrl}
+                                                orgUnitModified={orgUnitModified}
+                                                orgUnit={currentOrgUnit}
+                                                orgUnitTypes={orgUnitTypes}
+                                                sourceTypes={sourceTypes}
+                                                onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        tab === 'map' && (
+                                            <OrgUnitMap
+                                                orgUnit={currentOrgUnit}
+                                                onChangeLocation={(location) => {
+                                                    this.handleChangeLocation(location);
+                                                }}
+                                                onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        tab === 'history' && (
+                                            <Logs
+                                                params={params}
+                                                logObjectId={currentOrgUnit.id}
+                                                goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
+                                            />
+                                        )
+                                    }
+                                </div>
                                 <Divider className={classes.dividerMarginNeg} />
                                 <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
 
@@ -341,6 +357,7 @@ OrgUnitDetail.propTypes = {
     sourceTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
+    resetOrgUnitsLevels: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -357,6 +374,7 @@ const MapDispatchToProps = dispatch => ({
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),
+    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 

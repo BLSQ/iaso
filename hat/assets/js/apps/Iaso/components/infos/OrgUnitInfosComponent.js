@@ -30,6 +30,7 @@ function OrgUnitInfosComponent(props) {
                     keyValue="name"
                     onChange={onChangeInfo}
                     value={orgUnit.name}
+                    label={MESSAGES.name}
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
@@ -42,15 +43,8 @@ function OrgUnitInfosComponent(props) {
                             value: t.id,
                         }))
                     }
+                    label={MESSAGES.org_unit_type_id}
                 />
-                <InputComponent
-                    keyValue="aliases"
-                    onChange={onChangeInfo}
-                    value={orgUnit.aliases}
-                    type="arrayInput"
-                />
-            </Grid>
-            <Grid item xs={4}>
                 <InputComponent
                     keyValue="source"
                     onChange={onChangeInfo}
@@ -62,6 +56,7 @@ function OrgUnitInfosComponent(props) {
                             value: s[0],
                         }))
                     }
+                    label={MESSAGES.source}
                 />
                 <InputComponent
                     keyValue="status"
@@ -69,6 +64,7 @@ function OrgUnitInfosComponent(props) {
                     onChange={onChangeInfo}
                     value={orgUnit.status}
                     type="select"
+                    label={MESSAGES.status}
                     options={
                         [
                             {
@@ -82,11 +78,24 @@ function OrgUnitInfosComponent(props) {
                         ]
                     }
                 />
-
+                <InputComponent
+                    keyValue="aliases"
+                    onChange={onChangeInfo}
+                    value={orgUnit.aliases}
+                    type="arrayInput"
+                />
+            </Grid>
+            <Grid item xs={4}>
                 <OrgUnitsLevelsFiltersComponent
-                    onLatestIdChanged={latestId => console.log(latestId)}
+                    onLatestIdChanged={(latestId) => {
+                        if (latestId !== orgUnit.parent_id) {
+                            onChangeInfo('parent_id', latestId);
+                        }
+                    }}
                     params={params}
                     baseUrl={baseUrl}
+                    showCurrentOrgUnit={false}
+                    currentOrgUnitId={orgUnit.id}
                 />
             </Grid>
             <Grid item xs={4}>

@@ -71,8 +71,8 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)'
-            + '(/sourceId/:sourceId)(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/orgUnitsOrder/:orgUnitsOrder)'
+            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId(/sourceId/:sourceId))'
+            + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/orgUnitsLevels/:orgUnitsLevels)(/orgUnitsOrder/:orgUnitsOrder)'
             + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)'
             + '(/page/:page)(/tab/:tab)'}
             component={props => (

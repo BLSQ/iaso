@@ -143,6 +143,7 @@ class OrgUnit(models.Model):
             "id": self.id,
             "source": self.source,
             "source_ref": self.source_ref,
+            "parent_id": self.parent_id,
             "parent": self.parent.as_dict_with_parents() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name

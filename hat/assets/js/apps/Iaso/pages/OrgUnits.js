@@ -17,6 +17,8 @@ import {
     setOrgUnits, setOrgUnitTypes, setSourceTypes, setOrgUnitsListFetching,
 } from '../redux/orgUnitsReducer';
 
+import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
+
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -98,6 +100,7 @@ class OrgUnits extends Component {
         const newParams = {
             orgUnitId: orgUnit.id,
             ...params,
+            orgUnitslevels: params.levels,
             orgUnitsOrder: params.order,
             orgUnitsPageSize: params.pageSize,
             orgUnitsPage: params.page,
@@ -105,9 +108,11 @@ class OrgUnits extends Component {
         delete newParams.page;
         delete newParams.pageSize;
         delete newParams.order;
+        delete newParams.levels;
         if (tab) {
             newParams.tab = tab;
         }
+        this.props.resetOrgUnitsLevels();
         redirectTo('orgunits/detail', newParams);
     }
 
@@ -195,6 +200,7 @@ OrgUnits.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
+    resetOrgUnitsLevels: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -211,6 +217,7 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
+    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 export default withStyles(styles)(

@@ -36,6 +36,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
     {
         urlKey: 'levels',
         isMultiSelect: false,
+        useKeyParam: false,
         isClearable: true,
         options: orgunitList.map(o => ({
             label: `${o.name} (${o.org_unit_type_name})`,

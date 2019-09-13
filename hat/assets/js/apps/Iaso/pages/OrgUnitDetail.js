@@ -100,6 +100,7 @@ class OrgUnitDetail extends Component {
                         ...params,
                         levels,
                     };
+                    console.log('redirect for levels');
                     redirectTo(baseUrl, newParams);
                 }
             });
@@ -155,10 +156,18 @@ class OrgUnitDetail extends Component {
     }
 
     resetOrgUnit() {
+        this.props.resetOrgUnitsLevels();
+        const { redirectTo, params } = this.props;
+        const newParams = {
+            ...params,
+            levels: null,
+        };
+        redirectTo(baseUrl, newParams);
         this.setState({
             orgUnitModified: false,
             currentOrgUnit: this.props.currentOrgUnit,
         });
+        this.fetchDetail();
     }
 
     goToRevision(orgUnitRevision) {

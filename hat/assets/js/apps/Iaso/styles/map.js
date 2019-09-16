@@ -24,7 +24,7 @@ const mapStyles = theme => ({
             left: -5,
             pointerEvents: 'none',
         },
-        '& path': {
+        '& .leaflet-overlay-pane path': {
             fill: fade(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
         },

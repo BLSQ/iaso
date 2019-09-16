@@ -1,8 +1,7 @@
 /* globals window */
 import React from 'react';
 import moment from 'moment';
-
-import Button from '@material-ui/core/Button';
+import Link from '@material-ui/core/Link';
 
 const instancesTableColumns = formatMessage => (
     [
@@ -15,12 +14,12 @@ const instancesTableColumns = formatMessage => (
             accessor: 'file_url',
             Cell: settings => (
                 <span>
-                    <Button
+                    <Link
                         onClick={() => window.open(settings.original.file_url, '_blank')}
                         size="small"
                     >
                         XML
-                    </Button>
+                    </Link>
                 </span>
             ),
             width: 150,

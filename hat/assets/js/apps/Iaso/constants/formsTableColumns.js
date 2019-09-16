@@ -1,7 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
-import Button from '@material-ui/core/Button';
+import Link from '@material-ui/core/Link';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -87,12 +87,12 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         settings.original.instances_count > 0
                         && (
-                            <Button
+                            <Link
                                 size="small"
                                 onClick={() => component.selectForm(settings.original)}
                             >
                                 <FormattedMessage id="iaso.forms.view" defaultMessage="View" />
-                            </Button>
+                            </Link>
                         )
                     }
                 </section>

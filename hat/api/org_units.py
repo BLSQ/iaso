@@ -141,8 +141,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 | Q(parent__parent__parent__id=org_unit_parent_id)
                 | Q(parent__parent__parent__parent__id=org_unit_parent_id)
                 | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(
+                    parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+                | Q(
+                    parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
             )
 
         if source_id:
@@ -205,7 +209,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.longitude = longitude
 
         if latitude and longitude:
-            org_unit.location = Point(x=latitude, y=longitude, srid=4326)
+            org_unit.location = Point(x=longitude, y=latitude, srid=4326)
         org_unit.aliases = request.data.get("aliases", "")
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)

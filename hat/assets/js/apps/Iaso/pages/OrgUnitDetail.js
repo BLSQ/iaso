@@ -88,10 +88,6 @@ class OrgUnitDetail extends Component {
         } = this.props;
         if (orgUnitId) {
             fetchOrgUnitDetail(dispatch, orgUnitId).then((orgUnit) => {
-                this.props.setCurrentOrgUnit(orgUnit);
-                this.setState({
-                    currentOrgUnit: orgUnit,
-                });
                 const orgUnitTree = getOrgUnitsTree(orgUnit);
                 if (orgUnitTree.length > 0) {
                     const { redirectTo, params } = this.props;
@@ -100,9 +96,12 @@ class OrgUnitDetail extends Component {
                         ...params,
                         levels,
                     };
-                    console.log('redirect for levels');
                     redirectTo(baseUrl, newParams);
                 }
+                this.props.setCurrentOrgUnit(orgUnit);
+                this.setState({
+                    currentOrgUnit: orgUnit,
+                });
             });
         }
     }

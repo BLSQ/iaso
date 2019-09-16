@@ -3,12 +3,12 @@ import { push } from 'react-router-redux';
 import { connect } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import isEqual from 'lodash/isEqual';
 
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../utils/requests';
 import { createUrl } from '../../../../utils/fetchData';
+import { fetchLatestOrgUnitLevelId } from '../../utils/orgUnitUtils';
 
 import { setOrgUnitsLevel } from '../../redux/orgUnitsLevelsReducer';
 
@@ -17,36 +17,30 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         super(props);
         this.state = {
             levels: [],
-            firstLoad: true,
         };
     }
 
     componentDidMount() {
-        this.fetchAllTree().then(() => {
-            this.setState({
-                firstLoad: false,
-            });
-        });
+        this.fetchAllTree();
     }
-
-    // shouldComponentUpdate(nextProps, nextState) {
-    //     console.log('!isEqual(this.props.orgUnitsLevels, nextProps.orgUnitsLevels)', !isEqual(this.props.orgUnitsLevels, nextProps.orgUnitsLevels));
-    //     const levels = this.props.params[this.props.paramKey];
-    //     return !isEqual(this.props.orgUnitsLevels, nextProps.orgUnitsLevels)
-    //         || nextState.firstLoad
-    //         || (!levels && nextProps.params[nextProps.paramKey]);
-    // }
 
     componentDidUpdate(prevProps) {
         const levels = this.props.params[this.props.paramKey];
-        if (levels && !prevProps.params[prevProps.paramKey]) {
+        const prevLevels = prevProps.params[prevProps.paramKey];
+        if (levels && !prevLevels) {
             this.fetchAllTree();
+        } else {
+            const lastLevel = fetchLatestOrgUnitLevelId(this.props.params[this.props.paramKey]);
+            const prevLastLevel = fetchLatestOrgUnitLevelId(prevProps.params[prevProps.paramKey]);
+            if (lastLevel !== prevLastLevel && levels) {
+                const levelIndex = levels.split(',').indexOf(lastLevel.toString()) + 1;
+                this.fetchTree(levelIndex);
+            }
         }
     }
 
     onFilterChanged(value, level) {
         const {
-            dispatch,
             params,
             redirectTo,
             baseUrl,
@@ -78,11 +72,6 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             [paramKey]: newOrgUnitLevelsIds.toString(),
         };
         redirectTo(baseUrl, newParams);
-        if (value) {
-            fetchOrgUnits(dispatch, `&parent_id=${value}`).then((orgUnits) => {
-                this.props.setOrgUnitsLevel(orgUnits, level + 1);
-            });
-        }
     }
 
     fetchAllTree() {

@@ -209,6 +209,8 @@ class InstancesViewSet(viewsets.ViewSet):
                     if parent:
                         instance_values.append(parent["name"])
                         parent = parent["parent"]
+                    else:
+                        instance_values.append("")
 
                 for k in file_content_template:
                     instance_values.append(idict["file_content"].get(k, None))

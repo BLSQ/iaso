@@ -107,9 +107,15 @@ class InstancesViewSet(viewsets.ViewSet):
                 | Q(org_unit__parent__parent__id=org_unit_parent_id)
                 | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
                 | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
             )
 
         if with_location == "true":
@@ -152,9 +158,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 return Response(
                     [
                         instance.as_location()
-                        for instance in queryset.filter(
-                            location__isnull=False
-                        ).prefetch_related("instancefile_set").prefetch_related("device").defer("json")
+                        for instance in queryset.filter(location__isnull=False)
+                        .prefetch_related("instancefile_set")
+                        .prefetch_related("device")
+                        .defer("json")
                     ]
                 )
             else:
@@ -171,6 +178,10 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "Org unit", "width": 20},
                 {"title": "Org unit id", "width": 20},
                 {"title": "Référence externe", "width": 20},
+                {"title": "parent1", "width": 20},
+                {"title": "parent2", "width": 20},
+                {"title": "parent3", "width": 20},
+                {"title": "parent4", "width": 20},
             ]
             file_content_template = queryset.first().as_dict()["file_content"]
             for title in file_content_template:
@@ -178,12 +189,12 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = "instances"
 
             def get_row(instance, **kwargs):
-                idict = instance.as_dict()
+                idict = instance.as_dict_with_parents()
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 org_unit = idict.get("org_unit")
                 instance_values = [
-                    idict.get("form_id"),
+                    idict.get("id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
                     created_at,
@@ -193,9 +204,25 @@ class InstancesViewSet(viewsets.ViewSet):
                     org_unit.get("source_ref") if org_unit else None,
                 ]
 
+                parent = org_unit["parent"]
+                for i in range(4):
+                    if parent:
+                        instance_values.append(parent["name"])
+                        parent = parent["parent"]
+
                 for k in file_content_template:
                     instance_values.append(idict["file_content"].get(k, None))
                 return instance_values
+
+            queryset.prefetch_related(
+                "org_unit__parent__parent__parent__parent"
+            ).prefetch_related("org_unit__parent__parent__parent").prefetch_related(
+                "org_unit__parent__parent"
+            ).prefetch_related(
+                "org_unit__parent"
+            ).prefetch_related(
+                "org_unit"
+            )
 
             if xlsx_format:
                 filename = filename + ".xlsx"

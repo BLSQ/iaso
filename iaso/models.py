@@ -286,6 +286,24 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
         }
 
+    def as_dict_with_parents(self):
+        file_content = self.get_and_save_json_of_xml()
+
+        return {
+            "uuid": self.uuid,
+            "file_name": self.file_name,
+            "file_content": file_content,
+            "file_url": self.file.url if self.file else None,
+            "id": self.id,
+            "form_id": self.form_id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
+        }
+
     def as_full_model(self):
         return {
             "id": self.id,

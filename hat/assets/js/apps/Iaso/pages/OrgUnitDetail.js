@@ -232,6 +232,8 @@ class OrgUnitDetail extends Component {
             <Fragment>
                 <TopBar
                     title={this.props.currentOrgUnit ? this.props.currentOrgUnit.name : ''}
+                    displayBackButton
+                    goBack={() => this.goBack()}
                 >
                     <Tabs
                         value={tab}
@@ -308,10 +310,7 @@ class OrgUnitDetail extends Component {
                                 <Divider className={classes.dividerMarginNeg} />
                                 <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
 
-                                    <Grid xs={6} item className={classes.textAlignLeft}>
-                                        <BackButton goBack={() => this.goBack()} />
-                                    </Grid>
-                                    <Grid xs={6} item className={classes.textAlignRight}>
+                                    <Grid xs={12} item className={classes.textAlignRight}>
                                         {
                                             tab !== 'history' && (
                                                 <Fragment>

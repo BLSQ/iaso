@@ -9,6 +9,7 @@ import Typography from '@material-ui/core/Typography';
 
 import MenuIcon from '@material-ui/icons/Menu';
 import ExitIcon from '@material-ui/icons/ExitToApp';
+import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import PropTypes from 'prop-types';
 
@@ -26,20 +27,38 @@ const styles = theme => ({
 
 function TopBar(props) {
     const {
-        classes, title, toggleSidebar, children,
+        classes, title, toggleSidebar, children, displayBackButton, goBack,
     } = props;
     return (
         <Fragment>
             <AppBar position="relative" color="primary">
                 <Toolbar>
-                    <IconButton
-                        className={classes.menuButton}
-                        color="inherit"
-                        aria-label="Menu"
-                        onClick={toggleSidebar}
-                    >
-                        <MenuIcon />
-                    </IconButton>
+                    {
+                        !displayBackButton
+                        && (
+                            <IconButton
+                                className={classes.menuButton}
+                                color="inherit"
+                                aria-label="Menu"
+                                onClick={toggleSidebar}
+                            >
+                                <MenuIcon />
+                            </IconButton>
+                        )
+                    }
+                    {
+                        displayBackButton
+                        && (
+                            <IconButton
+                                className={classes.menuButton}
+                                color="inherit"
+                                aria-label="Back"
+                                onClick={goBack}
+                            >
+                                <ArrowBackIcon />
+                            </IconButton>
+                        )
+                    }
                     <Typography variant="h6" color="inherit">
                         {title}
                     </Typography>
@@ -63,6 +82,8 @@ function TopBar(props) {
 
 TopBar.defaultProps = {
     children: null,
+    displayBackButton: false,
+    goBack: () => null,
 };
 
 TopBar.propTypes = {
@@ -70,6 +91,8 @@ TopBar.propTypes = {
     title: PropTypes.string.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     children: PropTypes.any,
+    displayBackButton: PropTypes.bool,
+    goBack: PropTypes.func,
 };
 
 const MapDispatchToProps = dispatch => ({

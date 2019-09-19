@@ -218,6 +218,8 @@ class Instances extends Component {
                         defaultMessage: 'Record(s) for the form',
                         id: 'iaso.instance.form',
                     })}: ${currentForm ? currentForm.name : ''}`}
+                    displayBackButton
+                    goBack={() => this.goBack()}
                 >
                     <Tabs
                         value={tab}
@@ -282,10 +284,6 @@ class Instances extends Component {
                         }
                     </div>
                     <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-
-                        <Grid xs={6} item className={classes.textAlignLeft}>
-                            <BackButton goBack={() => this.goBack()} />
-                        </Grid>
 
                         <Grid xs={6} item className={classes.textAlignRight}>
                             {tab === 'list'

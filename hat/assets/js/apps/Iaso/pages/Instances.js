@@ -285,7 +285,7 @@ class Instances extends Component {
                     </div>
                     <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
 
-                        <Grid xs={6} item className={classes.textAlignRight}>
+                        <Grid xs={12} item className={classes.textAlignRight}>
                             {tab === 'list'
                                 && (
                                     <DownloadButtonsComponent

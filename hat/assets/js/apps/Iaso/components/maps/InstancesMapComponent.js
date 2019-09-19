@@ -93,6 +93,9 @@ class InstancesMap extends Component {
                 </Grid>
             );
         }
+        if (this.map) {
+            this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
+        }
         return (
             <Grid container spacing={4}>
                 <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>

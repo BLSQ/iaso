@@ -4,7 +4,7 @@ from rest_framework.response import Response
 
 from hat.vector_control.models import APIImport
 from .catches import timestamp_to_utc_datetime
-from iaso.models import Instance, OrgUnit, DeviceOwnership
+from iaso.models import Instance, OrgUnit, DeviceOwnership, Form
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
 
@@ -13,6 +13,7 @@ from django.core.paginator import Paginator
 from django.http import StreamingHttpResponse, HttpResponse
 from .export_utils import Echo, generate_xlsx, iter_items
 from iaso.utils import timestamp_to_datetime
+from time import gmtime, strftime
 import ntpath
 
 
@@ -134,6 +135,7 @@ class InstancesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(device__id=device_ownership.device.id)
 
         if form_id:
+            form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
         if csv_format is None and xlsx_format is None:
 
@@ -187,6 +189,10 @@ class InstancesViewSet(viewsets.ViewSet):
             for title in file_content_template:
                 columns.append({"title": title, "width": 50})
             filename = "instances"
+
+            if form:
+                filename = "%s-%s" % (filename, form.id)
+            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
                 idict = instance.as_dict_with_parents()

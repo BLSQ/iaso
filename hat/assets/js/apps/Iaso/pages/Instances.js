@@ -110,7 +110,7 @@ class Instances extends Component {
             params,
         } = this.props;
         const urlParams = {
-            limit: params.pageSize ? params.pageSize : 50,
+            limit: params.pageSize ? params.pageSize : 20,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
             form_id: params.formId,

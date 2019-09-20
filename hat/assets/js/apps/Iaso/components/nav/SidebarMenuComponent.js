@@ -1,4 +1,3 @@
-/* globals STATIC_URL */
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
@@ -20,8 +19,7 @@ import PropTypes from 'prop-types';
 import logoUrl from '../../images/iaso-logo.svg';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-
-const SIDEBAR_WIDTH = 250;
+import SIDEBAR_WIDTH from '../../constants/uiConstants';
 
 const styles = theme => ({
     logo: {

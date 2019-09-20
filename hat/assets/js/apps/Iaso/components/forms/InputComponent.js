@@ -222,7 +222,7 @@ class InputComponent extends Component {
                             color="primary"
                             checked={checked}
                             onChange={event => onChange(keyValue, event.target.checked)}
-                            value="checkedF"
+                            value="checked"
                         />
                     )}
                     label={label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])}

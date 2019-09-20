@@ -80,7 +80,6 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                 <section>
                     <Tooltip title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}>
                         <IconButton
-                            color="primary"
                             onClick={() => component.selectOrgUnit(settings.original)}
                         >
                             <RemoveRedEye />
@@ -93,7 +92,6 @@ const orgUnitsTableColumns = (formatMessage, component) => (
 
                             <Tooltip title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}>
                                 <IconButton
-                                    color="primary"
                                     onClick={() => component.selectOrgUnit(settings.original, 'map')}
                                 >
                                     <Map />
@@ -104,7 +102,6 @@ const orgUnitsTableColumns = (formatMessage, component) => (
 
                     <Tooltip title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}>
                         <IconButton
-                            color="primary"
                             onClick={() => component.selectOrgUnit(settings.original, 'history')}
                         >
                             <History />

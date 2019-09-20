@@ -6,7 +6,9 @@ import {
 import 'react-leaflet-draw';
 import { FormattedMessage, injectIntl } from 'react-intl';
 
-import { withStyles, Button, Grid } from '@material-ui/core';
+import {
+    withStyles, Button, Grid,
+} from '@material-ui/core';
 
 import Edit from '@material-ui/icons/Edit';
 import AddLocation from '@material-ui/icons/AddLocation';
@@ -24,6 +26,7 @@ import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { customMarker, customZoomBar } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
+import MapFilters from './tools/MapFiltersComponent';
 import MarkerComponent from './markers/MarkerComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -57,6 +60,7 @@ const styles = theme => ({
     },
     mapContainerNoDraw: {
         ...commonStyles(theme).mapContainer,
+        marginBottom: 0,
         '& .marker-cluster': {
             backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
         },
@@ -214,7 +218,12 @@ class OrgUnitMapComponent extends Component {
 
     render() {
         const {
-            classes, orgUnit, currentTile,
+            classes,
+            orgUnit,
+            currentTile,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         const { editEnabled } = this.state;
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -222,26 +231,32 @@ class OrgUnitMapComponent extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         return (
-            <Grid container spacing={4}>
-                <Grid item xs={8} md={9} lg={10} className={classes.mapContainerNoDraw}>
-                    <Map
-                        scrollWheelZoom={false}
-                        maxZoom={currentTile.maxZoom}
-                        style={{ height: '100%' }}
-                        ref={(ref) => {
-                            this.map = ref;
-                        }}
-                        center={[0, 0]}
-                        boundsOptions={{ padding }}
-                        zoom={zoom}
-                        zoomControl={false}
-                    >
-                        <TileLayer
-                            attribution={currentTile.attribution ? currentTile.attribution : ''}
-                            url={currentTile.url}
-                        />
-                        {
-                            hasMarker
+            <Grid container spacing={0}>
+                <MapFilters title={formatMessage({
+                    defaultMessage: 'Location informations',
+                    id: 'iaso.orgUnits.infosLocation',
+                })}
+                >
+                    <Grid container spacing={4}>
+                        <Grid item xs={8} md={9} lg={10} className={classes.mapContainerNoDraw}>
+                            <Map
+                                scrollWheelZoom={false}
+                                maxZoom={currentTile.maxZoom}
+                                style={{ height: '100%' }}
+                                ref={(ref) => {
+                                    this.map = ref;
+                                }}
+                                center={[0, 0]}
+                                boundsOptions={{ padding }}
+                                zoom={zoom}
+                                zoomControl={false}
+                            >
+                                <TileLayer
+                                    attribution={currentTile.attribution ? currentTile.attribution : ''}
+                                    url={currentTile.url}
+                                />
+                                {
+                                    hasMarker
                             && (
                                 <MarkerComponent
                                     item={orgUnit}
@@ -249,13 +264,13 @@ class OrgUnitMapComponent extends Component {
                                     onDragend={newMarker => this.props.onChangeLocation(newMarker.getLatLng())}
                                 />
                             )
-                        }
-                    </Map>
-                </Grid>
-                <Grid item xs={4} md={3} lg={2}>
-                    <TileSwitch />
-                    {
-                        !editEnabled && orgUnit.geo_json
+                                }
+                            </Map>
+                        </Grid>
+                        <Grid item xs={4} md={3} lg={2}>
+                            <TileSwitch />
+                            {
+                                !editEnabled && orgUnit.geo_json
                         && (
                             <Button
                                 variant="contained"
@@ -267,9 +282,9 @@ class OrgUnitMapComponent extends Component {
                                 <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
                             </Button>
                         )
-                    }
-                    {
-                        (editEnabled && orgUnit.geo_json)
+                            }
+                            {
+                                (editEnabled && orgUnit.geo_json)
                         && (
                             <Button
                                 variant="contained"
@@ -284,9 +299,9 @@ class OrgUnitMapComponent extends Component {
                                 <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
                             </Button>
                         )
-                    }
-                    {
-                        (editEnabled && orgUnit.geo_json)
+                            }
+                            {
+                                (editEnabled && orgUnit.geo_json)
                         && (
                             <Button
                                 variant="contained"
@@ -300,10 +315,10 @@ class OrgUnitMapComponent extends Component {
                                 <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
                             </Button>
                         )
-                    }
+                            }
 
-                    {
-                        orgUnit.geo_json
+                            {
+                                orgUnit.geo_json
                         && !editEnabled
                         && (
                             <Button
@@ -316,9 +331,9 @@ class OrgUnitMapComponent extends Component {
                                 <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
                             </Button>
                         )
-                    }
-                    {
-                        hasMarker
+                            }
+                            {
+                                hasMarker
                         && (
                             <Button
                                 variant="contained"
@@ -330,9 +345,9 @@ class OrgUnitMapComponent extends Component {
                                 <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
                             </Button>
                         )
-                    }
-                    {
-                        !orgUnit.geo_json
+                            }
+                            {
+                                !orgUnit.geo_json
                         && !hasMarker
                         && (
                             <Fragment>
@@ -356,8 +371,10 @@ class OrgUnitMapComponent extends Component {
                                 </Button>
                             </Fragment>
                         )
-                    }
-                </Grid>
+                            }
+                        </Grid>
+                    </Grid>
+                </MapFilters>
             </Grid>
         );
     }

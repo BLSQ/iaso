@@ -1,13 +1,13 @@
 {% extends 'iaso/base.html' %}
 {% load i18n %}
-
+{% load static %}
 {% block body %}
   <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
-  <div class="login__container">
+  <div class="login__container iasologin">
     <div class="login__content">
       <header class="login__header">
-        <h1 class="login__heading">{% trans 'Tableau de Bord Iaso' %}</h1>
-        <p>{% trans 'Connectez vous pour continuer' %}</p>
+        <h1 class="login__heading">  <img src="{% static 'images/logo.png' %}" /></h1>
+          <p>{% trans 'An offspring of the <a href="https://www.trypelim.org">Trypelim</a> project' %}</p>
       </header>
       <form method="post" data-qa="login-form" action="{% url 'login' %}" class="login__form">
         {% if next %}

@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
-from iaso.models import OrgUnit, Project, OrgUnitType
+from iaso.models import OrgUnit, Project, OrgUnitType, Instance
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from .catches import timestamp_to_utc_datetime
@@ -13,6 +13,10 @@ from copy import deepcopy
 from hat.audit.models import log_modification, ORG_UNIT_API
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from time import gmtime, strftime
+from iaso.utils import timestamp_to_datetime
+from django.http import StreamingHttpResponse, HttpResponse
+from .export_utils import Echo, generate_xlsx, iter_items
 
 
 def import_data(org_units, user, api_import):
@@ -79,6 +83,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         limit = request.GET.get("limit", None)
         validated = request.GET.get("validated", True)
+        has_instances = request.GET.get("hasInstances", None)
         search = request.GET.get("search", None)
         page_offset = request.GET.get("page", 1)
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
@@ -88,6 +93,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         parent_id = request.GET.get("parent_id", None)
         order = request.GET.get("order", "id").split(",")
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
+        csv_format = request.GET.get("csv", None)
+        xlsx_format = request.GET.get("xlsx", None)
 
         if validated == "true":
             validated = True
@@ -105,6 +112,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(aliases__contains=[search])
             )
+
+        if has_instances is not None:
+            ids_with_instances = Instance.objects.filter(
+                org_unit__isnull=False
+            ).values_list("org_unit_id", flat=True)
+            if has_instances == "true":
+                queryset = queryset.filter(id__in=ids_with_instances)
+            else:
+                queryset = queryset.exclude(id__in=ids_with_instances)
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
 
@@ -152,26 +168,95 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if source_id:
             queryset = queryset.filter(source=source_id)
 
-        if limit:
-            limit = int(limit)
-            page_offset = int(page_offset)
+        if csv_format is None:
+            if limit:
+                limit = int(limit)
+                page_offset = int(page_offset)
 
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
+                paginator = Paginator(queryset, limit)
+                res = {"count": paginator.count}
+                if page_offset > paginator.num_pages:
+                    page_offset = paginator.num_pages
+                page = paginator.page(page_offset)
 
-            res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-            return Response(res)
+                res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+                res["has_next"] = page.has_next()
+                res["has_previous"] = page.has_previous()
+                res["page"] = page_offset
+                res["pages"] = paginator.num_pages
+                res["limit"] = limit
+                return Response(res)
+            else:
+                queryset = queryset.select_related("org_unit_type")
+                return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
         else:
-            queryset = queryset.select_related("org_unit_type")
-            return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
+            columns = [
+                {"title": "ID", "width": 20},
+                {"title": "Nom", "width": 20},
+                {"title": "Latitude", "width": 40},
+                {"title": "Longitude", "width": 20},
+                {"title": "Date de création", "width": 20},
+                {"title": "Date de modification", "width": 20},
+                {"title": "Source", "width": 20},
+                {"title": "Statut", "width": 20},
+                {"title": "Référence externe", "width": 20},
+                {"title": "parent1", "width": 20},
+                {"title": "parent2", "width": 20},
+                {"title": "parent3", "width": 20},
+                {"title": "parent4", "width": 20},
+            ]
+
+            filename = "org_units"
+            filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
+
+            def get_row(org_unit, **kwargs):
+                idict = org_unit.as_dict_with_parents()
+                created_at = timestamp_to_datetime(idict.get("created_at"))
+                updated_at = timestamp_to_datetime(idict.get("updated_at"))
+                org_unit_values = [
+                    idict.get("id"),
+                    idict.get("name"),
+                    idict.get("latitude"),
+                    idict.get("longitude"),
+                    created_at,
+                    updated_at,
+                    idict.get("source"),
+                    idict.get("status"),
+                    idict.get("source_ref"),
+                ]
+                parent = idict.get("parent")
+                for i in range(4):
+                    if parent:
+                        org_unit_values.append(parent.get("name"))
+                        parent = parent.get("parent")
+                    else:
+                        org_unit_values.append("")
+
+                return org_unit_values
+
+            queryset.prefetch_related(
+                "parent__parent__parent__parent"
+            ).prefetch_related("parent__parent__parent").prefetch_related(
+                "parent__parent"
+            ).prefetch_related(
+                "parent"
+            )
+
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Forms", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                print("CSV")
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type="text/csv",
+                )
+                filename = filename + ".csv"
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            return response
 
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, id=pk)

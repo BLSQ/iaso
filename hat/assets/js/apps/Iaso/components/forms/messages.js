@@ -51,6 +51,18 @@ const MESSAGES = {
         id: 'iaso.forms.status',
         defaultMessage: 'Status',
     },
+    hasInstances: {
+        id: 'iaso.forms.hasInstances',
+        defaultMessage: 'With encoded forms',
+    },
+    yes: {
+        id: 'iaso.forms.yes',
+        defaultMessage: 'Yes',
+    },
+    no: {
+        id: 'iaso.forms.no',
+        defaultMessage: 'No',
+    },
     validated: {
         id: 'iaso.forms.validated',
         defaultMessage: 'Validated',

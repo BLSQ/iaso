@@ -193,6 +193,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             columns = [
                 {"title": "ID", "width": 20},
                 {"title": "Nom", "width": 20},
+                {"title": "Type", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
                 {"title": "Date de création", "width": 20},
@@ -216,6 +217,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 org_unit_values = [
                     idict.get("id"),
                     idict.get("name"),
+                    idict.get("org_unit_type_name"),
                     idict.get("latitude"),
                     idict.get("longitude"),
                     created_at,
@@ -249,7 +251,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:
-                print("CSV")
                 response = StreamingHttpResponse(
                     streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
                     content_type="text/csv",
@@ -335,7 +336,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             new_org_units = import_data(org_units, request.user, api_import)
             return Response([org_unit.as_dict() for org_unit in new_org_units])
         except Exception as exe:
-            print("Excpetion", exe)
+            print("Exception", exe)
             return Response({"res": "a problem happened, but your data was saved"})
 
     def retrieve(self, request, pk=None):

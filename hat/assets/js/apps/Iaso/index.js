@@ -62,7 +62,7 @@ export default function datasApp(element, baseUrl) {
         <Route
             path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)'
             + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)'
-            + '(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
+            + '(/order/:order)(/pageSize/:pageSize)(/page/:page)(/hasInstances/:hasInstances)(/back/:back)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -74,7 +74,7 @@ export default function datasApp(element, baseUrl) {
             path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId(/sourceId/:sourceId))'
             + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/orgUnitsLevels/:orgUnitsLevels)(/orgUnitsOrder/:orgUnitsOrder)'
             + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)'
-            + '(/page/:page)(/tab/:tab)'}
+            + '(/page/:page)(/tab/:tab)(/hasInstances/:hasInstances)'}
             component={props => (
                 <Fragment>
                     <SidebarMenu />

@@ -32,6 +32,26 @@ export const status = formatMessage => (
     }
 );
 
+export const hasInstances = formatMessage => (
+    {
+        urlKey: 'hasInstances',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [
+            {
+                label: formatMessage(MESSAGES.yes),
+                value: 'true',
+            },
+            {
+                label: formatMessage(MESSAGES.no),
+                value: 'false',
+            },
+        ],
+        label: MESSAGES.hasInstances,
+        type: 'select',
+    }
+);
+
 export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage) => (
     {
         urlKey: 'levels',

@@ -3,7 +3,7 @@ import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
 import {
-    withStyles, Button, Box,
+    withStyles, Button, Box, Divider,
 } from '@material-ui/core';
 
 import Edit from '@material-ui/icons/Edit';
@@ -17,6 +17,7 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 import shapeSvg from '../../../images/white-shape.svg';
+import InputComponent from '../../forms/InputComponent';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -45,8 +46,7 @@ class EditOrgUnitOptionComponent extends Component {
             onChange,
             mapGeoJson,
         } = this.props;
-
-        const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
+        const hasMarker = Boolean(orgUnit.latitude !== null) && Boolean(orgUnit.longitude !== null);
         return (
             <Box
                 px={2}
@@ -57,7 +57,6 @@ class EditOrgUnitOptionComponent extends Component {
                     !editEnabled && orgUnit.geo_json
                     && (
                         <Button
-                            size="small"
                             variant="contained"
                             onClick={() => toggleEditShape()}
                             className={classes.button}
@@ -72,7 +71,6 @@ class EditOrgUnitOptionComponent extends Component {
                     (editEnabled && orgUnit.geo_json)
                     && (
                         <Button
-                            size="small"
                             variant="contained"
                             onClick={() => {
                                 toggleEditShape();
@@ -90,7 +88,6 @@ class EditOrgUnitOptionComponent extends Component {
                     (editEnabled && orgUnit.geo_json)
                     && (
                         <Button
-                            size="small"
                             variant="contained"
                             className={classes.button}
                             onClick={() => {
@@ -109,7 +106,6 @@ class EditOrgUnitOptionComponent extends Component {
                     && !editEnabled
                     && (
                         <Button
-                            size="small"
                             variant="contained"
                             color="secondary"
                             className={classes.button}
@@ -123,16 +119,48 @@ class EditOrgUnitOptionComponent extends Component {
                 {
                     hasMarker
                     && (
-                        <Button
-                            size="small"
-                            variant="contained"
-                            color="secondary"
-                            className={classes.button}
-                            onClick={() => onChangeLocation({ lat: null, lng: null })}
-                        >
-                            <DeleteIcon className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.map.marker.delete" defaultMessage="Delete marker" />
-                        </Button>
+                        <Fragment>
+                            <InputComponent
+                                keyValue="latitude"
+                                onChange={(key, latitude) => {
+                                    if (latitude) {
+                                        onChangeLocation({
+                                            lat: parseFloat(latitude),
+                                            lng: orgUnit.longitude,
+                                        });
+                                    }
+                                }}
+                                value={orgUnit.latitude}
+                                type="number"
+                                label={{
+                                    defaultMessage: 'Latitude',
+                                    id: 'iaso.label.latitude',
+                                }}
+                            />
+                            <InputComponent
+                                keyValue="longitude"
+                                onChange={(key, longitude) => onChangeLocation({
+                                    lat: orgUnit.latitude,
+                                    lng: parseFloat(longitude),
+                                })}
+                                value={orgUnit.longitude}
+                                type="number"
+                                label={{
+                                    defaultMessage: 'Longitude',
+                                    id: 'iaso.label.longitude',
+                                }}
+                            />
+                            <Divider className={classes.marginY} />
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.button}
+                                onClick={() => onChangeLocation({ lat: null, lng: null })}
+                            >
+                                <DeleteIcon className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.map.marker.delete" defaultMessage="Delete marker" />
+                            </Button>
+                        </Fragment>
                     )
                 }
                 {
@@ -141,7 +169,6 @@ class EditOrgUnitOptionComponent extends Component {
                     && (
                         <Fragment>
                             <Button
-                                size="small"
                                 variant="contained"
                                 onClick={() => addShape()}
                                 className={classes.button}
@@ -151,7 +178,6 @@ class EditOrgUnitOptionComponent extends Component {
                                 <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
                             </Button>
                             <Button
-                                size="small"
                                 variant="contained"
                                 onClick={() => addMarker()}
                                 className={classes.button}

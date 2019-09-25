@@ -61,11 +61,11 @@ const MESSAGES = {
         defaultMessage: 'Files',
     },
     latitude: {
-        id: 'iaso.instance.latitude',
+        id: 'iaso.label.latitude',
         defaultMessage: 'Latitude',
     },
     longitude: {
-        id: 'iaso.instance.longitude',
+        id: 'iaso.label.longitude',
         defaultMessage: 'Longitude',
     },
 };

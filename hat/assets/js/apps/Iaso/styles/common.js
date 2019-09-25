@@ -21,6 +21,10 @@ const commonStyles = theme => ({
         width: 'auto',
         paddingLeft: theme.spacing(1),
     },
+    marginY: {
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+    },
     marginBottom: {
         marginBottom: theme.spacing(2),
     },

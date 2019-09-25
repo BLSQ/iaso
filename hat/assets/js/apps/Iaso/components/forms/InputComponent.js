@@ -107,7 +107,7 @@ class InputComponent extends Component {
         const {
             selectInputValue,
         } = this.state;
-        if (type === 'text') {
+        if (type === 'text' || type === 'number') {
             return (
                 <FormControl className={classes.formControl} variant="outlined">
                     <InputLabel
@@ -123,9 +123,11 @@ class InputComponent extends Component {
                         }
                     </InputLabel>
                     <OutlinedInput
+                        size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
                         value={value}
+                        type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
                     />
                 </FormControl>

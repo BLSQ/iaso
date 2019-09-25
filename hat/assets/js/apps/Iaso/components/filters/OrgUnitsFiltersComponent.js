@@ -16,6 +16,7 @@ import commonStyles from '../../styles/common';
 import {
     search,
     status,
+    hasInstances,
     orgUnitType,
     source,
     shape,
@@ -83,6 +84,7 @@ class OrgUnitsFiltersComponent extends Component {
                                 search(),
                                 source(formatMessage, sourceTypes),
                                 status(formatMessage),
+                                hasInstances(formatMessage),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />

@@ -3,8 +3,9 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import { withStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
+import {
+    withStyles, Grid, Paper,
+} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import {
@@ -23,7 +24,7 @@ import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
-
+import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
@@ -75,12 +76,26 @@ class OrgUnits extends Component {
     }
 
     onSearch() {
+        const url = this.getEndpointUrl();
+        this.setState({
+            tableUrl: url,
+        });
+    }
+
+    getEndpointUrl(toExport, exportType = 'csv') {
         let url = '/api/orgunits/?';
         const {
             params,
         } = this.props;
-        Object.keys(params).forEach((key) => {
-            const value = params[key];
+
+        const clonedParams = { ...params };
+
+        if (toExport) {
+            clonedParams[exportType] = true;
+        }
+
+        Object.keys(clonedParams).forEach((key) => {
+            const value = clonedParams[key];
             if (value && !url.includes(key)) {
                 if (key === 'levels') {
                     url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
@@ -90,9 +105,7 @@ class OrgUnits extends Component {
             }
         });
 
-        this.setState({
-            tableUrl: url,
-        });
+        return url;
     }
 
     selectOrgUnit(orgUnit, tab) {
@@ -154,27 +167,37 @@ class OrgUnits extends Component {
                     />
                     {
                         tableUrl && (
-                            <div className={classes.reactTable}>
-                                <CustomTableComponent
-                                    isSortable
-                                    pageSize={50}
-                                    showPagination
-                                    endPointUrl={tableUrl}
-                                    columns={tableColumns}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    params={params}
-                                    defaultPath={baseUrl}
-                                    dataKey="orgunits"
-                                    canSelect={false}
-                                    multiSort
-                                    onDataStartLoaded={() => dispatch(this.props.setOrgUnitsListFetching(true))}
-                                    onDataLoaded={(orgUnitsList, count, pages) => {
-                                        dispatch(this.props.setOrgUnitsListFetching(false));
-                                        this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages);
-                                    }}
-                                    reduxPage={reduxPage}
-                                />
-                            </div>
+                            <Fragment>
+                                <div className={classes.reactTable}>
+                                    <CustomTableComponent
+                                        isSortable
+                                        pageSize={50}
+                                        showPagination
+                                        endPointUrl={tableUrl}
+                                        columns={tableColumns}
+                                        defaultSorted={[{ id: 'id', desc: false }]}
+                                        params={params}
+                                        defaultPath={baseUrl}
+                                        dataKey="orgunits"
+                                        canSelect={false}
+                                        multiSort
+                                        onDataStartLoaded={() => dispatch(this.props.setOrgUnitsListFetching(true))}
+                                        onDataLoaded={(orgUnitsList, count, pages) => {
+                                            dispatch(this.props.setOrgUnitsListFetching(false));
+                                            this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages);
+                                        }}
+                                        reduxPage={reduxPage}
+                                    />
+                                </div>
+                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+                                    <Grid xs={12} item className={classes.textAlignRight}>
+                                        <DownloadButtonsComponent
+                                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Fragment>
                         )
                     }
                 </Paper>

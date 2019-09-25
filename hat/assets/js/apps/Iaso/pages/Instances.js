@@ -31,7 +31,6 @@ import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import InstancesMap from '../components/maps/InstancesMapComponent';
-import BackButton from '../components/buttons/BackButtonComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 

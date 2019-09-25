@@ -1,27 +1,19 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import {
     Map, TileLayer,
 } from 'react-leaflet';
 import 'react-leaflet-draw';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import {
-    withStyles, Button, Grid,
+    Grid,
 } from '@material-ui/core';
-
-import Edit from '@material-ui/icons/Edit';
-import AddLocation from '@material-ui/icons/AddLocation';
-import FormatShapes from '@material-ui/icons/FormatShapes';
-import Check from '@material-ui/icons/Check';
-import DeleteIcon from '@material-ui/icons/Delete';
-import Cancel from '@material-ui/icons/Cancel';
 
 import L from 'leaflet';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
-import commonStyles from '../../styles/common';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { customMarker, customZoomBar } from '../../utils/mapUtils';
 
@@ -50,27 +42,6 @@ const shapeOptions = () => ({
         layer.setStyle({
             weight: 3,
         });
-    },
-});
-
-const styles = theme => ({
-    ...commonStyles(theme),
-    button: {
-        width: '100%',
-        marginBottom: theme.spacing(2),
-    },
-    mapContainerNoDraw: {
-        ...commonStyles(theme).mapContainer,
-        marginBottom: 0,
-        '& .marker-cluster': {
-            backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
-        },
-        '& .marker-cluster.primary > div': {
-            backgroundColor: theme.palette.primary.main,
-        },
-        '& .leaflet-draw.leaflet-control': {
-            display: 'none',
-        },
     },
 });
 
@@ -219,7 +190,6 @@ class OrgUnitMapComponent extends Component {
 
     render() {
         const {
-            classes,
             orgUnit,
             currentTile,
             intl: {
@@ -247,12 +217,16 @@ class OrgUnitMapComponent extends Component {
                             mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
                         />
                     )}
-                    layersOptionComponent={(
+                    settingsOptionComponent={(
                         <TileSwitch />
                     )}
                     title={formatMessage({
                         defaultMessage: 'Location informations',
                         id: 'iaso.orgUnits.infosLocation',
+                    })}
+                    editTitle={formatMessage({
+                        defaultMessage: 'Edit location',
+                        id: 'iaso.orgUnits.editLocation',
                     })}
                 >
                     <Map
@@ -290,7 +264,6 @@ class OrgUnitMapComponent extends Component {
 
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
@@ -307,4 +280,4 @@ const MapDispatchToProps = dispatch => ({
     resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
 });
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitMapComponent)));
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitMapComponent));

@@ -5,7 +5,7 @@ import { injectIntl } from 'react-intl';
 import {
     withStyles,
     Grid,
-    Card,
+    Box,
     Switch,
     Typography,
 } from '@material-ui/core';
@@ -15,9 +15,6 @@ import { toggleCluster } from '../../../redux/mapReducer';
 
 
 const styles = theme => ({
-    card: {
-        marginBottom: theme.spacing(2),
-    },
     title: {
         paddingTop: theme.spacing(1),
         paddingBottom: theme.spacing(1),
@@ -42,8 +39,12 @@ const ClusterSwitchComponent = (props) => {
         },
     } = props;
     return (
-        <Card className={classes.card}>
-            <Grid component="label" container alignItems="center" justify="center" spacing={1}>
+        <Box
+            p={2}
+            className={classes.innerDrawerContent}
+            component="div"
+        >
+            <Grid component="label" container alignItems="center" justify="flex-start" spacing={1}>
                 <Grid item>
                     <Typography variant="inherit" component="span" color={isClusterActive ? 'primary' : 'inherit'}>
                         {formatMessage(MESSAGES.title)}
@@ -57,7 +58,7 @@ const ClusterSwitchComponent = (props) => {
                     />
                 </Grid>
             </Grid>
-        </Card>
+        </Box>
     );
 };
 

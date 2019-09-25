@@ -304,9 +304,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.latitude = latitude
         if longitude and str(longitude) != str(org_unit.longitude):
             org_unit.longitude = longitude
+        if not latitude:
+            org_unit.latitude = None
+        if not longitude:
+            org_unit.longitude = None
 
         if latitude and longitude:
             org_unit.location = Point(x=longitude, y=latitude, srid=4326)
+        else:
+            org_unit.location = None
         org_unit.aliases = request.data.get("aliases", "")
 
         if org_unit_type_id:

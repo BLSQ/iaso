@@ -2,7 +2,7 @@ import { fade } from '@material-ui/core/styles/colorManipulator';
 
 const mapStyles = theme => ({
     mapContainer: {
-        height: '70vh',
+        height: '62vh',
         marginBottom: theme.spacing(2),
         '& .marker-cluster.primary': {
             backgroundColor: fade(theme.palette.primary.main, 0.6),

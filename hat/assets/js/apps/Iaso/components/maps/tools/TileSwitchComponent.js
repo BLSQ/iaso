@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
@@ -8,7 +8,7 @@ import ListItemText from '@material-ui/core/ListItemText';
 import { withStyles } from '@material-ui/core';
 import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
 import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
-import Card from '@material-ui/core/Card';
+import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
 import Divider from '@material-ui/core/Divider';
 
@@ -16,13 +16,12 @@ import PropTypes from 'prop-types';
 import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
+import commonStyles from '../../../styles/common';
 
 const styles = theme => ({
-    card: {
-        marginBottom: theme.spacing(2),
-    },
+    ...commonStyles(theme),
     list: {
-        padding: 0,
+        padding: theme.spacing(0, 0, 2, 0),
     },
     icon: {
         marginRight: theme.spacing(1),
@@ -72,43 +71,55 @@ function TileSwitchComponent(props) {
         },
     } = props;
     return (
-        <Card className={classes.card}>
-            <Typography variant="h6" component="h6" className={classes.title} color="primary">
-                {formatMessage(MESSAGES.title)}
-            </Typography>
+        <Fragment>
+            <Box
+                px={2}
+                className={classes.innerDrawerToolbar}
+                component="div"
+            >
+                <Typography variant="subtitle1">
+                    {formatMessage(MESSAGES.title)}
+                </Typography>
+            </Box>
             <Divider />
-            <List className={classes.list}>
-                {
-                    Object.keys(tiles).map((key) => {
-                        const tile = tiles[key];
-                        const isCurrentTile = currentTile.url === tile.url;
-                        return (
-                            <ListItem
-                                selected={isCurrentTile}
-                                key={key}
-                                button
-                                onClick={() => props.setCurrentTile(tile)}
-                            >
-                                {
-                                    isCurrentTile
-                                    && <RadioButtonChecked color="primary" className={classes.icon} />
-                                }
-                                {
-                                    !isCurrentTile
-                                    && <RadioButtonUnchecked className={classes.icon} />
-                                }
-                                <ListItemText
-                                    primary={formatMessage(MESSAGES[key])}
-                                    classes={{
-                                        primary: classes.item,
-                                    }}
-                                />
-                            </ListItem>
-                        );
-                    })
-                }
-            </List>
-        </Card>
+            <Box
+                p={2}
+                className={classes.innerDrawerContent}
+                component="div"
+            >
+                <List className={classes.list}>
+                    {
+                        Object.keys(tiles).map((key) => {
+                            const tile = tiles[key];
+                            const isCurrentTile = currentTile.url === tile.url;
+                            return (
+                                <ListItem
+                                    selected={isCurrentTile}
+                                    key={key}
+                                    button
+                                    onClick={() => props.setCurrentTile(tile)}
+                                >
+                                    {
+                                        isCurrentTile
+                                        && <RadioButtonChecked color="primary" className={classes.icon} />
+                                    }
+                                    {
+                                        !isCurrentTile
+                                        && <RadioButtonUnchecked className={classes.icon} />
+                                    }
+                                    <ListItemText
+                                        primary={formatMessage(MESSAGES[key])}
+                                        classes={{
+                                            primary: classes.item,
+                                        }}
+                                    />
+                                </ListItem>
+                            );
+                        })
+                    }
+                </List>
+            </Box>
+        </Fragment>
     );
 }
 

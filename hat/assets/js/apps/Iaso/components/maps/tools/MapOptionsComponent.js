@@ -13,9 +13,8 @@ import {
 } from '@material-ui/core';
 
 import FilterIcon from '@material-ui/icons/FilterList';
-import LayersIcon from '@material-ui/icons/Layers';
+import SettingsIcon from '@material-ui/icons/Settings';
 import EditIcon from '@material-ui/icons/Edit';
-import Clear from '@material-ui/icons/Clear';
 
 import PropTypes from 'prop-types';
 
@@ -29,26 +28,13 @@ const styles = theme => ({
         borderTopLeftRadius: '5px',
         borderTopRightRadius: '5px',
     },
+    filterButton: {
+        marginLeft: 'auto',
+    },
     boxContent: {
         width: '100%',
         borderBottomLeftRadius: '5px',
         borderBottomRightRadius: '5px',
-    },
-    filterButton: {
-        marginLeft: 'auto',
-    },
-    drawerToolbar: {
-        ...theme.mixins.toolbar,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'flex-start',
-        height: 90,
-    },
-    drawerContent: {
-        width: '20vw',
-    },
-    drawerCloseButton: {
-        marginLeft: 'auto',
     },
     button: {
         width: '100%',
@@ -73,7 +59,7 @@ class MapOptions extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: 'layers',
+            activeOption: 'edit',
         };
     }
 
@@ -89,7 +75,8 @@ class MapOptions extends Component {
             title,
             classes,
             editOptionComponent,
-            layersOptionComponent,
+            settingsOptionComponent,
+            editTitle,
         } = this.props;
         const {
             activeOption,
@@ -109,13 +96,13 @@ class MapOptions extends Component {
                         {title}
                     </Typography>
 
-                    <Tooltip title={<FormattedMessage id="iaso.label.layers" defaultMessage="Layers" />}>
+                    <Tooltip title={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}>
                         <IconButton
                             className={classes.filterButton}
-                            color={activeOption === 'layers' ? 'primary' : 'inherit'}
-                            onClick={() => this.toggleOption('layers')}
+                            color={activeOption === 'settings' ? 'primary' : 'inherit'}
+                            onClick={() => this.toggleOption('settings')}
                         >
-                            <LayersIcon />
+                            <SettingsIcon />
                         </IconButton>
                     </Tooltip>
                     <Tooltip title={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}>
@@ -153,14 +140,43 @@ class MapOptions extends Component {
                             {
                                 activeOption === 'edit'
                                 && (
-                                    editOptionComponent
+                                    <Fragment>
+                                        <Box
+                                            px={2}
+                                            className={classes.innerDrawerToolbar}
+                                            component="div"
+                                        >
+                                            <Typography variant="h6" component="h6">
+                                                {
+                                                    editTitle !== '' && editTitle
+                                                }
+                                                {
+                                                    editTitle === '' && <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
+                                                }
+                                            </Typography>
+                                        </Box>
+                                        <Divider />
+                                        {editOptionComponent}
+                                    </Fragment>
                                 )
                             }
 
                             {
-                                activeOption === 'layers'
+                                activeOption === 'settings'
                                 && (
-                                    layersOptionComponent
+                                    <Fragment>
+                                        <Box
+                                            px={2}
+                                            className={classes.innerDrawerToolbar}
+                                            component="div"
+                                        >
+                                            <Typography variant="h6" component="h6">
+                                                <FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />
+                                            </Typography>
+                                        </Box>
+                                        <Divider />
+                                        {settingsOptionComponent}
+                                    </Fragment>
                                 )
                             }
 
@@ -170,25 +186,17 @@ class MapOptions extends Component {
                                     <Fragment>
                                         <Box
                                             px={2}
-                                            className={classes.drawerToolbar}
+                                            className={classes.innerDrawerToolbar}
                                             component="div"
                                         >
                                             <Typography variant="h6" component="h6">
                                                 <FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />
                                             </Typography>
-                                            <IconButton
-                                                className={classes.drawerCloseButton}
-                                                color="inherit"
-                                                aria-label="Menu"
-                                                onClick={() => this.toggleOption('filters')}
-                                            >
-                                                <Clear />
-                                            </IconButton>
                                         </Box>
                                         <Divider />
                                         <Box
                                             p={2}
-                                            className={classes.drawerContent}
+                                            className={classes.innerDrawerContent}
                                             component="div"
                                         >
                                             CONTENT
@@ -206,14 +214,16 @@ class MapOptions extends Component {
 
 MapOptions.defaultProps = {
     children: null,
+    editTitle: '',
 };
 
 MapOptions.propTypes = {
     classes: PropTypes.object.isRequired,
     title: PropTypes.string.isRequired,
+    editTitle: PropTypes.string,
     children: PropTypes.any,
     editOptionComponent: PropTypes.object.isRequired,
-    layersOptionComponent: PropTypes.object.isRequired,
+    settingsOptionComponent: PropTypes.object.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

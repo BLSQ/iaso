@@ -4,11 +4,14 @@ import {
     Map, TileLayer,
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
 
 import {
     withStyles,
+    Box,
+    Typography,
     Grid,
+    Divider,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -98,7 +101,7 @@ class InstancesMap extends Component {
         }
         return (
             <Grid container spacing={4}>
-                <Grid item xs={8} md={9} lg={10} className={classes.mapContainer}>
+                <Grid item xs={8} md={9} lg={9} className={classes.mapContainer}>
                     <Map
                         ref={(ref) => {
                             this.map = ref;
@@ -139,8 +142,19 @@ class InstancesMap extends Component {
                         }
                     </Map>
                 </Grid>
-                <Grid item xs={4} md={3} lg={2}>
+                <Grid item xs={4} md={3} lg={3}>
+                    <Box
+                        px={2}
+                        className={classes.innerDrawerToolbar}
+                        component="div"
+                    >
+                        <Typography variant="h6" component="h6">
+                            <FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />
+                        </Typography>
+                    </Box>
+                    <Divider />
                     <TileSwitch />
+                    <Divider />
                     <ClusterSwitch />
                 </Grid>
             </Grid>

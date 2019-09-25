@@ -1,7 +1,10 @@
 import mapStyles from './map';
+import innerDrawer from './innerDrawer';
+
 
 const commonStyles = theme => ({
     ...mapStyles(theme),
+    ...innerDrawer(theme),
     paperContainer: {
         padding: theme.spacing(4),
         margin: theme.spacing(4),

@@ -3,19 +3,20 @@ import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
 import {
-    withStyles, Button,
+    withStyles, Button, Box,
 } from '@material-ui/core';
 
 import Edit from '@material-ui/icons/Edit';
 import AddLocation from '@material-ui/icons/AddLocation';
-import FormatShapes from '@material-ui/icons/FormatShapes';
 import Check from '@material-ui/icons/Check';
 import DeleteIcon from '@material-ui/icons/Delete';
 import Cancel from '@material-ui/icons/Cancel';
 
+
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
+import shapeSvg from '../../../images/white-shape.svg';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -47,18 +48,23 @@ class EditOrgUnitOptionComponent extends Component {
 
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         return (
-            <Fragment>
+            <Box
+                px={2}
+                component="div"
+                className={classes.marginTop}
+            >
                 {
                     !editEnabled && orgUnit.geo_json
                     && (
                         <Button
+                            size="small"
                             variant="contained"
                             onClick={() => toggleEditShape()}
                             className={classes.button}
                             color="primary"
                         >
                             <Edit className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
+                            <FormattedMessage id="iaso.map.shape.edit" defaultMessage="Edit shape" />
                         </Button>
                     )
                 }
@@ -66,6 +72,7 @@ class EditOrgUnitOptionComponent extends Component {
                     (editEnabled && orgUnit.geo_json)
                     && (
                         <Button
+                            size="small"
                             variant="contained"
                             onClick={() => {
                                 toggleEditShape();
@@ -83,6 +90,7 @@ class EditOrgUnitOptionComponent extends Component {
                     (editEnabled && orgUnit.geo_json)
                     && (
                         <Button
+                            size="small"
                             variant="contained"
                             className={classes.button}
                             onClick={() => {
@@ -101,13 +109,14 @@ class EditOrgUnitOptionComponent extends Component {
                     && !editEnabled
                     && (
                         <Button
+                            size="small"
                             variant="contained"
                             color="secondary"
                             className={classes.button}
                             onClick={() => onDelete()}
                         >
                             <DeleteIcon className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                            <FormattedMessage id="iaso.map.shape.delete" defaultMessage="Delete shape" />
                         </Button>
                     )
                 }
@@ -115,13 +124,14 @@ class EditOrgUnitOptionComponent extends Component {
                     hasMarker
                     && (
                         <Button
+                            size="small"
                             variant="contained"
                             color="secondary"
                             className={classes.button}
                             onClick={() => onChangeLocation({ lat: null, lng: null })}
                         >
                             <DeleteIcon className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                            <FormattedMessage id="iaso.map.marker.delete" defaultMessage="Delete marker" />
                         </Button>
                     )
                 }
@@ -131,15 +141,17 @@ class EditOrgUnitOptionComponent extends Component {
                     && (
                         <Fragment>
                             <Button
+                                size="small"
                                 variant="contained"
                                 onClick={() => addShape()}
                                 className={classes.button}
                                 color="primary"
                             >
-                                <FormatShapes className={classes.buttonIcon} />
+                                <img src={shapeSvg} className={classes.buttonIcon} alt="" />
                                 <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
                             </Button>
                             <Button
+                                size="small"
                                 variant="contained"
                                 onClick={() => addMarker()}
                                 className={classes.button}
@@ -151,7 +163,7 @@ class EditOrgUnitOptionComponent extends Component {
                         </Fragment>
                     )
                 }
-            </Fragment>
+            </Box>
         );
     }
 }

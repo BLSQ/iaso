@@ -26,7 +26,8 @@ import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { customMarker, customZoomBar } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
-import MapFilters from './tools/MapFiltersComponent';
+import MapOptions from './tools/MapOptionsComponent';
+import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -232,31 +233,46 @@ class OrgUnitMapComponent extends Component {
         }
         return (
             <Grid container spacing={0}>
-                <MapFilters title={formatMessage({
-                    defaultMessage: 'Location informations',
-                    id: 'iaso.orgUnits.infosLocation',
-                })}
+                <MapOptions
+                    editOptionComponent={(
+                        <EditOrgUnitOptionComponent
+                            orgUnit={orgUnit}
+                            editEnabled={editEnabled}
+                            onChange={() => this.onChange()}
+                            onDelete={() => this.props.onChange(null)}
+                            toggleEditShape={() => this.toggleEditShape()}
+                            addMarker={() => addMarker()}
+                            addShape={() => this.addShape()}
+                            onChangeLocation={latLong => this.props.onChangeLocation(latLong)}
+                            mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
+                        />
+                    )}
+                    layersOptionComponent={(
+                        <TileSwitch />
+                    )}
+                    title={formatMessage({
+                        defaultMessage: 'Location informations',
+                        id: 'iaso.orgUnits.infosLocation',
+                    })}
                 >
-                    <Grid container spacing={4}>
-                        <Grid item xs={8} md={9} lg={10} className={classes.mapContainerNoDraw}>
-                            <Map
-                                scrollWheelZoom={false}
-                                maxZoom={currentTile.maxZoom}
-                                style={{ height: '100%' }}
-                                ref={(ref) => {
-                                    this.map = ref;
-                                }}
-                                center={[0, 0]}
-                                boundsOptions={{ padding }}
-                                zoom={zoom}
-                                zoomControl={false}
-                            >
-                                <TileLayer
-                                    attribution={currentTile.attribution ? currentTile.attribution : ''}
-                                    url={currentTile.url}
-                                />
-                                {
-                                    hasMarker
+                    <Map
+                        scrollWheelZoom={false}
+                        maxZoom={currentTile.maxZoom}
+                        style={{ height: '100%' }}
+                        ref={(ref) => {
+                            this.map = ref;
+                        }}
+                        center={[0, 0]}
+                        boundsOptions={{ padding }}
+                        zoom={zoom}
+                        zoomControl={false}
+                    >
+                        <TileLayer
+                            attribution={currentTile.attribution ? currentTile.attribution : ''}
+                            url={currentTile.url}
+                        />
+                        {
+                            hasMarker
                             && (
                                 <MarkerComponent
                                     item={orgUnit}
@@ -264,117 +280,9 @@ class OrgUnitMapComponent extends Component {
                                     onDragend={newMarker => this.props.onChangeLocation(newMarker.getLatLng())}
                                 />
                             )
-                                }
-                            </Map>
-                        </Grid>
-                        <Grid item xs={4} md={3} lg={2}>
-                            <TileSwitch />
-                            {
-                                !editEnabled && orgUnit.geo_json
-                        && (
-                            <Button
-                                variant="contained"
-                                onClick={() => this.toggleEditShape()}
-                                className={classes.button}
-                                color="primary"
-                            >
-                                <Edit className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
-                            </Button>
-                        )
-                            }
-                            {
-                                (editEnabled && orgUnit.geo_json)
-                        && (
-                            <Button
-                                variant="contained"
-                                onClick={() => {
-                                    this.toggleEditShape();
-                                    this.onChange();
-                                }}
-                                className={classes.button}
-                                color="primary"
-                            >
-                                <Check className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.validate" defaultMessage="Validate" />
-                            </Button>
-                        )
-                            }
-                            {
-                                (editEnabled && orgUnit.geo_json)
-                        && (
-                            <Button
-                                variant="contained"
-                                className={classes.button}
-                                onClick={() => {
-                                    this.toggleEditShape();
-                                    this.mapGeoJson(orgUnit.geo_json);
-                                }}
-                            >
-                                <Cancel className={classes.buttonIcon} fontSize="small" />
-                                <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
-                            </Button>
-                        )
-                            }
-
-                            {
-                                orgUnit.geo_json
-                        && !editEnabled
-                        && (
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                className={classes.button}
-                                onClick={() => this.props.onChange(null)}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
-                            </Button>
-                        )
-                            }
-                            {
-                                hasMarker
-                        && (
-                            <Button
-                                variant="contained"
-                                color="secondary"
-                                className={classes.button}
-                                onClick={() => this.props.onChangeLocation({ lat: null, lng: null })}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
-                            </Button>
-                        )
-                            }
-                            {
-                                !orgUnit.geo_json
-                        && !hasMarker
-                        && (
-                            <Fragment>
-                                <Button
-                                    variant="contained"
-                                    onClick={() => this.addShape()}
-                                    className={classes.button}
-                                    color="primary"
-                                >
-                                    <FormatShapes className={classes.buttonIcon} />
-                                    <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
-                                </Button>
-                                <Button
-                                    variant="contained"
-                                    onClick={() => addMarker()}
-                                    className={classes.button}
-                                    color="primary"
-                                >
-                                    <AddLocation className={classes.buttonIcon} />
-                                    <FormattedMessage id="iaso.map.shape.addLocation" defaultMessage="Add a location" />
-                                </Button>
-                            </Fragment>
-                        )
-                            }
-                        </Grid>
-                    </Grid>
-                </MapFilters>
+                        }
+                    </Map>
+                </MapOptions>
             </Grid>
         );
     }

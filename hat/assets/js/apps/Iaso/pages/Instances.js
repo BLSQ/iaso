@@ -262,7 +262,7 @@ class Instances extends Component {
                             tab === 'list' && (
                                 <CustomTableComponent
                                     isSortable
-                                    pageSize={50}
+                                    pageSize={20}
                                     showPagination
                                     columns={this.state.tableColumns}
                                     defaultSorted={[{ id: 'updated_at', desc: false }]}

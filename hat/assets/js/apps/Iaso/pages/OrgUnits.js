@@ -167,37 +167,39 @@ class OrgUnits extends Component {
                     />
                     {
                         tableUrl && (
-                            <div className={classes.reactTable}>
-                                <CustomTableComponent
-                                    isSortable
-                                    pageSize={50}
-                                    showPagination
-                                    endPointUrl={tableUrl}
-                                    columns={tableColumns}
-                                    defaultSorted={[{ id: 'id', desc: false }]}
-                                    params={params}
-                                    defaultPath={baseUrl}
-                                    dataKey="orgunits"
-                                    canSelect={false}
-                                    multiSort
-                                    onDataStartLoaded={() => dispatch(this.props.setOrgUnitsListFetching(true))}
-                                    onDataLoaded={(orgUnitsList, count, pages) => {
-                                        dispatch(this.props.setOrgUnitsListFetching(false));
-                                        this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages);
-                                    }}
-                                    reduxPage={reduxPage}
-                                />
-                            </div>
+                            <Fragment>
+                                <div className={classes.reactTable}>
+                                    <CustomTableComponent
+                                        isSortable
+                                        pageSize={50}
+                                        showPagination
+                                        endPointUrl={tableUrl}
+                                        columns={tableColumns}
+                                        defaultSorted={[{ id: 'id', desc: false }]}
+                                        params={params}
+                                        defaultPath={baseUrl}
+                                        dataKey="orgunits"
+                                        canSelect={false}
+                                        multiSort
+                                        onDataStartLoaded={() => dispatch(this.props.setOrgUnitsListFetching(true))}
+                                        onDataLoaded={(orgUnitsList, count, pages) => {
+                                            dispatch(this.props.setOrgUnitsListFetching(false));
+                                            this.props.setOrgUnits(orgUnitsList, this.props.params, count, pages);
+                                        }}
+                                        reduxPage={reduxPage}
+                                    />
+                                </div>
+                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+                                    <Grid xs={12} item className={classes.textAlignRight}>
+                                        <DownloadButtonsComponent
+                                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </Fragment>
                         )
                     }
-                    <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-                        <Grid xs={12} item className={classes.textAlignRight}>
-                            <DownloadButtonsComponent
-                                csvUrl={this.getEndpointUrl(true, 'csv')}
-                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                            />
-                        </Grid>
-                    </Grid>
                 </Paper>
             </Fragment>
         );

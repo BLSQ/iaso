@@ -85,7 +85,7 @@ class InstancePopupComponent extends Component {
             hasHero = currentInstance.files && currentInstance.files.length > 0;
         }
         let orgUnitTree = [];
-        if (currentInstance) {
+        if (currentInstance && currentInstance.org_unit) {
             orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
             orgUnitTree = orgUnitTree.reverse();
         }

@@ -233,7 +233,7 @@ class Instance(models.Model):
             f = self.form.location_field
 
         if self.json and f:
-            location = self.json[f]
+            location = self.json.get(f, None)
             if location:
                 latitude, longitude, altitude, accuracy = [
                     float(x) for x in location.split(" ")

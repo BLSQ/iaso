@@ -62,6 +62,15 @@ const commonStyles = theme => ({
     relativeContainer: {
         position: 'relative',
     },
+    svgIcon: {
+        width: 24,
+        heigth: 24,
+    },
+    svgChipIcon: {
+        width: 20,
+        heigth: 20,
+        padding: 4,
+    },
 });
 
 export default commonStyles;

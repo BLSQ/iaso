@@ -1,7 +1,5 @@
 import React, { Fragment, Component } from 'react';
 import { FormattedMessage } from 'react-intl';
-import { connect } from 'react-redux';
-
 import {
     withStyles, Button, Box, Divider,
 } from '@material-ui/core';
@@ -25,14 +23,14 @@ const styles = theme => ({
         width: '100%',
         marginBottom: theme.spacing(2),
     },
+    buttonTopMargin: {
+        width: '100%',
+        marginTop: theme.spacing(2),
+        marginBottom: theme.spacing(2),
+    },
 });
 
 class EditOrgUnitOptionComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {};
-    }
-
     render() {
         const {
             orgUnit,
@@ -59,7 +57,7 @@ class EditOrgUnitOptionComponent extends Component {
                         <Button
                             variant="contained"
                             onClick={() => toggleEditShape()}
-                            className={classes.button}
+                            className={classes.buttonTopMargin}
                             color="primary"
                         >
                             <Edit className={classes.buttonIcon} />
@@ -76,7 +74,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 toggleEditShape();
                                 onChange();
                             }}
-                            className={classes.button}
+                            className={classes.buttonTopMargin}
                             color="primary"
                         >
                             <Check className={classes.buttonIcon} />
@@ -150,11 +148,10 @@ class EditOrgUnitOptionComponent extends Component {
                                     id: 'iaso.label.longitude',
                                 }}
                             />
-                            <Divider className={classes.marginY} />
                             <Button
                                 variant="contained"
                                 color="secondary"
-                                className={classes.button}
+                                className={classes.buttonTopMargin}
                                 onClick={() => onChangeLocation({ lat: null, lng: null })}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
@@ -171,7 +168,7 @@ class EditOrgUnitOptionComponent extends Component {
                             <Button
                                 variant="contained"
                                 onClick={() => addShape()}
-                                className={classes.button}
+                                className={classes.buttonTopMargin}
                                 color="primary"
                             >
                                 <img src={shapeSvg} className={classes.buttonIcon} alt="" />
@@ -207,10 +204,4 @@ EditOrgUnitOptionComponent.propTypes = {
     mapGeoJson: PropTypes.func.isRequired,
 };
 
-const MapDispatchToProps = dispatch => ({
-    action: () => dispatch(),
-});
-
-export default withStyles(styles)(
-    connect(() => ({}), MapDispatchToProps)(EditOrgUnitOptionComponent),
-);
+export default withStyles(styles)(EditOrgUnitOptionComponent);

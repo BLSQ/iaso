@@ -20,6 +20,7 @@ import { customMarker, customZoomBar } from '../../utils/mapUtils';
 import TileSwitch from './tools/TileSwitchComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
+import FilterOrgunitOptionComponent from './tools/FilterOrgunitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -195,6 +196,7 @@ class OrgUnitMapComponent extends Component {
             intl: {
                 formatMessage,
             },
+            orgUnitTypes,
         } = this.props;
         const { editEnabled } = this.state;
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -205,7 +207,12 @@ class OrgUnitMapComponent extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     filtersOptionComponent={(
-                        <div>FILTERS</div>
+                        orgUnitTypes.length > 0 ? (
+                            <FilterOrgunitOptionComponent
+                                orgUnitTypes={orgUnitTypes}
+                                currentOrgUnit={orgUnit}
+                            />
+                        ) : null
                     )}
                     editOptionComponent={(
                         <EditOrgUnitOptionComponent
@@ -264,6 +271,9 @@ class OrgUnitMapComponent extends Component {
         );
     }
 }
+OrgUnitMapComponent.defaultProps = {
+    orgUnitTypes: [],
+};
 
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -272,6 +282,7 @@ OrgUnitMapComponent.propTypes = {
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
+    orgUnitTypes: PropTypes.array,
 };
 
 const MapStateToProps = state => ({

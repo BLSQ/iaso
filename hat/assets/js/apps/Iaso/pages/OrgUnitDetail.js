@@ -289,6 +289,7 @@ class OrgUnitDetail extends Component {
                                     {
                                         tab === 'map' && (
                                             <OrgUnitMap
+                                                orgUnitTypes={orgUnitTypes}
                                                 orgUnit={currentOrgUnit}
                                                 onChangeLocation={(location) => {
                                                     this.handleChangeLocation(location);

@@ -12,16 +12,19 @@ import { withStyles, IconButton, ListItemIcon } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
-import EditLocation from '@material-ui/icons/EditLocation';
 
 import PropTypes from 'prop-types';
 
 import logoUrl from '../../images/iaso-logo.svg';
+import orgUnitIconUrl from '../../images/grey-pentagon.svg';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import SIDEBAR_WIDTH from '../../constants/uiConstants';
 
+import commonStyles from '../../styles/common';
+
 const styles = theme => ({
+    ...commonStyles(theme),
     logo: {
         height: 35,
         width: 'auto',
@@ -40,6 +43,9 @@ const styles = theme => ({
     },
     list: {
         width: SIDEBAR_WIDTH,
+    },
+    listItemIcon: {
+        minWidth: 35,
     },
 });
 
@@ -82,7 +88,7 @@ class SidebarMenu extends PureComponent {
                 <Divider />
                 <List className={classes.list}>
                     <ListItem button onClick={() => this.onClick('forms')}>
-                        <ListItemIcon>
+                        <ListItemIcon className={classes.listItemIcon}>
                             <DataSourceIcon />
                         </ListItemIcon>
                         <ListItemText primary={formatMessage({
@@ -92,8 +98,8 @@ class SidebarMenu extends PureComponent {
                         />
                     </ListItem>
                     <ListItem button onClick={() => this.onClick('orgunits')}>
-                        <ListItemIcon>
-                            <EditLocation />
+                        <ListItemIcon className={classes.listItemIcon}>
+                            <img src={orgUnitIconUrl} className={classes.svgIcon} alt="org unit" />
                         </ListItemIcon>
                         <ListItemText primary={formatMessage({
                             defaultMessage: 'Org units',

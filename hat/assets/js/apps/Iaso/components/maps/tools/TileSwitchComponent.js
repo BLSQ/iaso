@@ -85,7 +85,7 @@ function TileSwitchComponent(props) {
                     {formatMessage(MESSAGES.title)}
                 </Typography>
             </Box>
-            <Divider />
+            <Divider light />
             <Box
                 py={2}
                 component="div"

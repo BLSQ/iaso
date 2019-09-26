@@ -44,7 +44,7 @@ const svgString = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" w
 
 export const customMarkerOptions = {
     className: 'marker-custom primary',
-    html: `<span>
+    html: `<span class="marker_bg"></span><span>
         ${L.Util.template(svgString)}
         <img src="${STATIC_URL}images/marker-shadow.png" />
     </span>`,

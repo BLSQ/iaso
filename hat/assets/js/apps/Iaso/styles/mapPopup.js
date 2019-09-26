@@ -18,6 +18,11 @@ const mapPopupStyles = theme => ({
             borderRadius: '20px',
             height: '18px',
         },
+        '& a.leaflet-popup-close-button:hover': {
+            color: theme.palette.primary.main,
+            backgroundColor: 'white',
+            border: `1px solid ${theme.palette.primary.main}`,
+        },
     },
     popupListItemLabel: {
         textAlign: 'right',

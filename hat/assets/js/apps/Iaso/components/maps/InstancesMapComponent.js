@@ -1,15 +1,12 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
     Map, TileLayer,
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
+import { injectIntl, intlShape } from 'react-intl';
 
 import {
-    withStyles,
-    Box,
-    Typography,
     Grid,
     Divider,
 } from '@material-ui/core';
@@ -26,13 +23,9 @@ import ClusterSwitch from './tools/ClusterSwitchComponent';
 import MarkersListComponent from './markers/MarkersListComponent';
 import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 import InstancePopupComponent from './popups/InstancePopupComponent';
+import InnerDrawer from '../nav/InnerDrawerComponent';
 
 import { fetchInstanceDetail } from '../../utils/requests';
-import commonStyles from '../../styles/common';
-
-const styles = theme => ({
-    ...commonStyles(theme),
-});
 
 const boundsOptions = { padding: [50, 50] };
 
@@ -73,7 +66,6 @@ class InstancesMap extends Component {
     render() {
         const {
             instances,
-            classes,
             currentTile,
             isClusterActive,
             intl: {
@@ -100,8 +92,17 @@ class InstancesMap extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         return (
-            <Grid container spacing={4}>
-                <Grid item xs={8} md={9} lg={9} className={classes.mapContainer}>
+            <Grid container spacing={0}>
+                <InnerDrawer
+                    settingsOptionComponent={(
+                        <Fragment>
+                            <Divider />
+                            <TileSwitch />
+                            <Divider />
+                            <ClusterSwitch />
+                        </Fragment>
+                    )}
+                >
                     <Map
                         ref={(ref) => {
                             this.map = ref;
@@ -141,22 +142,7 @@ class InstancesMap extends Component {
                             )
                         }
                     </Map>
-                </Grid>
-                <Grid item xs={4} md={3} lg={3}>
-                    <Box
-                        px={2}
-                        className={classes.innerDrawerToolbar}
-                        component="div"
-                    >
-                        <Typography variant="h6" component="h6">
-                            <FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />
-                        </Typography>
-                    </Box>
-                    <Divider />
-                    <TileSwitch />
-                    <Divider />
-                    <ClusterSwitch />
-                </Grid>
+                </InnerDrawer>
             </Grid>
         );
     }
@@ -186,4 +172,4 @@ const MapDispatchToProps = dispatch => ({
 });
 
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstancesMap)));
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstancesMap));

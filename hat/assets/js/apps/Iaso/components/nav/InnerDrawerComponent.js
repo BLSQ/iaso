@@ -18,7 +18,7 @@ import EditIcon from '@material-ui/icons/Edit';
 
 import PropTypes from 'prop-types';
 
-import commonStyles from '../../../styles/common';
+import commonStyles from '../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -40,26 +40,18 @@ const styles = theme => ({
         width: '100%',
         marginBottom: theme.spacing(2),
     },
-    mapContainerNoDraw: {
+    mapContainer: {
         ...commonStyles(theme).mapContainer,
         marginBottom: 0,
-        '& .marker-cluster': {
-            backgroundColor: `rgba(${theme.palette.primary.main}, 0.6)`,
-        },
-        '& .marker-cluster.primary > div': {
-            backgroundColor: theme.palette.primary.main,
-        },
-        '& .leaflet-draw.leaflet-control': {
-            display: 'none',
-        },
+        overflow: 'hidden',
     },
 });
 
-class MapOptions extends Component {
+class InnerDrawer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: 'edit',
+            activeOption: 'settings',
         };
     }
 
@@ -76,6 +68,7 @@ class MapOptions extends Component {
             classes,
             editOptionComponent,
             settingsOptionComponent,
+            filtersOptionComponent,
             editTitle,
         } = this.props;
         const {
@@ -83,56 +76,69 @@ class MapOptions extends Component {
         } = this.state;
         return (
             <Fragment>
-                <Box
-                    px={2}
-                    display="flex"
-                    alignItems="center"
-                    className={classes.box}
-                    component="div"
-                    border={1}
-                    borderColor="grey.300"
-                >
-                    <Typography variant="h6" component="h6" color="primary">
-                        {title}
-                    </Typography>
+                {
+                    (editOptionComponent || filtersOptionComponent) && (
+                        <Box
+                            px={2}
+                            display="flex"
+                            alignItems="center"
+                            className={classes.box}
+                            component="div"
+                            border={1}
+                            borderColor="grey.300"
+                        >
+                            <Typography variant="h6" component="h6" color="primary">
+                                {title}
+                            </Typography>
 
-                    <Tooltip title={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}>
-                        <IconButton
-                            className={classes.filterButton}
-                            color={activeOption === 'settings' ? 'primary' : 'inherit'}
-                            onClick={() => this.toggleOption('settings')}
-                        >
-                            <SettingsIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}>
-                        <IconButton
-                            color={activeOption === 'edit' ? 'primary' : 'inherit'}
-                            onClick={() => this.toggleOption('edit')}
-                        >
-                            <EditIcon />
-                        </IconButton>
-                    </Tooltip>
-                    <Tooltip title={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}>
-                        <IconButton
-                            color={activeOption === 'filters' ? 'primary' : 'inherit'}
-                            onClick={() => this.toggleOption('filters')}
-                        >
-                            <FilterIcon />
-                        </IconButton>
-                    </Tooltip>
-                </Box>
+                            <Tooltip title={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}>
+                                <IconButton
+                                    className={classes.filterButton}
+                                    color={activeOption === 'settings' ? 'primary' : 'inherit'}
+                                    onClick={() => this.toggleOption('settings')}
+                                >
+                                    <SettingsIcon />
+                                </IconButton>
+                            </Tooltip>
+                            {
+                                editOptionComponent && (
+                                    <Tooltip title={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}>
+                                        <IconButton
+                                            color={activeOption === 'edit' ? 'primary' : 'inherit'}
+                                            onClick={() => this.toggleOption('edit')}
+                                        >
+                                            <EditIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )
+                            }
+                            {
+                                filtersOptionComponent && (
+                                    <Tooltip title={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}>
+                                        <IconButton
+                                            color={activeOption === 'filters' ? 'primary' : 'inherit'}
+                                            onClick={() => this.toggleOption('filters')}
+                                        >
+                                            <FilterIcon />
+                                        </IconButton>
+                                    </Tooltip>
+                                )
+                            }
+                        </Box>
+                    )
+                }
                 <Box
-                    p={2}
+                    p={0}
                     className={classes.boxContent}
                     component="div"
                     border={1}
-                    borderTop={0}
+                    borderTop={editOptionComponent || filtersOptionComponent ? 0 : 1}
                     borderColor="grey.300"
+                    borderRadius={editOptionComponent || filtersOptionComponent ? 0 : 5}
                 >
 
-                    <Grid container spacing={2}>
-                        <Grid item xs={7} md={8} lg={9} className={classes.mapContainerNoDraw}>
+                    <Grid container spacing={0}>
+                        <Grid item xs={7} md={8} lg={9} className={classes.mapContainer}>
                             {children}
                         </Grid>
                         <Grid item xs={5} md={4} lg={3}>
@@ -194,13 +200,7 @@ class MapOptions extends Component {
                                             </Typography>
                                         </Box>
                                         <Divider />
-                                        <Box
-                                            p={2}
-                                            className={classes.innerDrawerContent}
-                                            component="div"
-                                        >
-                                            CONTENT
-                                        </Box>
+                                        {filtersOptionComponent}
                                     </Fragment>
                                 )
                             }
@@ -212,18 +212,22 @@ class MapOptions extends Component {
     }
 }
 
-MapOptions.defaultProps = {
+InnerDrawer.defaultProps = {
     children: null,
     editTitle: '',
+    title: '',
+    editOptionComponent: null,
+    filtersOptionComponent: null,
 };
 
-MapOptions.propTypes = {
+InnerDrawer.propTypes = {
     classes: PropTypes.object.isRequired,
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     editTitle: PropTypes.string,
     children: PropTypes.any,
-    editOptionComponent: PropTypes.object.isRequired,
     settingsOptionComponent: PropTypes.object.isRequired,
+    editOptionComponent: PropTypes.object,
+    filtersOptionComponent: PropTypes.object,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -231,5 +235,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(() => ({}), MapDispatchToProps)(MapOptions),
+    connect(() => ({}), MapDispatchToProps)(InnerDrawer),
 );

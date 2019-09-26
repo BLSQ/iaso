@@ -34,6 +34,10 @@ const styles = theme => ({
         textAlign: 'center',
         fontSize: 15,
     },
+    listItem: {
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
+    },
     item: {
         fontSize: 14,
     },
@@ -83,8 +87,7 @@ function TileSwitchComponent(props) {
             </Box>
             <Divider />
             <Box
-                p={2}
-                className={classes.innerDrawerContent}
+                py={2}
                 component="div"
             >
                 <List className={classes.list}>
@@ -95,6 +98,7 @@ function TileSwitchComponent(props) {
                             return (
                                 <ListItem
                                     selected={isCurrentTile}
+                                    className={classes.listItem}
                                     key={key}
                                     button
                                     onClick={() => props.setCurrentTile(tile)}

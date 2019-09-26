@@ -40,7 +40,8 @@ const ClusterSwitchComponent = (props) => {
     } = props;
     return (
         <Box
-            p={2}
+            px={3}
+            py={2}
             className={classes.innerDrawerContent}
             component="div"
         >

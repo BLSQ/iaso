@@ -51,7 +51,7 @@ class EditOrgUnitOptionComponent extends Component {
             <Box
                 px={2}
                 component="div"
-                className={classes.marginTop}
+                className={classes.innerDrawerContent}
             >
                 {
                     !editEnabled && orgUnit.geo_json

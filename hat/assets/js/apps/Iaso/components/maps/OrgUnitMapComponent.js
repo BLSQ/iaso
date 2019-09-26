@@ -18,7 +18,7 @@ import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import { customMarker, customZoomBar } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
-import MapOptions from './tools/MapOptionsComponent';
+import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
 
@@ -203,7 +203,10 @@ class OrgUnitMapComponent extends Component {
         }
         return (
             <Grid container spacing={0}>
-                <MapOptions
+                <InnerDrawer
+                    filtersOptionComponent={(
+                        <div>FILTERS</div>
+                    )}
                     editOptionComponent={(
                         <EditOrgUnitOptionComponent
                             orgUnit={orgUnit}
@@ -256,7 +259,7 @@ class OrgUnitMapComponent extends Component {
                             )
                         }
                     </Map>
-                </MapOptions>
+                </InnerDrawer>
             </Grid>
         );
     }

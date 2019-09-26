@@ -17,6 +17,16 @@ const mapStyles = theme => ({
             height: '100%',
             width: '100%',
         },
+        '& .marker-custom.primary .marker_bg': {
+            position: 'absolute',
+            display: 'block',
+            height: '10px',
+            width: '10px',
+            borderRadius: '10px',
+            backgroundColor: 'white',
+            top: 8,
+            left: 8,
+        },
         '& .marker-custom.primary svg': {
             fill: theme.palette.primary.main,
             position: 'absolute',
@@ -37,6 +47,9 @@ const mapStyles = theme => ({
             left: -1,
             zIndex: -1,
             pointerEvents: 'none',
+        },
+        '& .leaflet-draw.leaflet-control': {
+            display: 'none',
         },
     },
 });

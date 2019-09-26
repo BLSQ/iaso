@@ -5,10 +5,12 @@ const innerDrawer = theme => ({
         alignItems: 'center',
         justifyContent: 'flex-start',
         height: 50,
+        paddingLeft: theme.spacing(3),
+        paddingRight: theme.spacing(3),
     },
     innerDrawerContent: {
         width: '100%',
-        padding: theme.spacing(1, 0, 0, 0),
+        padding: theme.spacing(1, 3, 0, 3),
     },
 });
 

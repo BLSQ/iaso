@@ -168,6 +168,69 @@ class OrgUnit(models.Model):
         }
 
 
+class MatchingAlgorithm(models.Model):
+    name = models.TextField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s" % (
+            self.org_unit_1,
+            self.org_unit_2,
+            self.algorithm,
+            self.similarity_score,
+        )
+
+
+class Link(models.Model):
+    destination = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="source_set",
+    )
+    source = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="destination_set",
+    )
+    validated = models.BooleanField(default=False)
+    validator = models.ForeignKey(User, on_delete=models.CASCADE)
+    validation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    similarity_score = models.SmallIntegerField(null=True)
+    algorithm = models.ForeignKey(MatchingAlgorithm, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - %s" % (
+            self.org_unit_1,
+            self.org_unit_2,
+            self.algorithm,
+            self.similarity_score,
+        )
+
+    def as_dict(self):
+        return {
+            "destination": self.destination.as_dict(),
+            "source": self.source.as_dict(),
+            "user": self.user.profile.as_short_dict(),
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "validated": self.validated,
+            "validator": self.validator,
+            "validation_date": self.validation_date,
+            "similarity_score": self.similarity_score,
+            "algorithm": self.algorithm,
+        }
+
+
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
     projects = models.ManyToManyField(Project, blank=True)

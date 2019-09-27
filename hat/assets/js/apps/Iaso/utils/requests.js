@@ -11,7 +11,18 @@ const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}
         throw error;
     });
 
-const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes/')
+const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) => getRequest(`/api/orgunits/?${params}`)
+    .then(res => ({
+        ...orgUnitType,
+        orgUnits: res.orgUnits,
+    }))
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
+        console.error('Error while fetching org unit list:', error);
+        throw error;
+    });
+
+const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
     .then(res => res.orgUnitTypes)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitTypesError')));
@@ -113,6 +124,7 @@ const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/instances
 
 export {
     fetchOrgUnitsTypes,
+    fetchSubOrgUnitsByType,
     fetchSourceTypes,
     fetchSources,
     fetchOrgUnitDetail,

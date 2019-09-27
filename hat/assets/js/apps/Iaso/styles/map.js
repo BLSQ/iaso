@@ -11,6 +11,9 @@ const mapStyles = theme => ({
             backgroundColor: theme.palette.primary.main,
             color: theme.palette.primary.contrastText,
         },
+        '& .marker-custom': {
+            zIndex: '500 !important',
+        },
         '& .marker-custom.primary span': {
             position: 'relative',
             display: 'block',
@@ -26,6 +29,27 @@ const mapStyles = theme => ({
             backgroundColor: 'white',
             top: 8,
             left: 8,
+        },
+        '& .marker-custom.color': {
+            zIndex: '300 !important',
+        },
+        '& .marker-custom.color > div': {
+            width: 40,
+            height: 40,
+            padding: 5,
+        },
+        '& .marker-custom.color > div > span': {
+            width: 30,
+            height: 30,
+            display: 'flex',
+            borderRadius: 30,
+            justifyContent: 'center',
+            alignItems: 'center',
+        },
+        '& .marker-custom.color .svg-icon': {
+            display: 'block',
+            height: 'auto',
+            width: 22,
         },
         '& .marker-custom.primary svg': {
             fill: theme.palette.primary.main,

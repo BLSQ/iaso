@@ -145,6 +145,7 @@
     "iaso.orgUnits.title": "Unités d’organisation (org units)",
     "iaso.orgUnits.type": "Type",
     "iaso.orgUnits.subOrgUnitsType": "Sous type d'unités d'organisation",
+    "iaso.orgUnits.noSubOrgUnitsType": "Aucun sous type d'unités d'organisation",
     "iaso.orgUnits.updated_at": "Modification",
     "iaso.orgUnits.editLocation": "Editer la localisation",
     "iaso.province": "Province",

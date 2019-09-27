@@ -71,6 +71,11 @@ const commonStyles = theme => ({
         heigth: 20,
         padding: 4,
     },
+    textError: {
+        color: theme.palette.error.main,
+        display: 'flex',
+        alignItems: 'center',
+    },
 });
 
 export default commonStyles;

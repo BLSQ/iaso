@@ -11,13 +11,19 @@ const MarkersListComponent = (props) => {
         items,
         onMarkerClick,
         PopupComponent,
+        customMarker,
     } = props;
 
     return items.map((i) => {
         if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
         return (
             <Fragment key={i.id}>
-                <MarkerComponent item={i} onClick={onMarkerClick} PopupComponent={PopupComponent} />
+                <MarkerComponent
+                    item={i}
+                    onClick={onMarkerClick}
+                    PopupComponent={PopupComponent}
+                    marker={customMarker}
+                />
             </Fragment>
         );
     });
@@ -25,12 +31,15 @@ const MarkersListComponent = (props) => {
 
 MarkersListComponent.defaultProps = {
     items: [],
+    PopupComponent: null,
+    customMarker: null,
 };
 
 MarkersListComponent.propTypes = {
     items: PropTypes.array,
     onMarkerClick: PropTypes.func.isRequired,
-    PopupComponent: PropTypes.object.isRequired,
+    PopupComponent: PropTypes.object,
+    customMarker: PropTypes.object,
 };
 
 export default MarkersListComponent;

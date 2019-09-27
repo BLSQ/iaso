@@ -15,11 +15,12 @@ const MarkerComponent = (props) => {
         PopupComponent,
         draggable,
         onDragend,
+        marker,
     } = props;
     return (
         <Marker
             draggable={draggable}
-            icon={customMarker}
+            icon={marker || customMarker}
             position={[item.latitude, item.longitude]}
             onClick={() => onClick(item)}
             onDragend={e => onDragend(e.target)}
@@ -36,6 +37,7 @@ MarkerComponent.defaultProps = {
     onDragend: () => null,
     PopupComponent: undefined,
     draggable: false,
+    marker: null,
 };
 
 MarkerComponent.propTypes = {
@@ -44,6 +46,7 @@ MarkerComponent.propTypes = {
     PopupComponent: PropTypes.object,
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
+    marker: PropTypes.object,
 };
 
 export default MarkerComponent;

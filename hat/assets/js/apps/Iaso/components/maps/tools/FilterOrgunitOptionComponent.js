@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import {
     withStyles,
@@ -10,9 +11,14 @@ import {
 
 import PropTypes from 'prop-types';
 
-import orgUnitIconUrl from '../../../images/white-pentagon.svg';
+import orgUnitIconUrl from '../../../../../../../dashboard/static/images/white-pentagon.svg';
 
 import commonStyles from '../../../styles/common';
+
+import { setCurrentSubOrgUnitTypesSelected } from '../../../redux/orgUnitsReducer';
+
+import { fetchSubOrgUnitsByType } from '../../../utils/requests';
+
 import InputComponent from '../../forms/InputComponent';
 
 const styles = theme => ({
@@ -55,23 +61,6 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList, orgUnitTypesSel
 };
 
 
-const getOrgUnits = (orgUnitTypes, subOrgUnits) => {
-    const orgUnitTypesSelected = [];
-    let orgUnitTypesList = [];
-    orgUnitTypes.forEach((ot) => {
-        if (subOrgUnits.find(o => o.id === ot.id)) {
-            orgUnitTypesSelected.push(ot);
-        }
-    });
-    orgUnitTypesSelected.forEach((ot) => {
-        orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
-    });
-    return {
-        orgUnitTypesSelected,
-        orgUnitTypesList,
-    };
-};
-
 class FilterOrgunitOptionComponent extends Component {
     constructor(props) {
         super(props);
@@ -83,7 +72,6 @@ class FilterOrgunitOptionComponent extends Component {
             });
         });
         this.state = {
-            orgUnitTypesSelected: [],
             orgUnitTypesList: [],
             orgUnitTypes: coloredOrgUnitTypes,
         };
@@ -97,15 +85,34 @@ class FilterOrgunitOptionComponent extends Component {
             orgUnitTypes,
         } = this.state;
 
-        this.setState(getOrgUnits(orgUnitTypes, currentOrgUnit.org_unit_type.sub_unit_types));
+        const orgUnitTypesSelected = [];
+        let orgUnitTypesList = [];
+        orgUnitTypes.forEach((ot) => {
+            if (currentOrgUnit.org_unit_type.sub_unit_types.find(o => o.id === ot.id)) {
+                orgUnitTypesSelected.push(ot);
+            }
+        });
+        orgUnitTypesSelected.forEach((ot) => {
+            orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
+        });
+        this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
+        this.setState({
+            orgUnitTypesList,
+        });
+    }
+
+    componentWillUnmount() {
+        this.props.setCurrentSubOrgUnitTypesSelected([]);
     }
 
     onOrgUnitSelect(orgUnitId) {
         const {
             orgUnitTypes,
-            orgUnitTypesSelected,
             orgUnitTypesList,
         } = this.state;
+        const {
+            orgUnitTypesSelected,
+        } = this.props;
         const newOrgUnitTypesSelected = [...orgUnitTypesSelected];
         const newOrgUnitTypesList = [];
         orgUnitTypesList.forEach((o) => {
@@ -115,8 +122,8 @@ class FilterOrgunitOptionComponent extends Component {
         });
         const newOrgUnit = orgUnitTypes.find(o => o.id === orgUnitId);
         newOrgUnitTypesSelected.push(newOrgUnit);
+        this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({
-            orgUnitTypesSelected: newOrgUnitTypesSelected,
             orgUnitTypesList: newOrgUnitTypesList,
         });
     }
@@ -124,9 +131,11 @@ class FilterOrgunitOptionComponent extends Component {
     onDeleteOrgUnit(orgUnitId) {
         const {
             orgUnitTypes,
-            orgUnitTypesSelected,
             orgUnitTypesList,
         } = this.state;
+        const {
+            orgUnitTypesSelected,
+        } = this.props;
         const newOrgUnitTypesSelected = [];
         const newOrgUnitTypesList = [...orgUnitTypesList];
         orgUnitTypesSelected.forEach((o) => {
@@ -136,9 +145,36 @@ class FilterOrgunitOptionComponent extends Component {
         });
         const deletedOrgUnit = orgUnitTypes.find(o => o.id === orgUnitId);
         newOrgUnitTypesList.push(deletedOrgUnit);
+        this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({
-            orgUnitTypesSelected: newOrgUnitTypesSelected,
             orgUnitTypesList: newOrgUnitTypesList,
+        });
+    }
+
+    updateOrgUnitTypesSelected(orgUnitTypesSelected) {
+        const {
+            dispatch,
+            currentOrgUnit,
+        } = this.props;
+        const promisesArray = [];
+        const oldOrgUnitsTypes = [];
+        orgUnitTypesSelected.forEach((ot) => {
+            if (!ot.orgUnits) {
+                promisesArray.push(
+                    fetchSubOrgUnitsByType(
+                        dispatch,
+                        `&orgUnitParentId=${currentOrgUnit.id}&withLocation=true&orgUnitTypeId=${ot.id}`,
+                        ot,
+                    ),
+                );
+            } else {
+                oldOrgUnitsTypes.push(ot);
+            }
+        });
+
+        Promise.all(promisesArray).then((orgUnits) => {
+            const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
+            this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData);
         });
     }
 
@@ -146,75 +182,78 @@ class FilterOrgunitOptionComponent extends Component {
         const {
             currentOrgUnit,
             classes,
+            orgUnitTypesSelected,
         } = this.props;
         const {
-            orgUnitTypesSelected,
             orgUnitTypesList,
         } = this.state;
         return (
             <Fragment>
-                {
-                    currentOrgUnit.org_unit_type.sub_unit_types.length > 0 && (
-                        <Fragment>
-                            <Box
-                                px={2}
-                                className={classes.innerDrawerToolbar}
-                                component="div"
-                            >
-                                <Typography variant="subtitle1">
-                                    <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
-                                </Typography>
-                            </Box>
-                            <Divider light />
-                            <Box
-                                px={4}
-                                py={2}
-                                component="div"
-                            >
-                                {
-                                    orgUnitTypesSelected.length > 0 && (
-                                        orgUnitTypesSelected.map((o, i) => (
-                                            <Chip
-                                                key={o.id}
-                                                icon={<img src={orgUnitIconUrl} className={classes.svgChipIcon} alt="org unit" />}
-                                                label={o.short_name}
-                                                clickable
-                                                className={classes.chip}
-                                                onDelete={() => this.onDeleteOrgUnit(o.id)}
-                                                style={{
-                                                    backgroundColor: o.color,
-                                                    color: 'white',
-                                                }}
-                                            />
-                                        ))
-                                    )
-                                }
-                                {
+                <Box
+                    px={2}
+                    className={classes.innerDrawerToolbar}
+                    component="div"
+                >
+                    <Typography variant="subtitle1">
+                        <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
+                        :
+                    </Typography>
+                </Box>
+                <Divider light />
+                <Box
+                    px={4}
+                    py={2}
+                    component="div"
+                >
+                    {
+                        orgUnitTypesSelected.length > 0 && (
+                            orgUnitTypesSelected.map(o => (
+                                <Chip
+                                    key={o.id}
+                                    icon={<img src={orgUnitIconUrl} className={classes.svgChipIcon} alt="org unit" />}
+                                    label={o.short_name}
+                                    clickable
+                                    className={classes.chip}
+                                    onDelete={() => this.onDeleteOrgUnit(o.id)}
+                                    style={{
+                                        backgroundColor: o.color,
+                                        color: 'white',
+                                    }}
+                                />
+                            ))
+                        )
+                    }
+                    {
 
-                                    orgUnitTypesList.length > 0 && (
-                                        <InputComponent
-                                            keyValue="org_unit_type_id"
-                                            onChange={(key, orgUnitTypeId) => this.onOrgUnitSelect(orgUnitTypeId)}
-                                            value={null}
-                                            type="select"
-                                            options={
-                                                orgUnitTypesList.map(t => ({
-                                                    label: t.name,
-                                                    value: t.id,
-                                                }))
-                                            }
-                                            label={{
-                                                id: 'iaso.orgUnits.addOrgUnitType',
-                                                defaultMessage: 'Add org unit type',
-                                            }}
-                                        />
-                                    )
+                        orgUnitTypesList.length > 0 && (
+                            <InputComponent
+                                keyValue="org_unit_type_id"
+                                onChange={(key, orgUnitTypeId) => this.onOrgUnitSelect(orgUnitTypeId)}
+                                value={null}
+                                type="select"
+                                options={
+                                    orgUnitTypesList.map(t => ({
+                                        label: t.name,
+                                        value: t.id,
+                                    }))
                                 }
-                            </Box>
-                            <Divider />
-                        </Fragment>
-                    )
-                }
+                                label={{
+                                    id: 'iaso.orgUnits.addOrgUnitType',
+                                    defaultMessage: 'Add org unit type',
+                                }}
+                            />
+                        )
+                    }
+                    {
+                        orgUnitTypesList.length === 0
+                        && orgUnitTypesSelected.length === 0 && (
+                            <Typography variant="body1" className={classes.textError}>
+                                <FormattedMessage id="iaso.orgUnits.noSubOrgUnitsType" defaultMessage="No sub org units types" />
+                            </Typography>
+                        )
+                    }
+                </Box>
+                <Divider />
             </Fragment>
         );
     }
@@ -228,6 +267,19 @@ FilterOrgunitOptionComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array,
     currentOrgUnit: PropTypes.object.isRequired,
+    orgUnitTypesSelected: PropTypes.array.isRequired,
+    setCurrentSubOrgUnitTypesSelected: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(FilterOrgunitOptionComponent);
+const MapStateToProps = state => ({
+    currentTile: state.map.currentTile,
+    orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
+});
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    setCurrentSubOrgUnitTypesSelected: orgUnitTypesSelected => dispatch(setCurrentSubOrgUnitTypesSelected(orgUnitTypesSelected)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(FilterOrgunitOptionComponent));

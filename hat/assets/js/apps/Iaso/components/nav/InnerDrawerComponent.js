@@ -51,7 +51,7 @@ class InnerDrawer extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            activeOption: 'settings',
+            activeOption: props.filtersOptionComponent ? 'filters' : 'settings',
         };
     }
 
@@ -187,9 +187,9 @@ class InnerDrawer extends Component {
                             }
 
                             {
-                                activeOption === 'filters'
+                                filtersOptionComponent
                                 && (
-                                    <Fragment>
+                                    <div className={activeOption !== 'filters' ? 'hidden-opacity' : ''}>
                                         <Box
                                             px={2}
                                             className={classes.innerDrawerToolbar}
@@ -201,7 +201,7 @@ class InnerDrawer extends Component {
                                         </Box>
                                         <Divider />
                                         {filtersOptionComponent}
-                                    </Fragment>
+                                    </div>
                                 )
                             }
                         </Grid>

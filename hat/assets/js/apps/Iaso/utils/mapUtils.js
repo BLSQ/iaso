@@ -1,6 +1,9 @@
 /* globals STATIC_URL */
 import L from 'leaflet';
+import { fade } from '@material-ui/core/styles/colorManipulator';
+
 import { MESSAGES } from '../../../utils/map/mapUtils';
+
 
 export const isValidCoordinate = (latitude, longitude) => {
     if (
@@ -39,6 +42,13 @@ export const clusterCustomMarker = cluster => (L.divIcon({
     iconAnchor: [20, 30],
 }));
 
+export const clusterColorMarker = (color, iconName) => (L.divIcon({
+    html: `<div style="background-color:${fade(color, 0.6)}"><span style="background-color:${color}"><img class="svg-icon" src="${STATIC_URL}images/${iconName}" /></span></div>`,
+    className: 'marker-custom color',
+    iconSize: L.point(40, 40, true),
+    iconAnchor: [25, 30],
+}));
+
 const svgString = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">'
     + '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
 
@@ -46,7 +56,7 @@ export const customMarkerOptions = {
     className: 'marker-custom primary',
     html: `<span class="marker_bg"></span><span>
         ${L.Util.template(svgString)}
-        <img src="${STATIC_URL}images/marker-shadow.png" />
+        <img src="${STATIC_URL}images/marker-shadow.png"/>
     </span>`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -35],

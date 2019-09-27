@@ -15,13 +15,14 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
-import { customMarker, customZoomBar } from '../../utils/mapUtils';
+import { customMarker, customZoomBar, clusterColorMarker } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
 import FilterOrgunitOptionComponent from './tools/FilterOrgunitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
+import MarkersListComponent from './markers/MarkersListComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 
@@ -197,6 +198,7 @@ class OrgUnitMapComponent extends Component {
                 formatMessage,
             },
             orgUnitTypes,
+            orgUnitTypesSelected,
         } = this.props;
         const { editEnabled } = this.state;
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -256,6 +258,17 @@ class OrgUnitMapComponent extends Component {
                             url={currentTile.url}
                         />
                         {
+                            orgUnitTypesSelected.map(ot => (
+                                <MarkersListComponent
+                                    key={ot.id}
+                                    items={ot.orgUnits}
+                                    onMarkerClick={i => this.fetchDetail(i)}
+                                    PopupComponent={null}
+                                    customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
+                                />
+                            ))
+                        }
+                        {
                             hasMarker
                             && (
                                 <MarkerComponent
@@ -282,11 +295,13 @@ OrgUnitMapComponent.propTypes = {
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
+    orgUnitTypesSelected: PropTypes.array.isRequired,
     orgUnitTypes: PropTypes.array,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
+    orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
 });
 
 const MapDispatchToProps = dispatch => ({

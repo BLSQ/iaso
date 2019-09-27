@@ -5,6 +5,7 @@ const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 const SET_SOURCES = 'SET_SOURCES';
 const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
+const SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED = 'SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED';
 
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
@@ -49,9 +50,14 @@ export const setOrgUnitsListFetching = isFetching => ({
     payload: isFetching,
 });
 
+export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected => ({
+    type: SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED,
+    payload: currentSubOrgUnitsTypesSelected,
+});
 
 export const orgUnitsInitialState = {
     current: null,
+    currentSubOrgUnitsTypesSelected: [],
     fetchingList: false,
     fetchingDetail: true,
     orgUnitsPage: {
@@ -112,6 +118,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_ORG_UNITS_LIST_FETCHING: {
             const fetchingList = action.payload;
             return { ...state, fetchingList };
+        }
+
+        case SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED: {
+            const currentSubOrgUnitsTypesSelected = action.payload;
+            return { ...state, currentSubOrgUnitsTypesSelected };
         }
 
         default:

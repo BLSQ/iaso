@@ -3,6 +3,7 @@ const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 const SET_CURRENT_ORG_UNIT = 'SET_CURRENT_ORG_UNIT';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
+const SET_SOURCES = 'SET_SOURCES';
 const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
 
 
@@ -37,6 +38,12 @@ export const setSourceTypes = sourceTypes => ({
     payload: sourceTypes,
 });
 
+export const setSources = sources => ({
+    type: SET_SOURCES,
+    payload: sources,
+});
+
+
 export const setOrgUnitsListFetching = isFetching => ({
     type: SET_ORG_UNITS_LIST_FETCHING,
     payload: isFetching,
@@ -56,6 +63,7 @@ export const orgUnitsInitialState = {
     },
     orgUnitTypes: [],
     sourceTypes: [],
+    sources: [],
     orgUnitLevel: [],
 };
 
@@ -90,6 +98,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_SOURCE_TYPES: {
             const sourceTypes = action.payload;
             return { ...state, sourceTypes };
+        }
+
+        case SET_SOURCES: {
+            const sources = action.payload;
+            return { ...state, sources };
         }
 
         case RESET_ORG_UNITS: {

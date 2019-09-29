@@ -116,7 +116,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         if source:
-            queryset = queryset.filter(version__source_id=source)
+            queryset = queryset.filter(version__data_source_id=source)
 
         if version:
             queryset = queryset.filter(version=version)

@@ -84,6 +84,20 @@ export const orgUnitType = (formatMessage, orgunitTypesList) => (
 
 export const source = (formatMessage, sourceList) => (
     {
+        urlKey: 'source',
+        isMultiSelect: false,
+        isClearable: true,
+        options: sourceList.map(t => ({
+            label: t.name,
+            value: t.id,
+        })),
+        label: MESSAGES.source,
+        type: 'select',
+    }
+);
+
+export const subSource = (formatMessage, sourceList) => (
+    {
         urlKey: 'sourceId',
         isMultiSelect: false,
         isClearable: true,
@@ -91,7 +105,7 @@ export const source = (formatMessage, sourceList) => (
             label: formatMessage(MESSAGES[t[0]]),
             value: t[0],
         })),
-        label: MESSAGES.source,
+        label: MESSAGES.subSource,
         type: 'select',
     }
 );

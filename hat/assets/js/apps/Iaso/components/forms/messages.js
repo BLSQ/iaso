@@ -7,6 +7,10 @@ const MESSAGES = {
         id: 'iaso.forms.org_unit_type_id',
         defaultMessage: 'Org unit type',
     },
+    source: {
+        id: 'iaso.forms.source',
+        defaultMessage: 'Source',
+    },
     level: {
         id: 'iaso.forms.level',
         defaultMessage: 'Level',
@@ -23,9 +27,9 @@ const MESSAGES = {
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated at',
     },
-    source: {
-        id: 'iaso.forms.source',
-        defaultMessage: 'Source',
+    subSource: {
+        id: 'iaso.forms.subSource',
+        defaultMessage: 'Sub-Source',
     },
     snis: {
         id: 'iaso.forms.source.snis',

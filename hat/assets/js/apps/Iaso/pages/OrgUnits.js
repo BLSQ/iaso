@@ -11,11 +11,12 @@ import PropTypes from 'prop-types';
 import {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
+    fetchSources,
 } from '../utils/requests';
 
 
 import {
-    setOrgUnits, setOrgUnitTypes, setSourceTypes, setOrgUnitsListFetching,
+    setOrgUnits, setOrgUnitTypes, setSourceTypes, setOrgUnitsListFetching, setSources,
 } from '../redux/orgUnitsReducer';
 
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
@@ -69,6 +70,7 @@ class OrgUnits extends Component {
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+        fetchSources(this.props.dispatch).then(sources => this.props.setSources(sources));
     }
 
     componentWillUnmount() {
@@ -140,12 +142,14 @@ class OrgUnits extends Component {
             dispatch,
             orgUnitTypes,
             sourceTypes,
+            sources,
             fetchingList,
         } = this.props;
         const {
             tableUrl,
             tableColumns,
         } = this.state;
+
         return (
             <Fragment>
                 {
@@ -163,7 +167,8 @@ class OrgUnits extends Component {
                         params={params}
                         onSearch={() => this.onSearch()}
                         orgUnitTypes={orgUnitTypes}
-                        sourceTypes={sourceTypes}
+                        subSourceTypes={sourceTypes}
+                        sources={sources}
                     />
                     {
                         tableUrl && (
@@ -219,7 +224,9 @@ OrgUnits.propTypes = {
     setOrgUnitTypes: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     setSourceTypes: PropTypes.func.isRequired,
+    setSources: PropTypes.func.isRequired,
     sourceTypes: PropTypes.array.isRequired,
+    sources: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
@@ -230,6 +237,7 @@ const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sourceTypes: state.orgUnits.sourceTypes,
+    sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
 });
 
@@ -239,6 +247,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
+    setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });

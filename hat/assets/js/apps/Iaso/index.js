@@ -60,7 +60,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)'
+            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/source/:source)'
             + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/hasInstances/:hasInstances)'
             + '(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
             component={props => (
@@ -71,7 +71,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId(/sourceId/:sourceId))'
+            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/source/:source)'
             + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/hasInstances/:hasInstances)(/orgUnitsLevels/:orgUnitsLevels)(/orgUnitsOrder/:orgUnitsOrder)'
             + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)'
             + '(/page/:page)(/tab/:tab)'}

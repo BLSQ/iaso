@@ -118,9 +118,9 @@ class SourceVersion(models.Model):
 
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
-    uuid = models.TextField(null=True, blank=True)
+    uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True)
+    validated = models.BooleanField(default=True, db_index=True)
     version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
@@ -138,7 +138,7 @@ class OrgUnit(models.Model):
     source = models.TextField(
         choices=GEO_SOURCE_CHOICES, null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
-    source_ref = models.TextField(null=True, blank=True)
+    source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = PolygonField(srid=4326, null=True, blank=True)
     simplified_geom = PolygonField(srid=4326, null=True, blank=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)

@@ -16,7 +16,6 @@ export const status = formatMessage => (
     {
         urlKey: 'validated',
         isMultiSelect: false,
-        isClearable: true,
         options: [
             {
                 label: formatMessage(MESSAGES.validated),

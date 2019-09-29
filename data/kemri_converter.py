@@ -26,9 +26,6 @@ with open("kemri_for_match.csv") as csvfile:
         provinces.add(province)
         zones_dict[zone] = province
 
-    print(provinces)
-    print(zones_dict)
-    print(areas_dict)
     # columns to create
     # ref	name	parent_ref	aliases	org_unit_type	source	latitude	longitude	altitude
     with open("kemri_iaso_import.csv", "w", newline="") as f:
@@ -65,19 +62,15 @@ with open("kemri_for_match.csv") as csvfile:
             kemri_id = line[kemri_id_index]
             fosa_name = line[fosa_name_index]
             point = line[point_index]
-            print(point_index, line)
-            print("point", point)
             point = point[7:-1]
-            print(point)
             latitude, longitude = point.split(" ")
-            print(latitude, longitude)
             writer.writerow(
                 (
                     kemri_id,
                     fosa_name,
                     zone_ids[line[zone_index]],
                     "",
-                    "fosa",
+                    "cds",
                     "kemri",
                     latitude,
                     longitude,

@@ -12,7 +12,6 @@ GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
     ("ucla", "UCLA"),
     ("pnltha", "PNL THA"),
-    ("kemri", "KEMRI"),
     ("derivated", "Derivated from actual data"),
 )
 
@@ -79,23 +78,42 @@ class OrgUnitType(models.Model):
 
 class DataSource(models.Model):
     name = models.CharField(max_length=255)
-    description = models.TextField(max_length=255)
+    description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s " % (self.name,)
 
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
 
 class SourceVersion(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
     number = models.IntegerField()
-    description = models.TextField()
+    description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s %d" % (self.data_source, self.number)
+
+    def as_dict(self):
+        return {
+            "data_source": self.data_source.as_dict(),
+            "number": self.number,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
 
 
 class OrgUnit(models.Model):

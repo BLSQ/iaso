@@ -10,6 +10,8 @@ from .models import (
     Project,
     Device,
     DeviceOwnership,
+    DataSource,
+    SourceVersion,
 )
 
 
@@ -46,4 +48,6 @@ admin.site.register(InstanceFile)
 admin.site.register(Account)
 admin.site.register(Project)
 admin.site.register(Device)
+admin.site.register(SourceVersion)
+admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)

@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 import csv
-from iaso.models import OrgUnit, OrgUnitType
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
 from django.contrib.gis.geos import Point
 
 
@@ -11,11 +11,18 @@ class Command(BaseCommand):
         parser.add_argument("org_unit_csv_file", type=str)
         parser.add_argument("org_unit_type_csv_file", type=str)
         parser.add_argument("source_name", type=str)
+        parser.add_argument("version", type=int)
 
     def handle(self, *args, **options):
         file_name = options.get("org_unit_csv_file")
         org_unit_file_name = options.get("org_unit_type_csv_file")
         source_name = options.get("source_name")
+        version = options.get("version")
+
+        source, created = DataSource.objects.get_or_create(name=source_name)
+        version, created = SourceVersion.objects.get_or_create(
+            number=version, data_source=source
+        )
 
         OrgUnit.objects.filter(source=source_name).delete()  # warning: dangerous
         type_dict = dict()
@@ -40,6 +47,7 @@ class Command(BaseCommand):
                     org_unit.name = row[1].strip()
                     # org_unit.aliases = obj.aliases
                     org_unit.source = source_name
+                    org_unit.version = version
                     org_unit.source_ref = row[0].strip()
                     org_unit.validated = False
                     parent = row[2]

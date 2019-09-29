@@ -15,7 +15,7 @@ from .models import (
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
-    list_filter = ("org_unit_type", "custom", "validated")
+    list_filter = ("org_unit_type", "custom", "validated", "source")
     search_fields = ("name", "source_ref")
     ordering = ("name",)
 

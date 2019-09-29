@@ -12,6 +12,7 @@ GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
     ("ucla", "UCLA"),
     ("pnltha", "PNL THA"),
+    ("kemri", "KEMRI"),
     ("derivated", "Derivated from actual data"),
 )
 
@@ -76,11 +77,35 @@ class OrgUnitType(models.Model):
         return res
 
 
+class DataSource(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+
+class SourceVersion(models.Model):
+    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
+    number = models.IntegerField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s %d" % (self.data_source, self.number)
+
+
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True)
     custom = models.BooleanField(default=False)
     validated = models.BooleanField(default=True)
+    version = models.ForeignKey(
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
+    )
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -92,7 +117,9 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
+    source = models.TextField(
+        choices=GEO_SOURCE_CHOICES, null=True, blank=True
+    )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True)
     geom = PolygonField(srid=4326, null=True, blank=True)
     simplified_geom = PolygonField(srid=4326, null=True, blank=True)

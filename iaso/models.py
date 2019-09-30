@@ -182,7 +182,7 @@ class OrgUnit(models.Model):
             "has_geo_json": True if self.simplified_geom else False,
         }
 
-    def as_dict_with_parent(self):
+    def as_dict_with_parents(self):
         return {
             "name": self.name,
             "short_name": self.name,
@@ -190,7 +190,7 @@ class OrgUnit(models.Model):
             "sub_source": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
-            "parent": self.parent.as_dict_with_parent() if self.parent else None,
+            "parent": self.parent.as_dict_with_parents() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name
             if self.org_unit_type
@@ -396,7 +396,7 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
         }
 
-    def as_dict_with_parent(self):
+    def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
 
         return {
@@ -408,7 +408,7 @@ class Instance(models.Model):
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_unit": self.org_unit.as_dict_with_parent() if self.org_unit else None,
+            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
@@ -423,7 +423,7 @@ class Instance(models.Model):
             "form_id": self.form_id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "org_unit": self.org_unit.as_dict_with_parent() if self.org_unit else None,
+            "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,

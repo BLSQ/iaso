@@ -195,7 +195,7 @@ class InstancesViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
-                idict = instance.as_dict_with_parent()
+                idict = instance.as_dict_with_parents()
                 created_at = timestamp_to_datetime(idict.get("created_at"))
                 updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 org_unit = idict.get("org_unit")

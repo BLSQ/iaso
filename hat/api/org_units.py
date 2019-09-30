@@ -327,7 +327,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         )
         org_unit.save()
 
-        res = org_unit.as_dict_with_parent()
+        res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
@@ -356,7 +356,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
-        res = org_unit.as_dict_with_parent()
+        res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         if org_unit.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)

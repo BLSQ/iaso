@@ -1,6 +1,7 @@
 const SET_ORG_UNITS = 'SET_ORG_UNITS';
 const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 const SET_CURRENT_ORG_UNIT = 'SET_CURRENT_ORG_UNIT';
+const SET_CURRENT_SUB_ORG_UNIT = 'SET_CURRENT_SUB_ORG_UNIT';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 const SET_SOURCES = 'SET_SOURCES';
@@ -29,6 +30,11 @@ export const setCurrentOrgUnit = orgUnit => ({
     payload: orgUnit,
 });
 
+export const setCurrentSubOrgUnit = orgUnit => ({
+    type: SET_CURRENT_SUB_ORG_UNIT,
+    payload: orgUnit,
+});
+
 export const setOrgUnitTypes = orgUnitTypes => ({
     type: SET_ORG_UNIT_TYPES,
     payload: orgUnitTypes,
@@ -45,9 +51,9 @@ export const setSources = sources => ({
 });
 
 
-export const setOrgUnitsListFetching = isFetching => ({
+export const setOrgUnitsListFetching = currentSubOrgUnit => ({
     type: SET_ORG_UNITS_LIST_FETCHING,
-    payload: isFetching,
+    payload: currentSubOrgUnit,
 });
 
 export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected => ({
@@ -57,6 +63,7 @@ export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected
 
 export const orgUnitsInitialState = {
     current: null,
+    currentSubOrgUnit: null,
     currentSubOrgUnitsTypesSelected: [],
     fetchingList: false,
     fetchingDetail: true,
@@ -94,6 +101,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_CURRENT_ORG_UNIT: {
             const current = action.payload;
             return { ...state, current, fetchingDetail: false };
+        }
+
+        case SET_CURRENT_SUB_ORG_UNIT: {
+            const currentSubOrgUnit = action.payload;
+            return { ...state, currentSubOrgUnit };
         }
 
         case SET_ORG_UNIT_TYPES: {

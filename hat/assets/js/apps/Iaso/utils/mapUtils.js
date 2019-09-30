@@ -47,6 +47,7 @@ export const clusterColorMarker = (color, iconName) => (L.divIcon({
     className: 'marker-custom color',
     iconSize: L.point(40, 40, true),
     iconAnchor: [25, 30],
+    popupAnchor: [-1, -35],
 }));
 
 const svgString = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">'

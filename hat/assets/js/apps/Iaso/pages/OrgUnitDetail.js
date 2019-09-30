@@ -228,10 +228,14 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
         } = this.state;
+        let title = currentOrgUnit ? currentOrgUnit.name : '';
+        if (currentOrgUnit) {
+            title = `${title}${currentOrgUnit.org_unit_type_name ? ` - ${currentOrgUnit.org_unit_type_name}` : ''}`;
+        }
         return (
             <Fragment>
                 <TopBar
-                    title={this.props.currentOrgUnit ? this.props.currentOrgUnit.name : ''}
+                    title={title}
                     displayBackButton
                     goBack={() => this.goBack()}
                 >

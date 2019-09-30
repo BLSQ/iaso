@@ -23,8 +23,12 @@ import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
 import FilterOrgunitOptionComponent from './tools/FilterOrgunitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
 import MarkersListComponent from './markers/MarkersListComponent';
+import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
+import { setCurrentSubOrgUnit } from '../../redux/orgUnitsReducer';
+
+import { fetchOrgUnitDetail } from '../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 
@@ -190,6 +194,14 @@ class OrgUnitMapComponent extends Component {
         new L.Draw.Polygon(this.map.leafletElement, polygonDrawOpiton).enable();
     }
 
+    fetchSubOrgUnitDetail(orgUnit) {
+        const {
+            dispatch,
+        } = this.props;
+        this.props.setCurrentSubOrgUnit(null);
+        fetchOrgUnitDetail(dispatch, orgUnit.id).then(i => this.props.setCurrentSubOrgUnit(i));
+    }
+
     render() {
         const {
             orgUnit,
@@ -262,8 +274,8 @@ class OrgUnitMapComponent extends Component {
                                 <MarkersListComponent
                                     key={ot.id}
                                     items={ot.orgUnits}
-                                    onMarkerClick={i => this.fetchDetail(i)}
-                                    PopupComponent={null}
+                                    onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
+                                    PopupComponent={OrgUnitPopupComponent}
                                     customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
                                 />
                             ))
@@ -290,6 +302,7 @@ OrgUnitMapComponent.defaultProps = {
 
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
+    dispatch: PropTypes.func.isRequired,
     orgUnit: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
@@ -297,6 +310,7 @@ OrgUnitMapComponent.propTypes = {
     resetMapReducer: PropTypes.func.isRequired,
     orgUnitTypesSelected: PropTypes.array.isRequired,
     orgUnitTypes: PropTypes.array,
+    setCurrentSubOrgUnit: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -307,6 +321,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
+    setCurrentSubOrgUnit: o => dispatch(setCurrentSubOrgUnit(o)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitMapComponent));

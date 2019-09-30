@@ -168,7 +168,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
-    setCurrentInstance: currentTile => dispatch(setCurrentInstance(currentTile)),
+    setCurrentInstance: i => dispatch(setCurrentInstance(i)),
 });
 
 

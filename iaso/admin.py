@@ -10,12 +10,14 @@ from .models import (
     Project,
     Device,
     DeviceOwnership,
+    DataSource,
+    SourceVersion,
 )
 
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
-    list_filter = ("org_unit_type", "custom", "validated")
+    list_filter = ("org_unit_type", "custom", "validated", "source")
     search_fields = ("name", "source_ref")
     ordering = ("name",)
 
@@ -46,4 +48,6 @@ admin.site.register(InstanceFile)
 admin.site.register(Account)
 admin.site.register(Project)
 admin.site.register(Device)
+admin.site.register(SourceVersion)
+admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)

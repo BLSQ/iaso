@@ -91,6 +91,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shape = request.GET.get("withShape", None)
         with_location = request.GET.get("withLocation", None)
         parent_id = request.GET.get("parent_id", None)
+        source = request.GET.get("source", None)
+        version = request.GET.get("version", None)
         order = request.GET.get("order", "id").split(",")
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         csv_format = request.GET.get("csv", None)
@@ -112,6 +114,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(aliases__contains=[search])
             )
+
+        if source:
+            queryset = queryset.filter(version__data_source_id=source)
+
+        if version:
+            queryset = queryset.filter(version=version)
 
         if has_instances is not None:
             ids_with_instances = Instance.objects.filter(

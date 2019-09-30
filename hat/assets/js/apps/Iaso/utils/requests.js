@@ -11,7 +11,7 @@ const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}
         throw error;
     });
 
-const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
+const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes/')
     .then(res => res.orgUnitTypes)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitTypesError')));
@@ -19,14 +19,21 @@ const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
         throw error;
     });
 
-const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes')
-    .then(soureTypes => soureTypes)
+const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes/')
+    .then(sourceTypes => sourceTypes)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchSourceTypesError')));
         console.error('Error while fetching source types list:', error);
         throw error;
     });
 
+const fetchSources = dispatch => getRequest('/api/datasources/')
+    .then(res => res.sources)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchSourcesError')));
+        console.error('Error while fetching source list:', error);
+        throw error;
+    });
 
 const fetchDevices = dispatch => getRequest('/api/iasodevices')
     .then(devices => devices)
@@ -107,6 +114,7 @@ const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/instances
 export {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
+    fetchSources,
     fetchOrgUnitDetail,
     fetchInstancesAsLocations,
     fetchInstancesAsDict,

@@ -19,6 +19,7 @@ import {
     hasInstances,
     orgUnitType,
     source,
+    subSource,
     shape,
     location,
 } from '../../constants/filters';
@@ -69,7 +70,8 @@ class OrgUnitsFiltersComponent extends Component {
                 formatMessage,
             },
             orgUnitTypes,
-            sourceTypes,
+            sources,
+            subSourceTypes,
         } = this.props;
         const { filtersUpdated } = this.state;
         return (
@@ -82,7 +84,8 @@ class OrgUnitsFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 search(),
-                                source(formatMessage, sourceTypes),
+                                source(formatMessage, sources),
+                                subSource(formatMessage, subSourceTypes),
                                 status(formatMessage),
                                 hasInstances(formatMessage),
                             ]}
@@ -138,7 +141,8 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
+    subSourceTypes: PropTypes.array.isRequired,
+    sources: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 

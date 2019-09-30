@@ -76,11 +76,54 @@ class OrgUnitType(models.Model):
         return res
 
 
+class DataSource(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s " % (self.name,)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
+
+class SourceVersion(models.Model):
+    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
+    number = models.IntegerField()
+    description = models.TextField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s %d" % (self.data_source, self.number)
+
+    def as_dict(self):
+        return {
+            "data_source": self.data_source.as_dict(),
+            "number": self.number,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
+
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
-    uuid = models.TextField(null=True, blank=True)
+    uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True)
+    validated = models.BooleanField(default=True, db_index=True)
+    version = models.ForeignKey(
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
+    )
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
@@ -92,8 +135,10 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
-    source_ref = models.TextField(null=True, blank=True)
+    source = models.TextField(
+        choices=GEO_SOURCE_CHOICES, null=True, blank=True
+    )  # sometimes, in a given source, there are sub sources
+    source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = PolygonField(srid=4326, null=True, blank=True)
     simplified_geom = PolygonField(srid=4326, null=True, blank=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
@@ -165,6 +210,69 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type": self.org_unit_type.name,
+        }
+
+
+class MatchingAlgorithm(models.Model):
+    name = models.TextField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "%s - %s" % (
+            self.org_unit_1,
+            self.org_unit_2,
+            self.algorithm,
+            self.similarity_score,
+        )
+
+
+class Link(models.Model):
+    destination = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="source_set",
+    )
+    source = models.ForeignKey(
+        OrgUnit,
+        on_delete=models.CASCADE,
+        null=True,
+        blank=True,
+        related_name="destination_set",
+    )
+    validated = models.BooleanField(default=False)
+    validator = models.ForeignKey(User, on_delete=models.CASCADE)
+    validation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
+
+    similarity_score = models.SmallIntegerField(null=True)
+    algorithm = models.ForeignKey(MatchingAlgorithm, on_delete=models.CASCADE)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s - %s" % (
+            self.org_unit_1,
+            self.org_unit_2,
+            self.algorithm,
+            self.similarity_score,
+        )
+
+    def as_dict(self):
+        return {
+            "destination": self.destination.as_dict(),
+            "source": self.source.as_dict(),
+            "user": self.user.profile.as_short_dict(),
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "validated": self.validated,
+            "validator": self.validator,
+            "validation_date": self.validation_date,
+            "similarity_score": self.similarity_score,
+            "algorithm": self.algorithm,
         }
 
 

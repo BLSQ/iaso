@@ -8,7 +8,7 @@ export REDIS_HOST="localhost"
 export DEBUG="true"
 export CACHE="false"
 export DEV_SERVER="true"
-export RDS_DB_NAME="postgres"
+export RDS_DB_NAME="iaso"
 export FLAVOR="iaso"
 
 ./manage.py runserver

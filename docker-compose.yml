@@ -58,7 +58,7 @@ services:
     command: start_dev
 
   db:
-    image: mdillon/postgis:9.5
+    image: mdillon/postgis:10
     logging: *hat_logging
     ports:
       - "5433:5432"

@@ -143,6 +143,10 @@ export const orgUnitsPath = getPath({
         ...paginationPathParams,
         {
             isRequired: false,
+            key: 'searchActive',
+        },
+        {
+            isRequired: false,
             key: 'back',
         },
     ],

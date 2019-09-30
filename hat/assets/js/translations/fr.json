@@ -65,6 +65,7 @@
     "iaso.forms.records": "Enregistrement(s)",
     "iaso.forms.shape": "Forme",
     "iaso.forms.source": "Source",
+    "iaso.forms.subSource": "Sous-source",
     "iaso.forms.source.derivated": "Dérivé des données actuelles",
     "iaso.forms.source.pnltha": "PNLTHA",
     "iaso.forms.source.snis": "SNIS",

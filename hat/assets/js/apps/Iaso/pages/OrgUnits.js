@@ -71,8 +71,7 @@ class OrgUnits extends Component {
             const { params } = this.props;
             delete params.back;
             this.props.redirectTo(baseUrl, params);
-        }
-        if (this.props.params.searchActive) {
+        } else if (this.props.params.searchActive) {
             this.onSearch();
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -88,6 +87,9 @@ class OrgUnits extends Component {
             };
             newParams.levels = null;
             this.props.redirectTo(baseUrl, newParams);
+        }
+        if (!this.props.params.searchActive && this.props.reduxPage.list) {
+            this.resetOrgUnitData();
         }
     }
 
@@ -134,6 +136,13 @@ class OrgUnits extends Component {
         });
 
         return url;
+    }
+
+    resetOrgUnitData() {
+        this.setState({
+            tableUrl: null,
+        });
+        this.props.setOrgUnits(null, this.props.params, 0, 1);
     }
 
     selectOrgUnit(orgUnit, tab) {

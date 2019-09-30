@@ -31,6 +31,13 @@ import Instances from './pages/Instances';
 import OrgUnits from './pages/OrgUnits';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
+import {
+    formsPath,
+    instancesPath,
+    orgUnitsPath,
+    orgUnitsDetailsPath,
+} from './constants/paths';
+
 import SidebarMenu from './components/nav/SidebarMenuComponent';
 import * as zoomBar from '../../components/leaflet/zoom-bar';
 
@@ -39,7 +46,7 @@ export default function datasApp(element, baseUrl) {
     const dateTo = moment().format('YYYY-MM-DD');
     const routes = [
         <Route
-            path="/forms/date_from/:date_from/date_to/:date_to(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            path={formsPath}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -48,10 +55,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/instances/formId/:formId/date_from/:date_from/date_to/:date_to(/formOrder/:formOrder)'
-            + '(/formPageSize/:formPageSize)(/formPage/:formPage)(/order/:order)(/pageSize/:pageSize)(/page/:page)'
-            + '(/levels/:levels)(/orgUnitTypeId/:orgUnitTypeId)(/withLocation/:withLocation)(/deviceId/:deviceId)'
-            + '(/deviceOwnershipId/:deviceOwnershipId)(/tab/:tab)'}
+            path={instancesPath}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -60,9 +64,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/source/:source)'
-            + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/hasInstances/:hasInstances)'
-            + '(/order/:order)(/pageSize/:pageSize)(/page/:page)(/back/:back)'}
+            path={orgUnitsPath}
             component={props => (
                 <Fragment>
                     <SidebarMenu />
@@ -71,10 +73,7 @@ export default function datasApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={'/orgunits/detail/orgUnitId/:orgUnitId(/validated/:validated)(/orgUnitTypeId/:orgUnitTypeId)(/sourceId/:sourceId)(/source/:source)'
-            + '(/withShape/:withShape)(/withLocation/:withLocation)(/search/:search)(/levels/:levels)(/hasInstances/:hasInstances)(/orgUnitsLevels/:orgUnitsLevels)(/orgUnitsOrder/:orgUnitsOrder)'
-            + '(/orgUnitsPageSize/:orgUnitsPageSize)(/orgUnitsPage/:orgUnitsPage)(/order/:order)(/logsOrder/:logsOrder)(/pageSize/:pageSize)'
-            + '(/page/:page)(/tab/:tab)'}
+            path={orgUnitsDetailsPath}
             component={props => (
                 <Fragment>
                     <SidebarMenu />

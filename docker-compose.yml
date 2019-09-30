@@ -32,6 +32,7 @@ services:
     environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
       FLAVOR: "${FLAVOR}"
+      RDS_DB_NAME: "${RDS_DB_NAME}"
       DEBUG: 'true'
       TEST_PROD: "${TEST_PROD}"
       SECRET_KEY: secret

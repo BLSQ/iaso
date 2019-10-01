@@ -135,7 +135,7 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    source = models.TextField(
+    sub_source = models.TextField(
         choices=GEO_SOURCE_CHOICES, null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
@@ -165,7 +165,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
-            "source": self.source,
+            "sub_source": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
@@ -186,7 +186,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
-            "source": self.source,
+            "sub_source": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "parent": self.parent.as_dict_with_parents() if self.parent else None,

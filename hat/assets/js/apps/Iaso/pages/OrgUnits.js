@@ -76,8 +76,19 @@ class OrgUnits extends Component {
             this.onSearch();
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
         fetchSources(this.props.dispatch).then(sources => this.props.setSources(sources));
+    }
+
+    componentDidUpdate(prevProps) {
+        const validatedChanged = prevProps.params.validated !== this.props.params.validated;
+        const sourceChanged = prevProps.params.source !== this.props.params.source;
+        if (validatedChanged || sourceChanged) {
+            const newParams = {
+                ...this.props.params,
+            };
+            newParams.levels = null;
+            this.props.redirectTo(baseUrl, newParams);
+        }
     }
 
     componentWillUnmount() {
@@ -156,7 +167,6 @@ class OrgUnits extends Component {
             },
             dispatch,
             orgUnitTypes,
-            sourceTypes,
             sources,
             fetchingList,
         } = this.props;
@@ -182,7 +192,6 @@ class OrgUnits extends Component {
                         params={params}
                         onSearch={() => this.onSearch()}
                         orgUnitTypes={orgUnitTypes}
-                        subSourceTypes={sourceTypes}
                         sources={sources}
                     />
                     {
@@ -238,9 +247,7 @@ OrgUnits.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    setSourceTypes: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
     sources: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
@@ -251,7 +258,6 @@ OrgUnits.propTypes = {
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sourceTypes: state.orgUnits.sourceTypes,
     sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
 });
@@ -261,7 +267,6 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnits: (orgUnitsList, params, count, pages) => dispatch(setOrgUnits(orgUnitsList, true, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),

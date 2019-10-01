@@ -134,6 +134,10 @@ const orgUnitsPathParams = [
         isRequired: false,
         key: 'hasInstances',
     },
+    {
+        isRequired: false,
+        key: 'searchActive',
+    },
 ];
 
 export const orgUnitsPath = getPath({
@@ -141,10 +145,6 @@ export const orgUnitsPath = getPath({
     params: [
         ...orgUnitsPathParams,
         ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'searchActive',
-        },
         {
             isRequired: false,
             key: 'back',

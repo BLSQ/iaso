@@ -102,7 +102,7 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
 
         case SET_SOURCES: {
             const sources = action.payload;
-            return { ...state, sources };
+            return { ...state, sources, orgUnitLevel: [] };
         }
 
         case RESET_ORG_UNITS: {

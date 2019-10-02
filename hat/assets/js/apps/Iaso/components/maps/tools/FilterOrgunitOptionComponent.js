@@ -52,7 +52,7 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList, orgUnitTypesSel
                 && !orgUnitTypesSelected.find(os => os.id === subOrgUnit.id)) {
                 newOrgUnitTypesList.push(fullSubOrgUnit);
             }
-            if (fullSubOrgUnit.sub_unit_types) {
+            if (fullSubOrgUnit.sub_unit_types && fullSubOrgUnit.id !== orgUnit.id) {
                 newOrgUnitTypesList = getSubOrgunits(fullSubOrgUnit, orgUnitTypes, newOrgUnitTypesList, orgUnitTypesSelected);
             }
         });
@@ -163,7 +163,7 @@ class FilterOrgunitOptionComponent extends Component {
                 promisesArray.push(
                     fetchSubOrgUnitsByType(
                         dispatch,
-                        `&orgUnitParentId=${currentOrgUnit.id}&withLocation=true&orgUnitTypeId=${ot.id}`,
+                        `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}`,
                         ot,
                     ),
                 );

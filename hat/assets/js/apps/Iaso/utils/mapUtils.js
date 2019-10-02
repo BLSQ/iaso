@@ -42,7 +42,7 @@ export const clusterCustomMarker = cluster => (L.divIcon({
     iconAnchor: [20, 30],
 }));
 
-export const clusterColorMarker = (color, iconName) => (L.divIcon({
+export const oldclusterColorMarker = (color, iconName) => (L.divIcon({
     html: `<div style="background-color:${fade(color, 0.6)}"><span style="background-color:${color}"><img class="svg-icon" src="${STATIC_URL}images/${iconName}" /></span></div>`,
     className: 'marker-custom color',
     iconSize: L.point(40, 40, true),
@@ -51,6 +51,9 @@ export const clusterColorMarker = (color, iconName) => (L.divIcon({
 }));
 
 const svgString = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">'
+    + '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
+
+const svgColoredString = color => `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34" fill="${color}">`
     + '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
 
 export const customMarkerOptions = {
@@ -64,7 +67,19 @@ export const customMarkerOptions = {
     iconAnchor: [12, 32],
 };
 
+export const customColorMarkerOptions = (color, iconName) => ({
+    className: 'marker-custom color',
+    html: `${L.Util.template(svgColoredString(color))}
+    <img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />
+    <img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
+    iconSize: new L.Point(24, 34),
+    popupAnchor: [-1, -35],
+    iconAnchor: [12, 32],
+});
+
 export const customMarker = L.divIcon(customMarkerOptions);
+export const clusterColorMarker = (color, iconName) => L.divIcon(customColorMarkerOptions(color, iconName));
+
 
 export const customZoomBar = (formatMessage, fitToBounds) => L.control.zoombar({
     zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),

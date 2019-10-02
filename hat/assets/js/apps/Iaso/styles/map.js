@@ -33,23 +33,28 @@ const mapStyles = theme => ({
         '& .marker-custom.color': {
             zIndex: '300 !important',
         },
-        '& .marker-custom.color > div': {
-            width: 40,
-            height: 40,
-            padding: 5,
-        },
-        '& .marker-custom.color > div > span': {
-            width: 30,
-            height: 30,
-            display: 'flex',
-            borderRadius: 30,
-            justifyContent: 'center',
-            alignItems: 'center',
-        },
         '& .marker-custom.color .svg-icon': {
             display: 'block',
             height: 'auto',
-            width: 22,
+            width: 16,
+            position: 'absolute',
+            top: 6,
+            left: 4,
+            zIndex: 200,
+            borderRadius: '5px',
+        },
+        '& .marker-custom.color .marker_shadow': {
+            position: 'absolute',
+            bottom: 2,
+            left: -1,
+            zIndex: -1,
+            pointerEvents: 'none',
+        },
+        '& .marker-custom.color svg': {
+            position: 'absolute',
+            bottom: 0,
+            left: -5,
+            pointerEvents: 'none',
         },
         '& .marker-custom.primary svg': {
             fill: theme.palette.primary.main,

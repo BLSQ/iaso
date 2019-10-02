@@ -71,7 +71,6 @@ class OrgUnitsFiltersComponent extends Component {
             },
             orgUnitTypes,
             sources,
-            subSourceTypes,
         } = this.props;
         const { filtersUpdated } = this.state;
         return (
@@ -84,9 +83,6 @@ class OrgUnitsFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 search(),
-                                source(formatMessage, sources),
-                                subSource(formatMessage, subSourceTypes),
-                                status(formatMessage),
                                 hasInstances(formatMessage),
                             ]}
                             onEnterPressed={() => this.onSearch()}
@@ -105,6 +101,15 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                     </Grid>
                     <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(formatMessage, sources),
+                                status(formatMessage),
+                            ]}
+                        />
                         <OrgUnitsLevelsFiltersComponent
                             onLatestIdChanged={() => this.onFilterChanged()}
                             params={params}
@@ -141,7 +146,6 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    subSourceTypes: PropTypes.array.isRequired,
     sources: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };

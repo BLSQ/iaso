@@ -174,7 +174,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         if source_id:
-            queryset = queryset.filter(source=source_id)
+            queryset = queryset.filter(sub_source=source_id)
 
         if csv_format is None:
             if limit:

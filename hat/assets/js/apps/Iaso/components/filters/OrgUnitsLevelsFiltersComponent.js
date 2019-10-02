@@ -90,7 +90,6 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             version,
             validated,
         } = this.props.params;
-        console.log('this.props.params', this.props.params);
         let url = base;
         if (source) {
             url = `${url}&source=${source}`;

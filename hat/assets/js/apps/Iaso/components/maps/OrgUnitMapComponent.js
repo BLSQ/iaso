@@ -1,7 +1,7 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
-    Map, TileLayer,
+    Map, TileLayer, GeoJSON,
 } from 'react-leaflet';
 import 'react-leaflet-draw';
 import { injectIntl } from 'react-intl';
@@ -36,7 +36,10 @@ const zoom = 5;
 const padding = [10, 10];
 
 const polygonDrawOpiton = {
-    shapeOptions: { color: 'blue' },
+    shapeOptions: {
+        color: 'blue',
+        className: 'primary',
+    },
 };
 
 let editToolbar;
@@ -54,7 +57,42 @@ const shapeOptions = () => ({
 const addMarker = () => {
     drawControl._toolbars.draw._modes.marker.handler.enable();
 };
-const editableFeatureGroup = new L.FeatureGroup();
+let editableFeatureGroup = new L.FeatureGroup();
+
+const mapOrgUnitTypesSelected = (orgUnitTypesSelected) => {
+    const mappedOrgUnitTypesSelected = [];
+    orgUnitTypesSelected.forEach((ot) => {
+        const otCopy = {
+            ...ot,
+            orgUnits: {
+                shapes: [],
+                locations: [],
+            },
+        };
+        ot.orgUnits.forEach((o) => {
+            if (o.latitude && o.longitude) {
+                otCopy.orgUnits.locations.push(o);
+            }
+            if (o.geo_json) {
+                otCopy.orgUnits.shapes.push(o);
+            }
+        });
+        mappedOrgUnitTypesSelected.push(otCopy);
+    });
+    return mappedOrgUnitTypesSelected;
+};
+
+const renderShape = (item, color) => (
+    <GeoJSON
+        key={item.id}
+        data={item.geo_json}
+        style={() => (
+            { color }
+        )}
+    >
+        <OrgUnitPopupComponent itemId={item.id} />
+    </GeoJSON>
+);
 
 class OrgUnitMapComponent extends Component {
     constructor(props) {
@@ -63,6 +101,7 @@ class OrgUnitMapComponent extends Component {
         this.state = {
             leafletGeoJSON,
             editEnabled: false,
+            currentOption: 'filters',
         };
     }
 
@@ -96,6 +135,7 @@ class OrgUnitMapComponent extends Component {
         setDrawMessages(formatMessage);
 
         drawControl = new L.Control.Draw(options);
+        this.map.leafletElement.createPane('custom-shape-pane');
         this.map.leafletElement.addControl(drawControl);
         this.map.leafletElement.addLayer(editableFeatureGroup);
         this.map.leafletElement.on('draw:created', (e) => {
@@ -130,6 +170,7 @@ class OrgUnitMapComponent extends Component {
 
     componentWillUnmount() {
         this.props.resetMapReducer();
+        editableFeatureGroup = new L.FeatureGroup();
         if (this.state.editEnabled) {
             this.toggleEditShape();
         }
@@ -145,6 +186,12 @@ class OrgUnitMapComponent extends Component {
         onChange(geojsonData);
     }
 
+    setCurrentOption(currentOption) {
+        this.setState({
+            currentOption,
+        });
+    }
+
     mapGeoJson(geoJson) {
         const leafletGeoJSON = geoJson ? L.geoJson(geoJson, shapeOptions) : null;
         this.setState({
@@ -157,7 +204,10 @@ class OrgUnitMapComponent extends Component {
         editableFeatureGroup.clearLayers();
         if (leafletGeoJSON) {
             leafletGeoJSON.eachLayer((layer) => {
-                layer.addTo(editableFeatureGroup);
+                const tempLayer = layer;
+                tempLayer.options.className = 'primary';
+                tempLayer.options.pane = 'custom-shape-pane';
+                tempLayer.addTo(editableFeatureGroup);
             });
         }
         if (fitToBounds) {
@@ -212,14 +262,18 @@ class OrgUnitMapComponent extends Component {
             orgUnitTypes,
             orgUnitTypesSelected,
         } = this.props;
-        const { editEnabled } = this.state;
+        const { editEnabled, currentOption } = this.state;
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
         if (this.map) {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
+        const mappedOrgUnitTypesSelected = mapOrgUnitTypesSelected(orgUnitTypesSelected);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
+                    setCurrentOption={option => this.setCurrentOption(option)}
+                    settingsDisabled={editEnabled}
+                    filtersDisabled={editEnabled}
                     filtersOptionComponent={(
                         orgUnitTypes.length > 0 ? (
                             <FilterOrgunitOptionComponent
@@ -269,15 +323,30 @@ class OrgUnitMapComponent extends Component {
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
                             url={currentTile.url}
                         />
-                        {
-                            orgUnitTypesSelected.map(ot => (
-                                <MarkersListComponent
-                                    key={ot.id}
-                                    items={ot.orgUnits}
-                                    onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
-                                    PopupComponent={OrgUnitPopupComponent}
-                                    customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
-                                />
+                        {!editEnabled
+                            && mappedOrgUnitTypesSelected.map(ot => (
+                                <Fragment key={ot.id}>
+                                    <MarkersListComponent
+                                        items={ot.orgUnits.locations}
+                                        onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
+                                        PopupComponent={OrgUnitPopupComponent}
+                                        customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
+                                    />
+                                    {
+                                        ot.orgUnits.shapes.map(o => (
+                                            <GeoJSON
+                                                key={o.id}
+                                                data={o.geo_json}
+                                                onClick={() => this.fetchSubOrgUnitDetail(o)}
+                                                style={() => (
+                                                    { color: ot.color }
+                                                )}
+                                            >
+                                                <OrgUnitPopupComponent itemId={o.id} />
+                                            </GeoJSON>
+                                        ))
+                                    }
+                                </Fragment>
                             ))
                         }
                         {
@@ -285,7 +354,7 @@ class OrgUnitMapComponent extends Component {
                             && (
                                 <MarkerComponent
                                     item={orgUnit}
-                                    draggable
+                                    draggable={currentOption === 'edit'}
                                     onDragend={newMarker => this.props.onChangeLocation(newMarker.getLatLng())}
                                 />
                             )

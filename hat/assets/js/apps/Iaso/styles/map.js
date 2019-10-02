@@ -63,9 +63,10 @@ const mapStyles = theme => ({
             left: -5,
             pointerEvents: 'none',
         },
-        '& .leaflet-overlay-pane path': {
+        '& path.primary': {
             fill: fade(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
+            pointerEvents: 'none !important',
         },
         '& .leaflet-draw-guide-dash': {
             backgroundColor: `${theme.palette.primary.main} !important`,

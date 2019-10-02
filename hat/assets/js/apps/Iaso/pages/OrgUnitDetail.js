@@ -29,9 +29,9 @@ import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtil
 
 import TopBar from '../components/nav/TopBarComponent';
 import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
-import BackButton from '../components/buttons/BackButtonComponent';
 import OrgUnitMap from '../components/maps/OrgUnitMapComponent';
 import Logs from '../components/logs/LogsComponent';
+import LoadingSpinner from '../components/LoadingSpinnerComponent';
 
 import commonStyles from '../styles/common';
 
@@ -216,6 +216,7 @@ class OrgUnitDetail extends Component {
         const {
             classes,
             fetching,
+            fetchingSubOrgUnits,
             intl: {
                 formatMessage,
             },
@@ -271,6 +272,9 @@ class OrgUnitDetail extends Component {
                         />
                     </Tabs>
                 </TopBar>
+                {
+                    fetchingSubOrgUnits && <LoadingSpinner />
+                }
                 {!fetching
                     && currentOrgUnit
                     && (
@@ -365,6 +369,7 @@ OrgUnitDetail.propTypes = {
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
+    fetchingSubOrgUnits: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
@@ -374,6 +379,7 @@ OrgUnitDetail.propTypes = {
 
 const MapStateToProps = state => ({
     fetching: state.orgUnits.fetchingDetail,
+    fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sourceTypes: state.orgUnits.sourceTypes,

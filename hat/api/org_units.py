@@ -97,6 +97,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        with_shapes = request.GET.get("withShapes", None)
 
         if validated == "true":
             validated = True
@@ -195,6 +196,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
                 return Response(res)
+            elif with_shapes:
+                queryset = queryset.select_related("org_unit_type")
+                org_units = []
+                for unit in queryset:
+                    temp_org_unit = unit.as_dict();
+                    temp_org_unit["geo_json"] = None
+                    if temp_org_unit["has_geo_json"] == True:
+                        queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                        temp_org_unit["geo_json"] = geojson_queryset(
+                            queryset, geometry_field="simplified_geom"
+                        )
+                    org_units.append(temp_org_unit)
+                return Response({"orgUnits": org_units})
             else:
                 queryset = queryset.select_related("org_unit_type")
                 return Response({"orgUnits": [unit.as_dict() for unit in queryset]})

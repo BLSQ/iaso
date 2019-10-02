@@ -1,12 +1,13 @@
 const mapPopupStyles = theme => ({
     popup: {
         margin: 0,
+        bottom: '10px !important',
         '& .leaflet-popup-content-wrapper': {
             padding: 0,
         },
         '& .leaflet-popup-content': {
             margin: 0,
-            minHeight: 150,
+            minHeight: 100,
             width: '320px !important',
         },
         '& a.leaflet-popup-close-button': {

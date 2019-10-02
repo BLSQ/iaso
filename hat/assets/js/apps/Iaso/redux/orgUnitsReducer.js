@@ -2,6 +2,7 @@ const SET_ORG_UNITS = 'SET_ORG_UNITS';
 const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 const SET_CURRENT_ORG_UNIT = 'SET_CURRENT_ORG_UNIT';
 const SET_CURRENT_SUB_ORG_UNIT = 'SET_CURRENT_SUB_ORG_UNIT';
+const SET_SUB_ORG_UNITS_FETCHING = 'SET_SUB_ORG_UNITS_FETCHING';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 const SET_SOURCES = 'SET_SOURCES';
@@ -61,12 +62,18 @@ export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected
     payload: currentSubOrgUnitsTypesSelected,
 });
 
+export const setSubOrgUnitsFetching = fetching => ({
+    type: SET_SUB_ORG_UNITS_FETCHING,
+    payload: fetching,
+});
+
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
     currentSubOrgUnitsTypesSelected: [],
     fetchingList: false,
     fetchingDetail: true,
+    fetchingSubOrgUnits: false,
     orgUnitsPage: {
         list: null,
         showPagination: false,
@@ -130,6 +137,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_ORG_UNITS_LIST_FETCHING: {
             const fetchingList = action.payload;
             return { ...state, fetchingList };
+        }
+
+        case SET_SUB_ORG_UNITS_FETCHING: {
+            const fetchingSubOrgUnits = action.payload;
+            return { ...state, fetchingSubOrgUnits };
         }
 
         case SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED: {

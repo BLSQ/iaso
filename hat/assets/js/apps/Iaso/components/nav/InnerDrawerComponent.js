@@ -59,6 +59,7 @@ class InnerDrawer extends Component {
         this.setState({
             activeOption,
         });
+        this.props.setCurrentOption(activeOption);
     }
 
     render() {
@@ -70,6 +71,8 @@ class InnerDrawer extends Component {
             settingsOptionComponent,
             filtersOptionComponent,
             editTitle,
+            settingsDisabled,
+            filtersDisabled,
         } = this.props;
         const {
             activeOption,
@@ -94,6 +97,7 @@ class InnerDrawer extends Component {
                             <Tooltip title={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}>
                                 <IconButton
                                     className={classes.filterButton}
+                                    disabled={settingsDisabled}
                                     color={activeOption === 'settings' ? 'primary' : 'inherit'}
                                     onClick={() => this.toggleOption('settings')}
                                 >
@@ -116,6 +120,7 @@ class InnerDrawer extends Component {
                                 filtersOptionComponent && (
                                     <Tooltip title={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}>
                                         <IconButton
+                                            disabled={filtersDisabled}
                                             color={activeOption === 'filters' ? 'primary' : 'inherit'}
                                             onClick={() => this.toggleOption('filters')}
                                         >
@@ -218,6 +223,9 @@ InnerDrawer.defaultProps = {
     title: '',
     editOptionComponent: null,
     filtersOptionComponent: null,
+    settingsDisabled: false,
+    filtersDisabled: false,
+    setCurrentOption: () => null,
 };
 
 InnerDrawer.propTypes = {
@@ -228,6 +236,9 @@ InnerDrawer.propTypes = {
     settingsOptionComponent: PropTypes.object.isRequired,
     editOptionComponent: PropTypes.object,
     filtersOptionComponent: PropTypes.object,
+    settingsDisabled: PropTypes.bool,
+    filtersDisabled: PropTypes.bool,
+    setCurrentOption: PropTypes.func,
 };
 
 const MapDispatchToProps = dispatch => ({

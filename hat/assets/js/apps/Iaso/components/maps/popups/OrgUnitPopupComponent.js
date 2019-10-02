@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import {
     Popup,
@@ -104,14 +104,20 @@ class OrgUnitPopupComponent extends Component {
                                     label={formatMessage(MESSAGES.parent)}
                                     value={currentOrgUnit.parent ? currentOrgUnit.parent.name : '/'}
                                 />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.latitude)}
-                                    value={currentOrgUnit.latitude}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.longitude)}
-                                    value={currentOrgUnit.longitude}
-                                />
+                                {
+                                    !currentOrgUnit.has_geo_json && (
+                                        <Fragment>
+                                            <PopupItemComponent
+                                                label={formatMessage(MESSAGES.latitude)}
+                                                value={currentOrgUnit.latitude}
+                                            />
+                                            <PopupItemComponent
+                                                label={formatMessage(MESSAGES.longitude)}
+                                                value={currentOrgUnit.longitude}
+                                            />
+                                        </Fragment>
+                                    )
+                                }
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.created_at)}
                                     value={moment.unix(currentOrgUnit.created_at).format('DD/MM/YYYY HH:mm')}

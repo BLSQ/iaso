@@ -109,6 +109,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             .filter(org_unit_type__projects__app_id=app_id)
             .order_by(*order)
         )
+        queryset = queryset.prefetch_related("version__data_source")
 
         if search:
             queryset = queryset.filter(

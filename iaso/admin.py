@@ -12,6 +12,9 @@ from .models import (
     DeviceOwnership,
     DataSource,
     SourceVersion,
+    MatchingAlgorithm,
+    AlgorithmRun,
+    Link,
 )
 
 
@@ -51,3 +54,6 @@ admin.site.register(Device)
 admin.site.register(SourceVersion)
 admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
+admin.site.register(MatchingAlgorithm)
+admin.site.register(AlgorithmRun)
+admin.site.register(Link)

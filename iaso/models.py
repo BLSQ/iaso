@@ -77,7 +77,7 @@ class OrgUnitType(models.Model):
 
 
 class DataSource(models.Model):
-    name = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, unique=True)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -158,7 +158,7 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s " % (self.org_unit_type, self.name)
+        return "%s %s %d" % (self.org_unit_type, self.name, self.id)
 
     def as_dict(self):
         return {
@@ -221,12 +221,37 @@ class MatchingAlgorithm(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s" % (
-            self.org_unit_1,
-            self.org_unit_2,
-            self.algorithm,
-            self.similarity_score,
+        return "%s - %s %s" % (
+            self.name,
+            self.description,
+            self.created_at.timestamp() if self.created_at else None,
         )
+
+
+class AlgorithmRun(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    algorithm = models.ForeignKey(MatchingAlgorithm, on_delete=models.CASCADE)
+    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    result = JSONField(null=True, blank=True)
+    finished = models.BooleanField(default=False)
+    version_1 = models.ForeignKey(
+        SourceVersion,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="runs_where_destination",
+    )
+    version_2 = models.ForeignKey(
+        SourceVersion,
+        null=True,
+        blank=True,
+        on_delete=models.CASCADE,
+        related_name="runs_where_source",
+    )
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.algorithm, self.created_at, self.launcher)
 
 
 class Link(models.Model):
@@ -245,20 +270,22 @@ class Link(models.Model):
         related_name="destination_set",
     )
     validated = models.BooleanField(default=False)
-    validator = models.ForeignKey(User, on_delete=models.CASCADE)
+    validator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     validation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     similarity_score = models.SmallIntegerField(null=True)
-    algorithm = models.ForeignKey(MatchingAlgorithm, on_delete=models.CASCADE)
+    algorithm_run = models.ForeignKey(
+        AlgorithmRun, on_delete=models.CASCADE, null=True, blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s - %s" % (
-            self.org_unit_1,
-            self.org_unit_2,
-            self.algorithm,
+        return "%s - %s - %s -%d" % (
+            self.destination,
+            self.source,
+            self.algorithm_run,
             self.similarity_score,
         )
 

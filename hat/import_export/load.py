@@ -22,7 +22,7 @@ from pandas import DataFrame, concat as pandasconcat
 
 from hat.cases.event_log import EventStats
 from hat.cases.models import Case, Location, CaseAbstract
-from hat.common.utils import is_int, sns_notify
+from hat.common.utils import is_int, sns_notify, slack_notify
 from hat.geo.geo_finder import get_single_as_and_village
 from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_coordinates, \
@@ -359,6 +359,8 @@ def create_cases(df: DataFrame) -> None:
         except Exception as exc:
             logger.error("Error importing document %s: %s", json_document_id, exc, exc_info=1)
             sns_notify("Error importing document %s: %s" % (json_document_id, repr(exc)))
+            slack_notify(plain_text="Error importing document %s: %s" % (json_document_id, repr(exc)),
+                         icon="exclamation")
             raise
 
 

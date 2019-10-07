@@ -15,7 +15,7 @@ import orgUnitIconUrl from '../../../../../../../dashboard/static/images/white-p
 
 import commonStyles from '../../../styles/common';
 
-import { setCurrentSubOrgUnitTypesSelected, setSubOrgUnitsFetching } from '../../../redux/orgUnitsReducer';
+import { setCurrentSubOrgUnitTypesSelected, setFetching, setSourcesSelected } from '../../../redux/orgUnitsReducer';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
@@ -171,11 +171,11 @@ class FilterOrgunitOptionComponent extends Component {
                 oldOrgUnitsTypes.push(ot);
             }
         });
-        this.props.setSubOrgUnitsFetching(true);
+        this.props.setFetching(true);
         Promise.all(promisesArray).then((orgUnits) => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData);
-            this.props.setSubOrgUnitsFetching(false);
+            this.props.setFetching(false);
         });
     }
 
@@ -224,7 +224,6 @@ class FilterOrgunitOptionComponent extends Component {
                         )
                     }
                     {
-
                         orgUnitTypesList.length > 0 && (
                             <InputComponent
                                 keyValue="org_unit_type_id"
@@ -269,7 +268,8 @@ FilterOrgunitOptionComponent.propTypes = {
     currentOrgUnit: PropTypes.object.isRequired,
     orgUnitTypesSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnitTypesSelected: PropTypes.func.isRequired,
-    setSubOrgUnitsFetching: PropTypes.func.isRequired,
+    setFetching: PropTypes.func.isRequired,
+    setSourcesSelected: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
 };
 
@@ -281,7 +281,9 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentSubOrgUnitTypesSelected: orgUnitTypesSelected => dispatch(setCurrentSubOrgUnitTypesSelected(orgUnitTypesSelected)),
-    setSubOrgUnitsFetching: fetching => dispatch(setSubOrgUnitsFetching(fetching)),
+    setFetching: fetching => dispatch(setFetching(fetching)),
+    setSourcesSelected: sourcesSelected => dispatch(setSourcesSelected(sourcesSelected)),
+
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(FilterOrgunitOptionComponent));

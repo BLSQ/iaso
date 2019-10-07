@@ -1,13 +1,14 @@
 const SET_ORG_UNITS = 'SET_ORG_UNITS';
 const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
-const SET_CURRENT_ORG_UNIT = 'SET_CURRENT_ORG_UNIT';
-const SET_CURRENT_SUB_ORG_UNIT = 'SET_CURRENT_SUB_ORG_UNIT';
-const SET_SUB_ORG_UNITS_FETCHING = 'SET_SUB_ORG_UNITS_FETCHING';
+const SET_ORG_UNIT = 'SET_ORG_UNIT';
+const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
+const SET_FETCHING = 'SET_FETCHING';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 const SET_SOURCES = 'SET_SOURCES';
 const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
-const SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED = 'SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED';
+const SET_SUB_ORG_UNITS_TYPES_SELECTED = 'SET_SUB_ORG_UNITS_TYPES_SELETED';
+const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
 
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
@@ -27,12 +28,12 @@ export const resetOrgUnits = () => ({
 
 
 export const setCurrentOrgUnit = orgUnit => ({
-    type: SET_CURRENT_ORG_UNIT,
+    type: SET_ORG_UNIT,
     payload: orgUnit,
 });
 
 export const setCurrentSubOrgUnit = orgUnit => ({
-    type: SET_CURRENT_SUB_ORG_UNIT,
+    type: SET_SUB_ORG_UNIT,
     payload: orgUnit,
 });
 
@@ -57,13 +58,18 @@ export const setOrgUnitsListFetching = currentSubOrgUnit => ({
     payload: currentSubOrgUnit,
 });
 
+export const setSourcesSelected = currentSourcesSelected => ({
+    type: SET_SOURCES_SELECTED,
+    payload: currentSourcesSelected,
+});
+
 export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected => ({
-    type: SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED,
+    type: SET_SUB_ORG_UNITS_TYPES_SELECTED,
     payload: currentSubOrgUnitsTypesSelected,
 });
 
-export const setSubOrgUnitsFetching = fetching => ({
-    type: SET_SUB_ORG_UNITS_FETCHING,
+export const setFetching = fetching => ({
+    type: SET_FETCHING,
     payload: fetching,
 });
 
@@ -105,12 +111,12 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             };
         }
 
-        case SET_CURRENT_ORG_UNIT: {
+        case SET_ORG_UNIT: {
             const current = action.payload;
             return { ...state, current, fetchingDetail: false };
         }
 
-        case SET_CURRENT_SUB_ORG_UNIT: {
+        case SET_SUB_ORG_UNIT: {
             const currentSubOrgUnit = action.payload;
             return { ...state, currentSubOrgUnit };
         }
@@ -139,12 +145,12 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             return { ...state, fetchingList };
         }
 
-        case SET_SUB_ORG_UNITS_FETCHING: {
+        case SET_FETCHING: {
             const fetchingSubOrgUnits = action.payload;
             return { ...state, fetchingSubOrgUnits };
         }
 
-        case SET_CURRENT_SUB_ORG_UNITS_TYPES_SELETED: {
+        case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
             const currentSubOrgUnitsTypesSelected = action.payload;
             return { ...state, currentSubOrgUnitsTypesSelected };
         }

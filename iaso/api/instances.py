@@ -2,6 +2,7 @@ from django.contrib.gis.geos import Point
 from rest_framework import viewsets
 from rest_framework.response import Response
 
+from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, DeviceOwnership, Form
 from django.db.models import Q
@@ -239,7 +240,7 @@ class InstancesViewSet(viewsets.ViewSet):
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset, get_row),
+                    generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:

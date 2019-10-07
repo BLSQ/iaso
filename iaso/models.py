@@ -195,7 +195,7 @@ class OrgUnit(models.Model):
             "org_unit_type_name": self.org_unit_type.name
             if self.org_unit_type
             else None,
-            "org_unit_type": self.org_unit_type.as_dict(),
+            "org_unit_type": self.org_unit_type.as_dict() if self.org_unit_type else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,

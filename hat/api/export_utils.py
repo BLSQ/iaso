@@ -75,7 +75,7 @@ def generate_xlsx(sheet_name, columns, queryset, get_row):
     :return: the XLSX result to be included in the response. This is always using a temporary file.
     """
     output = io.BytesIO()
-    wb = xlsxwriter.Workbook(output, {"constant_memory": True})
+    wb = xlsxwriter.Workbook(output, {"constant_memory": True, "remove_timezone": True})
     if isinstance(sheet_name, list):
         i = 0
         for sheet in sheet_name:

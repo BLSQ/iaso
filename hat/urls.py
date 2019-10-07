@@ -64,7 +64,5 @@ if settings.FLAVOR == "iaso":
         url(r"^sync/", include("hat.sync.urls")),
     ]
 
-print("include('hat.api.urls')", include("hat.api.urls"))
-
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

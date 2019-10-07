@@ -9,6 +9,8 @@ from .api.iaso_devices_ownership import IasoDevicesOwnershipViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
+from .api.links import LinkViewSet
+
 
 router = routers.DefaultRouter()
 
@@ -24,5 +26,5 @@ router.register(
 )
 router.register(r"datasources", DataSourceViewSet, base_name="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")
-
+router.register(r"links", LinkViewSet, base_name="links")
 urlpatterns = [url(r"^", include(router.urls))]

@@ -227,6 +227,9 @@ class MatchingAlgorithm(models.Model):
             self.created_at.timestamp() if self.created_at else None,
         )
 
+    def as_dict(self):
+        return {"name": self.name}
+
 
 class AlgorithmRun(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
@@ -252,6 +255,22 @@ class AlgorithmRun(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.algorithm, self.created_at, self.launcher)
+
+    def as_dict(self):
+        return {
+            "algorithm": self.algorithm.as_dict(),
+            "launcher": self.launcher,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "ended_at": self.ended_at.timestamp() if self.ended_at else None,
+            "result": self.result,
+            "finished": self.finished,
+            "launcher": self.launcher.profile.as_dict()
+            if self.launcher and self.launcher.profile
+            else None,
+            "version_1": self.version_1.as_dict() if self.version_1 else None,
+            "version_2": self.version_2.as_dict() if self.version_2 else None,
+        }
 
 
 class Link(models.Model):
@@ -291,17 +310,18 @@ class Link(models.Model):
 
     def as_dict(self):
         return {
-            "destination": self.destination.as_dict(),
+            "destination": self.destination.as_dict_with_parents(),
             "source": self.source.as_dict(),
-            "user": self.user.profile.as_short_dict(),
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "validated": self.validated,
-            "validator": self.validator,
+            "validator": self.validator.profile.as_dict()
+            if self.validator and self.validator.profile
+            else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
-            "algorithm": self.algorithm,
+            "algorithm_run": self.algorithm_run.as_dict(),
         }
 
 

@@ -99,6 +99,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         with_shapes = request.GET.get("withShapes", None)
 
+        linked_to = request.GET.get("linkedTo", None)
+        link_validated = request.GET.get("linkValidated", True)
+        link_source = request.GET.get("linkSource", None)
+        link_version = request.GET.get("linkVersion", None)
+
         if validated == "true":
             validated = True
         if validated == "false":
@@ -131,6 +136,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(id__in=ids_with_instances)
             else:
                 queryset = queryset.exclude(id__in=ids_with_instances)
+
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
 
@@ -175,6 +181,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
             )
 
+        if linked_to:
+            queryset = queryset.filter(
+                destination_set__destination_id=linked_to,
+                destination_set__validated=link_validated,
+            )
+            if link_source:
+                queryset = queryset.filter(version__data_source_id=link_source)
+            if link_version:
+                queryset = queryset.filter(version_id=link_version)
+
         if source_id:
             queryset = queryset.filter(sub_source=source_id)
 
@@ -200,7 +216,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.select_related("org_unit_type")
                 org_units = []
                 for unit in queryset:
-                    temp_org_unit = unit.as_dict();
+                    temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
                         queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])

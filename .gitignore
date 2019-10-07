@@ -104,3 +104,9 @@ hat/assets/messages/**/*.json
 /pgdata/
 
 hat/assets/webpack/webpack-stats\.json
+
+bin/
+
+include/python3.6m
+
+pip-selfcheck.json

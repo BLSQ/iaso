@@ -24,7 +24,7 @@ class Command(BaseCommand):
             number=version, data_source=source
         )
 
-        OrgUnit.objects.filter(source=source_name).delete()  # warning: dangerous
+        OrgUnit.objects.filter(sub_source=source_name).delete()  # warning: dangerous
         type_dict = dict()
         with open(org_unit_file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
@@ -46,7 +46,7 @@ class Command(BaseCommand):
                     org_unit.org_unit_type = type_dict[row[4]]
                     org_unit.name = row[1].strip()
                     # org_unit.aliases = obj.aliases
-                    org_unit.source = source_name
+                    org_unit.sub_source = source_name
                     org_unit.version = version
                     org_unit.source_ref = row[0].strip()
                     org_unit.validated = False

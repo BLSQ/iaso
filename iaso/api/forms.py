@@ -7,7 +7,7 @@ from rest_framework.response import Response
 
 from iaso.models import Form
 from iaso.utils import timestamp_to_datetime
-from .export_utils import Echo, generate_xlsx, iter_items
+from hat.api.export_utils import Echo, generate_xlsx, iter_items
 
 
 class FormsViewSet(viewsets.ViewSet):

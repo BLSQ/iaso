@@ -2,22 +2,18 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.db.models import OuterRef, Exists
 from django.shortcuts import get_object_or_404
+
+from hat.api.export_utils import timestamp_to_utc_datetime
 from hat.vector_control.models import Trap, Catch, APIImport
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.http import StreamingHttpResponse, HttpResponse
 from django.contrib.gis.geos import Point
-from datetime import datetime
-from django.utils import timezone
 from django.db.models import Q
 from django.core.paginator import Paginator
 
 from hat.geo.models import Province, ZS, AS
 from .export_utils import Echo, generate_xlsx, iter_items
-
-
-def timestamp_to_utc_datetime(timestamp):
-    return datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)
 
 
 class CatchesViewSet(viewsets.ViewSet):

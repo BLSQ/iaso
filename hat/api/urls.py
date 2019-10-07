@@ -42,16 +42,9 @@ from .home import HomeViewSet
 from .team_types import TeamTypeViewSet
 from .problems import ProblemsViewSet
 from .qcdetails import QCDetailsViewSet
-from .org_units import OrgUnitViewSet
-from .org_unit_types import OrgUnitTypeViewSet
-from .instances import InstancesViewSet
-from .forms import FormsViewSet
 from .logs import LogsViewSet
 from .source_types import SourceTypeViewSet
-from .iaso_devices import IasoDevicesViewSet
-from .iaso_devices_ownership import IasoDevicesOwnershipViewSet
-from .data_sources import DataSourceViewSet
-from .source_versions import SourceVersionViewSet
+
 
 router = routers.DefaultRouter()
 router.register(r"plannings", PlanningViewSet, base_name="planning")
@@ -104,19 +97,8 @@ router.register(r"home", HomeViewSet, base_name="home")
 router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
 router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
-
-router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
-router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
-router.register(r"instances", InstancesViewSet, base_name="instances")
-router.register(r"forms", FormsViewSet, base_name="forms")
-router.register(r"logs", LogsViewSet, base_name="logs")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
-router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
-router.register(
-    r"iasodevicesownership",
-    IasoDevicesOwnershipViewSet,
-    base_name="iasodevicesownership",
-)
-router.register(r"datasources", DataSourceViewSet, base_name="datasources")
-router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")
+
+
+router.register(r"logs", LogsViewSet, base_name="logs")
 urlpatterns = [url(r"^", include(router.urls))]

@@ -1,8 +1,10 @@
 import csv
 import io
+from datetime import datetime
 
 import xlsxwriter
 from django.conf import settings
+from django.utils import timezone
 from xlsxwriter.utility import xl_rowcol_to_cell
 from hat.common.utils import queryset_iterator
 
@@ -10,15 +12,14 @@ from hat.common.utils import queryset_iterator
 def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
     ws = wb.add_worksheet(sheet_name)
 
-    bold = wb.add_format({'bold': True})
+    bold = wb.add_format({"bold": True})
     bold.set_text_wrap()
-    formats = {
-        'bold': bold,
-        'percent': wb.add_format({'num_format': '0.00%'}),
-    }
+    formats = {"bold": bold, "percent": wb.add_format({"num_format": "0.00%"})}
 
-    advanced = any([1 for cd in col_descs if 'format' in cd])
-    max_height = max([c["title"].count("\n") for c in col_descs]) + 1  # Nb of lines in titles
+    advanced = any([1 for cd in col_descs if "format" in cd])
+    max_height = (
+        max([c["title"].count("\n") for c in col_descs]) + 1
+    )  # Nb of lines in titles
     ws.set_row(0, 15 * max_height, bold)  # default height is 15
     ws.freeze_panes(1, 0)
 
@@ -26,11 +27,11 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
         xl_col = xl_rowcol_to_cell(0, i)
         size = col_desc["width"] if "width" in col_desc else len(col_desc["title"])
         col_format = formats.get(col_desc["format"]) if "format" in col_desc else None
-        ws.set_column(xl_col + ':' + xl_col, size, col_format)
+        ws.set_column(xl_col + ":" + xl_col, size, col_format)
 
     row_num = 1
     col_titles = [cd["title"] for cd in col_descs]
-    ws.write_row('A' + str(row_num), col_titles, bold)
+    ws.write_row("A" + str(row_num), col_titles, bold)
 
     for item in queryset:
         row_num += 1
@@ -38,14 +39,17 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
             print(f"Sheet {sheet_name} row {row_num}")
 
         if not advanced:
-            ws.write_row('A' + str(row_num), get_row(item, row_num=row_num))
+            ws.write_row("A" + str(row_num), get_row(item, row_num=row_num))
         else:
             for col_num, column in enumerate(get_row(item, row_num=row_num)):
                 cell = xl_rowcol_to_cell(row_num - 1, col_num)
                 # The link format is using a text for the link display. Without specific format, a http link
                 # will still be automatically colored by Excel but will show the full URL instead of a short text.
-                if str(column).startswith("http") and col_descs[col_num].get("format", "") == "link":
-                    ws.write_url(cell, str(column), string='Lien')
+                if (
+                    str(column).startswith("http")
+                    and col_descs[col_num].get("format", "") == "link"
+                ):
+                    ws.write_url(cell, str(column), string="Lien")
                 else:
                     ws.write(cell, column)
 
@@ -71,7 +75,7 @@ def generate_xlsx(sheet_name, columns, queryset, get_row):
     :return: the XLSX result to be included in the response. This is always using a temporary file.
     """
     output = io.BytesIO()
-    wb = xlsxwriter.Workbook(output, {'constant_memory': True})
+    wb = xlsxwriter.Workbook(output, {"constant_memory": True})
     if isinstance(sheet_name, list):
         i = 0
         for sheet in sheet_name:
@@ -90,11 +94,16 @@ class Echo:
     def write(self, value):
         return value
 
+
 def iter_items(queryset, pseudo_buffer, columns, get_row, chunk_size=5000):
     writer = csv.writer(pseudo_buffer)
     if columns and len(columns) > 0 and type(columns[0]) == dict:
-        yield writer.writerow([c['title'].replace("\n", " ") for c in columns])
+        yield writer.writerow([c["title"].replace("\n", " ") for c in columns])
     else:
         yield writer.writerow(columns)
     for item in queryset_iterator(queryset, chunk_size=chunk_size):
         yield writer.writerow(get_row(item))
+
+
+def timestamp_to_utc_datetime(timestamp):
+    return datetime.fromtimestamp(int(timestamp / 1000), timezone.utc)

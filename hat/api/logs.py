@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from hat.users.models import is_authorized_user
 from hat.audit.models import Modification
 from .authentication import CsrfExemptSessionAuthentication
-from .catches import timestamp_to_utc_datetime
+from hat.api.export_utils import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
 
 
@@ -61,9 +61,7 @@ class LogsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["list"] = map(
-                lambda x: x.as_list(), page.object_list
-            )
+            res["list"] = map(lambda x: x.as_list(), page.object_list)
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

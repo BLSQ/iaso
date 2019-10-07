@@ -3,7 +3,6 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 
 from hat.vector_control.models import APIImport
-from .catches import timestamp_to_utc_datetime
 from iaso.models import Instance, OrgUnit, DeviceOwnership, Form
 from django.db.models import Q
 from django.shortcuts import get_object_or_404
@@ -11,7 +10,12 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 
 from django.http import StreamingHttpResponse, HttpResponse
-from .export_utils import Echo, generate_xlsx, iter_items
+from hat.api.export_utils import (
+    Echo,
+    generate_xlsx,
+    iter_items,
+    timestamp_to_utc_datetime,
+)
 from iaso.utils import timestamp_to_datetime
 from time import gmtime, strftime
 import ntpath

@@ -16,7 +16,7 @@ from hat.geo.models import Province, ZS, AS
 from hat.users.models import get_user_geo_list, is_authorized_user, Profile
 from hat.vector_control.models import Site, APIImport, Trap, Catch
 from .authentication import CsrfExemptSessionAuthentication
-from .catches import timestamp_to_utc_datetime
+from hat.api.export_utils import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
 
 

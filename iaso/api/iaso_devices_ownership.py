@@ -2,6 +2,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import DeviceOwnership
 
+
 class IasoDevicesOwnershipViewSet(viewsets.ViewSet):
     """
     list devices ownerships:

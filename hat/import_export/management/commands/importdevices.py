@@ -3,7 +3,7 @@ from datetime import datetime
 
 from django.core.management.base import BaseCommand
 
-from hat.common.utils import sns_notify
+from hat.common.utils import sns_notify, slack_notify
 from hat.import_export.import_synced import import_synced_devices
 
 
@@ -28,4 +28,5 @@ class Command(BaseCommand):
 
         if num_total > 0 or num_imported > 0 or num_errors > 0:
             sns_notify(message)
+            slack_notify(message)
         self.stdout.write(message)

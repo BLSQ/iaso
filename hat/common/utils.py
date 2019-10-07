@@ -1,9 +1,12 @@
 import gc
+import json
+import os
 from typing import List, Any
 from uuid import uuid4
 from subprocess import run, PIPE, CalledProcessError
 
 import boto3
+import requests
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
@@ -128,6 +131,60 @@ def sns_notify(message):
             return None
     else:
         return None
+
+
+def slack_notify(plain_text=None, icon="information_source", channel=None, attachments=None):
+    """
+    Slack notification. This requires a SLACK_WEBHOOK_URL environment parameter to do anything.
+    The URL should look like https://hooks.slack.com/services/xxxxxx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxx
+    :param plain_text: This parameter can be provided for simple text messages or omitted if attachments are given
+    :param icon: Slack icon name for the message
+    :param channel: Override the webhook default channel. Can be specified as @edarchis to send to a user
+    :param attachments: [
+                 {
+                     "color": "good", # Can be "warning", "error" or a color hex triplet
+                     "fallback": "This text will show if the attachment cannot be shown with rich content",
+                     "fields": [
+                         {
+                             "title": "Title of the field",
+                             "value": "Value of the field",
+                             "short": "false"  # Will show the field next to another one if there is enough space
+                         }
+                     ],
+                     "text": "Notification text"
+                     "pretext": "Shown before the attachments section"
+                 }
+             ]
+    :return: Nothing
+    """
+    url = os.environ.get("SLACK_WEBHOOK_URL", None)
+    if not channel:
+        channel = os.environ.get("SLACK_CHANNEL", "#sleeping-sickness")
+    if url:
+        if ":" not in icon:
+            icon = ":" + icon + ":"
+        if "#" not in channel and "@" not in channel:
+            channel = "#" + channel
+
+        notif = {
+                    "username": os.environ.get("SLACK_USERNAME", "incoming-webhook"),
+                    "icon_emoji": icon,
+                    "channel": channel,
+                }
+        if attachments:
+            notif["attachments"] = attachments
+        if plain_text:
+            notif["text"] = plain_text
+        try:
+            response = requests.post(
+                url=url,
+                headers={
+                    "Content-Type": "application/json; charset=utf-8",
+                },
+                data=json.dumps(notif)
+            )
+        except requests.exceptions.RequestException:
+            pass  # This is notification, it shouldn't crash the application.
 
 
 def get_request_as_array(request_get_or_post, item, default_list=[]):

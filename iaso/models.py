@@ -165,7 +165,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
-            "version": self.version.number,
+            "version": self.version.number if self.version else None,
             "source": self.version.data_source.name if self.version else None,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,

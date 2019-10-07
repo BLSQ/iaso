@@ -489,6 +489,7 @@ class CaseAbstract(models.Model):
     confirmed_case = models.NullBooleanField("Cas confirmé", default=False)
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
+    mark_for_deletion = models.BooleanField("Item is marked for deletion", default=False)
 
     latest_test_date = models.DateTimeField(null=True, blank=True, db_index=True)
 
@@ -636,6 +637,9 @@ class Case(CaseAbstract):
             "screening_type": self.screening_type,
             "latest_test_date": self.latest_test_date,
         }
+
+        if self.mark_for_deletion:
+            d["mark_for_deletion"] = self.mark_for_deletion
 
         if full and self.test_set:
             # Test results

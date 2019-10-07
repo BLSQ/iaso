@@ -1,9 +1,9 @@
 from copy import copy
 
 from django.core.paginator import Paginator
-from django.db import models
-from django.db.models import Q, OuterRef, Exists, Max
-from django.db.models.functions import Coalesce, Cast
+
+from django.db import transaction
+from django.db.models import Q, OuterRef, Exists
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
@@ -94,6 +94,8 @@ class CasesViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
+        show_deleted = request.GET.get("show_deleted", False)
+
         anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
             return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
@@ -137,8 +139,14 @@ class CasesViewSet(viewsets.ViewSet):
         if stage is not None:
             queryset = CaseView.objects.filter(test_pl_result=stage)
 
+        if not show_deleted:
+            queryset = queryset.filter(mark_for_deletion=False)
+
         if located != 'all' and is_locator != 'true':
-            queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup").exclude(province__icontains="kas").exclude(province__icontains="kinsh").exclude(province__icontains="bas").exclude(province__icontains="maniema").exclude(province__icontains="k.").exclude(province__icontains="equateur")
+            queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup")\
+                .exclude(province__icontains="kas").exclude(province__icontains="kinsh")\
+                .exclude(province__icontains="bas").exclude(province__icontains="maniema")\
+                .exclude(province__icontains="k.").exclude(province__icontains="equateur")
 
         if coordination_ids:
             queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
@@ -486,4 +494,45 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(case.as_dict())
         else:
-            return Response('Unauthorized', status=401)
+            return Response('Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+
+    def delete(self, request, pk=None):
+        case = get_object_or_404(Case, pk=pk)
+
+        full_delete=request.query_params.get("full_delete", None)
+        if full_delete and full_delete.lower() == "true":
+            if not request.user.is_superuser:
+                return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+            result = full_delete_case(case)
+
+            return Response(result)
+        else:
+            # TODO support simple trypelim admins
+            if not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+                return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+            case.mark_for_deletion = True
+            case.save()
+            return Response(case.as_dict())
+
+
+@transaction.atomic
+def full_delete_case(case):
+    # First get the JSON Document (necessary to be able to recover from the delete)
+    marked_documents = case.jsondocument_set.all().update(deleted=True)
+    if marked_documents == 0:
+        raise Exception("Cannot delete a record without a JSON Document for recovery")
+    deleted_tests = case.test_set.all().delete()
+    patient = case.normalized_patient
+    deleted_case = case.delete()
+    response = {
+        "marked_documents": marked_documents,
+        "deleted_tests": deleted_tests,
+        "deleted_case": deleted_case,
+    }
+    if patient.case_set.count() == 0:
+        # Treatment, duplicate pairs and duplicate ignore are cascaded and will report in this deleted_patient
+        response["deleted_patient"] = patient.delete()
+
+    return response

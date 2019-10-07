@@ -279,6 +279,7 @@ class JSONDocument(models.Model):
     population = models.ForeignKey(to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True)
     type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default='participant')
     doc = JSONField()
+    deleted = models.BooleanField("The result of the document has been deleted, don't reimport", default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -21,6 +21,11 @@ const styles = theme => ({
         marginBottom: theme.spacing(1),
         marginTop: theme.spacing(2),
     },
+    formControlNoMarginTop: {
+        width: '100%',
+        marginBottom: theme.spacing(1),
+        marginTop: theme.spacing(1),
+    },
     inputLabel: {
         color: 'rgba(0, 0, 0, 0.4)',
         paddingLeft: 3,
@@ -103,13 +108,15 @@ class InputComponent extends Component {
             labelString,
             onEnterPressed,
             checked,
+            withMarginTop,
         } = this.props;
         const {
             selectInputValue,
         } = this.state;
+        const formClass = withMarginTop ? classes.formControl : classes.formControlNoMarginTop;
         if (type === 'text' || type === 'number') {
             return (
-                <FormControl className={classes.formControl} variant="outlined">
+                <FormControl className={formClass} variant="outlined">
                     <InputLabel
                         name={keyValue}
                         htmlFor={`input-text-${keyValue}`}
@@ -137,7 +144,7 @@ class InputComponent extends Component {
             return (
                 <FormControl
                     variant="outlined"
-                    className={classes.formControl}
+                    className={formClass}
                 >
                     <InputLabel
                         classes={{
@@ -181,7 +188,7 @@ class InputComponent extends Component {
         }
         if (type === 'search') {
             return (
-                <FormControl className={classes.formControl} variant="outlined">
+                <FormControl className={formClass} variant="outlined">
                     <InputLabel
                         classes={{
                             shrink: classes.shrink,
@@ -246,6 +253,7 @@ InputComponent.defaultProps = {
     labelString: '',
     checked: false,
     onEnterPressed: () => null,
+    withMarginTop: true,
 };
 
 InputComponent.propTypes = {
@@ -262,6 +270,7 @@ InputComponent.propTypes = {
     labelString: PropTypes.string,
     checked: PropTypes.bool,
     onEnterPressed: PropTypes.func,
+    withMarginTop: PropTypes.bool,
 };
 
 

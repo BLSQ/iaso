@@ -126,6 +126,7 @@ class FormsChipsFilterComponent extends Component {
                 {
                     notSelectedForms.length > 0 && (
                         <InputComponent
+                            withMarginTop={false}
                             keyValue="form_id"
                             onChange={(key, formId) => this.onAdd(formId)}
                             value={null}

@@ -14,7 +14,7 @@ import Cancel from '@material-ui/icons/Cancel';
 import PropTypes from 'prop-types';
 
 import {
-    setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes, resetOrgUnits,
+    setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes, resetOrgUnits, setCurrentForms,
 } from '../redux/orgUnitsReducer';
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
@@ -23,6 +23,7 @@ import {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
     fetchOrgUnitDetail,
+    fetchForms,
     saveOrgUnit,
 } from '../utils/requests';
 import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtils';
@@ -35,6 +36,7 @@ import LoadingSpinner from '../components/LoadingSpinnerComponent';
 
 import commonStyles from '../styles/common';
 
+import chipColors from '../constants/chipColors';
 
 const baseUrl = 'orgunits/detail';
 
@@ -60,10 +62,12 @@ class OrgUnitDetail extends Component {
     componentDidMount() {
         this.fetchDetail();
         if (this.props.orgUnitTypes.length === 0) {
-            fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+            fetchOrgUnitsTypes(this.props.dispatch)
+                .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         }
         if (this.props.sourceTypes.length === 0) {
-            fetchSourceTypes(this.props.dispatch).then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+            fetchSourceTypes(this.props.dispatch)
+                .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
         }
     }
 
@@ -99,6 +103,18 @@ class OrgUnitDetail extends Component {
                     redirectTo(baseUrl, newParams);
                 }
                 this.props.setCurrentOrgUnit(orgUnit);
+
+                fetchForms(this.props.dispatch, `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`)
+                    .then((data) => {
+                        const forms = [];
+                        data.forms.forEach((f, i) => {
+                            forms.push({
+                                ...f,
+                                color: chipColors[i],
+                            });
+                        });
+                        this.props.setCurrentForms(forms);
+                    });
                 this.setState({
                     currentOrgUnit: orgUnit,
                 });
@@ -131,6 +147,7 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeLocation(location) {
+        console.log('location', location);
         this.setState({
             orgUnitModified: true,
             currentOrgUnit: {
@@ -297,7 +314,6 @@ class OrgUnitDetail extends Component {
                                     {
                                         tab === 'map' && (
                                             <OrgUnitMap
-                                                orgUnitTypes={orgUnitTypes}
                                                 orgUnit={currentOrgUnit}
                                                 onChangeLocation={(location) => {
                                                     this.handleChangeLocation(location);
@@ -364,6 +380,7 @@ OrgUnitDetail.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     setCurrentOrgUnit: PropTypes.func.isRequired,
+    setCurrentForms: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     setSourceTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
@@ -382,6 +399,7 @@ const MapStateToProps = state => ({
     fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    currentForms: state.orgUnits.currentForms,
     sourceTypes: state.orgUnits.sourceTypes,
 });
 
@@ -389,6 +407,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
+    setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),

@@ -3,7 +3,7 @@ import { getRequest, patchRequest } from '../libs/Api';
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../components/snackBars';
 
-const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}`)
+export const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}`)
     .then(res => res.orgUnits)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
@@ -11,7 +11,7 @@ const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}
         throw error;
     });
 
-const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) => getRequest(`/api/orgunits/?${params}`)
+export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) => getRequest(`/api/orgunits/?${params}`)
     .then(res => ({
         ...orgUnitType,
         orgUnits: res.orgUnits,
@@ -22,7 +22,7 @@ const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) => getRequest(`/a
         throw error;
     });
 
-const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
+export const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
     .then(res => res.orgUnitTypes)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitTypesError')));
@@ -30,7 +30,7 @@ const fetchOrgUnitsTypes = dispatch => getRequest('/api/orgunittypes')
         throw error;
     });
 
-const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes/')
+export const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes/')
     .then(sourceTypes => sourceTypes)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchSourceTypesError')));
@@ -38,7 +38,7 @@ const fetchSourceTypes = dispatch => getRequest('/api/sourcetypes/')
         throw error;
     });
 
-const fetchSources = dispatch => getRequest('/api/datasources/')
+export const fetchSources = dispatch => getRequest('/api/datasources/')
     .then(res => res.sources)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchSourcesError')));
@@ -46,7 +46,7 @@ const fetchSources = dispatch => getRequest('/api/datasources/')
         throw error;
     });
 
-const fetchDevices = dispatch => getRequest('/api/iasodevices')
+export const fetchDevices = dispatch => getRequest('/api/iasodevices')
     .then(devices => devices)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesError')));
@@ -54,7 +54,7 @@ const fetchDevices = dispatch => getRequest('/api/iasodevices')
         throw error;
     });
 
-const fetchDevicesOwnerships = dispatch => getRequest('/api/iasodevicesownership')
+export const fetchDevicesOwnerships = dispatch => getRequest('/api/iasodevicesownership')
     .then(devicesOwnerships => devicesOwnerships)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesOwnershipError')));
@@ -62,7 +62,7 @@ const fetchDevicesOwnerships = dispatch => getRequest('/api/iasodevicesownership
         throw error;
     });
 
-const fetchInstancesAsDict = (dispatch, url) => getRequest(url)
+export const fetchInstancesAsDict = (dispatch, url) => getRequest(url)
     .then(instances => instances)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceDictError')));
@@ -70,7 +70,7 @@ const fetchInstancesAsDict = (dispatch, url) => getRequest(url)
         throw error;
     });
 
-const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
+export const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
     .then(instances => instances)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));
@@ -78,7 +78,29 @@ const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
         throw error;
     });
 
-const fetchFormDetail = (dispatch, formId) => getRequest(`/api/forms/${formId}`)
+export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
+    const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
+    return getRequest(url)
+        .then(instances => ({
+            ...form,
+            instances,
+        }))
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));
+            console.error('Error while fetching instances locations list:', error);
+            throw error;
+        });
+};
+
+export const fetchForms = (dispatch, url = '/api/forms/') => getRequest(url)
+    .then(forms => forms)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchFormsError')));
+        console.error('Error while fetching forms list:', error);
+        throw error;
+    });
+
+export const fetchFormDetail = (dispatch, formId) => getRequest(`/api/forms/${formId}`)
     .then(form => form)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchFormError')));
@@ -86,7 +108,7 @@ const fetchFormDetail = (dispatch, formId) => getRequest(`/api/forms/${formId}`)
         throw error;
     });
 
-const fetchOrgUnitDetail = (dispatch, orgUnitId) => getRequest(`/api/orgunits/${orgUnitId}`)
+export const fetchOrgUnitDetail = (dispatch, orgUnitId) => getRequest(`/api/orgunits/${orgUnitId}`)
     .then(orgUnit => orgUnit)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitError')));
@@ -94,7 +116,7 @@ const fetchOrgUnitDetail = (dispatch, orgUnitId) => getRequest(`/api/orgunits/${
         throw error;
     });
 
-const saveOrgUnit = (dispatch, orgUnit) => patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
+export const saveOrgUnit = (dispatch, orgUnit) => patchRequest(`/api/orgunits/${orgUnit.id}/`, orgUnit)
     .then((savedOrgUnit) => {
         dispatch(enqueueSnackbar(succesfullSnackBar()));
         return savedOrgUnit;
@@ -105,7 +127,7 @@ const saveOrgUnit = (dispatch, orgUnit) => patchRequest(`/api/orgunits/${orgUnit
         throw error;
     });
 
-const fetchLogDetail = (dispatch, logId) => getRequest(`/api/logs/${logId}`)
+export const fetchLogDetail = (dispatch, logId) => getRequest(`/api/logs/${logId}`)
     .then(logDetail => logDetail)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchLogDetailError')));
@@ -113,28 +135,10 @@ const fetchLogDetail = (dispatch, logId) => getRequest(`/api/logs/${logId}`)
         throw error;
     });
 
-const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/instances/${instanceId}`)
+export const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/instances/${instanceId}`)
     .then(instance => instance)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError')));
         console.error('Error while fetching instance detail:', error);
         throw error;
     });
-
-
-export {
-    fetchOrgUnitsTypes,
-    fetchSubOrgUnitsByType,
-    fetchSourceTypes,
-    fetchSources,
-    fetchOrgUnitDetail,
-    fetchInstancesAsLocations,
-    fetchInstancesAsDict,
-    fetchFormDetail,
-    saveOrgUnit,
-    fetchLogDetail,
-    fetchDevices,
-    fetchDevicesOwnerships,
-    fetchOrgUnits,
-    fetchInstanceDetail,
-};

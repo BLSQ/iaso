@@ -93,6 +93,7 @@ class InstancesViewSet(viewsets.ViewSet):
         device_id = request.GET.get("deviceId", None)
         device_ownership_id = request.GET.get("deviceOwnershipId", None)
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
+        org_unit_id = request.GET.get("orgUnitId", None)
 
         queryset = (
             queryset.exclude(file="")
@@ -105,6 +106,8 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         if org_unit_type_id:
             queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
+        if org_unit_id:
+            queryset = queryset.filter(org_unit_id=org_unit_id)
 
         if org_unit_parent_id:
             queryset = queryset.filter(

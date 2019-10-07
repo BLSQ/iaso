@@ -9,7 +9,8 @@ const SET_SOURCES = 'SET_SOURCES';
 const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
 const SET_SUB_ORG_UNITS_TYPES_SELECTED = 'SET_SUB_ORG_UNITS_TYPES_SELETED';
 const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
-
+const SET_FORMS_SELECTED = 'SET_FORMS_SELECTED';
+const SET_CURRENT_FORMS = 'SET_CURRENT_FORMS';
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
     type: SET_ORG_UNITS,
@@ -42,6 +43,11 @@ export const setOrgUnitTypes = orgUnitTypes => ({
     payload: orgUnitTypes,
 });
 
+export const setCurrentForms = currentForms => ({
+    type: SET_CURRENT_FORMS,
+    payload: currentForms,
+});
+
 export const setSourceTypes = sourceTypes => ({
     type: SET_SOURCE_TYPES,
     payload: sourceTypes,
@@ -63,6 +69,11 @@ export const setSourcesSelected = currentSourcesSelected => ({
     payload: currentSourcesSelected,
 });
 
+export const setFormsSelected = currentFormsSelected => ({
+    type: SET_FORMS_SELECTED,
+    payload: currentFormsSelected,
+});
+
 export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected => ({
     type: SET_SUB_ORG_UNITS_TYPES_SELECTED,
     payload: currentSubOrgUnitsTypesSelected,
@@ -77,6 +88,8 @@ export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
     currentSubOrgUnitsTypesSelected: [],
+    currentForms: null,
+    currentFormsSelected: [],
     fetchingList: false,
     fetchingDetail: true,
     fetchingSubOrgUnits: false,
@@ -126,6 +139,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             return { ...state, orgUnitTypes };
         }
 
+        case SET_CURRENT_FORMS: {
+            const currentForms = action.payload;
+            return { ...state, currentForms };
+        }
+
         case SET_SOURCE_TYPES: {
             const sourceTypes = action.payload;
             return { ...state, sourceTypes };
@@ -153,6 +171,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
             const currentSubOrgUnitsTypesSelected = action.payload;
             return { ...state, currentSubOrgUnitsTypesSelected };
+        }
+
+        case SET_FORMS_SELECTED: {
+            const currentFormsSelected = action.payload;
+            return { ...state, currentFormsSelected };
         }
 
         default:

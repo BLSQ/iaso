@@ -36,6 +36,7 @@ class FormsViewSet(viewsets.ViewSet):
         to_date = request.GET.get("date_to", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
 
         queryset = queryset.annotate(instance_updated_at=Max("instance__updated_at"))
         queryset = queryset.annotate(
@@ -57,6 +58,9 @@ class FormsViewSet(viewsets.ViewSet):
                 | Q(created_at__lte=to_date)
                 | Q(updated_at__lte=to_date)
             )
+
+        if org_unit_type_id:
+            queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
 
         if csv_format is None and xlsx_format is None:
             if limit:

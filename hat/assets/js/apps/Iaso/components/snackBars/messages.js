@@ -23,6 +23,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchFormError',
         defaultMessage: 'An error occured while fetching form detail',
     },
+    fetchFormsError: {
+        id: 'iaso.snackBar.fetchFormsError',
+        defaultMessage: 'An error occured while fetching forms list',
+    },
     fetchOrgUnitError: {
         id: 'iaso.snackBar.fetchOrgUnitError',
         defaultMessage: 'An error occured while fetching org unit detail',

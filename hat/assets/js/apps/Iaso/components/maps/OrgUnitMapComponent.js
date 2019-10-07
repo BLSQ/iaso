@@ -24,11 +24,13 @@ import FilterOrgunitOptionComponent from './tools/FilterOrgunitOptionComponent';
 import MarkerComponent from './markers/MarkerComponent';
 import MarkersListComponent from './markers/MarkersListComponent';
 import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
+import InstancePopupComponent from './popups/InstancePopupComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 import { setCurrentSubOrgUnit } from '../../redux/orgUnitsReducer';
+import { setCurrentInstance } from '../../redux/instancesReducer';
 
-import { fetchOrgUnitDetail } from '../../utils/requests';
+import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 
@@ -81,18 +83,6 @@ const mapOrgUnitTypesSelected = (orgUnitTypesSelected) => {
     });
     return mappedOrgUnitTypesSelected;
 };
-
-const renderShape = (item, color) => (
-    <GeoJSON
-        key={item.id}
-        data={item.geo_json}
-        style={() => (
-            { color }
-        )}
-    >
-        <OrgUnitPopupComponent itemId={item.id} />
-    </GeoJSON>
-);
 
 class OrgUnitMapComponent extends Component {
     constructor(props) {
@@ -252,6 +242,14 @@ class OrgUnitMapComponent extends Component {
         fetchOrgUnitDetail(dispatch, orgUnit.id).then(i => this.props.setCurrentSubOrgUnit(i));
     }
 
+    fetchInstanceDetail(instance) {
+        const {
+            dispatch,
+        } = this.props;
+        this.props.setCurrentInstance(null);
+        fetchInstanceDetail(dispatch, instance.id).then(i => this.props.setCurrentInstance(i));
+    }
+
     render() {
         const {
             orgUnit,
@@ -259,7 +257,7 @@ class OrgUnitMapComponent extends Component {
             intl: {
                 formatMessage,
             },
-            orgUnitTypes,
+            formsSelected,
             orgUnitTypesSelected,
         } = this.props;
         const { editEnabled, currentOption } = this.state;
@@ -275,12 +273,7 @@ class OrgUnitMapComponent extends Component {
                     settingsDisabled={editEnabled}
                     filtersDisabled={editEnabled}
                     filtersOptionComponent={(
-                        orgUnitTypes.length > 0 ? (
-                            <FilterOrgunitOptionComponent
-                                orgUnitTypes={orgUnitTypes}
-                                currentOrgUnit={orgUnit}
-                            />
-                        ) : null
+                        <FilterOrgunitOptionComponent />
                     )}
                     editOptionComponent={(
                         <EditOrgUnitOptionComponent
@@ -349,6 +342,17 @@ class OrgUnitMapComponent extends Component {
                                 </Fragment>
                             ))
                         }
+                        {!editEnabled
+                            && formsSelected.map(f => (
+                                <MarkersListComponent
+                                    key={f.id}
+                                    items={f.instances}
+                                    onMarkerClick={i => this.fetchInstanceDetail(i)}
+                                    PopupComponent={InstancePopupComponent}
+                                    customMarker={clusterColorMarker(f.color, 'white-form.svg')}
+                                />
+                            ))
+                        }
                         {
                             hasMarker
                             && (
@@ -365,9 +369,6 @@ class OrgUnitMapComponent extends Component {
         );
     }
 }
-OrgUnitMapComponent.defaultProps = {
-    orgUnitTypes: [],
-};
 
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -378,11 +379,13 @@ OrgUnitMapComponent.propTypes = {
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     orgUnitTypesSelected: PropTypes.array.isRequired,
-    orgUnitTypes: PropTypes.array,
+    formsSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
+    setCurrentInstance: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
+    formsSelected: state.orgUnits.currentFormsSelected,
     currentTile: state.map.currentTile,
     orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
 });
@@ -391,6 +394,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     resetMapReducer: currentTile => dispatch(resetMapReducer(currentTile)),
     setCurrentSubOrgUnit: o => dispatch(setCurrentSubOrgUnit(o)),
+    setCurrentInstance: i => dispatch(setCurrentInstance(i)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitMapComponent));

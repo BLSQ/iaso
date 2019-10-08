@@ -11,14 +11,12 @@ import PropTypes from 'prop-types';
 
 import {
     fetchOrgUnitsTypes,
-    fetchSourceTypes,
     fetchSources,
 } from '../utils/requests';
 
 import {
     setOrgUnits,
     setOrgUnitTypes,
-    setSourceTypes,
     setOrgUnitsListFetching,
     setSources,
 } from '../redux/orgUnitsReducer';
@@ -37,6 +35,7 @@ import OrgUnitsFiltersComponent from '../components/filters/OrgUnitsFiltersCompo
 
 import commonStyles from '../styles/common';
 import reactTable from '../styles/reactTable';
+import chipColors from '../constants/chipColors';
 
 const baseUrl = 'orgunits';
 
@@ -75,7 +74,18 @@ class OrgUnits extends Component {
             this.onSearch();
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSources(this.props.dispatch).then(sources => this.props.setSources(sources));
+
+        fetchSources(this.props.dispatch)
+            .then((data) => {
+                const sources = [];
+                data.forEach((s, i) => {
+                    sources.push({
+                        ...s,
+                        color: chipColors[i],
+                    });
+                });
+                this.props.setSources(sources);
+            });
     }
 
     componentDidUpdate(prevProps) {

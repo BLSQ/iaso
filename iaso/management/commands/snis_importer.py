@@ -41,8 +41,6 @@ class Command(BaseCommand):
                 type_dict[csv_name] = OrgUnitType.objects.get(pk=iaso_id)
         unknownUnitType = OrgUnitType.objects.get(name="Inconnu")
         type_dict[""] = unknownUnitType
-        print("type_dict", type_dict)
-        print("file_name", file_name)
         with open(file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
             index = 1
@@ -72,7 +70,6 @@ class Command(BaseCommand):
                         coordinates = row[2]
                         feature_type = row[3]
 
-                        print("coordinates", coordinates)
                         if feature_type == "POINT" and coordinates:
                             tuple = json.loads(coordinates)
                             pnt = Point(tuple[0], tuple[1])

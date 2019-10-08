@@ -106,7 +106,7 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                source(formatMessage, sources),
+                                source(formatMessage, sources || []),
                                 status(formatMessage),
                             ]}
                         />
@@ -137,6 +137,7 @@ class OrgUnitsFiltersComponent extends Component {
 }
 OrgUnitsFiltersComponent.defaultProps = {
     baseUrl: '',
+    sources: [],
 };
 
 OrgUnitsFiltersComponent.propTypes = {
@@ -146,7 +147,7 @@ OrgUnitsFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sources: PropTypes.array.isRequired,
+    sources: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
 };
 

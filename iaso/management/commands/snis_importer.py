@@ -32,7 +32,7 @@ class Command(BaseCommand):
 
         # OrgUnit.objects.filter(source=source_name).delete()  # warning: dangerous
         type_dict = dict()
-        with open(org_unit_file_name) as csvfile:
+        with open(org_unit_file_name, encoding="utf-8") as csvfile:
             csv_reader = csv.reader(csvfile)
             for row in csv_reader:
                 print(row)

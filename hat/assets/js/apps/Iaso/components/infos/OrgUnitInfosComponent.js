@@ -17,6 +17,7 @@ function OrgUnitInfosComponent(props) {
         onChangeInfo,
         orgUnitTypes,
         sourceTypes,
+        sources,
         intl: {
             formatMessage,
         },
@@ -46,9 +47,9 @@ function OrgUnitInfosComponent(props) {
                     label={MESSAGES.org_unit_type_id}
                 />
                 <InputComponent
-                    keyValue="source"
+                    keyValue="sub_source"
                     onChange={onChangeInfo}
-                    value={orgUnit.source}
+                    value={orgUnit.sub_source}
                     type="select"
                     options={
                         sourceTypes.map(s => ({
@@ -56,7 +57,7 @@ function OrgUnitInfosComponent(props) {
                             value: s[0],
                         }))
                     }
-                    label={MESSAGES.source}
+                    label={MESSAGES.subSource}
                 />
                 <InputComponent
                     keyValue="status"
@@ -100,6 +101,12 @@ function OrgUnitInfosComponent(props) {
             </Grid>
             <Grid item xs={4}>
                 <InputComponent
+                    keyValue="source"
+                    value={orgUnit.source}
+                    disabled
+                    label={MESSAGES.source}
+                />
+                <InputComponent
                     keyValue="source_ref"
                     value={orgUnit.source_ref}
                     disabled
@@ -126,6 +133,7 @@ OrgUnitInfosComponent.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
+    sources: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };
 

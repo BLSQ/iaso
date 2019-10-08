@@ -14,7 +14,12 @@ import Cancel from '@material-ui/icons/Cancel';
 import PropTypes from 'prop-types';
 
 import {
-    setCurrentOrgUnit, setOrgUnitTypes, setSourceTypes, resetOrgUnits, setCurrentForms,
+    setCurrentOrgUnit,
+    setOrgUnitTypes,
+    setSourceTypes,
+    resetOrgUnits,
+    setCurrentForms,
+    setSources,
 } from '../redux/orgUnitsReducer';
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
@@ -22,6 +27,7 @@ import { createUrl } from '../../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
+    fetchSources,
     fetchOrgUnitDetail,
     fetchForms,
     saveOrgUnit,
@@ -68,6 +74,10 @@ class OrgUnitDetail extends Component {
         if (this.props.sourceTypes.length === 0) {
             fetchSourceTypes(this.props.dispatch)
                 .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+        }
+        if (this.props.sources.length === 0) {
+            fetchSources(this.props.dispatch)
+                .then(sources => this.props.setSources(sources));
         }
     }
 
@@ -147,7 +157,6 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeLocation(location) {
-        console.log('location', location);
         this.setState({
             orgUnitModified: true,
             currentOrgUnit: {
@@ -239,6 +248,7 @@ class OrgUnitDetail extends Component {
             },
             orgUnitTypes,
             sourceTypes,
+            sources,
             params,
         } = this.props;
         const {
@@ -307,6 +317,7 @@ class OrgUnitDetail extends Component {
                                                 orgUnit={currentOrgUnit}
                                                 orgUnitTypes={orgUnitTypes}
                                                 sourceTypes={sourceTypes}
+                                                sources={sources}
                                                 onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
                                             />
                                         )
@@ -392,6 +403,8 @@ OrgUnitDetail.propTypes = {
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
+    setSources: PropTypes.func.isRequired,
+    sources: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -401,6 +414,7 @@ const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     currentForms: state.orgUnits.currentForms,
     sourceTypes: state.orgUnits.sourceTypes,
+    sources: state.orgUnits.sources,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -412,6 +426,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
+    setSources: sources => dispatch(setSources(sources)),
 });
 
 

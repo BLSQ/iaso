@@ -303,7 +303,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
-        org_unit.source = request.data.get("source", "")
+        org_unit.sub_source = request.data.get("sub_source", "")
         org_unit.validated = request.data.get("status", True)
         geo_json = request.data.get("geo_json", None)
         simplified_geom = request.data.get("simplified_geom", None)

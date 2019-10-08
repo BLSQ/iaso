@@ -361,32 +361,30 @@ class OrgUnitMapComponent extends Component {
                                 />
                             ))
                         }
-                        {!editEnabled
-                            && mappedSourcesSelected.map(s => (
-                                <Fragment key={s.id}>
-                                    <MarkersListComponent
-                                        items={s.orgUnits.locations}
-                                        onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
-                                        PopupComponent={OrgUnitPopupComponent}
-                                        customMarker={clusterColorMarker(s.color)}
-                                    />
-                                    {
-                                        s.orgUnits.shapes.map(o => (
-                                            <GeoJSON
-                                                key={o.id}
-                                                data={o.geo_json}
-                                                onClick={() => this.fetchSubOrgUnitDetail(o)}
-                                                style={() => (
-                                                    { color: s.color }
-                                                )}
-                                            >
-                                                <OrgUnitPopupComponent itemId={o.id} />
-                                            </GeoJSON>
-                                        ))
-                                    }
-                                </Fragment>
-                            ))
-                        }
+                        {mappedSourcesSelected.map(s => (
+                            <Fragment key={s.id}>
+                                <MarkersListComponent
+                                    items={s.orgUnits.locations}
+                                    onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
+                                    PopupComponent={OrgUnitPopupComponent}
+                                    customMarker={clusterColorMarker(s.color)}
+                                />
+                                {
+                                    s.orgUnits.shapes.map(o => (
+                                        <GeoJSON
+                                            key={o.id}
+                                            data={o.geo_json}
+                                            onClick={() => this.fetchSubOrgUnitDetail(o)}
+                                            style={() => (
+                                                { color: s.color }
+                                            )}
+                                        >
+                                            <OrgUnitPopupComponent itemId={o.id} />
+                                        </GeoJSON>
+                                    ))
+                                }
+                            </Fragment>
+                        ))}
                         {
                             hasMarker
                             && (

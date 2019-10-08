@@ -368,7 +368,7 @@ class OrgUnitMapComponent extends Component {
                                         items={s.orgUnits.locations}
                                         onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
-                                        customMarker={clusterColorMarker(s.color, 'white-pentagon.svg')}
+                                        customMarker={clusterColorMarker(s.color)}
                                     />
                                     {
                                         s.orgUnits.shapes.map(o => (

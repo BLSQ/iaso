@@ -62,8 +62,7 @@ export const customMarkerOptions = {
 export const customColorMarkerOptions = (color, iconName) => ({
     className: 'marker-custom color',
     html: `${L.Util.template(svgColoredString(color))}
-    <img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />
-    <img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
+    ${iconName ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" /><img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>` : ''}`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -28],
     iconAnchor: [12, 32],

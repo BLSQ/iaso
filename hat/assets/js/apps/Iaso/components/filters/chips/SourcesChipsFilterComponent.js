@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
-
 import {
     withStyles,
     Box,
@@ -11,31 +10,32 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import formIconUrl from '../../../../../../../dashboard/static/images/white-form.svg';
-
-import { setFormsSelected } from '../../../redux/orgUnitsReducer';
+import { setSourcesSelected } from '../../../redux/orgUnitsReducer';
 
 import ChipsFilterComponent from './ChipsFilterComponent';
 
 import {
-    fetchInstancesAsLocationsByForm,
+    fetchAssociatedOrgUnits,
 } from '../../../utils/requests';
 import commonStyles from '../../../styles/common';
+
+import {
+    getSourcesWithoutCurrentSource,
+} from '../../../utils/orgUnitUtils';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
-
-function FormsChipsFilterComponent(props) {
+function SourcesChipsFilterComponent(props) {
     const {
         classes,
-        formsSelected,
-        currentForms,
+        sourcesSelected,
+        currentSources,
         dispatch,
         currentOrgUnit,
     } = props;
-    if (!currentForms || (currentForms && currentForms.length === 0)) return null;
+    const sources = getSourcesWithoutCurrentSource(currentSources, currentOrgUnit.source_id);
     return (
         <Fragment>
             <Box
@@ -44,54 +44,53 @@ function FormsChipsFilterComponent(props) {
                 component="div"
             >
                 <Typography variant="subtitle1">
-                    <FormattedMessage id="iaso.forms.title" defaultMessage="Forms" />
+                    <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
                     :
                 </Typography>
             </Box>
             <Divider light />
             <ChipsFilterComponent
                 selectLabelMessage={{
-                    id: 'iaso.orgUnits.addForm',
-                    defaultMessage: 'Add form',
+                    id: 'iaso.orgUnits.addSource',
+                    defaultMessage: 'Add source',
                 }}
-                chipIconUrl={formIconUrl}
-                locationsKey="instances"
-                fetchDetails={form => fetchInstancesAsLocationsByForm(
+                locationsKey="orgUnits"
+                fetchDetails={source => fetchAssociatedOrgUnits(
                     dispatch,
-                    form,
+                    source,
                     currentOrgUnit,
                 )}
                 setSelectedItems={props.setFormsSelected}
-                selectedItems={formsSelected}
-                currentItems={currentForms}
-                displayTotal
+                selectedItems={sourcesSelected}
+                currentItems={sources}
             />
+            <Divider />
         </Fragment>
     );
 }
 
-FormsChipsFilterComponent.defaultProps = {
-    currentForms: null,
+SourcesChipsFilterComponent.defaultProps = {
+    currentSources: null,
 };
 
-FormsChipsFilterComponent.propTypes = {
+SourcesChipsFilterComponent.propTypes = {
     classes: PropTypes.object.isRequired,
-    currentForms: PropTypes.any,
+    currentSources: PropTypes.any,
     currentOrgUnit: PropTypes.object.isRequired,
-    formsSelected: PropTypes.array.isRequired,
+    sourcesSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
-    currentForms: state.orgUnits.currentForms,
-    formsSelected: state.orgUnits.currentFormsSelected,
+    currentSources: state.orgUnits.sources,
+    sourcesSelected: state.orgUnits.currentSourcesSelected,
     currentOrgUnit: state.orgUnits.current,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setFormsSelected: forms => dispatch(setFormsSelected(forms)),
+    setFormsSelected: sources => dispatch(setSourcesSelected(sources)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(FormsChipsFilterComponent));
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(SourcesChipsFilterComponent));

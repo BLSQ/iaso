@@ -20,7 +20,9 @@ import { customMarker, customZoomBar, clusterColorMarker } from '../../utils/map
 import TileSwitch from './tools/TileSwitchComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
-import FilterOrgunitOptionComponent from './tools/FilterOrgunitOptionComponent';
+import OrgUnitTypeChipsFilterComponent from '../filters/chips/OrgUnitTypeChipsFilterComponent';
+import FormsChipsFilterComponent from '../filters/chips/FormsChipsFilterComponent';
+import SourcesChipsFilterComponent from '../filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from './markers/MarkerComponent';
 import MarkersListComponent from './markers/MarkersListComponent';
 import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
@@ -61,9 +63,9 @@ const addMarker = () => {
 };
 let editableFeatureGroup = new L.FeatureGroup();
 
-const mapOrgUnitTypesSelected = (orgUnitTypesSelected) => {
-    const mappedOrgUnitTypesSelected = [];
-    orgUnitTypesSelected.forEach((ot) => {
+const mapOrgUnitByLocation = (orgUnits) => {
+    const mappedOrgunits = [];
+    orgUnits.forEach((ot) => {
         const otCopy = {
             ...ot,
             orgUnits: {
@@ -79,9 +81,9 @@ const mapOrgUnitTypesSelected = (orgUnitTypesSelected) => {
                 otCopy.orgUnits.shapes.push(o);
             }
         });
-        mappedOrgUnitTypesSelected.push(otCopy);
+        mappedOrgunits.push(otCopy);
     });
-    return mappedOrgUnitTypesSelected;
+    return mappedOrgunits;
 };
 
 class OrgUnitMapComponent extends Component {
@@ -257,6 +259,7 @@ class OrgUnitMapComponent extends Component {
             intl: {
                 formatMessage,
             },
+            sourcesSelected,
             formsSelected,
             orgUnitTypesSelected,
         } = this.props;
@@ -265,7 +268,8 @@ class OrgUnitMapComponent extends Component {
         if (this.map) {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
-        const mappedOrgUnitTypesSelected = mapOrgUnitTypesSelected(orgUnitTypesSelected);
+        const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
+        const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -273,7 +277,11 @@ class OrgUnitMapComponent extends Component {
                     settingsDisabled={editEnabled}
                     filtersDisabled={editEnabled}
                     filtersOptionComponent={(
-                        <FilterOrgunitOptionComponent />
+                        <Fragment>
+                            <SourcesChipsFilterComponent />
+                            <OrgUnitTypeChipsFilterComponent />
+                            <FormsChipsFilterComponent />
+                        </Fragment>
                     )}
                     editOptionComponent={(
                         <EditOrgUnitOptionComponent
@@ -353,6 +361,32 @@ class OrgUnitMapComponent extends Component {
                                 />
                             ))
                         }
+                        {!editEnabled
+                            && mappedSourcesSelected.map(s => (
+                                <Fragment key={s.id}>
+                                    <MarkersListComponent
+                                        items={s.orgUnits.locations}
+                                        onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
+                                        PopupComponent={OrgUnitPopupComponent}
+                                        customMarker={clusterColorMarker(s.color, 'white-pentagon.svg')}
+                                    />
+                                    {
+                                        s.orgUnits.shapes.map(o => (
+                                            <GeoJSON
+                                                key={o.id}
+                                                data={o.geo_json}
+                                                onClick={() => this.fetchSubOrgUnitDetail(o)}
+                                                style={() => (
+                                                    { color: s.color }
+                                                )}
+                                            >
+                                                <OrgUnitPopupComponent itemId={o.id} />
+                                            </GeoJSON>
+                                        ))
+                                    }
+                                </Fragment>
+                            ))
+                        }
                         {
                             hasMarker
                             && (
@@ -382,12 +416,14 @@ OrgUnitMapComponent.propTypes = {
     formsSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
+    sourcesSelected: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     formsSelected: state.orgUnits.currentFormsSelected,
     currentTile: state.map.currentTile,
     orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
+    sourcesSelected: state.orgUnits.currentSourcesSelected,
 });
 
 const MapDispatchToProps = dispatch => ({

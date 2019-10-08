@@ -146,7 +146,7 @@ class InnerDrawer extends Component {
                         <Grid item xs={7} md={8} lg={9} className={classes.mapContainer}>
                             {children}
                         </Grid>
-                        <Grid item xs={5} md={4} lg={3}>
+                        <Grid item xs={5} md={4} lg={3} className={classes.innerDrawerToolContainer}>
 
                             {
                                 activeOption === 'edit'

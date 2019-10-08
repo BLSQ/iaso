@@ -90,6 +90,7 @@ export const orgUnitsInitialState = {
     currentSubOrgUnitsTypesSelected: [],
     currentForms: null,
     currentFormsSelected: [],
+    currentSourcesSelected: [],
     fetchingList: false,
     fetchingDetail: true,
     fetchingSubOrgUnits: false,
@@ -102,7 +103,7 @@ export const orgUnitsInitialState = {
     },
     orgUnitTypes: [],
     sourceTypes: [],
-    sources: [],
+    sources: null,
     orgUnitLevel: [],
 };
 
@@ -176,6 +177,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FORMS_SELECTED: {
             const currentFormsSelected = action.payload;
             return { ...state, currentFormsSelected };
+        }
+
+        case SET_SOURCES_SELECTED: {
+            const currentSourcesSelected = action.payload;
+            return { ...state, currentSourcesSelected };
         }
 
         default:

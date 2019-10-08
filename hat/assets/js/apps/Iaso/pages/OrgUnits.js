@@ -245,6 +245,7 @@ class OrgUnits extends Component {
 }
 OrgUnits.defaultProps = {
     reduxPage: undefined,
+    sources: [],
 };
 
 OrgUnits.propTypes = {
@@ -257,7 +258,7 @@ OrgUnits.propTypes = {
     setOrgUnitTypes: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     setSources: PropTypes.func.isRequired,
-    sources: PropTypes.array.isRequired,
+    sources: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,

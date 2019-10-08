@@ -84,6 +84,8 @@ class ChipsFilterComponent extends Component {
             currentItems,
             chipIconUrl,
             selectLabelMessage,
+            locationsKey,
+            displayTotal,
         } = this.props;
         let notSelectedItems = [];
         if (currentItems) {
@@ -100,8 +102,10 @@ class ChipsFilterComponent extends Component {
                         selectedItems.map(f => (
                             <Chip
                                 key={f.id}
-                                icon={<img src={chipIconUrl} className={classes.svgChipIcon} alt="item" />}
-                                label={`${f.name} - ${f.instances.length}`}
+                                icon={chipIconUrl !== ''
+                                    ? <img src={chipIconUrl} className={classes.svgChipIcon} alt="item" />
+                                    : null}
+                                label={`${f.name} - ${displayTotal ? f[locationsKey].length : ''}`}
                                 clickable
                                 className={classes.chip}
                                 onDelete={() => this.onDelete(f)}
@@ -138,6 +142,8 @@ class ChipsFilterComponent extends Component {
 
 ChipsFilterComponent.defaultProps = {
     currentItems: null,
+    displayTotal: false,
+    chipIconUrl: '',
 };
 
 ChipsFilterComponent.propTypes = {
@@ -148,8 +154,9 @@ ChipsFilterComponent.propTypes = {
     setFetching: PropTypes.func.isRequired,
     fetchDetails: PropTypes.func.isRequired,
     locationsKey: PropTypes.string.isRequired,
-    chipIconUrl: PropTypes.string.isRequired,
+    chipIconUrl: PropTypes.string,
     selectLabelMessage: PropTypes.string.isRequired,
+    displayTotal: PropTypes.bool,
 };
 
 const MapStateToProps = () => ({

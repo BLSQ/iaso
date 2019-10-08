@@ -92,6 +92,21 @@ export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
         });
 };
 
+export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit) => {
+    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true`;
+    return getRequest(url)
+        .then(data => ({
+            ...source,
+            orgUnits: data.orgUnits,
+        }))
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
+            console.error('Error while fetching org unit list:', error);
+            throw error;
+        });
+};
+
+
 export const fetchForms = (dispatch, url = '/api/forms/') => getRequest(url)
     .then(forms => forms)
     .catch((error) => {

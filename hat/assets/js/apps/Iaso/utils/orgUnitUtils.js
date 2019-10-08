@@ -39,3 +39,13 @@ export const getOrgUnitsTree = (orgUnit) => {
 };
 
 export const getAliasesArrayFromString = aliasString => aliasString.replace('[', '').replace(']', '').replace(/"/gi, '').split(',');
+
+export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => {
+    const sources = [];
+    sourcesList.forEach((s) => {
+        if (s.id !== currentSourceId) {
+            sources.push(s);
+        }
+    });
+    return sources;
+};

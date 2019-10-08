@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import {
@@ -6,6 +6,7 @@ import {
     Box,
     Chip,
     Typography,
+    Divider,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -171,56 +172,73 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         const {
             classes,
             orgUnitTypesSelected,
+            orgUnitTypes,
         } = this.props;
         const {
             orgUnitTypesList,
         } = this.state;
+
+        if (!orgUnitTypes || (orgUnitTypes && orgUnitTypes.length === 0)) return null;
         return (
-            <Box
-                px={4}
-                py={2}
-                component="div"
-            >
-                {
-                    orgUnitTypesSelected.length > 0 && (
-                        orgUnitTypesSelected.map(o => (
-                            <Chip
-                                key={o.id}
-                                icon={<img src={orgUnitIconUrl} className={classes.svgChipIcon} alt="org unit" />}
-                                label={o.short_name}
-                                clickable
-                                className={classes.chip}
-                                onDelete={() => this.onDeleteOrgUnit(o.id)}
-                                style={{
-                                    backgroundColor: o.color,
-                                    color: 'white',
+            <Fragment>
+                <Box
+                    px={2}
+                    className={classes.innerDrawerToolbar}
+                    component="div"
+                >
+                    <Typography variant="subtitle1">
+                        <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
+                        :
+                    </Typography>
+                </Box>
+                <Divider light />
+                <Box
+                    px={4}
+                    py={2}
+                    component="div"
+                >
+                    {
+                        orgUnitTypesSelected.length > 0 && (
+                            orgUnitTypesSelected.map(o => (
+                                <Chip
+                                    key={o.id}
+                                    icon={<img src={orgUnitIconUrl} className={classes.svgChipIcon} alt="org unit" />}
+                                    label={o.short_name}
+                                    clickable
+                                    className={classes.chip}
+                                    onDelete={() => this.onDeleteOrgUnit(o.id)}
+                                    style={{
+                                        backgroundColor: o.color,
+                                        color: 'white',
+                                    }}
+                                />
+                            ))
+                        )
+                    }
+                    {
+                        orgUnitTypesList.length > 0 && (
+                            <InputComponent
+                                withMarginTop={false}
+                                keyValue="org_unit_type_id"
+                                onChange={(key, orgUnitTypeId) => this.onOrgUnitSelect(orgUnitTypeId)}
+                                value={null}
+                                type="select"
+                                options={
+                                    orgUnitTypesList.map(t => ({
+                                        label: t.name,
+                                        value: t.id,
+                                    }))
+                                }
+                                label={{
+                                    id: 'iaso.orgUnits.addOrgUnitType',
+                                    defaultMessage: 'Add org unit type',
                                 }}
                             />
-                        ))
-                    )
-                }
-                {
-                    orgUnitTypesList.length > 0 && (
-                        <InputComponent
-                            withMarginTop={false}
-                            keyValue="org_unit_type_id"
-                            onChange={(key, orgUnitTypeId) => this.onOrgUnitSelect(orgUnitTypeId)}
-                            value={null}
-                            type="select"
-                            options={
-                                orgUnitTypesList.map(t => ({
-                                    label: t.name,
-                                    value: t.id,
-                                }))
-                            }
-                            label={{
-                                id: 'iaso.orgUnits.addOrgUnitType',
-                                defaultMessage: 'Add org unit type',
-                            }}
-                        />
-                    )
-                }
-            </Box>
+                        )
+                    }
+                </Box>
+                <Divider />
+            </Fragment>
         );
     }
 }

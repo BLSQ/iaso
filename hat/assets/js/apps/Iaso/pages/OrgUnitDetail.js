@@ -75,9 +75,18 @@ class OrgUnitDetail extends Component {
             fetchSourceTypes(this.props.dispatch)
                 .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
         }
-        if (this.props.sources.length === 0) {
+        if (!this.props.sources) {
             fetchSources(this.props.dispatch)
-                .then(sources => this.props.setSources(sources));
+                .then((data) => {
+                    const sources = [];
+                    data.forEach((s, i) => {
+                        sources.push({
+                            ...s,
+                            color: chipColors[i],
+                        });
+                    });
+                    this.props.setSources(sources);
+                });
         }
     }
 
@@ -117,10 +126,11 @@ class OrgUnitDetail extends Component {
                 fetchForms(this.props.dispatch, `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`)
                     .then((data) => {
                         const forms = [];
+                        const formsColors = [...chipColors].reverse();
                         data.forms.forEach((f, i) => {
                             forms.push({
                                 ...f,
-                                color: chipColors[i],
+                                color: formsColors[i],
                             });
                         });
                         this.props.setCurrentForms(forms);
@@ -384,6 +394,7 @@ class OrgUnitDetail extends Component {
 }
 OrgUnitDetail.defaultProps = {
     currentOrgUnit: undefined,
+    sources: [],
 };
 
 OrgUnitDetail.propTypes = {
@@ -404,7 +415,7 @@ OrgUnitDetail.propTypes = {
     resetOrgUnits: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
-    sources: PropTypes.array.isRequired,
+    sources: PropTypes.array,
 };
 
 const MapStateToProps = state => ({

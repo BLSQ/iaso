@@ -1,6 +1,5 @@
 const chipColors = [
     '#4dd0e1',
-    '#4caf50',
     '#01579b',
     '#607d8b',
     '#ffa726',

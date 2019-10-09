@@ -96,7 +96,6 @@ class InstancesMap extends Component {
                 <InnerDrawer
                     settingsOptionComponent={(
                         <Fragment>
-                            <Divider />
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
@@ -150,7 +149,6 @@ class InstancesMap extends Component {
 
 
 InstancesMap.propTypes = {
-    classes: PropTypes.object.isRequired,
     instances: PropTypes.array.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,

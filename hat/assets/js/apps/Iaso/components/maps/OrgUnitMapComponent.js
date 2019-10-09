@@ -37,7 +37,7 @@ import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../utils/requests';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const zoom = 5;
-const padding = [10, 10];
+const padding = [100, 100];
 
 const polygonDrawOpiton = {
     shapeOptions: {
@@ -102,6 +102,7 @@ class OrgUnitMapComponent extends Component {
             intl: {
                 formatMessage,
             },
+            setOrgUnitLocationModified,
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
@@ -133,12 +134,16 @@ class OrgUnitMapComponent extends Component {
         this.map.leafletElement.on('draw:created', (e) => {
             e.layer.addTo(editableFeatureGroup);
             if (e.layerType === 'polygon') {
+                setOrgUnitLocationModified();
                 this.onChange();
             }
             if (e.layerType === 'marker') {
                 this.props.onChangeLocation(e.layer.getLatLng());
                 this.map.leafletElement.removeLayer(e.layer);
             }
+        });
+        this.map.leafletElement.on('draw:editvertex', () => {
+            setOrgUnitLocationModified();
         });
         editToolbar = new L.EditToolbar({
             featureGroup: editableFeatureGroup,
@@ -210,12 +215,12 @@ class OrgUnitMapComponent extends Component {
     fitToBounds(leafletGeoJSON = this.state.leafletGeoJSON) {
         const { currentTile, orgUnit } = this.props;
         if (orgUnit.geo_json) {
-            this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding });
+            this.map.leafletElement.fitBounds(leafletGeoJSON.getBounds(), { maxZoom: currentTile.maxZoom, padding, animate: false });
         }
         if (orgUnit.latitude && orgUnit.longitude) {
             const latlng = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
             const markerBounds = L.latLngBounds(latlng);
-            this.map.leafletElement.fitBounds(markerBounds, { maxZoom: 10, padding });
+            this.map.leafletElement.fitBounds(markerBounds, { maxZoom: 10, padding, animate: false });
         }
     }
 
@@ -262,6 +267,10 @@ class OrgUnitMapComponent extends Component {
             sourcesSelected,
             formsSelected,
             orgUnitTypesSelected,
+            saveOrgUnit,
+            resetOrgUnit,
+            orgUnitLocationModified,
+            setOrgUnitLocationModified,
         } = this.props;
         const { editEnabled, currentOption } = this.state;
         const hasMarker = Boolean(orgUnit.latitude) && Boolean(orgUnit.longitude);
@@ -285,28 +294,29 @@ class OrgUnitMapComponent extends Component {
                     )}
                     editOptionComponent={(
                         <EditOrgUnitOptionComponent
+                            orgUnitLocationModified={orgUnitLocationModified}
+                            saveOrgUnit={saveOrgUnit}
+                            mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
+                            resetOrgUnit={resetOrgUnit}
                             orgUnit={orgUnit}
                             editEnabled={editEnabled}
-                            onChange={() => this.onChange()}
-                            onDelete={() => this.props.onChange(null)}
+                            onChange={() => {
+                                this.onChange();
+                            }
+                            }
+                            onDelete={() => {
+                                setOrgUnitLocationModified();
+                                this.props.onChange(null);
+                            }}
                             toggleEditShape={() => this.toggleEditShape()}
                             addMarker={() => addMarker()}
                             addShape={() => this.addShape()}
                             onChangeLocation={latLong => this.props.onChangeLocation(latLong)}
-                            mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
                         />
                     )}
                     settingsOptionComponent={(
                         <TileSwitch />
                     )}
-                    title={formatMessage({
-                        defaultMessage: 'Location informations',
-                        id: 'iaso.orgUnits.infosLocation',
-                    })}
-                    editTitle={formatMessage({
-                        defaultMessage: 'Edit location',
-                        id: 'iaso.orgUnits.editLocation',
-                    })}
                 >
                     <Map
                         scrollWheelZoom={false}
@@ -415,6 +425,10 @@ OrgUnitMapComponent.propTypes = {
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
+    resetOrgUnit: PropTypes.func.isRequired,
+    saveOrgUnit: PropTypes.func.isRequired,
+    setOrgUnitLocationModified: PropTypes.func.isRequired,
+    orgUnitLocationModified: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -4,6 +4,9 @@ const mapStyles = theme => ({
     mapContainer: {
         height: '62vh',
         marginBottom: theme.spacing(2),
+        '& .leaflet-container .leaflet-popup-content a': {
+            color: theme.palette.primary.main,
+        },
         '& .marker-cluster.primary': {
             backgroundColor: fade(theme.palette.primary.main, 0.6),
         },

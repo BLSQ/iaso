@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import {
     withStyles,
     Box,
-    Divider,
     Typography,
 } from '@material-ui/core';
 
@@ -48,7 +47,6 @@ function FormsChipsFilterComponent(props) {
                     :
                 </Typography>
             </Box>
-            <Divider light />
             <ChipsFilterComponent
                 selectLabelMessage={{
                     id: 'iaso.orgUnits.addForm',

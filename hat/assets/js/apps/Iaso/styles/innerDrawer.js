@@ -1,7 +1,12 @@
+
+export const menuHeight = 112;
+
 const innerDrawer = theme => ({
     innerDrawerToolContainer: {
-        height: '62vh',
         overflow: 'auto',
+        display: 'flex',
+        flexDirection: 'column',
+        flex: 'auto',
     },
     innerDrawerToolbar: {
         ...theme.mixins.toolbar,
@@ -11,9 +16,21 @@ const innerDrawer = theme => ({
         minHeight: '20px !important',
         padding: theme.spacing(1, 3),
     },
+    innerDrawerContentContainer: {
+        width: '100%',
+        flex: 'auto',
+        marginTop: theme.spacing(2),
+    },
     innerDrawerContent: {
         width: '100%',
-        padding: theme.spacing(1, 3, 0, 3),
+        padding: theme.spacing(1, 3),
+        flex: 'auto',
+    },
+    innerDrawerTabs: {
+        minWidth: 100,
+    },
+    innerDrawerTab: {
+        minWidth: 100,
     },
 });
 

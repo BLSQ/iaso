@@ -17,6 +17,9 @@ import InputComponent from '../../forms/InputComponent';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    content: {
+        padding: theme.spacing(0, 3, 2, 3),
+    },
     chip: {
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(1),
@@ -93,8 +96,7 @@ class ChipsFilterComponent extends Component {
         }
         return (
             <Box
-                px={4}
-                py={2}
+                className={classes.content}
                 component="div"
             >
                 {
@@ -105,7 +107,7 @@ class ChipsFilterComponent extends Component {
                                 icon={chipIconUrl !== ''
                                     ? <img src={chipIconUrl} className={classes.svgChipIcon} alt="item" />
                                     : null}
-                                label={`${f.name} - ${displayTotal ? f[locationsKey].length : ''}`}
+                                label={`${f.name} ${displayTotal ? `- ${f[locationsKey].length}` : ''}`}
                                 clickable
                                 className={classes.chip}
                                 onDelete={() => this.onDelete(f)}
@@ -155,7 +157,7 @@ ChipsFilterComponent.propTypes = {
     fetchDetails: PropTypes.func.isRequired,
     locationsKey: PropTypes.string.isRequired,
     chipIconUrl: PropTypes.string,
-    selectLabelMessage: PropTypes.string.isRequired,
+    selectLabelMessage: PropTypes.object.isRequired,
     displayTotal: PropTypes.bool,
 };
 

@@ -45,6 +45,7 @@ const styles = theme => ({
     paperContainer: {
         ...commonStyles(theme).paperContainer,
         marginTop: 0,
+        paddingBottom: 0,
     },
     reactTable: {
         ...reactTable(theme).reactTable,
@@ -257,9 +258,9 @@ class Instances extends Component {
                     />
 
                     <Divider className={classes.dividerMarginNeg} />
-                    <div className={classes.reactTable}>
-                        {
-                            tab === 'list' && (
+                    {
+                        tab === 'list' && (
+                            <div className={classes.reactTable}>
                                 <CustomTableComponent
                                     isSortable
                                     pageSize={20}
@@ -274,26 +275,29 @@ class Instances extends Component {
                                     canSelect={false}
                                     reduxPage={reduxPage}
                                 />
-                            )
-                        }
-                        {
-                            tab === 'map' && (
+                            </div>
+                        )
+                    }
+                    {
+                        tab === 'map' && (
+                            <div className={classes.containerMarginNeg}>
                                 <InstancesMap instances={instancesLocations} />
-                            )
-                        }
-                    </div>
-                    <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-
-                        <Grid xs={12} item className={classes.textAlignRight}>
-                            {tab === 'list'
-                                && (
-                                    <DownloadButtonsComponent
-                                        csvUrl={this.getEndpointUrl(true, 'csv')}
-                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                                    />
-                                )}
-                        </Grid>
-                    </Grid>
+                            </div>
+                        )
+                    }
+                    {tab === 'list'
+                        && (
+                            <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+                                <Grid xs={12} item className={classes.textAlignRight}>
+                                    <div className={classes.paddingBottomBig}>
+                                        <DownloadButtonsComponent
+                                            csvUrl={this.getEndpointUrl(true, 'csv')}
+                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                        />
+                                    </div>
+                                </Grid>
+                            </Grid>
+                        )}
                 </Paper>
             </section>
         );

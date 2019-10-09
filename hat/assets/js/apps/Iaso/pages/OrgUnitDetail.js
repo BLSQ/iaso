@@ -4,12 +4,10 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import {
-    withStyles, Divider, Paper, Tabs, Tab, Grid,
+    withStyles, Paper, Tabs, Tab, Grid,
 } from '@material-ui/core';
 
 import Button from '@material-ui/core/Button';
-import Save from '@material-ui/icons/Save';
-import Cancel from '@material-ui/icons/Cancel';
 
 import PropTypes from 'prop-types';
 
@@ -52,6 +50,13 @@ const styles = theme => ({
         ...commonStyles(theme).paperContainer,
         marginTop: 0,
     },
+    paperContainerFullHeight: {
+        ...commonStyles(theme).paperContainer,
+        marginTop: 0,
+        marginBottom: 0,
+        padding: 0,
+        height: 'calc(100vh - 112px)',
+    },
 });
 
 
@@ -62,6 +67,7 @@ class OrgUnitDetail extends Component {
             tab: props.params.tab ? props.params.tab : 'infos',
             currentOrgUnit: undefined,
             orgUnitModified: false,
+            orgUnitLocationModified: false,
         };
     }
 
@@ -101,6 +107,13 @@ class OrgUnitDetail extends Component {
             this.handleChangeTab(params.tab, false);
         }
     }
+
+    setOrgUnitLocationModified() {
+        this.setState({
+            orgUnitLocationModified: true,
+        });
+    }
+
 
     fetchDetail() {
         const {
@@ -158,7 +171,7 @@ class OrgUnitDetail extends Component {
 
     handleChangeInfo(key, value) {
         this.setState({
-            orgUnitModified: true,
+            orgUnitModified: key !== 'geo_json',
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
                 [key]: value,
@@ -168,7 +181,7 @@ class OrgUnitDetail extends Component {
 
     handleChangeLocation(location) {
         this.setState({
-            orgUnitModified: true,
+            orgUnitLocationModified: true,
             currentOrgUnit: {
                 ...this.state.currentOrgUnit,
                 latitude: location.lat ? parseFloat(location.lat.toFixed(8)) : null,
@@ -182,6 +195,7 @@ class OrgUnitDetail extends Component {
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,
+                    orgUnitLocationModified: false,
                     currentOrgUnit,
                 });
                 this.props.resetOrgUnits();
@@ -200,6 +214,7 @@ class OrgUnitDetail extends Component {
         redirectTo(baseUrl, newParams);
         this.setState({
             orgUnitModified: false,
+            orgUnitLocationModified: false,
             currentOrgUnit: this.props.currentOrgUnit,
         });
         this.fetchDetail();
@@ -265,6 +280,7 @@ class OrgUnitDetail extends Component {
             tab,
             currentOrgUnit,
             orgUnitModified,
+            orgUnitLocationModified,
         } = this.state;
         let title = currentOrgUnit ? currentOrgUnit.name : '';
         if (currentOrgUnit) {
@@ -316,57 +332,27 @@ class OrgUnitDetail extends Component {
                     && currentOrgUnit
                     && (
                         <section>
-                            <Paper className={classes.paperContainer}>
-                                <div className={classes.marginBottom}>
-                                    {
-                                        tab === 'infos' && (
+                            {
+                                tab === 'infos' && (
+                                    <div className={classes.marginBottom}>
+                                        <Paper className={classes.paperContainer}>
                                             <OrgUnitInfos
                                                 params={params}
                                                 baseUrl={baseUrl}
-                                                orgUnitModified={orgUnitModified}
                                                 orgUnit={currentOrgUnit}
                                                 orgUnitTypes={orgUnitTypes}
                                                 sourceTypes={sourceTypes}
                                                 sources={sources}
                                                 onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
                                             />
-                                        )
-                                    }
-                                    {
-                                        tab === 'map' && (
-                                            <OrgUnitMap
-                                                orgUnit={currentOrgUnit}
-                                                onChangeLocation={(location) => {
-                                                    this.handleChangeLocation(location);
-                                                }}
-                                                onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
-                                            />
-                                        )
-                                    }
-                                    {
-                                        tab === 'history' && (
-                                            <Logs
-                                                params={params}
-                                                logObjectId={currentOrgUnit.id}
-                                                goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
-                                            />
-                                        )
-                                    }
-                                </div>
-                                <Divider className={classes.dividerMarginNeg} />
-                                <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
-
-                                    <Grid xs={12} item className={classes.textAlignRight}>
-                                        {
-                                            tab !== 'history' && (
-                                                <Fragment>
+                                            <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
+                                                <Grid xs={12} item className={classes.textAlignRight}>
                                                     <Button
                                                         className={classes.marginLeft}
                                                         disabled={!orgUnitModified}
                                                         variant="contained"
                                                         onClick={() => this.resetOrgUnit()}
                                                     >
-                                                        <Cancel className={classes.buttonIcon} fontSize="small" />
                                                         <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
                                                     </Button>
                                                     <Button
@@ -376,15 +362,44 @@ class OrgUnitDetail extends Component {
                                                         color="primary"
                                                         onClick={() => this.saveOrgUnit(currentOrgUnit)}
                                                     >
-                                                        <Save className={classes.buttonIcon} fontSize="small" />
                                                         <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
                                                     </Button>
-                                                </Fragment>
-                                            )
-                                        }
-                                    </Grid>
-                                </Grid>
-                            </Paper>
+                                                </Grid>
+                                            </Grid>
+                                        </Paper>
+                                    </div>
+                                )
+                            }
+                            {
+                                tab === 'map' && (
+                                    <Paper className={classes.paperContainerFullHeight}>
+                                        <OrgUnitMap
+                                            setOrgUnitLocationModified={() => this.setOrgUnitLocationModified()}
+                                            orgUnitLocationModified={orgUnitLocationModified}
+                                            orgUnit={currentOrgUnit}
+                                            resetOrgUnit={() => this.resetOrgUnit()}
+                                            saveOrgUnit={() => this.saveOrgUnit(currentOrgUnit)}
+                                            onChangeLocation={(location) => {
+                                                this.handleChangeLocation(location);
+                                            }}
+                                            onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                        />
+                                    </Paper>
+                                )
+                            }
+                            {
+                                tab === 'history' && (
+                                    <div className={classes.marginBottom}>
+                                        <Paper className={classes.paperContainer}>
+                                            <Logs
+                                                params={params}
+                                                logObjectId={currentOrgUnit.id}
+                                                goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
+                                            />
+                                        </Paper>
+                                    </div>
+                                )
+                            }
                         </section>
                     )
                 }

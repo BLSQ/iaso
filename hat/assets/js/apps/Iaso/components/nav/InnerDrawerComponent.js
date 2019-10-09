@@ -5,36 +5,20 @@ import { connect } from 'react-redux';
 import {
     withStyles,
     Box,
-    Typography,
-    Tooltip,
-    IconButton,
-    Divider,
     Grid,
+    Tabs,
+    Tab,
 } from '@material-ui/core';
-
-import FilterIcon from '@material-ui/icons/FilterList';
-import SettingsIcon from '@material-ui/icons/Settings';
-import EditIcon from '@material-ui/icons/Edit';
 
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
+import { menuHeight } from '../../styles/innerDrawer';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    box: {
-        width: '100%',
-        height: theme.spacing(8),
-        borderTopLeftRadius: '5px',
-        borderTopRightRadius: '5px',
-    },
-    filterButton: {
-        marginLeft: 'auto',
-    },
     boxContent: {
         width: '100%',
-        borderBottomLeftRadius: '5px',
-        borderBottomRightRadius: '5px',
     },
     button: {
         width: '100%',
@@ -43,6 +27,7 @@ const styles = theme => ({
     mapContainer: {
         ...commonStyles(theme).mapContainer,
         marginBottom: 0,
+        height: `calc(100vh - ${menuHeight}px)`,
         overflow: 'hidden',
     },
 });
@@ -65,12 +50,10 @@ class InnerDrawer extends Component {
     render() {
         const {
             children,
-            title,
             classes,
             editOptionComponent,
             settingsOptionComponent,
             filtersOptionComponent,
-            editTitle,
             settingsDisabled,
             filtersDisabled,
         } = this.props;
@@ -79,136 +62,89 @@ class InnerDrawer extends Component {
         } = this.state;
         return (
             <Fragment>
-                {
-                    (editOptionComponent || filtersOptionComponent) && (
-                        <Box
-                            px={2}
-                            display="flex"
-                            alignItems="center"
-                            className={classes.box}
-                            component="div"
-                            border={1}
-                            borderColor="grey.300"
-                        >
-                            <Typography variant="h6" component="h6" color="primary">
-                                {title}
-                            </Typography>
-
-                            <Tooltip title={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}>
-                                <IconButton
-                                    className={classes.filterButton}
-                                    disabled={settingsDisabled}
-                                    color={activeOption === 'settings' ? 'primary' : 'inherit'}
-                                    onClick={() => this.toggleOption('settings')}
-                                >
-                                    <SettingsIcon />
-                                </IconButton>
-                            </Tooltip>
-                            {
-                                editOptionComponent && (
-                                    <Tooltip title={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}>
-                                        <IconButton
-                                            color={activeOption === 'edit' ? 'primary' : 'inherit'}
-                                            onClick={() => this.toggleOption('edit')}
-                                        >
-                                            <EditIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                )
-                            }
-                            {
-                                filtersOptionComponent && (
-                                    <Tooltip title={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}>
-                                        <IconButton
-                                            disabled={filtersDisabled}
-                                            color={activeOption === 'filters' ? 'primary' : 'inherit'}
-                                            onClick={() => this.toggleOption('filters')}
-                                        >
-                                            <FilterIcon />
-                                        </IconButton>
-                                    </Tooltip>
-                                )
-                            }
-                        </Box>
-                    )
-                }
                 <Box
                     p={0}
                     className={classes.boxContent}
                     component="div"
-                    border={1}
-                    borderTop={editOptionComponent || filtersOptionComponent ? 0 : 1}
-                    borderColor="grey.300"
-                    borderRadius={editOptionComponent || filtersOptionComponent ? 0 : 5}
                 >
-
                     <Grid container spacing={0}>
                         <Grid item xs={7} md={8} lg={9} className={classes.mapContainer}>
                             {children}
                         </Grid>
                         <Grid item xs={5} md={4} lg={3} className={classes.innerDrawerToolContainer}>
-
                             {
-                                activeOption === 'edit'
+                                (editOptionComponent || filtersOptionComponent)
                                 && (
-                                    <Fragment>
-                                        <Box
-                                            px={2}
-                                            className={classes.innerDrawerToolbar}
-                                            component="div"
-                                        >
-                                            <Typography variant="h6" component="h6">
-                                                {
-                                                    editTitle !== '' && editTitle
-                                                }
-                                                {
-                                                    editTitle === '' && <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
-                                                }
-                                            </Typography>
-                                        </Box>
-                                        <Divider />
-                                        {editOptionComponent}
-                                    </Fragment>
+                                    <Tabs
+                                        centered
+                                        classes={{
+                                            root: classes.innerDrawerTabs,
+                                        }}
+                                        value={activeOption}
+                                        indicatorColor="primary"
+                                        onChange={(event, newtab) => this.toggleOption(newtab)
+                                        }
+                                    >
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            disabled={settingsDisabled}
+                                            value="settings"
+                                            label={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}
+                                        />
+                                        {
+                                            editOptionComponent && (
+                                                <Tab
+                                                    classes={{
+                                                        root: classes.innerDrawerTab,
+                                                    }}
+                                                    value="edit"
+                                                    label={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}
+                                                />
+                                            )
+                                        }
+                                        {
+                                            filtersOptionComponent && (
+                                                <Tab
+                                                    classes={{
+                                                        root: classes.innerDrawerTab,
+                                                    }}
+                                                    disabled={filtersDisabled}
+                                                    value="filters"
+                                                    label={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}
+                                                />
+                                            )
+                                        }
+                                    </Tabs>
                                 )
                             }
+                            <Box
+                                display="flex"
+                                flexWrap="wrap"
+                                className={classes.innerDrawerContentContainer}
+                                flexDirection="column"
+                            >
+                                {
+                                    filtersOptionComponent
+                                    && (
+                                        <div className={activeOption !== 'filters' ? 'hidden-opacity' : ''}>
+                                            {filtersOptionComponent}
+                                        </div>
+                                    )
+                                }
 
-                            {
-                                activeOption === 'settings'
-                                && (
-                                    <Fragment>
-                                        <Box
-                                            px={2}
-                                            className={classes.innerDrawerToolbar}
-                                            component="div"
-                                        >
-                                            <Typography variant="h6" component="h6">
-                                                <FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />
-                                            </Typography>
-                                        </Box>
-                                        <Divider />
-                                        {settingsOptionComponent}
-                                    </Fragment>
-                                )
-                            }
+                                {
+                                    activeOption === 'edit'
+                                    && editOptionComponent
+                                }
 
-                            {
-                                filtersOptionComponent
-                                && (
-                                    <div className={activeOption !== 'filters' ? 'hidden-opacity' : ''}>
-                                        <Box
-                                            px={2}
-                                            className={classes.innerDrawerToolbar}
-                                            component="div"
-                                        >
-                                            <Typography variant="h6" component="h6">
-                                                <FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />
-                                            </Typography>
-                                        </Box>
-                                        <Divider />
-                                        {filtersOptionComponent}
-                                    </div>
-                                )
-                            }
+                                {
+                                    activeOption === 'settings'
+                                    && settingsOptionComponent
+                                }
+                            </Box>
+
                         </Grid>
                     </Grid>
                 </Box>
@@ -219,8 +155,6 @@ class InnerDrawer extends Component {
 
 InnerDrawer.defaultProps = {
     children: null,
-    editTitle: '',
-    title: '',
     editOptionComponent: null,
     filtersOptionComponent: null,
     settingsDisabled: false,
@@ -230,8 +164,6 @@ InnerDrawer.defaultProps = {
 
 InnerDrawer.propTypes = {
     classes: PropTypes.object.isRequired,
-    title: PropTypes.string,
-    editTitle: PropTypes.string,
     children: PropTypes.any,
     settingsOptionComponent: PropTypes.object.isRequired,
     editOptionComponent: PropTypes.object,

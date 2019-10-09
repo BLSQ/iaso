@@ -6,7 +6,6 @@ import {
     Box,
     Chip,
     Typography,
-    Divider,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -25,6 +24,9 @@ import chipColors from '../../../constants/chipColors';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    content: {
+        padding: theme.spacing(0, 3, 2, 3),
+    },
     chip: {
         marginRight: theme.spacing(1),
         marginBottom: theme.spacing(1),
@@ -182,7 +184,6 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         return (
             <Fragment>
                 <Box
-                    px={2}
                     className={classes.innerDrawerToolbar}
                     component="div"
                 >
@@ -191,10 +192,8 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         :
                     </Typography>
                 </Box>
-                <Divider light />
                 <Box
-                    px={4}
-                    py={2}
+                    className={classes.content}
                     component="div"
                 >
                     {
@@ -237,7 +236,6 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         )
                     }
                 </Box>
-                <Divider />
             </Fragment>
         );
     }

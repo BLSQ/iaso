@@ -6,7 +6,6 @@ import PropTypes from 'prop-types';
 import {
     withStyles,
     Box,
-    Divider,
     Typography,
 } from '@material-ui/core';
 
@@ -48,7 +47,6 @@ function SourcesChipsFilterComponent(props) {
                     :
                 </Typography>
             </Box>
-            <Divider light />
             <ChipsFilterComponent
                 selectLabelMessage={{
                     id: 'iaso.orgUnits.addSource',
@@ -64,7 +62,6 @@ function SourcesChipsFilterComponent(props) {
                 selectedItems={sourcesSelected}
                 currentItems={sources}
             />
-            <Divider />
         </Fragment>
     );
 }

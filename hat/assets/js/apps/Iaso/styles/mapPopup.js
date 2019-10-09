@@ -45,7 +45,7 @@ const mapPopupStyles = theme => ({
         height: 120,
     },
     popupCardContent: {
-        margin: theme.spacing(2),
+        margin: theme.spacing(3, 2, 2, 2),
         overflow: 'hidden',
         wordBreak: 'break-all',
         padding: '0 !important',

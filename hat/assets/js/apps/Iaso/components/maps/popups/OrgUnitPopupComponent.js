@@ -9,6 +9,9 @@ import {
     withStyles,
     Card,
     CardContent,
+    Button,
+    Grid,
+    Box,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -32,6 +35,9 @@ const styles = theme => ({
     },
     fileItem: {
         display: 'inline-block',
+    },
+    actionBox: {
+        padding: theme.spacing(1, 0, 0, 0),
     },
 });
 
@@ -122,6 +128,16 @@ class OrgUnitPopupComponent extends Component {
                                     label={formatMessage(MESSAGES.created_at)}
                                     value={moment.unix(currentOrgUnit.created_at).format('DD/MM/YYYY HH:mm')}
                                 />
+                                <Box className={classes.actionBox}>
+                                    <Grid container spacing={0} justify="flex-end" alignItems="center">
+                                        <Button
+                                            color="primary"
+                                            href={`/dashboard/orgunits/detail/orgUnitId/${currentOrgUnit.id}/validated/true/`}
+                                        >
+                                        Voir
+                                        </Button>
+                                    </Grid>
+                                </Box>
                             </CardContent>
                         </Card>
                     )

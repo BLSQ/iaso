@@ -10,7 +10,6 @@ import RadioButtonChecked from '@material-ui/icons/RadioButtonChecked';
 import RadioButtonUnchecked from '@material-ui/icons/RadioButtonUnchecked';
 import Box from '@material-ui/core/Box';
 import Typography from '@material-ui/core/Typography';
-import Divider from '@material-ui/core/Divider';
 
 import PropTypes from 'prop-types';
 import { setCurrentTile } from '../../../redux/mapReducer';
@@ -85,7 +84,6 @@ function TileSwitchComponent(props) {
                     {formatMessage(MESSAGES.title)}
                 </Typography>
             </Box>
-            <Divider light />
             <Box
                 py={2}
                 component="div"

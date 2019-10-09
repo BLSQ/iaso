@@ -132,7 +132,7 @@ class OrgUnitPopupComponent extends Component {
                                     <Grid container spacing={0} justify="flex-end" alignItems="center">
                                         <Button
                                             color="primary"
-                                            href={`/dashboard/orgunits/detail/orgUnitId/${currentOrgUnit.id}/validated/true/`}
+                                            href={`/dashboard/orgunits/detail/orgUnitId/${currentOrgUnit.id}/validated/true/backurl/${encodeURIComponent(window.location.pathname.replace(new RegExp('/', 'g'), '__'))}`}
                                         >
                                         Voir
                                         </Button>

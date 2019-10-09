@@ -162,6 +162,10 @@ export const orgUnitsDetailsPath = getPath({
         ...orgUnitsPathParams,
         {
             isRequired: false,
+            key: 'backurl',
+        },
+        {
+            isRequired: false,
             key: 'orgUnitsLevels',
         },
         {

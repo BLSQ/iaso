@@ -243,24 +243,29 @@ class OrgUnitDetail extends Component {
     goBack() {
         const { redirectTo, params } = this.props;
         this.props.setCurrentOrgUnit(undefined);
-        const tempParams = {
-            ...params,
-        };
-        delete tempParams.tab;
-        delete tempParams.orgUnitId;
-        delete tempParams.orgUnitsPageSize;
-        delete tempParams.orgUnitsOrder;
-        delete tempParams.orgUnitsPage;
-        delete tempParams.orgUnitsLevels;
         this.props.resetOrgUnitsLevels();
-        redirectTo('orgunits', {
-            ...tempParams,
-            levels: params.orgUnitsLevels,
-            order: params.orgUnitsOrder,
-            pageSize: params.orgUnitsPageSize,
-            page: params.orgUnitsPage,
-            back: true,
-        });
+        if (params.backurl) {
+            const backurl = params.backurl.replace(new RegExp('__', 'g'), '/');
+            window.location.pathname = backurl;
+        } else {
+            const tempParams = {
+                ...params,
+            };
+            delete tempParams.tab;
+            delete tempParams.orgUnitId;
+            delete tempParams.orgUnitsPageSize;
+            delete tempParams.orgUnitsOrder;
+            delete tempParams.orgUnitsPage;
+            delete tempParams.orgUnitsLevels;
+            redirectTo('orgunits', {
+                ...tempParams,
+                levels: params.orgUnitsLevels,
+                order: params.orgUnitsOrder,
+                pageSize: params.orgUnitsPageSize,
+                page: params.orgUnitsPage,
+                back: true,
+            });
+        }
     }
 
     render() {

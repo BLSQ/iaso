@@ -76,7 +76,6 @@ class InnerDrawer extends Component {
                                 (editOptionComponent || filtersOptionComponent)
                                 && (
                                     <Tabs
-                                        centered
                                         classes={{
                                             root: classes.innerDrawerTabs,
                                         }}
@@ -85,6 +84,18 @@ class InnerDrawer extends Component {
                                         onChange={(event, newtab) => this.toggleOption(newtab)
                                         }
                                     >
+                                        {
+                                            filtersOptionComponent && (
+                                                <Tab
+                                                    classes={{
+                                                        root: classes.innerDrawerTab,
+                                                    }}
+                                                    disabled={filtersDisabled}
+                                                    value="filters"
+                                                    label={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}
+                                                />
+                                            )
+                                        }
                                         <Tab
                                             classes={{
                                                 root: classes.innerDrawerTab,
@@ -101,18 +112,6 @@ class InnerDrawer extends Component {
                                                     }}
                                                     value="edit"
                                                     label={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}
-                                                />
-                                            )
-                                        }
-                                        {
-                                            filtersOptionComponent && (
-                                                <Tab
-                                                    classes={{
-                                                        root: classes.innerDrawerTab,
-                                                    }}
-                                                    disabled={filtersDisabled}
-                                                    value="filters"
-                                                    label={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}
                                                 />
                                             )
                                         }

@@ -39,8 +39,8 @@ class Command(BaseCommand):
                 iaso_id, csv_name, parent_csv_name = row
                 print("iaso_id", iaso_id)
                 type_dict[csv_name] = OrgUnitType.objects.get(pk=iaso_id)
-        unknownUnitType = OrgUnitType.objects.get(name="Inconnu")
-        type_dict[""] = unknownUnitType
+        unknown_unit_type = OrgUnitType.objects.get(name="Inconnu")
+        type_dict[""] = unknown_unit_type
         with open(file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
             index = 1
@@ -55,7 +55,9 @@ class Command(BaseCommand):
                         org_unit = OrgUnit()
                         snis_first_group = row[5].split(",")[0]
                         print("snis_first_group", snis_first_group)
-                        org_unit.org_unit_type = type_dict[snis_first_group]
+                        org_unit.org_unit_type = type_dict.get(
+                            snis_first_group, unknown_unit_type
+                        )
                         org_unit.name = row[1].strip()
                         # org_unit.aliases = obj.aliases
                         org_unit.sub_source = source_name

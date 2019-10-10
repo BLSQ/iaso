@@ -198,7 +198,9 @@ class OrgUnit(models.Model):
             "org_unit_type_name": self.org_unit_type.name
             if self.org_unit_type
             else None,
-            "org_unit_type": self.org_unit_type.as_dict() if self.org_unit_type else None,
+            "org_unit_type": self.org_unit_type.as_dict()
+            if self.org_unit_type
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -337,6 +339,7 @@ class Form(models.Model):
     name = models.TextField(null=True, blank=True)
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
+    fields = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -362,10 +365,27 @@ class Form(models.Model):
 
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"
+    form = models.ForeignKey(Form, on_delete=models.CASCADE)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     version_id = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def convert_xml_to_fields(self):
+        if self.file:
+            if "amazonaws" in self.file.url:
+                file = urlopen(self.file.url)
+            else:
+                file = self.file
+            file_content = flat_parse_xml_file(file)
+            self.form.fields = file_content
+            self.form.save()
+        else:
+            file_content = {}
+        return file_content
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
 
 
 class Instance(models.Model):

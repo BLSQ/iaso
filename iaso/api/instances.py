@@ -145,6 +145,7 @@ class InstancesViewSet(viewsets.ViewSet):
         if form_id:
             form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
+
         if csv_format is None and xlsx_format is None:
 
             if limit:
@@ -193,13 +194,21 @@ class InstancesViewSet(viewsets.ViewSet):
                 {"title": "parent3", "width": 20},
                 {"title": "parent4", "width": 20},
             ]
-            file_content_template = queryset.first().as_dict()["file_content"]
-            for title in file_content_template:
-                columns.append({"title": title, "width": 50})
+
             filename = "instances"
 
             if form:
                 filename = "%s-%s" % (filename, form.id)
+
+            if form and form.fields:
+                file_content_template = form.fields
+                for title in file_content_template:
+                    columns.append({"title": title, "width": 50})
+            else:
+                file_content_template = queryset.first().as_dict()["file_content"]
+                for title in file_content_template:
+                    columns.append({"title": title, "width": 50})
+
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
@@ -243,7 +252,9 @@ class InstancesViewSet(viewsets.ViewSet):
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row),
+                    generate_xlsx(
+                        "Forms", columns, queryset_iterator(queryset, 100), get_row
+                    ),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:

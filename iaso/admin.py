@@ -4,6 +4,7 @@ from .models import (
     OrgUnitType,
     OrgUnit,
     Form,
+    FormVersion,
     Instance,
     InstanceFile,
     Account,
@@ -57,3 +58,4 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(Link)
+admin.site.register(FormVersion)

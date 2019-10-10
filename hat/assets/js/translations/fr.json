@@ -61,6 +61,7 @@
     "iaso.forms.name": "Nom",
     "iaso.forms.noInstance": "Aucun enregistrement",
     "iaso.forms.notValidated": "Non validé",
+    "iaso.forms.both": "Validé et non validé",
     "iaso.forms.org_unit_type_id": "Type d'unité d’organisation (org unit)",
     "iaso.forms.level": "Niveau",
     "iaso.forms.records": "Enregistrement(s)",

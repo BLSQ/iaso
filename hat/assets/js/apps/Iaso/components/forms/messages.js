@@ -75,6 +75,10 @@ const MESSAGES = {
         id: 'iaso.forms.notValidated',
         defaultMessage: 'Not validated',
     },
+    both: {
+        id: 'iaso.forms.both',
+        defaultMessage: 'Validated and not validated',
+    },
     Prov: {
         id: 'iaso.province',
         defaultMessage: 'Province',

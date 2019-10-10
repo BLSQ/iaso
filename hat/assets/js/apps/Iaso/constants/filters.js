@@ -19,6 +19,10 @@ export const status = formatMessage => (
         isClearable: false,
         options: [
             {
+                label: formatMessage(MESSAGES.both),
+                value: 'both',
+            },
+            {
                 label: formatMessage(MESSAGES.validated),
                 value: 'true',
             },

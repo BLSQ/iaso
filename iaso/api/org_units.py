@@ -86,7 +86,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
 
         limit = request.GET.get("limit", None)
-        validated = request.GET.get("validated", True)
+        validated = request.GET.get("validated", "true")
         has_instances = request.GET.get("hasInstances", None)
         search = request.GET.get("search", None)
         page_offset = request.GET.get("page", 1)
@@ -113,9 +113,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if validated == "false":
             validated = False
 
+        if validated != "both":
+            queryset = OrgUnit.objects.filter(validated=validated)
+        else:
+            queryset = OrgUnit.objects.all()
+
         queryset = (
-            OrgUnit.objects.filter(validated=validated)
-            .exclude(org_unit_type=None)
+            queryset.exclude(org_unit_type=None)
             .filter(org_unit_type__projects__app_id=app_id)
             .order_by(*order)
         )

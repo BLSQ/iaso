@@ -37,7 +37,7 @@ import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../utils/requests';
 import 'leaflet-draw/dist/leaflet.draw.css';
 
 const zoom = 5;
-const padding = [100, 100];
+const padding = [75, 75];
 
 const polygonDrawOpiton = {
     shapeOptions: {
@@ -261,9 +261,6 @@ class OrgUnitMapComponent extends Component {
         const {
             orgUnit,
             currentTile,
-            intl: {
-                formatMessage,
-            },
             sourcesSelected,
             formsSelected,
             orgUnitTypesSelected,

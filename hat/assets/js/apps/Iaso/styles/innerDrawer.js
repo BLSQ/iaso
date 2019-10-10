@@ -1,9 +1,9 @@
 
 export const menuHeight = 112;
+export const tabsHeight = 68;
 
 const innerDrawer = theme => ({
     innerDrawerToolContainer: {
-        overflow: 'auto',
         display: 'flex',
         flexDirection: 'column',
         flex: 'auto',
@@ -18,8 +18,9 @@ const innerDrawer = theme => ({
     },
     innerDrawerContentContainer: {
         width: '100%',
-        flex: 'auto',
+        overflow: 'auto',
         marginTop: theme.spacing(2),
+        height: `calc(100vh - ${menuHeight + tabsHeight}px)`, // ugly way to fix innerdrawer content height
     },
     innerDrawerContent: {
         width: '100%',

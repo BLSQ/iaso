@@ -127,9 +127,14 @@ class InnerDrawer extends Component {
                                 {
                                     filtersOptionComponent
                                     && (
-                                        <div className={activeOption !== 'filters' ? 'hidden-opacity' : ''}>
+                                        <Box
+                                            display="flex"
+                                            flexWrap="wrap"
+                                            className={activeOption !== 'filters' ? 'hidden-opacity' : ''}
+                                            flexDirection="column"
+                                        >
                                             {filtersOptionComponent}
-                                        </div>
+                                        </Box>
                                     )
                                 }
 

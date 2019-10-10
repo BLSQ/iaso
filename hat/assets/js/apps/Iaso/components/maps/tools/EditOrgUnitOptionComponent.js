@@ -68,6 +68,9 @@ class EditOrgUnitOptionComponent extends Component {
             >
                 <Box
                     component="div"
+                    display="flex"
+                    flexWrap="wrap"
+                    flexDirection="column"
                 >
                     {
                         !editEnabled && orgUnit.geo_json
@@ -89,8 +92,8 @@ class EditOrgUnitOptionComponent extends Component {
                             <Button
                                 variant="outlined"
                                 onClick={() => {
-                                    toggleEditShape();
                                     onChange();
+                                    toggleEditShape();
                                 }}
                                 className={classes.buttonTopMargin}
                                 color="secondary"

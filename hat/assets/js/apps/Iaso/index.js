@@ -23,6 +23,7 @@ import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenu
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
+import { routerInitialState, routerReducer } from './redux/routerReducer';
 
 import App from '../App';
 
@@ -101,6 +102,7 @@ export default function datasApp(element, baseUrl) {
         map: mapInitialState,
         devices: devicesInitialState,
         orgUnitsLevels: orgUnitsLevelsInitialState,
+        routerCustom: routerInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -112,6 +114,7 @@ export default function datasApp(element, baseUrl) {
         map: mapReducer,
         devices: devicesReducer,
         orgUnitsLevels: orgUnitsLevelsReducer,
+        routerCustom: routerReducer,
     }, [
         routerMiddleware(history),
     ]);

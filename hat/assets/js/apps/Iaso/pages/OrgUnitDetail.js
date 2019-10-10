@@ -122,7 +122,6 @@ class OrgUnitDetail extends Component {
         });
     }
 
-
     fetchDetail() {
         const {
             params: {
@@ -261,6 +260,8 @@ class OrgUnitDetail extends Component {
             sources,
             params,
             router,
+            prevPathname,
+            redirectToPush,
         } = this.props;
         const {
             tab,
@@ -277,7 +278,13 @@ class OrgUnitDetail extends Component {
                 <TopBar
                     title={title}
                     displayBackButton
-                    goBack={() => this.goBack()}
+                    goBack={() => {
+                        if (prevPathname) {
+                            router.goBack();
+                        } else {
+                            redirectToPush('orgunits', {});
+                        }
+                    }}
                 >
                     <Tabs
                         value={tab}
@@ -396,6 +403,7 @@ class OrgUnitDetail extends Component {
 OrgUnitDetail.defaultProps = {
     currentOrgUnit: undefined,
     sources: [],
+    prevPathname: null,
 };
 
 OrgUnitDetail.propTypes = {
@@ -409,6 +417,7 @@ OrgUnitDetail.propTypes = {
     setSourceTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
+    redirectToPush: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     fetchingSubOrgUnits: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
@@ -418,6 +427,7 @@ OrgUnitDetail.propTypes = {
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     sources: PropTypes.array,
+    prevPathname: PropTypes.any,
 };
 
 const MapStateToProps = state => ({
@@ -428,6 +438,7 @@ const MapStateToProps = state => ({
     currentForms: state.orgUnits.currentForms,
     sourceTypes: state.orgUnits.sourceTypes,
     sources: state.orgUnits.sources,
+    prevPathname: state.routerCustom.prevPathname,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -437,6 +448,7 @@ const MapDispatchToProps = dispatch => ({
     setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
+    redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
     setSources: sources => dispatch(setSources(sources)),

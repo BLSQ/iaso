@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import { replace } from 'react-router-redux';
+import { replace, push } from 'react-router-redux';
 
 import {
     withStyles, Divider, Tabs, Grid, Tab, Paper,
@@ -201,6 +201,9 @@ class Instances extends Component {
             intl: {
                 formatMessage,
             },
+            router,
+            prevPathname,
+            redirectToPush,
         } = this.props;
         const {
             tab,
@@ -213,7 +216,13 @@ class Instances extends Component {
                         id: 'iaso.instance.form',
                     })}: ${currentForm ? currentForm.name : ''}`}
                     displayBackButton
-                    goBack={() => this.goBack()}
+                    goBack={() => {
+                        if (prevPathname) {
+                            router.goBack();
+                        } else {
+                            redirectToPush('forms', {});
+                        }
+                    }}
                 >
                     <Tabs
                         value={tab}
@@ -300,6 +309,7 @@ class Instances extends Component {
 Instances.defaultProps = {
     reduxPage: undefined,
     currentForm: undefined,
+    prevPathname: null,
 };
 
 Instances.propTypes = {
@@ -320,6 +330,8 @@ Instances.propTypes = {
     setDevicesList: PropTypes.func.isRequired,
     setDevicesOwnershipList: PropTypes.func.isRequired,
     router: PropTypes.object.isRequired,
+    redirectToPush: PropTypes.func.isRequired,
+    prevPathname: PropTypes.any,
 };
 
 const MapStateToProps = state => ({
@@ -327,6 +339,7 @@ const MapStateToProps = state => ({
     instancesLocations: state.instances.instancesLocations,
     fetching: state.instances.fetching,
     currentForm: state.forms.current,
+    prevPathname: state.routerCustom.prevPathname,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -337,6 +350,7 @@ const MapDispatchToProps = dispatch => ({
     setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
+    redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
 });

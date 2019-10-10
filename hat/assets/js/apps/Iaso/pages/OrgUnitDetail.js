@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { push } from 'react-router-redux';
+import { push, replace } from 'react-router-redux';
 
 import {
     withStyles, Paper, Tabs, Tab, Grid,
@@ -72,6 +72,7 @@ class OrgUnitDetail extends Component {
     }
 
     componentDidMount() {
+        this.props.resetOrgUnitsLevels();
         this.fetchDetail();
         if (this.props.orgUnitTypes.length === 0) {
             fetchOrgUnitsTypes(this.props.dispatch)
@@ -101,6 +102,7 @@ class OrgUnitDetail extends Component {
             params,
         } = this.props;
         if (params.orgUnitId !== prevProps.params.orgUnitId) {
+            this.resetCurrentOrgUnit();
             this.fetchDetail();
         }
         if (params.tab !== prevProps.params.tab) {
@@ -111,6 +113,12 @@ class OrgUnitDetail extends Component {
     setOrgUnitLocationModified() {
         this.setState({
             orgUnitLocationModified: true,
+        });
+    }
+
+    resetCurrentOrgUnit() {
+        this.setState({
+            currentOrgUnit: undefined,
         });
     }
 
@@ -240,34 +248,6 @@ class OrgUnitDetail extends Component {
         );
     }
 
-    goBack() {
-        const { redirectTo, params } = this.props;
-        this.props.setCurrentOrgUnit(undefined);
-        this.props.resetOrgUnitsLevels();
-        if (params.backurl) {
-            const backurl = params.backurl.replace(new RegExp('__', 'g'), '/');
-            window.location.pathname = backurl;
-        } else {
-            const tempParams = {
-                ...params,
-            };
-            delete tempParams.tab;
-            delete tempParams.orgUnitId;
-            delete tempParams.orgUnitsPageSize;
-            delete tempParams.orgUnitsOrder;
-            delete tempParams.orgUnitsPage;
-            delete tempParams.orgUnitsLevels;
-            redirectTo('orgunits', {
-                ...tempParams,
-                levels: params.orgUnitsLevels,
-                order: params.orgUnitsOrder,
-                pageSize: params.orgUnitsPageSize,
-                page: params.orgUnitsPage,
-                back: true,
-            });
-        }
-    }
-
     render() {
         const {
             classes,
@@ -280,6 +260,7 @@ class OrgUnitDetail extends Component {
             sourceTypes,
             sources,
             params,
+            router,
         } = this.props;
         const {
             tab,
@@ -418,6 +399,7 @@ OrgUnitDetail.defaultProps = {
 };
 
 OrgUnitDetail.propTypes = {
+    router: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
@@ -454,7 +436,7 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
     setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
     setSources: sources => dispatch(setSources(sources)),

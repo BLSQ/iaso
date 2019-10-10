@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { replace } from 'react-router-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import ReactResizeDetector from 'react-resize-detector';
@@ -351,7 +351,7 @@ CustomTableComponent.propTypes = {
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
 });
 
 const CustomTableComponentIntl = injectIntl(CustomTableComponent);

@@ -20,7 +20,6 @@ import {
     setOrgUnitsListFetching,
     setSources,
 } from '../redux/orgUnitsReducer';
-import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
@@ -65,12 +64,7 @@ class OrgUnits extends Component {
     }
 
     componentWillMount() {
-        if (this.props.params.back) {
-            this.onSearch();
-            const { params } = this.props;
-            delete params.back;
-            this.props.redirectTo(baseUrl, params);
-        } else if (this.props.params.searchActive) {
+        if (this.props.params.searchActive) {
             this.onSearch();
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -156,23 +150,11 @@ class OrgUnits extends Component {
     }
 
     selectOrgUnit(orgUnit, tab) {
-        const { redirectTo, params } = this.props;
+        const { redirectTo } = this.props;
         const newParams = {
             orgUnitId: orgUnit.id,
-            ...params,
-            orgUnitslevels: params.levels,
-            orgUnitsOrder: params.order,
-            orgUnitsPageSize: params.pageSize,
-            orgUnitsPage: params.page,
+            tab,
         };
-        delete newParams.page;
-        delete newParams.pageSize;
-        delete newParams.order;
-        delete newParams.levels;
-        if (tab) {
-            newParams.tab = tab;
-        }
-        this.props.resetOrgUnitsLevels();
         redirectTo('orgunits/detail', newParams);
     }
 
@@ -272,7 +254,6 @@ OrgUnits.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
-    resetOrgUnitsLevels: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -289,7 +270,6 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
-    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 export default withStyles(styles)(

@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { replace } from 'react-router-redux';
 import PropTypes from 'prop-types';
 
 import { createUrl } from '../../../../utils/fetchData';
@@ -168,7 +168,7 @@ const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(FiltersComponent);

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import { push } from 'react-router-redux';
+import { replace } from 'react-router-redux';
 
 import {
     withStyles, Divider, Tabs, Grid, Tab, Paper,
@@ -154,16 +154,10 @@ class Instances extends Component {
 
 
     goBack() {
-        const { redirectTo, params } = this.props;
+        const { params, router } = this.props;
         this.props.setCurrentForm(undefined);
         this.props.setInstances([], params, 0, 0);
-        redirectTo('forms', {
-            date_from: params.date_from,
-            date_to: params.date_to,
-            order: params.formOrder,
-            pageSize: params.formPageSize,
-            page: params.formPage,
-        });
+        router.goBack();
     }
 
     fetchInstances() {
@@ -325,6 +319,7 @@ Instances.propTypes = {
     setInstancesFetching: PropTypes.func.isRequired,
     setDevicesList: PropTypes.func.isRequired,
     setDevicesOwnershipList: PropTypes.func.isRequired,
+    router: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -341,7 +336,7 @@ const MapDispatchToProps = dispatch => ({
     setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),
     setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
 });

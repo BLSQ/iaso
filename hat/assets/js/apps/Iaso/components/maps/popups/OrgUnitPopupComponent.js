@@ -1,9 +1,11 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
+
 import {
     Popup,
 } from 'react-leaflet';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 
 import {
     withStyles,
@@ -19,6 +21,8 @@ import moment from 'moment';
 
 import LoadingSpinner from '../../LoadingSpinnerComponent';
 import PopupItemComponent from './PopupItemComponent';
+
+import { createUrl } from '../../../../../utils/fetchData';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
@@ -73,6 +77,15 @@ const MESSAGES = {
 };
 
 class OrgUnitPopupComponent extends Component {
+    goToOrgUnit() {
+        const { redirectTo, currentOrgUnit } = this.props;
+        const newParams = {
+            orgUnitId: currentOrgUnit.id,
+            tab: 'infos',
+        };
+        redirectTo('orgunits/detail', newParams);
+    }
+
     render() {
         const {
             classes,
@@ -132,9 +145,9 @@ class OrgUnitPopupComponent extends Component {
                                     <Grid container spacing={0} justify="flex-end" alignItems="center">
                                         <Button
                                             color="primary"
-                                            href={`/dashboard/orgunits/detail/orgUnitId/${currentOrgUnit.id}/validated/true/backurl/${encodeURIComponent(window.location.pathname.replace(new RegExp('/', 'g'), '__'))}`}
+                                            onClick={() => this.goToOrgUnit()}
                                         >
-                                        Voir
+                                            <FormattedMessage id="iaso.label.see" defaultMessage="See" />
                                         </Button>
                                     </Grid>
                                 </Box>
@@ -155,6 +168,7 @@ OrgUnitPopupComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     currentOrgUnit: PropTypes.object,
     itemId: PropTypes.number.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -163,6 +177,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 

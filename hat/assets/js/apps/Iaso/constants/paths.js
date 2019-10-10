@@ -49,26 +49,6 @@ export const instancesPath = getPath({
             isRequired: true,
             key: 'formId',
         },
-        {
-            isRequired: true,
-            key: 'date_from',
-        },
-        {
-            isRequired: true,
-            key: 'date_to',
-        },
-        {
-            isRequired: false,
-            key: 'formOrder',
-        },
-        {
-            isRequired: false,
-            key: 'formPageSize',
-        },
-        {
-            isRequired: false,
-            key: 'formPage',
-        },
         ...paginationPathParams,
         {
             isRequired: false,
@@ -145,10 +125,6 @@ export const orgUnitsPath = getPath({
     params: [
         ...orgUnitsPathParams,
         ...paginationPathParams,
-        {
-            isRequired: false,
-            key: 'back',
-        },
     ],
 });
 
@@ -159,26 +135,9 @@ export const orgUnitsDetailsPath = getPath({
             isRequired: true,
             key: 'orgUnitId',
         },
-        ...orgUnitsPathParams,
         {
             isRequired: false,
-            key: 'backurl',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitsLevels',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitsOrder',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitsPageSize',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitsPage',
+            key: 'levels',
         },
         ...paginationPathParams,
         {
@@ -188,6 +147,10 @@ export const orgUnitsDetailsPath = getPath({
         {
             isRequired: false,
             key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'backurl',
         },
     ],
 });

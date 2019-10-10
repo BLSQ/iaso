@@ -62,18 +62,11 @@ class Forms extends Component {
     }
 
     selectForm(form) {
-        const { redirectTo, params } = this.props;
+        const { redirectTo } = this.props;
         this.props.setCurrentForm(form);
         const newParams = {
             formId: form.id,
-            ...params,
-            formOrder: params.order,
-            formPageSize: params.pageSize,
-            formPage: params.page,
         };
-        delete newParams.page;
-        delete newParams.pageSize;
-        delete newParams.order;
         redirectTo('instances', newParams);
     }
 

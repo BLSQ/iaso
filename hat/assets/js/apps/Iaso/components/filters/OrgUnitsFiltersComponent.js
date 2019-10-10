@@ -19,7 +19,6 @@ import {
     hasInstances,
     orgUnitType,
     source,
-    subSource,
     shape,
     location,
 } from '../../constants/filters';
@@ -72,7 +71,6 @@ class OrgUnitsFiltersComponent extends Component {
             orgUnitTypes,
             sources,
         } = this.props;
-        const { filtersUpdated } = this.state;
         return (
             <Fragment>
                 <Grid container spacing={4}>

@@ -19,6 +19,7 @@ import {
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
+import Link from '@material-ui/icons/Link';
 
 import PropTypes from 'prop-types';
 
@@ -117,6 +118,16 @@ class SidebarMenu extends PureComponent {
                         <ListItemText primary={formatMessage({
                             defaultMessage: 'Org units',
                             id: 'iaso.orgUnits.title',
+                        })}
+                        />
+                    </ListItem>
+                    <ListItem button onClick={() => this.onClick('links')}>
+                        <ListItemIcon className={classes.listItemIcon}>
+                            <Link />
+                        </ListItemIcon>
+                        <ListItemText primary={formatMessage({
+                            defaultMessage: 'Links validation',
+                            id: 'iaso.links.title',
                         })}
                         />
                     </ListItem>

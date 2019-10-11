@@ -51,7 +51,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Updated at',
-                id: 'iaso.orgUnits.updated_at',
+                id: 'iaso.label.updated_at',
             }),
             accessor: 'updated_at',
             Cell: settings => (
@@ -63,7 +63,7 @@ const orgUnitsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Created at',
-                id: 'iaso.orgUnits.created_at',
+                id: 'iaso.label.created_at',
             }),
             accessor: 'created_at',
             Cell: settings => (

@@ -24,12 +24,14 @@ import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsRe
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
+import { linksInitialState, linksReducer } from './redux/linksReducer';
 
 import App from '../App';
 
 import Forms from './pages/Forms';
 import Instances from './pages/Instances';
 import OrgUnits from './pages/OrgUnits';
+import Links from './pages/Links';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
 import {
@@ -37,6 +39,7 @@ import {
     instancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
+    linksPath,
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
@@ -82,10 +85,21 @@ export default function datasApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
+        <Route
+            path={linksPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu />
+                    <Links {...props} />
+                </Fragment>
+            )}
+        />,
         <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to="/orgunits/validated/both" />,
+        <Redirect path="/links" to={`/links/date_from/${dateFrom}/date_to/${dateTo}`} />,
+
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -103,6 +117,7 @@ export default function datasApp(element, baseUrl) {
         devices: devicesInitialState,
         orgUnitsLevels: orgUnitsLevelsInitialState,
         routerCustom: routerInitialState,
+        links: linksInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -115,6 +130,7 @@ export default function datasApp(element, baseUrl) {
         devices: devicesReducer,
         orgUnitsLevels: orgUnitsLevelsReducer,
         routerCustom: routerReducer,
+        links: linksReducer,
     }, [
         routerMiddleware(history),
     ]);

@@ -1,4 +1,4 @@
 
-const SIDEBAR_WIDTH = 250;
+const SIDEBAR_WIDTH = 300;
 
 export default SIDEBAR_WIDTH;

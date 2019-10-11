@@ -154,3 +154,22 @@ export const orgUnitsDetailsPath = getPath({
         },
     ],
 });
+
+export const linksPath = getPath({
+    baseUrl: 'links',
+    params: [
+        {
+            isRequired: true,
+            key: 'date_from',
+        },
+        {
+            isRequired: true,
+            key: 'date_to',
+        },
+        ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
+    ],
+});

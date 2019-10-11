@@ -177,12 +177,17 @@ class OrgUnitDetail extends Component {
     }
 
     handleChangeInfo(key, value) {
+        const currentOrgUnit = {
+            ...this.state.currentOrgUnit,
+            [key]: value,
+        };
+        if (key !== 'geo_json' && value) {
+            currentOrgUnit.latitude = null;
+            currentOrgUnit.longitude = null;
+        }
         this.setState({
             orgUnitModified: key !== 'geo_json',
-            currentOrgUnit: {
-                ...this.state.currentOrgUnit,
-                [key]: value,
-            },
+            currentOrgUnit,
         });
     }
 
@@ -193,6 +198,7 @@ class OrgUnitDetail extends Component {
                 ...this.state.currentOrgUnit,
                 latitude: location.lat ? parseFloat(location.lat.toFixed(8)) : null,
                 longitude: location.lng ? parseFloat(location.lng.toFixed(8)) : null,
+                geo_json: null,
             },
         });
     }

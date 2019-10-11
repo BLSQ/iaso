@@ -1,4 +1,3 @@
-
 export const menuHeight = 112;
 export const tabsHeight = 68;
 
@@ -26,6 +25,11 @@ const innerDrawer = theme => ({
         width: '100%',
         padding: theme.spacing(1, 3),
         flex: 'auto',
+    },
+    innerDrawerFooterContent: {
+        marginTop: 'auto',
+        width: '100%',
+        padding: theme.spacing(1, 3),
     },
     innerDrawerTabs: {
         minWidth: 100,

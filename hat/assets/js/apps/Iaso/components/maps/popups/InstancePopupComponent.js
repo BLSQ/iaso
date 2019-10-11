@@ -10,6 +10,8 @@ import {
     Card,
     CardMedia,
     CardContent,
+    Grid,
+    Box,
 } from '@material-ui/core';
 import AttachFile from '@material-ui/icons/AttachFile';
 
@@ -18,6 +20,7 @@ import moment from 'moment';
 
 import LoadingSpinner from '../../LoadingSpinnerComponent';
 import PopupItemComponent from './PopupItemComponent';
+import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
@@ -36,6 +39,9 @@ const styles = theme => ({
     },
     fileItem: {
         display: 'inline-block',
+    },
+    actionBox: {
+        padding: theme.spacing(1, 0, 0, 0),
     },
 });
 
@@ -68,20 +74,42 @@ const MESSAGES = {
         id: 'iaso.label.longitude',
         defaultMessage: 'Longitude',
     },
+    associate: {
+        id: 'iaso.label.useOrgUnitLocation.btn',
+        defaultMessage: 'Use this location',
+    },
+    question: {
+        id: 'iaso.label.useOrgUnitLocation.question',
+        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
+    },
+    message: {
+        id: 'iaso.label.useOrgUnitLocation.message',
+        defaultMessage: 'Don\'t forget to save',
+    },
 };
 
 class InstancePopupComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.popup = React.createRef();
+    }
+
+    confirmDialog() {
+        this.props.useLocation(this.props.currentInstance);
+        this.popup.current.leafletElement.options.leaflet.map.closePopup();
+    }
+
     render() {
         const {
             classes,
             currentInstance,
-            itemId,
             intl: {
                 formatMessage,
             },
+            displayUseLocation,
         } = this.props;
         let hasHero = false;
-        if (currentInstance && currentInstance.id === itemId) {
+        if (currentInstance) {
             hasHero = currentInstance.files && currentInstance.files.length > 0;
         }
         let orgUnitTree = [];
@@ -90,14 +118,13 @@ class InstancePopupComponent extends Component {
             orgUnitTree = orgUnitTree.reverse();
         }
         return (
-            <Popup className={classes.popup}>
+            <Popup className={classes.popup} ref={this.popup}>
                 {
                     !currentInstance
                     && <LoadingSpinner />
                 }
                 {
                     currentInstance
-                    && currentInstance.id === itemId
                     && (
                         <Card className={classes.popupCard}>
                             {
@@ -151,6 +178,26 @@ class InstancePopupComponent extends Component {
                                         </ul>
                                     )}
                                 />
+                                {
+                                    displayUseLocation
+                                    && (
+                                        <Box className={classes.actionBox}>
+                                            <Grid
+                                                container
+                                                spacing={0}
+                                                justify="center"
+                                                alignItems="center"
+                                            >
+                                                <ConfirmDialog
+                                                    btnMessage={formatMessage(MESSAGES.associate)}
+                                                    question={formatMessage(MESSAGES.question)}
+                                                    message={formatMessage(MESSAGES.message)}
+                                                    confirm={() => this.confirmDialog()}
+                                                />
+                                            </Grid>
+                                        </Box>
+                                    )
+                                }
                             </CardContent>
                         </Card>
                     )
@@ -161,13 +208,16 @@ class InstancePopupComponent extends Component {
 }
 InstancePopupComponent.defaultProps = {
     currentInstance: null,
+    displayUseLocation: false,
+    useLocation: () => { },
 };
 
 InstancePopupComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     currentInstance: PropTypes.object,
-    itemId: PropTypes.number.isRequired,
+    displayUseLocation: PropTypes.bool,
+    useLocation: PropTypes.func,
 };
 
 const MapStateToProps = state => ({

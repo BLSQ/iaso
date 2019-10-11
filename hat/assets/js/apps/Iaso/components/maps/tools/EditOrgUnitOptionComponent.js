@@ -7,9 +7,7 @@ import {
 import Edit from '@material-ui/icons/Edit';
 import AddLocation from '@material-ui/icons/AddLocation';
 import DeleteIcon from '@material-ui/icons/Delete';
-import Cancel from '@material-ui/icons/Cancel';
-import Save from '@material-ui/icons/Save';
-import Stop from '@material-ui/icons/NotInterested';
+import Check from '@material-ui/icons/Check';
 
 
 import PropTypes from 'prop-types';
@@ -30,11 +28,6 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
     },
-    buttonTopMarginAuto: {
-        marginTop: 'auto',
-        width: '100%',
-        marginBottom: theme.spacing(2),
-    },
     buttonIconSvg: {
         ...commonStyles(theme).buttonIcon,
         fill: theme.palette.primary.main,
@@ -53,10 +46,6 @@ class EditOrgUnitOptionComponent extends Component {
             addShape,
             onDelete,
             onChange,
-            saveOrgUnit,
-            mapGeoJson,
-            resetOrgUnit,
-            orgUnitLocationModified,
         } = this.props;
         const hasMarker = Boolean(orgUnit.latitude !== null) && Boolean(orgUnit.longitude !== null);
         return (
@@ -96,9 +85,9 @@ class EditOrgUnitOptionComponent extends Component {
                                     toggleEditShape();
                                 }}
                                 className={classes.buttonTopMargin}
-                                color="secondary"
+                                color="primary"
                             >
-                                <Stop className={classes.buttonIcon} />
+                                <Check className={classes.buttonIcon} />
                                 <FormattedMessage id="iaso.label.shape.stopEdit" defaultMessage="Stop edit" />
                             </Button>
                         )
@@ -192,31 +181,6 @@ class EditOrgUnitOptionComponent extends Component {
                         )
                     }
                 </Box>
-                <Button
-                    className={classes.buttonTopMarginAuto}
-                    disabled={!orgUnitLocationModified}
-                    variant="outlined"
-                    onClick={() => {
-                        if (editEnabled) {
-                            toggleEditShape();
-                        }
-                        mapGeoJson(orgUnit.geo_json);
-                        resetOrgUnit();
-                    }}
-                >
-                    <Cancel className={classes.buttonIcon} fontSize="small" />
-                    <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
-                </Button>
-                <Button
-                    disabled={!orgUnitLocationModified || editEnabled}
-                    variant="outlined"
-                    className={classes.button}
-                    color="primary"
-                    onClick={() => saveOrgUnit()}
-                >
-                    <Save className={classes.buttonIcon} fontSize="small" />
-                    <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
-                </Button>
             </Box>
         );
     }
@@ -232,10 +196,6 @@ EditOrgUnitOptionComponent.propTypes = {
     addMarker: PropTypes.func.isRequired,
     addShape: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,
-    mapGeoJson: PropTypes.func.isRequired,
-    resetOrgUnit: PropTypes.func.isRequired,
-    saveOrgUnit: PropTypes.func.isRequired,
-    orgUnitLocationModified: PropTypes.bool.isRequired,
 };
 
 export default withStyles(styles)(EditOrgUnitOptionComponent);

@@ -16,6 +16,7 @@ const MarkerComponent = (props) => {
         draggable,
         onDragend,
         marker,
+        popupProps,
     } = props;
     return (
         <Marker
@@ -26,7 +27,7 @@ const MarkerComponent = (props) => {
             onDragend={e => onDragend(e.target)}
         >
             {
-                PopupComponent && <PopupComponent itemId={item.id} />
+                PopupComponent && <PopupComponent {...popupProps} />
             }
         </Marker>
     );
@@ -38,6 +39,7 @@ MarkerComponent.defaultProps = {
     PopupComponent: undefined,
     draggable: false,
     marker: null,
+    popupProps: {},
 };
 
 MarkerComponent.propTypes = {
@@ -47,6 +49,7 @@ MarkerComponent.propTypes = {
     onDragend: PropTypes.func,
     draggable: PropTypes.bool,
     marker: PropTypes.object,
+    popupProps: PropTypes.object,
 };
 
 export default MarkerComponent;

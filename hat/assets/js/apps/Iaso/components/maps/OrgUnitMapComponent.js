@@ -20,6 +20,7 @@ import { customMarker, customZoomBar, clusterColorMarker } from '../../utils/map
 import TileSwitch from './tools/TileSwitchComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
+import OrgunitOptionSaveComponent from './tools/OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../filters/chips/OrgUnitTypeChipsFilterComponent';
 import FormsChipsFilterComponent from '../filters/chips/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../filters/chips/SourcesChipsFilterComponent';
@@ -257,6 +258,19 @@ class OrgUnitMapComponent extends Component {
         fetchInstanceDetail(dispatch, instance.id).then(i => this.props.setCurrentInstance(i));
     }
 
+    useOrgUnitLocation(newOrgUnit) {
+        const { onChange, onChangeLocation, setOrgUnitLocationModified } = this.props;
+        if (newOrgUnit.latitude && newOrgUnit.longitude) {
+            onChangeLocation({
+                lat: newOrgUnit.latitude,
+                lng: newOrgUnit.longitude,
+            });
+        } else if (newOrgUnit.has_geo_json) {
+            setOrgUnitLocationModified();
+            onChange(newOrgUnit.geo_json);
+        }
+    }
+
     render() {
         const {
             orgUnit,
@@ -282,6 +296,17 @@ class OrgUnitMapComponent extends Component {
                     setCurrentOption={option => this.setCurrentOption(option)}
                     settingsDisabled={editEnabled}
                     filtersDisabled={editEnabled}
+                    footerComponent={(
+                        <OrgunitOptionSaveComponent
+                            orgUnit={orgUnit}
+                            editEnabled={editEnabled}
+                            toggleEditShape={() => this.toggleEditShape()}
+                            mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
+                            resetOrgUnit={resetOrgUnit}
+                            orgUnitLocationModified={orgUnitLocationModified}
+                            saveOrgUnit={saveOrgUnit}
+                        />
+                    )}
                     filtersOptionComponent={(
                         <Fragment>
                             <SourcesChipsFilterComponent />
@@ -290,11 +315,8 @@ class OrgUnitMapComponent extends Component {
                         </Fragment>
                     )}
                     editOptionComponent={(
+
                         <EditOrgUnitOptionComponent
-                            orgUnitLocationModified={orgUnitLocationModified}
-                            saveOrgUnit={saveOrgUnit}
-                            mapGeoJson={geoJson => this.mapGeoJson(geoJson)}
-                            resetOrgUnit={resetOrgUnit}
                             orgUnit={orgUnit}
                             editEnabled={editEnabled}
                             onChange={() => {
@@ -338,6 +360,10 @@ class OrgUnitMapComponent extends Component {
                                         items={ot.orgUnits.locations}
                                         onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
+                                        popupProps={{
+                                            displayUseLocation: true,
+                                            useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
+                                        }}
                                         customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
                                     />
                                     {
@@ -350,7 +376,10 @@ class OrgUnitMapComponent extends Component {
                                                     { color: ot.color }
                                                 )}
                                             >
-                                                <OrgUnitPopupComponent itemId={o.id} />
+                                                <OrgUnitPopupComponent
+                                                    displayUseLocation
+                                                    useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
+                                                />
                                             </GeoJSON>
                                         ))
                                     }
@@ -364,6 +393,10 @@ class OrgUnitMapComponent extends Component {
                                     items={f.instances}
                                     onMarkerClick={i => this.fetchInstanceDetail(i)}
                                     PopupComponent={InstancePopupComponent}
+                                    popupProps={{
+                                        displayUseLocation: true,
+                                        useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
+                                    }}
                                     customMarker={clusterColorMarker(f.color, 'white-form.svg')}
                                 />
                             ))
@@ -386,7 +419,10 @@ class OrgUnitMapComponent extends Component {
                                                 { color: s.color }
                                             )}
                                         >
-                                            <OrgUnitPopupComponent itemId={o.id} />
+                                            <OrgUnitPopupComponent
+                                                displayUseLocation
+                                                useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
+                                            />
                                         </GeoJSON>
                                     ))
                                 }

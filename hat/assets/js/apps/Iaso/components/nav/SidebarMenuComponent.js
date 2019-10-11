@@ -1,14 +1,21 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
-import Drawer from '@material-ui/core/Drawer';
-import List from '@material-ui/core/List';
-import ListItem from '@material-ui/core/ListItem';
-import ListItemText from '@material-ui/core/ListItemText';
-import Divider from '@material-ui/core/Divider';
-import { withStyles, IconButton, ListItemIcon } from '@material-ui/core';
+import ExitIcon from '@material-ui/icons/ExitToApp';
+import {
+    withStyles,
+    Button,
+    IconButton,
+    ListItemIcon,
+    Drawer,
+    List,
+    ListItem,
+    ListItemText,
+    Divider,
+    Tooltip,
+} from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
@@ -46,6 +53,12 @@ const styles = theme => ({
     },
     listItemIcon: {
         minWidth: 35,
+    },
+    logout: {
+        marginTop: 'auto',
+        marginBottom: theme.spacing(3),
+        marginLeft: theme.spacing(3),
+        marginRight: theme.spacing(3),
     },
 });
 
@@ -108,6 +121,18 @@ class SidebarMenu extends PureComponent {
                         />
                     </ListItem>
                 </List>
+                <Tooltip title={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />} >
+                    <Button
+                        size="small"
+                        className={classes.logout}
+                        color="inherit"
+                        href="/logout-iaso"
+                        aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                    >
+                        <ExitIcon className={classes.smallButtonIcon} />
+                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
+                    </Button>
+                </Tooltip>
             </Drawer>
         );
     }

@@ -21,6 +21,7 @@ import moment from 'moment';
 
 import LoadingSpinner from '../../LoadingSpinnerComponent';
 import PopupItemComponent from './PopupItemComponent';
+import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
 
@@ -74,9 +75,26 @@ const MESSAGES = {
         id: 'iaso.label.longitude',
         defaultMessage: 'Longitude',
     },
+    associate: {
+        id: 'iaso.label.useOrgUnitLocation.btn',
+        defaultMessage: 'Use this location',
+    },
+    question: {
+        id: 'iaso.label.useOrgUnitLocation.question',
+        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
+    },
+    message: {
+        id: 'iaso.label.useOrgUnitLocation.message',
+        defaultMessage: 'Don\'t forget to save',
+    },
 };
 
 class OrgUnitPopupComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.popup = React.createRef();
+    }
+
     goToOrgUnit() {
         const { redirectTo, currentOrgUnit } = this.props;
         const newParams = {
@@ -86,24 +104,28 @@ class OrgUnitPopupComponent extends Component {
         redirectTo('orgunits/detail', newParams);
     }
 
+    confirmDialog() {
+        this.props.useLocation(this.props.currentOrgUnit);
+        this.popup.current.leafletElement.options.leaflet.map.closePopup();
+    }
+
     render() {
         const {
             classes,
             currentOrgUnit,
-            itemId,
+            displayUseLocation,
             intl: {
                 formatMessage,
             },
         } = this.props;
         return (
-            <Popup className={classes.popup}>
+            <Popup className={classes.popup} ref={this.popup}>
                 {
                     !currentOrgUnit
                     && <LoadingSpinner />
                 }
                 {
                     currentOrgUnit
-                    && currentOrgUnit.id === itemId
                     && (
                         <Card className={classes.popupCard}>
                             <CardContent className={classes.popupCardContent}>
@@ -142,8 +164,27 @@ class OrgUnitPopupComponent extends Component {
                                     value={moment.unix(currentOrgUnit.created_at).format('DD/MM/YYYY HH:mm')}
                                 />
                                 <Box className={classes.actionBox}>
-                                    <Grid container spacing={0} justify="flex-end" alignItems="center">
+                                    <Grid
+                                        container
+                                        spacing={0}
+                                        justify={displayUseLocation ? 'center' : 'flex-end'}
+                                        alignItems="center"
+                                    >
+                                        {
+                                            displayUseLocation
+                                            && (
+                                                <ConfirmDialog
+                                                    btnMessage={formatMessage(MESSAGES.associate)}
+                                                    question={formatMessage(MESSAGES.question)}
+                                                    message={formatMessage(MESSAGES.message)}
+                                                    confirm={() => this.confirmDialog()}
+                                                />
+                                            )
+                                        }
                                         <Button
+                                            className={classes.marginLeft}
+                                            variant="outlined"
+                                            size="small"
                                             color="primary"
                                             onClick={() => this.goToOrgUnit()}
                                         >
@@ -161,14 +202,17 @@ class OrgUnitPopupComponent extends Component {
 }
 OrgUnitPopupComponent.defaultProps = {
     currentOrgUnit: null,
+    displayUseLocation: false,
+    useLocation: () => {},
 };
 
 OrgUnitPopupComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     currentOrgUnit: PropTypes.object,
-    itemId: PropTypes.number.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    displayUseLocation: PropTypes.bool,
+    useLocation: PropTypes.func,
 };
 
 const MapStateToProps = state => ({

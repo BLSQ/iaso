@@ -12,6 +12,7 @@ const MarkersListComponent = (props) => {
         onMarkerClick,
         PopupComponent,
         customMarker,
+        popupProps,
     } = props;
 
     return items.map((i) => {
@@ -23,6 +24,7 @@ const MarkersListComponent = (props) => {
                     onClick={onMarkerClick}
                     PopupComponent={PopupComponent}
                     marker={customMarker}
+                    popupProps={popupProps}
                 />
             </Fragment>
         );
@@ -33,6 +35,7 @@ MarkersListComponent.defaultProps = {
     items: [],
     PopupComponent: null,
     customMarker: null,
+    popupProps: {},
 };
 
 MarkersListComponent.propTypes = {
@@ -40,6 +43,7 @@ MarkersListComponent.propTypes = {
     onMarkerClick: PropTypes.func.isRequired,
     PopupComponent: PropTypes.object,
     customMarker: PropTypes.object,
+    popupProps: PropTypes.object,
 };
 
 export default MarkersListComponent;

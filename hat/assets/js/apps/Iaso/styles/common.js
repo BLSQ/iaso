@@ -17,6 +17,13 @@ const commonStyles = theme => ({
         width: 15,
         height: 15,
     },
+    smallButtonIcon: {
+        marginRight: theme.spacing(1),
+        width: 15,
+        height: 15,
+        position: 'relative',
+        top: -1,
+    },
     listitem: {
         width: 'auto',
         paddingLeft: theme.spacing(1),

@@ -1,14 +1,12 @@
 import React, { Fragment } from 'react';
-import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
-import { withStyles, IconButton, Tooltip } from '@material-ui/core';
+import { withStyles, IconButton } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Toolbar from '@material-ui/core/Toolbar';
 import Typography from '@material-ui/core/Typography';
 
 import MenuIcon from '@material-ui/icons/Menu';
-import ExitIcon from '@material-ui/icons/ExitToApp';
 import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 
 import PropTypes from 'prop-types';
@@ -16,9 +14,6 @@ import PropTypes from 'prop-types';
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 
 const styles = theme => ({
-    button: {
-        marginLeft: 'auto',
-    },
     menuButton: {
         marginRight: theme.spacing(2),
         marginLeft: theme.spacing(1),
@@ -63,16 +58,6 @@ function TopBar(props) {
                         {title}
                     </Typography>
 
-                    <Tooltip title={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}>
-                        <IconButton
-                            className={classes.button}
-                            color="inherit"
-                            href="/logout-iaso"
-                            aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
-                        >
-                            <ExitIcon />
-                        </IconButton>
-                    </Tooltip>
                 </Toolbar>
                 {children}
             </AppBar>

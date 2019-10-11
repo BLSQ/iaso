@@ -56,6 +56,7 @@ class InnerDrawer extends Component {
             filtersOptionComponent,
             settingsDisabled,
             filtersDisabled,
+            footerComponent,
         } = this.props;
         const {
             activeOption,
@@ -122,16 +123,14 @@ class InnerDrawer extends Component {
                                 display="flex"
                                 flexWrap="wrap"
                                 className={classes.innerDrawerContentContainer}
-                                flexDirection="column"
+                                flexDirection="row"
                             >
                                 {
                                     filtersOptionComponent
                                     && (
                                         <Box
-                                            display="flex"
-                                            flexWrap="wrap"
+                                            width="100%"
                                             className={activeOption !== 'filters' ? 'hidden-opacity' : ''}
-                                            flexDirection="column"
                                         >
                                             {filtersOptionComponent}
                                         </Box>
@@ -140,12 +139,32 @@ class InnerDrawer extends Component {
 
                                 {
                                     activeOption === 'edit'
-                                    && editOptionComponent
+                                    && (
+                                        <Box
+                                            width="100%"
+                                        >
+                                            {editOptionComponent}
+                                        </Box>
+                                    )
                                 }
 
                                 {
                                     activeOption === 'settings'
-                                    && settingsOptionComponent
+                                    && (
+                                        <Box
+                                            width="100%"
+                                        >
+                                            {settingsOptionComponent}
+                                        </Box>
+                                    )
+                                }
+                                {
+                                    footerComponent
+                                    && (
+                                        <div className={classes.innerDrawerFooterContent}>
+                                            {footerComponent}
+                                        </div>
+                                    )
                                 }
                             </Box>
 
@@ -161,6 +180,7 @@ InnerDrawer.defaultProps = {
     children: null,
     editOptionComponent: null,
     filtersOptionComponent: null,
+    footerComponent: null,
     settingsDisabled: false,
     filtersDisabled: false,
     setCurrentOption: () => null,
@@ -172,6 +192,7 @@ InnerDrawer.propTypes = {
     settingsOptionComponent: PropTypes.object.isRequired,
     editOptionComponent: PropTypes.object,
     filtersOptionComponent: PropTypes.object,
+    footerComponent: PropTypes.object,
     settingsDisabled: PropTypes.bool,
     filtersDisabled: PropTypes.bool,
     setCurrentOption: PropTypes.func,

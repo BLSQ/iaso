@@ -72,9 +72,9 @@ ConfirmDialog.defaultProps = {
 };
 
 ConfirmDialog.propTypes = {
-    question: PropTypes.object.isRequired,
-    message: PropTypes.object.isRequired,
-    btnMessage: PropTypes.object.isRequired,
+    question: PropTypes.any.isRequired,
+    message: PropTypes.any.isRequired,
+    btnMessage: PropTypes.any.isRequired,
     confirm: PropTypes.func.isRequired,
     reject: PropTypes.func,
 };

@@ -363,6 +363,28 @@ class Form(models.Model):
         return res
 
 
+class Group(models.Model):
+    name = models.TextField()
+    source_ref = models.TextField(null=True, blank=True)
+    source_version = models.ForeignKey(
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
+    )
+    org_units = models.ManyToManyField(OrgUnit, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s %s " % (self.name, self.source_version)
+
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "source_ref": self.source_ref,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
+
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"
     form = models.ForeignKey(Form, on_delete=models.CASCADE)

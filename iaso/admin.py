@@ -16,6 +16,7 @@ from .models import (
     MatchingAlgorithm,
     AlgorithmRun,
     Link,
+    Group,
 )
 
 
@@ -59,3 +60,10 @@ admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(Link)
 admin.site.register(FormVersion)
+
+
+class GroupAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("groups",)
+
+
+admin.site.register(Group)

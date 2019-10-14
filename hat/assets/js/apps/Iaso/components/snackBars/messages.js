@@ -67,6 +67,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchInstanceError',
         defaultMessage: 'An error occured while fetching instance detail',
     },
+    saveLinkError: {
+        id: 'iaso.snackBar.saveLinkError',
+        defaultMessage: 'An error occured while saving link',
+    },
 };
 
 export default MESSAGES;

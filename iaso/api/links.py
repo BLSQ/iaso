@@ -159,7 +159,13 @@ class LinkViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         link = get_object_or_404(Link, id=pk)
         original_copy = deepcopy(link)
-        link.validated = request.data.get("validated")
+        validated = request.data.get("validated", None)
+        if validated is not None:
+            link.validated = validated
+        if validated == True:
+            link.validator = request.user
+        if validated == False:
+            link.validator = None
 
         log_modification(original_copy, link, source=ORG_UNIT_API, user=request.user)
         link.save()

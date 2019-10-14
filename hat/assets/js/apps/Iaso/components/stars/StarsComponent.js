@@ -29,6 +29,10 @@ const styles = theme => ({
     },
     score: {
         marginLeft: theme.spacing(1),
+        fontSize: '0.6rem',
+        color: 'rgba(0, 0, 0, 0.6)',
+        position: 'relative',
+        top: 3,
     },
 });
 
@@ -62,7 +66,7 @@ function StarsComponent(props) {
                 displayCount
                 && (
                     <span className={classes.score}>
-                        {`(${score})`}
+                        {`(${score}/100)`}
                     </span>
                 )
             }

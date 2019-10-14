@@ -157,3 +157,14 @@ export const fetchInstanceDetail = (dispatch, instanceId) => getRequest(`/api/in
         console.error('Error while fetching instance detail:', error);
         throw error;
     });
+
+export const saveLink = (dispatch, link) => patchRequest(`/api/links/${link.id}/`, link)
+    .then((savedLink) => {
+        dispatch(enqueueSnackbar(succesfullSnackBar()));
+        return savedLink;
+    })
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('saveLinkError')));
+        console.error('Error occured while saving link:', error);
+        throw error;
+    });

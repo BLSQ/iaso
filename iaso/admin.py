@@ -53,6 +53,12 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "file")
 
 
+class LinkAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("source", "destination")
+
+
+admin.site.register(Link, LinkAdmin)
+
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
@@ -64,7 +70,6 @@ admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
-admin.site.register(Link)
 admin.site.register(FormVersion)
 
 

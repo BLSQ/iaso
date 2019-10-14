@@ -45,7 +45,7 @@ export const linksReducer = (state = linksInitialState, action = {}) => {
             } = action.payload;
             return {
                 ...state,
-                orgUnitsPage: {
+                linksPage: {
                     list,
                     showPagination,
                     params,

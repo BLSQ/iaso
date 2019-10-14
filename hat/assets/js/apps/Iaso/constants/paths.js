@@ -166,6 +166,10 @@ export const linksPath = getPath({
             isRequired: true,
             key: 'date_to',
         },
+        {
+            isRequired: false,
+            key: 'search',
+        },
         ...paginationPathParams,
         {
             isRequired: false,

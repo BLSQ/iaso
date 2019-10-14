@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 
 import {
     fetchOrgUnitsTypes,
+    saveLink,
 } from '../utils/requests';
 
 import {
@@ -122,6 +123,28 @@ class Links extends Component {
         this.props.setLinks(null, this.props.params, 0, 1);
     }
 
+    validateLink(link) {
+        const {
+            dispatch,
+            reduxPage,
+            params,
+        } = this.props;
+        const newLink = {
+            ...link,
+            validated: !link.validated,
+        };
+        saveLink(dispatch, newLink).then((savedLink) => {
+            const linksList = [];
+            reduxPage.list.forEach((l) => {
+                if (l.id !== savedLink.id) {
+                    linksList.push(l);
+                } else {
+                    linksList.push(savedLink);
+                }
+            });
+            this.props.setLinks(linksList, params, reduxPage.count, reduxPage.pages);
+        });
+    }
 
     selectLink(linkItem, tab) {
         const { redirectTo } = this.props;
@@ -178,7 +201,7 @@ class Links extends Component {
                                         showPagination
                                         endPointUrl={tableUrl}
                                         columns={tableColumns}
-                                        defaultSorted={[{ id: 'similarity_score', desc: false }]}
+                                        defaultSorted={[{ id: 'similarity_score', desc: true }]}
                                         params={params}
                                         defaultPath={baseUrl}
                                         dataKey="links"

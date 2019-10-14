@@ -1,6 +1,8 @@
 import React from 'react';
 import moment from 'moment';
+import Checkbox from '@material-ui/core/Checkbox';
 
+import getDisplayName from '../utils/usersUtils';
 import StarsComponent from '../components/stars/StarsComponent';
 
 const linksTableColumns = (formatMessage, component) => (
@@ -10,14 +12,14 @@ const linksTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Similarity score',
                 id: 'iaso.label.similarity_score',
             }),
-            width: 120,
+            width: 170,
             accessor: 'similarity_score',
             Cell: settings => (
                 <div className="middle-align">
                     <StarsComponent
                         score={settings.original.similarity_score}
                         bgColor={settings.index % 2 ? 'white' : '#f7f7f7'}
-                        displayCount={false}
+                        displayCount
                     />
                 </div>
             ),
@@ -76,14 +78,37 @@ const linksTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Created at',
-                id: 'iaso.label.created_at',
+                defaultMessage: 'Algorithm',
+                id: 'iaso.label.algorithm',
             }),
-            accessor: 'created_at',
+            accessor: 'algorithm_run',
             Cell: settings => (
-                <span>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
-                </span>
+                settings.original.algorithm_run.algorithm.name
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Validated',
+                id: 'iaso.forms.validated',
+            }),
+            accessor: 'validated',
+            Cell: settings => (
+                <Checkbox
+                    color="primary"
+                    checked={settings.original.validated}
+                    onChange={() => component.validateLink(settings.original)}
+                    value="checked"
+                />
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Validator',
+                id: 'iaso.label.validator',
+            }),
+            accessor: 'validator',
+            Cell: settings => (
+                settings.original.validator ? getDisplayName(settings.original.validator) : '/'
             ),
         },
     ]

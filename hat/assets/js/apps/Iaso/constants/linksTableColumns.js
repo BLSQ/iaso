@@ -1,17 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 
-const getStars = (score) => {
-    const stars = [];
-
-    for (let i = 0; i < score; i += 1) {
-        stars.push(<i className="fa fa-star" key={`${i}-pos`} />);
-    }
-    for (let i = 0; i < (5 - score); i += 1) {
-        stars.push(<i className="fa fa-star-o" key={`${i}-neg`} />);
-    }
-    return stars;
-};
+import StarsComponent from '../components/stars/StarsComponent';
 
 const linksTableColumns = (formatMessage, component) => (
     [
@@ -20,25 +10,17 @@ const linksTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Similarity score',
                 id: 'iaso.label.similarity_score',
             }),
+            width: 120,
             accessor: 'similarity_score',
-            Cell: (settings) => {
-                let finalScore = 0;
-                if (settings.original.similarity_score < 700) {
-                    finalScore = Math.round(Math.abs(700 - settings.original.similarity_score) / 140);
-                }
-                return (
-                    <div className="middle-align stars">
-                        {
-                            getStars(finalScore)
-                        }
-                        {
-                            <span>
-                                {`(${settings.original.similarity_score})`}
-                            </span>
-                        }
-                    </div>
-                );
-            },
+            Cell: settings => (
+                <div className="middle-align">
+                    <StarsComponent
+                        score={settings.original.similarity_score}
+                        bgColor={settings.index % 2 ? 'white' : '#f7f7f7'}
+                        displayCount={false}
+                    />
+                </div>
+            ),
         },
         {
             Header: formatMessage({

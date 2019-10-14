@@ -23,7 +23,7 @@ from .models import (
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
     list_filter = ("org_unit_type", "custom", "validated", "sub_source")
-    search_fields = ("name", "source_ref")
+    search_fields = ("name", "source_ref", "uuid")
     ordering = ("name",)
 
 
@@ -45,11 +45,17 @@ class FormAdmin(admin.GeoModelAdmin):
 
 class InstanceAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_unit",)
+    search_fields = ("file_name", "uuid")
+
+
+class InstanceFileAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("instance",)
+    search_fields = ("name", "file")
 
 
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
-admin.site.register(InstanceFile)
+admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)
 admin.site.register(Project)
 admin.site.register(Device)

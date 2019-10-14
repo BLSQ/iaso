@@ -39,6 +39,7 @@ def import_data(instances, api_import):
             instance_db = instances[0]
             instance_db.file_name = file_name
         elif len(instances) == 0:
+            print("file_name", file_name)
             instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
             instance_db.uuid = uuid
         else:
@@ -50,6 +51,7 @@ def import_data(instances, api_import):
         if str(tentative_org_unit_id).isdigit():
             instance_db.org_unit_id = tentative_org_unit_id
         else:
+            print("tentative_org_unit_id", tentative_org_unit_id)
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
             instance_db.org_unit = org_unit
 

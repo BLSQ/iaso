@@ -1,0 +1,6 @@
+9,Province(DPS),
+7,Zone de Sante,Province(DPS)
+10,Aire de Sante,Zone de Sante
+3,Formation Sanitaire,Aire de Sante
+11,PCA,Aire de Sante
+3,PMA,Aire de Sante

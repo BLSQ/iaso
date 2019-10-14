@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from hat.vector_control.models import APIImport
-from hat.api.org_units import import_data as import_units
-from hat.api.instances import import_data as import_instances
+from iaso.api.org_units import import_data as import_units
+from iaso.api.instances import import_data as import_instances
 
 
 class Command(BaseCommand):

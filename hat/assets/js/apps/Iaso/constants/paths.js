@@ -170,6 +170,22 @@ export const linksPath = getPath({
             isRequired: false,
             key: 'search',
         },
+        {
+            isRequired: false,
+            key: 'source1',
+        },
+        {
+            isRequired: false,
+            key: 'source2',
+        },
+        {
+            isRequired: false,
+            key: 'validated',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeId',
+        },
         ...paginationPathParams,
         {
             isRequired: false,

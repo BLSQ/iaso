@@ -94,7 +94,7 @@ class OrgUnitsFiltersComponent extends Component {
                             filters={[
                                 location(formatMessage),
                                 shape(formatMessage),
-                                orgUnitType(formatMessage, orgUnitTypes),
+                                orgUnitType(orgUnitTypes),
                             ]}
                         />
                     </Grid>
@@ -104,7 +104,7 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                source(formatMessage, sources || []),
+                                source(sources || []),
                                 status(formatMessage),
                             ]}
                         />

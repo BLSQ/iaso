@@ -12,10 +12,12 @@ import PropTypes from 'prop-types';
 import {
     fetchOrgUnitsTypes,
     saveLink,
+    fetchSources,
 } from '../utils/requests';
 
 import {
     setOrgUnitTypes,
+    setSources,
 } from '../redux/orgUnitsReducer';
 import {
     setLinks,
@@ -67,6 +69,8 @@ class Links extends Component {
             this.onSearch();
         }
         fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchSources(this.props.dispatch)
+            .then(sources => this.props.setSources(sources));
     }
 
     componentDidUpdate() {
@@ -146,16 +150,6 @@ class Links extends Component {
         });
     }
 
-    selectLink(linkItem, tab) {
-        const { redirectTo } = this.props;
-        const newParams = {
-            linkId: linkItem.id,
-            tab,
-        };
-        console.log('reidrect');
-        // redirectTo('orgunits/detail', newParams);
-    }
-
     render() {
         const {
             classes,
@@ -165,7 +159,6 @@ class Links extends Component {
                 formatMessage,
             },
             dispatch,
-            orgUnitTypes,
             fetchingList,
         } = this.props;
         const {
@@ -189,7 +182,6 @@ class Links extends Component {
                         baseUrl={baseUrl}
                         params={params}
                         onSearch={() => this.onSearch()}
-                        orgUnitTypes={orgUnitTypes}
                     />
                     {
                         tableUrl && (
@@ -243,7 +235,6 @@ Links.propTypes = {
     setLinks: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     setLinksListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
@@ -251,8 +242,6 @@ Links.propTypes = {
 
 const MapStateToProps = state => ({
     reduxPage: state.links.linksPage,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
 });
 
@@ -262,6 +251,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setLinksListFetching: isFetching => dispatch(setLinksListFetching(isFetching)),
+    setSources: sources => dispatch(setSources(sources)),
 });
 
 export default withStyles(styles)(

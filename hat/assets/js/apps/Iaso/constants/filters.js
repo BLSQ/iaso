@@ -72,31 +72,43 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
         value,
     }
 );
-export const orgUnitType = (formatMessage, orgunitTypesList) => (
+export const orgUnitType = (
+    orgunitTypesList,
+    urlKey = 'orgUnitTypeId',
+    labelString = '',
+    label = MESSAGES.org_unit_type_id,
+) => (
     {
-        urlKey: 'orgUnitTypeId',
+        urlKey,
         isMultiSelect: false,
         isClearable: true,
         options: orgunitTypesList.map(t => ({
             label: t.name,
             value: t.id,
         })),
-        label: MESSAGES.org_unit_type_id,
+        label: labelString !== '' ? null : label,
         type: 'select',
+        labelString,
     }
 );
 
-export const source = (formatMessage, sourceList) => (
+export const source = (
+    sourceList,
+    urlKey = 'source',
+    labelString = '',
+    label = MESSAGES.source,
+) => (
     {
-        urlKey: 'source',
+        urlKey,
         isMultiSelect: false,
         isClearable: true,
         options: sourceList.map(t => ({
             label: t.name,
             value: t.id,
         })),
-        label: MESSAGES.source,
+        label: labelString !== '' ? null : label,
         type: 'select',
+        labelString,
     }
 );
 

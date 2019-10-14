@@ -16,6 +16,8 @@ import commonStyles from '../../styles/common';
 import {
     search,
     orgUnitType,
+    source,
+    status,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -26,7 +28,7 @@ const styles = theme => ({
     ...commonStyles(theme),
 });
 
-class OrgUnitsFiltersComponent extends Component {
+class LinksFiltersComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -63,6 +65,7 @@ class OrgUnitsFiltersComponent extends Component {
                 formatMessage,
             },
             orgUnitTypes,
+            sources,
         } = this.props;
         return (
             <Fragment>
@@ -74,7 +77,38 @@ class OrgUnitsFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 search(),
-                                orgUnitType(formatMessage, orgUnitTypes),
+                                orgUnitType(orgUnitTypes),
+                                status(formatMessage),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(
+                                    sources || [],
+                                    'source1',
+                                    `${
+                                        formatMessage({
+                                            id: 'iaso.forms.source',
+                                            defaultMessage: 'Source',
+                                        })
+                                    } 1`,
+                                ),
+                                source(
+                                    sources || [],
+                                    'source2',
+                                    `${
+                                        formatMessage({
+                                            id: 'iaso.forms.source',
+                                            defaultMessage: 'Source',
+                                        })
+                                    } 2`,
+                                ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
@@ -97,25 +131,31 @@ class OrgUnitsFiltersComponent extends Component {
         );
     }
 }
-OrgUnitsFiltersComponent.defaultProps = {
+LinksFiltersComponent.defaultProps = {
     baseUrl: '',
+    sources: [],
 };
 
-OrgUnitsFiltersComponent.propTypes = {
+LinksFiltersComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    sources: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
+    sources: state.orgUnits.sources,
+});
+
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(LinksFiltersComponent)));

@@ -53,8 +53,10 @@ class LinkViewSet(viewsets.ViewSet):
                 | Q(source__aliases__contains=[search])
             )
 
-        if validated:
-            queryset = queryset.filter(validated=validated)
+        if validated == 'true':
+            queryset = queryset.filter(validated=True)
+        if validated == 'false':
+            queryset = queryset.filter(validated=False)
 
         if source_id_1:
             queryset = queryset.filter(destination__version__data_source_id=source_id_1)

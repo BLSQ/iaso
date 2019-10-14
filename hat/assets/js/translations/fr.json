@@ -115,6 +115,7 @@
     "iaso.label.see": "Voir",
     "iaso.label.similarity_score": "Score de similarité",
     "iaso.label.source": "Source",
+    "iaso.label.sourceLower": "source",
     "iaso.label.sources": "Sources",
     "iaso.label.type": "Type",
     "iaso.label.user": "Utilisateur",

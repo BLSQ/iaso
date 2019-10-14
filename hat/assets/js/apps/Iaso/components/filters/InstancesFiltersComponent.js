@@ -79,7 +79,7 @@ class InstancesFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 location(formatMessage),
-                                orgUnitType(formatMessage, orgUnitTypes),
+                                orgUnitType(orgUnitTypes),
                             ]}
                         />
                     </Grid>

@@ -1,5 +1,9 @@
+import React from 'react';
+
 import MESSAGES from '../components/forms/messages';
+import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
+
 
 export const search = () => (
     {
@@ -154,6 +158,49 @@ export const deviceOwnership = deviceOnershipList => (
     }
 );
 
+
+export const validator = profileList => (
+    {
+        urlKey: 'validatorId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: profileList.map(u => ({
+            label: getDisplayName(u),
+            value: u.id,
+        })),
+        label: MESSAGES.validator,
+        type: 'select',
+    }
+);
+
+export const algo = algoList => (
+    {
+        urlKey: 'algorithmId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: algoList.map(a => ({
+            label: a.name,
+            value: a.id,
+        })),
+        label: MESSAGES.algo,
+        type: 'select',
+    }
+);
+
+export const score = () => (
+    {
+        urlKey: 'score',
+        isMultiSelect: false,
+        isClearable: true,
+        options: [1, 2, 3, 4, 5].map(s => ({
+            label: <FullStarsSvg score={s} />,
+            value: `${(s - 1) * 20},${s * 20}`,
+        })),
+        label: MESSAGES.score,
+        type: 'select',
+        isSearchable: false,
+    }
+);
 
 export const shape = formatMessage => (
     {

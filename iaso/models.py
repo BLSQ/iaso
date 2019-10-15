@@ -233,7 +233,10 @@ class MatchingAlgorithm(models.Model):
         )
 
     def as_dict(self):
-        return {"name": self.name}
+        return {
+            "name": self.name,
+            "id": self.id,
+            }
 
 
 class AlgorithmRun(models.Model):

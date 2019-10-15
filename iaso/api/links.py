@@ -34,11 +34,10 @@ class LinkViewSet(viewsets.ViewSet):
 
         version_id_1 = request.GET.get("version1", None)
         version_id_2 = request.GET.get("version2", None)
-        validator_id = request.GET.get("validator_id", None)
-        algorithm_id = request.GET.get("algo", None)
+        validator_id = request.GET.get("validatorId", None)
+        algorithm_id = request.GET.get("algorithmId", None)
         run_id = request.GET.get("run", None)
-        score_lower_bound = request.GET.get("scoreLowerBound", None)
-        score_upper_bound = request.GET.get("scoreUpperBound", None)
+        score = request.GET.get("score", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         queryset = Link.objects.order_by(*order)
@@ -78,12 +77,15 @@ class LinkViewSet(viewsets.ViewSet):
 
         if run_id:
             queryset = queryset.filter(algorithm_run=run_id)
+        if score:
+            scoreList = score.split(',')
+            score_lower_bound = scoreList[0]
+            score_upper_bound = scoreList[1]
+            if score_lower_bound:
+                queryset = queryset.filter(similarity_score__gte=score_lower_bound)
 
-        if score_lower_bound:
-            queryset = queryset.filter(similarity_score__gte=score_lower_bound)
-
-        if score_upper_bound:
-            queryset = queryset.filter(similarity_score__lte=score_upper_bound)
+            if score_upper_bound:
+                queryset = queryset.filter(similarity_score__lte=score_upper_bound)
 
         if org_unit_type_id:
             queryset = queryset.filter(

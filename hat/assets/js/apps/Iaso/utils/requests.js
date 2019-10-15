@@ -168,3 +168,19 @@ export const saveLink = (dispatch, link) => patchRequest(`/api/links/${link.id}/
         console.error('Error occured while saving link:', error);
         throw error;
     });
+
+export const fetchProfiles = dispatch => getRequest('/api/profiles')
+    .then(profiles => profiles)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchProfilesError')));
+        console.error('Error while fetching profiles list:', error);
+        throw error;
+    });
+
+export const fetchAlgorithms = dispatch => getRequest('/api/algorithms')
+    .then(algorithms => algorithms)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchAlgorithmsError')));
+        console.error('Error while fetching algorithms list:', error);
+        throw error;
+    });

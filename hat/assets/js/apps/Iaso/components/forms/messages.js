@@ -127,6 +127,18 @@ const MESSAGES = {
         id: 'iaso.forms.deviceOwnership',
         defaultMessage: 'Device ownership',
     },
+    validator: {
+        id: 'iaso.label.validator',
+        defaultMessage: 'Validator',
+    },
+    algo: {
+        id: 'iaso.label.algorithm',
+        defaultMessage: 'Algorithm',
+    },
+    score: {
+        id: 'iaso.label.similarity_score',
+        defaultMessage: 'Similarity score',
+    },
 };
 
 export default MESSAGES;

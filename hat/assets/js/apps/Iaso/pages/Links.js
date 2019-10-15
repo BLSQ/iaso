@@ -13,6 +13,8 @@ import {
     fetchOrgUnitsTypes,
     saveLink,
     fetchSources,
+    fetchProfiles,
+    fetchAlgorithms,
 } from '../utils/requests';
 
 import {
@@ -22,7 +24,11 @@ import {
 import {
     setLinks,
     setLinksListFetching,
+    setAlgorithms,
 } from '../redux/linksReducer';
+import {
+    setProfiles,
+} from '../redux/profilesReducer';
 
 import linksTableColumns from '../constants/linksTableColumns';
 
@@ -65,12 +71,18 @@ class Links extends Component {
     }
 
     componentWillMount() {
+        const { dispatch } = this.props;
         if (this.props.params.searchActive) {
             this.onSearch();
         }
-        fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSources(this.props.dispatch)
+        fetchOrgUnitsTypes(dispatch)
+            .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchSources(dispatch)
             .then(sources => this.props.setSources(sources));
+        fetchProfiles(dispatch)
+            .then(profiles => this.props.setProfiles(profiles));
+        fetchAlgorithms(dispatch)
+            .then(algoList => this.props.setAlgorithms(algoList));
     }
 
     componentDidUpdate() {
@@ -238,6 +250,9 @@ Links.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setLinksListFetching: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
+    setSources: PropTypes.func.isRequired,
+    setProfiles: PropTypes.func.isRequired,
+    setAlgorithms: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -252,6 +267,8 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setLinksListFetching: isFetching => dispatch(setLinksListFetching(isFetching)),
     setSources: sources => dispatch(setSources(sources)),
+    setProfiles: profiles => dispatch(setProfiles(profiles)),
+    setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
 });
 
 export default withStyles(styles)(

@@ -18,6 +18,9 @@ import {
     orgUnitType,
     source,
     status,
+    validator,
+    algo,
+    score,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -66,6 +69,8 @@ class LinksFiltersComponent extends Component {
             },
             orgUnitTypes,
             sources,
+            profiles,
+            algorithms,
         } = this.props;
         return (
             <Fragment>
@@ -109,6 +114,19 @@ class LinksFiltersComponent extends Component {
                                         })
                                     } 2`,
                                 ),
+                                score(),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                validator(profiles),
+                                algo(algorithms),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
@@ -144,12 +162,16 @@ LinksFiltersComponent.propTypes = {
     onSearch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     sources: PropTypes.array,
+    profiles: PropTypes.array.isRequired,
+    algorithms: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sources: state.orgUnits.sources,
+    profiles: state.profiles.list,
+    algorithms: state.links.algorithmsList,
 });
 
 

@@ -10,6 +10,8 @@ from .api.data_sources import DataSourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
 from .api.links import LinkViewSet
+from .api.profiles import ProfilesViewSet
+from .api.algorithms import AlgorithmsViewSet
 
 
 router = routers.DefaultRouter()
@@ -27,4 +29,6 @@ router.register(
 router.register(r"datasources", DataSourceViewSet, base_name="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")
 router.register(r"links", LinkViewSet, base_name="links")
+router.register(r"profiles", ProfilesViewSet, base_name="profiles")
+router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
 urlpatterns = [url(r"^", include(router.urls))]

@@ -71,6 +71,14 @@ const MESSAGES = {
         id: 'iaso.snackBar.saveLinkError',
         defaultMessage: 'An error occured while saving link',
     },
+    fetchProfilesError: {
+        id: 'iaso.snackBar.fetchProfilesError',
+        defaultMessage: 'An error occured while fetching profiles list',
+    },
+    fetchAlgorithmsError: {
+        id: 'iaso.snackBar.fetchAlgorithmsError',
+        defaultMessage: 'An error occured while fetching algorithms list',
+    },
 };
 
 export default MESSAGES;

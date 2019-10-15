@@ -25,6 +25,7 @@ import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
+import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
 
 import App from '../App';
 
@@ -118,6 +119,7 @@ export default function datasApp(element, baseUrl) {
         orgUnitsLevels: orgUnitsLevelsInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
+        profiles: profilesInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -131,6 +133,7 @@ export default function datasApp(element, baseUrl) {
         orgUnitsLevels: orgUnitsLevelsReducer,
         routerCustom: routerReducer,
         links: linksReducer,
+        profiles: profilesReducer,
     }, [
         routerMiddleware(history),
     ]);

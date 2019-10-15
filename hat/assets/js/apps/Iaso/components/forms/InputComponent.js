@@ -109,6 +109,7 @@ class InputComponent extends Component {
             onEnterPressed,
             checked,
             withMarginTop,
+            isSearchable,
         } = this.props;
         const {
             selectInputValue,
@@ -162,6 +163,7 @@ class InputComponent extends Component {
                         }
                     </InputLabel>
                     <Select
+                        searchable={isSearchable}
                         multi={false}
                         clearable={clearable}
                         simpleValue
@@ -170,6 +172,10 @@ class InputComponent extends Component {
                         value={value}
                         placeholder=""
                         options={options}
+                        noResultsText={formatMessage({
+                            id: 'iaso.label.noOptions',
+                            defaultMessage: 'No results found',
+                        })}
                         onChange={newValue => onChange(keyValue, newValue)}
                     />
                 </FormControl>
@@ -254,6 +260,7 @@ InputComponent.defaultProps = {
     checked: false,
     onEnterPressed: () => null,
     withMarginTop: true,
+    isSearchable: true,
 };
 
 InputComponent.propTypes = {
@@ -271,6 +278,7 @@ InputComponent.propTypes = {
     checked: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
+    isSearchable: PropTypes.bool,
 };
 
 

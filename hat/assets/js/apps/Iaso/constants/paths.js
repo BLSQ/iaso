@@ -184,7 +184,19 @@ export const linksPath = getPath({
         },
         {
             isRequired: false,
+            key: 'validatorId',
+        },
+        {
+            isRequired: false,
             key: 'orgUnitTypeId',
+        },
+        {
+            isRequired: false,
+            key: 'algorithmId',
+        },
+        {
+            isRequired: false,
+            key: 'score',
         },
         ...paginationPathParams,
         {

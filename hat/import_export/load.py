@@ -281,7 +281,7 @@ def normalize_location(case_zone, case_area, case_village, device_id=None, latit
             except MultipleObjectsReturned as exc:
                 print("Multiple villages found where only zero or one was expected. Village:",
                       case_zone, case_area, case_village, "found",
-                      ", ".join([(x.id, x.name) for x in Village.objects.filter(Q(
+                      ", ".join([f"{x.id}: {x.name}" for x in Village.objects.filter(Q(
                           Q(AS_id=case_area) &
                           Q(Q(name=case_village) | Q(aliases__contains=[case_village]))))]))
                 raise Exception(f"Multiple villages found where one expected {case_village}") from exc

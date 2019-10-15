@@ -65,8 +65,8 @@ class Command(BaseCommand):
             )
             return
         else:
+            OrgUnit.objects.filter(version=version).delete()
             print(("%d org units records deleted" % version_count).upper())
-        OrgUnit.objects.filter(version=version).delete()  # warning: dangerous
 
         type_dict = dict()
         with open(org_unit_file_name, encoding="utf-8") as csvfile:

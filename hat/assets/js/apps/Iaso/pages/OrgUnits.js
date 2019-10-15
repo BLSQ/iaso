@@ -132,7 +132,7 @@ class OrgUnits extends Component {
             const value = clonedParams[key];
             if (value && !url.includes(key)) {
                 if (key === 'levels') {
-                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
+                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}&validated=both`;
                 } else {
                     url += `&${key}=${value}`;
                 }

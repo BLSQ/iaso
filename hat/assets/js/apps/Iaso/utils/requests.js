@@ -93,7 +93,7 @@ export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
 };
 
 export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true`;
+    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true&validated=both`;
     return getRequest(url)
         .then(data => ({
             ...source,

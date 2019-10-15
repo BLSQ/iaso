@@ -14,10 +14,23 @@ class Command(BaseCommand):
     help = "Import a complete pyramid from a csv file"
 
     def add_arguments(self, parser):
-        parser.add_argument("csv_file", type=str)
-        parser.add_argument("org_unit_type_csv_file", type=str)
-        parser.add_argument("source_name", type=str)
-        parser.add_argument("version", type=int)
+        parser.add_argument("csv_file", type=str, help="Path to the org units csv file")
+        parser.add_argument(
+            "org_unit_type_csv_file",
+            type=str,
+            help="Path to the org unit types csv file",
+        )
+        parser.add_argument(
+            "source_name",
+            type=str,
+            help="The name of the source. It will be created if it doesn't exist",
+        )
+        parser.add_argument(
+            "version", type=int, help="An integer version number for the new version"
+        )
+        parser.add_argument(
+            "-f", "--force", action="store_true", help="Define a username prefix"
+        )
 
     @staticmethod
     def get_group(name, group_dict, source_version):
@@ -37,82 +50,114 @@ class Command(BaseCommand):
         org_unit_file_name = options.get("org_unit_type_csv_file")
         source_name = options.get("source_name")
         version_number = options.get("version")
+        force = options.get("force")
 
         source, created = DataSource.objects.get_or_create(name=source_name)
         version, created = SourceVersion.objects.get_or_create(
             number=version_number, data_source=source
         )
-        if not created:
-            version.delete()
-            version, created = SourceVersion.objects.get_or_create(
-                number=version_number, data_source=source
+
+        version_count = OrgUnit.objects.filter(version=version_number).count()
+        if version_count > 0 and not force:
+            print(
+                "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
+                % version_count
             )
-        # OrgUnit.objects.filter(source=source_name).delete()  # warning: dangerous
+            return
+        else:
+            print(("%d org units records deleted" % version_count).upper())
+        OrgUnit.objects.filter(version=version).delete()  # warning: dangerous
+
         type_dict = dict()
         with open(org_unit_file_name, encoding="utf-8") as csvfile:
             csv_reader = csv.reader(csvfile)
             for row in csv_reader:
                 print(row)
                 iaso_id, csv_name, parent_csv_name = row
-                print("iaso_id", iaso_id)
                 type_dict[csv_name] = OrgUnitType.objects.get(pk=iaso_id)
+
         unknown_unit_type, created = OrgUnitType.objects.get_or_create(name="Inconnu")
-        print("unknown_unit_type", unknown_unit_type)
         group_dict = {}
+        unlinked_parentships = []
+
         with open(file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
             index = 1
             unit_dict = dict()
+
             for row in csv_reader:
                 if index == 1:
                     index += 1  # ignoring header
                 else:
-                    # try:
-                    # "id", "name", "coordinates", "featureType", "parent", "groups"
+                    try:
+                        # "id", "name", "coordinates", "featureType", "parent", "groups"
 
-                    org_unit = OrgUnit()
-                    group_names = [x.strip() for x in row[5].split(",")]
-                    for group_name in group_names:
-                        if group_name in type_dict:
-                            org_unit.org_unit_type = type_dict[group_name]
-                            print("TYPE FOUND", group_name)
-                            break
-                    if org_unit.org_unit_type is None:
-                        org_unit.org_unit_type = unknown_unit_type
+                        org_unit = OrgUnit()
+                        group_names = [x.strip() for x in row[5].split(",")]
+                        for group_name in group_names:
+                            if group_name in type_dict:
+                                org_unit.org_unit_type = type_dict[group_name]
 
-                    org_unit.name = row[1].strip()
-                    # org_unit.aliases = obj.aliases
-                    org_unit.sub_source = source_name
-                    org_unit.version = version
-                    org_unit.source_ref = row[0].strip()
-                    org_unit.validated = False
-                    parent = row[4]
-                    if parent:
-                        org_unit.parent = unit_dict.get(parent)
-                    coordinates = row[2]
-                    feature_type = row[3]
+                                break
+                        if org_unit.org_unit_type is None:
+                            org_unit.org_unit_type = unknown_unit_type
 
-                    if feature_type == "POINT" and coordinates:
-                        tuple = json.loads(coordinates)
-                        pnt = Point(tuple[0], tuple[1])
-                        org_unit.location = pnt
-                        org_unit.longitude = pnt.x
-                        org_unit.latitude = pnt.y
+                        org_unit.name = row[1].strip()
+                        # org_unit.aliases = obj.aliases
+                        org_unit.sub_source = source_name
+                        org_unit.version = version
+                        org_unit.source_ref = row[0].strip()
+                        org_unit.validated = False
+                        parent = row[4]
+                        if parent:
+                            org_unit.parent = unit_dict.get(parent)
+                            if not org_unit.parent:
+                                unlinked_parentships.append(
+                                    (org_unit.source_ref, parent)
+                                )
+                                if index % 100 == 0:
+                                    print(
+                                        "unmatched:",
+                                        len(unlinked_parentships),
+                                        "/",
+                                        index,
+                                    )
+                        coordinates = row[2]
+                        feature_type = row[3]
 
-                    if feature_type == "MULTI_POLYGON" and coordinates:
-                        j = json.loads(coordinates)
-                        p = Polygon(j[0][0])
-                        org_unit.simplified_geom = p
+                        if feature_type == "POINT" and coordinates:
+                            tuple = json.loads(coordinates)
+                            pnt = Point(tuple[0], tuple[1])
+                            org_unit.location = pnt
+                            org_unit.longitude = pnt.x
+                            org_unit.latitude = pnt.y
 
-                    org_unit.save()
+                        if feature_type == "MULTI_POLYGON" and coordinates:
+                            j = json.loads(coordinates)
+                            p = Polygon(j[0][0])
+                            org_unit.simplified_geom = p
 
-                    for group_name in group_names:
+                        org_unit.save()
 
-                        group = self.get_group(group_name, group_dict, version)
-                        group.org_units.add(org_unit)
+                        for group_name in group_names:
 
-                    unit_dict[org_unit.source_ref] = org_unit
-                    index += 1
-                # except Exception as e:
-                #     print("Error %s for row %d" % (e, index), row)
-                #     break
+                            group = self.get_group(group_name, group_dict, version)
+                            group.org_units.add(org_unit)
+
+                        unit_dict[org_unit.source_ref] = org_unit
+                        index += 1
+                    except Exception as e:
+                        print("Error %s for row %d" % (e, index), row)
+                        break
+
+            # we need to do this because we cannot be sure that parents are after their children in the imported file
+            nr_to_link = len(unlinked_parentships)
+            linked_count = 0
+            for tuple in unlinked_parentships:
+                child = OrgUnit.objects.get(source_ref=tuple[0], version=version)
+                parent = OrgUnit.objects.get(source_ref=tuple[1], version=version)
+                child.parent = parent
+                child.save()
+                linked_count = linked_count + 1
+                if linked_count % 100 == 0:
+                    print("matched:", linked_count, "/", nr_to_link)

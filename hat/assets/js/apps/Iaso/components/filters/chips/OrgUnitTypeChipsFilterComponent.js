@@ -156,7 +156,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 promisesArray.push(
                     fetchSubOrgUnitsByType(
                         dispatch,
-                        `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}&withShapes=true`,
+                        `&orgUnitParentId=${currentOrgUnit.id}&orgUnitTypeId=${ot.id}&withShapes=true&validated=both`,
                         ot,
                     ),
                 );

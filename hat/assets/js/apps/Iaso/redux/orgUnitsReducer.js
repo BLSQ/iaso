@@ -1,4 +1,5 @@
 const SET_ORG_UNITS = 'SET_ORG_UNITS';
+const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
 const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 const SET_ORG_UNIT = 'SET_ORG_UNIT';
 const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
@@ -22,6 +23,12 @@ export const setOrgUnits = (list, showPagination, params, count, pages) => ({
         pages,
     },
 });
+
+export const setOrgUnitsLocations = orgUnitsLocations => ({
+    type: SET_ORG_UNITS_LOCATIONS,
+    payload: orgUnitsLocations,
+});
+
 
 export const resetOrgUnits = () => ({
     type: RESET_ORG_UNITS,
@@ -105,6 +112,7 @@ export const orgUnitsInitialState = {
     sourceTypes: [],
     sources: null,
     orgUnitLevel: [],
+    orgUnitsLocations: [],
 };
 
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
@@ -182,6 +190,12 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_SOURCES_SELECTED: {
             const currentSourcesSelected = action.payload;
             return { ...state, currentSourcesSelected };
+        }
+
+        case SET_ORG_UNITS_LOCATIONS: {
+            const orgUnitsLocations = action.payload;
+            console.log('SET_ORG_UNITS_LOCATIONS', orgUnitsLocations);
+            return { ...state, orgUnitsLocations };
         }
 
         default:

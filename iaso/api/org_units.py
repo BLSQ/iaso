@@ -102,6 +102,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
         with_shapes = request.GET.get("withShapes", None)
+        as_location = request.GET.get("asLocation", None)
 
         linked_to = request.GET.get("linkedTo", None)
         link_validated = request.GET.get("linkValidated", True)
@@ -233,6 +234,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         )
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
+            elif as_location:
+                queryset = queryset.filter(
+                    Q(location__isnull=False) | Q(simplified_geom__isnull=False)
+                )
+                return Response(
+                    [
+                        org_unit.as_location()
+                        for org_unit in queryset
+                    ]
+                )
             else:
                 queryset = queryset.select_related("org_unit_type")
                 return Response({"orgUnits": [unit.as_dict() for unit in queryset]})

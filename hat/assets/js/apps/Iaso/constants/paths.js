@@ -77,53 +77,54 @@ export const instancesPath = getPath({
     ],
 });
 
-const orgUnitsPathParams = [
-    {
-        isRequired: true,
-        key: 'validated',
-    },
-    {
-        isRequired: false,
-        key: 'orgUnitTypeId',
-    },
-    {
-        isRequired: false,
-        key: 'sourceId',
-    },
-    {
-        isRequired: false,
-        key: 'source',
-    },
-    {
-        isRequired: false,
-        key: 'withShape',
-    },
-    {
-        isRequired: false,
-        key: 'withLocation',
-    },
-    {
-        isRequired: false,
-        key: 'search',
-    },
-    {
-        isRequired: false,
-        key: 'levels',
-    },
-    {
-        isRequired: false,
-        key: 'hasInstances',
-    },
-    {
-        isRequired: false,
-        key: 'searchActive',
-    },
-];
 
 export const orgUnitsPath = getPath({
     baseUrl: 'orgunits',
     params: [
-        ...orgUnitsPathParams,
+        {
+            isRequired: true,
+            key: 'validated',
+        },
+        {
+            isRequired: false,
+            key: 'orgUnitTypeId',
+        },
+        {
+            isRequired: false,
+            key: 'sourceId',
+        },
+        {
+            isRequired: false,
+            key: 'source',
+        },
+        {
+            isRequired: false,
+            key: 'withShape',
+        },
+        {
+            isRequired: false,
+            key: 'withLocation',
+        },
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        {
+            isRequired: false,
+            key: 'levels',
+        },
+        {
+            isRequired: false,
+            key: 'hasInstances',
+        },
+        {
+            isRequired: false,
+            key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
         ...paginationPathParams,
     ],
 });
@@ -147,10 +148,6 @@ export const orgUnitsDetailsPath = getPath({
         {
             isRequired: false,
             key: 'tab',
-        },
-        {
-            isRequired: false,
-            key: 'backurl',
         },
     ],
 });

@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { replace, push } from 'react-router-redux';
 
 import {
-    withStyles, Divider, Tabs, Grid, Tab, Paper,
+    withStyles, Tabs, Grid, Tab, Paper,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -124,7 +124,7 @@ class Instances extends Component {
             urlParams[exportType] = true;
         }
         if (asLocation) {
-            urlParams.as_location = true;
+            urlParams.asLocation = true;
             delete urlParams.limit;
             delete urlParams.page;
         }
@@ -145,7 +145,7 @@ class Instances extends Component {
                 ...params,
                 tab,
             };
-            redirectTo('instances', newParams);
+            redirectTo(baseUrl, newParams);
         }
         this.setState({
             tab,
@@ -237,14 +237,14 @@ class Instances extends Component {
                             value="list"
                             label={formatMessage({
                                 defaultMessage: 'List',
-                                id: 'iaso.instance.list',
+                                id: 'iaso.label.list',
                             })}
                         />
                         <Tab
                             value="map"
                             label={formatMessage({
                                 defaultMessage: 'Map',
-                                id: 'iaso.instance.map',
+                                id: 'iaso.label.map',
                             })}
                         />
                     </Tabs>
@@ -259,8 +259,6 @@ class Instances extends Component {
                         params={params}
                         onSearch={() => this.fetchInstances()}
                     />
-
-                    <Divider className={classes.dividerMarginNeg} />
                     {
                         tab === 'list' && (
                             <div className={classes.reactTable}>

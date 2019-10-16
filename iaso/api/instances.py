@@ -84,7 +84,7 @@ class InstancesViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = Instance.objects.order_by("-id")
         limit = request.GET.get("limit", None)
-        as_location = request.GET.get("as_location", None)
+        as_location = request.GET.get("asLocation", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")
         form_id = request.GET.get("form_id", None)

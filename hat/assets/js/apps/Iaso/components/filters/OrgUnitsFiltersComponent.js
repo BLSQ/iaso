@@ -72,7 +72,7 @@ class OrgUnitsFiltersComponent extends Component {
             sources,
         } = this.props;
         return (
-            <Fragment>
+            <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
                         <FiltersComponent
@@ -129,7 +129,7 @@ class OrgUnitsFiltersComponent extends Component {
                         </Button>
                     </Grid>
                 </Grid>
-            </Fragment>
+            </div>
         );
     }
 }

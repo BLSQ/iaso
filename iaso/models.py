@@ -219,6 +219,16 @@ class OrgUnit(models.Model):
             "org_unit_type": self.org_unit_type.name,
         }
 
+    def as_location(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "short_name": self.name,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
+        }
+
 
 class MatchingAlgorithm(models.Model):
     name = models.TextField()

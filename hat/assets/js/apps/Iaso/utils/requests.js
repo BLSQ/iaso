@@ -78,6 +78,15 @@ export const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
         throw error;
     });
 
+
+export const fetchOrgUnitsList = (dispatch, url) => getRequest(url)
+    .then(data => data)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
+        console.error('Error while fetching org unit list:', error);
+        throw error;
+    });
+
 export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
     const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
     return getRequest(url)

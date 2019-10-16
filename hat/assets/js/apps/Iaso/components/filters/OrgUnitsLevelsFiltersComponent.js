@@ -114,7 +114,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             currentOrgUnitId,
         } = this.props;
 
-        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then((orgUnits) => {
+        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0&validated=both')).then((orgUnits) => {
             this.props.setOrgUnitsLevel(orgUnits, 0);
             if (levels[0]) {
                 if (showCurrentOrgUnit !== false
@@ -136,7 +136,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         } = this.state;
         const parentId = levels[level - 1];
         if (parentId) {
-            const base = `&parent_id=${parentId}`;
+            const base = `&parent_id=${parentId}&validated=both`;
 
             return fetchOrgUnits(dispatch, this.buildUrl(base)).then((orgUnits) => {
                 this.props.setOrgUnitsLevel(orgUnits, level);

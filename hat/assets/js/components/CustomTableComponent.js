@@ -152,7 +152,6 @@ class CustomTableComponent extends React.Component {
             if (!data.pages) {
                 showPagination = false;
             }
-
             setTimeout(() => {
                 this.setState({
                     page: settings.page,
@@ -214,8 +213,11 @@ class CustomTableComponent extends React.Component {
 
     render() {
         const data = this.state.reduxDatas ? this.state.reduxDatas : this.state.data;
-        let currentPageSize = this.state.showPagination
-            || (!this.state.showPagination && data.length === 0)
+        const {
+            showPagination,
+        } = this.state;
+        let currentPageSize = showPagination
+            || (!showPagination && data.length === 0)
             ? this.state.pageSize : data.length;
         if (data.length === 0) {
             currentPageSize = 2;
@@ -231,16 +233,18 @@ class CustomTableComponent extends React.Component {
                 SubComponent: this.props.SubComponent ? this.props.SubComponent : null,
             };
         }
+
         return (
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section
                     id={this.state.tableId}
                     className={`custom-table-container ${this.props.selectable
-                        ? 'selectable' : ''} ${!this.state.showPagination && this.state.count
+                        ? 'selectable' : ''} ${!showPagination && this.state.count
                         ? 'no-pagination' : ''} ${this.state.isHeaderFixed
                         ? 'header-fixed' : ''} `}
                 >
                     <ReactTable
+                        showPagination={showPagination}
                         manual
                         multiSort={this.props.multiSort}
                         columns={this.props.columns}

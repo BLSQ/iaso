@@ -73,10 +73,18 @@ class OrgUnitsFiltersComponent extends Component {
             },
             orgUnitTypes,
             sources,
+            currentTab,
         } = this.props;
         const {
             filtersUpdated,
         } = this.state;
+        const filters = [
+            search(),
+            hasInstances(formatMessage),
+        ];
+        if (currentTab === 'map') {
+            filters.push(locationsLimit());
+        }
         return (
             <div className={classes.root}>
                 <Grid container spacing={4}>
@@ -85,11 +93,7 @@ class OrgUnitsFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                search(),
-                                locationsLimit(),
-                                hasInstances(formatMessage),
-                            ]}
+                            filters={filters}
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
@@ -154,6 +158,7 @@ OrgUnitsFiltersComponent.propTypes = {
     orgUnitTypes: PropTypes.array.isRequired,
     sources: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
+    currentTab: PropTypes.string.isRequired,
 };
 
 const MapStateToProps = () => ({});

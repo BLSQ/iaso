@@ -94,15 +94,17 @@ class OrgUnits extends Component {
         this.state = {
             tableColumns: orgUnitsTableColumns(props.intl.formatMessage, this),
             tab: props.params.tab ? props.params.tab : 'list',
+            hasLocations: false,
         };
     }
 
     componentWillMount() {
         const {
             dispatch,
+            params,
         } = this.props;
         if (this.props.params.searchActive) {
-            this.fetchOrgUnits();
+            this.fetchOrgUnits(params.tab === 'map');
         }
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
@@ -138,16 +140,19 @@ class OrgUnits extends Component {
             params,
             dispatch,
         } = this.props;
+        const {
+            tab,
+        } = this.state;
         if (params.pageSize !== prevProps.params.pageSize
             || params.order !== prevProps.params.order
             || params.page !== prevProps.params.page) {
             this.fetchOrgUnits(false);
         }
-        if ((params.locationLimit <= locationLimitMax) && warningDisplayed) {
+        if ((params.locationLimit <= locationLimitMax || tab !== 'map') && warningDisplayed) {
             warningDisplayed = false;
             dispatch(closeFixedSnackbar('locationLimitWarning'));
         }
-        if ((params.locationLimit > locationLimitMax) && !warningDisplayed) {
+        if ((params.locationLimit > locationLimitMax && tab === 'map') && !warningDisplayed) {
             warningDisplayed = true;
             dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
         }
@@ -205,6 +210,10 @@ class OrgUnits extends Component {
             };
             redirectTo(baseUrl, newParams);
         }
+
+        if (!this.state.hasLocations && tab === 'map') {
+            this.fetchOrgUnitsLocations();
+        }
         this.setState({
             tab,
         });
@@ -217,6 +226,21 @@ class OrgUnits extends Component {
             tab,
         };
         redirectTo('orgunits/detail', newParams);
+    }
+
+    fetchOrgUnitsLocations() {
+        const {
+            dispatch,
+        } = this.props;
+        dispatch(this.props.setOrgUnitsListFetching(true));
+        const urlLocation = this.getEndpointUrl(false, '', true);
+        fetchOrgUnitsList(dispatch, urlLocation).then((orgUnits) => {
+            this.setState({
+                hasLocations: true,
+            });
+            this.props.setOrgUnitsLocations(mapOrgUnitByLocation(orgUnits));
+            dispatch(this.props.setOrgUnitsListFetching(false));
+        });
     }
 
     fetchOrgUnits(withLocations = true) {
@@ -243,6 +267,9 @@ class OrgUnits extends Component {
             this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages);
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(data[1]));
+                this.setState({
+                    hasLocations: true,
+                });
             }
             dispatch(this.props.setOrgUnitsListFetching(false));
         });
@@ -305,9 +332,10 @@ class OrgUnits extends Component {
                     <OrgUnitsFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
-                        onSearch={() => this.fetchOrgUnits()}
+                        onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
                         orgUnitTypes={orgUnitTypes}
                         sources={sources}
+                        currentTab={tab}
                     />
                     {
                         params.searchActive

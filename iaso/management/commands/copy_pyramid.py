@@ -5,7 +5,9 @@ from django.contrib.gis.geos import Point
 
 
 class Command(BaseCommand):
-    help = "Import a complete pyramid from a csv file"
+    help = """Copy a complete pyramid. After usage, there will be a full copy, just 
+              with a different version. Both pyramids will be totally unlinked.
+    """
 
     def add_arguments(self, parser):
         parser.add_argument("source_source_name", type=str)

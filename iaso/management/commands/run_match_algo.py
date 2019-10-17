@@ -12,7 +12,7 @@ import importlib
 
 
 class Command(BaseCommand):
-    help = "Import a complete pyramid from a csv file"
+    help = "Run an algorithm to create links between org unit pyramids"
 
     def add_arguments(self, parser):
         parser.add_argument("algo_name", type=str)

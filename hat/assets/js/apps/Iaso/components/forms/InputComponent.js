@@ -26,6 +26,9 @@ const styles = theme => ({
         '&:hover fieldset': {
             borderColor: `${theme.palette.primary.main}  !important`,
         },
+        '&:focused label': {
+            color: `${theme.palette.primary.main}  !important`,
+        },
     },
     formControlNoMarginTop: {
         width: '100%',
@@ -52,19 +55,34 @@ const styles = theme => ({
         marginTop: -2,
         backgroundColor: 'white',
     },
+    shrinkFocused: {
+        fontSize: 20,
+        marginTop: -2,
+        backgroundColor: 'white',
+        color: theme.palette.primary.main,
+    },
     select: {
+        '& .is-pseudo-focused .Select-control': {
+            borderColor: `${theme.palette.primary.main}  !important`,
+        },
+        '& .is-focused .Select-control': {
+            borderColor: `${theme.palette.primary.main}  !important`,
+        },
         '& .is-open .Select-control': {
-            borderColor: theme.palette.primary.main,
+            borderColor: `${theme.palette.primary.main}  !important`,
+            overfow: 'hidden',
         },
         '& .is-open .Select-menu-outer': {
             borderLeftColor: theme.palette.primary.main,
             borderBottomColor: theme.palette.primary.main,
             borderRightColor: theme.palette.primary.main,
             left: '1px',
-            width: 'calc(100% - 1px)',
         },
         '&:hover .Select-control': {
             borderColor: `${theme.palette.primary.main}  !important`,
+        },
+        '& .Select-control': {
+            boxShadow: 'none  !important',
         },
     },
     icon: {
@@ -104,12 +122,19 @@ class InputComponent extends Component {
         super(props);
         this.state = {
             selectInputValue: '',
+            isFocused: false,
         };
     }
 
     onSelectInputChange(selectInputValue) {
         this.setState({
             selectInputValue,
+        });
+    }
+
+    toggleFocused(isFocused) {
+        this.setState({
+            isFocused,
         });
     }
 
@@ -135,6 +160,7 @@ class InputComponent extends Component {
         } = this.props;
         const {
             selectInputValue,
+            isFocused,
         } = this.state;
         const formClass = withMarginTop ? classes.formControl : classes.formControlNoMarginTop;
         if (type === 'text' || type === 'number') {
@@ -171,7 +197,7 @@ class InputComponent extends Component {
                 >
                     <InputLabel
                         classes={{
-                            shrink: classes.shrink,
+                            shrink: isFocused ? classes.shrinkFocused : classes.shrink,
                         }}
                         shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
                         className={classes.inputLabel}
@@ -194,6 +220,8 @@ class InputComponent extends Component {
                             name={keyValue}
                             value={value}
                             placeholder=""
+                            onBlur={() => this.toggleFocused(false)}
+                            onFocus={() => this.toggleFocused(true)}
                             options={options}
                             noResultsText={formatMessage({
                                 id: 'iaso.label.noOptions',

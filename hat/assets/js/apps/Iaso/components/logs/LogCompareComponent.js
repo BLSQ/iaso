@@ -23,7 +23,7 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
     cell: {
-        width: 180,
+        minWidth: 180,
     },
     isDifferent: {
         backgroundColor: theme.palette.error.main,
@@ -125,7 +125,9 @@ const LogCompareComponent = ({
                                                 return (
                                                     <TableRow key={key}>
                                                         <TableCell className={classes.cell}>{key}</TableCell>
-                                                        <TableCell className={isDifferent && allFields ? classes.isDifferent : null}>{currentField && currentField.toString().length > 0 ? currentField.toString() : '--'}</TableCell>
+                                                        <TableCell className={isDifferent && allFields ? classes.isDifferent : null}>
+                                                            {currentField && currentField.toString().length > 0 ? currentField.toString() : '--'}
+                                                        </TableCell>
                                                     </TableRow>
                                                 );
                                             })

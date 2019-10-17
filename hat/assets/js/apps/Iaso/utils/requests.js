@@ -90,9 +90,9 @@ export const fetchOrgUnitsList = (dispatch, url) => getRequest(url)
 export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
     const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
     return getRequest(url)
-        .then(instances => ({
+        .then(data => ({
             ...form,
-            instances,
+            instances: data.instances,
         }))
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));

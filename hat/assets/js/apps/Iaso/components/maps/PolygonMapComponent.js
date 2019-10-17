@@ -12,12 +12,11 @@ import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 
-const boundsOptions = { padding: [20, 20] };
+const boundsOptions = { padding: [10, 10] };
 
 const styles = () => ({
     mapContainer: {
         height: 400,
-        minWidth: 400,
     },
 });
 

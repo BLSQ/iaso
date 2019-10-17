@@ -31,7 +31,4 @@ $select-height: 54px;
         width: 90%;
         overflow: hidden;
     }
-    .Select.is-focused:not(.is-open) > .Select-control {
-        border-color: inherit;
-    }
 }

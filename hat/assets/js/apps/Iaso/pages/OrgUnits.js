@@ -159,7 +159,11 @@ class OrgUnits extends Component {
     }
 
     componentWillUnmount() {
+        const {
+            dispatch,
+        } = this.props;
         this.props.setOrgUnits(null, this.props.params, 0, 1);
+        dispatch(closeFixedSnackbar('locationLimitWarning'));
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {

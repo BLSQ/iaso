@@ -370,7 +370,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.longitude = None
 
         if latitude and longitude:
-            org_unit.location = Point(x=longitude, y=latitude, srid=4326)
+            org_unit.location = Point(x=float(longitude), y=float(latitude), srid=4326)
         else:
             org_unit.location = None
         org_unit.aliases = request.data.get("aliases", "")

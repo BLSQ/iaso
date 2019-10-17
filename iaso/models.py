@@ -7,6 +7,7 @@ from iaso.utils import flat_parse_xml_file
 from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+import random
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -14,6 +15,15 @@ GEO_SOURCE_CHOICES = (
     ("pnltha", "PNL THA"),
     ("derivated", "Derivated from actual data"),
 )
+
+
+def generate_id_for_dhis_2():
+    letters = "abcdefghijklmnopqrstuvwxyz"
+    letters = letters + letters.upper()
+    all_chars = "0123456789" + letters
+    first_letter = random.choice(letters)
+    other_letters = random.choices(all_chars, k=10)
+    return first_letter + "".join(other_letters)
 
 
 class Account(models.Model):
@@ -246,10 +256,7 @@ class MatchingAlgorithm(models.Model):
         )
 
     def as_dict(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-            }
+        return {"name": self.name, "id": self.id}
 
 
 class AlgorithmRun(models.Model):
@@ -431,6 +438,7 @@ class Instance(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
+    export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
@@ -491,6 +499,7 @@ class Instance(models.Model):
 
         return {
             "uuid": self.uuid,
+            "export_id": self.export_id,
             "file_name": self.file_name,
             "file_content": file_content,
             "file_url": self.file.url if self.file else None,
@@ -506,9 +515,10 @@ class Instance(models.Model):
 
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
-
+        print(self.export_id)
         return {
             "uuid": self.uuid,
+            "export_id": self.export_id,
             "file_name": self.file_name,
             "file_content": file_content,
             "file_url": self.file.url if self.file else None,

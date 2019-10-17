@@ -184,6 +184,7 @@ class InstancesViewSet(viewsets.ViewSet):
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},
+                {"title": "Export id", "width": 20},
                 {"title": "Latitude", "width": 40},
                 {"title": "Longitude", "width": 20},
                 {"title": "Date de création", "width": 20},
@@ -220,6 +221,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 org_unit = idict.get("org_unit")
                 instance_values = [
                     idict.get("id"),
+                    idict.get("export_id"),
                     idict.get("latitude"),
                     idict.get("longitude"),
                     created_at,

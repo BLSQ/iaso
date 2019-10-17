@@ -26,13 +26,24 @@ export const getLatLngBounds = (items) => {
         } else if (isValidCoordinate(i[0], i[1])) {
             latLngs.push(L.latLng(i[0], i[1]));
         }
-        return null;
     });
     if (latLngs.length === 0) {
         return null;
     }
     const bounds = L.latLngBounds(latLngs);
     return bounds;
+};
+
+export const getShapesBounds = (shapes) => {
+    const groups = [];
+    shapes.forEach((s) => {
+        const shapeGroup = new L.FeatureGroup();
+        const shape = L.geoJSON(s.geo_json);
+        shape.addTo(shapeGroup);
+        groups.push(shapeGroup);
+    });
+    const group = new L.FeatureGroup(groups);
+    return group.getBounds();
 };
 
 export const clusterCustomMarker = cluster => (L.divIcon({

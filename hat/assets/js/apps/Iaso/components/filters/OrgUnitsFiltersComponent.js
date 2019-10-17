@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
@@ -21,6 +21,7 @@ import {
     source,
     shape,
     location,
+    locationsLimit,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -30,6 +31,9 @@ import { createUrl } from '../../../../utils/fetchData';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    root: {
+        paddingBottom: theme.spacing(4),
+    },
 });
 
 class OrgUnitsFiltersComponent extends Component {
@@ -54,7 +58,6 @@ class OrgUnitsFiltersComponent extends Component {
             const tempParams = {
                 ...this.props.params,
             };
-            tempParams.page = 1;
             this.props.redirectTo(this.props.baseUrl, tempParams);
         }
         this.props.onSearch();
@@ -71,8 +74,11 @@ class OrgUnitsFiltersComponent extends Component {
             orgUnitTypes,
             sources,
         } = this.props;
+        const {
+            filtersUpdated,
+        } = this.state;
         return (
-            <div className={classes.marginBottomBig}>
+            <div className={classes.root}>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
                         <FiltersComponent
@@ -81,6 +87,7 @@ class OrgUnitsFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 search(),
+                                locationsLimit(),
                                 hasInstances(formatMessage),
                             ]}
                             onEnterPressed={() => this.onSearch()}
@@ -118,7 +125,7 @@ class OrgUnitsFiltersComponent extends Component {
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
                         <Button
-                            // disabled={!filtersUpdated}
+                            disabled={!filtersUpdated}
                             variant="contained"
                             className={classes.button}
                             color="primary"

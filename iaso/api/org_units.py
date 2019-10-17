@@ -204,7 +204,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(sub_source=source_id)
 
         if csv_format is None:
-            if limit:
+            if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
 
@@ -228,22 +228,33 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                        shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
                         temp_org_unit["geo_json"] = geojson_queryset(
-                            queryset, geometry_field="simplified_geom"
+                            shape_queryset, geometry_field="simplified_geom"
                         )
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
             elif as_location:
+                limit = int(limit)
                 queryset = queryset.filter(
-                    Q(location__isnull=False) | Q(simplified_geom__isnull=False)
+                    Q(location__isnull=False)
+                    | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+                    | Q(simplified_geom__isnull=False)
                 )
-                return Response(
-                    [
-                        org_unit.as_location()
-                        for org_unit in queryset
-                    ]
-                )
+
+                paginator = Paginator(queryset, limit)
+                page = paginator.page(1)
+                org_units = []
+                for unit in page.object_list:
+                    temp_org_unit = unit.as_location()
+                    temp_org_unit["geo_json"] = None
+                    if temp_org_unit["has_geo_json"] == True:
+                        shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                        temp_org_unit["geo_json"] = geojson_queryset(
+                            shape_queryset, geometry_field="simplified_geom"
+                        )
+                    org_units.append(temp_org_unit)
+                return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
                 return Response({"orgUnits": [unit.as_dict() for unit in queryset]})

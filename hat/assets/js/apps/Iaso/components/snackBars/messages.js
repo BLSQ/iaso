@@ -79,6 +79,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchAlgorithmsError',
         defaultMessage: 'An error occured while fetching algorithms list',
     },
+    locationLimitWarning: {
+        id: 'iaso.snackBar.locationLimitWarning',
+        defaultMessage: 'Diplay too much items on the map can reduce the performance',
+    },
 };
 
 export default MESSAGES;

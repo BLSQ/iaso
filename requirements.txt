@@ -25,7 +25,7 @@ rq==0.7.1
 rq-scheduler==0.7.0
 
 # postgresql and sql
-psycopg2==2.7.1
+psycopg2==2.7.3.2
 snaql==0.4.1
 
 # webpack loader

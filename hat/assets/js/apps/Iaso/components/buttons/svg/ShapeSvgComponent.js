@@ -13,7 +13,7 @@ function ShapeSvg(props) {
 }
 
 ShapeSvg.propTypes = {
-    className: PropTypes.object.isRequired,
+    className: PropTypes.any.isRequired,
 };
 
 export default ShapeSvg;

@@ -25,6 +25,7 @@ import {
     setOrgUnitTypes,
     setOrgUnitsListFetching,
     setSources,
+    setFetchingOrgUnitTypes,
 } from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
@@ -43,7 +44,12 @@ import commonStyles from '../styles/common';
 import reactTable from '../styles/reactTable';
 import chipColors from '../constants/chipColors';
 
+import { warningSnackBar } from '../components/snackBars';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
+
 const baseUrl = 'orgunits';
+let warningDisplayed = false;
+export const locationLimitMax = 3000;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -54,7 +60,6 @@ const styles = theme => ({
     },
     reactTable: {
         ...reactTable(theme).reactTable,
-        marginTop: theme.spacing(4),
     },
     buttonIcon: {
         marginRight: theme.spacing(1),
@@ -66,6 +71,23 @@ const styles = theme => ({
     },
 });
 
+const mapOrgUnitByLocation = (orgUnits) => {
+    const mappedOrgunits = {
+        shapes: [],
+        locations: [],
+    };
+
+    orgUnits.forEach((o) => {
+        if (o.latitude && o.longitude) {
+            mappedOrgunits.locations.push(o);
+        }
+        if (o.geo_json) {
+            mappedOrgunits.shapes.push(o);
+        }
+    });
+    return mappedOrgunits;
+};
+
 class OrgUnits extends Component {
     constructor(props) {
         super(props);
@@ -76,10 +98,18 @@ class OrgUnits extends Component {
     }
 
     componentWillMount() {
+        const {
+            dispatch,
+        } = this.props;
         if (this.props.params.searchActive) {
             this.fetchOrgUnits();
         }
-        fetchOrgUnitsTypes(this.props.dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+
+        dispatch(this.props.setFetchingOrgUnitTypes(true));
+        fetchOrgUnitsTypes(this.props.dispatch).then((orgUnitTypes) => {
+            this.props.setOrgUnitTypes(orgUnitTypes);
+            dispatch(this.props.setFetchingOrgUnitTypes(false));
+        });
 
         fetchSources(this.props.dispatch)
             .then((data) => {
@@ -104,17 +134,23 @@ class OrgUnits extends Component {
             newParams.levels = null;
             this.props.redirectTo(baseUrl, newParams);
         }
-        if (!this.props.params.searchActive && this.props.reduxPage.list) {
-            this.resetOrgUnitData();
-        }
         const {
             params,
+            dispatch,
         } = this.props;
-        // if (params.pageSize !== prevProps.params.pageSize
-        //     || params.order !== prevProps.params.order
-        //     || params.page !== prevProps.params.page) {
-        //     this.fetchOrgUnits();
-        // }
+        if (params.pageSize !== prevProps.params.pageSize
+            || params.order !== prevProps.params.order
+            || params.page !== prevProps.params.page) {
+            this.fetchOrgUnits(false);
+        }
+        if ((params.locationLimit <= locationLimitMax) && warningDisplayed) {
+            warningDisplayed = false;
+            dispatch(closeFixedSnackbar('locationLimitWarning'));
+        }
+        if ((params.locationLimit > locationLimitMax) && !warningDisplayed) {
+            warningDisplayed = true;
+            dispatch(enqueueSnackbar(warningSnackBar('locationLimitWarning')));
+        }
     }
 
     componentWillUnmount() {
@@ -127,22 +163,30 @@ class OrgUnits extends Component {
             params,
         } = this.props;
 
-        const urlParams = { ...params };
+        const urlParams = {
+            ...params,
+            limit: params.pageSize ? params.pageSize : 50,
+            order: params.order ? params.order : '-updated_at',
+            page: params.page ? params.page : 1,
+        };
 
         if (toExport) {
             urlParams[exportType] = true;
         }
         if (asLocation) {
             urlParams.asLocation = true;
-            delete urlParams.limit;
+            urlParams.limit = params.locationLimit ? params.locationLimit : locationLimitMax;
             delete urlParams.page;
         }
+        delete urlParams.tab;
+        delete urlParams.searchActive;
+        delete urlParams.pageSize;
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
             if (value && !url.includes(key)) {
                 if (key === 'levels') {
-                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}&validated=both`;
+                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
                 } else {
                     url += `&${key}=${value}`;
                 }
@@ -166,10 +210,6 @@ class OrgUnits extends Component {
         });
     }
 
-    resetOrgUnitData() {
-        this.props.setOrgUnits(null, this.props.params, 0, 1);
-    }
-
     selectOrgUnit(orgUnit, tab) {
         const { redirectTo } = this.props;
         const newParams = {
@@ -179,29 +219,31 @@ class OrgUnits extends Component {
         redirectTo('orgunits/detail', newParams);
     }
 
-    fetchOrgUnits() {
+    fetchOrgUnits(withLocations = true) {
         const {
             params,
             dispatch,
         } = this.props;
 
         const url = this.getEndpointUrl();
-        const urlLocation = this.getEndpointUrl(false, '', true);
-
         dispatch(this.props.setOrgUnitsListFetching(true));
-        Promise.all([
-            fetchOrgUnitsList(dispatch, url).then((data) => {
-                console.log('fetchOrgUnitsList', data);
-                this.props.setOrgUnits(data.orgUnits, params, data.count, data.pages);
-            }),
-            // fetchOrgUnitsList(dispatch, urlLocation)
-            //     .then(data => this.props.setOrgUnitsLocations(data)),
-        ]).then(() => {
-            const newParams = {
-                ...params,
-            };
-            newParams.searchActive = true;
-            this.props.redirectTo(baseUrl, newParams);
+        const promises = [fetchOrgUnitsList(dispatch, url)];
+        if (withLocations) {
+            const urlLocation = this.getEndpointUrl(false, '', true);
+            promises.push(fetchOrgUnitsList(dispatch, urlLocation));
+        }
+        Promise.all(promises).then((data) => {
+            if (!params.searchActive) {
+                const newParams = {
+                    ...params,
+                };
+                newParams.searchActive = true;
+                this.props.redirectTo(baseUrl, newParams);
+            }
+            this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages);
+            if (withLocations) {
+                this.props.setOrgUnitsLocations(mapOrgUnitByLocation(data[1]));
+            }
             dispatch(this.props.setOrgUnitsListFetching(false));
         });
     }
@@ -217,12 +259,12 @@ class OrgUnits extends Component {
             orgUnitTypes,
             sources,
             fetchingList,
+            fetchingOrgUnitTypes,
         } = this.props;
         const {
             tableColumns,
             tab,
         } = this.state;
-
         return (
             <Fragment>
                 {
@@ -292,7 +334,9 @@ class OrgUnits extends Component {
                                     )
                                 }
                                 {
-                                    tab === 'map' && (
+                                    tab === 'map'
+                                    && !fetchingOrgUnitTypes
+                                    && (
                                         <div className={classes.containerMarginNeg}>
                                             <OrgunitsMap />
                                         </div>
@@ -337,8 +381,10 @@ OrgUnits.propTypes = {
     sources: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
+    setFetchingOrgUnitTypes: PropTypes.func.isRequired,
     fetchingList: PropTypes.bool.isRequired,
     setOrgUnitsLocations: PropTypes.func.isRequired,
+    fetchingOrgUnitTypes: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -346,6 +392,7 @@ const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
+    fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -355,6 +402,7 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
+    setFetchingOrgUnitTypes: isFetching => dispatch(setFetchingOrgUnitTypes(isFetching)),
     setOrgUnitsLocations: orgUnitsList => dispatch(setOrgUnitsLocations(orgUnitsList)),
 });
 

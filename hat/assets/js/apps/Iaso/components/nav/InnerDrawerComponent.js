@@ -56,6 +56,7 @@ class InnerDrawer extends Component {
             filtersOptionComponent,
             settingsDisabled,
             filtersDisabled,
+            withTopBorder,
             footerComponent,
         } = this.props;
         const {
@@ -64,6 +65,8 @@ class InnerDrawer extends Component {
         return (
             <Fragment>
                 <Box
+                    borderTop={withTopBorder ? 1 : 0}
+                    borderColor="grey.300"
                     p={0}
                     className={classes.boxContent}
                     component="div"
@@ -184,6 +187,7 @@ InnerDrawer.defaultProps = {
     settingsDisabled: false,
     filtersDisabled: false,
     setCurrentOption: () => null,
+    withTopBorder: false,
 };
 
 InnerDrawer.propTypes = {
@@ -196,6 +200,7 @@ InnerDrawer.propTypes = {
     settingsDisabled: PropTypes.bool,
     filtersDisabled: PropTypes.bool,
     setCurrentOption: PropTypes.func,
+    withTopBorder: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

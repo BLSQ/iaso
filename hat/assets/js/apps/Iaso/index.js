@@ -31,7 +31,7 @@ import App from '../App';
 
 import Forms from './pages/Forms';
 import Instances from './pages/Instances';
-import OrgUnits from './pages/OrgUnits';
+import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
 import Links from './pages/Links';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
@@ -45,6 +45,7 @@ import {
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
 import * as zoomBar from '../../components/leaflet/zoom-bar';
+
 
 export default function datasApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
@@ -98,7 +99,7 @@ export default function datasApp(element, baseUrl) {
         <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
-        <Redirect path="/orgunits" to="/orgunits/validated/both" />,
+        <Redirect path="/orgunits" to={`/orgunits/validated/true/locationLimit/${locationLimitMax}`} />,
         <Redirect path="/links" to={`/links/date_from/${dateFrom}/date_to/${dateTo}`} />,
 
     ];

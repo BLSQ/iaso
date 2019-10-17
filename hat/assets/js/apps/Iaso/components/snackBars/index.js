@@ -1,5 +1,6 @@
 export const formSuccessFullMessageKey = 'successful';
 export const formErrorMessageKey = 'error';
+export const formWarningMessageKey = 'warning';
 export const buttonReloadMessageKey = 'reload';
 export const reloadPageMessageKey = 'reloadPage';
 
@@ -17,6 +18,15 @@ export const errorSnackBar = (messageKey = formErrorMessageKey) => ({
     options: {
         variant: 'error',
         persist: false,
+    },
+});
+
+export const warningSnackBar = (messageKey = formWarningMessageKey) => ({
+    messageKey,
+    options: {
+        maxsnack: 1, // always display snackBar
+        variant: 'warning',
+        persist: true,
     },
 });
 

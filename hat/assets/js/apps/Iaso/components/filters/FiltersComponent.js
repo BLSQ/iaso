@@ -90,6 +90,18 @@ class FiltersComponent extends React.Component {
                             return (
                                 <Fragment key={filter.urlKey}>
                                     {
+                                        filter.type === 'number'
+                                        && (
+                                            <InputComponent
+                                                keyValue={filter.urlKey}
+                                                onChange={(key, value) => this.onChange(filter.urlKey, value, filter.callback)}
+                                                value={filterValue}
+                                                type="number"
+                                                label={filter.label}
+                                            />
+                                        )
+                                    }
+                                    {
                                         filter.type === 'select'
                                         && (
                                             <InputComponent

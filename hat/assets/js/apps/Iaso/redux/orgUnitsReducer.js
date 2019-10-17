@@ -12,6 +12,7 @@ const SET_SUB_ORG_UNITS_TYPES_SELECTED = 'SET_SUB_ORG_UNITS_TYPES_SELETED';
 const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
 const SET_FORMS_SELECTED = 'SET_FORMS_SELECTED';
 const SET_CURRENT_FORMS = 'SET_CURRENT_FORMS';
+const SET_FETCHING_ORG_UNITS_TYPES = 'SET_FETCHING_ORG_UNITS_TYPES';
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
     type: SET_ORG_UNITS,
@@ -91,6 +92,11 @@ export const setFetching = fetching => ({
     payload: fetching,
 });
 
+export const setFetchingOrgUnitTypes = fetching => ({
+    type: SET_FETCHING_ORG_UNITS_TYPES,
+    payload: fetching,
+});
+
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
@@ -101,6 +107,7 @@ export const orgUnitsInitialState = {
     fetchingList: false,
     fetchingDetail: true,
     fetchingSubOrgUnits: false,
+    fetchingOrgUnitTypes: true,
     orgUnitsPage: {
         list: null,
         showPagination: false,
@@ -112,7 +119,10 @@ export const orgUnitsInitialState = {
     sourceTypes: [],
     sources: null,
     orgUnitLevel: [],
-    orgUnitsLocations: [],
+    orgUnitsLocations: {
+        locations: [],
+        shapes: [],
+    },
 };
 
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
@@ -194,10 +204,13 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
 
         case SET_ORG_UNITS_LOCATIONS: {
             const orgUnitsLocations = action.payload;
-            console.log('SET_ORG_UNITS_LOCATIONS', orgUnitsLocations);
             return { ...state, orgUnitsLocations };
         }
 
+        case SET_FETCHING_ORG_UNITS_TYPES: {
+            const fetchingOrgUnitTypes = action.payload;
+            return { ...state, fetchingOrgUnitTypes };
+        }
         default:
             return state;
     }

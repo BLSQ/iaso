@@ -13,7 +13,7 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
 
     def list(self, request):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        queryset = OrgUnitType.objects.filter(projects__app_id=app_id).order_by("id")
+        queryset = OrgUnitType.objects.filter(projects__app_id=app_id).order_by("depth")
 
         return Response(
             {"orgUnitTypes": [unit.as_dict(app_id=app_id) for unit in queryset]}

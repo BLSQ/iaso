@@ -139,6 +139,10 @@ const MESSAGES = {
         id: 'iaso.label.similarity_score',
         defaultMessage: 'Similarity score',
     },
+    locationLimit: {
+        id: 'iaso.map.locationLimit',
+        defaultMessage: 'Map results limit',
+    },
 };
 
 export default MESSAGES;

@@ -86,6 +86,10 @@ export const orgUnitsPath = getPath({
             key: 'validated',
         },
         {
+            isRequired: true,
+            key: 'locationLimit',
+        },
+        {
             isRequired: false,
             key: 'orgUnitTypeId',
         },

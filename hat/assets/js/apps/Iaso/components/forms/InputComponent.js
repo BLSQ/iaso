@@ -20,11 +20,23 @@ const styles = theme => ({
         width: '100%',
         marginBottom: theme.spacing(1),
         marginTop: theme.spacing(2),
+        '& fieldset': {
+            borderWidth: '1px !important',
+        },
+        '&:hover fieldset': {
+            borderColor: `${theme.palette.primary.main}  !important`,
+        },
     },
     formControlNoMarginTop: {
         width: '100%',
         marginBottom: theme.spacing(1),
         marginTop: theme.spacing(1),
+        '& .fieldset': {
+            borderWidth: '1px !important',
+        },
+        '&:hover fieldset': {
+            borderColor: `${theme.palette.primary.main}  !important`,
+        },
     },
     inputLabel: {
         color: 'rgba(0, 0, 0, 0.4)',
@@ -41,8 +53,18 @@ const styles = theme => ({
         backgroundColor: 'white',
     },
     select: {
-        '&:focus': {
-            backgroundColor: 'white !important',
+        '& .is-open .Select-control': {
+            borderColor: theme.palette.primary.main,
+        },
+        '& .is-open .Select-menu-outer': {
+            borderLeftColor: theme.palette.primary.main,
+            borderBottomColor: theme.palette.primary.main,
+            borderRightColor: theme.palette.primary.main,
+            left: '1px',
+            width: 'calc(100% - 1px)',
+        },
+        '&:hover .Select-control': {
+            borderColor: `${theme.palette.primary.main}  !important`,
         },
     },
     icon: {
@@ -162,22 +184,24 @@ class InputComponent extends Component {
                             labelString !== '' ? labelString : null
                         }
                     </InputLabel>
-                    <Select
-                        searchable={isSearchable}
-                        multi={false}
-                        clearable={clearable}
-                        simpleValue
-                        onInputChange={newValue => this.onSelectInputChange(newValue)}
-                        name={keyValue}
-                        value={value}
-                        placeholder=""
-                        options={options}
-                        noResultsText={formatMessage({
-                            id: 'iaso.label.noOptions',
-                            defaultMessage: 'No results found',
-                        })}
-                        onChange={newValue => onChange(keyValue, newValue)}
-                    />
+                    <div className={classes.select}>
+                        <Select
+                            searchable={isSearchable}
+                            multi={false}
+                            clearable={clearable}
+                            simpleValue
+                            onInputChange={newValue => this.onSelectInputChange(newValue)}
+                            name={keyValue}
+                            value={value}
+                            placeholder=""
+                            options={options}
+                            noResultsText={formatMessage({
+                                id: 'iaso.label.noOptions',
+                                defaultMessage: 'No results found',
+                            })}
+                            onChange={newValue => onChange(keyValue, newValue)}
+                        />
+                    </div>
                 </FormControl>
             );
         }

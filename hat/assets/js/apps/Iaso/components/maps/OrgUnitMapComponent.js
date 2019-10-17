@@ -43,7 +43,7 @@ const padding = [75, 75];
 const polygonDrawOpiton = {
     shapeOptions: {
         color: 'blue',
-        className: 'primary',
+        className: 'primary no-pointer-event',
     },
 };
 
@@ -203,7 +203,7 @@ class OrgUnitMapComponent extends Component {
         if (leafletGeoJSON) {
             leafletGeoJSON.eachLayer((layer) => {
                 const tempLayer = layer;
-                tempLayer.options.className = 'primary';
+                tempLayer.options.className = 'primary no-pointer-event';
                 tempLayer.options.pane = 'custom-shape-pane';
                 tempLayer.addTo(editableFeatureGroup);
             });

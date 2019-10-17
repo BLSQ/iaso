@@ -242,3 +242,12 @@ export const location = formatMessage => (
         type: 'select',
     }
 );
+
+
+export const locationsLimit = () => (
+    {
+        urlKey: 'locationLimit',
+        label: MESSAGES.locationLimit,
+        type: 'number',
+    }
+);

@@ -50,6 +50,7 @@ class OrgUnitType(models.Model):
     )
 
     projects = models.ManyToManyField(Project, related_name="unit_types", blank=True)
+    depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
         return "%s" % (self.name)
@@ -227,6 +228,8 @@ class OrgUnit(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "has_geo_json": True if self.simplified_geom else False,
+            "org_unit_type": self.org_unit_type.name,
         }
 
 

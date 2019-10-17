@@ -69,6 +69,8 @@ const mapStyles = theme => ({
         '& path.primary': {
             fill: fade(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
+        },
+        '& path.no-pointer-event': {
             pointerEvents: 'none !important',
         },
         '& .leaflet-draw-guide-dash': {

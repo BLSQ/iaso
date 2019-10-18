@@ -17,6 +17,7 @@ const boundsOptions = { padding: [10, 10] };
 const styles = () => ({
     mapContainer: {
         height: 400,
+        minWidth: 200,
     },
 });
 

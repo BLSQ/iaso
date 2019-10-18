@@ -70,6 +70,10 @@ const mapStyles = theme => ({
             fill: fade(theme.palette.primary.main, 0.6),
             stroke: theme.palette.primary.main,
         },
+        '& path.secondary': {
+            fill: fade(theme.palette.secondary.main, 0.6),
+            stroke: theme.palette.secondary.main,
+        },
         '& path.no-pointer-event': {
             pointerEvents: 'none !important',
         },

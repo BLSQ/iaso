@@ -33,6 +33,10 @@ import InnerDrawer from '../nav/InnerDrawerComponent';
 
 import { fetchOrgUnitDetail } from '../../utils/requests';
 
+const boundsOptions = {
+    padding: [50, 50],
+};
+
 const getOrgUnitsBounds = (orgUnits) => {
     const locationsBounds = orgUnits.locations.length > 0 ? getLatLngBounds(orgUnits.locations) : null;
     const shapeBounds = orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
@@ -81,14 +85,11 @@ class OrgunitsMap extends Component {
 
     fitToBounds() {
         const {
-            currentTile,
             orgUnits,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         if (bounds) {
-            this.map.leafletElement.fitBounds(bounds, {
-                maxZoom: currentTile.maxZoom,
-            });
+            this.map.leafletElement.fitBounds(bounds, boundsOptions);
         }
     }
 
@@ -140,11 +141,10 @@ class OrgunitsMap extends Component {
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
                         bounds={bounds}
-                        boundsOptions={{
-                            maxZoom: currentTile.maxZoom,
-                        }}
+                        boundsOptions={boundsOptions}
                         zoom={13}
                         zoomControl={false}
+                        zoomSnap={0.1}
                     >
                         <TileLayer
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
@@ -178,7 +178,7 @@ class OrgunitsMap extends Component {
                                     pane={o.org_unit_type
                                         ? `custom-shape-pane-${camelCase(o.org_unit_type)}`
                                         : 'custom-shape-pane'}
-                                    // className="primary"
+                                    className="secondary"
                                     key={o.id}
                                     data={o.geo_json}
                                     onClick={() => this.fetchDetail(o)}

@@ -206,8 +206,8 @@ class OrgUnits extends Component {
     }
 
     handleChangeTab(tab, redirect = true) {
+        const { redirectTo, params } = this.props;
         if (redirect) {
-            const { redirectTo, params } = this.props;
             const newParams = {
                 ...params,
                 tab,
@@ -215,7 +215,7 @@ class OrgUnits extends Component {
             redirectTo(baseUrl, newParams);
         }
 
-        if (!this.state.hasLocations && tab === 'map') {
+        if (!this.state.hasLocations && tab === 'map' && params.searchActive) {
             this.fetchOrgUnitsLocations();
         }
         this.setState({

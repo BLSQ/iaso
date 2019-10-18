@@ -164,7 +164,7 @@ class OrgUnit(models.Model):
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(srid=4326, null=True)
+    location = PointField(srid=4326, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -442,7 +442,7 @@ class Instance(models.Model):
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
-    location = PointField(srid=4326, null=True)
+    location = PointField(srid=4326, null=True, blank=True)
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )

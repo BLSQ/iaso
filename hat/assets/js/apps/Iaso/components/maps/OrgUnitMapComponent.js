@@ -290,6 +290,7 @@ class OrgUnitMapComponent extends Component {
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
         const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
+        const currentOrgUnitHasLocation = orgUnit.has_geo_json || (orgUnit.latitude && orgUnit.longitude);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -361,7 +362,7 @@ class OrgUnitMapComponent extends Component {
                                         onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
                                         popupProps={{
-                                            displayUseLocation: true,
+                                            displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
                                             useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                         }}
                                         customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
@@ -377,7 +378,7 @@ class OrgUnitMapComponent extends Component {
                                                 )}
                                             >
                                                 <OrgUnitPopupComponent
-                                                    displayUseLocation
+                                                    displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
                                                     useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                                 />
                                             </GeoJSON>
@@ -394,7 +395,7 @@ class OrgUnitMapComponent extends Component {
                                     onMarkerClick={i => this.fetchInstanceDetail(i)}
                                     PopupComponent={InstancePopupComponent}
                                     popupProps={{
-                                        displayUseLocation: true,
+                                        displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
                                         useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                     }}
                                     customMarker={clusterColorMarker(f.color, 'white-form.svg')}
@@ -420,7 +421,7 @@ class OrgUnitMapComponent extends Component {
                                             )}
                                         >
                                             <OrgUnitPopupComponent
-                                                displayUseLocation
+                                                displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
                                                 useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                             />
                                         </GeoJSON>

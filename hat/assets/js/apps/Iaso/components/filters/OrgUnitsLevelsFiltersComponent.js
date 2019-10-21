@@ -86,10 +86,10 @@ class OrgUnitsLevelsFiltersComponent extends Component {
 
     buildUrl(base) {
         const {
-            source,
             version,
             validated,
         } = this.props.params;
+        const source = this.props.params.source || this.props.source;
         let url = base;
         if (source) {
             url = `${url}&source=${source}`;
@@ -114,7 +114,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             currentOrgUnitId,
         } = this.props;
 
-        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0&validated=both')).then((orgUnits) => {
+        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then((orgUnits) => {
             this.props.setOrgUnitsLevel(orgUnits, 0);
             if (levels[0]) {
                 if (showCurrentOrgUnit !== false
@@ -136,7 +136,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         } = this.state;
         const parentId = levels[level - 1];
         if (parentId) {
-            const base = `&parent_id=${parentId}&validated=both`;
+            const base = `&parent_id=${parentId}`;
 
             return fetchOrgUnits(dispatch, this.buildUrl(base)).then((orgUnits) => {
                 this.props.setOrgUnitsLevel(orgUnits, level);
@@ -192,6 +192,7 @@ OrgUnitsLevelsFiltersComponent.defaultProps = {
     paramKey: 'levels',
     showCurrentOrgUnit: true,
     currentOrgUnitId: null,
+    source: null,
 };
 
 OrgUnitsLevelsFiltersComponent.propTypes = {
@@ -205,6 +206,7 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     paramKey: PropTypes.string,
     showCurrentOrgUnit: PropTypes.bool,
     currentOrgUnitId: PropTypes.any,
+    source: PropTypes.any,
 };
 
 const MapStateToProps = state => ({

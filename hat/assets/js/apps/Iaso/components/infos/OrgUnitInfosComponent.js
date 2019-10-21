@@ -97,6 +97,7 @@ function OrgUnitInfosComponent(props) {
                     baseUrl={baseUrl}
                     showCurrentOrgUnit={false}
                     currentOrgUnitId={orgUnit.id}
+                    source={orgUnit.source_id}
                 />
             </Grid>
             <Grid item xs={4}>

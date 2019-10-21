@@ -807,6 +807,16 @@ MAPPING: List[JsonType] = [
         }
     },
     {
+        "field": "phone",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.suspects_full],
+        "sources": {
+            "mobile": {
+                "field": ("main", "person.phone")
+            },
+        }
+    },
+    {
         "field": "sex",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
@@ -1729,6 +1739,58 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pg.testTime")
+            },
+        },
+    },
+    #################
+    # Infection location
+    {
+        "field": "infection_location_type",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.infection.location")
+            },
+        },
+    },
+    {
+        "field": "infection_location_province",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.infection.province")
+            },
+        },
+    },
+    {
+        "field": "infection_location_zone",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.infection.zone")
+            },
+        },
+    },
+    {
+        "field": "infection_location_area",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.infection.area")
+            },
+        },
+    },
+    {
+        "field": "infection_location_village",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.infection.village")
             },
         },
     },

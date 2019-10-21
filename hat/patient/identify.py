@@ -29,7 +29,7 @@ def name_normalize(name):
     return stripped_name
 
 
-def get_or_create_patient_from_case(case: Case, origin_area, origin_village,
+def get_or_create_patient_from_case(case: Case, origin_area, origin_village, phone, phone_date,
                                     dead=False, death_date=None, death_device=None, death_location=None):
     if case.age is not None:
         age = case.age
@@ -46,12 +46,14 @@ def get_or_create_patient_from_case(case: Case, origin_area, origin_village,
 
     return get_or_create_patient(case.prename, case.lastname, case.name, case.mothers_surname, case.sex,
                                  case.year_of_birth, origin_area, origin_village, case.ZS, case.AS, case.village, age,
+                                 phone, phone_date,
                                  dead=dead, death_date=death_date, death_device=death_device_db,
                                  death_location=death_location)
 
 
 def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex, year_of_birth,
                           origin_area, origin_village, origin_raw_zs, origin_raw_as, origin_raw_village, age,
+                          phone=None, phone_date=None,
                           dead=None, death_date=None, death_device=None, death_location=None):
     first_name = name_normalize(first_name)
     last_name = name_normalize(last_name)
@@ -89,8 +91,13 @@ def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex
                 "death_date": death_date,
                 "death_device": death_device,
                 "death_location": death_location,
+                "phone_number": phone,
+                "phone_number_date": phone_date,
             }
         )
+        if not patient_created and phone and phone != patient.phone_number:
+            patient.phone_number = phone
+            patient.phone_number_date = phone_date
     except MultipleObjectsReturned as exc:
         print("multiple patients found")
         for p in Patient.objects.filter(**patient_search_params):

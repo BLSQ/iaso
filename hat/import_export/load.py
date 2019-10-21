@@ -328,8 +328,12 @@ def create_cases(df: DataFrame) -> None:
                 patient_as = normalized_AS
                 patient_village = normalized_village
 
+            extract_infection_location(case, ignored_columns)
+
             patient, patient_created = get_or_create_patient_from_case(
                 case, patient_as, patient_village,
+                phone=ignored_columns.get('phone'),
+                phone_date=case.document_date if ignored_columns.get('phone') else None,
                 dead=ignored_columns.get('dead', False),
                 death_date=mobile_get_date(ignored_columns.get('death_date', None)),
                 death_device=ignored_columns.get('death_device', None),
@@ -450,3 +454,47 @@ def get_screening_type(case, ignored_columns):
             return device.last_user.profile.screening_type
         else:
             return None
+
+
+MEMBER_TYPE_RESIDENT = "resident"
+MEMBER_TYPE_TRAVELER = "traveller"
+# v2.0.45 of the mobile app inverted testLocation and residenceLocation
+INFECTION_RESIDENT = ["testLocation", "residenceLocationNew"]
+INFECTION_TEST = ["residenceLocation", "testLocationNew"]
+INFECTION_OTHER = ["otherLocation", "otherLocationNew"]
+
+
+def extract_infection_location(case, ignored_columns):
+    if ignored_columns.get('infection_location_village'):
+        infection_as, infection_village = normalize_location(
+            ignored_columns.get('infection_location_zone', None),
+            ignored_columns.get('infection_location_area', None),
+            ignored_columns.get('infection_location_village', None),
+            device_id=case.device_id, latitude=case.latitude, longitude=case.longitude
+        )
+        if infection_village:
+            case.infection_location = infection_village
+
+    infection_location_type = ignored_columns.get('infection_location_type')
+    participant_member_type = ignored_columns.get('participant_member_type')
+    if participant_member_type == MEMBER_TYPE_RESIDENT:
+        if infection_location_type in INFECTION_RESIDENT:
+            case.infection_location = case.normalized_village
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
+        elif infection_location_type in INFECTION_TEST:
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
+        if infection_location_type in INFECTION_OTHER:
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
+    elif participant_member_type == MEMBER_TYPE_TRAVELER:
+        if infection_location_type in INFECTION_RESIDENT:
+            case.infection_location = case.normalized_village
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
+        elif infection_location_type in INFECTION_TEST:
+            case.infection_location = case.normalized_village
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
+        if infection_location_type in INFECTION_OTHER:
+            case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
+    else:
+        if participant_member_type:
+            raise Exception(f"Participant member type {participant_member_type} is none of the expected choices: "
+                            f"resident or traveler")

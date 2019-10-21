@@ -1,0 +1,77 @@
+{
+   "_id": "participant-6997c00f2fd94c84b1b742cb2e2a8c84",
+   "_rev": "6-1221dc7e02ca760906c49ba051b39efa",
+   "person": {
+       "forename": "Do",
+       "postname": "Who",
+       "surname": "Phonophobia",
+       "phone": "",
+       "birthYear": "",
+       "noBirthYear": true,
+       "gender": "Female",
+       "mothersSurname": "Esp",
+       "location": {
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       }
+   },
+   "participant": {
+       "memberType": "resident",
+       "screeningLocation": {
+           "zone": "703",
+           "area": "11749",
+           "village": "62681"
+       },
+       "hatId": "PHWHDOFXXXXE",
+       "screenings": {
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-10-16T13:18:14.395Z",
+               "position": {
+                   "accuracy": 14.607999801635742,
+                   "latitude": 50.8367252,
+                   "longitude": 4.4008896,
+                   "timestamp": 1571231893373
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-10-16T13:18:13.163Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pg": {
+               "result": "positive",
+               "creationTime": "2019-10-16T13:18:20.535Z",
+               "testTime": "2019-10-16T13:18:24.386Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 14.607999801635742,
+                   "latitude": 50.8367252,
+                   "longitude": 4.4008896,
+                   "timestamp": 1571231893373
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 14.550000190734863,
+           "latitude": 50.8367207,
+           "longitude": 4.4009077,
+           "timestamp": 1571231883379
+       },
+       "infection": {
+           "location": "otherLocation",
+           "province": "2",
+           "zone": "21",
+           "area": "211",
+           "village": "Funnel"
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-10-16T13:18:13.092Z",
+   "dateModified": "2019-10-16T13:18:57.284Z",
+   "deviceId": "f7651cad79052ac6"
+}

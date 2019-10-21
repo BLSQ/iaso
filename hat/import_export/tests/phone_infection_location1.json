@@ -1,0 +1,81 @@
+{
+   "_id": "participant-d447d80c688a4952a599f1eb8604b783",
+   "_rev": "6-9f60a4312f70f148beea0811f094f902",
+   "person": {
+       "forename": "Gossip match Istvan",
+       "postname": "Gcjudjgtbx",
+       "surname": "Pas flottant du tout",
+       "phone": "0495953636",
+       "birthYear": "2019",
+       "noBirthYear": false,
+       "gender": "Male",
+       "mothersSurname": "Desperado",
+       "location": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1234"
+       }
+   },
+   "participant": {
+       "memberType": "resident",
+       "screeningLocation": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1234"
+       },
+       "hatId": "PAGCGOM2019D",
+       "screenings": {
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-10-15T16:30:04.958Z",
+               "position": {
+                   "accuracy": 15.97700023651123,
+                   "latitude": 50.6813277,
+                   "longitude": 4.9570088,
+                   "timestamp": 1571157005000
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-10-15T16:30:03.768Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pg": {
+               "result": "positive",
+               "creationTime": "2019-10-15T16:30:09.568Z",
+               "testTime": "2019-10-15T16:30:10.983Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 15.97700023651123,
+                   "latitude": 50.6813277,
+                   "longitude": 4.9570088,
+                   "timestamp": 1571157011000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 15.97700023651123,
+           "latitude": 50.6813277,
+           "longitude": 4.9570088,
+           "timestamp": 1571157004000
+       },
+       "infection": {
+           "location": "otherLocation",
+           "province": "2",
+           "zone": "21",
+           "area": "2111",
+           "village": "2111"
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-10-15T16:30:03.691Z",
+   "dateModified": "2019-10-15T16:30:24.065Z",
+   "deviceId": "f7651cad79052ac6"
+}

@@ -1,0 +1,73 @@
+{
+   "_id": "participant-5f535e9b230448f8b33c84e11693259d",
+   "_rev": "6-2849986ba6490774f771f44bae7a7993",
+   "person": {
+       "forename": "Do",
+       "postname": "Agnès",
+       "surname": "Waterside",
+       "phone": "8549569856",
+       "birthYear": "",
+       "noBirthYear": true,
+       "gender": "Male",
+       "mothersSurname": "Twill",
+       "location": {
+           "zone": "11",
+           "area": "112",
+           "village": "1121"
+       }
+   },
+   "participant": {
+       "memberType": "resident",
+       "screeningLocation": {
+           "zone": "11",
+           "area": "112",
+           "village": "1121"
+       },
+       "hatId": "WAAGDOMXXXXT",
+       "screenings": {
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-10-16T14:50:12.800Z",
+               "position": {
+                   "accuracy": 14.406999588012695,
+                   "latitude": 50.8367045,
+                   "longitude": 4.4009297,
+                   "timestamp": 1571237407357
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-10-16T14:50:11.619Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pg": {
+               "result": "positive",
+               "creationTime": "2019-10-16T14:50:16.941Z",
+               "testTime": "2019-10-16T14:50:20.163Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 14.335000038146973,
+                   "latitude": 50.8367045,
+                   "longitude": 4.4009298,
+                   "timestamp": 1571237417356
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 14.406999588012695,
+           "latitude": 50.8367045,
+           "longitude": 4.4009297,
+           "timestamp": 1571237407357
+       },
+       "infection": {
+           "location": "testLocation"
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-10-16T14:50:11.496Z",
+   "dateModified": "2019-10-16T14:56:58.030Z",
+   "deviceId": "f7651cad79052ac6"
+}

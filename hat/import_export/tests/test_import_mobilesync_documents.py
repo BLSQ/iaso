@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from datetime import date
 
 from django.contrib.auth.models import User
 from django.test import TestCase
@@ -30,6 +31,7 @@ def load_document(filename, username=None, device_db_name=None):
         return document, device_db
 
 
+# noinspection DuplicatedCode
 class ImportMobileSyncDocuments(TestCase):
     fixtures = ['locations', 'users', 'teams']
 
@@ -482,3 +484,128 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(case.test_set.count(), 3, "There should be 3 tests after the third document")
         maect_test = case.test_set.get(type="MAECT")
         self.assertIsNotNone(maect_test)
+
+    # This test contains some tests for travelers rather than residents
+    def test_import_phone_infection_location1(self):
+        phone_infection_location1, device_db = load_document("phone_infection_location1.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=phone_infection_location1).json()
+        self.assertEqual(phone_infection_location1['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=phone_infection_location1['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.infection_location_type, "other")
+        self.assertEquals(case.infection_location.id, 2111)
+
+    # Traveler with "residenceLocation" which is in reality "testLocation" or "flottant" and so should be the test location
+    def test_import_phone_infection_location_trav_resid(self):
+        phone_infection_location, device_db = load_document("phone_infection_location_trav_resid.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=phone_infection_location).json()
+        self.assertEqual(phone_infection_location['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.infection_location_type, "test")
+        self.assertEquals(case.infection_location.id, 1111)
+        self.assertEquals(case.normalized_patient.phone_number, "0486861212")
+        self.assertEquals(case.normalized_patient.phone_number_date, date(2019, 10, 15))
+
+    # Resident with infection location "flottant"
+    def test_import_phone_infection_location_res_flott_no_tel(self):
+        phone_infection_location, device_db = load_document("phone_infection_location_flott_village_name.json",
+                                                            "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=phone_infection_location).json()
+        self.assertEqual(phone_infection_location['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.infection_location_type, "test")
+        self.assertEquals(case.infection_location.id, 1111)
+        self.assertEquals(case.normalized_patient.phone_number, "123456799")
+
+    # Resident with infection location "flottant"
+    def test_import_phone_infection_location_res_other_unk_village(self):
+        phone_infection_location, device_db = load_document("phone_infection_location_res_other_unk_village.json",
+                                                            "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=phone_infection_location).json()
+        self.assertEqual(phone_infection_location['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.infection_location_type, "other")
+        self.assertEquals(case.infection_location.name, "Funnel")
+        self.assertIsNone(case.normalized_patient.phone_number)
+        self.assertIsNone(case.normalized_patient.phone_number_date)
+
+    # Resident with infection location "flottant" and existing patient
+    def test_import_phone_infection_location_test_location(self):
+        phone_infection_location, device_db = load_document("phone_infection_location_test_location.json",
+                                                            "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=phone_infection_location).json()
+        self.assertEqual(phone_infection_location['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.infection_location_type, "residence")
+        self.assertEquals(case.infection_location.id, 1121)
+        self.assertEquals(case.normalized_patient.phone_number, "8549569856")
+

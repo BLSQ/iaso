@@ -1,3 +1,4 @@
+from dateutil.utils import today
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -407,6 +408,10 @@ class PatientsViewSet(viewsets.ViewSet):
             new_patient.last_name = request.data.get('last_name', '')
             new_patient.first_name = request.data.get('first_name', '')
             new_patient.sex = request.data.get('sex', '')
+            phone_number = request.data.get('phone_number')
+            if phone_number or (phone_number is None and new_patient.phone_number is not None):
+                new_patient.phone_number = phone_number
+                new_patient.phone_number_date = today()
             year_of_birth = request.data.get('year_of_birth', None)
             new_patient.mothers_surname = request.data.get('mothers_surname', '')
             if year_of_birth:

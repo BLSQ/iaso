@@ -57,6 +57,8 @@ class Patient(models.Model):
         "sync.DeviceDB", null=True, blank=True, on_delete=CASCADE
     )
     death_location = gis_models.PointField(srid=GPS_SRID, null=True)
+    phone_number = models.TextField("Numéro de téléphone", null=True, blank=True)
+    phone_number_date = models.DateField("Date de collecte du numéro de téléphone", null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -88,6 +90,8 @@ class Patient(models.Model):
             else ANONYMOUS_PLACEHOLDER,
             "sex": self.sex,
             "age": self.age,
+            "phone_number": self.phone_number,
+            "phone_number_date": self.phone_number_date,
             "year_of_birth": self.year_of_birth,
             "mothers_surname": self.mothers_surname
             if not is_anonymised

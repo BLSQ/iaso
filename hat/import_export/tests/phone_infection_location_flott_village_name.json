@@ -1,0 +1,79 @@
+{
+   "_id": "participant-426dec7c606247919c45acadc8f9a0da",
+   "_rev": "6-936fd17fdf2a17f12863c6ea9de70929",
+   "person": {
+       "forename": "Fix",
+       "postname": "Cell",
+       "surname": "Dunno",
+       "phone": "123456799",
+       "birthYear": "1999",
+       "noBirthYear": false,
+       "gender": "Male",
+       "mothersSurname": "Russell",
+       "location": {
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       },
+       "traveller": {
+           "travellerProvince": "2",
+           "travellerZone": "21",
+           "travellerArea": "211",
+           "travellerVillage": "Testvillage"
+       }
+   },
+   "participant": {
+       "memberType": "traveller",
+       "screeningLocation": {
+           "zone": "11",
+           "area": "111",
+           "village": "1111"
+       },
+       "hatId": "DUCEFIM1999R",
+       "screenings": {
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-10-16T13:15:06.164Z",
+               "position": {
+                   "accuracy": 14.491000175476074,
+                   "latitude": 50.8367243,
+                   "longitude": 4.4009216,
+                   "timestamp": 1571231697638
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-10-16T13:15:03.850Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pg": {
+               "result": "positive",
+               "creationTime": "2019-10-16T13:15:40.584Z",
+               "testTime": "2019-10-16T13:15:42.110Z",
+               "device": "f7651cad79052ac6",
+               "position": {
+                   "accuracy": 14.470999717712402,
+                   "latitude": 50.8367253,
+                   "longitude": 4.4008902,
+                   "timestamp": 1571231737873
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 14.491000175476074,
+           "latitude": 50.8367243,
+           "longitude": 4.4009216,
+           "timestamp": 1571231697638
+       },
+       "infection": {
+           "location": "residenceLocation"
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-10-16T13:15:03.681Z",
+   "dateModified": "2019-10-16T13:15:56.971Z",
+   "deviceId": "f7651cad79052ac6"
+}

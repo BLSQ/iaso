@@ -1,14 +1,13 @@
 from datetime import datetime
-from typing import Any
 
-from django.db import models, connection
+from django.db import models
 from django.db.models import Q
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
 from hat.constants import SCREENING_TYPE_CHOICES
-from hat.geo.models import Village
 from hat.geo.models import AS as ASModel
+from hat.geo.models import Village
 from hat.sync.models import DeviceDB
 from hat.users.models import Team
 
@@ -240,6 +239,15 @@ class CaseAbstract(models.Model):
     )
     source = models.TextField(choices=SOURCE_CHOICES, null=True)
 
+    ORIGIN_SELF_PRESENTED = "selfPresenting"
+    ORIGIN_MOBILE_UNIT = "mobileUnit"
+    ORIGIN_STRUCTURE = "structure"
+    ORIGIN_CHOICES = (
+        (ORIGIN_SELF_PRESENTED, "S'est présenté de lui-même"),
+        (ORIGIN_MOBILE_UNIT, "Une unité mobile"),
+        (ORIGIN_STRUCTURE, "Une structure de santé"),
+    )
+
     document_date = models.DateTimeField("Date document", db_index=True, null=True)
     # The id is currently a hash over the row to be able to catch duplicates
     document_id = models.TextField(unique=True)
@@ -300,6 +308,27 @@ class CaseAbstract(models.Model):
     normalized_team = models.ForeignKey(Team, null=True, on_delete=models.SET_NULL)
     mobile_unit = models.TextField(null=True)
     device_id = models.TextField(null=True)
+
+    # In mobile app 2.0.45, there were three choices with bad labels:
+    # "Résident" -> "testLocation"
+    # "Flottant" -> "residenceLocation"
+    # "Autre" -> "otherLocation"
+    # The main issue being that the "Flottant" doesn't ask for a location. When this happens and the location
+    # could not be determined, they are marked as ambiguous
+    INFECTION_LOCATION_TYPE_AMBIGUOUS = "ambiguous"
+    INFECTION_LOCATION_TYPE_RESIDENCE = "residence"
+    INFECTION_LOCATION_TYPE_TEST = "test"
+    INFECTION_LOCATION_TYPE_OTHER = "other"
+    INFECTION_LOCATION_TYPE_CHOICES=(
+        (INFECTION_LOCATION_TYPE_AMBIGUOUS, "Lieu ambigu dans l'app mobile version 2.0.45"),
+        (INFECTION_LOCATION_TYPE_RESIDENCE, "Lieu de résidence"),
+        (INFECTION_LOCATION_TYPE_TEST, "Lieu du test"),
+        (INFECTION_LOCATION_TYPE_OTHER, "Autre"),
+    )
+    infection_location_type = models.TextField("Type d'endroit où l'infection a été rapportée",
+                                               choices=INFECTION_LOCATION_TYPE_CHOICES, null=True, blank=True)
+    infection_location = models.ForeignKey(Village, null=True, blank=True, on_delete=models.SET_NULL,
+                                           related_name="infection_cases")
 
     treatment_center = models.TextField("Centre de traitement", null=True, blank=True)
     treatment_start_date = models.DateTimeField(
@@ -657,6 +686,10 @@ class CaseView(CaseAbstract):
     .. seealso:: :any:`hat.cases.filters` to get the list of test classification.
 
     """
+
+    # Avoid confusion with Case in reverse mapping
+    infection_location = models.ForeignKey(Village, null=True, blank=True, on_delete=models.SET_NULL,
+                                           related_name="+")
 
     # calculated fields
     document_date_day = models.DateTimeField(null=True)

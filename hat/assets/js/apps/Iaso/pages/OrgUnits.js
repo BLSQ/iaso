@@ -6,7 +6,7 @@ import { push } from 'react-router-redux';
 import {
     withStyles,
     Grid,
-    Paper,
+    Box,
     Tabs,
     Tab,
 } from '@material-ui/core';
@@ -53,11 +53,6 @@ export const locationLimitMax = 3000;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    paperContainer: {
-        ...commonStyles(theme).paperContainer,
-        marginTop: 0,
-        paddingBottom: 0,
-    },
     reactTable: {
         ...reactTable(theme).reactTable,
     },
@@ -332,7 +327,7 @@ class OrgUnits extends Component {
                         />
                     </Tabs>
                 </TopBar>
-                <Paper className={classes.paperContainer}>
+                <Box className={classes.containerFullHeightPadded}>
                     <OrgUnitsFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
@@ -390,7 +385,7 @@ class OrgUnits extends Component {
                             </Fragment>
                         )
                     }
-                </Paper>
+                </Box>
             </Fragment>
         );
     }

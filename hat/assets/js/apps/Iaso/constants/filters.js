@@ -98,13 +98,14 @@ export const orgUnitType = (
 
 export const source = (
     sourceList,
+    isMultiSelect = false,
     urlKey = 'source',
     labelString = '',
     label = MESSAGES.source,
 ) => (
     {
         urlKey,
-        isMultiSelect: false,
+        isMultiSelect,
         isClearable: true,
         options: sourceList.map(t => ({
             label: t.name,

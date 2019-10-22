@@ -96,6 +96,7 @@ class LinksFiltersComponent extends Component {
                             filters={[
                                 source(
                                     sources || [],
+                                    false,
                                     'source1',
                                     `${
                                         formatMessage({
@@ -106,6 +107,7 @@ class LinksFiltersComponent extends Component {
                                 ),
                                 source(
                                     sources || [],
+                                    false,
                                     'source2',
                                     `${
                                         formatMessage({

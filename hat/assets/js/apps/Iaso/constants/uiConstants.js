@@ -1,4 +1,4 @@
 
-const SIDEBAR_WIDTH = 300;
-
-export default SIDEBAR_WIDTH;
+export const SIDEBAR_WIDTH = 300;
+export const MENU_HEIGHT_WITH_TABS = 112;
+export const MENU_HEIGHT_WITHOUT_TABS = 65;

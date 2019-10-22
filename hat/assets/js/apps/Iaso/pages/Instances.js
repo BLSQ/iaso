@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { replace, push } from 'react-router-redux';
 
 import {
-    withStyles, Tabs, Grid, Tab, Paper,
+    withStyles, Tabs, Grid, Tab, Box,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -42,11 +42,6 @@ const baseUrl = 'instances';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    paperContainer: {
-        ...commonStyles(theme).paperContainer,
-        marginTop: 0,
-        paddingBottom: 0,
-    },
     reactTable: {
         ...reactTable(theme).reactTable,
         marginTop: theme.spacing(4),
@@ -253,7 +248,7 @@ class Instances extends Component {
                     fetching
                     && <LoadingSpinner />
                 }
-                <Paper className={classes.paperContainer}>
+                <Box className={classes.containerFullHeightPadded}>
                     <InstancesFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
@@ -299,7 +294,7 @@ class Instances extends Component {
                                 </Grid>
                             </Grid>
                         )}
-                </Paper>
+                </Box>
             </section>
         );
     }

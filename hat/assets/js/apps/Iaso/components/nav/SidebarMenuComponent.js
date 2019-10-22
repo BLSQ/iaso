@@ -14,7 +14,6 @@ import {
     ListItem,
     ListItemText,
     Divider,
-    Tooltip,
 } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -27,7 +26,7 @@ import logoUrl from '../../images/iaso-logo.svg';
 import orgUnitIconUrl from '../../images/grey-pentagon.svg';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-import SIDEBAR_WIDTH from '../../constants/uiConstants';
+import { SIDEBAR_WIDTH } from '../../constants/uiConstants';
 
 import commonStyles from '../../styles/common';
 
@@ -132,18 +131,16 @@ class SidebarMenu extends PureComponent {
                         />
                     </ListItem>
                 </List>
-                <Tooltip title={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />} >
-                    <Button
-                        size="small"
-                        className={classes.logout}
-                        color="inherit"
-                        href="/logout-iaso"
-                        aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
-                    >
-                        <ExitIcon className={classes.smallButtonIcon} />
-                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
-                    </Button>
-                </Tooltip>
+                <Button
+                    size="small"
+                    className={classes.logout}
+                    color="inherit"
+                    href="/logout-iaso"
+                    aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                >
+                    <ExitIcon className={classes.smallButtonIcon} />
+                    <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
+                </Button>
             </Drawer>
         );
     }

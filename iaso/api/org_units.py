@@ -132,7 +132,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         if source:
-            queryset = queryset.filter(version__data_source_id=source)
+            queryset = queryset.filter(version__data_source_id__in=source.split(','))
 
         if version:
             queryset = queryset.filter(version=version)

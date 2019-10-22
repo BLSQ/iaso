@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import {
-    withStyles, Grid, Paper,
+    withStyles, Grid, Box,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -189,7 +189,7 @@ class Links extends Component {
                     id: 'iaso.links.title',
                 })}
                 />
-                <Paper className={classes.paperContainer}>
+                <Box className={classes.containerFullHeightNoTabPadded}>
                     <LinksFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
@@ -230,7 +230,7 @@ class Links extends Component {
                             </Fragment>
                         )
                     }
-                </Paper>
+                </Box>
             </Fragment>
         );
     }

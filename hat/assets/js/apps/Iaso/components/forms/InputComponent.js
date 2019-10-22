@@ -9,6 +9,7 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 import SearchIcon from '@material-ui/icons/Search';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 
 import PropTypes from 'prop-types';
 
@@ -84,6 +85,28 @@ const styles = theme => ({
         '& .Select-control': {
             boxShadow: 'none  !important',
         },
+        '& .Select--multi .Select-control': {
+            // paddingTop: 5,
+        },
+        '& .Select--multi .Select-value': {
+            height: theme.spacing(4),
+            padding: '0 !important',
+            color: theme.palette.secondary.main,
+            borderColor: theme.palette.secondary.main,
+            backgroundColor: fade(theme.palette.secondary.main, 0.08),
+        },
+        '& .Select--multi .Select-multi-value-wrapper': {
+            width: '100%',
+            display: 'flex',
+            flexWrap: 'wrap',
+            position: 'relative',
+            top: 5,
+        },
+        '& .Select--multi .Select-input': {
+            position: 'relative',
+            top: -5,
+            paddingLeft: `${theme.spacing(1)}px !important`,
+        },
     },
     icon: {
         right: theme.spacing(2),
@@ -157,6 +180,7 @@ class InputComponent extends Component {
             checked,
             withMarginTop,
             isSearchable,
+            multi,
         } = this.props;
         const {
             selectInputValue,
@@ -213,7 +237,7 @@ class InputComponent extends Component {
                     <div className={classes.select}>
                         <Select
                             searchable={isSearchable}
-                            multi={false}
+                            multi={multi}
                             clearable={clearable}
                             simpleValue
                             onInputChange={newValue => this.onSelectInputChange(newValue)}
@@ -313,6 +337,7 @@ InputComponent.defaultProps = {
     onEnterPressed: () => null,
     withMarginTop: true,
     isSearchable: true,
+    multi: false,
 };
 
 InputComponent.propTypes = {
@@ -331,6 +356,7 @@ InputComponent.propTypes = {
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
     isSearchable: PropTypes.bool,
+    multi: PropTypes.bool,
 };
 
 

@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
-import Paper from '@material-ui/core/Paper';
+import Box from '@material-ui/core/Paper';
 import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
@@ -88,7 +88,7 @@ class Forms extends Component {
                     id: 'iaso.forms.title',
                 })}
                 />
-                <Paper className={classes.paperContainer}>
+                <Box className={classes.containerFullHeightNoTabPadded}>
                     <PeriodSelectorComponent
                         dateFrom={params.date_from}
                         dateTo={params.date_to}
@@ -124,7 +124,7 @@ class Forms extends Component {
                                 />
                             )}
                     </Grid>
-                </Paper>
+                </Box>
             </section>
         );
     }

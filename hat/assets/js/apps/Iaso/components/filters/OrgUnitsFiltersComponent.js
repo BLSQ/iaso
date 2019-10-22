@@ -115,7 +115,7 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                source(sources || []),
+                                source(sources || [], true),
                                 status(formatMessage),
                             ]}
                         />

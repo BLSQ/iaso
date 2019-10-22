@@ -44,7 +44,6 @@ function SourcesChipsFilterComponent(props) {
             >
                 <Typography variant="subtitle1">
                     <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
-                    :
                 </Typography>
             </Box>
             <ChipsFilterComponent

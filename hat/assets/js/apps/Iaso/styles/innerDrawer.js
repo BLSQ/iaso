@@ -1,3 +1,5 @@
+import grey from '@material-ui/core/colors/grey';
+
 export const menuHeight = 112;
 export const tabsHeight = 68;
 
@@ -33,9 +35,11 @@ const innerDrawer = theme => ({
     },
     innerDrawerTabs: {
         minWidth: 100,
+        borderBottom: `1px solid ${grey['300']}`,
     },
     innerDrawerTab: {
         minWidth: 100,
+        paddingTop: theme.spacing(2),
     },
 });
 

@@ -94,6 +94,7 @@ class InstancesMap extends Component {
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
+                    withTopBorder
                     settingsOptionComponent={(
                         <Fragment>
                             <TileSwitch />

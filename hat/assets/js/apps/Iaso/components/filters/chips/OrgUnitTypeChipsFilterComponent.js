@@ -191,7 +191,6 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 >
                     <Typography variant="subtitle1">
                         <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
-                        :
                     </Typography>
                 </Box>
                 <Box

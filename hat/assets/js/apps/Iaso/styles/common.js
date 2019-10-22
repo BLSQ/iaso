@@ -1,13 +1,33 @@
 import mapStyles from './map';
 import innerDrawer from './innerDrawer';
+import { MENU_HEIGHT_WITH_TABS, MENU_HEIGHT_WITHOUT_TABS } from '../constants/uiConstants';
 
 
 const commonStyles = theme => ({
     ...mapStyles(theme),
     ...innerDrawer(theme),
-    paperContainer: {
+    containerFullHeight: {
+        width: '100%',
+        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
+        margin: 0,
+        overflow: 'auto',
+        backgroundColor: 'white',
+    },
+    containerFullHeightPadded: {
+        width: '100%',
+        height: `calc(100vh - ${MENU_HEIGHT_WITH_TABS}px)`,
         padding: theme.spacing(4),
-        margin: theme.spacing(4),
+        margin: 0,
+        backgroundColor: 'white',
+        overflow: 'auto',
+    },
+    containerFullHeightNoTabPadded: {
+        width: '100%',
+        height: `calc(100vh - ${MENU_HEIGHT_WITHOUT_TABS}px)`,
+        padding: theme.spacing(4),
+        margin: 0,
+        overflow: 'auto',
+        backgroundColor: 'white',
     },
     indicator: {
         backgroundColor: 'white',
@@ -70,7 +90,7 @@ const commonStyles = theme => ({
         margin: theme.spacing(0, -4, 0, -4),
     },
     containerMarginNeg: {
-        margin: theme.spacing(0, -4, 0, -4),
+        margin: theme.spacing(0, -4, -4, -4),
         width: `calc(100% + ${theme.spacing(8)})`,
     },
     relativeContainer: {

@@ -4,7 +4,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import { push, replace } from 'react-router-redux';
 
 import {
-    withStyles, Paper, Tabs, Tab, Grid,
+    withStyles, Box, Tabs, Tab, Grid,
 } from '@material-ui/core';
 
 import Button from '@material-ui/core/Button';
@@ -46,17 +46,6 @@ const baseUrl = 'orgunits/detail';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    paperContainer: {
-        ...commonStyles(theme).paperContainer,
-        marginTop: 0,
-    },
-    paperContainerFullHeight: {
-        ...commonStyles(theme).paperContainer,
-        marginTop: 0,
-        marginBottom: 0,
-        padding: 0,
-        height: 'calc(100vh - 112px)',
-    },
 });
 
 
@@ -333,45 +322,43 @@ class OrgUnitDetail extends Component {
                         <section>
                             {
                                 tab === 'infos' && (
-                                    <div className={classes.marginBottom}>
-                                        <Paper className={classes.paperContainer}>
-                                            <OrgUnitInfos
-                                                params={params}
-                                                baseUrl={baseUrl}
-                                                orgUnit={currentOrgUnit}
-                                                orgUnitTypes={orgUnitTypes}
-                                                sourceTypes={sourceTypes}
-                                                sources={sources}
-                                                onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
-                                            />
-                                            <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
-                                                <Grid xs={12} item className={classes.textAlignRight}>
-                                                    <Button
-                                                        className={classes.marginLeft}
-                                                        disabled={!orgUnitModified}
-                                                        variant="contained"
-                                                        onClick={() => this.resetOrgUnit()}
-                                                    >
-                                                        <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
-                                                    </Button>
-                                                    <Button
-                                                        disabled={!orgUnitModified}
-                                                        variant="contained"
-                                                        className={classes.marginLeft}
-                                                        color="primary"
-                                                        onClick={() => this.saveOrgUnit(currentOrgUnit)}
-                                                    >
-                                                        <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
-                                                    </Button>
-                                                </Grid>
+                                    <Box className={classes.containerFullHeightPadded}>
+                                        <OrgUnitInfos
+                                            params={params}
+                                            baseUrl={baseUrl}
+                                            orgUnit={currentOrgUnit}
+                                            orgUnitTypes={orgUnitTypes}
+                                            sourceTypes={sourceTypes}
+                                            sources={sources}
+                                            onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
+                                        />
+                                        <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
+                                            <Grid xs={12} item className={classes.textAlignRight}>
+                                                <Button
+                                                    className={classes.marginLeft}
+                                                    disabled={!orgUnitModified}
+                                                    variant="contained"
+                                                    onClick={() => this.resetOrgUnit()}
+                                                >
+                                                    <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                                                </Button>
+                                                <Button
+                                                    disabled={!orgUnitModified}
+                                                    variant="contained"
+                                                    className={classes.marginLeft}
+                                                    color="primary"
+                                                    onClick={() => this.saveOrgUnit(currentOrgUnit)}
+                                                >
+                                                    <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
+                                                </Button>
                                             </Grid>
-                                        </Paper>
-                                    </div>
+                                        </Grid>
+                                    </Box>
                                 )
                             }
                             {
                                 tab === 'map' && (
-                                    <Paper className={classes.paperContainerFullHeight}>
+                                    <Box className={classes.containerFullHeight}>
                                         <OrgUnitMap
                                             setOrgUnitLocationModified={() => this.setOrgUnitLocationModified()}
                                             orgUnitLocationModified={orgUnitLocationModified}
@@ -383,20 +370,18 @@ class OrgUnitDetail extends Component {
                                             }}
                                             onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
                                         />
-                                    </Paper>
+                                    </Box>
                                 )
                             }
                             {
                                 tab === 'history' && (
-                                    <div className={classes.marginBottom}>
-                                        <Paper className={classes.paperContainer}>
-                                            <Logs
-                                                params={params}
-                                                logObjectId={currentOrgUnit.id}
-                                                goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
-                                            />
-                                        </Paper>
-                                    </div>
+                                    <Box className={classes.containerFullHeightPadded}>
+                                        <Logs
+                                            params={params}
+                                            logObjectId={currentOrgUnit.id}
+                                            goToRevision={orgUnitRevision => this.goToRevision(orgUnitRevision)}
+                                        />
+                                    </Box>
                                 )
                             }
                         </section>

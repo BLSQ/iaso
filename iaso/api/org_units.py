@@ -147,7 +147,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.exclude(id__in=ids_with_instances)
 
         if org_unit_type_id:
-            queryset = queryset.filter(org_unit_type__id=org_unit_type_id)
+            queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(','))
 
         if with_shape == "true":
             queryset = queryset.filter(simplified_geom__isnull=False)

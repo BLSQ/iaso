@@ -89,8 +89,8 @@ class LinkViewSet(viewsets.ViewSet):
 
         if org_unit_type_id:
             queryset = queryset.filter(
-                Q(destination__org_unit_type_id=org_unit_type_id)
-                | Q(source__org_unit_type_id=org_unit_type_id)
+                Q(destination__org_unit_type_id__in=org_unit_type_id.split(','))
+                | Q(source__org_unit_type_id__in=org_unit_type_id.split(','))
             )
 
         if csv_format is None and xlsx_format is None:

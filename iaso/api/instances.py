@@ -107,7 +107,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         if org_unit_type_id:
-            queryset = queryset.filter(org_unit__org_unit_type=org_unit_type_id)
+            queryset = queryset.filter(org_unit__org_unit_type__in=org_unit_type_id.split(','))
         if org_unit_id:
             queryset = queryset.filter(org_unit_id=org_unit_id)
 

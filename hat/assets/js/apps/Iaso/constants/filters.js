@@ -84,7 +84,7 @@ export const orgUnitType = (
 ) => (
     {
         urlKey,
-        isMultiSelect: false,
+        isMultiSelect: true,
         isClearable: true,
         options: orgunitTypesList.map(t => ({
             label: t.name,

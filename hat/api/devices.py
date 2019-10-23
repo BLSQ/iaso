@@ -114,7 +114,7 @@ class DevicesViewSet(viewsets.ViewSet):
                     "last_user": last_user,
                     "last_team": last_team,
                     "id": device.id,
-                    # **device_stats
+                    **device_stats
                 }
                 if with_tests_devices:
                     device_dict['is_test'] = device.is_test

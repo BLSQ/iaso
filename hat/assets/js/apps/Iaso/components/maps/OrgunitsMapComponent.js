@@ -18,7 +18,10 @@ import {
     getLatLngBounds,
     getShapesBounds,
     clusterCustomMarker,
+    colorClusterCustomMarker,
     customZoomBar,
+    getSourceColor,
+    colorMarker,
 } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -38,7 +41,11 @@ const boundsOptions = {
 };
 
 const getOrgUnitsBounds = (orgUnits) => {
-    const locationsBounds = orgUnits.locations.length > 0 ? getLatLngBounds(orgUnits.locations) : null;
+    let orgUnitsLocations = [];
+    Object.values(orgUnits.locations).forEach((location) => {
+        orgUnitsLocations = orgUnitsLocations.concat(location.orgUnits);
+    });
+    const locationsBounds = orgUnitsLocations.length > 0 ? getLatLngBounds(orgUnitsLocations) : null;
     const shapeBounds = orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
     let bounds = null;
     if (locationsBounds && shapeBounds) {
@@ -101,6 +108,7 @@ class OrgunitsMap extends Component {
             intl: {
                 formatMessage,
             },
+            currentSources,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         if (!bounds && orgUnits.locations.length > 0) {
@@ -145,6 +153,7 @@ class OrgunitsMap extends Component {
                         zoom={13}
                         zoomControl={false}
                         zoomSnap={0.1}
+                        keyboard={false}
                     >
                         <TileLayer
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
@@ -153,23 +162,37 @@ class OrgunitsMap extends Component {
                         {
                             isClusterActive
                             && (
-                                <MarkerClusterGroup iconCreateFunction={clusterCustomMarker}>
-                                    <MarkersListComponent
-                                        items={orgUnits.locations}
-                                        onMarkerClick={o => this.fetchDetail(o)}
-                                        PopupComponent={OrgUnitPopupComponent}
-                                    />
-                                </MarkerClusterGroup>
+                                Object.values(orgUnits.locations).map(location => (
+                                    <MarkerClusterGroup
+                                        iconCreateFunction={cluster => colorClusterCustomMarker(cluster, getSourceColor(currentSources, location.source.id))}
+                                        key={location.source.id}
+                                    >
+                                        <MarkersListComponent
+                                            markerProps={o => ({
+                                                icon: colorMarker(getSourceColor(currentSources, o.source_id)),
+                                            })}
+                                            items={location.orgUnits}
+                                            onMarkerClick={o => this.fetchDetail(o)}
+                                            PopupComponent={OrgUnitPopupComponent}
+                                        />
+                                    </MarkerClusterGroup>
+                                ))
                             )
                         }
                         {
                             !isClusterActive
                             && (
-                                <MarkersListComponent
-                                    items={orgUnits.locations}
-                                    onMarkerClick={o => this.fetchDetail(o)}
-                                    PopupComponent={OrgUnitPopupComponent}
-                                />
+                                Object.values(orgUnits.locations).map(location => (
+                                    <MarkersListComponent
+                                        key={location.source.id}
+                                        markerProps={o => ({
+                                            icon: colorMarker(getSourceColor(currentSources, o.source_id)),
+                                        })}
+                                        items={location.orgUnits}
+                                        onMarkerClick={o => this.fetchDetail(o)}
+                                        PopupComponent={OrgUnitPopupComponent}
+                                    />
+                                ))
                             )
                         }
                         {
@@ -178,8 +201,10 @@ class OrgunitsMap extends Component {
                                     pane={o.org_unit_type
                                         ? `custom-shape-pane-${camelCase(o.org_unit_type)}`
                                         : 'custom-shape-pane'}
-                                    className="secondary"
                                     key={o.id}
+                                    style={() => ({
+                                        color: getSourceColor(currentSources, o.source_id),
+                                    })}
                                     data={o.geo_json}
                                     onClick={() => this.fetchDetail(o)}
                                 >
@@ -193,6 +218,9 @@ class OrgunitsMap extends Component {
         );
     }
 }
+OrgunitsMap.defaultProps = {
+    currentSources: [],
+};
 
 
 OrgunitsMap.propTypes = {
@@ -204,6 +232,7 @@ OrgunitsMap.propTypes = {
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    currentSources: PropTypes.any,
 };
 
 const MapStateToProps = state => ({
@@ -211,6 +240,7 @@ const MapStateToProps = state => ({
     isClusterActive: state.map.isClusterActive,
     orgUnits: state.orgUnits.orgUnitsLocations,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    currentSources: state.orgUnits.sources,
 });
 
 const MapDispatchToProps = dispatch => ({

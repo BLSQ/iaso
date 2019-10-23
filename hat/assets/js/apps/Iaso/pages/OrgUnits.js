@@ -12,6 +12,7 @@ import {
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import kebabCase from 'lodash/kebabCase';
 
 import {
     fetchOrgUnitsTypes,
@@ -66,15 +67,21 @@ const styles = theme => ({
     },
 });
 
-const mapOrgUnitByLocation = (orgUnits) => {
+const mapOrgUnitByLocation = (orgUnits, selectedSources, currentSources) => {
+    const locations = {};
+    currentSources.forEach((source) => {
+        locations[kebabCase(source.name)] = {
+            source,
+            orgUnits: [],
+        };
+    });
     const mappedOrgunits = {
         shapes: [],
-        locations: [],
+        locations,
     };
-
     orgUnits.forEach((o) => {
         if (o.latitude && o.longitude) {
-            mappedOrgunits.locations.push(o);
+            mappedOrgunits.locations[kebabCase(o.source_name)].orgUnits.push(o);
         }
         if (o.geo_json) {
             mappedOrgunits.shapes.push(o);
@@ -89,7 +96,7 @@ class OrgUnits extends Component {
         this.state = {
             tableColumns: orgUnitsTableColumns(props.intl.formatMessage, this),
             tab: props.params.tab ? props.params.tab : 'list',
-            hasLocations: false,
+            listUpdated: false,
         };
     }
 
@@ -98,9 +105,6 @@ class OrgUnits extends Component {
             dispatch,
             params,
         } = this.props;
-        if (this.props.params.searchActive) {
-            this.fetchOrgUnits(params.tab === 'map');
-        }
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
         fetchOrgUnitsTypes(this.props.dispatch).then((orgUnitTypes) => {
@@ -118,6 +122,9 @@ class OrgUnits extends Component {
                     });
                 });
                 this.props.setSources(sources);
+                if (this.props.params.searchActive) {
+                    this.fetchOrgUnits(params.tab === 'map');
+                }
             });
     }
 
@@ -201,7 +208,12 @@ class OrgUnits extends Component {
     }
 
     handleChangeTab(tab, redirect = true) {
-        const { redirectTo, params } = this.props;
+        const { redirectTo, params, filtersUpdated } = this.props;
+        const { listUpdated } = this.state;
+        const newState = {
+            ...this.state,
+            tab,
+        };
         if (redirect) {
             const newParams = {
                 ...params,
@@ -210,12 +222,13 @@ class OrgUnits extends Component {
             redirectTo(baseUrl, newParams);
         }
 
-        if (!this.state.hasLocations && tab === 'map' && params.searchActive) {
+        if (tab === 'map' && params.searchActive && (filtersUpdated || listUpdated)) {
+            if (listUpdated) {
+                newState.listUpdated = false;
+            }
             this.fetchOrgUnitsLocations();
         }
-        this.setState({
-            tab,
-        });
+        this.setState(newState);
     }
 
     selectOrgUnit(orgUnit, tab) {
@@ -230,14 +243,19 @@ class OrgUnits extends Component {
     fetchOrgUnitsLocations() {
         const {
             dispatch,
+            params,
+            sources,
         } = this.props;
         dispatch(this.props.setOrgUnitsListFetching(true));
         const urlLocation = this.getEndpointUrl(false, '', true);
         fetchOrgUnitsList(dispatch, urlLocation).then((orgUnits) => {
-            this.setState({
-                hasLocations: true,
-            });
-            this.props.setOrgUnitsLocations(mapOrgUnitByLocation(orgUnits));
+            this.props.setOrgUnitsLocations(
+                mapOrgUnitByLocation(
+                    orgUnits,
+                    params.source ? params.source.split(',') : [],
+                    sources || [],
+                ),
+            );
             dispatch(this.props.setOrgUnitsListFetching(false));
         });
     }
@@ -246,11 +264,15 @@ class OrgUnits extends Component {
         const {
             params,
             dispatch,
+            sources,
         } = this.props;
 
         const url = this.getEndpointUrl();
         dispatch(this.props.setOrgUnitsListFetching(true));
         const promises = [fetchOrgUnitsList(dispatch, url)];
+        this.setState({
+            listUpdated: !withLocations,
+        });
         if (withLocations) {
             const urlLocation = this.getEndpointUrl(false, '', true);
             promises.push(fetchOrgUnitsList(dispatch, urlLocation));
@@ -265,10 +287,11 @@ class OrgUnits extends Component {
             }
             this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages);
             if (withLocations) {
-                this.props.setOrgUnitsLocations(mapOrgUnitByLocation(data[1]));
-                this.setState({
-                    hasLocations: true,
-                });
+                this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
+                    data[1],
+                    params.source ? params.source.split(',') : [],
+                    sources || [],
+                ));
             }
             dispatch(this.props.setOrgUnitsListFetching(false));
         });
@@ -412,6 +435,7 @@ OrgUnits.propTypes = {
     fetchingList: PropTypes.bool.isRequired,
     setOrgUnitsLocations: PropTypes.func.isRequired,
     fetchingOrgUnitTypes: PropTypes.bool.isRequired,
+    filtersUpdated: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -420,6 +444,7 @@ const MapStateToProps = state => ({
     sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
+    filtersUpdated: state.orgUnits.filtersUpdated,
 });
 
 const MapDispatchToProps = dispatch => ({

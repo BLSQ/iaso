@@ -13,6 +13,7 @@ const MarkersListComponent = (props) => {
         PopupComponent,
         customMarker,
         popupProps,
+        markerProps,
     } = props;
 
     return items.map((i) => {
@@ -25,6 +26,7 @@ const MarkersListComponent = (props) => {
                     PopupComponent={PopupComponent}
                     marker={customMarker}
                     popupProps={popupProps}
+                    markerProps={markerProps}
                 />
             </Fragment>
         );
@@ -36,6 +38,7 @@ MarkersListComponent.defaultProps = {
     PopupComponent: null,
     customMarker: null,
     popupProps: {},
+    markerProps: () => {},
 };
 
 MarkersListComponent.propTypes = {
@@ -44,6 +47,7 @@ MarkersListComponent.propTypes = {
     PopupComponent: PropTypes.object,
     customMarker: PropTypes.object,
     popupProps: PropTypes.object,
+    markerProps: PropTypes.func,
 };
 
 export default MarkersListComponent;

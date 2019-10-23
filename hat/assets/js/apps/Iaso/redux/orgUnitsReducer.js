@@ -13,6 +13,7 @@ const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
 const SET_FORMS_SELECTED = 'SET_FORMS_SELECTED';
 const SET_CURRENT_FORMS = 'SET_CURRENT_FORMS';
 const SET_FETCHING_ORG_UNITS_TYPES = 'SET_FETCHING_ORG_UNITS_TYPES';
+const SET_FILTERS_UPDATED = 'SET_FILTERS_UPDATED';
 
 export const setOrgUnits = (list, showPagination, params, count, pages) => ({
     type: SET_ORG_UNITS,
@@ -97,6 +98,11 @@ export const setFetchingOrgUnitTypes = fetching => ({
     payload: fetching,
 });
 
+export const setFiltersUpdated = filtersUpdated => ({
+    type: SET_FILTERS_UPDATED,
+    payload: filtersUpdated,
+});
+
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
@@ -123,6 +129,7 @@ export const orgUnitsInitialState = {
         locations: [],
         shapes: [],
     },
+    filtersUpdated: true,
 };
 
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
@@ -210,6 +217,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_FETCHING_ORG_UNITS_TYPES: {
             const fetchingOrgUnitTypes = action.payload;
             return { ...state, fetchingOrgUnitTypes };
+        }
+
+        case SET_FILTERS_UPDATED: {
+            const filtersUpdated = action.payload;
+            return { ...state, filtersUpdated };
         }
         default:
             return state;

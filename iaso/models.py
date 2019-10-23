@@ -240,6 +240,8 @@ class OrgUnit(models.Model):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name,
+            "source_id": self.version.data_source.id if self.version else None,
+            "source_name": self.version.data_source.name if self.version else None,
         }
 
 

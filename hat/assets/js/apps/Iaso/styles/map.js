@@ -7,6 +7,19 @@ const mapStyles = theme => ({
         '& .leaflet-container .leaflet-popup-content a': {
             color: theme.palette.primary.main,
         },
+        '& .marker-cluster.color': {
+            color: 'white',
+        },
+        '& .marker-cluster.color div .border': {
+            position: 'absolute',
+            display: 'block',
+            height: 40,
+            width: 40,
+            top: -5,
+            left: -5,
+            borderRadius: '100%',
+            zIndex: -1,
+        },
         '& .marker-cluster.primary': {
             backgroundColor: fade(theme.palette.primary.main, 0.6),
         },
@@ -23,7 +36,7 @@ const mapStyles = theme => ({
             height: '100%',
             width: '100%',
         },
-        '& .marker-custom.primary .marker_bg': {
+        '& .marker-custom .marker_bg, & .marker-custom.primary .marker_bg': {
             position: 'absolute',
             display: 'block',
             height: '10px',

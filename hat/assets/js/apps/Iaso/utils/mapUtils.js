@@ -1,5 +1,6 @@
 /* globals STATIC_URL */
 import L from 'leaflet';
+import { fade } from '@material-ui/core/styles/colorManipulator';
 
 import { MESSAGES } from '../../../utils/map/mapUtils';
 
@@ -52,6 +53,19 @@ export const clusterCustomMarker = cluster => (L.divIcon({
     iconAnchor: [20, 30],
 }));
 
+export const colorClusterCustomMarker = (cluster, backgroundColor) => (L.divIcon({
+    html: `<div style="background-color: ${backgroundColor};" >`
+            + `<div class="border" style="background-color: ${fade(backgroundColor, 0.5)};"></div>`
+            + `<span>${cluster.getChildCount()}</span>`
+        + '</div>',
+    className: 'marker-cluster color',
+    iconSize: L.point(40, 40, true),
+    iconAnchor: [20, 30],
+    style: () => ({
+        backgroundColor,
+    }),
+}));
+
 const svgString = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="34" height="34">'
     + '<path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>';
 
@@ -72,14 +86,14 @@ export const customMarkerOptions = {
 export const customColorMarkerOptions = (color, iconName) => ({
     className: 'marker-custom color',
     html: `${L.Util.template(svgColoredString(color))}
-    ${iconName ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />` : ''}<img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
+    ${iconName ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />` : '<span class="marker_bg"></span>'}<img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -28],
     iconAnchor: [12, 32],
 });
 
 export const customMarker = L.divIcon(customMarkerOptions);
-export const clusterColorMarker = (color, iconName) => L.divIcon(customColorMarkerOptions(color, iconName));
+export const colorMarker = (color, iconName) => L.divIcon(customColorMarkerOptions(color, iconName));
 
 
 export const customZoomBar = (formatMessage, fitToBounds) => L.control.zoombar({
@@ -89,3 +103,12 @@ export const customZoomBar = (formatMessage, fitToBounds) => L.control.zoombar({
     fitToBounds: () => fitToBounds(),
     position: 'topleft',
 });
+
+export const getSourceColor = (sourcesList, sourceId) => {
+    let sourceColor = '#3388FF';
+    const source = sourcesList.find(s => s.id === parseInt(sourceId, 10));
+    if (source && source.color) {
+        sourceColor = source.color;
+    }
+    return sourceColor;
+};

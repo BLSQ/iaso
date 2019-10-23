@@ -58,6 +58,7 @@ class PolygonMap extends Component {
                         this.map = ref;
                     }}
                     zoomControl={false}
+                    keyboard={false}
                 >
                     <TileLayer
                         attribution={currentTile.attribution ? currentTile.attribution : ''}

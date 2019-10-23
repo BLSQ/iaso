@@ -15,7 +15,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
-import { customMarker, customZoomBar, clusterColorMarker } from '../../utils/mapUtils';
+import { customMarker, customZoomBar, colorMarker } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
@@ -349,6 +349,7 @@ class OrgUnitMapComponent extends Component {
                         boundsOptions={{ padding }}
                         zoom={zoom}
                         zoomControl={false}
+                        keyboard={false}
                     >
                         <TileLayer
                             attribution={currentTile.attribution ? currentTile.attribution : ''}
@@ -365,7 +366,7 @@ class OrgUnitMapComponent extends Component {
                                             displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
                                             useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                         }}
-                                        customMarker={clusterColorMarker(ot.color, 'white-pentagon.svg')}
+                                        customMarker={colorMarker(ot.color, 'white-pentagon.svg')}
                                     />
                                     {
                                         ot.orgUnits.shapes.map(o => (
@@ -398,7 +399,7 @@ class OrgUnitMapComponent extends Component {
                                         displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
                                         useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                     }}
-                                    customMarker={clusterColorMarker(f.color, 'white-form.svg')}
+                                    customMarker={colorMarker(f.color, 'white-form.svg')}
                                 />
                             ))
                         }
@@ -408,7 +409,7 @@ class OrgUnitMapComponent extends Component {
                                     items={s.orgUnits.locations}
                                     onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                     PopupComponent={OrgUnitPopupComponent}
-                                    customMarker={clusterColorMarker(s.color)}
+                                    customMarker={colorMarker(s.color)}
                                 />
                                 {
                                     s.orgUnits.shapes.map(o => (

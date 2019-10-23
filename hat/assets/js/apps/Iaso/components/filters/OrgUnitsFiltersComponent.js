@@ -23,6 +23,9 @@ import {
     location,
     locationsLimit,
 } from '../../constants/filters';
+import {
+    setFiltersUpdated,
+} from '../../redux/orgUnitsReducer';
 
 import FiltersComponent from './FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
@@ -37,24 +40,13 @@ const styles = theme => ({
 });
 
 class OrgUnitsFiltersComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            filtersUpdated: true,
-        };
-    }
-
     onFilterChanged() {
-        this.setState({
-            filtersUpdated: true,
-        });
+        this.props.setFiltersUpdated(true);
     }
 
     onSearch() {
-        if (this.state.filtersUpdated) {
-            this.setState({
-                filtersUpdated: false,
-            });
+        if (this.props.filtersUpdated) {
+            this.props.setFiltersUpdated(false);
             const tempParams = {
                 ...this.props.params,
             };
@@ -74,10 +66,8 @@ class OrgUnitsFiltersComponent extends Component {
             orgUnitTypes,
             sources,
             currentTab,
-        } = this.props;
-        const {
             filtersUpdated,
-        } = this.state;
+        } = this.props;
         const filters = [
             search(),
             hasInstances(formatMessage),
@@ -115,7 +105,7 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                source(sources || [], true),
+                                source(sources || [], true, true),
                                 status(formatMessage),
                             ]}
                         />
@@ -159,13 +149,18 @@ OrgUnitsFiltersComponent.propTypes = {
     sources: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
     currentTab: PropTypes.string.isRequired,
+    setFiltersUpdated: PropTypes.func.isRequired,
+    filtersUpdated: PropTypes.bool.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    filtersUpdated: state.orgUnits.filtersUpdated,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));

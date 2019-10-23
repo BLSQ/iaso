@@ -85,15 +85,24 @@ const styles = theme => ({
         '& .Select-control': {
             boxShadow: 'none  !important',
         },
-        '& .Select--multi .Select-control': {
-            // paddingTop: 5,
-        },
         '& .Select--multi .Select-value': {
             height: theme.spacing(4),
             padding: '0 !important',
             color: theme.palette.secondary.main,
             borderColor: theme.palette.secondary.main,
             backgroundColor: fade(theme.palette.secondary.main, 0.08),
+        },
+        '& .Select--multi .Select-value .Select-value-icon': {
+            borderColor: fade(theme.palette.secondary.main, 0.24),
+        },
+        '& .Select--multi .Select-value .select-color': {
+            display: 'inline-block',
+            width: theme.spacing(2),
+            height: theme.spacing(2),
+            borderRadius: theme.spacing(2),
+            marginRight: theme.spacing(1),
+            position: 'relative',
+            top: 3,
         },
         '& .Select--multi .Select-multi-value-wrapper': {
             width: '100%',

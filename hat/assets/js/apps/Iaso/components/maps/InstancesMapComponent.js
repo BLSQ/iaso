@@ -114,6 +114,7 @@ class InstancesMap extends Component {
                         boundsOptions={boundsOptions}
                         zoom={13}
                         zoomControl={false}
+                        keyboard={false}
                     >
                         <TileLayer
                             attribution={currentTile.attribution ? currentTile.attribution : ''}

@@ -96,9 +96,20 @@ export const orgUnitType = (
     }
 );
 
+const renderColoredOption = item => (
+    <div>
+        <span
+            style={{ backgroundColor: item.color }}
+            className="select-color"
+        />
+        {item.name}
+    </div>
+);
+
 export const source = (
     sourceList,
     isMultiSelect = false,
+    displayColor = false,
     urlKey = 'source',
     labelString = '',
     label = MESSAGES.source,
@@ -106,10 +117,11 @@ export const source = (
     {
         urlKey,
         isMultiSelect,
+        displayColor,
         isClearable: true,
-        options: sourceList.map(t => ({
-            label: t.name,
-            value: t.id,
+        options: sourceList.map(s => ({
+            label: displayColor ? renderColoredOption(s) : s.name,
+            value: s.id,
         })),
         label: labelString !== '' ? null : label,
         type: 'select',

@@ -108,6 +108,7 @@ class LinksFiltersComponent extends Component {
                                 source(
                                     sources || [],
                                     false,
+                                    false,
                                     'source2',
                                     `${
                                         formatMessage({

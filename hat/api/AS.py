@@ -49,7 +49,7 @@ class ASViewSet(viewsets.ViewSet):
 
         as_list = request.GET.get("as_list", False)
         orders = request.GET.get("order", "name").split(",")
-        page_offset = request.GET.get("page", None)
+        page_offset = int(request.GET.get("page", 0))
         limit = request.GET.get("limit", None)
         search = request.GET.get("search", None)
         province_ids = request.GET.get("province_id", None)
@@ -101,30 +101,18 @@ class ASViewSet(viewsets.ViewSet):
 
             return Response(geo_json)
         elif as_list:
-            if page_offset:
-                page_offset = int(page_offset)
-                queryset = queryset.order_by(*orders)
-                values = (
-                    'name',
-                    'id',
-                    "ZS_id",
-                    "ZS__name",
-                    "ZS__province_id",
-                    "ZS__province__name",
-                    "aliases",
-                    "source",
-                )
-                paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                if page_offset > paginator.num_pages:
-                    page_offset = paginator.num_pages
-                page = paginator.page(page_offset)
-                res["areas"] = map(lambda x: x.as_full_dict(), page.object_list)
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
+            queryset = queryset.order_by(*orders)
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
+            res["areas"] = map(lambda x: x.as_full_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
             return Response(res)
         elif csv_format or xlsx_format:
                 if (

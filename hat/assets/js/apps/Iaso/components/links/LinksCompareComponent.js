@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 import isEqual from 'lodash/isEqual';
 
 import {
-    withStyles, Table, TableBody, TableCell, TableRow, Paper, Grid, Typography,
+    withStyles, Table, TableBody, Paper, Grid, Typography,
 } from '@material-ui/core';
 
 
@@ -19,25 +19,14 @@ const styles = theme => ({
     table: {
         marginBottom: theme.spacing(2),
     },
-    cell: {
-        minWidth: 180,
-    },
-    isDifferent: {
-        backgroundColor: theme.palette.error.main,
-        color: 'white',
-    },
     title: {
         marginBottom: theme.spacing(1),
-    },
-    marginRight: {
-        marginRight: theme.spacing(2),
-        display: 'inline-block',
     },
 });
 
 
 const LinksCompare = ({
-    link, compareLink, classes, title,
+    link, compareLink, classes, title, validated,
 }) => {
     const differenceArray = [{}];
     return (
@@ -77,7 +66,15 @@ const LinksCompare = ({
                                         const value = link[key];
                                         const isDifferent = !isEqual(value, compareLink[key]);
                                         differenceArray[key] = value;
-                                        return (<LinksValue key={key} linkKey={key} value={value} isDifferent={isDifferent} />);
+                                        return (
+                                            <LinksValue
+                                                key={key}
+                                                linkKey={key}
+                                                value={value}
+                                                isDifferent={isDifferent}
+                                                validated={validated}
+                                            />
+                                        );
                                     })
                                 }
                             </TableBody>
@@ -91,6 +88,7 @@ const LinksCompare = ({
 
 LinksCompare.defaultProps = {
     title: '',
+    validated: false,
 };
 
 LinksCompare.propTypes = {
@@ -98,6 +96,7 @@ LinksCompare.propTypes = {
     link: PropTypes.object.isRequired,
     compareLink: PropTypes.object.isRequired,
     title: PropTypes.string,
+    validated: PropTypes.bool,
 };
 
 export default withStyles(styles)(LinksCompare);

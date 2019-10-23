@@ -26,7 +26,7 @@ const styles = theme => ({
         minWidth: 180,
     },
     isDifferent: {
-        backgroundColor: theme.palette.error.main,
+        backgroundColor: theme.palette.secondary.main,
         color: 'white',
     },
     seeAll: {

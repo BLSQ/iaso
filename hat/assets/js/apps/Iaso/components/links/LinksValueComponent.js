@@ -16,7 +16,11 @@ const styles = theme => ({
         minWidth: 180,
     },
     isDifferent: {
-        backgroundColor: theme.palette.error.main,
+        backgroundColor: theme.palette.secondary.main,
+        color: 'white',
+    },
+    isDifferentValidated: {
+        backgroundColor: theme.palette.primary.main,
         color: 'white',
     },
 });
@@ -68,11 +72,12 @@ const renderValue = (linkKey, value) => {
 };
 
 const LinksValue = ({
-    linkKey, value, isDifferent, classes, intl,
+    linkKey, value, isDifferent, classes, intl, validated,
 }) => {
     const { formatMessage } = intl;
     if (ignoredKeys.indexOf(linkKey) !== -1) return null;
 
+    const differentClass = validated ? classes.isDifferentValidated : classes.isDifferent;
     return (
         <TableRow>
             <TableCell className={classes.cell}>
@@ -83,7 +88,7 @@ const LinksValue = ({
                     !MESSAGES[linkKey] && linkKey
                 }
             </TableCell>
-            <TableCell className={isDifferent ? classes.isDifferent : null}>
+            <TableCell className={isDifferent ? differentClass : null}>
                 {renderValue(linkKey, value)}
             </TableCell>
         </TableRow>
@@ -92,6 +97,7 @@ const LinksValue = ({
 
 LinksValue.defaultProps = {
     value: null,
+    validated: false,
 };
 
 LinksValue.propTypes = {
@@ -100,6 +106,7 @@ LinksValue.propTypes = {
     linkKey: PropTypes.string.isRequired,
     value: PropTypes.any,
     isDifferent: PropTypes.bool.isRequired,
+    validated: PropTypes.bool,
 };
 
 export default withStyles(styles)(injectIntl(LinksValue));

@@ -87,6 +87,7 @@ class LinksDetails extends Component {
                                 <Grid container spacing={2}>
                                     <Grid item xs={6}>
                                         <LinksCompare
+                                            validated={validated}
                                             title={formatMessage({
                                                 id: 'iaso.label.destination',
                                                 defaultMessage: 'Destination',
@@ -97,6 +98,7 @@ class LinksDetails extends Component {
                                     </Grid>
                                     <Grid item xs={6}>
                                         <LinksCompare
+                                            validated={validated}
                                             title={formatMessage({
                                                 id: 'iaso.label.origin',
                                                 defaultMessage: 'Origin',

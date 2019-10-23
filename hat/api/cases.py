@@ -297,7 +297,6 @@ class CasesViewSet(viewsets.ViewSet):
                 queryset = queryset.annotate(has_unuploaded_videos=Exists(has_unuploaded_videos))\
                     .filter(has_unuploaded_videos=True)
 
-        queryset = queryset.annotate(latest_test_date=Max("test__date"))
         queryset = CaseView.add_caseview_fields_to_case_queryset(queryset)
 
         # Performance prefetch
@@ -325,7 +324,7 @@ class CasesViewSet(viewsets.ViewSet):
             page = paginator.page(page_offset)
 
             res["cases"] = list(
-                map(lambda x: x.as_dict(additional_fields=["latest_test_date"] + CaseView.caseview_additional_fields),
+                map(lambda x: x.as_dict(additional_fields=CaseView.caseview_additional_fields),
                     page.object_list))  # just the map breaks the tests
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()

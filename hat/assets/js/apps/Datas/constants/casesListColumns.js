@@ -33,7 +33,7 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Date',
-                id: 'casesList.label.latest_test_date',
+                id: 'main.label.latest_test_date',
             }),
             accessor: 'latest_test_date',
             className: 'small',

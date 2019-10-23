@@ -231,6 +231,9 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
                                                     })
 
     if test_created:
+        if test.date > test.form.latest_test_date:
+            # Use an update to avoid interfering with a .save() of the whole object.
+            Case.objects.filter(id=test.form_id).update(latest_test_date=test.date)
         test.result = result
         test.note = note
         test.tester_id = tester_id

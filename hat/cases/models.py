@@ -490,6 +490,8 @@ class CaseAbstract(models.Model):
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
 
+    latest_test_date = models.DateTimeField(null=True, blank=True, db_index=True)
+
     FILTER_ANY_PICTURE_FILENAME = Q(
         Q(test_catt_picture_filename__isnull=False)
         | Q(test_rdt_picture_filename__isnull=False)
@@ -632,6 +634,7 @@ class Case(CaseAbstract):
             "circumstances_dp_cs": self.circumstances_dp_cs,
             "circumstances_dp_hgr": self.circumstances_dp_hgr,
             "screening_type": self.screening_type,
+            "latest_test_date": self.latest_test_date,
         }
 
         if full and self.test_set:

@@ -1,4 +1,4 @@
-from django.test import TestCase
+from django.test import TestCase, tag
 from .models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
 from math import floor
 from rest_framework.test import APIClient
@@ -23,6 +23,7 @@ class BasicAPITestCase(TestCase):
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
 
+    @tag("iaso_only")
     def test_org_unit_insertion(self):
         """Creating Org Units through the API"""
         c = APIClient()
@@ -111,6 +112,7 @@ class BasicAPITestCase(TestCase):
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
 
+    @tag("iaso_only")
     def test_instance_insertion(self):
         """Creating Instance Units through the API"""
         c = APIClient()
@@ -165,6 +167,7 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(instance.form_id, form.id)
         self.assertEqual(floor(instance.location.x), floor(4.4))
 
+    @tag("iaso_only")
     def test_fetch_org_unit_type(self):
         """Fetch Org Unit Types through the API"""
         c = APIClient()

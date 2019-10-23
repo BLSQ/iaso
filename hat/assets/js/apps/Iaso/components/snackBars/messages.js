@@ -81,7 +81,11 @@ const MESSAGES = {
     },
     locationLimitWarning: {
         id: 'iaso.snackBar.locationLimitWarning',
-        defaultMessage: 'Diplay too much items on the map can reduce the performance',
+        defaultMessage: 'Display too much items on the map can reduce the performance',
+    },
+    fetchLinkDetailError: {
+        id: 'iaso.snackBar.fetchLinkDetailError',
+        defaultMessage: 'An error occured while fetching link detail',
     },
 };
 

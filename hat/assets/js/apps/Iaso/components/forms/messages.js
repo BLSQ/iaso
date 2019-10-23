@@ -143,6 +143,30 @@ const MESSAGES = {
         id: 'iaso.map.locationLimit',
         defaultMessage: 'Map results limit',
     },
+    short_name: {
+        id: 'iaso.orgUnits.short_name',
+        defaultMessage: 'Short name',
+    },
+    parent_name: {
+        id: 'iaso.orgUnits.parent_name',
+        defaultMessage: 'Parent name',
+    },
+    org_unit_type_name: {
+        id: 'iaso.orgUnits.org_unit_type_name',
+        defaultMessage: 'Orgasnisation unit type',
+    },
+    latitude: {
+        id: 'iaso.label.latitude',
+        defaultMessage: 'Latitude',
+    },
+    longitude: {
+        id: 'iaso.label.longitude',
+        defaultMessage: 'Longitude',
+    },
+    geo_json: {
+        id: 'iaso.label.geo_json',
+        defaultMessage: 'Geo json shape',
+    },
 };
 
 export default MESSAGES;

@@ -1,6 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from iaso.models import Link
+from iaso.models import Link, OrgUnit
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -11,6 +11,7 @@ from rest_framework.authentication import BasicAuthentication
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from hat.geo.geojson import geojson_queryset
 
 
 class LinkViewSet(viewsets.ViewSet):
@@ -176,4 +177,21 @@ class LinkViewSet(viewsets.ViewSet):
 
         res = link.as_dict()
 
+        return Response(res)
+
+    def retrieve(self, request, pk=None):
+        link = get_object_or_404(Link, id=pk)
+        res = link.as_full_dict()
+        res["source"]["geo_json"] = None
+        res["destination"]["geo_json"] = None
+        if link.source.simplified_geom:
+            queryset = OrgUnit.objects.all().filter(id=link.source.id)
+            res["source"]["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
+        if link.destination.simplified_geom:
+            queryset = OrgUnit.objects.all().filter(id=link.destination.id)
+            res["destination"]["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
         return Response(res)

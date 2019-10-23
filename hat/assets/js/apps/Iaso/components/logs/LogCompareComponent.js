@@ -61,8 +61,8 @@ const LogCompareComponent = ({
                                 <Grid container item xs={6} justify="flex-end" alignItems="center">
                                     <Tooltip title={
                                         allFields
-                                            ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
-                                            : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
+                                            ? <FormattedMessage id="iaso.label.seeChanges" defaultMessage="See only changes" />
+                                            : <FormattedMessage id="iaso.label.seeAll" defaultMessage="See all fields" />
                                     }
                                     >
                                         <IconButton

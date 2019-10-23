@@ -204,6 +204,7 @@ class OrgUnit(models.Model):
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
+            "parent_name": self.parent.name if self.parent else None,
             "parent": self.parent.as_dict_with_parents() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name
@@ -342,6 +343,22 @@ class Link(models.Model):
         return {
             "destination": self.destination.as_dict_with_parents(),
             "source": self.source.as_dict(),
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "validated": self.validated,
+            "validator": self.validator.profile.as_dict()
+            if self.validator and self.validator.profile
+            else None,
+            "validation_date": self.validation_date,
+            "similarity_score": self.similarity_score,
+            "algorithm_run": self.algorithm_run.as_dict(),
+        }
+
+    def as_full_dict(self):
+        return {
+            "destination": self.destination.as_dict_with_parents(),
+            "source": self.source.as_dict_with_parents(),
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

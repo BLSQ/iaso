@@ -193,3 +193,12 @@ export const fetchAlgorithms = dispatch => getRequest('/api/algorithms')
         console.error('Error while fetching algorithms list:', error);
         throw error;
     });
+
+
+export const fetchLinkDetail = (dispatch, linkId) => getRequest(`/api/links/${linkId}`)
+    .then(linkDetail => linkDetail)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchLinkDetailError')));
+        console.error('Error while fetching link detail:', error);
+        throw error;
+    });

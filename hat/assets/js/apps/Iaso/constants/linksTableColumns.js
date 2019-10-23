@@ -1,6 +1,9 @@
 import React from 'react';
 import moment from 'moment';
 import Checkbox from '@material-ui/core/Checkbox';
+import { Tooltip } from '@material-ui/core';
+import Add from '@material-ui/icons/Add';
+import Remove from '@material-ui/icons/Remove';
 
 import getDisplayName from '../utils/usersUtils';
 import StarsComponent from '../components/stars/StarsComponent';
@@ -41,10 +44,10 @@ const linksTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: `${formatMessage({
-                defaultMessage: 'Source',
-                id: 'iaso.label.source',
-            })} 1`,
+            Header: formatMessage({
+                defaultMessage: 'Destination',
+                id: 'iaso.label.destination',
+            }),
             accessor: 'destination__source',
             Cell: settings => (
                 <span>
@@ -53,10 +56,10 @@ const linksTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: `${formatMessage({
-                defaultMessage: 'Source',
-                id: 'iaso.label.source',
-            })} 2`,
+            Header: formatMessage({
+                defaultMessage: 'Origin',
+                id: 'iaso.label.origin',
+            }),
             accessor: 'source__source',
             Cell: settings => (
                 <span>
@@ -88,6 +91,16 @@ const linksTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Validator',
+                id: 'iaso.label.validator',
+            }),
+            accessor: 'validator',
+            Cell: settings => (
+                settings.original.validator ? getDisplayName(settings.original.validator) : '/'
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Validated',
                 id: 'iaso.forms.validated',
             }),
@@ -102,13 +115,23 @@ const linksTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Validator',
-                id: 'iaso.label.validator',
-            }),
-            accessor: 'validator',
-            Cell: settings => (
-                settings.original.validator ? getDisplayName(settings.original.validator) : '/'
+            expander: true,
+            width: 65,
+            // eslint-disable-next-line react/prop-types
+            Expander: ({ isExpanded }) => (
+                isExpanded
+                    ? (
+                        <Remove />
+                    )
+                    : (
+                        <Tooltip title={formatMessage({
+                            defaultMessage: 'Details',
+                            id: 'iaso.label.details',
+                        })}
+                        >
+                            <Add />
+                        </Tooltip>
+                    )
             ),
         },
     ]

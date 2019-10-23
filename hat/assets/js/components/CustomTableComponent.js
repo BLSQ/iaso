@@ -232,6 +232,10 @@ class CustomTableComponent extends React.Component {
             extraProps = {
                 SubComponent: this.props.SubComponent ? this.props.SubComponent : null,
             };
+            if (this.props.expanded) {
+                extraProps.expanded = { ...this.props.expanded };
+                extraProps.onExpandedChange = (newExpanded, index, event) => this.props.onExpandedChange(newExpanded, index, event);
+            }
         }
 
         return (
@@ -288,7 +292,7 @@ CustomTableComponent.defaultProps = {
     pageSize: 1,
     page: 1,
     endPointUrl: '',
-    onRowClicked: () => { },
+    onRowClicked: () => null,
     showPagination: false,
     defaultSorted: [],
     defaultPath: '',
@@ -296,9 +300,10 @@ CustomTableComponent.defaultProps = {
     multiSort: false,
     selectable: false,
     withBorder: true,
-    onDataStartLoaded: () => { },
-    onDataLoaded: () => { },
-    onDataUpdated: () => { },
+    onDataStartLoaded: () => null,
+    onDataLoaded: () => null,
+    onDataUpdated: () => null,
+    onExpandedChange: () => null,
     isUpdated: false,
     callBackWithDataKey: true,
     disableHeaderFixed: false,
@@ -316,6 +321,7 @@ CustomTableComponent.defaultProps = {
     canSelect: true,
     displayLoader: true,
     SubComponent: null,
+    expanded: null,
 };
 
 CustomTableComponent.propTypes = {
@@ -351,6 +357,8 @@ CustomTableComponent.propTypes = {
     canSelect: PropTypes.bool,
     displayLoader: PropTypes.bool,
     SubComponent: PropTypes.any,
+    expanded: PropTypes.any,
+    onExpandedChange: PropTypes.func,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -39,7 +39,7 @@ const orgUnitsLogsColumns = formatMessage => ([
         Expander: ({ isExpanded }) => (
             isExpanded
                 ? (
-                    <Remove color="primary" />
+                    <Remove />
                 )
                 : (
                     <Tooltip title={formatMessage({
@@ -47,7 +47,7 @@ const orgUnitsLogsColumns = formatMessage => ([
                         id: 'iaso.label.details',
                     })}
                     >
-                        <Add color="primary" />
+                        <Add />
                     </Tooltip>
                 )
         ),

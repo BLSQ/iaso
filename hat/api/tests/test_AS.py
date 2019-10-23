@@ -8,10 +8,10 @@ class ASTest(APITestCase):
     expected_as = {
             'id': 111,
             'name': 'Muluma',
-            'zs_id': 11,
-            'zs_name': 'Mosango',
-            'province_id': 1,
-            'province_name': 'Kwilu',
+            'ZS_id': 11,
+            'ZS__name': 'Mosango',
+            'ZS__province_id': 1,
+            'source': 'snis',
         }
 
     ###
@@ -36,7 +36,8 @@ class ASTest(APITestCase):
         url = reverse('as-detail', args=[111])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_as)
+        for k in self.expected_as:
+            self.assertEqual(response.data[k], self.expected_as[k])
 
     ###
     # Restricted users
@@ -54,7 +55,8 @@ class ASTest(APITestCase):
         url = reverse('as-detail', args=[111])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_as)
+        for k in self.expected_as:
+            self.assertEqual(response.data[k], self.expected_as[k])
 
     # Requesting YB with muluma limited user should fail
     def test_retrieve_as_yasabonga_limited_muluma(self):
@@ -78,7 +80,8 @@ class ASTest(APITestCase):
         url = reverse('as-detail', args=[111])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_as)
+        for k in self.expected_as:
+            self.assertEqual(response.data[k], self.expected_as[k])
 
     # Requesting YB with muluma limited user should fail
     def test_retrieve_as_yasa_limited_muluma(self):
@@ -102,7 +105,8 @@ class ASTest(APITestCase):
         url = reverse('as-detail', args=[111])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_as)
+        for k in self.expected_as:
+            self.assertEqual(response.data[k], self.expected_as[k])
 
     # Requesting YB with muluma limited user should fail
     def test_retrieve_prov_kwilu_limited_boko(self):

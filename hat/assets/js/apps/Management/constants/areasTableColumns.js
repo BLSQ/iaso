@@ -31,7 +31,7 @@ const areasTableColumns = (
         {
             Header: formatMessage({
                 defaultMessage: 'Alias',
-                id: 'main.label.source',
+                id: 'main.label.aliases',
             }),
             sortable: false,
             accessor: 'aliases',

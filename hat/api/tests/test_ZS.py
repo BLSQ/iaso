@@ -29,7 +29,8 @@ class ZSTest(APITestCase):
         url = reverse('zs-detail', args=[11])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_zs)
+        for k in self.expected_zs:
+            self.assertEqual(response.data[k], self.expected_zs[k])
 
     ###
     # Restricted users
@@ -47,7 +48,8 @@ class ZSTest(APITestCase):
         url = reverse('zs-detail', args=[11])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_zs)
+        for k in self.expected_zs:
+            self.assertEqual(response.data[k], self.expected_zs[k])
 
     # Requesting YB with Mosango limited user should fail
     def test_retrieve_zs_yasabonga_limited_mosango(self):
@@ -71,7 +73,8 @@ class ZSTest(APITestCase):
         url = reverse('zs-detail', args=[11])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_zs)
+        for k in self.expected_zs:
+            self.assertEqual(response.data[k], self.expected_zs[k])
 
     # Requesting YB with Mosango limited user should fail
     def test_retrieve_as_YB_limited_mosango(self):
@@ -95,7 +98,8 @@ class ZSTest(APITestCase):
         url = reverse('zs-detail', args=[11])
         response = self.client.get(url, format='json')
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(response.data, self.expected_zs)
+        for k in self.expected_zs:
+            self.assertEqual(response.data[k], self.expected_zs[k])
 
     # Requesting YB with Mosango limited user should fail
     def test_retrieve_prov_kwilu_limited_boko(self):

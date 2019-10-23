@@ -173,7 +173,7 @@ class ASViewSet(viewsets.ViewSet):
                 response["Content-Disposition"] = "attachment; filename=%s" % filename
                 response["Cache-Control"] = "no-cache, no-store, must-revalidate"
                 return response
-        else :
+        else:
             return Response(queryset.values(*values).order_by('name'))
 
     def retrieve(self, request, pk=None):

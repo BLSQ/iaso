@@ -125,7 +125,7 @@ class AS(models.Model):
             "ZS_id": self.ZS_id,
             "ZS__name": self.ZS.name,
             "ZS__province_id": self.ZS.province_id,
-            "ZS__province_id": self.ZS.province.name,
+            "ZS__province__name": self.ZS.province.name,
             "aliases": self.aliases,
             "source": self.source,
             "has_shape": False if self.simplified_geom is None else True,

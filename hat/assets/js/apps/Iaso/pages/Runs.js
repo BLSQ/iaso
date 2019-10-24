@@ -39,8 +39,6 @@ import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import LinksFiltersComponent from '../components/filters/LinksFiltersComponent';
-import LinksDetails from '../components/links/LinksDetailsComponent';
-
 
 import commonStyles from '../styles/common';
 import reactTable from '../styles/reactTable';
@@ -63,13 +61,12 @@ const styles = theme => ({
     },
 });
 
-class Links extends Component {
+class Runs extends Component {
     constructor(props) {
         super(props);
         this.state = {
             tableColumns: linksTableColumns(props.intl.formatMessage, this),
             tableUrl: null,
-            expanded: {},
         };
     }
 
@@ -110,12 +107,6 @@ class Links extends Component {
         const url = this.getEndpointUrl();
         this.setState({
             tableUrl: url,
-        });
-    }
-
-    onExpandedChange(expanded, index) {
-        this.setState({
-            expanded,
         });
     }
 
@@ -185,7 +176,6 @@ class Links extends Component {
         const {
             tableUrl,
             tableColumns,
-            expanded,
         } = this.state;
 
         return (
@@ -195,8 +185,8 @@ class Links extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar title={formatMessage({
-                    defaultMessage: 'Links validation',
-                    id: 'iaso.links.title',
+                    defaultMessage: 'Algorithms',
+                    id: 'iaso.label.algorithms',
                 })}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
@@ -210,9 +200,6 @@ class Links extends Component {
                             <Fragment>
                                 <div className={classes.reactTable}>
                                     <CustomTableComponent
-                                        expanded={expanded}
-                                        onExpandedChange={(newExpanded, index) => this.onExpandedChange(newExpanded, index)}
-                                        disableHeaderFixed
                                         isSortable
                                         pageSize={10}
                                         showPagination
@@ -230,15 +217,6 @@ class Links extends Component {
                                             this.props.setLinks(linksList, this.props.params, count, pages);
                                         }}
                                         reduxPage={reduxPage}
-                                        SubComponent={({ original }) => (original
-                                            ? (
-                                                <LinksDetails
-                                                    linkId={original.id}
-                                                    validated={original.validated}
-                                                    validateLink={() => this.validateLink(original)}
-                                                />
-                                            )
-                                            : null)}
                                     />
                                 </div>
                                 <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
@@ -257,11 +235,11 @@ class Links extends Component {
         );
     }
 }
-Links.defaultProps = {
+Runs.defaultProps = {
     reduxPage: undefined,
 };
 
-Links.propTypes = {
+Runs.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
@@ -294,5 +272,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Links)),
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Runs)),
 );

@@ -33,6 +33,7 @@ import Forms from './pages/Forms';
 import Instances from './pages/Instances';
 import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
 import Links from './pages/Links';
+import Runs from './pages/Runs';
 import OrgUnitDetail from './pages/OrgUnitDetail';
 
 import {
@@ -41,6 +42,7 @@ import {
     orgUnitsPath,
     orgUnitsDetailsPath,
     linksPath,
+    algosPath,
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
@@ -55,7 +57,7 @@ export default function datasApp(element, baseUrl) {
             path={formsPath}
             component={props => (
                 <Fragment>
-                    <SidebarMenu />
+                    <SidebarMenu {...props} />
                     <Forms {...props} />
                 </Fragment>
             )}
@@ -64,7 +66,7 @@ export default function datasApp(element, baseUrl) {
             path={instancesPath}
             component={props => (
                 <Fragment>
-                    <SidebarMenu />
+                    <SidebarMenu {...props} />
                     <Instances {...props} />
                 </Fragment>
             )}
@@ -73,7 +75,7 @@ export default function datasApp(element, baseUrl) {
             path={orgUnitsPath}
             component={props => (
                 <Fragment>
-                    <SidebarMenu />
+                    <SidebarMenu {...props} />
                     <OrgUnits {...props} />
                 </Fragment>
             )}
@@ -82,7 +84,7 @@ export default function datasApp(element, baseUrl) {
             path={orgUnitsDetailsPath}
             component={props => (
                 <Fragment>
-                    <SidebarMenu />
+                    <SidebarMenu {...props} />
                     <OrgUnitDetail {...props} />
                 </Fragment>
             )}
@@ -91,8 +93,17 @@ export default function datasApp(element, baseUrl) {
             path={linksPath}
             component={props => (
                 <Fragment>
-                    <SidebarMenu />
+                    <SidebarMenu {...props} />
                     <Links {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={algosPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <Runs {...props} />
                 </Fragment>
             )}
         />,
@@ -100,7 +111,7 @@ export default function datasApp(element, baseUrl) {
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/validated/true/locationLimit/${locationLimitMax}`} />,
-        <Redirect path="/links" to={`/links/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Redirect path="/links/list" to={`/links/list/date_from/${dateFrom}/date_to/${dateTo}`} />,
 
     ];
 

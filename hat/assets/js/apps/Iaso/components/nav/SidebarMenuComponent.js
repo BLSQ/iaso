@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import ExitIcon from '@material-ui/icons/ExitToApp';
@@ -8,27 +8,24 @@ import {
     withStyles,
     Button,
     IconButton,
-    ListItemIcon,
     Drawer,
     List,
-    ListItem,
-    ListItemText,
     Divider,
 } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
-import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
-import Link from '@material-ui/icons/Link';
-
 import PropTypes from 'prop-types';
 
 import logoUrl from '../../images/iaso-logo.svg';
-import orgUnitIconUrl from '../../images/grey-pentagon.svg';
 
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../constants/uiConstants';
 
+import MenuItem from './MenuItemComponent';
+
 import commonStyles from '../../styles/common';
+
+import menuItems from '../../constants/menu';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -51,9 +48,6 @@ const styles = theme => ({
     list: {
         width: SIDEBAR_WIDTH,
     },
-    listItemIcon: {
-        minWidth: 35,
-    },
     logout: {
         marginTop: 'auto',
         marginBottom: theme.spacing(3),
@@ -68,18 +62,16 @@ class SidebarMenu extends PureComponent {
             redirectTo,
             toggleSidebar,
         } = this.props;
-        toggleSidebar();
+        // toggleSidebar();
         redirectTo(path);
     }
 
     render() {
         const {
             classes,
-            intl: {
-                formatMessage,
-            },
             isOpen,
             toggleSidebar,
+            location,
         } = this.props;
         return (
             <Drawer
@@ -100,36 +92,16 @@ class SidebarMenu extends PureComponent {
                 </div>
                 <Divider />
                 <List className={classes.list}>
-                    <ListItem button onClick={() => this.onClick('forms')}>
-                        <ListItemIcon className={classes.listItemIcon}>
-                            <DataSourceIcon />
-                        </ListItemIcon>
-                        <ListItemText primary={formatMessage({
-                            defaultMessage: 'Forms',
-                            id: 'iaso.forms.title',
-                        })}
-                        />
-                    </ListItem>
-                    <ListItem button onClick={() => this.onClick('orgunits')}>
-                        <ListItemIcon className={classes.listItemIcon}>
-                            <img src={orgUnitIconUrl} className={classes.svgIcon} alt="org unit" />
-                        </ListItemIcon>
-                        <ListItemText primary={formatMessage({
-                            defaultMessage: 'Org units',
-                            id: 'iaso.orgUnits.title',
-                        })}
-                        />
-                    </ListItem>
-                    <ListItem button onClick={() => this.onClick('links')}>
-                        <ListItemIcon className={classes.listItemIcon}>
-                            <Link />
-                        </ListItemIcon>
-                        <ListItemText primary={formatMessage({
-                            defaultMessage: 'Links validation',
-                            id: 'iaso.links.title',
-                        })}
-                        />
-                    </ListItem>
+                    {
+                        menuItems.map(menuItem => (
+                            <MenuItem
+                                location={location}
+                                key={menuItem.key}
+                                menuItem={menuItem}
+                                onClick={path => this.onClick(path)}
+                            />
+                        ))
+                    }
                 </List>
                 <Button
                     size="small"
@@ -148,10 +120,10 @@ class SidebarMenu extends PureComponent {
 
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
+    location: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -165,5 +137,5 @@ const MapDispatchToProps = dispatch => ({
 
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(SidebarMenu)),
+    connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),
 );

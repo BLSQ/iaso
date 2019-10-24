@@ -157,7 +157,7 @@ export const orgUnitsDetailsPath = getPath({
 });
 
 export const linksPath = getPath({
-    baseUrl: 'links',
+    baseUrl: 'links/list',
     params: [
         {
             isRequired: true,
@@ -204,5 +204,13 @@ export const linksPath = getPath({
             isRequired: false,
             key: 'searchActive',
         },
+    ],
+});
+
+
+export const algosPath = getPath({
+    baseUrl: 'links/runs',
+    params: [
+        ...paginationPathParams,
     ],
 });

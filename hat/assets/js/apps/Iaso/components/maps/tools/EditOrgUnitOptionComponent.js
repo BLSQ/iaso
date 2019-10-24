@@ -14,7 +14,7 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
-import ShapeSvg from '../../buttons/svg/ShapeSvgComponent';
+import ShapeSvg from '../../svg/ShapeSvgComponent';
 import InputComponent from '../../forms/InputComponent';
 
 const styles = theme => ({

@@ -186,6 +186,51 @@ export const validator = profileList => (
     }
 );
 
+export const profile = (
+    profileList,
+    isMultiSelect = false,
+    urlKey = 'profile',
+    labelString = '',
+    label = MESSAGES.profile,
+) => (
+    {
+        urlKey,
+        isMultiSelect,
+        isClearable: true,
+        options: profileList.map(u => ({
+            label: getDisplayName(u),
+            value: u.id,
+        })),
+        label: labelString !== '' ? null : label,
+        type: 'select',
+        labelString,
+    }
+);
+
+export const version = (
+    formatMessage,
+    versionsList,
+    isDisabled = false,
+    isMultiSelect = false,
+    urlKey = 'version',
+    labelString = '',
+    label = MESSAGES.version,
+) => (
+    {
+        isDisabled,
+        urlKey,
+        isMultiSelect,
+        isClearable: true,
+        options: versionsList.map(v => ({
+            label: `${formatMessage(MESSAGES.version)} ${v.number}`,
+            value: v.number,
+        })),
+        label: labelString !== '' ? null : label,
+        type: 'select',
+        labelString,
+    }
+);
+
 export const algo = algoList => (
     {
         urlKey: 'algorithmId',

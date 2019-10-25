@@ -45,25 +45,55 @@ const linksTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
+<<<<<<< HEAD
                 defaultMessage: 'Destination',
                 id: 'iaso.label.destination',
             }),
             accessor: 'destination__source',
+=======
+                defaultMessage: 'Origin',
+                id: 'iaso.label.origin',
+            }),
+            accessor: 'source__source',
+>>>>>>> filters
             Cell: settings => (
                 <span>
-                    {settings.original.destination.source}
+                    {`${formatMessage({
+                        defaultMessage: 'Source',
+                        id: 'iaso.label.source',
+                    })}: ${settings.original.source.source}`}
+                    <br />
+                    {`${formatMessage({
+                        defaultMessage: 'Version',
+                        id: 'iaso.label.version',
+                    })}: ${settings.original.source.version}`}
                 </span>
             ),
         },
         {
             Header: formatMessage({
+<<<<<<< HEAD
                 defaultMessage: 'Origin',
                 id: 'iaso.label.origin',
             }),
             accessor: 'source__source',
+=======
+                defaultMessage: 'Destination',
+                id: 'iaso.label.destination',
+            }),
+            accessor: 'destination__source',
+>>>>>>> filters
             Cell: settings => (
                 <span>
-                    {settings.original.source.source}
+                    {`${formatMessage({
+                        defaultMessage: 'Source',
+                        id: 'iaso.label.source',
+                    })}: ${settings.original.destination.source}`}
+                    <br />
+                    {`${formatMessage({
+                        defaultMessage: 'Version',
+                        id: 'iaso.label.version',
+                    })}: ${settings.original.destination.version}`}
                 </span>
             ),
         },

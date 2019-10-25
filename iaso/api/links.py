@@ -30,11 +30,10 @@ class LinkViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
 
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
-        source_id_1 = request.GET.get("source1", None)
-        source_id_2 = request.GET.get("source2", None)
-
-        version_id_1 = request.GET.get("version1", None)
-        version_id_2 = request.GET.get("version2", None)
+        origin = request.GET.get("origin", None)
+        destination = request.GET.get("destination", None)
+        origin_version = request.GET.get("originVersion", None)
+        destination_version = request.GET.get("destinationVersion", None)
         validator_id = request.GET.get("validatorId", None)
         algorithm_id = request.GET.get("algorithmId", None)
         run_id = request.GET.get("run", None)
@@ -58,17 +57,17 @@ class LinkViewSet(viewsets.ViewSet):
         if validated == 'false':
             queryset = queryset.filter(validated=False)
 
-        if source_id_1:
-            queryset = queryset.filter(destination__version__data_source_id=source_id_1)
+        if destination:
+            queryset = queryset.filter(destination__version__data_source_id=destination)
 
-        if source_id_2:
-            queryset = queryset.filter(source__version__data_source_id=source_id_2)
+        if origin:
+            queryset = queryset.filter(source__version__data_source_id=origin)
 
-        if version_id_1:
-            queryset = queryset.filter(destination__version=version_id_1)
+        if destination_version:
+            queryset = queryset.filter(destination__version__number=destination_version)
 
-        if version_id_2:
-            queryset = queryset.filter(destination__version=version_id_2)
+        if origin_version:
+            queryset = queryset.filter(source__version__number=origin_version)
 
         if validator_id:
             queryset = queryset.filter(validator=validator_id)

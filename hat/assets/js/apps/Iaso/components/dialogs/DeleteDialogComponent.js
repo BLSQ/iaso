@@ -5,6 +5,7 @@ import { FormattedMessage } from 'react-intl';
 
 import Delete from '@material-ui/icons/Delete';
 import {
+    withStyles,
     IconButton,
     Tooltip,
     Button,
@@ -14,9 +15,18 @@ import {
     DialogContentText,
     DialogTitle,
 } from '@material-ui/core';
+import commonStyles from '../../styles/common';
+
+const styles = theme => ({
+    ...commonStyles(theme),
+    popperFixed: {
+        ...commonStyles(theme).popperFixed,
+        marginTop: theme.spacing(1),
+    },
+});
 
 const DeleteDialog = ({
-    message, question, confirm, reject, disabled,
+    message, question, confirm, reject, disabled, classes,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -35,7 +45,16 @@ const DeleteDialog = ({
 
     return (
         <Fragment>
-            <Tooltip placement="bottom" title={<FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />}>
+            <Tooltip
+                classes={{
+                    popper: classes.popperFixed,
+                }}
+                disableFocusListener={disabled}
+                disableHoverListener={disabled}
+                disableTouchListener={disabled}
+                placement="bottom"
+                title={<FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />}
+            >
                 <span>
                     <IconButton
                         disabled={disabled}
@@ -80,6 +99,7 @@ DeleteDialog.defaultProps = {
 };
 
 DeleteDialog.propTypes = {
+    classes: PropTypes.object.isRequired,
     question: PropTypes.any.isRequired,
     message: PropTypes.any.isRequired,
     confirm: PropTypes.func.isRequired,
@@ -87,4 +107,4 @@ DeleteDialog.propTypes = {
     disabled: PropTypes.bool,
 };
 
-export default DeleteDialog;
+export default withStyles(styles)(DeleteDialog);

@@ -13,8 +13,10 @@ import { getPolygonPositionsFromSimplifiedGeom } from '../../utils/orgUnitUtils'
 
 import PolygonMap from '../maps/PolygonMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
+import commonStyles from '../../styles/common';
 
 const styles = theme => ({
+    ...commonStyles(theme),
     paper: {
         padding: theme.spacing(2),
         textAlign: 'center',
@@ -59,11 +61,23 @@ const LogCompareComponent = ({
                                     </Typography>
                                 </Grid>
                                 <Grid container item xs={6} justify="flex-end" alignItems="center">
+<<<<<<< HEAD
                                     <Tooltip title={
                                         allFields
                                             ? <FormattedMessage id="iaso.label.seeChanges" defaultMessage="See only changes" />
                                             : <FormattedMessage id="iaso.label.seeAll" defaultMessage="See all fields" />
                                     }
+=======
+                                    <Tooltip
+                                        classes={{
+                                            popper: classes.popperFixed,
+                                        }}
+                                        title={
+                                            allFields
+                                                ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
+                                                : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
+                                        }
+>>>>>>> filters
                                     >
                                         <IconButton
                                             className={classes.deleteIcon}

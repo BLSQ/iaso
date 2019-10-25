@@ -21,6 +21,7 @@ import {
     validator,
     algo,
     score,
+    version,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -72,10 +73,18 @@ class LinksFiltersComponent extends Component {
             profiles,
             algorithms,
         } = this.props;
+        let currentOrigin;
+        if (params.origin && sources) {
+            currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
+        }
+        let currentDestination;
+        if (params.destination && sources) {
+            currentDestination = sources.find(s => s.id === parseInt(params.destination, 10));
+        }
         return (
             <Fragment>
                 <Grid container spacing={4}>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -88,41 +97,7 @@ class LinksFiltersComponent extends Component {
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
-                    <Grid item xs={4}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                source(
-                                    sources || [],
-                                    false,
-                                    'source1',
-                                    `${
-                                        formatMessage({
-                                            id: 'iaso.forms.source',
-                                            defaultMessage: 'Source',
-                                        })
-                                    } 1`,
-                                ),
-                                source(
-                                    sources || [],
-                                    false,
-                                    false,
-                                    'source2',
-                                    `${
-                                        formatMessage({
-                                            id: 'iaso.forms.source',
-                                            defaultMessage: 'Source',
-                                        })
-                                    } 2`,
-                                ),
-                                score(),
-                            ]}
-                            onEnterPressed={() => this.onSearch()}
-                        />
-                    </Grid>
-                    <Grid item xs={4}>
+                    <Grid item xs={3}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -130,6 +105,69 @@ class LinksFiltersComponent extends Component {
                             filters={[
                                 validator(profiles),
                                 algo(algorithms),
+                                score(),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(
+                                    sources || [],
+                                    false,
+                                    false,
+                                    'origin',
+                                    formatMessage({
+                                        id: 'iaso.label.sourceorigin',
+                                        defaultMessage: 'Origin source',
+                                    }),
+                                ),
+                                version(
+                                    formatMessage,
+                                    currentOrigin ? currentOrigin.versions : [],
+                                    Boolean(!currentOrigin || (currentOrigin && currentOrigin.versions.length === 0)),
+                                    false,
+                                    'originVersion',
+                                    formatMessage({
+                                        id: 'iaso.label.sourceoriginversion',
+                                        defaultMessage: 'Origin source version',
+                                    }),
+                                ),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={3}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(
+                                    sources || [],
+                                    false,
+                                    false,
+                                    'destination',
+                                    formatMessage({
+                                        id: 'iaso.label.sourcedestination',
+                                        defaultMessage: 'Destination source',
+                                    }),
+                                ),
+                                version(
+                                    formatMessage,
+                                    currentDestination ? currentDestination.versions : [],
+                                    Boolean(!currentDestination || (currentDestination && currentDestination.versions.length === 0)),
+                                    false,
+                                    'destinationVersion',
+                                    formatMessage({
+                                        id: 'iaso.label.sourcedestinationversion',
+                                        defaultMessage: 'Destination source version',
+                                    }),
+                                ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />

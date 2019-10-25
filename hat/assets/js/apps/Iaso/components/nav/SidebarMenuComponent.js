@@ -62,7 +62,7 @@ class SidebarMenu extends PureComponent {
             redirectTo,
             toggleSidebar,
         } = this.props;
-        // toggleSidebar();
+        toggleSidebar();
         redirectTo(path);
     }
 

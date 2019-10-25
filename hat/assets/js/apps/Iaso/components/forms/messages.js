@@ -167,6 +167,14 @@ const MESSAGES = {
         id: 'iaso.label.geo_json',
         defaultMessage: 'Geo json shape',
     },
+    profile: {
+        id: 'iaso.label.user',
+        defaultMessage: 'User',
+    },
+    version: {
+        id: 'iaso.label.version',
+        defaultMessage: 'Version',
+    },
 };
 
 export default MESSAGES;

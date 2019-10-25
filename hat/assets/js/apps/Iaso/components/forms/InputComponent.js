@@ -245,6 +245,7 @@ class InputComponent extends Component {
                     </InputLabel>
                     <div className={classes.select}>
                         <Select
+                            disabled={disabled}
                             searchable={isSearchable}
                             multi={multi}
                             clearable={clearable}

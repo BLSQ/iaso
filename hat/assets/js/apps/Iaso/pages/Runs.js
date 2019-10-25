@@ -12,6 +12,8 @@ import PropTypes from 'prop-types';
 import {
     fetchAlgorithms,
     deleteAlgorithmRun,
+    fetchSources,
+    fetchProfiles,
 } from '../utils/requests';
 
 import {
@@ -19,6 +21,13 @@ import {
     setIsFetching,
     setAlgorithms,
 } from '../redux/linksReducer';
+
+import {
+    setSources,
+} from '../redux/orgUnitsReducer';
+import {
+    setProfiles,
+} from '../redux/profilesReducer';
 
 import runsTableColumns from '../constants/runsTableColumns';
 
@@ -58,8 +67,12 @@ class Runs extends Component {
         if (this.props.params.searchActive) {
             this.onSearch();
         }
+        fetchSources(dispatch)
+            .then(sources => this.props.setSources(sources));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
+        fetchProfiles(dispatch)
+            .then(profiles => this.props.setProfiles(profiles));
     }
 
     componentDidUpdate() {
@@ -199,6 +212,8 @@ Runs.propTypes = {
     setIsFetching: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
+    setProfiles: PropTypes.func.isRequired,
+    setSources: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -212,6 +227,8 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
+    setSources: sources => dispatch(setSources(sources)),
+    setProfiles: profiles => dispatch(setProfiles(profiles)),
 });
 
 export default withStyles(styles)(

@@ -97,12 +97,14 @@ class DataSource(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
+        versions = SourceVersion.objects.filter(data_source_id=self.id)
         return {
             "name": self.name,
             "description": self.description,
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "versions": [v.as_dict_without_data_source() for v in versions]
         }
 
 
@@ -119,6 +121,14 @@ class SourceVersion(models.Model):
     def as_dict(self):
         return {
             "data_source": self.data_source.as_dict(),
+            "number": self.number,
+            "description": self.description,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+    def as_dict_without_data_source(self):
+        return {
             "number": self.number,
             "description": self.description,
             "id": self.id,
@@ -191,6 +201,7 @@ class OrgUnit(models.Model):
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
+            "version": self.version.number if self.version else None,
         }
 
     def as_dict_with_parents(self):
@@ -220,6 +231,7 @@ class OrgUnit(models.Model):
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
+            "version": self.version.number if self.version else None,
         }
 
     def as_dict_for_csv(self):
@@ -288,6 +300,7 @@ class AlgorithmRun(models.Model):
         return "%s - %s - %s" % (self.algorithm, self.created_at, self.launcher)
 
     def as_dict(self):
+        links_count = Link.objects.filter(algorithm_run=self.id).count()
         return {
             "algorithm": self.algorithm.as_dict(),
             "launcher": self.launcher,
@@ -301,6 +314,7 @@ class AlgorithmRun(models.Model):
             else None,
             "version_1": self.version_1.as_dict() if self.version_1 else None,
             "version_2": self.version_2.as_dict() if self.version_2 else None,
+            "links_count": links_count,
         }
 
 
@@ -534,7 +548,6 @@ class Instance(models.Model):
 
     def as_dict_with_parents(self):
         file_content = self.get_and_save_json_of_xml()
-        print(self.export_id)
         return {
             "uuid": self.uuid,
             "export_id": self.export_id,

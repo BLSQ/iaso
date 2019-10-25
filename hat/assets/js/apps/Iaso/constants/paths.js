@@ -173,11 +173,19 @@ export const linksPath = getPath({
         },
         {
             isRequired: false,
-            key: 'source1',
+            key: 'origin',
         },
         {
             isRequired: false,
-            key: 'source2',
+            key: 'originVersion',
+        },
+        {
+            isRequired: false,
+            key: 'destination',
+        },
+        {
+            isRequired: false,
+            key: 'destinationVersion',
         },
         {
             isRequired: false,
@@ -214,6 +222,26 @@ export const algosPath = getPath({
         {
             isRequired: false,
             key: 'algorithmId',
+        },
+        {
+            isRequired: false,
+            key: 'origin',
+        },
+        {
+            isRequired: false,
+            key: 'originVersion',
+        },
+        {
+            isRequired: false,
+            key: 'destination',
+        },
+        {
+            isRequired: false,
+            key: 'destinationVersion',
+        },
+        {
+            isRequired: false,
+            key: 'launcher',
         },
         ...paginationPathParams,
         {

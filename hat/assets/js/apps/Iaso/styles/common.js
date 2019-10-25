@@ -112,6 +112,9 @@ const commonStyles = theme => ({
         display: 'flex',
         alignItems: 'center',
     },
+    popperFixed: {
+        position: 'fixed !important',
+    },
 });
 
 export default commonStyles;

@@ -202,7 +202,7 @@ export const fetchLinkDetail = (dispatch, linkId) => getRequest(`/api/links/${li
         throw error;
     });
 
-export const deleteAlgorithmRun = (dispatch, runId) => deleteRequest(`/api/algorithmsruns/${runId}`)
+export const deleteAlgorithmRun = (dispatch, runId) => deleteRequest(`/api/algorithmsruns/${runId}/`)
     .then(res => res)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('deleteRun')));

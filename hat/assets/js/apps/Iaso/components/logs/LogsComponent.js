@@ -29,7 +29,7 @@ class Logs extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: orgUnitsLogsColumns(props.intl.formatMessage, this),
+            tableColumns: orgUnitsLogsColumns(props.intl.formatMessage, props.classes),
             tableUrl: this.getEndpointUrl(),
         };
     }

@@ -83,7 +83,7 @@ class OrgUnits extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: orgUnitsTableColumns(props.intl.formatMessage, this),
+            tableColumns: orgUnitsTableColumns(props.intl.formatMessage, this, props.classes),
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
         };

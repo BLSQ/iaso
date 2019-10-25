@@ -26,10 +26,26 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "created_at").split(",")
         algorithm_id = request.GET.get("algorithmId", None)
+        origin = request.GET.get("origin", None)
+        destination = request.GET.get("destination", None)
+        origin_version = request.GET.get("originVersion", None)
+        destination_version = request.GET.get("destinationVersion", None)
+        launcher_id = request.GET.get("launcher", None)
+
 
         queryset = AlgorithmRun.objects.all()
         if algorithm_id:
             queryset = queryset.filter(algorithm__id=algorithm_id)
+        if origin:
+            queryset = queryset.filter(version_2__data_source__id=origin)
+        if destination:
+            queryset = queryset.filter(version_1__data_source__id=destination)
+        if origin_version:
+            queryset = queryset.filter(version_2__number=origin_version)
+        if destination_version:
+            queryset = queryset.filter(version_1__number=destination_version)
+        if launcher_id:
+            queryset = queryset.filter(launcher=launcher_id)
 
         queryset = queryset.order_by(*orders)
 
@@ -53,7 +69,11 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         else:
             return Response(map(lambda x: x.as_dict(), queryset))
 
+    def retrieve(self, request, pk=None):
+        run_item = get_object_or_404(AlgorithmRun, pk=pk)
+        return Response(run_item.as_dict())
+
     def delete(self, request, pk=None):
-        run = get_object_or_404(AlgorithmRun, pk=pk)
-        run.delete()
+        run_item = get_object_or_404(AlgorithmRun, pk=pk)
+        run_item.delete()
         return Response(True)

@@ -1,6 +1,8 @@
 import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
+import { IconButton, Tooltip } from '@material-ui/core';
+import Delete from '@material-ui/icons/Delete';
 
 import { formatThousand } from '../../../utils';
 import getDisplayName from '../utils/usersUtils';
@@ -9,10 +11,6 @@ import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
 
 const runsTableColumns = (formatMessage, component) => (
     [
-        {
-            Header: 'ID',
-            accessor: 'id',
-        },
         {
             Header: formatMessage({
                 defaultMessage: 'Stopped at',
@@ -69,10 +67,11 @@ const runsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Links',
                 id: 'iaso.label.links',
             }),
-            accessor: 'result',
+            accessor: 'links_count',
+            sortable: false,
             Cell: settings => (
                 <span>
-                    {settings.original.result ? formatThousand(settings.original.result['items matched']) : '/'}
+                    {formatThousand(settings.original.links_count)}
                 </span>
             ),
         },

@@ -6,7 +6,7 @@ import { Tooltip } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-const orgUnitsLogsColumns = formatMessage => ([
+const orgUnitsLogsColumns = (formatMessage, classes) => ([
     {
         Header: 'ID',
         accessor: 'id',
@@ -42,10 +42,14 @@ const orgUnitsLogsColumns = formatMessage => ([
                     <VisibilityOff />
                 )
                 : (
-                    <Tooltip title={formatMessage({
-                        defaultMessage: 'Details',
-                        id: 'iaso.label.details',
-                    })}
+                    <Tooltip
+                        classes={{
+                            popper: classes.popperFixed,
+                        }}
+                        title={formatMessage({
+                            defaultMessage: 'Details',
+                            id: 'iaso.label.details',
+                        })}
                     >
                         <Visibility />
                     </Tooltip>

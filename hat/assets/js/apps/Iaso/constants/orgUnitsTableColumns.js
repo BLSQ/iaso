@@ -6,7 +6,7 @@ import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 
-const orgUnitsTableColumns = (formatMessage, component) => (
+const orgUnitsTableColumns = (formatMessage, component, classes) => (
     [
         {
             Header: 'Id',
@@ -76,7 +76,12 @@ const orgUnitsTableColumns = (formatMessage, component) => (
             width: 150,
             Cell: settings => (
                 <section>
-                    <Tooltip title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}>
+                    <Tooltip
+                        classes={{
+                            popper: classes.popperFixed,
+                        }}
+                        title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}
+                    >
                         <IconButton
                             onClick={() => component.selectOrgUnit(settings.original)}
                         >
@@ -88,7 +93,12 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                             || (settings.original.latitude && settings.original.longitude))
                         && (
 
-                            <Tooltip title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}>
+                            <Tooltip
+                                classes={{
+                                    popper: classes.popperFixed,
+                                }}
+                                title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}
+                            >
                                 <IconButton
                                     onClick={() => component.selectOrgUnit(settings.original, 'map')}
                                 >
@@ -98,7 +108,12 @@ const orgUnitsTableColumns = (formatMessage, component) => (
                         )
                     }
 
-                    <Tooltip title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}>
+                    <Tooltip
+                        classes={{
+                            popper: classes.popperFixed,
+                        }}
+                        title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}
+                    >
                         <IconButton
                             onClick={() => component.selectOrgUnit(settings.original, 'history')}
                         >

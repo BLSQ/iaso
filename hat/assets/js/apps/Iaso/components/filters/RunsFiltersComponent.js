@@ -16,6 +16,9 @@ import commonStyles from '../../styles/common';
 
 import {
     algo,
+    source,
+    profile,
+    version,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -31,12 +34,28 @@ class RunsFiltersComponent extends Component {
         super(props);
         this.state = {
             filtersUpdated: props.params.searchActive !== 'true',
+            refreshEnabled: props.params.searchActive === 'true',
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        const tempParams = {
+            ...this.props.params,
+        };
+        if (prevProps.params.origin !== this.props.params.origin) {
+            tempParams.originVersion = undefined;
+            this.props.redirectTo(this.props.baseUrl, tempParams);
+        }
+        if (prevProps.params.destination !== this.props.params.destination) {
+            tempParams.destinationVersion = undefined;
+            this.props.redirectTo(this.props.baseUrl, tempParams);
+        }
     }
 
     onFilterChanged() {
         this.setState({
             filtersUpdated: true,
+            refreshEnabled: true,
         });
     }
 
@@ -54,6 +73,7 @@ class RunsFiltersComponent extends Component {
         this.props.onSearch();
     }
 
+
     render() {
         const {
             params,
@@ -64,10 +84,21 @@ class RunsFiltersComponent extends Component {
             },
             algorithms,
             onRefresh,
+            sources,
+            profiles,
         } = this.props;
         const {
             filtersUpdated,
+            refreshEnabled,
         } = this.state;
+        let currentOrigin;
+        if (params.origin && sources) {
+            currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
+        }
+        let currentDestination;
+        if (params.destination && sources) {
+            currentDestination = sources.find(s => s.id === parseInt(params.destination, 10));
+        }
         return (
             <Fragment>
                 <Grid container spacing={4}>
@@ -78,6 +109,77 @@ class RunsFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 algo(algorithms),
+                                profile(
+                                    profiles || [],
+                                    false,
+                                    'launcher',
+                                    formatMessage({
+                                        id: 'iaso.label.launcher',
+                                        defaultMessage: 'Launcher',
+                                    }),
+                                ),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(
+                                    sources || [],
+                                    false,
+                                    false,
+                                    'origin',
+                                    formatMessage({
+                                        id: 'iaso.label.sourceorigin',
+                                        defaultMessage: 'Origin source',
+                                    }),
+                                ),
+                                version(
+                                    formatMessage,
+                                    currentOrigin ? currentOrigin.versions : [],
+                                    Boolean(!currentOrigin || (currentOrigin && currentOrigin.versions.length === 0)),
+                                    false,
+                                    'originVersion',
+                                    formatMessage({
+                                        id: 'iaso.label.sourceoriginversion',
+                                        defaultMessage: 'Origin source version',
+                                    }),
+                                ),
+                            ]}
+                            onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() => this.onFilterChanged()}
+                            filters={[
+                                source(
+                                    sources || [],
+                                    false,
+                                    false,
+                                    'destination',
+                                    formatMessage({
+                                        id: 'iaso.label.sourcedestination',
+                                        defaultMessage: 'Destination source',
+                                    }),
+                                ),
+                                version(
+                                    formatMessage,
+                                    currentDestination ? currentDestination.versions : [],
+                                    Boolean(!currentDestination || (currentDestination && currentDestination.versions.length === 0)),
+                                    false,
+                                    'destinationVersion',
+                                    formatMessage({
+                                        id: 'iaso.label.sourcedestinationversion',
+                                        defaultMessage: 'Destination source version',
+                                    }),
+                                ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
@@ -86,6 +188,7 @@ class RunsFiltersComponent extends Component {
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={12} container justify="flex-end" alignItems="center">
                         <Button
+                            disabled={!refreshEnabled}
                             variant="contained"
                             color="primary"
                             onClick={() => onRefresh()}
@@ -111,6 +214,7 @@ class RunsFiltersComponent extends Component {
 }
 RunsFiltersComponent.defaultProps = {
     baseUrl: '',
+    sources: [],
 };
 
 RunsFiltersComponent.propTypes = {
@@ -122,11 +226,15 @@ RunsFiltersComponent.propTypes = {
     onRefresh: PropTypes.func.isRequired,
     algorithms: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    sources: PropTypes.array,
+    profiles: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     algorithms: state.links.algorithmsList,
+    sources: state.orgUnits.sources,
+    profiles: state.profiles.list,
 });
 
 

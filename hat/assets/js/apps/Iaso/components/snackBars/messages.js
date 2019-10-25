@@ -87,6 +87,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchLinkDetailError',
         defaultMessage: 'An error occured while fetching link detail',
     },
+    deleteRun: {
+        id: 'iaso.snackBar.deleteRun',
+        defaultMessage: 'An error occured while deleting algorithms run',
+    },
 };
 
 export default MESSAGES;

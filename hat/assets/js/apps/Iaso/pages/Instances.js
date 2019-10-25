@@ -35,7 +35,8 @@ import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 
 import commonStyles from '../styles/common';
-import reactTable from '../styles/reactTable';
+
+import getTableUrl from '../utils/tableUtils';
 
 
 const baseUrl = 'instances';
@@ -43,7 +44,7 @@ const baseUrl = 'instances';
 const styles = theme => ({
     ...commonStyles(theme),
     reactTable: {
-        ...reactTable(theme).reactTable,
+        ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
     },
 });
@@ -100,7 +101,6 @@ class Instances extends Component {
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
-        let url = '/api/instances/?';
         const {
             params,
         } = this.props;
@@ -115,22 +115,7 @@ class Instances extends Component {
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
-        if (toExport) {
-            urlParams[exportType] = true;
-        }
-        if (asLocation) {
-            urlParams.asLocation = true;
-            delete urlParams.limit;
-            delete urlParams.page;
-        }
-
-        Object.keys(urlParams).forEach((key) => {
-            const value = urlParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
-        });
-        return url;
+        return getTableUrl('instances', urlParams, toExport, exportType, asLocation);
     }
 
     handleChangeTab(tab, redirect = true) {

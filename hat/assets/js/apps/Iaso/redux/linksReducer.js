@@ -1,10 +1,21 @@
 const SET_LINKS = 'SET_LINKS';
+const SET_RUNS = 'SET_RUNS';
 const SET_ALGO_LIST = 'SET_ALGO_LIST';
-const SET_FETCHING = 'SET_FETCHING';
-const SET_LINKS_LIST_FETCHING = 'SET_LINKS_LIST_FETCHING';
+const SET_IS_FETCHING = 'SET_IS_FETCHING';
 
 export const setLinks = (list, showPagination, params, count, pages) => ({
     type: SET_LINKS,
+    payload: {
+        list,
+        showPagination,
+        params,
+        count,
+        pages,
+    },
+});
+
+export const setRuns = (list, showPagination, params, count, pages) => ({
+    type: SET_RUNS,
     payload: {
         list,
         showPagination,
@@ -19,23 +30,24 @@ export const setAlgorithms = algoList => ({
     payload: algoList,
 });
 
-export const setLinksListFetching = currentSubOrgUnit => ({
-    type: SET_LINKS_LIST_FETCHING,
-    payload: currentSubOrgUnit,
-});
-
-
-export const setFetching = fetching => ({
-    type: SET_FETCHING,
-    payload: fetching,
+export const setIsFetching = isFetching => ({
+    type: SET_IS_FETCHING,
+    payload: isFetching,
 });
 
 export const linksInitialState = {
     current: null,
-    fetchingList: false,
+    fetching: false,
     fetchingDetail: true,
     algorithmsList: [],
     linksPage: {
+        list: null,
+        showPagination: false,
+        params: {},
+        count: 0,
+        pages: 0,
+    },
+    runsPage: {
         list: null,
         showPagination: false,
         params: {},
@@ -61,10 +73,25 @@ export const linksReducer = (state = linksInitialState, action = {}) => {
                 },
             };
         }
+        case SET_RUNS: {
+            const {
+                list, showPagination, params, count, pages,
+            } = action.payload;
+            return {
+                ...state,
+                runsPage: {
+                    list,
+                    showPagination,
+                    params,
+                    count,
+                    pages,
+                },
+            };
+        }
 
-        case SET_LINKS_LIST_FETCHING: {
-            const fetchingList = action.payload;
-            return { ...state, fetchingList };
+        case SET_IS_FETCHING: {
+            const fetching = action.payload;
+            return { ...state, fetching };
         }
 
         case SET_ALGO_LIST: {

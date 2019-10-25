@@ -12,12 +12,13 @@ import LoadingSpinner from '../LoadingSpinnerComponent';
 import orgUnitsLogsColumns from '../../constants/orgUnitsLogsColumns';
 import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
-import reactTable from '../../styles/reactTable';
+
+import getTableUrl from '../../utils/tableUtils';
 
 const styles = theme => ({
     ...commonStyles(theme),
     reactTable: {
-        ...reactTable(theme).reactTable,
+        ...commonStyles(theme).reactTable,
         marginBottom: theme.spacing(2),
     },
 });
@@ -34,7 +35,6 @@ class Logs extends Component {
     }
 
     getEndpointUrl() {
-        let url = '/api/logs/?';
         const {
             params,
             logObjectId,
@@ -45,13 +45,7 @@ class Logs extends Component {
             source: 'org_unit_api',
         };
 
-        Object.keys(urlParams).forEach((key) => {
-            const value = urlParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
-        });
-        return url;
+        return getTableUrl('logs', urlParams);
     }
 
     goToRevision(revision) {

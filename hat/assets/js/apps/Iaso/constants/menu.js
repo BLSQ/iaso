@@ -41,8 +41,8 @@ const menuItems = [
             },
             {
                 label: {
-                    defaultMessage: 'Algorithms',
-                    id: 'iaso.label.algorithms',
+                    defaultMessage: 'Algorithms runs',
+                    id: 'iaso.label.algorithmsRuns',
                 },
                 key: 'runs',
                 icon: props => <CompareArrows {...props} />,

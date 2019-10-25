@@ -29,3 +29,12 @@ export const patchRequest = (url, data) => req
         console.error(`Error when patching ${url}: ${error}`);
         throw error;
     });
+
+export const deleteRequest = url => req
+    .delete(url)
+    .set('Content-Type', 'application/json')
+    .then(() => true)
+    .catch((error) => {
+        console.error(`Error when deleting ${url}: ${error}`);
+        throw error;
+    });

@@ -6,8 +6,6 @@ import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 
-import MESSAGES from '../components/forms/messages';
-
 const orgUnitsTableColumns = (formatMessage, component) => (
     [
         {

@@ -211,6 +211,14 @@ export const linksPath = getPath({
 export const algosPath = getPath({
     baseUrl: 'links/runs',
     params: [
+        {
+            isRequired: false,
+            key: 'algorithmId',
+        },
         ...paginationPathParams,
+        {
+            isRequired: false,
+            key: 'searchActive',
+        },
     ],
 });

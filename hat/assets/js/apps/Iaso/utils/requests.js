@@ -1,4 +1,4 @@
-import { getRequest, patchRequest } from '../libs/Api';
+import { getRequest, patchRequest, deleteRequest } from '../libs/Api';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../components/snackBars';
@@ -194,7 +194,6 @@ export const fetchAlgorithms = dispatch => getRequest('/api/algorithms')
         throw error;
     });
 
-
 export const fetchLinkDetail = (dispatch, linkId) => getRequest(`/api/links/${linkId}`)
     .then(linkDetail => linkDetail)
     .catch((error) => {
@@ -202,3 +201,12 @@ export const fetchLinkDetail = (dispatch, linkId) => getRequest(`/api/links/${li
         console.error('Error while fetching link detail:', error);
         throw error;
     });
+
+export const deleteAlgorithmRun = (dispatch, runId) => deleteRequest(`/api/algorithmsruns/${runId}`)
+    .then(res => res)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('deleteRun')));
+        console.error('Error while delteing algorithms run:', error);
+        throw error;
+    });
+

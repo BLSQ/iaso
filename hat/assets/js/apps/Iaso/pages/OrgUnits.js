@@ -33,6 +33,7 @@ import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
+import getTableUrl from '../utils/tableUtils';
 
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import TopBar from '../components/nav/TopBarComponent';
@@ -42,7 +43,6 @@ import OrgUnitsFiltersComponent from '../components/filters/OrgUnitsFiltersCompo
 import OrgunitsMap from '../components/maps/OrgunitsMapComponent';
 
 import commonStyles from '../styles/common';
-import reactTable from '../styles/reactTable';
 import chipColors from '../constants/chipColors';
 
 import { warningSnackBar } from '../components/snackBars';
@@ -54,17 +54,6 @@ export const locationLimitMax = 3000;
 
 const styles = theme => ({
     ...commonStyles(theme),
-    reactTable: {
-        ...reactTable(theme).reactTable,
-    },
-    buttonIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-    },
-    tableButton: {
-        marginRight: theme.spacing(2),
-    },
 });
 
 const mapOrgUnitByLocation = (orgUnits, selectedSources, currentSources) => {
@@ -169,7 +158,6 @@ class OrgUnits extends Component {
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
-        let url = '/api/orgunits/?';
         const {
             params,
         } = this.props;
@@ -179,32 +167,13 @@ class OrgUnits extends Component {
             limit: params.pageSize ? params.pageSize : 50,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
+            orgUnitParentId: params.levels ? fetchLatestOrgUnitLevelId(params.levels) : null,
         };
-
-        if (toExport) {
-            urlParams[exportType] = true;
-        }
-        if (asLocation) {
-            urlParams.asLocation = true;
-            urlParams.limit = params.locationLimit ? params.locationLimit : locationLimitMax;
-            delete urlParams.page;
-        }
         delete urlParams.tab;
         delete urlParams.searchActive;
         delete urlParams.pageSize;
 
-        Object.keys(urlParams).forEach((key) => {
-            const value = urlParams[key];
-            if (value && !url.includes(key)) {
-                if (key === 'levels') {
-                    url += `&orgUnitParentId=${fetchLatestOrgUnitLevelId(value)}`;
-                } else {
-                    url += `&${key}=${value}`;
-                }
-            }
-        });
-
-        return url;
+        return getTableUrl('orgunits', urlParams, toExport, exportType, asLocation);
     }
 
     handleChangeTab(tab, redirect = true) {

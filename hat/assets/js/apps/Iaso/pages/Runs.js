@@ -4,60 +4,42 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import {
-    withStyles, Grid, Box,
+    withStyles, Box,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
 import {
-    fetchOrgUnitsTypes,
-    saveLink,
-    fetchSources,
-    fetchProfiles,
     fetchAlgorithms,
+    deleteAlgorithmRun,
 } from '../utils/requests';
 
 import {
-    setOrgUnitTypes,
-    setSources,
-} from '../redux/orgUnitsReducer';
-import {
-    setLinks,
-    setLinksListFetching,
+    setRuns,
+    setIsFetching,
     setAlgorithms,
 } from '../redux/linksReducer';
-import {
-    setProfiles,
-} from '../redux/profilesReducer';
 
-import linksTableColumns from '../constants/linksTableColumns';
+import runsTableColumns from '../constants/runsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
+import getTableUrl from '../utils/tableUtils';
 
-import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
+
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import LinksFiltersComponent from '../components/filters/LinksFiltersComponent';
+import RunsFiltersComponent from '../components/filters/RunsFiltersComponent';
 
 import commonStyles from '../styles/common';
-import reactTable from '../styles/reactTable';
 
-const baseUrl = 'links/list';
+const baseUrl = 'links/runs';
 
 const styles = theme => ({
     ...commonStyles(theme),
     reactTable: {
-        ...reactTable(theme).reactTable,
+        ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
-    },
-    buttonIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-    },
-    tableButton: {
-        marginRight: theme.spacing(2),
     },
 });
 
@@ -65,8 +47,9 @@ class Runs extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: linksTableColumns(props.intl.formatMessage, this),
+            tableColumns: runsTableColumns(props.intl.formatMessage, this),
             tableUrl: null,
+            isUpdated: false,
         };
     }
 
@@ -75,12 +58,6 @@ class Runs extends Component {
         if (this.props.params.searchActive) {
             this.onSearch();
         }
-        fetchOrgUnitsTypes(dispatch)
-            .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSources(dispatch)
-            .then(sources => this.props.setSources(sources));
-        fetchProfiles(dispatch)
-            .then(profiles => this.props.setProfiles(profiles));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
     }
@@ -92,7 +69,7 @@ class Runs extends Component {
     }
 
     componentWillUnmount() {
-        this.props.setLinks(null, this.props.params, 0, 1);
+        this.props.setRuns(null, this.props.params, 0, 1);
     }
 
     onSearch() {
@@ -104,61 +81,38 @@ class Runs extends Component {
             newParams.searchActive = true;
         }
         redirectTo(baseUrl, newParams);
-        const url = this.getEndpointUrl();
+        const url = getTableUrl('algorithmsruns', this.props.params);
         this.setState({
             tableUrl: url,
         });
     }
 
-    getEndpointUrl(toExport, exportType = 'csv') {
-        let url = '/api/links/?';
-        const {
-            params,
-        } = this.props;
-
-        const clonedParams = { ...params };
-
-        if (toExport) {
-            clonedParams[exportType] = true;
-        }
-
-        Object.keys(clonedParams).forEach((key) => {
-            const value = clonedParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
+    onRefresh() {
+        this.setState({
+            isUpdated: true,
         });
+    }
 
-        return url;
+    onDataStartLoaded() {
+        const { dispatch } = this.props;
+        this.setState({
+            isUpdated: false,
+        });
+        dispatch(this.props.setIsFetching(true));
     }
 
     resetData() {
         this.setState({
             tableUrl: null,
         });
-        this.props.setLinks(null, this.props.params, 0, 1);
+        this.props.setRuns(null, this.props.params, 0, 1);
     }
 
-    validateLink(link) {
-        const {
-            dispatch,
-            reduxPage,
-            params,
-        } = this.props;
-        const newLink = {
-            ...link,
-            validated: !link.validated,
-        };
-        saveLink(dispatch, newLink).then((savedLink) => {
-            const linksList = [];
-            reduxPage.list.forEach((l) => {
-                if (l.id !== savedLink.id) {
-                    linksList.push(l);
-                } else {
-                    linksList.push(savedLink);
-                }
-            });
-            this.props.setLinks(linksList, params, reduxPage.count, reduxPage.pages);
+    deleteRuns(run) {
+        const { dispatch } = this.props;
+        dispatch(this.props.setIsFetching(true));
+        deleteAlgorithmRun(dispatch, run.id).then(() => {
+            this.onRefresh();
         });
     }
 
@@ -171,29 +125,31 @@ class Runs extends Component {
                 formatMessage,
             },
             dispatch,
-            fetchingList,
+            fetching,
         } = this.props;
         const {
             tableUrl,
             tableColumns,
+            isUpdated,
         } = this.state;
 
         return (
             <Fragment>
                 {
-                    fetchingList
+                    fetching
                     && <LoadingSpinner />
                 }
                 <TopBar title={formatMessage({
-                    defaultMessage: 'Algorithms',
-                    id: 'iaso.label.algorithms',
+                    defaultMessage: 'Algorithms runs',
+                    id: 'iaso.label.algorithmsRuns',
                 })}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <LinksFiltersComponent
+                    <RunsFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
                         onSearch={() => this.onSearch()}
+                        onRefresh={() => this.onRefresh()}
                     />
                     {
                         tableUrl && (
@@ -205,28 +161,21 @@ class Runs extends Component {
                                         showPagination
                                         endPointUrl={tableUrl}
                                         columns={tableColumns}
-                                        defaultSorted={[{ id: 'similarity_score', desc: true }]}
+                                        defaultSorted={[{ id: 'ended_at', desc: true }]}
                                         params={params}
                                         defaultPath={baseUrl}
-                                        dataKey="links"
+                                        dataKey="runs"
                                         canSelect={false}
                                         multiSort
-                                        onDataStartLoaded={() => dispatch(this.props.setLinksListFetching(true))}
-                                        onDataLoaded={(linksList, count, pages) => {
-                                            dispatch(this.props.setLinksListFetching(false));
-                                            this.props.setLinks(linksList, this.props.params, count, pages);
+                                        onDataStartLoaded={() => this.onDataStartLoaded()}
+                                        onDataLoaded={(list, count, pages) => {
+                                            dispatch(this.props.setIsFetching(false));
+                                            this.props.setRuns(list, this.props.params, count, pages);
                                         }}
                                         reduxPage={reduxPage}
+                                        isUpdated={isUpdated}
                                     />
                                 </div>
-                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-                                    <Grid xs={12} item className={classes.textAlignRight}>
-                                        <DownloadButtonsComponent
-                                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                                        />
-                                    </Grid>
-                                </Grid>
                             </Fragment>
                         )
                     }
@@ -244,30 +193,24 @@ Runs.propTypes = {
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
-    setLinks: PropTypes.func.isRequired,
+    setRuns: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    setOrgUnitTypes: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    setLinksListFetching: PropTypes.func.isRequired,
-    fetchingList: PropTypes.bool.isRequired,
-    setSources: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
+    setIsFetching: PropTypes.func.isRequired,
+    fetching: PropTypes.bool.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
-    reduxPage: state.links.linksPage,
-    fetchingList: state.orgUnits.fetchingList,
+    reduxPage: state.links.runsPage,
+    fetching: state.links.fetching,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setLinks: (linksList, params, count, pages) => dispatch(setLinks(linksList, true, params, count, pages)),
+    setRuns: (linksList, params, count, pages) => dispatch(setRuns(linksList, true, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setLinksListFetching: isFetching => dispatch(setLinksListFetching(isFetching)),
-    setSources: sources => dispatch(setSources(sources)),
-    setProfiles: profiles => dispatch(setProfiles(profiles)),
+    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
 });
 

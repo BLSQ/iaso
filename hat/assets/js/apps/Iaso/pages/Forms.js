@@ -21,14 +21,13 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 
 import commonStyles from '../styles/common';
-import reactTable from '../styles/reactTable';
 
 const baseUrl = 'forms';
 
 const styles = theme => ({
     ...commonStyles(theme),
     reactTable: {
-        ...reactTable(theme).reactTable,
+        ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
     },
 });

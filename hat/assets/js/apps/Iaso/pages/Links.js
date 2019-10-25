@@ -23,7 +23,7 @@ import {
 } from '../redux/orgUnitsReducer';
 import {
     setLinks,
-    setLinksListFetching,
+    setIsFetching,
     setAlgorithms,
 } from '../redux/linksReducer';
 import {
@@ -33,6 +33,7 @@ import {
 import linksTableColumns from '../constants/linksTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
+import getTableUrl from '../utils/tableUtils';
 
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import TopBar from '../components/nav/TopBarComponent';
@@ -43,23 +44,14 @@ import LinksDetails from '../components/links/LinksDetailsComponent';
 
 
 import commonStyles from '../styles/common';
-import reactTable from '../styles/reactTable';
 
 const baseUrl = 'links/list';
 
 const styles = theme => ({
     ...commonStyles(theme),
     reactTable: {
-        ...reactTable(theme).reactTable,
+        ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
-    },
-    buttonIcon: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-    },
-    tableButton: {
-        marginRight: theme.spacing(2),
     },
 });
 
@@ -120,25 +112,7 @@ class Links extends Component {
     }
 
     getEndpointUrl(toExport, exportType = 'csv') {
-        let url = '/api/links/?';
-        const {
-            params,
-        } = this.props;
-
-        const clonedParams = { ...params };
-
-        if (toExport) {
-            clonedParams[exportType] = true;
-        }
-
-        Object.keys(clonedParams).forEach((key) => {
-            const value = clonedParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
-        });
-
-        return url;
+        return getTableUrl('links', this.props.params, toExport, exportType);
     }
 
     resetData() {
@@ -180,7 +154,7 @@ class Links extends Component {
                 formatMessage,
             },
             dispatch,
-            fetchingList,
+            fetching,
         } = this.props;
         const {
             tableUrl,
@@ -191,7 +165,7 @@ class Links extends Component {
         return (
             <Fragment>
                 {
-                    fetchingList
+                    fetching
                     && <LoadingSpinner />
                 }
                 <TopBar title={formatMessage({
@@ -224,9 +198,9 @@ class Links extends Component {
                                         dataKey="links"
                                         canSelect={false}
                                         multiSort
-                                        onDataStartLoaded={() => dispatch(this.props.setLinksListFetching(true))}
+                                        onDataStartLoaded={() => dispatch(this.props.setIsFetching(true))}
                                         onDataLoaded={(linksList, count, pages) => {
-                                            dispatch(this.props.setLinksListFetching(false));
+                                            dispatch(this.props.setIsFetching(false));
                                             this.props.setLinks(linksList, this.props.params, count, pages);
                                         }}
                                         reduxPage={reduxPage}
@@ -270,8 +244,8 @@ Links.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    setLinksListFetching: PropTypes.func.isRequired,
-    fetchingList: PropTypes.bool.isRequired,
+    setIsFetching: PropTypes.func.isRequired,
+    fetching: PropTypes.bool.isRequired,
     setSources: PropTypes.func.isRequired,
     setProfiles: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
@@ -279,7 +253,7 @@ Links.propTypes = {
 
 const MapStateToProps = state => ({
     reduxPage: state.links.linksPage,
-    fetchingList: state.orgUnits.fetchingList,
+    fetching: state.links.fetching,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -287,7 +261,7 @@ const MapDispatchToProps = dispatch => ({
     setLinks: (linksList, params, count, pages) => dispatch(setLinks(linksList, true, params, count, pages)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setLinksListFetching: isFetching => dispatch(setLinksListFetching(isFetching)),
+    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setSources: sources => dispatch(setSources(sources)),
     setProfiles: profiles => dispatch(setProfiles(profiles)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),

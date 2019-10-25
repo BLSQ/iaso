@@ -12,6 +12,7 @@ from .api.forms import FormsViewSet
 from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
 from .api.algorithms import AlgorithmsViewSet
+from .api.algorithms_runs import AlgorithmsRunsViewSet
 
 
 router = routers.DefaultRouter()
@@ -31,4 +32,5 @@ router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversio
 router.register(r"links", LinkViewSet, base_name="links")
 router.register(r"profiles", ProfilesViewSet, base_name="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
+router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsruns")
 urlpatterns = [url(r"^", include(router.urls))]

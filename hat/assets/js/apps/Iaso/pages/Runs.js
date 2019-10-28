@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import {
-    withStyles, Box,
+    withStyles, Box, Grid,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import {
     fetchAlgorithms,
     deleteAlgorithmRun,
+    runAlgorithm,
     fetchSources,
     fetchProfiles,
 } from '../utils/requests';
@@ -39,6 +40,7 @@ import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import RunsFiltersComponent from '../components/filters/RunsFiltersComponent';
+import AddRunDialogComponent from '../components/dialogs/AddRunDialogComponent';
 
 import commonStyles from '../styles/common';
 
@@ -137,6 +139,14 @@ class Runs extends Component {
         });
     }
 
+    executeRun(run) {
+        const { dispatch } = this.props;
+        runAlgorithm(dispatch, run).then(() => {
+            this.onRefresh();
+        });
+        setTimeout(() => this.onRefresh(), 500);
+    }
+
     render() {
         const {
             classes,
@@ -174,32 +184,35 @@ class Runs extends Component {
                     />
                     {
                         tableUrl && (
-                            <Fragment>
-                                <div className={classes.reactTable}>
-                                    <CustomTableComponent
-                                        isSortable
-                                        pageSize={10}
-                                        showPagination
-                                        endPointUrl={tableUrl}
-                                        columns={tableColumns}
-                                        defaultSorted={[{ id: 'ended_at', desc: true }]}
-                                        params={params}
-                                        defaultPath={baseUrl}
-                                        dataKey="runs"
-                                        canSelect={false}
-                                        multiSort
-                                        onDataStartLoaded={() => this.onDataStartLoaded()}
-                                        onDataLoaded={(list, count, pages) => {
-                                            dispatch(this.props.setIsFetching(false));
-                                            this.props.setRuns(list, this.props.params, count, pages);
-                                        }}
-                                        reduxPage={reduxPage}
-                                        isUpdated={isUpdated}
-                                    />
-                                </div>
-                            </Fragment>
+                            <div className={classes.reactTable}>
+                                <CustomTableComponent
+                                    isSortable
+                                    pageSize={10}
+                                    showPagination
+                                    endPointUrl={tableUrl}
+                                    columns={tableColumns}
+                                    defaultSorted={[{ id: 'ended_at', desc: true }]}
+                                    params={params}
+                                    defaultPath={baseUrl}
+                                    dataKey="runs"
+                                    canSelect={false}
+                                    multiSort
+                                    onDataStartLoaded={() => this.onDataStartLoaded()}
+                                    onDataLoaded={(list, count, pages) => {
+                                        dispatch(this.props.setIsFetching(false));
+                                        this.props.setRuns(list, this.props.params, count, pages);
+                                    }}
+                                    reduxPage={reduxPage}
+                                    isUpdated={isUpdated}
+                                />
+                            </div>
                         )
                     }
+                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        <AddRunDialogComponent
+                            executeRun={runItem => this.executeRun(runItem)}
+                        />
+                    </Grid>
                 </Box>
             </Fragment>
         );

@@ -3,9 +3,15 @@ from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 
-from iaso.models import AlgorithmRun
+from iaso.models import (
+    AlgorithmRun,
+    DataSource,
+    SourceVersion,
+    MatchingAlgorithm,
+)
 from .authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+import importlib
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
@@ -76,4 +82,25 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
     def delete(self, request, pk=None):
         run_item = get_object_or_404(AlgorithmRun, pk=pk)
         run_item.delete()
+        return Response(True)
+
+    def update(self, request, pk=None):
+        algo_id = request.data.get('algoId', -1)
+        source_origin_id = request.data.get('sourceOriginId', -1)
+        version_origin = request.data.get('versionOrigin', -1)
+        source_destination_id = request.data.get('sourceDestinationId', -1)
+        version_destination = request.data.get('versionDestination', -1)
+
+        algorithm = MatchingAlgorithm.objects.get(id=algo_id)
+        source_1 = DataSource.objects.get(id=source_origin_id)
+        version_1 = SourceVersion.objects.get(
+            number=version_origin, data_source=source_1
+        )
+        source_2 = DataSource.objects.get(id=source_destination_id)
+        version_2 = SourceVersion.objects.get(
+            number=version_destination, data_source=source_2
+        )
+        algo_module = importlib.import_module(algorithm.name)
+        algo = algo_module.Algorithm()
+        algo.match(version_1, version_2, request.user)
         return Response(True)

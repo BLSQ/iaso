@@ -38,3 +38,13 @@ export const deleteRequest = url => req
         console.error(`Error when deleting ${url}: ${error}`);
         throw error;
     });
+
+export const putRequest = (url, data) => req
+    .put(url)
+    .set('Content-Type', 'application/json')
+    .send(data)
+    .then(result => result.body)
+    .catch((error) => {
+        console.error(`Error when put ${url}: ${error}`);
+        throw error;
+    });

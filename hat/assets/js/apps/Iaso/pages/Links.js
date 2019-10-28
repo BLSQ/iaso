@@ -68,8 +68,7 @@ class Links extends Component {
     }
 
     componentWillMount() {
-        const { dispatch, prevPathname } = this.props;
-        console.log('prevPathname', prevPathname);
+        const { dispatch } = this.props;
         if (this.props.params.searchActive) {
             this.onSearch();
         }

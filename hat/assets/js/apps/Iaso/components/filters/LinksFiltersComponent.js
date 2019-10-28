@@ -22,6 +22,7 @@ import {
     algo,
     score,
     version,
+    algoRun,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -72,6 +73,7 @@ class LinksFiltersComponent extends Component {
             sources,
             profiles,
             algorithms,
+            algorithmRuns,
         } = this.props;
         let currentOrigin;
         if (params.origin && sources) {
@@ -91,6 +93,7 @@ class LinksFiltersComponent extends Component {
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
                                 search(),
+                                algoRun(algorithmRuns, formatMessage),
                                 orgUnitType(orgUnitTypes),
                                 status(formatMessage),
                             ]}
@@ -205,6 +208,7 @@ LinksFiltersComponent.propTypes = {
     sources: PropTypes.array,
     profiles: PropTypes.array.isRequired,
     algorithms: PropTypes.array.isRequired,
+    algorithmRuns: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 
@@ -213,6 +217,7 @@ const MapStateToProps = state => ({
     sources: state.orgUnits.sources,
     profiles: state.profiles.list,
     algorithms: state.links.algorithmsList,
+    algorithmRuns: state.links.algorithmRunsList,
 });
 
 

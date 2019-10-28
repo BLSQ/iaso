@@ -107,6 +107,12 @@ class DataSource(models.Model):
             "versions": [v.as_dict_without_data_source() for v in versions]
         }
 
+    def as_list(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+        }
+
 
 class SourceVersion(models.Model):
     data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
@@ -127,6 +133,14 @@ class SourceVersion(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
+    def as_list(self):
+        return {
+            "data_source": self.data_source.as_list(),
+            "number": self.number,
+            "id": self.id,
+        }
+
     def as_dict_without_data_source(self):
         return {
             "number": self.number,
@@ -303,7 +317,6 @@ class AlgorithmRun(models.Model):
         links_count = Link.objects.filter(algorithm_run=self.id).count()
         return {
             "algorithm": self.algorithm.as_dict(),
-            "launcher": self.launcher,
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "ended_at": self.ended_at.timestamp() if self.ended_at else None,
@@ -315,6 +328,15 @@ class AlgorithmRun(models.Model):
             "version_1": self.version_1.as_dict() if self.version_1 else None,
             "version_2": self.version_2.as_dict() if self.version_2 else None,
             "links_count": links_count,
+        }
+
+    def as_list(self):
+        return {
+            "algorithm_name": self.algorithm.name,
+            "algorithm_id": self.algorithm.id,
+            "id": self.id,
+            "version_1": self.version_1.as_list() if self.version_1 else None,
+            "version_2": self.version_2.as_list() if self.version_2 else None,
         }
 
 

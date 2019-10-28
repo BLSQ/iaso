@@ -92,6 +92,8 @@
     "iaso.instance.org_unit": "Unités d’organisation (org unit)",
     "iaso.instance.updated_at": "Mise à jour",
     "iaso.label.destination": "Destination",
+    "iaso.label.from": "De",
+    "iaso.label.to": "vers",
     "iaso.label.version": "Version",
     "iaso.label.origin": "Origine",
     "iaso.label.list": "Liste",

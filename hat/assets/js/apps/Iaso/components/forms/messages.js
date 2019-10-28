@@ -135,6 +135,10 @@ const MESSAGES = {
         id: 'iaso.label.algorithm',
         defaultMessage: 'Algorithm',
     },
+    algoRun: {
+        id: 'iaso.label.algorithmsRuns',
+        defaultMessage: 'Algorithms runs',
+    },
     score: {
         id: 'iaso.label.similarity_score',
         defaultMessage: 'Similarity score',

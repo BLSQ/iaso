@@ -36,6 +36,7 @@ class LinkViewSet(viewsets.ViewSet):
         destination_version = request.GET.get("destinationVersion", None)
         validator_id = request.GET.get("validatorId", None)
         algorithm_id = request.GET.get("algorithmId", None)
+        algorithm_run_Id = request.GET.get("algorithmRunId", None)
         run_id = request.GET.get("run", None)
         score = request.GET.get("score", None)
         csv_format = request.GET.get("csv", None)
@@ -74,6 +75,9 @@ class LinkViewSet(viewsets.ViewSet):
 
         if algorithm_id:
             queryset = queryset.filter(algorithm_run__algorithm=algorithm_id)
+
+        if algorithm_run_Id:
+            queryset = queryset.filter(algorithm_run_id=algorithm_run_Id)
 
         if run_id:
             queryset = queryset.filter(algorithm_run=run_id)

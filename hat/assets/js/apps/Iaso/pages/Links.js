@@ -15,6 +15,7 @@ import {
     fetchSources,
     fetchProfiles,
     fetchAlgorithms,
+    fetchAlgorithmRuns,
 } from '../utils/requests';
 
 import {
@@ -25,6 +26,7 @@ import {
     setLinks,
     setIsFetching,
     setAlgorithms,
+    setAlgorithmRuns,
 } from '../redux/linksReducer';
 import {
     setProfiles,
@@ -66,7 +68,8 @@ class Links extends Component {
     }
 
     componentWillMount() {
-        const { dispatch } = this.props;
+        const { dispatch, prevPathname } = this.props;
+        console.log('prevPathname', prevPathname);
         if (this.props.params.searchActive) {
             this.onSearch();
         }
@@ -78,6 +81,8 @@ class Links extends Component {
             .then(profiles => this.props.setProfiles(profiles));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
+        fetchAlgorithmRuns(dispatch)
+            .then(algoRunsList => this.props.setAlgorithmRuns(algoRunsList));
     }
 
     componentDidUpdate() {
@@ -155,23 +160,28 @@ class Links extends Component {
             },
             dispatch,
             fetching,
+            prevPathname,
+            router,
         } = this.props;
         const {
             tableUrl,
             tableColumns,
             expanded,
         } = this.state;
-
+        const displayBackButton = prevPathname && prevPathname.includes('/links/runs/');
         return (
             <Fragment>
                 {
                     fetching
                     && <LoadingSpinner />
                 }
-                <TopBar title={formatMessage({
-                    defaultMessage: 'Links validation',
-                    id: 'iaso.links.title',
-                })}
+                <TopBar
+                    title={formatMessage({
+                        defaultMessage: 'Links validation',
+                        id: 'iaso.links.title',
+                    })}
+                    displayBackButton={displayBackButton}
+                    goBack={() => router.goBack()}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <LinksFiltersComponent
@@ -233,9 +243,11 @@ class Links extends Component {
 }
 Links.defaultProps = {
     reduxPage: undefined,
+    prevPathname: null,
 };
 
 Links.propTypes = {
+    router: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
@@ -249,11 +261,14 @@ Links.propTypes = {
     setSources: PropTypes.func.isRequired,
     setProfiles: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
+    setAlgorithmRuns: PropTypes.func.isRequired,
+    prevPathname: PropTypes.any,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.links.linksPage,
     fetching: state.links.fetching,
+    prevPathname: state.routerCustom.prevPathname,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -265,6 +280,7 @@ const MapDispatchToProps = dispatch => ({
     setSources: sources => dispatch(setSources(sources)),
     setProfiles: profiles => dispatch(setProfiles(profiles)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
+    setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
 });
 
 export default withStyles(styles)(

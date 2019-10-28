@@ -1,6 +1,7 @@
 const SET_LINKS = 'SET_LINKS';
 const SET_RUNS = 'SET_RUNS';
 const SET_ALGO_LIST = 'SET_ALGO_LIST';
+const SET_ALGO_RUNS_LIST = 'SET_ALGO_RUNS_LIST';
 const SET_IS_FETCHING = 'SET_IS_FETCHING';
 
 export const setLinks = (list, showPagination, params, count, pages) => ({
@@ -30,6 +31,11 @@ export const setAlgorithms = algoList => ({
     payload: algoList,
 });
 
+export const setAlgorithmRuns = algoRunsList => ({
+    type: SET_ALGO_RUNS_LIST,
+    payload: algoRunsList,
+});
+
 export const setIsFetching = isFetching => ({
     type: SET_IS_FETCHING,
     payload: isFetching,
@@ -40,6 +46,7 @@ export const linksInitialState = {
     fetching: false,
     fetchingDetail: true,
     algorithmsList: [],
+    algorithmRunsList: [],
     linksPage: {
         list: null,
         showPagination: false,
@@ -97,6 +104,11 @@ export const linksReducer = (state = linksInitialState, action = {}) => {
         case SET_ALGO_LIST: {
             const algorithmsList = action.payload;
             return { ...state, algorithmsList };
+        }
+
+        case SET_ALGO_RUNS_LIST: {
+            const algorithmRunsList = action.payload;
+            return { ...state, algorithmRunsList };
         }
 
         default:

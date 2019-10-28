@@ -85,6 +85,14 @@ class Runs extends Component {
         this.props.setRuns(null, this.props.params, 0, 1);
     }
 
+    onSelectRunLinks(runItem) {
+        const params = {
+            algorithmRunId: runItem.id,
+            searchActive: true,
+        };
+        this.props.redirectTo('links/list', params);
+    }
+
     onSearch() {
         const { redirectTo, params } = this.props;
         const newParams = {

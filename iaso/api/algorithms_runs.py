@@ -67,7 +67,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response(map(lambda x: x.as_dict(), queryset))
+            return Response(map(lambda x: x.as_list(), queryset))
 
     def retrieve(self, request, pk=None):
         run_item = get_object_or_404(AlgorithmRun, pk=pk)

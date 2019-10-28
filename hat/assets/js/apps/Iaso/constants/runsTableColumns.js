@@ -1,8 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
-import { IconButton, Tooltip } from '@material-ui/core';
-import Delete from '@material-ui/icons/Delete';
+import Link from '@material-ui/core/Link';
 
 import { formatThousand } from '../../../utils';
 import getDisplayName from '../utils/usersUtils';
@@ -71,7 +70,21 @@ const runsTableColumns = (formatMessage, component) => (
             sortable: false,
             Cell: settings => (
                 <span>
-                    {formatThousand(settings.original.links_count)}
+                    {
+                        settings.original.links_count === 0
+                        && '/'
+                    }
+                    {
+                        settings.original.links_count > 0
+                        && (
+                            <Link
+                                size="small"
+                                onClick={() => component.onSelectRunLinks(settings.original)}
+                            >
+                                {formatThousand(settings.original.links_count)}
+                            </Link>
+                        )
+                    }
                 </span>
             ),
         },

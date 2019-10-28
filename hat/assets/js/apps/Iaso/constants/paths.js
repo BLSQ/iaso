@@ -160,14 +160,6 @@ export const linksPath = getPath({
     baseUrl: 'links/list',
     params: [
         {
-            isRequired: true,
-            key: 'date_from',
-        },
-        {
-            isRequired: true,
-            key: 'date_to',
-        },
-        {
             isRequired: false,
             key: 'search',
         },
@@ -202,6 +194,10 @@ export const linksPath = getPath({
         {
             isRequired: false,
             key: 'algorithmId',
+        },
+        {
+            isRequired: false,
+            key: 'algorithmRunId',
         },
         {
             isRequired: false,

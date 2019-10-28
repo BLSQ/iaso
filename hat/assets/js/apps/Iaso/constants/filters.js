@@ -245,6 +245,32 @@ export const algo = algoList => (
     }
 );
 
+const getRunDisplayName = (runItem, formatMessage) => (
+    `${formatMessage({
+        id: 'iaso.label.from',
+        defaultMessage: 'From',
+    })} ${runItem.version_2.data_source.name} v${runItem.version_2.number}`
+    + ` ${formatMessage({
+        id: 'iaso.label.to',
+        defaultMessage: 'to',
+    })} ${runItem.version_1.data_source.name} v${runItem.version_1.number} (`
+    + `${runItem.algorithm_name})`
+);
+
+export const algoRun = (algoRunList, formatMessage) => (
+    {
+        urlKey: 'algorithmRunId',
+        isMultiSelect: false,
+        isClearable: true,
+        options: algoRunList.map(a => ({
+            label: getRunDisplayName(a, formatMessage),
+            value: a.id,
+        })),
+        label: MESSAGES.algoRun,
+        type: 'select',
+    }
+);
+
 export const score = () => (
     {
         urlKey: 'score',

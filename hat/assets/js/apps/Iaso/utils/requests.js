@@ -202,6 +202,14 @@ export const fetchLinkDetail = (dispatch, linkId) => getRequest(`/api/links/${li
         throw error;
     });
 
+export const fetchAlgorithmRuns = dispatch => getRequest('/api/algorithmsruns')
+    .then(algorithms => algorithms)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchAlgorithmsError')));
+        console.error('Error while fetching algorithms list:', error);
+        throw error;
+    });
+
 export const deleteAlgorithmRun = (dispatch, runId) => deleteRequest(`/api/algorithmsruns/${runId}/`)
     .then(res => res)
     .catch((error) => {

@@ -10,6 +10,7 @@ import SearchIcon from '@material-ui/icons/Search';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
 import Checkbox from '@material-ui/core/Checkbox';
 import { fade } from '@material-ui/core/styles/colorManipulator';
+import grey from '@material-ui/core/colors/grey';
 
 import PropTypes from 'prop-types';
 
@@ -63,6 +64,13 @@ const styles = theme => ({
         color: theme.palette.primary.main,
     },
     select: {
+        '& .is-disabled  .Select-control': {
+            borderColor: `${grey['300']} !important`,
+            cursor: 'not-allowed',
+        },
+        '&:hover .is-disabled  .Select-control': {
+            borderColor: `${grey['300']} !important`,
+        },
         '& .is-pseudo-focused .Select-control': {
             borderColor: `${theme.palette.primary.main}  !important`,
         },

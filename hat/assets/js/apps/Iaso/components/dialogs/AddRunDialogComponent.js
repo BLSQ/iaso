@@ -23,8 +23,16 @@ const styles = theme => ({
     paper: {
         overflow: 'visible',
     },
+    title: {
+        paddingBottom: 0,
+    },
     content: {
         overflow: 'visible',
+        paddingBottom: theme.spacing(2),
+    },
+    action: {
+        paddingBottom: theme.spacing(2),
+        paddingRight: theme.spacing(2),
     },
 });
 
@@ -114,7 +122,7 @@ class AddRunDialogComponent extends Component {
                         paper: classes.paper,
                     }}
                 >
-                    <DialogTitle>
+                    <DialogTitle className={classes.title}>
                         <FormattedMessage
                             id="iaso.algo.addRun"
                             defaultMessage="Add algorithm run"
@@ -222,7 +230,7 @@ class AddRunDialogComponent extends Component {
                             </Grid>
                         </Grid>
                     </DialogContent>
-                    <DialogActions>
+                    <DialogActions className={classes.action}>
                         <Button onClick={() => this.handleClose(false)} color="primary">
                             <FormattedMessage
                                 id="iaso.label.cancel"

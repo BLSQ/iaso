@@ -13,7 +13,9 @@ import { userActions } from '../redux/users';
 import { teamsActions } from '../redux/teams';
 import Search from '../../../components/Search';
 import FiltersComponent from '../../../components/FiltersComponent';
-import { teamType, institutions } from '../../../utils/constants/filters';
+import {
+    teamType, institutions, activeUsers, inactiveUsers,
+} from '../../../utils/constants/filters';
 
 const baseUrl = 'users';
 
@@ -207,38 +209,42 @@ class ManagementUsers extends React.Component {
         return (
             <section>
                 {
-                    this.state.showEditModale &&
-                    <UserModaleComponent
-                        showModale={this.state.showEditModale}
-                        closeModal={() => this.props.selectUser(null)}
-                        user={selectedUser}
-                        saveData={newData => this.saveData(newData)}
-                        institutions={institutionsList}
-                        userTypes={userTypes}
-                        testerTypes={testerTypes}
-                        userLevels={userLevels}
-                        permissions={permissions}
-                        provinces={provinces}
-                        zones={zones}
-                        areas={areas}
-                        teams={teams}
-                        selectProvince={(provinceId, zoneId) => selectProvince(provinceId, zoneId)}
-                        selectZone={zoneId => selectZone(zoneId)}
-                        updateCurrentUser={user => updateCurrentUser(user)}
-                        deleteUserZones
-                        isUpdated={this.props.isUpdated}
-                        error={load.error}
-                    />
+                    this.state.showEditModale
+                    && (
+                        <UserModaleComponent
+                            showModale={this.state.showEditModale}
+                            closeModal={() => this.props.selectUser(null)}
+                            user={selectedUser}
+                            saveData={newData => this.saveData(newData)}
+                            institutions={institutionsList}
+                            userTypes={userTypes}
+                            testerTypes={testerTypes}
+                            userLevels={userLevels}
+                            permissions={permissions}
+                            provinces={provinces}
+                            zones={zones}
+                            areas={areas}
+                            teams={teams}
+                            selectProvince={(provinceId, zoneId) => selectProvince(provinceId, zoneId)}
+                            selectZone={zoneId => selectZone(zoneId)}
+                            updateCurrentUser={user => updateCurrentUser(user)}
+                            deleteUserZones
+                            isUpdated={this.props.isUpdated}
+                            error={load.error}
+                        />
+                    )
                 }
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.dataDeleted}
-                        deleteElement={element => this.deleteData(element)}
-                        message={this.state.dataDeleted.userName}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.dataDeleted}
+                            deleteElement={element => this.deleteData(element)}
+                            message={this.state.dataDeleted.userName}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
                     <div className="widget__header">
@@ -285,9 +291,11 @@ class ManagementUsers extends React.Component {
                                         id: 'main.label.team_user_type',
                                         defaultMessage: 'User type',
                                     }, {
-                                            id: 'main.label.allMale',
-                                            defaultMessage: 'All',
-                                        }),
+                                        id: 'main.label.allMale',
+                                        defaultMessage: 'All',
+                                    }),
+                                    activeUsers(),
+                                    inactiveUsers(),
                                 ]}
                             />
                         </div>
@@ -295,12 +303,14 @@ class ManagementUsers extends React.Component {
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     <section>
                         <CustomTableComponent
@@ -336,7 +346,8 @@ class ManagementUsers extends React.Component {
                         </div>
                     </section>
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 ManagementUsers.defaultProps = {

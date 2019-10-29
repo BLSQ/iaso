@@ -288,6 +288,7 @@ class Profile(models.Model):
             "passwordReset": self.password_reset,
             "tester_type": self.tester_type,
             "is_superuser": self.user.is_superuser,
+            "is_active": self.user.is_active,
             "level": self.level,
             "screening_type": self.screening_type,
         }

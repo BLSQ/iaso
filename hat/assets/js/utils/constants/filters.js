@@ -147,7 +147,7 @@ export const MESSAGES = {
 
 const getMessage = key => MESSAGES[key];
 
-const testType = formatMessage => (
+export const testType = formatMessage => (
     {
         name: 'test_type',
         urlKey: 'test_type',
@@ -207,7 +207,7 @@ const testType = formatMessage => (
     }
 );
 
-const testTypeImage = () => (
+export const testTypeImage = () => (
     {
         name: 'test_type_image',
         urlKey: 'test_type_image',
@@ -235,7 +235,7 @@ const testTypeImage = () => (
     }
 );
 
-const testTypeVideo = () => (
+export const testTypeVideo = () => (
     {
         name: 'test_type_video',
         urlKey: 'test_type_video',
@@ -271,7 +271,7 @@ const testTypeVideo = () => (
     }
 );
 
-const screeningResult = formatMessage => (
+export const screeningResult = formatMessage => (
     {
         name: 'screening_result',
         urlKey: 'screening_result',
@@ -303,7 +303,7 @@ const screeningResult = formatMessage => (
     }
 );
 
-const confirmationResult = formatMessage => (
+export const confirmationResult = formatMessage => (
     {
         name: 'confirmation_result',
         urlKey: 'confirmation_result',
@@ -335,7 +335,7 @@ const confirmationResult = formatMessage => (
     }
 );
 
-const source = formatMessage => (
+export const source = formatMessage => (
     {
         name: 'source',
         urlKey: 'source',
@@ -371,7 +371,7 @@ const source = formatMessage => (
     }
 );
 
-const teams = (teamsList, isMultiSelect = true) => (
+export const teams = (teamsList, isMultiSelect = true) => (
     {
         name: isMultiSelect ? 'teams' : 'team_id',
         urlKey: isMultiSelect ? 'teams' : 'team_id',
@@ -390,7 +390,7 @@ const teams = (teamsList, isMultiSelect = true) => (
     }
 );
 
-const located = formatMessage => (
+export const located = formatMessage => (
     {
         name: 'located',
         urlKey: 'located',
@@ -422,7 +422,7 @@ const located = formatMessage => (
     }
 );
 
-const searchLastname = component => (
+export const searchLastname = component => (
     {
         name: 'search_lastname',
         urlKey: 'search_lastname',
@@ -443,7 +443,7 @@ const searchLastname = component => (
     }
 );
 
-const searchName = component => (
+export const searchName = component => (
     {
         name: 'search_name',
         urlKey: 'search_name',
@@ -464,7 +464,7 @@ const searchName = component => (
     }
 );
 
-const searchPrename = component => (
+export const searchPrename = component => (
     {
         name: 'search_prename',
         urlKey: 'search_prename',
@@ -485,7 +485,7 @@ const searchPrename = component => (
     }
 );
 
-const searchMotherName = component => (
+export const searchMotherName = component => (
     {
         name: 'search_mother_name',
         urlKey: 'search_mother_name',
@@ -506,7 +506,7 @@ const searchMotherName = component => (
     }
 );
 
-const searchUuid = component => (
+export const searchUuid = component => (
     {
         name: 'searchUuid',
         urlKey: 'searchUuid',
@@ -527,7 +527,7 @@ const searchUuid = component => (
     }
 );
 
-const coordinations = (coordinationsList, isMultiSelect = true) => (
+export const coordinations = (coordinationsList, isMultiSelect = true) => (
     {
         name: 'coordination_id',
         urlKey: 'coordination_id',
@@ -546,7 +546,7 @@ const coordinations = (coordinationsList, isMultiSelect = true) => (
     }
 );
 
-const workZones = (workzonesList, props, urlKey) => (
+export const workZones = (workzonesList, props, urlKey) => (
     {
         name: 'workzone_id',
         urlKey: 'workzone_id',
@@ -567,7 +567,7 @@ const workZones = (workzonesList, props, urlKey) => (
 );
 
 
-const provinces = (provincesList, props, urlKey) => (
+export const provinces = (provincesList, props, urlKey) => (
     {
         name: 'province_id',
         urlKey: 'province_id',
@@ -589,7 +589,7 @@ const provinces = (provincesList, props, urlKey) => (
 );
 
 
-const zones = (zoneslist, props, urlKey) => (
+export const zones = (zoneslist, props, urlKey) => (
     {
         name: 'zs_id',
         urlKey: 'zs_id',
@@ -612,7 +612,7 @@ const zones = (zoneslist, props, urlKey) => (
 );
 
 
-const aires = (areasList, props, urlKey) => (
+export const aires = (areasList, props, urlKey) => (
     {
         name: 'as_id',
         urlKey: 'as_id',
@@ -634,7 +634,7 @@ const aires = (areasList, props, urlKey) => (
     }
 );
 
-const villages = villagesList => (
+export const villages = villagesList => (
     {
         name: 'village_id',
         urlKey: 'village_id',
@@ -654,7 +654,7 @@ const villages = villagesList => (
     }
 );
 
-const onlyDupes = () => (
+export const onlyDupes = () => (
     {
         name: 'only_dupes',
         urlKey: 'only_dupes',
@@ -666,7 +666,7 @@ const onlyDupes = () => (
     }
 );
 
-const users = (
+export const users = (
     usersList,
     mainLabel = {
         id: 'main.label.users',
@@ -701,7 +701,7 @@ const users = (
     }
 );
 
-const habitats = (formatMessage, habitatsList) => (
+export const habitats = (formatMessage, habitatsList) => (
     {
         name: 'habitats',
         urlKey: 'habitats',
@@ -728,7 +728,7 @@ const habitats = (formatMessage, habitatsList) => (
     }
 );
 
-const sites = formatMessage => (
+export const sites = formatMessage => (
     {
         name: 'sitesFilter',
         urlKey: 'sitesFilter',
@@ -765,7 +765,7 @@ const sites = formatMessage => (
     }
 );
 
-const traps = formatMessage => (
+export const traps = formatMessage => (
     {
         name: 'trapsFilter',
         urlKey: 'trapsFilter',
@@ -802,7 +802,7 @@ const traps = formatMessage => (
     }
 );
 
-const targets = formatMessage => (
+export const targets = formatMessage => (
     {
         name: 'targetsFilter',
         urlKey: 'targetsFilter',
@@ -832,7 +832,7 @@ const targets = formatMessage => (
 );
 
 
-const medecine = formatMessage => (
+export const medecine = formatMessage => (
     {
         name: 'treatment_medicine',
         urlKey: 'treatment_medicine',
@@ -853,7 +853,7 @@ const medecine = formatMessage => (
     }
 );
 
-const onlyTreatedPatients = () => (
+export const onlyTreatedPatients = () => (
     {
         name: 'with_treatment',
         urlKey: 'with_treatment',
@@ -866,7 +866,7 @@ const onlyTreatedPatients = () => (
     }
 );
 
-const onlyDead = () => (
+export const onlyDead = () => (
     {
         name: 'dead',
         urlKey: 'dead',
@@ -878,7 +878,7 @@ const onlyDead = () => (
     }
 );
 
-const testerType = formatMessage => (
+export const testerType = formatMessage => (
     {
         name: 'tester_type',
         urlKey: 'tester_type',
@@ -906,7 +906,7 @@ const testerType = formatMessage => (
     }
 );
 
-const withTestDevices = () => (
+export const withTestDevices = () => (
     {
         name: 'with_tests_devices',
         urlKey: 'with_tests_devices',
@@ -918,7 +918,7 @@ const withTestDevices = () => (
     }
 );
 
-const device = devicesList => (
+export const device = devicesList => (
     {
         name: 'device_id',
         urlKey: 'device_id',
@@ -940,7 +940,7 @@ const device = devicesList => (
     }
 );
 
-const images = formatMessage => (
+export const images = formatMessage => (
     {
         name: 'pictures',
         urlKey: 'pictures',
@@ -977,7 +977,7 @@ const images = formatMessage => (
 );
 
 
-const videos = formatMessage => (
+export const videos = formatMessage => (
     {
         name: 'videos',
         urlKey: 'videos',
@@ -1013,7 +1013,7 @@ const videos = formatMessage => (
     }
 );
 
-const onlyCheckedTests = () => (
+export const onlyCheckedTests = () => (
     {
         name: 'only_checked_tests',
         urlKey: 'only_checked_tests',
@@ -1025,7 +1025,7 @@ const onlyCheckedTests = () => (
     }
 );
 
-const teamType = (formatMessage, teamTypeList, label = {
+export const teamType = (formatMessage, teamTypeList, label = {
     id: 'main.label.team_type',
     defaultMessage: 'Team type',
 }, placeholder = {
@@ -1044,7 +1044,7 @@ const teamType = (formatMessage, teamTypeList, label = {
     }
 );
 
-const screenTeamType = () => (
+export const screenTeamType = () => (
     {
         name: 'type',
         urlKey: 'type',
@@ -1066,7 +1066,7 @@ const screenTeamType = () => (
     }
 );
 
-const anonymous = () => (
+export const anonymous = () => (
     {
         name: 'anonymous',
         urlKey: 'anonymous',
@@ -1078,7 +1078,7 @@ const anonymous = () => (
     }
 );
 
-const institutions = (institutionsList, isMultiSelect = false) => (
+export const institutions = (institutionsList, isMultiSelect = false) => (
     {
         name: 'institution_id',
         urlKey: 'institution_id',
@@ -1098,7 +1098,7 @@ const institutions = (institutionsList, isMultiSelect = false) => (
     }
 );
 
-const problems = (formatMessage, problemsList) => (
+export const problems = (formatMessage, problemsList) => (
     {
         name: 'problems',
         urlKey: 'problems',
@@ -1124,7 +1124,7 @@ const problems = (formatMessage, problemsList) => (
     }
 );
 
-const screeningType = formatMessage => (
+export const screeningType = formatMessage => (
     {
         name: 'screening_type',
         urlKey: 'screening_type',
@@ -1152,7 +1152,7 @@ const screeningType = formatMessage => (
     }
 );
 
-const stage = formatMessage => (
+export const stage = formatMessage => (
     {
         name: 'stage',
         urlKey: 'stage',
@@ -1184,46 +1184,26 @@ const stage = formatMessage => (
     }
 );
 
-export {
-    testType,
-    testTypeImage,
-    testTypeVideo,
-    screeningResult,
-    confirmationResult,
-    source,
-    teams,
-    located,
-    searchLastname,
-    searchName,
-    searchPrename,
-    searchUuid,
-    coordinations,
-    workZones,
-    provinces,
-    zones,
-    aires,
-    villages,
-    searchMotherName,
-    onlyDupes,
-    users,
-    habitats,
-    sites,
-    traps,
-    targets,
-    medecine,
-    onlyTreatedPatients,
-    onlyDead,
-    testerType,
-    withTestDevices,
-    device,
-    images,
-    videos,
-    onlyCheckedTests,
-    anonymous,
-    teamType,
-    screenTeamType,
-    institutions,
-    screeningType,
-    problems,
-    stage,
-};
+export const activeUsers = () => (
+    {
+        name: 'active',
+        urlKey: 'active',
+        label: {
+            id: 'main.label.usersActive',
+            defaultMessage: 'Active users',
+        },
+        type: 'checkbox',
+    }
+);
+
+export const inactiveUsers = () => (
+    {
+        name: 'inactive',
+        urlKey: 'inactive',
+        label: {
+            id: 'main.label.usersInactive',
+            defaultMessage: 'Inactive users',
+        },
+        type: 'checkbox',
+    }
+);

@@ -58,14 +58,17 @@ class ProfilesViewSet(viewsets.ViewSet):
         as_list = request.GET.get("as_list", False)
         team_id = request.GET.get("team_id", False)
 
-        include_inactive = request.GET.get("include_inactive", False)
+        include_inactive = request.GET.get("inactive", False)
+        include_active = request.GET.get("active", False)
 
         screening_type = request.GET.get("screening_type", None)
         team_type = request.GET.get("team_type", "tester")
 
         queryset = Profile.objects.all()
 
-        if not include_inactive:
+        if include_inactive and not include_active:
+            queryset = queryset.filter(user__is_active=False)
+        if include_active and not include_inactive:
             queryset = queryset.filter(user__is_active=True)
 
         if institution_id:

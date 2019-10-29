@@ -458,6 +458,8 @@
     "main.label.user": "Utilisateur",
     "main.label.userName": "Nom d'utilisateur",
     "main.label.userType": "Type de rôle",
+    "main.label.usersActive": "Utilisateurs actifs",
+    "main.label.usersInactive": "Utilisateurs inactifs",
     "main.label.user_level": "Niveau de QC",
     "main.label.users": "Utilisateurs",
     "main.label.validate": "Valider",

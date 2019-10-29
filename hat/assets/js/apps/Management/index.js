@@ -72,7 +72,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementPlanningsPage}
         />,
         <Route
-            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institution_id/:institution_id)(/team_type/:team_type)"
+            path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institution_id/:institution_id)(/team_type/:team_type)(/active/:active)(/inactive/:inactive)"
             component={ManagementUsersPage}
         />,
         <Route

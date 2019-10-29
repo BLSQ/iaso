@@ -45,17 +45,10 @@ const linksTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-<<<<<<< HEAD
-                defaultMessage: 'Destination',
-                id: 'iaso.label.destination',
-            }),
-            accessor: 'destination__source',
-=======
                 defaultMessage: 'Origin',
                 id: 'iaso.label.origin',
             }),
             accessor: 'source__source',
->>>>>>> filters
             Cell: settings => (
                 <span>
                     {`${formatMessage({
@@ -72,17 +65,10 @@ const linksTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-<<<<<<< HEAD
-                defaultMessage: 'Origin',
-                id: 'iaso.label.origin',
-            }),
-            accessor: 'source__source',
-=======
                 defaultMessage: 'Destination',
                 id: 'iaso.label.destination',
             }),
             accessor: 'destination__source',
->>>>>>> filters
             Cell: settings => (
                 <span>
                     {`${formatMessage({

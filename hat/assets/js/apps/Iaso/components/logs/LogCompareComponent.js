@@ -61,13 +61,6 @@ const LogCompareComponent = ({
                                     </Typography>
                                 </Grid>
                                 <Grid container item xs={6} justify="flex-end" alignItems="center">
-<<<<<<< HEAD
-                                    <Tooltip title={
-                                        allFields
-                                            ? <FormattedMessage id="iaso.label.seeChanges" defaultMessage="See only changes" />
-                                            : <FormattedMessage id="iaso.label.seeAll" defaultMessage="See all fields" />
-                                    }
-=======
                                     <Tooltip
                                         classes={{
                                             popper: classes.popperFixed,
@@ -77,7 +70,6 @@ const LogCompareComponent = ({
                                                 ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
                                                 : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
                                         }
->>>>>>> filters
                                     >
                                         <IconButton
                                             className={classes.deleteIcon}

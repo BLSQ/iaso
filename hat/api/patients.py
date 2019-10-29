@@ -1,4 +1,4 @@
-from dateutil.utils import today
+from datetime import datetime
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -49,9 +49,7 @@ class PatientsViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_required = [
-        'menupermissions.x_locator'
-    ]
+    permission_required = ["menupermissions.x_locator"]
 
     def list(self, request):
         limit = int(request.GET.get("limit", 50))
@@ -85,116 +83,127 @@ class PatientsViewSet(viewsets.ViewSet):
         videos = request.GET.get("videos", None)
         anonymous_request = request.GET.get("anonymous", None)
         stage = request.GET.get("stage", None)
-        anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
+        anonymous = (
+            request.user.has_perm("menupermissions.x_anonymous")
+            and not request.user.is_superuser
+        ) or anonymous_request
 
         csv_format = request.GET.get("csv", None)  # default will be json
         xlsx_format = request.GET.get("xlsx", None)
 
-        queryset = (
-            Patient.objects.order_by(*orders)
-        )
+        queryset = Patient.objects.order_by(*orders)
         additional_fields = []
 
         if only_dupes:
-            dupes = PatientDuplicatesPair.objects\
-                .filter(Q(patient1_id=OuterRef('id')) | Q(patient2_id=OuterRef('id')))
-            queryset = queryset\
-                .annotate(has_dupes=Exists(dupes))\
-                .filter(has_dupes=True)
+            dupes = PatientDuplicatesPair.objects.filter(
+                Q(patient1_id=OuterRef("id")) | Q(patient2_id=OuterRef("id"))
+            )
+            queryset = queryset.annotate(has_dupes=Exists(dupes)).filter(has_dupes=True)
 
         if date_from or date_to:
-            test_with_date_in_range = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))
+            test_with_date_in_range = Test.objects.filter(
+                form__normalized_patient_id=OuterRef("id")
+            )
             if date_from:
-                test_with_date_in_range = test_with_date_in_range.filter(date__gte=date_from)
+                test_with_date_in_range = test_with_date_in_range.filter(
+                    date__gte=date_from
+                )
             if date_to:
-                test_with_date_in_range = test_with_date_in_range.filter(date__lte=date_to)
+                test_with_date_in_range = test_with_date_in_range.filter(
+                    date__lte=date_to
+                )
 
-            queryset = queryset\
-                .annotate(test_with_date_in_range=Exists(test_with_date_in_range))\
-                .filter(test_with_date_in_range=True)
+            queryset = queryset.annotate(
+                test_with_date_in_range=Exists(test_with_date_in_range)
+            ).filter(test_with_date_in_range=True)
 
         if teams:
-            teams_cases = Case.objects\
-                .filter(normalized_team_id__in=teams.split(","))\
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(teams_cases=Exists(teams_cases))\
-                .filter(teams_cases=True)
+            teams_cases = Case.objects.filter(
+                normalized_team_id__in=teams.split(",")
+            ).filter(normalized_patient_id=OuterRef("id"))
+            queryset = queryset.annotate(teams_cases=Exists(teams_cases)).filter(
+                teams_cases=True
+            )
 
         if coordination_id:
-            coord_cases = Case.objects\
-                .filter(normalized_team__coordination_id__in=coordination_id.split(","))\
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(teams_cases=Exists(coord_cases))\
-                .filter(teams_cases=True)
+            coord_cases = Case.objects.filter(
+                normalized_team__coordination_id__in=coordination_id.split(",")
+            ).filter(normalized_patient_id=OuterRef("id"))
+            queryset = queryset.annotate(teams_cases=Exists(coord_cases)).filter(
+                teams_cases=True
+            )
 
         if test_types:
-            test_with_type_in = Test.objects.filter(form__normalized_patient_id=OuterRef('id'))\
-                .filter(type__in=test_types.upper().split(","))
-            queryset = queryset \
-                .annotate(test_with_type_in=Exists(test_with_type_in)) \
-                .filter(test_with_type_in=True)
+            test_with_type_in = Test.objects.filter(
+                form__normalized_patient_id=OuterRef("id")
+            ).filter(type__in=test_types.upper().split(","))
+            queryset = queryset.annotate(
+                test_with_type_in=Exists(test_with_type_in)
+            ).filter(test_with_type_in=True)
 
         if screening_result is not None:
-            if screening_result == 'not_done':
-                none_screening_cases = CaseView.objects\
-                    .filter(screening_result__isnull=True)\
-                    .filter(normalized_patient_id=OuterRef('id'))
-                queryset = queryset\
-                    .annotate(has_none_screening_case=Exists(none_screening_cases))\
-                    .filter(has_none_screening_case=True)
+            if screening_result == "not_done":
+                none_screening_cases = CaseView.objects.filter(
+                    screening_result__isnull=True
+                ).filter(normalized_patient_id=OuterRef("id"))
+                queryset = queryset.annotate(
+                    has_none_screening_case=Exists(none_screening_cases)
+                ).filter(has_none_screening_case=True)
             else:
                 # setting this to false will provide patients that had no positive screening result at all
-                positive_screening_cases = CaseView.objects\
-                    .filter(screening_result__gte=RES_POSITIVE)\
-                    .filter(normalized_patient_id=OuterRef('id'))
-                queryset = queryset\
-                    .annotate(has_positive_screening_case=Exists(positive_screening_cases))\
-                    .filter(has_positive_screening_case=(screening_result.lower() == 'true'))
+                positive_screening_cases = CaseView.objects.filter(
+                    screening_result__gte=RES_POSITIVE
+                ).filter(normalized_patient_id=OuterRef("id"))
+                queryset = queryset.annotate(
+                    has_positive_screening_case=Exists(positive_screening_cases)
+                ).filter(
+                    has_positive_screening_case=(screening_result.lower() == "true")
+                )
 
         if stage is not None:
-            stage_query = CaseView.objects\
-                .filter(test_pl_result=stage)\
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(has_stage=Exists(stage_query))\
-                .filter(has_stage=True)
+            stage_query = CaseView.objects.filter(test_pl_result=stage).filter(
+                normalized_patient_id=OuterRef("id")
+            )
+            queryset = queryset.annotate(has_stage=Exists(stage_query)).filter(
+                has_stage=True
+            )
 
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
-            cases_of_screening_type = Case.objects \
-                .filter(screening_type=screening_type) \
-                .filter(normalized_patient_id=OuterRef('id'))
-            queryset = queryset \
-                .annotate(has_cases_of_screening_type=Exists(cases_of_screening_type)) \
-                .filter(has_cases_of_screening_type=True)
+                return Response(
+                    f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            cases_of_screening_type = Case.objects.filter(
+                screening_type=screening_type
+            ).filter(normalized_patient_id=OuterRef("id"))
+            queryset = queryset.annotate(
+                has_cases_of_screening_type=Exists(cases_of_screening_type)
+            ).filter(has_cases_of_screening_type=True)
 
         if confirmation_result is not None:
-            if confirmation_result == 'not_done':
-                none_confirmed_case = CaseView.objects\
-                    .filter(confirmation_result__isnull=True)\
-                    .filter(normalized_patient_id=OuterRef('id'))
-                queryset = queryset\
-                    .annotate(has_none_confirmed_case=Exists(none_confirmed_case))\
-                    .filter(has_none_confirmed_case=True)
+            if confirmation_result == "not_done":
+                none_confirmed_case = CaseView.objects.filter(
+                    confirmation_result__isnull=True
+                ).filter(normalized_patient_id=OuterRef("id"))
+                queryset = queryset.annotate(
+                    has_none_confirmed_case=Exists(none_confirmed_case)
+                ).filter(has_none_confirmed_case=True)
             else:
-                confirmed_cases = Case.objects\
-                    .filter(confirmed_case=True)\
-                    .filter(normalized_patient_id=OuterRef('id'))
-                queryset = queryset\
-                    .annotate(has_confirmed_case=Exists(confirmed_cases))\
-                    .filter(has_confirmed_case=(confirmation_result.lower() == 'true'))
+                confirmed_cases = Case.objects.filter(confirmed_case=True).filter(
+                    normalized_patient_id=OuterRef("id")
+                )
+                queryset = queryset.annotate(
+                    has_confirmed_case=Exists(confirmed_cases)
+                ).filter(has_confirmed_case=(confirmation_result.lower() == "true"))
 
         if treatment_medicine is not None:
-            treatment_meds = Treatment.objects\
-                .filter(medicine=treatment_medicine)\
-                .filter(patient_id=OuterRef('id'))
-            queryset = queryset\
-                .annotate(has_treatment_med=Exists(treatment_meds))\
-                .filter(has_treatment_med=True)
+            treatment_meds = Treatment.objects.filter(
+                medicine=treatment_medicine
+            ).filter(patient_id=OuterRef("id"))
+            queryset = queryset.annotate(
+                has_treatment_med=Exists(treatment_meds)
+            ).filter(has_treatment_med=True)
 
         queryset = queryset.annotate(treatment_count=Count("treatment"))
         additional_fields.append("treatment_count")
@@ -206,14 +215,24 @@ class PatientsViewSet(viewsets.ViewSet):
 
         # Scope
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(origin_area__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(
+                origin_area__ZS__province_id__in=get_user_geo_list(
+                    request.user, "province_scope"
+                )
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(origin_area__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(
+                origin_area__ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            queryset = queryset.filter(origin_area_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            queryset = queryset.filter(
+                origin_area_id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
 
         if province_ids and not zs_ids and not as_ids:
-            queryset = queryset.filter(origin_area__ZS__province_id__in=province_ids.split(","))
+            queryset = queryset.filter(
+                origin_area__ZS__province_id__in=province_ids.split(",")
+            )
         else:
             if zs_ids and not as_ids:
                 queryset = queryset.filter(origin_area__ZS_id__in=zs_ids.split(","))
@@ -225,74 +244,89 @@ class PatientsViewSet(viewsets.ViewSet):
             queryset = queryset.filter(origin_village_id__in=village_ids.split(","))
 
         if tester_type:
-            devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
-            cases = Case.objects.filter(device_id__in=devices).values_list('pk', flat=True)
+            devices = DeviceDB.objects.filter(
+                last_user__profile__tester_type__in=tester_type.split(",")
+            ).values_list("device_id", flat=True)
+            cases = Case.objects.filter(device_id__in=devices).values_list(
+                "pk", flat=True
+            )
             queryset = queryset.filter(case__in=cases)
 
         if device_ids:
-            cases = Case.objects.filter(device_id__in=device_ids.split(",")).values_list('pk', flat=True)
+            cases = Case.objects.filter(
+                device_id__in=device_ids.split(",")
+            ).values_list("pk", flat=True)
             queryset = queryset.filter(case__in=cases)
 
         if pictures:
-            picture_tests = Test.objects\
-                .filter(form__normalized_patient_id=OuterRef("id")) \
-                .filter(type__in=TYPES_WITH_IMAGES) \
+            picture_tests = (
+                Test.objects.filter(form__normalized_patient_id=OuterRef("id"))
+                .filter(type__in=TYPES_WITH_IMAGES)
                 .filter(image_filename__isnull=False)
+            )
 
-            if pictures == 'with_pictures':
-                queryset = queryset.annotate(tests_with_pictures=Exists(picture_tests))\
-                    .filter(tests_with_pictures=True)
-            elif pictures == 'without_pictures':
-                queryset = queryset.annotate(tests_with_pictures=Exists(picture_tests)) \
-                    .filter(tests_with_pictures=False)
-            elif pictures == 'with_pictures_uploaded':
-                tests_with_uploaded_pictures = picture_tests\
-                    .filter(image_id__isnull=False)
-                queryset = queryset.annotate(tests_with_uploaded_pictures=Exists(tests_with_uploaded_pictures))\
-                    .filter(tests_with_uploaded_pictures=True)
-            elif pictures == 'without_pictures_uploaded':  # but with pictures:
-                tests_without_uploaded_pictures = picture_tests\
-                    .filter(image_id__isnull=True)
-                queryset = queryset.annotate(tests_without_uploaded_pictures=Exists(tests_without_uploaded_pictures))\
-                    .filter(tests_without_uploaded_pictures=True)
+            if pictures == "with_pictures":
+                queryset = queryset.annotate(
+                    tests_with_pictures=Exists(picture_tests)
+                ).filter(tests_with_pictures=True)
+            elif pictures == "without_pictures":
+                queryset = queryset.annotate(
+                    tests_with_pictures=Exists(picture_tests)
+                ).filter(tests_with_pictures=False)
+            elif pictures == "with_pictures_uploaded":
+                tests_with_uploaded_pictures = picture_tests.filter(
+                    image_id__isnull=False
+                )
+                queryset = queryset.annotate(
+                    tests_with_uploaded_pictures=Exists(tests_with_uploaded_pictures)
+                ).filter(tests_with_uploaded_pictures=True)
+            elif pictures == "without_pictures_uploaded":  # but with pictures:
+                tests_without_uploaded_pictures = picture_tests.filter(
+                    image_id__isnull=True
+                )
+                queryset = queryset.annotate(
+                    tests_without_uploaded_pictures=Exists(
+                        tests_without_uploaded_pictures
+                    )
+                ).filter(tests_without_uploaded_pictures=True)
 
         if videos:
-            has_videos = Test.objects\
-                .filter(form__normalized_patient_id=OuterRef("id"))\
-                .filter(type__in=TYPES_WITH_VIDEOS)\
+            has_videos = (
+                Test.objects.filter(form__normalized_patient_id=OuterRef("id"))
+                .filter(type__in=TYPES_WITH_VIDEOS)
                 .filter(video_filename__isnull=False)
+            )
 
-            if videos == 'with_videos':
-                queryset = queryset.annotate(tests_with_videos=Exists(has_videos))\
-                    .filter(tests_with_videos=True)
-            elif videos == 'without_videos':
-                queryset = queryset.annotate(tests_with_videos=Exists(has_videos)) \
-                    .filter(tests_with_videos=False)
-            elif videos == 'with_videos_uploaded':
-                tests_with_videos = has_videos\
-                    .filter(video_id__isnull=False)
-                queryset = queryset.annotate(tests_with_videos=Exists(tests_with_videos))\
-                    .filter(tests_with_videos=True)
-            elif videos == 'without_videos_uploaded':  # but with videos:
-                tests_without_videos = has_videos\
-                    .filter(video_id__isnull=True)
-                queryset = queryset.annotate(tests_without_videos=Exists(tests_without_videos))\
-                    .filter(tests_without_videos=True)
+            if videos == "with_videos":
+                queryset = queryset.annotate(
+                    tests_with_videos=Exists(has_videos)
+                ).filter(tests_with_videos=True)
+            elif videos == "without_videos":
+                queryset = queryset.annotate(
+                    tests_with_videos=Exists(has_videos)
+                ).filter(tests_with_videos=False)
+            elif videos == "with_videos_uploaded":
+                tests_with_videos = has_videos.filter(video_id__isnull=False)
+                queryset = queryset.annotate(
+                    tests_with_videos=Exists(tests_with_videos)
+                ).filter(tests_with_videos=True)
+            elif videos == "without_videos_uploaded":  # but with videos:
+                tests_without_videos = has_videos.filter(video_id__isnull=True)
+                queryset = queryset.annotate(
+                    tests_without_videos=Exists(tests_without_videos)
+                ).filter(tests_without_videos=True)
 
         # Ignore the anonymous param here as the user might be entitled to use the filters but export anonymously
-        if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+        if not (
+            request.user.has_perm("menupermissions.x_anonymous")
+            and not request.user.is_superuser
+        ):
             if search_name:
-                queryset = queryset.filter(
-                    Q(post_name__icontains=search_name)
-                )
+                queryset = queryset.filter(Q(post_name__icontains=search_name))
             if search_prename:
-                queryset = queryset.filter(
-                    Q(first_name__icontains=search_prename)
-                )
+                queryset = queryset.filter(Q(first_name__icontains=search_prename))
             if search_lastname:
-                queryset = queryset.filter(
-                    Q(last_name__icontains=search_lastname)
-                )
+                queryset = queryset.filter(Q(last_name__icontains=search_lastname))
             if search_mother_name:
                 queryset = queryset.filter(
                     Q(mothers_surname__icontains=search_mother_name)
@@ -315,7 +349,12 @@ class PatientsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["patient"] = list(map(lambda x: x.as_dict(additional_fields=additional_fields), page.object_list))
+            res["patient"] = list(
+                map(
+                    lambda x: x.as_dict(additional_fields=additional_fields),
+                    page.object_list,
+                )
+            )
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -324,128 +363,147 @@ class PatientsViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
-            filename = 'patients'
-            queryset = queryset.annotate(treatment_ids=ArrayAgg("treatment", distinct=True))
+            if (
+                not request.user.has_perm("menupermissions.x_datas_download")
+                and not request.user.is_superuser
+            ):
+                return Response("Unauthorized", status=401)
+            filename = "patients"
+            queryset = queryset.annotate(
+                treatment_ids=ArrayAgg("treatment", distinct=True)
+            )
             queryset = queryset.annotate(test_ids=ArrayAgg("case__test", distinct=True))
             if xlsx_format:
-                filename = filename + '.xlsx'
+                filename = filename + ".xlsx"
                 # avoid fetching those from get_row
-                queryset_treatments = Treatment.objects\
-                    .filter(patient__in=queryset_unprefetched)\
-                    .order_by(*["patient_id", "index"])\
+                queryset_treatments = (
+                    Treatment.objects.filter(patient__in=queryset_unprefetched)
+                    .order_by(*["patient_id", "index"])
                     .select_related("device__last_user__profile__team")
+                )
                 subquery = queryset.filter(id=OuterRef("form__normalized_patient_id"))
-                queryset_tests = Test.objects\
-                    .annotate(exists_patient=Exists(subquery))\
-                    .filter(exists_patient=True)\
-                    .order_by("form__normalized_patient_id")\
-                    .select_related("form")\
-                    .select_related("village")\
-                    .select_related("form__normalized_patient")\
-                    .select_related("image")\
-                    .select_related("video")\
+                queryset_tests = (
+                    Test.objects.annotate(exists_patient=Exists(subquery))
+                    .filter(exists_patient=True)
+                    .order_by("form__normalized_patient_id")
+                    .select_related("form")
+                    .select_related("village")
+                    .select_related("form__normalized_patient")
+                    .select_related("image")
+                    .select_related("video")
                     .select_related("team")
+                )
 
                 response = HttpResponse(
                     generate_xlsx(
+                        ["Patients", "Tests", "Traitements"],
+                        [columns, columns_tests, columns_treatments],
                         [
-                            'Patients',
-                            'Tests',
-                            'Traitements',
-                        ], [
-                            columns,
-                            columns_tests,
-                            columns_treatments,
-                        ], [
                             queryset_iterator(queryset, 5000),
                             queryset_iterator(queryset_tests, 5000),
                             queryset_iterator(queryset_treatments, 5000),
-                        ], [
+                        ],
+                        [
                             lambda row, **kwargs: get_row(row, anonymous),
                             lambda row, **kwargs: get_row_tests(row, request),
                             lambda row, **kwargs: get_row_treatments(row),
                         ],
                     ),
-                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:
-                filename = filename + '.csv'
+                filename = filename + ".csv"
                 response = StreamingHttpResponse(
                     streaming_content=(
-                        iter_items(queryset, Echo(), columns, lambda row, **kwargs: get_row(row, anonymous), chunk_size=10000)),
-                    content_type='text/csv',
+                        iter_items(
+                            queryset,
+                            Echo(),
+                            columns,
+                            lambda row, **kwargs: get_row(row, anonymous),
+                            chunk_size=10000,
+                        )
+                    ),
+                    content_type="text/csv",
                 )
-            response['Content-Disposition'] = 'attachment; filename=%s' % filename
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
     def retrieve(self, request, pk=None):
         patient = get_object_or_404(Patient, pk=pk)
-        is_authorized = (not patient.origin_area) or is_authorized_user(request.user,
-                                                                        patient.origin_area.ZS.province.id,
-                                                                        patient.origin_area.ZS.id,
-                                                                        patient.origin_area.id)
+        is_authorized = (not patient.origin_area) or is_authorized_user(
+            request.user,
+            patient.origin_area.ZS.province.id,
+            patient.origin_area.ZS.id,
+            patient.origin_area.id,
+        )
         if is_authorized:
             return Response(patient.as_full_dict())
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def update(self, request, pk=None):
         new_patient = get_object_or_404(Patient, pk=pk)
-        is_authorized = \
-            (
-                (not new_patient.origin_area)
-                or is_authorized_user(request.user, new_patient.origin_area.ZS.province.id,
-                                               new_patient.origin_area.ZS.id, new_patient.origin_area.id)
-            ) \
-            and (
-                request.user.is_superuser
-                or not request.user.has_perm("menupermissions.x_anonymous")
+        is_authorized = (
+            (not new_patient.origin_area)
+            or is_authorized_user(
+                request.user,
+                new_patient.origin_area.ZS.province.id,
+                new_patient.origin_area.ZS.id,
+                new_patient.origin_area.id,
             )
+        ) and (
+            request.user.is_superuser
+            or not request.user.has_perm("menupermissions.x_anonymous")
+        )
         if is_authorized:
-            new_patient.post_name = request.data.get('post_name', '')
-            new_patient.last_name = request.data.get('last_name', '')
-            new_patient.first_name = request.data.get('first_name', '')
-            new_patient.sex = request.data.get('sex', '')
-            phone_number = request.data.get('phone_number')
-            if phone_number or (phone_number is None and new_patient.phone_number is not None):
+            new_patient.post_name = request.data.get("post_name", "")
+            new_patient.last_name = request.data.get("last_name", "")
+            new_patient.first_name = request.data.get("first_name", "")
+            new_patient.sex = request.data.get("sex", "")
+            phone_number = request.data.get("phone_number")
+            if phone_number or (
+                phone_number is None and new_patient.phone_number is not None
+            ):
                 new_patient.phone_number = phone_number
-                new_patient.phone_number_date = today()
-            year_of_birth = request.data.get('year_of_birth', None)
-            new_patient.mothers_surname = request.data.get('mothers_surname', '')
+                new_patient.phone_number_date = datetime.today()
+            year_of_birth = request.data.get("year_of_birth", None)
+            new_patient.mothers_surname = request.data.get("mothers_surname", "")
             if year_of_birth:
                 new_patient.year_of_birth = year_of_birth
             else:
                 new_patient.year_of_birth = None
 
-            AS_id = request.data.get('AS_id', None)
+            AS_id = request.data.get("AS_id", None)
             if AS_id:
                 new_AS = get_object_or_404(AS, pk=AS_id)
                 new_patient.origin_area = new_AS
             else:
                 new_patient.origin_area = None
 
-            village_id = request.data.get('village_id', None)
+            village_id = request.data.get("village_id", None)
             if village_id:
                 new_village = get_object_or_404(Village, pk=village_id)
                 new_patient.origin_village = new_village
             else:
                 new_patient.origin_village = None
 
-            death = request.data.get('death', None)
+            death = request.data.get("death", None)
             if death:
-                new_patient.dead = death.get('dead')
+                new_patient.dead = death.get("dead")
                 if new_patient.dead:
-                    new_patient.death_date = death.get('death_date')
-                    device = death.get('device')
+                    new_patient.death_date = death.get("death_date")
+                    device = death.get("device")
                     if device:
-                        device_id = device.get('device_id')
+                        device_id = device.get("device_id")
                         device = get_object_or_404(DeviceDB, device_id=device_id)
                         new_patient.death_device = device
-                    location = death.get('location')
+                    location = death.get("location")
                     if location:
-                        new_patient.death_location = Point(x=location.get('coordinates')[0], y=location.get('coordinates')[1], srid=4326)
+                        new_patient.death_location = Point(
+                            x=location.get("coordinates")[0],
+                            y=location.get("coordinates")[1],
+                            srid=4326,
+                        )
                 else:
                     new_patient.death_date = None
                     new_patient.death_device = None
@@ -454,5 +512,4 @@ class PatientsViewSet(viewsets.ViewSet):
             new_patient.save()
             return Response(new_patient.as_full_dict())
         else:
-            return Response('Unauthorized', status=401)
-
+            return Response("Unauthorized", status=401)

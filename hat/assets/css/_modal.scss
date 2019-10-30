@@ -11,6 +11,7 @@
     left: 0;
     width: 100vw;
     height: 100vh;
+    overflow: auto;
     >div {
         top: 15vh !important;
     }
@@ -36,8 +37,8 @@
     max-height: 85%;
     min-width: 100px;
     min-height: 100px;
-    max-width: 80%;
     overflow: visible !important;
+    max-height: 900%;
     &.hidden-modal {
         opacity: 0 !important;
     }
@@ -55,7 +56,6 @@
         background-color: white;
         padding: $padding-unit;
         top: 9% !important;
-        max-height: 90%;
     }
     .half {
         border: 1px solid $gray;

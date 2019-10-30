@@ -1184,10 +1184,11 @@ export const stage = formatMessage => (
     }
 );
 
-export const activeUsers = () => (
+export const activeUsers = (disabled = false) => (
     {
         name: 'active',
         urlKey: 'active',
+        disabled,
         label: {
             id: 'main.label.usersActive',
             defaultMessage: 'Active users',
@@ -1196,10 +1197,11 @@ export const activeUsers = () => (
     }
 );
 
-export const inactiveUsers = () => (
+export const inactiveUsers = (disabled = false) => (
     {
         name: 'inactive',
         urlKey: 'inactive',
+        disabled,
         label: {
             id: 'main.label.usersInactive',
             defaultMessage: 'Inactive users',

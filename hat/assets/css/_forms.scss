@@ -1,6 +1,7 @@
 $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
-.trypelim, .login__container {
+.trypelim,
+.login__container {
 
     input[type="text"],
     input[type="number"],
@@ -178,5 +179,49 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
             cursor: default;
             opacity: 0.6;
         }
+    }
+
+    .check-box__container {
+        display: inline-block;
+
+        label {
+            display: inline-block !important;
+            font-size: 12px;
+        }
+
+        >span {
+            display: inline-block;
+            position: relative;
+        }
+    }
+
+    .check-box__icon {
+        position: relative;
+        top: 6px;
+        margin-left: 10px;
+    }
+
+    .check-box__input_hidden {
+        position: absolute !important;
+        opacity: 0 !important;
+        top: 0 !important;
+        right: 0 !important;
+        height: 100% !important;
+        width: 30px !important;
+        cursor: pointer;
+
+
+        &.disabled {
+
+            cursor: not-allowed;
+        }
+    }
+
+    .icon-green {
+        fill: $green;
+    }
+
+    .icon-error {
+        fill: $red;
     }
 }

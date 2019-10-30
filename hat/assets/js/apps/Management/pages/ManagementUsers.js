@@ -3,12 +3,13 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import CheckCircle from '@material-ui/icons/CheckCircle';
+import HighlightOff from '@material-ui/icons/HighlightOff';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import UserModaleComponent from '../components/UserModaleComponent';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
 import { userActions } from '../redux/users';
 import { teamsActions } from '../redux/teams';
 import Search from '../../../components/Search';
@@ -73,6 +74,19 @@ class ManagementUsers extends React.Component {
                 },
                 {
                     Header: formatMessage({
+                        defaultMessage: 'Active',
+                        id: 'main.label.active',
+                    }),
+                    accessor: 'user__is_active',
+                    Cell: settings => (
+                        <span>
+                            { settings.original.is_active && <CheckCircle className="icon-green" />}
+                            { !settings.original.is_active && <HighlightOff className="icon-error" />}
+                        </span>
+                    ),
+                },
+                {
+                    Header: formatMessage({
                         defaultMessage: 'Actions',
                         id: 'main.label.actions',
                     }),
@@ -88,20 +102,11 @@ class ManagementUsers extends React.Component {
                                 <i className="fa fa-pencil-square-o" />
                                 <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
                             </button>
-                            <button
-                                className="button--delete--tiny"
-                                onClick={() => this.showDelete(settings.original)}
-                            >
-                                <i className="fa fa-trash" />
-                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
-                            </button>
                         </section>
                     ),
                 },
             ],
             showEditModale: false,
-            showDeleteModale: false,
-            dataDeleted: undefined,
         };
     }
 
@@ -145,21 +150,6 @@ class ManagementUsers extends React.Component {
         return url;
     }
 
-    showDelete(data) {
-        this.setState({
-            showDeleteModale: true,
-            dataDeleted: data,
-        });
-    }
-
-    toggleDeleteModale() {
-        this.setState({
-            showDeleteModale: !this.state.showDeleteModale,
-            dataDeleted:
-                !this.state.showDeleteModale ? this.state.dataDeleted : undefined,
-        });
-    }
-
     saveData(newData) {
         const { dispatch } = this.props;
         if (newData.id === 0) {
@@ -167,15 +157,6 @@ class ManagementUsers extends React.Component {
         } else {
             dispatch(userActions.updateUser(dispatch, newData));
         }
-    }
-
-    deleteData(element) {
-        const { dispatch } = this.props;
-        this.setState({
-            showDeleteModale: false,
-            dataDeleted: undefined,
-        });
-        dispatch(userActions.deleteUser(dispatch, element));
     }
 
     fetchTeamTypes() {
@@ -204,6 +185,7 @@ class ManagementUsers extends React.Component {
             teams,
             load,
             teamTypes,
+            params,
         } = this.props;
 
         return (
@@ -231,18 +213,6 @@ class ManagementUsers extends React.Component {
                             deleteUserZones
                             isUpdated={this.props.isUpdated}
                             error={load.error}
-                        />
-                    )
-                }
-                {
-                    this.state.showDeleteModale
-                    && (
-                        <DeleteModaleComponent
-                            showModale={this.state.showDeleteModale}
-                            toggleModal={() => this.toggleDeleteModale()}
-                            element={this.state.dataDeleted}
-                            deleteElement={element => this.deleteData(element)}
-                            message={this.state.dataDeleted.userName}
                         />
                     )
                 }
@@ -279,7 +249,9 @@ class ManagementUsers extends React.Component {
                             <FiltersComponent
                                 params={this.props.params}
                                 baseUrl={baseUrl}
-                                filters={[institutions(institutionsList)]}
+                                filters={[
+                                    institutions(institutionsList),
+                                ]}
                             />
                         </div>
                         <div>
@@ -294,8 +266,8 @@ class ManagementUsers extends React.Component {
                                         id: 'main.label.allMale',
                                         defaultMessage: 'All',
                                     }),
-                                    activeUsers(),
-                                    inactiveUsers(),
+                                    activeUsers(params.inactive === undefined),
+                                    inactiveUsers(params.active === undefined),
                                 ]}
                             />
                         </div>
@@ -338,6 +310,7 @@ class ManagementUsers extends React.Component {
                                     AS: [],
                                     ZS: [],
                                     permissions: [],
+                                    is_active: true,
                                 })}
                             >
                                 <i className="fa fa-plus" />

@@ -8,6 +8,8 @@ import Search from './Search';
 
 import { createUrl } from '../utils/fetchData';
 import { userHasPermission } from '../utils';
+import CheckBox from './CheckBoxComponent';
+
 
 const anonymisedFilterArray = [
     'search_prename',
@@ -21,6 +23,7 @@ class FiltersComponent extends React.Component {
         super(props);
         this.state = {};
     }
+
     onChange(urlKey, value, callback) {
         if (callback) {
             callback(value);
@@ -93,73 +96,76 @@ class FiltersComponent extends React.Component {
             <section>
                 {
                     filters.map((filter) => {
-                        const searchDisabled = userHasPermission(permissions, currentUser, 'x_anonymous', false) &&
-                            anonymisedFilterArray.indexOf(filter.name) !== -1;
+                        const searchDisabled = userHasPermission(permissions, currentUser, 'x_anonymous', false)
+                            && anonymisedFilterArray.indexOf(filter.name) !== -1;
+
+                        let isChecked;
+                        if (filter.type === 'checkbox') {
+                            isChecked = (this.props.params[filter.urlKey] === 'true')
+                                || (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck]);
+                        }
 
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
                                 <div key={filter.name}>
                                     <div className="filter-item">
                                         {
-                                            filter.type !== 'checkbox' &&
-                                            <div className="filter-item-subtitle ">
-                                                {formatMessage(filter.label)}
-                                            </div>
-                                        }
-                                        {
-                                            filter.type === 'select' &&
-                                            <Select
-                                                multi={filter.isMultiSelect}
-                                                clearable={filter.isClearable}
-                                                simpleValue
-                                                name={filter.name}
-                                                value={filter.value || params[filter.urlKey]}
-                                                placeholder={formatMessage(filter.placeholder)}
-                                                options={filter.options.map(item =>
-                                                    ({ label: item.label || item.name, value: item.value || item.id }))}
-                                                onChange={value => this.onChange(filter.urlKey, value, filter.callback)}
-                                                className={filter.className ? filter.className : ''}
-                                                disabled={filter.isDisabled || false}
-                                            />
-                                        }
-
-                                        {
-                                            filter.type === 'search' &&
-                                            <Search
-                                                placeholderText={formatMessage(filter.placeholder)}
-                                                allowEmptySearch={filter.allowEmptySearch}
-                                                showResetSearch={filter.showResetSearch}
-                                                onSearch={() => this.onSearch()}
-                                                resetSearch={() => this.onSearchChange('', filter.urlKey, true)}
-                                                displayResults={filter.displayResults}
-                                                searchString={params[filter.urlKey]}
-                                                resetOnUnmount={false}
-                                                onChange={value => this.onSearchChange(value, filter.urlKey)}
-                                                disabled={searchDisabled}
-                                                displayIcon={filter.displayIcon}
-                                                onKeyPressed={filter.onKeyPressed}
-                                            />
-                                        }
-
-                                        {
-                                            filter.type === 'checkbox' &&
-                                            <span className="filter-checkbox">
-                                                <label htmlFor={`checkbox-${filter.urlKey}`}>
+                                            filter.type !== 'checkbox'
+                                            && (
+                                                <div className="filter-item-subtitle ">
                                                     {formatMessage(filter.label)}
-                                                </label>
-                                                <input
-                                                    id={`checkbox-${filter.urlKey}`}
-                                                    type="checkbox"
-                                                    name={`checkbox-${filter.urlKey}`}
-                                                    className="list--normalized-as-checkbox"
-                                                    checked={
-                                                        (this.props.params[filter.urlKey] === 'true') ||
-                                                            (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck])
-                                                            ? 'checked' : ''
-                                                    }
-                                                    onChange={event => this.toggleCheckbox(event.target.checked, filter.urlKey)}
+                                                </div>
+                                            )
+                                        }
+                                        {
+                                            filter.type === 'select'
+                                            && (
+                                                <Select
+                                                    multi={filter.isMultiSelect}
+                                                    clearable={filter.isClearable}
+                                                    simpleValue
+                                                    name={filter.name}
+                                                    value={filter.value || params[filter.urlKey]}
+                                                    placeholder={formatMessage(filter.placeholder)}
+                                                    options={filter.options.map(item => ({ label: item.label || item.name, value: item.value || item.id }))}
+                                                    onChange={value => this.onChange(filter.urlKey, value, filter.callback)}
+                                                    className={filter.className ? filter.className : ''}
+                                                    disabled={filter.isDisabled || false}
                                                 />
-                                            </span>
+                                            )
+                                        }
+
+                                        {
+                                            filter.type === 'search'
+                                            && (
+                                                <Search
+                                                    placeholderText={formatMessage(filter.placeholder)}
+                                                    allowEmptySearch={filter.allowEmptySearch}
+                                                    showResetSearch={filter.showResetSearch}
+                                                    onSearch={() => this.onSearch()}
+                                                    resetSearch={() => this.onSearchChange('', filter.urlKey, true)}
+                                                    displayResults={filter.displayResults}
+                                                    searchString={params[filter.urlKey]}
+                                                    resetOnUnmount={false}
+                                                    onChange={value => this.onSearchChange(value, filter.urlKey)}
+                                                    disabled={searchDisabled}
+                                                    displayIcon={filter.displayIcon}
+                                                    onKeyPressed={filter.onKeyPressed}
+                                                />
+                                            )
+                                        }
+
+                                        {
+                                            filter.type === 'checkbox'
+                                            && (
+                                                <CheckBox
+                                                    isChecked={isChecked}
+                                                    isDisabled={filter.disabled}
+                                                    keyValue={filter.urlKey}
+                                                    labelObj={filter.label}
+                                                    toggleCheckbox={(checked, keyValue) => this.toggleCheckbox(checked, keyValue)}
+                                                />
+                                            )
                                         }
                                     </div>
                                 </div>
@@ -199,4 +205,3 @@ const MapDispatchToProps = dispatch => ({
 const FiltersComponentIntl = injectIntl(FiltersComponent);
 
 export default connect(MapStateToProps, MapDispatchToProps)(FiltersComponentIntl);
-

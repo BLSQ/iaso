@@ -4,8 +4,8 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
 import TabsComponent from '../../../components/TabsComponent';
 import { deepEqual } from '../../../utils';
-import UserInfosComponent from '../components/UserInfosComponent';
-import UserGeoComponent from '../components/UserGeoComponent';
+import UserInfosComponent from './UserInfosComponent';
+import UserGeoComponent from './UserGeoComponent';
 import UserPermissionsComponent from './UserPermissionsComponent';
 
 
@@ -168,52 +168,62 @@ class UserModale extends Component {
                         defaultSelect={currentTab}
                     />
                     {
-                        currentTab === 'infos' &&
-                        <UserInfosComponent
-                            password={password}
-                            institutions={institutions}
-                            teams={teams}
-                            user={user}
-                            updatePassword={newPassword => this.updatePassword(newPassword)}
-                            updateUserField={(key, value) => this.updateUserField(key, value)}
-                            testerTypes={testerTypes}
-                            userLevels={userLevels}
-                        />
+                        currentTab === 'infos'
+                        && (
+                            <UserInfosComponent
+                                password={password}
+                                institutions={institutions}
+                                teams={teams}
+                                user={user}
+                                updatePassword={newPassword => this.updatePassword(newPassword)}
+                                updateUserField={(key, value) => this.updateUserField(key, value)}
+                                testerTypes={testerTypes}
+                                userLevels={userLevels}
+                            />
+                        )
                     }
                     {
-                        currentTab === 'geo' &&
-                        <UserGeoComponent
-                            provinces={provinces}
-                            zones={zones}
-                            areas={areas}
-                            user={user}
-                            updateUserField={(key, value) => this.updateUserField(key, value)}
-                        />
+                        currentTab === 'geo'
+                        && (
+                            <UserGeoComponent
+                                provinces={provinces}
+                                zones={zones}
+                                areas={areas}
+                                user={user}
+                                updateUserField={(key, value) => this.updateUserField(key, value)}
+                            />
+                        )
                     }
                     {
-                        currentTab === 'permissions' &&
-                        <UserPermissionsComponent
-                            userTypes={userTypes}
-                            permissions={permissions}
-                            userPermissions={user.permissions}
-                            userType={user.userType}
-                            updatePermissions={(newPermissions, newUserType) => this.updatePermissions(newPermissions, newUserType)}
-                        />
+                        currentTab === 'permissions'
+                        && (
+                            <UserPermissionsComponent
+                                userTypes={userTypes}
+                                permissions={permissions}
+                                userPermissions={user.permissions}
+                                userType={user.userType}
+                                updatePermissions={(newPermissions, newUserType) => this.updatePermissions(newPermissions, newUserType)}
+                            />
+                        )
                     }
                     {
-                        isUpdated &&
-                        <div className="align-right text--success">
-                            <FormattedMessage id="main.label.userupdated" defaultMessage="Utilisateur sauvegardé" />
-                        </div>
+                        isUpdated
+                        && (
+                            <div className="align-right text--success">
+                                <FormattedMessage id="main.label.userupdated" defaultMessage="Utilisateur sauvegardé" />
+                            </div>
+                        )
                     }
                     {
-                        error &&
-                        <div className="align-right text--error">
-                            {
-                                error.message ||
-                                <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
-                            }
-                        </div>
+                        error
+                        && (
+                            <div className="align-right text--error">
+                                {
+                                    error.message
+                                    || <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                                }
+                            </div>
+                        )
                     }
                     <div className="align-right">
                         <button
@@ -224,10 +234,10 @@ class UserModale extends Component {
                         </button>
                         <button
                             disabled={
-                                (user.userName === '' ||
-                                    (!isChanged && user.id !== 0) ||
-                                    (user.id === 0 &&
-                                        (user.userName === '' || password === '')))
+                                (user.userName === ''
+                                    || (!isChanged && user.id !== 0)
+                                    || (user.id === 0
+                                        && (user.userName === '' || password === '')))
                             }
                             className="button--save"
                             onClick={() => this.onSave()}

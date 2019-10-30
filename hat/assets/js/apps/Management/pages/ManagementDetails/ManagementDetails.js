@@ -20,6 +20,8 @@ import BarChart from '../../../../components/BarChart';
 import testStatsSettings from '../../constants/testStatsSettings';
 import confirmationStatsSettings from '../../constants/confirmationStatsSettings';
 import LoadingSpinner from '../../../../components/loading-spinner';
+import CheckBox from '../../../../components/CheckBoxComponent';
+
 import managementDetailColumns from './managementDetailColumns';
 import {
     MESSAGES,
@@ -73,23 +75,23 @@ export class ManagementDetails extends Component {
             },
         } = newProps;
 
-        const fetchVillagesYear = ((!villagesYear.detailId ||
-            from !== this.props.params.from ||
-            to !== this.props.params.to) && !loading);
+        const fetchVillagesYear = ((!villagesYear.detailId
+            || from !== this.props.params.from
+            || to !== this.props.params.to) && !loading);
 
-        const fetchVillagesMonth = ((!villagesMonth.detailId ||
-            from !== this.props.params.from ||
-            to !== this.props.params.to) && !loading);
+        const fetchVillagesMonth = ((!villagesMonth.detailId
+            || from !== this.props.params.from
+            || to !== this.props.params.to) && !loading);
         if (fetchVillagesYear) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ?
-                'device_id' : 'team_id', currentDetail.device_id ?
-                currentDetail.device_id : currentDetail.id, from, to, 'villageyear', !fetchVillagesMonth));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id
+                ? 'device_id' : 'team_id', currentDetail.device_id
+                ? currentDetail.device_id : currentDetail.id, from, to, 'villageyear', !fetchVillagesMonth));
         }
 
         if (fetchVillagesMonth) {
-            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id ?
-                'device_id' : 'team_id', currentDetail.device_id ?
-                currentDetail.device_id : currentDetail.id, from, to, 'month', true));
+            dispatch(detailsActions.fetchDetailsVillages(dispatch, currentDetail.device_id
+                ? 'device_id' : 'team_id', currentDetail.device_id
+                ? currentDetail.device_id : currentDetail.id, from, to, 'month', true));
         }
         if (deviceId && currentDetail) {
             this.setState({
@@ -120,9 +122,9 @@ export class ManagementDetails extends Component {
                 to,
             },
         } = this.props;
-        let url = currentDetail.device_id ?
-            `/api/teststats/?device_id=${currentDetail.device_id}&grouping=villageday` :
-            `/api/teststats/?team_id=${currentDetail.id}&grouping=villageday`;
+        let url = currentDetail.device_id
+            ? `/api/teststats/?device_id=${currentDetail.device_id}&grouping=villageday`
+            : `/api/teststats/?team_id=${currentDetail.id}&grouping=villageday`;
         if (from) {
             url += `&from=${from}`;
         }
@@ -169,91 +171,103 @@ export class ManagementDetails extends Component {
         return (
             <section>
                 {
-                    loading &&
-                    <div>
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
-                    </div>
+                    loading
+                    && (
+                        <div>
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        </div>
+                    )
                 }
                 <div className="widget__container">
                     {
-                        currentDetail &&
-                        currentDetail.device_id &&
-                        <div className="widget__header">
-                            <h2>
-                                <button
-                                    className="button--back"
-                                    onClick={() => this.goBack()}
-                                >
-                                    <i className="fa fa-arrow-left" />{' '}
-                                </button>
-
-                                {
-                                    currentDetail &&
-                                    <span>
-                                        <FormattedMessage id="main.label.user" defaultMessage="User" />:{` ${currentDetail.last_user}`}
-                                        {' - '}
-                                        <FormattedMessage id="main.label.team" defaultMessage="Team" />:{` ${currentDetail.last_team}`}
-                                    </span>
-                                }
-                                <div className="float-right">
-                                    <span className="filter-checkbox">
-                                        <label htmlFor="checkbox-is-test">
-                                            <FormattedMessage id="details.label.is_test" defaultMessage="Test device" />:
-                                        </label>
-                                        <input
-                                            id="checkbox-is-test"
-                                            type="checkbox"
-                                            name="checkbox-is-test"
-                                            className="list--normalized-as-checkbox"
-                                            checked={
-                                                this.state.isTest ? 'checked' : ''
-                                            }
-                                            onChange={event => this.setState({ isTest: event.target.checked })}
-                                        />
-                                    </span>
+                        currentDetail
+                        && currentDetail.device_id
+                        && (
+                            <div className="widget__header">
+                                <h2>
                                     <button
-                                        disabled={currentDetail.is_test === this.state.isTest}
-                                        onClick={() => this.saveDeviceChanges()}
-                                        className="button--save--tiny margin-left"
+                                        className="button--back"
+                                        onClick={() => this.goBack()}
                                     >
-                                        <FormattedMessage
-                                            id="main.label.save"
-                                            defaultMessage="Save"
-                                        />
+                                        <i className="fa fa-arrow-left" />
+                                        {' '}
                                     </button>
-                                </div>
-                            </h2>
-                        </div>
+
+                                    {
+                                        currentDetail
+                                        && (
+                                            <span>
+                                                <FormattedMessage id="main.label.user" defaultMessage="User" />
+                                                :
+                                                {` ${currentDetail.last_user}`}
+                                                {' - '}
+                                                <FormattedMessage id="main.label.team" defaultMessage="Team" />
+                                                :
+                                                {` ${currentDetail.last_team}`}
+                                            </span>
+                                        )
+                                    }
+                                    <div className="float-right">
+                                        <CheckBox
+                                            isChecked={this.state.isTest}
+                                            keyValue="checkbox-is-test"
+                                            labelObj={{
+                                                id: 'details.label.is_test',
+                                                defaultMessage: 'Test device',
+                                            }}
+                                            toggleCheckbox={checked => this.setState({ isTest: checked })}
+                                        />
+                                        <button
+                                            disabled={currentDetail.is_test === this.state.isTest}
+                                            onClick={() => this.saveDeviceChanges()}
+                                            className="button--save--tiny margin-left"
+                                        >
+                                            <FormattedMessage
+                                                id="main.label.save"
+                                                defaultMessage="Save"
+                                            />
+                                        </button>
+                                    </div>
+                                </h2>
+                            </div>
+                        )
                     }
                     {
-                        currentDetail &&
-                        currentDetail.name &&
-                        <div className="widget__header">
-                            <h2>
-                                <button
-                                    className="button--back"
-                                    onClick={() => (this.props.redirectTo('teams', {
-                                        coordination_id: params.coordination_id,
-                                        type: params.type,
-                                        order: params.teamOrder,
-                                        team_type: params.team_type,
-                                    }))}
-                                >
-                                    <i className="fa fa-arrow-left" />{' '}
-                                </button>
+                        currentDetail
+                        && currentDetail.name
+                        && (
+                            <div className="widget__header">
+                                <h2>
+                                    <button
+                                        className="button--back"
+                                        onClick={() => (this.props.redirectTo('teams', {
+                                            coordination_id: params.coordination_id,
+                                            type: params.type,
+                                            order: params.teamOrder,
+                                            team_type: params.team_type,
+                                        }))}
+                                    >
+                                        <i className="fa fa-arrow-left" />
+                                        {' '}
+                                    </button>
 
-                                {
-                                    currentDetail &&
-                                    <div>
-                                        <FormattedMessage id="main.label.team" defaultMessage="Team" />:{` ${currentDetail.name}`}
-                                    </div>
-                                }
-                            </h2>
-                        </div>
+                                    {
+                                        currentDetail
+                                        && (
+                                            <div>
+                                                <FormattedMessage id="main.label.team" defaultMessage="Team" />
+                                                :
+                                                {` ${currentDetail.name}`}
+                                            </div>
+                                        )
+                                    }
+                                </h2>
+                            </div>
+                        )
                     }
                 </div>
 
@@ -263,12 +277,11 @@ export class ManagementDetails extends Component {
                             <PeriodSelectorComponent
                                 dateFrom={params.from}
                                 dateTo={params.to}
-                                onChangeDate={(from, to) =>
-                                    this.props.redirectTo('detail', {
-                                        ...params,
-                                        from,
-                                        to,
-                                    })}
+                                onChangeDate={(from, to) => this.props.redirectTo('detail', {
+                                    ...params,
+                                    from,
+                                    to,
+                                })}
                             />
                         </h2>
                     </div>
@@ -286,23 +299,25 @@ export class ManagementDetails extends Component {
                 />
                 <div className={`widget__container no-border ${this.state.currentTab !== 'table' ? 'hidden' : ''}`}>
                     {
-                        currentDetail &&
-                        villages &&
-                        <CustomTableComponent
-                            selectable
-                            isSortable
-                            dataKey="result"
-                            showPagination={false}
-                            endPointUrl={this.getVillageTableUrl()}
-                            columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'date', desc: false }]}
-                            params={this.props.params}
-                            defaultPath="detail"
-                            canSelect={false}
-                            multiSort
-                            callBackWithDataKey={false}
-                            onDataLoaded={result => this.onTableLoaded(result)}
-                        />
+                        currentDetail
+                        && villages
+                        && (
+                            <CustomTableComponent
+                                selectable
+                                isSortable
+                                dataKey="result"
+                                showPagination={false}
+                                endPointUrl={this.getVillageTableUrl()}
+                                columns={this.state.tableColumns}
+                                defaultSorted={[{ id: 'date', desc: false }]}
+                                params={this.props.params}
+                                defaultPath="detail"
+                                canSelect={false}
+                                multiSort
+                                callBackWithDataKey={false}
+                                onDataLoaded={result => this.onTableLoaded(result)}
+                            />
+                        )
                     }
                     <div className="count-container-alone">
                         <div>
@@ -316,109 +331,123 @@ export class ManagementDetails extends Component {
                 </div>
                 <div className={`widget__container ${this.state.currentTab !== 'map' ? 'hidden' : ''}`}>
                     {
-                        (loading ||
-                            !currentDetail) &&
+                        (loading
+                            || !currentDetail)
+                        && (
                             <div className="widget__content">
                                 {' '}
                             </div>
+                        )
                     }
                     {
-                        !loading &&
-                        currentDetail &&
-                        villages.length === 0 &&
-                        <div className="widget__content">
-                            <FormattedMessage
-                                id="table.noResult"
-                                defaultMessage="No result"
-                            />
-                        </div>
-                    }
-                    {villages.length > 0 &&
-                        <div className="flex-container">
-                            <div className="split-selector-container ">
-                                <LayersComponent
-                                    base={baseLayer}
-                                    change={(type, key) => this.props.changeLayer(type, key)}
-                                />
-                                <div className="map__option padding-top">
-                                    <span className="map__option__header">
-                                        <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
-                                    </span>
-                                    <form>
-                                        <ul className="map__option__list legend">
-                                            <li className="map__option__list__item">
-                                                <i className="map__option__icon--without-positive-cases" />
-                                                <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Without new cases" />
-                                            </li>
-                                            <li className="map__option__list__item">
-                                                <i className="map__option__icon--with-positive-cases" />
-                                                <FormattedMessage id="management.detail.legend.newCases" defaultMessage="With new cases" />
-                                            </li>
-                                        </ul>
-                                    </form>
-                                </div>
-                            </div>
-                            <div className="split-map ">
-                                {
-                                    villagesYear.list.length > 0 &&
-                                    <Map
-                                        baseLayer={baseLayer}
-                                        villages={mapVillages(villagesYear.list)}
-                                        selectVillage={() => { }}
-                                        selectedVillageId={0}
-                                        getShape={type => this.props.getShape(type)}
-                                    />
-                                }
-                            </div>
-                        </div>
-                    }
-                </div>
-                <section className={`${this.state.currentTab !== 'stats' ? 'hidden' : ''}`}>
-                    {
-                        (loading ||
-                            !currentDetail) &&
-                            <div className="widget__container">
-                                <div className="widget__content">
-                                    {' '}
-                                </div>
-                            </div>
-                    }
-
-                    {
-                        !loading &&
-                        currentDetail &&
-                        villagesMonth.list.length === 0 &&
-                        <div className="widget__container">
+                        !loading
+                        && currentDetail
+                        && villages.length === 0
+                        && (
                             <div className="widget__content">
                                 <FormattedMessage
                                     id="table.noResult"
                                     defaultMessage="No result"
                                 />
                             </div>
-                        </div>
+                        )
+                    }
+                    {villages.length > 0
+                        && (
+                            <div className="flex-container">
+                                <div className="split-selector-container ">
+                                    <LayersComponent
+                                        base={baseLayer}
+                                        change={(type, key) => this.props.changeLayer(type, key)}
+                                    />
+                                    <div className="map__option padding-top">
+                                        <span className="map__option__header">
+                                            <FormattedMessage id="microplanning.legend.key" defaultMessage="Légende" />
+                                        </span>
+                                        <form>
+                                            <ul className="map__option__list legend">
+                                                <li className="map__option__list__item">
+                                                    <i className="map__option__icon--without-positive-cases" />
+                                                    <FormattedMessage id="management.detail.legend.noNewCases" defaultMessage="Without new cases" />
+                                                </li>
+                                                <li className="map__option__list__item">
+                                                    <i className="map__option__icon--with-positive-cases" />
+                                                    <FormattedMessage id="management.detail.legend.newCases" defaultMessage="With new cases" />
+                                                </li>
+                                            </ul>
+                                        </form>
+                                    </div>
+                                </div>
+                                <div className="split-map ">
+                                    {
+                                        villagesYear.list.length > 0
+                                        && (
+                                            <Map
+                                                baseLayer={baseLayer}
+                                                villages={mapVillages(villagesYear.list)}
+                                                selectVillage={() => { }}
+                                                selectedVillageId={0}
+                                                getShape={type => this.props.getShape(type)}
+                                            />
+                                        )
+                                    }
+                                </div>
+                            </div>
+                        )
+                    }
+                </div>
+                <section className={`${this.state.currentTab !== 'stats' ? 'hidden' : ''}`}>
+                    {
+                        (loading
+                            || !currentDetail)
+                        && (
+                            <div className="widget__container">
+                                <div className="widget__content">
+                                    {' '}
+                                </div>
+                            </div>
+                        )
+                    }
+
+                    {
+                        !loading
+                        && currentDetail
+                        && villagesMonth.list.length === 0
+                        && (
+                            <div className="widget__container">
+                                <div className="widget__content">
+                                    <FormattedMessage
+                                        id="table.noResult"
+                                        defaultMessage="No result"
+                                    />
+                                </div>
+                            </div>
+                        )
                     }
                     {
-                        villagesMonth.list.length > 0 &&
-                        <section>
-                            <div className="widget__container">
-                                <BarChart
-                                    showLegend
-                                    datas={villagesMonth.list}
-                                    settings={testStatsSettings}
-                                    title={formatMessage(MESSAGES.testStatsTitle)}
-                                    extraComponent={renderTestPourcentage(villagesMonth.total)}
-                                />
-                            </div>
-                            <div className="widget__container">
-                                <BarChart
-                                    showLegend
-                                    datas={villagesMonth.list}
-                                    settings={confirmationStatsSettings}
-                                    title={formatMessage(MESSAGES.confirmationStatsTitle)}
-                                    extraComponent={renderConfirmationPourcentage(villagesMonth.total)}
-                                />
-                            </div>
-                        </section>
+                        villagesMonth.list.length > 0
+                        && (
+                            <section>
+                                <div className="widget__container">
+                                    <BarChart
+                                        showLegend
+                                        datas={villagesMonth.list}
+                                        settings={testStatsSettings}
+                                        title={formatMessage(MESSAGES.testStatsTitle)}
+                                        extraComponent={renderTestPourcentage(villagesMonth.total)}
+                                    />
+                                </div>
+                                <div className="widget__container">
+                                    <BarChart
+                                        showLegend
+                                        datas={villagesMonth.list}
+                                        settings={confirmationStatsSettings}
+                                        title={formatMessage(MESSAGES.confirmationStatsTitle)}
+                                        extraComponent={renderConfirmationPourcentage(villagesMonth.total)}
+                                    />
+                                </div>
+                            </section>
+                        )
                     }
                 </section>
             </section>

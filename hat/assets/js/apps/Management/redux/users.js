@@ -349,25 +349,6 @@ export const createUser = (dispatch, user) => {
 };
 
 
-export const deleteUser = (dispatch, user) => {
-    dispatch(loadActions.startLoading());
-    req
-        .delete(`/api/profiles/${user.id}/`)
-        .set('Content-Type', 'application/json')
-        .then(() => {
-            dispatch(userUpdated(true));
-            dispatch(loadActions.successLoadingNoData());
-        })
-        .catch((err) => {
-            dispatch(loadActions.errorLoading(err));
-            console.error('Error when deleting user', err);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
-
 export const usersInitialState = {
     isUpdated: false,
     list: [],
@@ -387,7 +368,6 @@ export const userActions = {
     updateUser,
     setUsers,
     userUpdated,
-    deleteUser,
     createUser,
     selectUser,
     fetchInstitutions,

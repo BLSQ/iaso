@@ -5,6 +5,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { getPossibleYears } from '../../../utils';
 import Search from '../../../components/Search';
 import Filters from './Filters';
+import CheckBox from '../../../components/CheckBoxComponent';
 
 
 const MESSAGES = defineMessages({
@@ -77,29 +78,24 @@ class ListFilters extends React.Component {
                         searchString={this.props.params.search}
                     />
                     <span className="map__text--select align-right">
-                        <FormattedMessage
-                            id="locator.list.normalized"
-                            defaultMessage="Area already found"
-                        />
-                        <input
-                            type="checkbox"
-                            name="with normalized as"
-                            className="list--normalized-as-checkbox"
-                            checked={this.props.params.normalized === 'true' || !this.props.params.normalized ? 'checked' : ''}
-                            onChange={() => this.toggleNormalized(true)}
+                        <CheckBox
+                            isChecked={this.props.params.normalized === 'true' || !this.props.params.normalized ? 'checked' : ''}
+                            keyValue="with normalized as"
+                            labelObj={{
+                                id: 'locator.list.normalized',
+                                defaultMessage: 'Area already found',
+                            }}
+                            toggleCheckbox={() => this.toggleNormalized(true)}
                         />
                     </span>
                     <span className="map__text--select align-right">
-                        <FormattedMessage
-                            id="locator.list.notnormalized"
-                            defaultMessage="Area not found"
-                        />
-                        <input
-                            type="checkbox"
-                            name="without normalized as"
-                            className="list--normalized-as-checkbox"
-                            checked={this.props.params.normalized === 'false' || !this.props.params.normalized ? 'checked' : ''}
-                            onChange={() => this.toggleNormalized(false)}
+                        <CheckBox
+                            isChecked={this.props.params.normalized === 'false' || !this.props.params.normalized ? 'checked' : ''}
+                            labelObj={{
+                                id: 'locator.list.notnormalized',
+                                defaultMessage: 'Area not found',
+                            }}
+                            toggleCheckbox={() => this.toggleNormalized(false)}
                         />
                     </span>
                 </div>

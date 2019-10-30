@@ -300,8 +300,19 @@
                 margin: 8px $padding-unit/2 0 5px;
             }
         }
+        >section .check-box__container {
+            width: 100%;
+            .check-box__icon {
+                margin-left: 0;
+                top: 8px;
+                &.not-checked {
+                    fill: #868486;
+                }
+            }
+        }
         >section>div,
-        >section>section>div {
+        >section>section>div ,
+        >section .check-box__container {
             display: flex;
             margin-bottom: 10px;
             label {

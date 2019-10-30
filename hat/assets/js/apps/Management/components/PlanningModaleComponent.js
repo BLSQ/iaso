@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
+import CheckBox from '../../../components/CheckBoxComponent';
 
 class PlanningModale extends Component {
     constructor(props) {
@@ -96,25 +97,22 @@ class PlanningModale extends Component {
                         />
                     </div>
                     {
-                        this.props.canMakeTemplate && !this.props.isDuplicate &&
-                        <div>
-                            <label
-                                htmlFor={`make-template-${this.state.planning.id}`}
-                                className="filter__container__select__label"
-                            >
-                                <FormattedMessage
-                                    id="main.label.template"
-                                    defaultMessage="Template"
-                                />:
-                            </label>
-                            <input
-                                type="checkbox"
-                                name="make-template"
-                                className=""
-                                checked={this.state.planning.is_template ? 'checked' : ''}
-                                onChange={() => this.updatePlanningField('is_template', !this.state.planning.is_template)}
-                            />
-                        </div>
+                        this.props.canMakeTemplate && !this.props.isDuplicate
+                        && (
+                            <div>
+                                <CheckBox
+                                    isChecked={this.state.planning.is_template ? 'checked' : ''}
+                                    keyValue="make-template"
+                                    labelClassName="filter__container__select__label"
+                                    labelObj={{
+                                        id: 'main.label.template',
+                                        defaultMessage: 'Template',
+                                    }}
+                                    showSemicolon
+                                    toggleCheckbox={() => this.updatePlanningField('is_template', !this.state.planning.is_template)}
+                                />
+                            </div>
+                        )
                     }
                     <div className="align-right">
                         <button

@@ -151,6 +151,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.first_name = request.data.get("firstName", "")
         user.last_name = request.data.get("lastName", "")
         user.username = request.data.get("userName", "")
+        user.is_active = request.data.get("is_active", True)
         user.email = request.data.get("email", "")
         password = request.data.get("password", None)
         provinces = request.data.get("province", None)
@@ -242,6 +243,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.last_name = request.data.get("lastName", "")
         user.username = username
         user.email = request.data.get("email", "")
+        user.is_active = request.data.get("is_active", True)
         password = request.data.get("password", None)
         provinces = request.data.get("province", None)
         zones = request.data.get("ZS", [])
@@ -309,10 +311,3 @@ class ProfilesViewSet(viewsets.ViewSet):
         user.profile.save()
         log_modification(None, user, PROFILE_API, request.user)
         return Response(user.profile.as_dict())
-
-    def delete(self, request, pk):
-        profile = get_object_or_404(Profile, id=pk)
-        log_modification(profile.user, None, PROFILE_API, request.user)
-        profile.user.is_active = False
-        profile.user.save()
-        return Response("ok")

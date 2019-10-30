@@ -85,7 +85,7 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Utilisateurs",
-                    "url_key": reverse("dashboard:management_user"),
+                    "url_key": reverse("dashboard:management_user") + "/active/true",
                     "perms": "x_management_users"
                 },
                 {

@@ -5,6 +5,7 @@ import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { deepEqual } from '../../../utils';
 import { MESSAGES } from '../../../utils/constants/filters';
+import CheckBox from '../../../components/CheckBoxComponent';
 
 
 const LOCAL_MESSAGES = defineMessages({
@@ -61,7 +62,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.userName"
                             defaultMessage="User name"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -80,7 +82,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.firstName"
                             defaultMessage="First name"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -98,7 +101,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.lastName"
                             defaultMessage="Name"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -116,7 +120,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.phone"
                             defaultMessage="Phone"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -134,7 +139,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.email"
                             defaultMessage="E-mail"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -152,15 +158,15 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.tester_type"
                             defaultMessage="Tester type"
-                        />:
+                        />
+                        :
                     </label>
                     <Select
                         simpleValue
                         name="tester_type"
                         value={this.state.user.tester_type}
                         placeholder={formatMessage(LOCAL_MESSAGES.noneMasc)}
-                        options={testerTypes.map(t =>
-                            ({ label: formatMessage(MESSAGES[t[0]]), value: t[0] }))}
+                        options={testerTypes.map(t => ({ label: formatMessage(MESSAGES[t[0]]), value: t[0] }))}
                         onChange={testerType => this.props.updateUserField('tester_type', testerType)}
                     />
                 </div>
@@ -172,7 +178,8 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.user_level"
                             defaultMessage="QC level"
-                        />:
+                        />
+                        :
                     </label>
                     <Select
                         simpleValue
@@ -180,8 +187,7 @@ class UserInfosComponent extends Component {
                         clearable={false}
                         value={this.state.user.level || 10}
                         placeholder={formatMessage(LOCAL_MESSAGES.none)}
-                        options={userLevels.map(l =>
-                            ({ label: l[1], value: l[0] }))}
+                        options={userLevels.map(l => ({ label: l[1], value: l[0] }))}
                         onChange={level => this.props.updateUserField('level', level)}
                     />
                 </div>
@@ -191,19 +197,24 @@ class UserInfosComponent extends Component {
                         className="filter__container__select__label"
                     >
                         {
-                            this.state.user.id === 0 &&
-                            <FormattedMessage
-                                id="main.label.password"
-                                defaultMessage="Password"
-                            />
+                            this.state.user.id === 0
+                            && (
+                                <FormattedMessage
+                                    id="main.label.password"
+                                    defaultMessage="Password"
+                                />
+                            )
                         }
                         {
-                            this.state.user.id !== 0 &&
-                            <FormattedMessage
-                                id="main.label.newPassword"
-                                defaultMessage="New password"
-                            />
-                        }:
+                            this.state.user.id !== 0
+                            && (
+                                <FormattedMessage
+                                    id="main.label.newPassword"
+                                    defaultMessage="New password"
+                                />
+                            )
+                        }
+                        :
                     </label>
                     <input
                         autoComplete="new-password"
@@ -216,12 +227,12 @@ class UserInfosComponent extends Component {
                     />
                     <button className="toggle-display-password" onClick={() => this.togglePasswordDisplay()}>
                         {
-                            !this.state.displayPassword &&
-                            <i className="fa fa-eye" aria-hidden="true" />
+                            !this.state.displayPassword
+                            && <i className="fa fa-eye" aria-hidden="true" />
                         }
                         {
-                            this.state.displayPassword &&
-                            <i className="fa fa-eye-slash" aria-hidden="true" />
+                            this.state.displayPassword
+                            && <i className="fa fa-eye-slash" aria-hidden="true" />
                         }
                     </button>
                 </div>
@@ -233,15 +244,15 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.teams"
                             defaultMessage="Team"
-                        />:
+                        />
+                        :
                     </label>
                     <Select
                         simpleValue
                         name="team_id"
                         value={this.state.user.team}
                         placeholder={formatMessage(LOCAL_MESSAGES.none)}
-                        options={teams.map(team =>
-                            ({ label: team.name, value: team.id }))}
+                        options={teams.map(team => ({ label: team.name, value: team.id }))}
                         onChange={teamId => this.props.updateUserField('team', teamId)}
                     />
                 </div>
@@ -253,33 +264,43 @@ class UserInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.institution"
                             defaultMessage="Institution"
-                        />:
+                        />
+                        :
                     </label>
                     <Select
                         simpleValue
                         name="institution_id"
                         value={this.state.user.institution ? this.state.user.institution.id : null}
                         placeholder={formatMessage(LOCAL_MESSAGES.none)}
-                        options={institutions.map(institution =>
-                            ({ label: institution.name, value: institution.id }))}
+                        options={institutions.map(institution => ({ label: institution.name, value: institution.id }))}
                         onChange={institutionId => this.props.updateUserField('institution', { id: institutionId })}
                     />
                 </div>
+
                 <div>
-                    <label
-                        htmlFor="passwordReset"
-                        className="filter__container__select__label"
-                    >
-                        <FormattedMessage
-                            id="management.user.resetpassword"
-                            defaultMessage="Reset password"
-                        />:
-                    </label>
-                    <input
-                        type="checkbox"
-                        name="passwordReset"
-                        checked={this.state.user.passwordReset ? 'checked' : ''}
-                        onChange={event => this.props.updateUserField('passwordReset', event.target.checked)}
+                    <CheckBox
+                        isChecked={Boolean(this.state.user.passwordReset)}
+                        keyValue="passwordReset"
+                        showSemicolon
+                        labelClassName="filter__container__select__label"
+                        labelObj={{
+                            id: 'management.user.resetpassword',
+                            defaultMessage: 'Reset password',
+                        }}
+                        toggleCheckbox={checked => this.props.updateUserField('passwordReset', checked)}
+                    />
+                </div>
+                <div>
+                    <CheckBox
+                        isChecked={Boolean(this.state.user.is_active)}
+                        keyValue="is_active"
+                        showSemicolon
+                        labelClassName="filter__container__select__label"
+                        labelObj={{
+                            id: 'management.user.isActive',
+                            defaultMessage: 'User active',
+                        }}
+                        toggleCheckbox={checked => this.props.updateUserField('is_active', checked)}
                     />
                 </div>
             </section>

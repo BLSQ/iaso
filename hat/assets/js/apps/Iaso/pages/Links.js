@@ -61,7 +61,7 @@ class Links extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: linksTableColumns(props.intl.formatMessage, this),
+            tableColumns: linksTableColumns(props.intl.formatMessage, this, props.classes),
             tableUrl: null,
             expanded: {},
         };

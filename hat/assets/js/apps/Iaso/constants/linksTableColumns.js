@@ -8,7 +8,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import getDisplayName from '../utils/usersUtils';
 import StarsComponent from '../components/stars/StarsComponent';
 
-const linksTableColumns = (formatMessage, component) => (
+const linksTableColumns = (formatMessage, component, classes) => (
     [
         {
             Header: formatMessage({
@@ -140,10 +140,14 @@ const linksTableColumns = (formatMessage, component) => (
                         <VisibilityOff />
                     )
                     : (
-                        <Tooltip title={formatMessage({
-                            defaultMessage: 'Details',
-                            id: 'iaso.label.details',
-                        })}
+                        <Tooltip
+                            classes={{
+                                popper: classes.popperFixed,
+                            }}
+                            title={formatMessage({
+                                defaultMessage: 'Details',
+                                id: 'iaso.label.details',
+                            })}
                         >
                             <Visibility />
                         </Tooltip>

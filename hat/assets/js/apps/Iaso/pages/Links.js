@@ -109,10 +109,21 @@ class Links extends Component {
         });
     }
 
-    onExpandedChange(expanded, index) {
+    onExpandedChange(expanded) {
         this.setState({
             expanded,
         });
+    }
+
+    onDataLoaded(linksList, count, pages) {
+        const {
+            dispatch,
+        } = this.props;
+        this.setState({
+            expanded: {},
+        });
+        dispatch(this.props.setIsFetching(false));
+        this.props.setLinks(linksList, this.props.params, count, pages);
     }
 
     getEndpointUrl(toExport, exportType = 'csv') {
@@ -122,6 +133,7 @@ class Links extends Component {
     resetData() {
         this.setState({
             tableUrl: null,
+            expanded: {},
         });
         this.props.setLinks(null, this.props.params, 0, 1);
     }
@@ -208,10 +220,7 @@ class Links extends Component {
                                         canSelect={false}
                                         multiSort
                                         onDataStartLoaded={() => dispatch(this.props.setIsFetching(true))}
-                                        onDataLoaded={(linksList, count, pages) => {
-                                            dispatch(this.props.setIsFetching(false));
-                                            this.props.setLinks(linksList, this.props.params, count, pages);
-                                        }}
+                                        onDataLoaded={(linksList, count, pages) => this.onDataLoaded(linksList, count, pages)}
                                         reduxPage={reduxPage}
                                         SubComponent={({ original }) => (original
                                             ? (

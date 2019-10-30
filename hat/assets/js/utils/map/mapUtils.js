@@ -276,7 +276,7 @@ const renderTestTooltipContent = (test, formatMessage, testsMapping) => (
     `<section class="custom-popup-container">
         <div>${test.type}-${test.id}</div>
         <div class="${parseInt(test.result, 10) > 1 ? 'error-text' : ''}">
-            ${formatMessage({ defaultMessage: 'Résultat', id: 'main.label.testResult' })}:
+            ${formatMessage({ defaultMessage: 'Result', id: 'main.label.testResult' })}:
             <span>${testsMapping[test.result]}</span>
         </div>
         <div>

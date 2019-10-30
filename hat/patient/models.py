@@ -192,6 +192,8 @@ class Patient(models.Model):
             "death": death,
             "treatments": [t.as_dict() for t in self.treatment_set.all()],
             "death_date": self.death_date,
+            "phone_number": self.phone_number,
+            "phone_number_date": self.phone_number_date,
         }
 
 

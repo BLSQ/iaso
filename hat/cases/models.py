@@ -636,6 +636,8 @@ class Case(CaseAbstract):
             "circumstances_dp_hgr": self.circumstances_dp_hgr,
             "screening_type": self.screening_type,
             "latest_test_date": self.latest_test_date,
+            "infection_location": self.infection_location.as_short_dict() if self.infection_location else None,
+            "infection_location_type": self.get_infection_location_type_display(),
         }
 
         if self.mark_for_deletion:

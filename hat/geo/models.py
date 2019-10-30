@@ -214,6 +214,20 @@ class Village(models.Model):
             "aliases": self.aliases,
         }
 
+    def as_short_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "AS_id": self.AS_id,
+            "AS_name": self.AS.name,
+            "ZS_id": self.AS.ZS_id,
+            "ZS_name": self.AS.ZS.name,
+            "province_id": self.AS.ZS.province_id,
+            "province_name": self.AS.ZS.province.name,
+            "village_type": self.village_type,
+            "village_official": self.village_official,
+            "village_source": self.village_source,
+        }
 
 class ZSASMappingImport(models.Model):
     file_name = models.TextField()

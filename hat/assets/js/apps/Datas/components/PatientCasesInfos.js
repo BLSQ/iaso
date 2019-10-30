@@ -64,10 +64,13 @@ class PatientCasesInfo extends React.Component {
                         >
                             <th colSpan="2">
                                 {
-                                    !currentCase.team.normalized_team &&
-                                    <span>
-                                        <i className="fa fa-warning" /> {'  '}
-                                    </span>
+                                    !currentCase.team.normalized_team
+                                    && (
+                                        <span>
+                                            <i className="fa fa-warning" />
+                                            {'  '}
+                                        </span>
+                                    )
                                 }
                                 <strong><FormattedMessage id="main.label.informations" defaultMessage="Informations" /></strong>
                             </th>
@@ -88,11 +91,11 @@ class PatientCasesInfo extends React.Component {
                             </th>
                             <td>
                                 {!currentCase.screening_type && '--'}
-                                {currentCase.screening_type === 'active' &&
-                                    <FormattedMessage id="main.label.active" defaultMessage="Active" />
+                                {currentCase.screening_type === 'active'
+                                    && <FormattedMessage id="main.label.active" defaultMessage="Active" />
                                 }
-                                {currentCase.screening_type === 'passive' &&
-                                    <FormattedMessage id="main.label.passive" defaultMessage="Passive" />
+                                {currentCase.screening_type === 'passive'
+                                    && <FormattedMessage id="main.label.passive" defaultMessage="Passive" />
                                 }
                             </td>
                         </tr>
@@ -111,60 +114,70 @@ class PatientCasesInfo extends React.Component {
                                     !currentCase.test_pl_result ? '--' : ''
                                 }
                                 {
-                                    currentCase.test_pl_result === 'unknown' ?
-                                        <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
+                                    currentCase.test_pl_result === 'unknown'
+                                        ? <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
                                 }
                             </td>
                         </tr>
-                        {currentCase.circumstances_da_um &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="UM active screening" />
-                                </th>
-                                <td>
-                                    {currentCase.circumstances_da_um}
-                                </td>
-                            </tr>
+                        {currentCase.circumstances_da_um !== undefined
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="UM active screening" />
+                                    </th>
+                                    <td>
+                                        {currentCase.circumstances_da_um}
+                                    </td>
+                                </tr>
+                            )
                         }
-                        {currentCase.circumstances_dp_um &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="UM passive screening" />
-                                </th>
-                                <td>
-                                    {currentCase.circumstances_dp_um}
-                                </td>
-                            </tr>
+                        {currentCase.circumstances_dp_um !== undefined
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="UM passive screening" />
+                                    </th>
+                                    <td>
+                                        {currentCase.circumstances_dp_um}
+                                    </td>
+                                </tr>
+                            )
                         }
-                        {currentCase.circumstances_dp_cdtc &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Passive screening CDTC" />
-                                </th>
-                                <td>
-                                    {currentCase.circumstances_dp_cdtc}
-                                </td>
-                            </tr>
+                        {currentCase.circumstances_dp_cdtc !== undefined
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Passive screening CDTC" />
+                                    </th>
+                                    <td>
+                                        {currentCase.circumstances_dp_cdtc}
+                                    </td>
+                                </tr>
+                            )
                         }
-                        {currentCase.circumstances_dp_cs &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="CS passive screening" />
-                                </th>
-                                <td>
-                                    {currentCase.circumstances_dp_cs}
-                                </td>
-                            </tr>
+                        {currentCase.circumstances_dp_cs !== undefined
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="CS passive screening" />
+                                    </th>
+                                    <td>
+                                        {currentCase.circumstances_dp_cs}
+                                    </td>
+                                </tr>
+                            )
                         }
-                        {currentCase.circumstances_dp_hgr &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="HGR passive screening" />
-                                </th>
-                                <td>
-                                    {currentCase.circumstances_dp_hgr}
-                                </td>
-                            </tr>
+                        {currentCase.circumstances_dp_hgr !== undefined
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="HGR passive screening" />
+                                    </th>
+                                    <td>
+                                        {currentCase.circumstances_dp_hgr}
+                                    </td>
+                                </tr>
+                            )
                         }
                         <tr>
                             <th>
@@ -172,12 +185,12 @@ class PatientCasesInfo extends React.Component {
                             </th>
                             <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>
                                 {
-                                    !currentCase.team.normalized_team &&
-                                    <FormattedMessage id="main.label.teamNotFound" defaultMessage="Team not found" />
+                                    !currentCase.team.normalized_team
+                                    && <FormattedMessage id="main.label.teamNotFound" defaultMessage="Team not found" />
                                 }
                                 {
-                                    currentCase.team.normalized_team &&
-                                    teamName
+                                    currentCase.team.normalized_team
+                                    && teamName
                                 }
                             </td>
                         </tr>
@@ -202,8 +215,8 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="main.label.source" defaultMessage="Source" />
                             </th>
                             <td className={`${similarCase && (similarCase.source !== currentCase.source) ? 'error' : ''}`}>
-                                {currentCase.source && MESSAGES[currentCase.source] ?
-                                    formatMessage(MESSAGES[currentCase.source])
+                                {currentCase.source && MESSAGES[currentCase.source]
+                                    ? formatMessage(MESSAGES[currentCase.source])
                                     : currentCase.source}
                                 {!currentCase.source && '--'}
                             </td>

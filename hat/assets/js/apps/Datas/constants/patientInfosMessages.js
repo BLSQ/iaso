@@ -41,6 +41,11 @@ const patientInfosMessages = formatMessage => ({
             },
         ],
     },
+    phone_number: {
+        defaultMessage: 'Phone',
+        id: 'main.label.phone',
+        type: 'text',
+    },
     death_date: {
         defaultMessage: 'Death date',
         id: 'main.label.death_date',

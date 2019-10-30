@@ -5,7 +5,7 @@ from datetime import datetime
 class Algorithm:
     description = "Matching on external id"
 
-    def match(self, version_1, version_2):
+    def match(self, version_1, version_2, user=None):
 
         algo, created = MatchingAlgorithm.objects.get_or_create(
             name=__name__, defaults={"description": self.description}
@@ -14,6 +14,8 @@ class Algorithm:
         run.algorithm = algo
         run.version_1 = version_1
         run.version_2 = version_2
+        if user:
+            run.launcher = user
         run.save()
 
         units1 = list(

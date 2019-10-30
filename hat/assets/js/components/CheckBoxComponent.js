@@ -30,8 +30,7 @@ function CheckBoxComponent(props) {
                         isChecked
                         && (
                             <CheckBox
-                                className="check-box__icon"
-                                color={!isDisabled ? 'primary' : 'inherit'}
+                                className={`check-box__icon ${!isDisabled ? 'primary' : ''}`}
                             />
                         )
                     }

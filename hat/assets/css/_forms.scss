@@ -199,6 +199,9 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         position: relative;
         top: 6px;
         margin-left: 10px;
+        &.primary {
+            fill: $blue;
+        }
     }
 
     .check-box__input_hidden {

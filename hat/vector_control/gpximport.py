@@ -26,7 +26,7 @@ def gpximport(filename, file=None, user=None):
 
     for wp in gpx.waypoints:
         Target.objects.get_or_create(
-            location=Point(x=wp.longitude, y=wp.latitude, z=wp.elevation, srid=4326),
+            location=Point(x=wp.longitude, y=wp.latitude, z=wp.elevation if wp.elevation else 0, srid=4326),
             name=wp.name,
             deployment=None,
             full_name=filename + " " + wp.name,

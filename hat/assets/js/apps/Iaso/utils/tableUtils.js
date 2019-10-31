@@ -14,10 +14,11 @@ const getTableUrl = (
 
     if (asLocation) {
         clonedParams.asLocation = true;
-        delete clonedParams.limit;
+        clonedParams.limit = clonedParams.locationLimit;
         delete clonedParams.page;
     }
 
+    delete clonedParams.locationLimit;
 
     Object.keys(clonedParams).forEach((key) => {
         const value = clonedParams[key];

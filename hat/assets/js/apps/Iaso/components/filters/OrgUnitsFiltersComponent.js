@@ -119,7 +119,7 @@ class OrgUnitsFiltersComponent extends Component {
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
                         <Button
-                            disabled={!filtersUpdated}
+                            disabled={!filtersUpdated && Boolean(params.searchActive)}
                             variant="contained"
                             className={classes.button}
                             color="primary"

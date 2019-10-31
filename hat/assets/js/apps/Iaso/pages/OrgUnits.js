@@ -27,6 +27,7 @@ import {
     setOrgUnitsListFetching,
     setSources,
     setFetchingOrgUnitTypes,
+    setFiltersUpdated,
 } from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
@@ -255,6 +256,7 @@ class OrgUnits extends Component {
                 this.props.redirectTo(baseUrl, newParams);
             }
             this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages);
+            this.props.setFiltersUpdated(false);
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
                     data[1],
@@ -405,6 +407,7 @@ OrgUnits.propTypes = {
     setOrgUnitsLocations: PropTypes.func.isRequired,
     fetchingOrgUnitTypes: PropTypes.bool.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
+    setFiltersUpdated: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -425,6 +428,7 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitsListFetching: isFetching => dispatch(setOrgUnitsListFetching(isFetching)),
     setFetchingOrgUnitTypes: isFetching => dispatch(setFetchingOrgUnitTypes(isFetching)),
     setOrgUnitsLocations: orgUnitsList => dispatch(setOrgUnitsLocations(orgUnitsList)),
+    setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
 });
 
 export default withStyles(styles)(

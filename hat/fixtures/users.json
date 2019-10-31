@@ -87,6 +87,11 @@
           "x_management_devices",
           "menupermissions",
           "custompermissionsupport"
+        ],
+        [
+          "x_qualitycontrol",
+          "menupermissions",
+          "custompermissionsupport"
         ]
       ]
     }
@@ -138,6 +143,11 @@
         ],
         [
           "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
+        ],
+        [
+          "x_qualitycontrol",
           "menupermissions",
           "custompermissionsupport"
         ]
@@ -193,6 +203,11 @@
           "x_locator",
           "menupermissions",
           "custompermissionsupport"
+        ],
+        [
+          "x_qualitycontrol",
+          "menupermissions",
+          "custompermissionsupport"
         ]
       ]
     }
@@ -244,6 +259,11 @@
         ],
         [
           "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
+        ],
+        [
+          "x_qualitycontrol",
           "menupermissions",
           "custompermissionsupport"
         ]
@@ -348,6 +368,115 @@
     }
   },
   {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$sUaQXwEX35wG$/bKQ4BY0udmBX9QPIiUvfCLQNjmvsMzq8LqzEFQj184=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "screener",
+      "first_name": "Scree",
+      "last_name": "Ner",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-09-14T10:41:25Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$sUaQXwEX35wG$/bKQ4BY0udmBX9QPIiUvfCLQNjmvsMzq8LqzEFQj184=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "confirmer",
+      "first_name": "Con",
+      "last_name": "Firmer",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2018-09-14T10:41:25Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ]
+      ]
+    }
+  },
+    {
+    "model": "auth.user",
+    "fields": {
+      "password": "pbkdf2_sha256$30000$rRkK3bxbfKkr$6gNi+Zv5aqUAOkxWyDB5IhUc87JQFXFdDxu1Xlpzt4s=",
+      "last_login": null,
+      "is_superuser": false,
+      "username": "qc_admin",
+      "first_name": "",
+      "last_name": "",
+      "email": "",
+      "is_staff": false,
+      "is_active": true,
+      "date_joined": "2016-09-27T09:32:59.863Z",
+      "groups": [],
+      "user_permissions": [
+        [
+          "export",
+          "cases",
+          "case"
+        ],
+        [
+          "export_full",
+          "cases",
+          "case"
+        ],
+        [
+          "import",
+          "cases",
+          "case"
+        ],
+        [
+          "import_reconciled",
+          "cases",
+          "case"
+        ],
+        [
+          "view",
+          "cases",
+          "case"
+        ],
+        [
+          "import_locations",
+          "cases",
+          "location"
+        ],
+        [
+          "x_locator",
+          "menupermissions",
+          "custompermissionsupport"
+        ],
+        [
+          "x_management_devices",
+          "menupermissions",
+          "custompermissionsupport"
+        ],
+        [
+          "x_qualitycontrol",
+          "menupermissions",
+          "custompermissionsupport"
+        ]
+      ]
+    }
+  },
+  {
     "model": "users.profile",
     "pk": 1,
     "fields": {
@@ -369,6 +498,8 @@
     "model": "users.profile",
     "pk": 3,
     "fields": {
+      "level": 30,
+      "tester_type": "screener",
       "user": [
         "supervisor"
       ]
@@ -378,6 +509,7 @@
     "model": "users.profile",
     "pk": 4,
     "fields": {
+      "level": 20,
       "user": [
         "supervisor-mosango"
       ],
@@ -425,6 +557,7 @@
     "model": "users.profile",
     "pk": 9,
     "fields": {
+      "level": 20,
       "user": [
         "supervisor-muluma"
       ],
@@ -438,7 +571,42 @@
       "user": [
         "passive"
       ],
+      "tester_type": "confirmer",
       "screening_type": "passive"
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 11,
+    "fields": {
+      "user": [
+        "screener"
+      ],
+      "tester_type": "screener",
+      "screening_type": "active"
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 12,
+    "fields": {
+      "user": [
+        "confirmer"
+      ],
+      "tester_type": "confirmer",
+      "screening_type": "active"
+    }
+  },
+  {
+    "model": "users.profile",
+    "pk": 13,
+    "fields": {
+      "user": [
+        "qc_admin"
+      ],
+      "level": 40,
+      "tester_type": "confirmer",
+      "screening_type": "active"
     }
   }
 ]

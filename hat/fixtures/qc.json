@@ -1,0 +1,493 @@
+[
+  {
+    "model": "cases.case",
+    "pk": 150,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x150", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 2, "normalized_patient_id": 105, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1501,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1501.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1501,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "150", "village": 1111,
+      "image_filename": "foo1501.jpg", "image_id": 1501, "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1501,
+    "fields": {
+      "result": 2, "test_id": 1501, "validator_id": ["supervisor"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 151,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x151", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 104, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1511,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1502.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1511,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "151", "village": 1111,
+      "image_filename": "foo1502.jpg", "image_id": 1511, "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1511,
+    "fields": {
+      "result": 1, "test_id": 1511, "validator_id": ["supervisor"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 152,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x152", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1521,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1522.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1521,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "152", "village": 1111,
+      "image_filename": "foo1522.jpg", "image_id": 1521, "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1521,
+    "fields": {
+      "result": 1, "test_id": 1521, "validator_id": ["supervisor"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 153,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x153", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1531,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1532.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1531,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "153", "village": 1111, "image_id": 1531,
+      "image_filename": "foo1532.jpg", "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1531,
+    "fields": {
+      "result": 2, "test_id": 1531, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1532,
+    "fields": {
+      "result": 2, "test_id": 1531, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 154,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x154", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1541,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1542.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1541,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "154", "village": 1111, "image_id": 1541,
+      "image_filename": "foo1542.jpg", "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1541,
+    "fields": {
+      "result": 2, "test_id": 1541, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1542,
+    "fields": {
+      "result": 1, "test_id": 1541, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 153,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x153", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1531,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1532.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1531,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "153", "village": 1111, "image_id": 1531,
+      "image_filename": "foo1532.jpg", "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1531,
+    "fields": {
+      "result": 2, "test_id": 1531, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1532,
+    "fields": {
+      "result": 1, "test_id": 1531, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 155,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x155", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_rdt": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1551,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "RDT", "image": "foo1552.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1551,
+    "fields": {
+      "type": "RDT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "155", "village": 1111, "image_id": 1551,
+      "image_filename": "foo1552.jpg", "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1551,
+    "fields": {
+      "result": 2, "test_id": 1551, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1552,
+    "fields": {
+      "result": 1, "test_id": 1551, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 156,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x156", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_pg": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.videoupload",
+    "pk": 1561,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "PG", "video": "foo1562.mp4", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1561,
+    "fields": {
+      "type": "PG", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "156", "village": 1111, "video_id": 1561,
+      "video_filename": "foo1562.mp4", "tester_id": 12,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1561,
+    "fields": {
+      "result": 2, "test_id": 1561, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1562,
+    "fields": {
+      "result": 2, "test_id": 1561, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 157,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x157", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_pg": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.videoupload",
+    "pk": 1571,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "PG", "video": "foo1572.mp4", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1571,
+    "fields": {
+      "type": "PG", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "157", "village": 1111, "video_id": 1571,
+      "video_filename": "foo1572.mp4", "tester_id": 12,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1571,
+    "fields": {
+      "result": 2, "test_id": 1571, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1572,
+    "fields": {
+      "result": 1, "test_id": 1571, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 158,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x158", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_pg": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.videoupload",
+    "pk": 1581,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "PG", "video": "foo1582.mp4", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1581,
+    "fields": {
+      "type": "PG", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "158", "village": 1111, "video_id": 1581,
+      "video_filename": "foo1582.mp4", "tester_id": 12,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1581,
+    "fields": {
+      "result": 1, "test_id": 1581, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+  {
+    "model": "cases.case",
+    "pk": 159,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x159", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_pg": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.videoupload",
+    "pk": 1591,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "PG", "video": "foo1592.mp4", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1591,
+    "fields": {
+      "type": "PG", "result": 1, "date": "2018-01-07T00:00:00Z", "form": "159", "village": 1111, "video_id": 1591,
+      "video_filename": "foo1592.mp4", "tester_id": 12,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1591,
+    "fields": {
+      "result": 1, "test_id": 1591, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": true, "is_confirmed_case": true, "is_good_place": true,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 160,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x160", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_pg": 2, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.videoupload",
+    "pk": 1601,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "PG", "video": "foo1602.mp4", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1601,
+    "fields": {
+      "type": "PG", "result": 1, "date": "2018-01-07T00:00:00Z", "form": "160", "village": 1111, "video_id": 1601,
+      "video_filename": "foo1602.mp4", "tester_id": 10,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  }
+]

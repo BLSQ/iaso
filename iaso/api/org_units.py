@@ -422,9 +422,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
-        if org_unit.simplified_geom:
+        if org_unit.simplified_geom or org_unit.catchment:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
-            res["geo_json"] = geojson_queryset(
-                queryset, geometry_field="simplified_geom"
-            )
+            if org_unit.simplified_geom:
+                res["geo_json"] = geojson_queryset(
+                    queryset, geometry_field="simplified_geom"
+                )
+            if org_unit.catchment:
+                res["catchment"] = geojson_queryset(
+                    queryset, geometry_field="catchment"
+                )
         return Response(res)

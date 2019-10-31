@@ -173,6 +173,7 @@ class OrgUnit(models.Model):
     source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = PolygonField(srid=4326, null=True, blank=True)
     simplified_geom = PolygonField(srid=4326, null=True, blank=True)
+    catchment = PolygonField(srid=4326, null=True, blank=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 

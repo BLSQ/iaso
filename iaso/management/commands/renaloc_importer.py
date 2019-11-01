@@ -72,7 +72,7 @@ class Command(BaseCommand):
             name="Département"
         )
         commune_unit_type, created = OrgUnitType.objects.get_or_create(name="Commune")
-
+        localite_unit_type, created = OrgUnitType.objects.get_or_create(name="Localité")
         region_dict = {}
         depart_dict = {}
         comm_dict = {}
@@ -164,7 +164,7 @@ class Command(BaseCommand):
                     name = row[ioc["NomLocalite"]]
 
                     unit = OrgUnit()
-                    unit.org_unit_type_id = 18
+                    unit.org_unit_type_id = localite_unit_type.id
                     unit.name = name
 
                     if longitude and latitude:

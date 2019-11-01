@@ -67,6 +67,12 @@ class Command(BaseCommand):
             print(("%d org units records deleted" % version_count).upper())
         # "CodeRegion;Region;CodeDepart;Departement;CodeCom;Commune"
 
+        region_unit_type, created = OrgUnitType.objects.get_or_create(name="Région")
+        department_unit_type, created = OrgUnitType.objects.get_or_create(
+            name="Département"
+        )
+        commune_unit_type, created = OrgUnitType.objects.get_or_create(name="Commune")
+
         region_dict = {}
         depart_dict = {}
         comm_dict = {}
@@ -102,9 +108,15 @@ class Command(BaseCommand):
                     r = None
                     d = None
                     c = None
+
                     if code_region:
                         r = insert_in(
-                            region_dict, code_region, region, source_name, version, 15
+                            region_dict,
+                            code_region,
+                            region,
+                            source_name,
+                            version,
+                            region_unit_type.id,
                         )
                     if code_depart:
                         d = insert_in(
@@ -113,7 +125,7 @@ class Command(BaseCommand):
                             department,
                             source_name,
                             version,
-                            19,
+                            department_unit_type.id,
                             r,
                         )
                     if code_com:
@@ -123,7 +135,7 @@ class Command(BaseCommand):
                             commune,
                             source_name,
                             version,
-                            20,
+                            commune_unit_type.id,
                             d,
                         )
                     # print("region_dict", region_dict)

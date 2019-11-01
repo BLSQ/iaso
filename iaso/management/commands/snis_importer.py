@@ -57,7 +57,8 @@ class Command(BaseCommand):
             number=version_number, data_source=source
         )
 
-        version_count = OrgUnit.objects.filter(version=version_number).count()
+        version_count = OrgUnit.objects.filter(version=version).count()
+        print(version, source)
         if version_count > 0 and not force:
             print(
                 "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
@@ -87,7 +88,7 @@ class Command(BaseCommand):
 
             for row in csv_reader:
                 if index == 1:
-                    index += 1  # ignoring header
+                    pass
                 else:
                     try:
                         # "id", "name", "coordinates", "featureType", "parent", "groups"
@@ -115,22 +116,20 @@ class Command(BaseCommand):
                                 unlinked_parentships.append(
                                     (org_unit.source_ref, parent)
                                 )
-                                if index % 100 == 0:
-                                    print(
-                                        "unmatched:",
-                                        len(unlinked_parentships),
-                                        "/",
-                                        index,
-                                    )
+                        if index % 100 == 0:
+                            print("unmatched:", len(unlinked_parentships), "/", index)
                         coordinates = row[2]
                         feature_type = row[3]
 
                         if feature_type == "POINT" and coordinates:
-                            tuple = json.loads(coordinates)
-                            pnt = Point(tuple[0], tuple[1])
-                            org_unit.location = pnt
-                            org_unit.longitude = pnt.x
-                            org_unit.latitude = pnt.y
+                            try:
+                                tuple = json.loads(coordinates)
+                                pnt = Point(float(tuple[0]), float(tuple[1]))
+                                org_unit.location = pnt
+                                org_unit.longitude = pnt.x
+                                org_unit.latitude = pnt.y
+                            except:
+                                print("failed at importing POINT", coordinates)
 
                         if feature_type == "MULTI_POLYGON" and coordinates:
                             j = json.loads(coordinates)
@@ -145,10 +144,9 @@ class Command(BaseCommand):
                             group.org_units.add(org_unit)
 
                         unit_dict[org_unit.source_ref] = org_unit
-                        index += 1
                     except Exception as e:
                         print("Error %s for row %d" % (e, index), row)
-                        break
+                index += 1
 
             # we need to do this because we cannot be sure that parents are after their children in the imported file
             nr_to_link = len(unlinked_parentships)

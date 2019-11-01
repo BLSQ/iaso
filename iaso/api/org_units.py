@@ -119,11 +119,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             queryset = OrgUnit.objects.all()
 
-        queryset = (
-            queryset.exclude(org_unit_type=None)
-            .filter(org_unit_type__projects__app_id=app_id)
-            .order_by(*order)
-        )
+        queryset = queryset.filter(  # .exclude(org_unit_type=None)
+            org_unit_type__projects__app_id=app_id
+        ).order_by(*order)
         queryset = queryset.prefetch_related("version__data_source")
 
         if search:
@@ -132,7 +130,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             )
 
         if source:
-            queryset = queryset.filter(version__data_source_id__in=source.split(','))
+            queryset = queryset.filter(version__data_source_id__in=source.split(","))
 
         if version:
             queryset = queryset.filter(version=version)
@@ -147,7 +145,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 queryset = queryset.exclude(id__in=ids_with_instances)
 
         if org_unit_type_id:
-            queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(','))
+            queryset = queryset.filter(
+                org_unit_type__id__in=org_unit_type_id.split(",")
+            )
 
         if with_shape == "true":
             queryset = queryset.filter(simplified_geom__isnull=False)
@@ -213,7 +213,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-
+                print("queryset", queryset.query)
                 res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
@@ -228,7 +228,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                        shape_queryset = OrgUnit.objects.all().filter(
+                            id=temp_org_unit["id"]
+                        )
                         temp_org_unit["geo_json"] = geojson_queryset(
                             shape_queryset, geometry_field="simplified_geom"
                         )
@@ -249,7 +251,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_location()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(id=temp_org_unit["id"])
+                        shape_queryset = OrgUnit.objects.all().filter(
+                            id=temp_org_unit["id"]
+                        )
                         temp_org_unit["geo_json"] = geojson_queryset(
                             shape_queryset, geometry_field="simplified_geom"
                         )

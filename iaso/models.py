@@ -104,14 +104,11 @@ class DataSource(models.Model):
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "versions": [v.as_dict_without_data_source() for v in versions]
+            "versions": [v.as_dict_without_data_source() for v in versions],
         }
 
     def as_list(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-        }
+        return {"name": self.name, "id": self.id}
 
 
 class SourceVersion(models.Model):
@@ -270,6 +267,23 @@ class OrgUnit(models.Model):
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }
+
+
+class RecordType(models.Model):
+    name = models.TextField()
+    description = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class Record(models.Model):
+    value = models.DecimalField(max_digits=19, decimal_places=10)
+    version = models.ForeignKey(
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
+    )
+    org_unit = models.ForeignKey(
+        OrgUnit, null=True, blank=True, on_delete=models.CASCADE
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
 
 
 class MatchingAlgorithm(models.Model):
@@ -452,7 +466,7 @@ class Group(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s %s " % (self.name, self.source_version)
+        return "%s | %s " % (self.name, self.source_version)
 
     def as_dict(self):
         return {

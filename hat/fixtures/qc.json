@@ -203,51 +203,6 @@
   },
 
 
-  {
-    "model": "cases.case",
-    "pk": 153,
-    "fields": {
-      "source": "mobile_backup", "document_id": "x153", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
-      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
-      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
-      "normalized_village_id": 2111
-    }
-  },
-  {
-    "model": "sync.imageupload",
-    "pk": 1531,
-    "fields": {
-      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1532.jpg", "upload_date": "2018-01-10T00:00:00Z"
-    }
-  },
-  {
-    "model": "patient.test",
-    "pk": 1531,
-    "fields": {
-      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "153", "village": 1111, "image_id": 1531,
-      "image_filename": "foo1532.jpg", "tester_id": 11,
-      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
-    }
-  },
-  {
-    "model": "quality.check",
-    "pk": 1531,
-    "fields": {
-      "result": 2, "test_id": 1531, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
-      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
-      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
-    }
-  },
-  {
-    "model": "quality.check",
-    "pk": 1532,
-    "fields": {
-      "result": 1, "test_id": 1531, "validator_id": ["supervisor"], "comment": null, "level": 30,
-      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
-      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
-    }
-  },
-
 
   {
     "model": "cases.case",
@@ -488,6 +443,53 @@
       "type": "PG", "result": 1, "date": "2018-01-07T00:00:00Z", "form": "160", "village": 1111, "video_id": 1601,
       "video_filename": "foo1602.mp4", "tester_id": 10,
       "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 161,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x161", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "sync.imageupload",
+    "pk": 1611,
+    "fields": {
+      "participant_uuid": "jlkqjfglkjsdfmlkg", "type": "CATT", "image": "foo1612.jpg", "upload_date": "2018-01-10T00:00:00Z"
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1611,
+    "fields": {
+      "type": "CATT", "result": 2, "date": "2018-01-07T00:00:00Z", "form": "161", "village": 1111, "image_id": 1611,
+      "image_filename": "foo1612.jpg", "tester_id": 11,
+      "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1611,
+    "fields": {
+      "result": 2, "test_id": 1611, "validator_id": ["supervisor-mosango"], "comment": null, "level": 20,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
+    }
+  },
+  {
+    "model": "quality.check",
+    "pk": 1612,
+    "fields": {
+      "result": 1, "test_id": 1611, "validator_id": ["supervisor"], "comment": null, "level": 30,
+      "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
+      "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
     }
   }
 ]

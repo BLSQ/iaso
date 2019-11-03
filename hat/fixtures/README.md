@@ -37,7 +37,7 @@ the village `1111` is in AS `111`, ZS `11` and province `1`.
 ## Users
 
 | Username           | Super | Scope  | Permissions | Password             |
-|:-------------------|:------|:-------|:------------|----------------------|
+|:-------------------|:------|:-------|:------------|:---------------------|
 | root               | Yes   |        | -           |                      |
 | admin              | Yes   |        |             | pwd                  |
 | supervisor         |       |        |             | supervisorsupervisor |
@@ -47,4 +47,24 @@ the village `1111` is in AS `111`, ZS `11` and province `1`.
 | importer           |       |        |             | importerimporter     |
 | full-exporter      |       |        |             |                      |
 | anon-exporter      |       |        |             |                      |
-| passive            |       |        |             | pwd                     |
+| passive            |       |        |             | pwd                  |
+| screener           |       |        |             | supervisorsupervisor |
+| confirmer          |       |        |             | supervisorsupervisor |
+| qc_admin           |       |        |             | supervisorsupervisor |
+
+## Quality Control
+
+| Base ID | Test type | result | QC2 | QC3 |
+|:--------|:----------|:-------|:----|:----|
+| 150     | CATT      | +      | +   |     |
+| 151     | CATT      | +      | -   |     |
+| 152     | CATT      | +      | -   |     |
+| 153     | CATT      | +      | +   | +   |
+| 154     | CATT      | +      | +   | -   |
+| 155     | RDT       | +      | -   |     |
+| 156     | PG        | +      | +   | +   |
+| 157     | PG        | +      | +   | -   |
+| 158     | PG        | +      | -   |     |
+| 159     | PG        | -      | -   |     |
+| 160     | PG        | -      |     |     |
+| 161     | CATT      | +      | +   | -   |

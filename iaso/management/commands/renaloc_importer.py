@@ -3,9 +3,7 @@ import csv
 from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group
 from django.contrib.gis.geos import Point
 import sys
-import json
 import io
-from django.contrib.gis.geos import Polygon
 
 csv.field_size_limit(sys.maxsize)
 
@@ -147,14 +145,16 @@ class Command(BaseCommand):
                         lo_deg = row[ioc["LONGDEGRE"]]
 
                         longitude = (
-                            int(lo_deg) + int(lo_min) / 60 + int(lo_f_min) / 3600
+                            int(lo_deg) + int(lo_min) / 60 + int(lo_f_min) / 60000
                         )
 
                         la_f_min = row[ioc["LATFRACTMINUTE"]]
                         la_min = row[ioc["LATMINUTE"]]
                         la_deg = row[ioc["LATDEGRE"]]
 
-                        latitude = int(la_deg) + int(la_min) / 60 + int(la_f_min) / 3600
+                        latitude = (
+                            int(la_deg) + int(la_min) / 60 + int(la_f_min) / 60000
+                        )
 
                         # print(longitude, latitude)
                     except:

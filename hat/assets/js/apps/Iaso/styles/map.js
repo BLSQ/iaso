@@ -90,9 +90,6 @@ const mapStyles = theme => ({
         '& path.no-pointer-event': {
             pointerEvents: 'none !important',
         },
-        '& .leaflet-draw-guide-dash': {
-            backgroundColor: `${theme.palette.primary.main} !important`,
-        },
         '& .marker-custom.primary img': {
             position: 'absolute',
             bottom: 2,

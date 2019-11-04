@@ -368,7 +368,8 @@ class OrgUnitDetail extends Component {
                                             onChangeLocation={(location) => {
                                                 this.handleChangeLocation(location);
                                             }}
-                                            onChange={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                            onChangeGeoJson={geoJson => this.handleChangeInfo('geo_json', geoJson)}
+                                            onChangeCatchment={catchment => this.handleChangeInfo('catchment', catchment)}
                                         />
                                     </Box>
                                 )

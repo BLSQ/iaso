@@ -21,10 +21,13 @@ const styles = theme => ({
 function OrgunitOptionSaveComponent(props) {
     const {
         toggleEditShape,
+        toggleEditCatchment,
         orgUnitLocationModified,
         classes,
-        editEnabled,
+        editGeoJsonEnabled,
+        editCatchmentEnabled,
         mapGeoJson,
+        mapCatchment,
         orgUnit,
         resetOrgUnit,
         saveOrgUnit,
@@ -36,17 +39,21 @@ function OrgunitOptionSaveComponent(props) {
                 disabled={!orgUnitLocationModified}
                 variant="contained"
                 onClick={() => {
-                    if (editEnabled) {
+                    if (editGeoJsonEnabled) {
                         toggleEditShape();
                     }
+                    if (editCatchmentEnabled) {
+                        toggleEditCatchment();
+                    }
                     mapGeoJson(orgUnit.geo_json);
+                    mapCatchment(orgUnit.catchment);
                     resetOrgUnit();
                 }}
             >
                 <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
-                disabled={!orgUnitLocationModified || editEnabled}
+                disabled={!orgUnitLocationModified || editGeoJsonEnabled || editCatchmentEnabled}
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -61,9 +68,12 @@ function OrgunitOptionSaveComponent(props) {
 OrgunitOptionSaveComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
-    editEnabled: PropTypes.bool.isRequired,
+    editGeoJsonEnabled: PropTypes.bool.isRequired,
+    editCatchmentEnabled: PropTypes.bool.isRequired,
     toggleEditShape: PropTypes.func.isRequired,
+    toggleEditCatchment: PropTypes.func.isRequired,
     mapGeoJson: PropTypes.func.isRequired,
+    mapCatchment: PropTypes.func.isRequired,
     resetOrgUnit: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,

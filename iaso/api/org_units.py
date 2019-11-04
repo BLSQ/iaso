@@ -340,6 +340,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.source = request.data.get("source", "")
         org_unit.validated = request.data.get("status", True)
         geo_json = request.data.get("geo_json", None)
+        catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
@@ -362,6 +363,25 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.simplified_geom = simplified_geom
         else:
             org_unit.simplified_geom = None
+
+
+        if (
+            catchment
+            and catchment["features"][0]["geometry"]
+            and catchment["features"][0]["geometry"]["coordinates"]
+        ):
+            if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
+                org_unit.catchment = Polygon(
+                    catchment["features"][0]["geometry"]["coordinates"][0]
+                )
+            else:
+                # DB has a single Polygon, refuse if we have more, or less.
+                return Response(
+                    "Only one polygon should be saved in the catchment shape",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+        else :
+            org_unit.catchment = None
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
         if latitude and str(latitude) != str(org_unit.latitude):
@@ -393,11 +413,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
-        if org_unit.simplified_geom:
+        res["catchment"] = None
+        if org_unit.simplified_geom or org_unit.catchment:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
-            res["geo_json"] = geojson_queryset(
-                queryset, geometry_field="simplified_geom"
-            )
+            if org_unit.simplified_geom:
+                res["geo_json"] = geojson_queryset(
+                    queryset, geometry_field="simplified_geom"
+                )
+            if org_unit.catchment:
+                res["catchment"] = geojson_queryset(
+                    queryset, geometry_field="catchment"
+                )
 
         return Response(res)
 
@@ -422,6 +448,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
+        res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:
             queryset = OrgUnit.objects.all().filter(id=org_unit.id)
             if org_unit.simplified_geom:

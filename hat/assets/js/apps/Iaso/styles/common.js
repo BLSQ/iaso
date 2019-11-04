@@ -39,18 +39,6 @@ const commonStyles = theme => ({
         width: 15,
         height: 15,
     },
-    buttonIconSvg: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-        fill: theme.palette.primary.main,
-    },
-    buttonIconSvgSecondary: {
-        marginRight: theme.spacing(1),
-        width: 15,
-        height: 15,
-        fill: theme.palette.secondary.main,
-    },
     smallButtonIcon: {
         marginRight: theme.spacing(1),
         width: 15,

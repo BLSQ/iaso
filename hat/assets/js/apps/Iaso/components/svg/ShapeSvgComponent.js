@@ -1,19 +1,18 @@
 import React from 'react';
-import PropTypes from 'prop-types';
+import SvgIcon from '@material-ui/core/SvgIcon';
 
 function ShapeSvg(props) {
-    const {
-        className,
-    } = props;
+    const finalProps = {
+        ...props,
+        viewBox: '-5 -5 55 55',
+    };
     return (
-        <svg className={className} focusable="false" viewBox="0 0 24 24" aria-hidden="true" role="presentation">
-            <path d="M23 7V1h-6v2H7V1H1v6h2v10H1v6h6v-2h10v2h6v-6h-2V7h2zM3 3h2v2H3V3zm2 18H3v-2h2v2zm12-2H7v-2H5V7h2V5h10v2h2v10h-2v2zm4 2h-2v-2h2v2zM19 5V3h2v2h-2zm-5.27" />
-        </svg>
+        <SvgIcon
+            {...finalProps}
+        >
+            <path d="M46,14V2H34V6H14V2H2V14H6V34H2V46H14V42H34v4H46V34H42V14ZM6,6h4v4H6Zm4,36H6V38h4Zm24-4H14V34H10V14h4V10H34v4h4V34H34Zm8,4H38V38h4ZM38,10V6h4v4Z" />
+        </SvgIcon>
     );
 }
-
-ShapeSvg.propTypes = {
-    className: PropTypes.any.isRequired,
-};
 
 export default ShapeSvg;

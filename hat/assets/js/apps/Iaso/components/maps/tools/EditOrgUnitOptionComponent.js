@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import {
-    withStyles, Button, Box,
+    withStyles, Button, Box, Typography,
 } from '@material-ui/core';
 
 import Edit from '@material-ui/icons/Edit';
@@ -35,17 +35,14 @@ class EditOrgUnitOptionComponent extends Component {
         const {
             orgUnit,
             classes,
-            editGeoJsonEnabled,
+            editLocationEnabled,
             editCatchmentEnabled,
             toggleEditShape,
-            toggleEditCatchment,
             onChangeLocation,
             addMarker,
             addShape,
-            onDeleteGeoJson,
-            onDeleteCatchment,
-            onChangeGeoJson,
-            onChangeCatchment,
+            onDeleteShape,
+            onChangeShape,
         } = this.props;
         const hasMarker = Boolean(orgUnit.latitude !== null) && Boolean(orgUnit.longitude !== null);
         return (
@@ -61,65 +58,26 @@ class EditOrgUnitOptionComponent extends Component {
                     flexWrap="wrap"
                     flexDirection="column"
                 >
+                    <Box
+                        px={0}
+                        component="div"
+                    >
+                        <Typography variant="subtitle1">
+                            <FormattedMessage id="iaso.map.catchment" defaultMessage="Catchment" />
+                        </Typography>
+                    </Box>
                     {
-                        !editGeoJsonEnabled && !editCatchmentEnabled && orgUnit.geo_json
+                        !editCatchmentEnabled && orgUnit.catchment
                         && (
                             <Button
+                                disabled={editLocationEnabled}
                                 variant="outlined"
-                                onClick={() => toggleEditShape()}
-                                className={classes.buttonTopMargin}
-                                color="primary"
-                            >
-                                <Edit className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.shape.edit" defaultMessage="Edit shape" />
-                            </Button>
-                        )
-                    }
-                    {
-                        (editGeoJsonEnabled && orgUnit.geo_json)
-                        && (
-                            <Button
-                                variant="outlined"
-                                onClick={() => {
-                                    onChangeGeoJson();
-                                    toggleEditShape();
-                                }}
-                                className={classes.buttonTopMargin}
-                                color="primary"
-                            >
-                                <Check className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.shape.stopEdit" defaultMessage="Stop edit shape" />
-                            </Button>
-                        )
-                    }
-
-                    {
-                        orgUnit.geo_json
-                        && !editGeoJsonEnabled
-                        && !editCatchmentEnabled
-                        && (
-                            <Button
-                                variant="outlined"
-                                color="primary"
-                                className={classes.button}
-                                onClick={() => onDeleteGeoJson()}
-                            >
-                                <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.shape.delete" defaultMessage="Delete shape" />
-                            </Button>
-                        )
-                    }
-                    {
-                        !editGeoJsonEnabled && !editCatchmentEnabled && orgUnit.catchment
-                        && (
-                            <Button
-                                variant="outlined"
-                                onClick={() => toggleEditCatchment()}
+                                onClick={() => toggleEditShape('catchment')}
                                 className={classes.buttonTopMargin}
                                 color="secondary"
                             >
                                 <Edit className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.catchment.edit" defaultMessage="Edit catchment" />
+                                <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
                             </Button>
                         )
                     }
@@ -129,30 +87,103 @@ class EditOrgUnitOptionComponent extends Component {
                             <Button
                                 variant="outlined"
                                 onClick={() => {
-                                    onChangeCatchment();
-                                    toggleEditCatchment();
+                                    onChangeShape('catchment');
+                                    toggleEditShape('catchment');
                                 }}
                                 className={classes.buttonTopMargin}
                                 color="secondary"
                             >
                                 <Check className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.catchment.stopEdit" defaultMessage="Stop edit catchment" />
+                                <FormattedMessage id="iaso.label.stopEdit" defaultMessage="Stop edit" />
                             </Button>
                         )
                     }
                     {
                         orgUnit.catchment
-                        && !editGeoJsonEnabled
                         && !editCatchmentEnabled
                         && (
                             <Button
+                                disabled={editLocationEnabled}
                                 variant="outlined"
                                 color="secondary"
                                 className={classes.button}
-                                onClick={() => onDeleteCatchment()}
+                                onClick={() => onDeleteShape('catchment')}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.catchment.delete" defaultMessage="Delete catchment" />
+                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                            </Button>
+                        )
+                    }
+                    {
+                        !orgUnit.catchment
+                        && (
+                            <Button
+                                disabled={editLocationEnabled}
+                                variant="outlined"
+                                onClick={() => addShape('catchment')}
+                                className={classes.buttonTopMargin}
+                                color="secondary"
+                            >
+                                <ShapeSvg className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.add" defaultMessage="Add" />
+                            </Button>
+                        )
+                    }
+                    <Box
+                        px={0}
+                        component="div"
+                        className={classes.marginTop}
+                    >
+                        <Typography variant="subtitle1">
+                            <FormattedMessage id="iaso.map.location" defaultMessage="Location" />
+                        </Typography>
+                    </Box>
+                    {
+                        !editLocationEnabled && orgUnit.geo_json
+                        && (
+                            <Button
+                                disabled={editCatchmentEnabled}
+                                variant="outlined"
+                                onClick={() => toggleEditShape('location')}
+                                className={classes.buttonTopMargin}
+                                color="primary"
+                            >
+                                <Edit className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.map.shape.edit" defaultMessage="Edit shape" />
+                            </Button>
+                        )
+                    }
+                    {
+                        (editLocationEnabled && orgUnit.geo_json)
+                        && (
+                            <Button
+                                variant="outlined"
+                                onClick={() => {
+                                    onChangeShape('location');
+                                    toggleEditShape('location');
+                                }}
+                                className={classes.buttonTopMargin}
+                                color="primary"
+                            >
+                                <Check className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.label.stopEdit" defaultMessage="Stop edit" />
+                            </Button>
+                        )
+                    }
+
+                    {
+                        orgUnit.geo_json
+                        && !editLocationEnabled
+                        && (
+                            <Button
+                                disabled={editCatchmentEnabled}
+                                variant="outlined"
+                                color="primary"
+                                className={classes.button}
+                                onClick={() => onDeleteShape('location')}
+                            >
+                                <DeleteIcon className={classes.buttonIcon} />
+                                <FormattedMessage id="iaso.map.shape.delete" defaultMessage="Delete shape" />
                             </Button>
                         )
                     }
@@ -161,6 +192,7 @@ class EditOrgUnitOptionComponent extends Component {
                         && (
                             <Fragment>
                                 <InputComponent
+                                    disabled={editCatchmentEnabled}
                                     keyValue="latitude"
                                     onChange={(key, latitude) => {
                                         if (latitude) {
@@ -178,6 +210,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     }}
                                 />
                                 <InputComponent
+                                    disabled={editCatchmentEnabled}
                                     keyValue="longitude"
                                     onChange={(key, longitude) => onChangeLocation({
                                         lat: orgUnit.latitude,
@@ -191,6 +224,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     }}
                                 />
                                 <Button
+                                    disabled={editCatchmentEnabled}
                                     variant="outlined"
                                     color="primary"
                                     className={classes.buttonTopMargin}
@@ -203,34 +237,22 @@ class EditOrgUnitOptionComponent extends Component {
                         )
                     }
                     {
-                        !orgUnit.catchment
-                        && (
-                            <Button
-                                variant="outlined"
-                                onClick={() => addShape('catchment')}
-                                className={classes.buttonTopMargin}
-                                color="secondary"
-                            >
-                                <ShapeSvg className={classes.buttonIconSvgSecondary} />
-                                <FormattedMessage id="iaso.label.catchment.addShape" defaultMessage="Add catchment" />
-                            </Button>
-                        )
-                    }
-                    {
                         !orgUnit.geo_json
                         && !hasMarker
                         && (
                             <Fragment>
                                 <Button
+                                    disabled={editCatchmentEnabled}
                                     variant="outlined"
                                     onClick={() => addShape('geo_json')}
                                     className={classes.buttonTopMargin}
                                     color="primary"
                                 >
-                                    <ShapeSvg className={classes.buttonIconSvg} />
+                                    <ShapeSvg className={classes.buttonIcon} />
                                     <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
                                 </Button>
                                 <Button
+                                    disabled={editCatchmentEnabled}
                                     variant="outlined"
                                     onClick={() => addMarker()}
                                     className={classes.button}
@@ -251,14 +273,11 @@ class EditOrgUnitOptionComponent extends Component {
 EditOrgUnitOptionComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
-    editGeoJsonEnabled: PropTypes.bool.isRequired,
+    editLocationEnabled: PropTypes.bool.isRequired,
     editCatchmentEnabled: PropTypes.bool.isRequired,
-    onChangeGeoJson: PropTypes.func.isRequired,
-    onChangeCatchment: PropTypes.func.isRequired,
-    onDeleteGeoJson: PropTypes.func.isRequired,
-    onDeleteCatchment: PropTypes.func.isRequired,
+    onChangeShape: PropTypes.func.isRequired,
+    onDeleteShape: PropTypes.func.isRequired,
     toggleEditShape: PropTypes.func.isRequired,
-    toggleEditCatchment: PropTypes.func.isRequired,
     addMarker: PropTypes.func.isRequired,
     addShape: PropTypes.func.isRequired,
     onChangeLocation: PropTypes.func.isRequired,

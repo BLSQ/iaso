@@ -3,6 +3,7 @@ import L from 'leaflet';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 
 import { MESSAGES } from '../../../utils/map/mapUtils';
+import theme from './theme';
 
 
 export const isValidCoordinate = (latitude, longitude) => {
@@ -112,3 +113,77 @@ export const getSourceColor = (sourcesList, sourceId) => {
     }
     return sourceColor;
 };
+
+
+export const addDrawControl = (map, group) => {
+    const options = {
+        position: 'topright',
+        draw: {
+            polyline: false,
+            polygon: false,
+            circle: false,
+            marker: {
+                icon: customMarker,
+            },
+            circlemarker: false,
+            featureGroup: group,
+            rectangle: false,
+        },
+        edit: {
+            edit: false,
+            featureGroup: group,
+            remove: false,
+        },
+    };
+
+    const drawControl = new L.Control.Draw(options);
+    map.addControl(drawControl);
+    map.addLayer(group);
+    const editToolbar = new L.EditToolbar({
+        featureGroup: group,
+    });
+    const editHandler = editToolbar.getModeHandlers()[0].handler;
+    editHandler._map = map;
+    return {
+        editHandler,
+        drawControl,
+    };
+};
+
+export const mapOrgUnitByLocation = (orgUnits) => {
+    const mappedOrgunits = [];
+    orgUnits.forEach((ot) => {
+        const otCopy = {
+            ...ot,
+            orgUnits: {
+                shapes: [],
+                locations: [],
+            },
+        };
+        ot.orgUnits.forEach((o) => {
+            if (o.latitude && o.longitude) {
+                otCopy.orgUnits.locations.push(o);
+            }
+            if (o.geo_json) {
+                otCopy.orgUnits.shapes.push(o);
+            }
+        });
+        mappedOrgunits.push(otCopy);
+    });
+    return mappedOrgunits;
+};
+
+export const shapeOptions = () => ({
+    onEachFeature: (feature, layer) => {
+        layer.setStyle({
+            weight: 3,
+        });
+    },
+});
+
+export const polygonDrawOpiton = (customClass = 'primary') => ({
+    shapeOptions: {
+        color: theme.palette[customClass].main,
+        className: `${customClass} no-pointer-event`,
+    },
+});

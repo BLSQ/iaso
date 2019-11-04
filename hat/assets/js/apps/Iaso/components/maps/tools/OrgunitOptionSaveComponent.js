@@ -21,13 +21,11 @@ const styles = theme => ({
 function OrgunitOptionSaveComponent(props) {
     const {
         toggleEditShape,
-        toggleEditCatchment,
         orgUnitLocationModified,
         classes,
-        editGeoJsonEnabled,
+        editLocationEnabled,
         editCatchmentEnabled,
-        mapGeoJson,
-        mapCatchment,
+        mapShape,
         orgUnit,
         resetOrgUnit,
         saveOrgUnit,
@@ -39,21 +37,21 @@ function OrgunitOptionSaveComponent(props) {
                 disabled={!orgUnitLocationModified}
                 variant="contained"
                 onClick={() => {
-                    if (editGeoJsonEnabled) {
-                        toggleEditShape();
+                    if (editLocationEnabled) {
+                        toggleEditShape('location');
                     }
                     if (editCatchmentEnabled) {
-                        toggleEditCatchment();
+                        toggleEditShape('catchment');
                     }
-                    mapGeoJson(orgUnit.geo_json);
-                    mapCatchment(orgUnit.catchment);
+                    mapShape(orgUnit.geo_json, 'location');
+                    mapShape(orgUnit.catchment, 'catchment');
                     resetOrgUnit();
                 }}
             >
                 <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
             </Button>
             <Button
-                disabled={!orgUnitLocationModified || editGeoJsonEnabled || editCatchmentEnabled}
+                disabled={!orgUnitLocationModified || editLocationEnabled || editCatchmentEnabled}
                 variant="contained"
                 className={classes.button}
                 color="primary"
@@ -68,12 +66,10 @@ function OrgunitOptionSaveComponent(props) {
 OrgunitOptionSaveComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
-    editGeoJsonEnabled: PropTypes.bool.isRequired,
+    editLocationEnabled: PropTypes.bool.isRequired,
     editCatchmentEnabled: PropTypes.bool.isRequired,
     toggleEditShape: PropTypes.func.isRequired,
-    toggleEditCatchment: PropTypes.func.isRequired,
-    mapGeoJson: PropTypes.func.isRequired,
-    mapCatchment: PropTypes.func.isRequired,
+    mapShape: PropTypes.func.isRequired,
     resetOrgUnit: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,

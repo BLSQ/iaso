@@ -28,10 +28,6 @@ const styles = theme => ({
         marginTop: theme.spacing(2),
         marginBottom: theme.spacing(2),
     },
-    buttonIconSvg: {
-        ...commonStyles(theme).buttonIcon,
-        fill: theme.palette.primary.main,
-    },
 });
 
 class EditOrgUnitOptionComponent extends Component {
@@ -196,7 +192,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 />
                                 <Button
                                     variant="outlined"
-                                    color="secondary"
+                                    color="primary"
                                     className={classes.buttonTopMargin}
                                     onClick={() => onChangeLocation({ lat: null, lng: null })}
                                 >
@@ -215,7 +211,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 className={classes.buttonTopMargin}
                                 color="secondary"
                             >
-                                <ShapeSvg className={classes.buttonIconSvg} />
+                                <ShapeSvg className={classes.buttonIconSvgSecondary} />
                                 <FormattedMessage id="iaso.label.catchment.addShape" defaultMessage="Add catchment" />
                             </Button>
                         )

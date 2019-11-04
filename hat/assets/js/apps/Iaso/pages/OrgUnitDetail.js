@@ -170,7 +170,7 @@ class OrgUnitDetail extends Component {
             ...this.state.currentOrgUnit,
             [key]: value,
         };
-        if (key !== 'geo_json' && value) {
+        if (key !== 'geo_json' && key !== 'catchment' && value) {
             currentOrgUnit.latitude = null;
             currentOrgUnit.longitude = null;
         }

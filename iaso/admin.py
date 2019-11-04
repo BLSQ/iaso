@@ -22,7 +22,7 @@ from .models import (
 
 class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
-    list_filter = ("org_unit_type", "custom", "validated", "sub_source")
+    list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     ordering = ("name",)
 

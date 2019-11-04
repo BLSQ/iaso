@@ -192,14 +192,17 @@ class OrgUnitMapComponent extends Component {
         if (orgUnit.catchment) {
             groups.push(editableFetureGroups.catchment.group);
         }
-        if (groups.length > 1) {
-            const group = new L.FeatureGroup(groups);
-            this.map.leafletElement.fitBounds(group.getBounds(), { maxZoom: currentTile.maxZoom, padding, animate: false });
-        }
+        const group = new L.FeatureGroup(groups);
         if (orgUnit.latitude && orgUnit.longitude) {
             const latlng = [L.latLng(orgUnit.latitude, orgUnit.longitude)];
-            const markerBounds = L.latLngBounds(latlng);
-            this.map.leafletElement.fitBounds(markerBounds, { maxZoom: 10, padding, animate: false });
+            let bounds = L.latLngBounds(latlng);
+            if (groups.length > 0) {
+                const groupBounds = group.getBounds();
+                bounds = groupBounds.extend(bounds);
+            }
+            this.map.leafletElement.fitBounds(bounds, { maxZoom: 10, padding, animate: false });
+        } else if (groups.length > 0) {
+            this.map.leafletElement.fitBounds(group.getBounds(), { maxZoom: currentTile.maxZoom, padding, animate: false });
         }
     }
 

@@ -96,6 +96,7 @@ const mapStyles = theme => ({
             left: -1,
             zIndex: -1,
             pointerEvents: 'none',
+            width: 'auto',
         },
         '& .leaflet-draw.leaflet-control': {
             display: 'none',

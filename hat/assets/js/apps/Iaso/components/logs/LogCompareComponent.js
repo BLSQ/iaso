@@ -1,19 +1,24 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import moment from 'moment';
 
 import isEqual from 'lodash/isEqual';
 
 import {
     withStyles, Table, TableBody, TableCell, TableRow, Paper, IconButton, Tooltip, Grid, Typography,
 } from '@material-ui/core';
-import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
+import Visibility from '@material-ui/icons/Visibility';
+import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import { getPolygonPositionsFromSimplifiedGeom } from '../../utils/orgUnitUtils';
 
 import PolygonMap from '../maps/PolygonMapComponent';
+import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 import commonStyles from '../../styles/common';
+
+import MESSAGES from '../forms/messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -38,18 +43,67 @@ const styles = theme => ({
         marginRight: theme.spacing(2),
         display: 'inline-block',
     },
+    cellMap: {
+        margin: -theme.spacing(2),
+    },
 });
 
+const placeholder = '--';
+
+const renderValue = (
+    fieldKey,
+    value,
+    fields,
+    classes,
+) => {
+    if (!value || value.toString().length === 0) return placeholder;
+    switch (fieldKey) {
+        case 'simplified_geom': {
+            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(value);
+            return <div className={classes.cellMap}><PolygonMap polygonPositions={polygonPositions} /></div>;
+        }
+        case 'updated_at': {
+            return moment.unix(value).format('DD/MM/YYYY HH:mm');
+        }
+
+        case 'location': {
+            return (
+                <div className={classes.cellMap}>
+                    <MarkerMap latitude={fields.latitude} longitude={fields.longitude} />
+                </div>
+            );
+        }
+
+        default:
+            return value.toString();
+    }
+};
+
+const getArrayfields = (objectItem => (
+    Object.keys(objectItem).map(fieldKey => ({ fieldKey, value: objectItem[fieldKey] }))
+));
+
 const LogCompareComponent = ({
-    log, compareLog, classes, goToRevision, title,
+    log, compareLog, classes, goToRevision, title, intl,
 }) => {
     const [allFields, seeAllFields] = React.useState(false);
 
     const differenceArray = [];
+    const { formatMessage } = intl;
 
     return (
         log.map((l, i) => {
             differenceArray.push({});
+            const fieldsObject = {
+                ...l.fields,
+            };
+            const fullFields = getArrayfields(l.fields);
+            const latIndex = fullFields.findIndex(field => field.fieldKey === 'latitude') + 1;
+            const longitude = fullFields.find(field => field.fieldKey === 'longitude');
+            delete fieldsObject.longitude;
+            let fields = getArrayfields(fieldsObject).slice(0, latIndex);
+            fields.push(longitude);
+            fields = fields.concat(getArrayfields(fieldsObject).slice(latIndex));
             return (
                 <Paper className={classes.paper} key={l.pk}>
                     {!isEqual(l.fields, compareLog[i].fields)
@@ -76,7 +130,9 @@ const LogCompareComponent = ({
                                             color="inherit"
                                             onClick={() => seeAllFields(!allFields)}
                                         >
-                                            <RemoveRedEye />
+                                            {
+                                                allFields ? <VisibilityOff /> : <Visibility />
+                                            }
                                         </IconButton>
                                     </Tooltip>
                                 </Grid>
@@ -100,27 +156,27 @@ const LogCompareComponent = ({
                                 <Table className={classes.table}>
                                     <TableBody>
                                         {
-                                            Object.keys(l.fields).map((key) => {
-                                                const currentField = l.fields[key];
+                                            fields.map((field) => {
+                                                const { value, fieldKey } = field;
                                                 let isDifferent = false;
-                                                if (Array.isArray(currentField)) {
-                                                    currentField.forEach((f, index) => {
-                                                        if (f && compareLog[i] && f !== compareLog[i].fields[key][index]) {
+                                                if (Array.isArray(value)) {
+                                                    value.forEach((f, index) => {
+                                                        if (f && compareLog[i] && f !== compareLog[i].fields[fieldKey][index]) {
                                                             isDifferent = true;
                                                         }
                                                     });
                                                 } else {
-                                                    isDifferent = compareLog[i] && compareLog[i].fields[key] !== currentField;
+                                                    isDifferent = compareLog[i] && compareLog[i].fields[fieldKey] !== value;
                                                 }
                                                 isDifferent = isDifferent && l.pk === compareLog[i].pk && l.model === compareLog[i].model;
                                                 if (!isDifferent && !allFields) return null;
-                                                differenceArray[i][key] = currentField;
-                                                if ((key === 'simplified_geom' || key === 'catchment') && currentField) {
+                                                differenceArray[i][fieldKey] = value;
+                                                if ((fieldKey === 'simplified_geom' || fieldKey === 'catchment') && currentField) {
                                                     const polygonPositions = getPolygonPositionsFromSimplifiedGeom(currentField);
                                                     return (
-                                                        <TableRow key={key}>
+                                                        <TableRow key={fieldKey}>
                                                             <TableCell className={classes.cell}>
-                                                                {key}
+                                                                {fieldKey}
                                                             </TableCell>
                                                             <TableCell className={isDifferent && allFields ? classes.isDifferent : null}>
                                                                 <PolygonMap polygonPositions={polygonPositions} />
@@ -129,10 +185,22 @@ const LogCompareComponent = ({
                                                     );
                                                 }
                                                 return (
-                                                    <TableRow key={key}>
-                                                        <TableCell className={classes.cell}>{key}</TableCell>
-                                                        <TableCell className={isDifferent && allFields ? classes.isDifferent : null}>
-                                                            {currentField && currentField.toString().length > 0 ? currentField.toString() : '--'}
+                                                    <TableRow key={fieldKey}>
+                                                        <TableCell className={classes.cell}>
+                                                            {
+                                                                MESSAGES[fieldKey] && formatMessage(MESSAGES[fieldKey])
+                                                            }
+                                                            {
+                                                                !MESSAGES[fieldKey] && fieldKey
+                                                            }
+                                                        </TableCell>
+                                                        <TableCell className={
+                                                            isDifferent && allFields
+                                                                ? classes.isDifferent
+                                                                : null
+                                                        }
+                                                        >
+                                                            {renderValue(fieldKey, value, l.fields, classes)}
                                                         </TableCell>
                                                     </TableRow>
                                                 );
@@ -207,6 +275,7 @@ LogCompareComponent.defaultProps = {
 };
 
 LogCompareComponent.propTypes = {
+    intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     log: PropTypes.array.isRequired,
     compareLog: PropTypes.array,
@@ -214,4 +283,4 @@ LogCompareComponent.propTypes = {
     title: PropTypes.string.isRequired,
 };
 
-export default withStyles(styles)(LogCompareComponent);
+export default withStyles(styles)(injectIntl(LogCompareComponent));

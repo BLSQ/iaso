@@ -21,6 +21,7 @@ const styles = theme => ({
         ...commonStyles(theme).mapContainer,
         height: 400,
         minWidth: 200,
+        marginbottom: 0,
     },
     button: {
         width: '100%',

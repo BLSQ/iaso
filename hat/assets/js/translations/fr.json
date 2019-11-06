@@ -97,6 +97,7 @@
     "iaso.label.version": "Version",
     "iaso.label.list": "Liste",
     "iaso.instance.missingGeolocation": "Aucune instance trouvée avec une localisation",
+    "iaso.instance.missingFile": "Aucune fichier trouvé",
     "iaso.label.algorithm": "Algorithme",
     "iaso.label.algorithms": "Algorithmes",
     "iaso.label.algorithmsRuns": "Exécution d'algorithmes",

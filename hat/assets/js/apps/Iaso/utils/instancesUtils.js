@@ -35,11 +35,10 @@ export const getInstancesFilesList = (instances) => {
     const filesList = [];
     instances.forEach((i) => {
         if (i.files.length > 0) {
-            i.files.forEach((src) => {
+            i.files.forEach((path) => {
                 const file = {
                     itemId: i.id,
-                    // src,
-                    src: `https://s3.eu-central-1.amazonaws.com/iaso-stg/instancefiles/${src.replace('/media/instancefiles/', '')}`
+                    path,
                 };
                 filesList.push(file);
             });

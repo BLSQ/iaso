@@ -75,7 +75,7 @@ export const fetchInstancesAsDict = (dispatch, url) => getRequest(url)
         throw error;
     });
 
-export const fetchInstancesAsLocations = (dispatch, url) => getRequest(url)
+export const fetchInstancesAsSmallDict = (dispatch, url) => getRequest(`${url}&asSmallDict=true`)
     .then(instances => instances)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));

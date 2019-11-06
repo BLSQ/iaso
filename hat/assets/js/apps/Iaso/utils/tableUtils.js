@@ -4,6 +4,7 @@ const getTableUrl = (
     toExport = false,
     exportType = 'csv',
     asLocation = false,
+    asSmallDict = false,
 ) => {
     let url = `/api/${urlKey}/?`;
     const clonedParams = { ...params };
@@ -17,6 +18,12 @@ const getTableUrl = (
         clonedParams.limit = clonedParams.locationLimit;
         delete clonedParams.page;
     }
+
+    if (asSmallDict) {
+        clonedParams.limit = clonedParams.locationLimit;
+        delete clonedParams.page;
+    }
+
 
     delete clonedParams.locationLimit;
 

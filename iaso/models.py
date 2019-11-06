@@ -619,12 +619,15 @@ class Instance(models.Model):
             ],
         }
 
-    def as_location(self):
+    def as_small_dict(self):
         return {
             "id": self.id,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "files": [
+                f.file.url if f.file else None for f in self.instancefile_set.all()
+            ],
         }
 
 

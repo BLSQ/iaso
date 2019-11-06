@@ -5,7 +5,7 @@ from rest_framework.response import Response
 from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, DeviceOwnership, Form
-from django.db.models import Q
+from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 
 from django.core.paginator import Paginator
@@ -169,10 +169,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             elif as_small_dict:
+                queryset = queryset.annotate(instancefile_count=Count("instancefile"))
                 return Response(
                     [
                         instance.as_small_dict()
-                        for instance in queryset.filter(location__isnull=False)
+                        for instance in queryset.filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
                         .prefetch_related("instancefile_set")
                         .prefetch_related("device")
                         .defer("json")

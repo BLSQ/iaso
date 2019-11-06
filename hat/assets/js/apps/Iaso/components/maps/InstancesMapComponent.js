@@ -37,7 +37,9 @@ class InstancesMap extends Component {
             },
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
+        if (this.map) {
+            zoomBar.addTo(this.map.leafletElement);
+        }
     }
 
     componentWillUnmount() {
@@ -71,9 +73,11 @@ class InstancesMap extends Component {
             intl: {
                 formatMessage,
             },
+            fetching,
         } = this.props;
+        if (fetching) return null;
         const bounds = getLatLngBounds(instances);
-        if (!bounds && instances.length > 0) {
+        if (!bounds) {
             return (
                 <Grid container spacing={0}>
                     <Grid item xs={3} />
@@ -158,11 +162,13 @@ InstancesMap.propTypes = {
     intl: intlShape.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fetching: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
+    fetching: state.instances.fetching,
 });
 
 const MapDispatchToProps = dispatch => ({

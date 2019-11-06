@@ -80,15 +80,15 @@ class InstancesMap extends Component {
         if (!bounds) {
             return (
                 <Grid container spacing={0}>
-                    <Grid item xs={3} />
-                    <Grid item xs={6}>
+                    <Grid item xs={4} />
+                    <Grid item xs={4}>
                         <ErrorPaperComponent message={formatMessage({
                             defaultMessage: 'Cannot find an instance with geolocation',
                             id: 'iaso.instance.missingGeolocation',
                         })}
                         />
                     </Grid>
-                    <Grid item xs={3} />
+                    <Grid item xs={4} />
                 </Grid>
             );
         }

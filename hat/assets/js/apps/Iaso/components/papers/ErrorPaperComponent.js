@@ -19,6 +19,7 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         color: theme.palette.error.main,
+        justifyContent: 'center',
     },
     buttonIcon: {
         ...commonStyles(theme).buttonIcon,

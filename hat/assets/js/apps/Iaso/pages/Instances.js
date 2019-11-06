@@ -24,13 +24,14 @@ import {
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
-import getInstancesColumns from '../utils/instancesUtils';
+import { getInstancesColumns, getInstancesFilesList } from '../utils/instancesUtils';
 import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import InstancesMap from '../components/maps/InstancesMapComponent';
+import FilesList from '../components/files/FilesListComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 
@@ -227,6 +228,13 @@ class Instances extends Component {
                                 id: 'iaso.label.map',
                             })}
                         />
+                        <Tab
+                            value="files"
+                            label={formatMessage({
+                                defaultMessage: 'Files',
+                                id: 'iaso.label.files',
+                            })}
+                        />
                     </Tabs>
                 </TopBar>
                 {
@@ -264,6 +272,13 @@ class Instances extends Component {
                             <div className={classes.containerMarginNeg}>
                                 <InstancesMap instances={instancesSmall} />
                             </div>
+                        )
+                    }
+                    {
+                        tab === 'files' && (
+                            <FilesList
+                                files={getInstancesFilesList(instancesSmall)}
+                            />
                         )
                     }
                     {tab === 'list'

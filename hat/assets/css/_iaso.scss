@@ -10,5 +10,14 @@ $primary-color: #2372BA;
     .leaflet-container {
         height: 80vh;
     }
-
+    >.fullscreen {
+        z-index: 10000;
+        position: relative;
+        .react-images__view {
+            img {
+                max-height: 90vh;
+                max-width: 150%;
+            }
+        }
+    }
 }

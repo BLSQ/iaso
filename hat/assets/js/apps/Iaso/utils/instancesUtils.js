@@ -3,7 +3,7 @@ import React from 'react';
 import instancesTableColumns from '../constants/instancesTableColumns';
 
 
-const getInstancesColumns = (formatMessage, instances) => {
+export const getInstancesColumns = (formatMessage, instances) => {
     let tableColumns = [...instancesTableColumns(formatMessage)];
     if (instances[0]) {
         const childrenArray = [];
@@ -30,4 +30,20 @@ const getInstancesColumns = (formatMessage, instances) => {
     return tableColumns;
 };
 
-export default getInstancesColumns;
+
+export const getInstancesFilesList = (instances) => {
+    const filesList = [];
+    instances.forEach((i) => {
+        if (i.files.length > 0) {
+            i.files.forEach((src) => {
+                const file = {
+                    itemId: i.id,
+                    // src,
+                    src: `https://s3.eu-central-1.amazonaws.com/iaso-stg/instancefiles/${src.replace('/media/instancefiles/', '')}`
+                };
+                filesList.push(file);
+            });
+        }
+    });
+    return filesList;
+};

@@ -9,14 +9,14 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { setInstances, setInstancesLocations, setInstancesFetching } from '../redux/instancesReducer';
+import { setInstances, setInstancesSmallDict, setInstancesFetching } from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
 import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
 
 import {
     fetchInstancesAsDict,
-    fetchInstancesAsLocations,
+    fetchInstancesAsSmallDict,
     fetchFormDetail,
     fetchOrgUnitsTypes,
     fetchDevices,
@@ -100,7 +100,7 @@ class Instances extends Component {
         }
     }
 
-    getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
+    getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
         const {
             params,
         } = this.props;
@@ -115,7 +115,7 @@ class Instances extends Component {
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
-        return getTableUrl('instances', urlParams, toExport, exportType, asLocation);
+        return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -150,7 +150,7 @@ class Instances extends Component {
         } = this.props;
 
         const url = this.getEndpointUrl();
-        const urlLocation = this.getEndpointUrl(false, '', true);
+        const urlSmall = this.getEndpointUrl(false, '', true);
 
         dispatch(this.props.setInstancesFetching(true));
         Promise.all([
@@ -163,8 +163,8 @@ class Instances extends Component {
                     tableColumns: getInstancesColumns(formatMessage, instances),
                 });
             }),
-            fetchInstancesAsLocations(dispatch, urlLocation)
-                .then(data => this.props.setInstancesLocations(data)),
+            fetchInstancesAsSmallDict(dispatch, urlSmall)
+                .then(data => this.props.setInstancesSmallDict(data)),
         ]).then(() => {
             dispatch(this.props.setInstancesFetching(false));
         });
@@ -175,7 +175,7 @@ class Instances extends Component {
             classes,
             params,
             reduxPage,
-            instancesLocations,
+            instancesSmall,
             fetching,
             currentForm,
             intl: {
@@ -262,7 +262,7 @@ class Instances extends Component {
                     {
                         tab === 'map' && (
                             <div className={classes.containerMarginNeg}>
-                                <InstancesMap instances={instancesLocations} />
+                                <InstancesMap instances={instancesSmall} />
                             </div>
                         )
                     }
@@ -294,10 +294,10 @@ Instances.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
-    instancesLocations: PropTypes.array.isRequired,
+    instancesSmall: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
     setInstances: PropTypes.func.isRequired,
-    setInstancesLocations: PropTypes.func.isRequired,
+    setInstancesSmallDict: PropTypes.func.isRequired,
     setCurrentForm: PropTypes.func.isRequired,
     currentForm: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
@@ -314,7 +314,7 @@ Instances.propTypes = {
 
 const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
-    instancesLocations: state.instances.instancesLocations,
+    instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
     currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
@@ -324,7 +324,7 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
-    setInstancesLocations: instances => dispatch(setInstancesLocations(instances)),
+    setInstancesSmallDict: instances => dispatch(setInstancesSmallDict(instances)),
     setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),

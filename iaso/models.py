@@ -626,6 +626,8 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "org_unit": self.org_unit.as_dict()['name'] if self.org_unit else None,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],

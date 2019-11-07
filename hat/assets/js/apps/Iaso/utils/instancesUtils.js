@@ -1,5 +1,6 @@
 import React from 'react';
 
+import moment from 'moment';
 import instancesTableColumns from '../constants/instancesTableColumns';
 
 
@@ -38,7 +39,10 @@ export const getInstancesFilesList = (instances) => {
             i.files.forEach((path) => {
                 const file = {
                     itemId: i.id,
-                    path,
+                    orgUnitName: i.org_unit,
+                    createdAt: moment.unix(i.created_at).format('DD/MM/YYYY HH:mm'),
+                    // path,
+                    path: `https://s3.eu-central-1.amazonaws.com/iaso-stg/instancefiles/${path.replace('/media/instancefiles/', '')}`,
                 };
                 filesList.push(file);
             });

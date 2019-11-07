@@ -230,8 +230,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     org_unit.get("id") if org_unit else None,
                     org_unit.get("source_ref") if org_unit else None,
                 ]
-
-                parent = org_unit["parent"]
+                parent = org_unit["parent"] if org_unit else None
                 for i in range(4):
                     if parent:
                         instance_values.append(parent["name"])

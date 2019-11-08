@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import LazyImage from 'react-lazy-progressive-image';
 import isEqual from 'lodash/isEqual';

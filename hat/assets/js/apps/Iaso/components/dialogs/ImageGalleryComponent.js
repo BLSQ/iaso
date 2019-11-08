@@ -132,12 +132,11 @@ const ImageGallery = ({
                     {
 
                     }
-                    <Typography
-                        type="body2"
+                    <div
                         className={classes.infos}
                     >
                         {getExtraInfos(currentImg)}
-                    </Typography>
+                    </div>
                     <Typography
                         type="body2"
                         className={classes.count}

@@ -230,4 +230,3 @@ export const runAlgorithm = (dispatch, runItem) => putRequest('/api/algorithmsru
         console.error('Error while deleting algorithms run:', error);
         throw error;
     });
-

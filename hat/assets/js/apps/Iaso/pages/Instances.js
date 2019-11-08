@@ -31,7 +31,7 @@ import TopBar from '../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import InstancesMap from '../components/maps/InstancesMapComponent';
-import FilesList from '../components/files/FilesListComponent';
+import InstancesFilesList from '../components/files/InstancesFilesListComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
 
@@ -276,7 +276,7 @@ class Instances extends Component {
                     }
                     {
                         tab === 'files' && (
-                            <FilesList
+                            <InstancesFilesList
                                 files={getInstancesFilesList(instancesSmall)}
                             />
                         )

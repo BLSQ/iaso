@@ -39,8 +39,6 @@ export const getInstancesFilesList = (instances) => {
             i.files.forEach((path) => {
                 const file = {
                     itemId: i.id,
-                    orgUnitName: i.org_unit,
-                    createdAt: moment.unix(i.created_at).format('DD/MM/YYYY HH:mm'),
                     // path,
                     path: `https://s3.eu-central-1.amazonaws.com/iaso-stg/instancefiles/${path.replace('/media/instancefiles/', '')}`,
                 };

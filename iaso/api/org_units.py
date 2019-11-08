@@ -405,6 +405,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if parent_id:
             parent_org_unit = get_object_or_404(OrgUnit, id=parent_id)
             org_unit.parent = parent_org_unit
+        else:
+            org_unit.parent = None
 
         log_modification(
             original_copy, org_unit, source=ORG_UNIT_API, user=request.user

@@ -109,11 +109,11 @@ function InstancePopover(props) {
                     />
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.latitude)}
-                        value={instanceDetail.latitude}
+                        value={instanceDetail.latitude ? instanceDetail.latitude.toFixed(5) : '--'}
                     />
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.longitude)}
-                        value={instanceDetail.longitude}
+                        value={instanceDetail.longitude ? instanceDetail.longitude.toFixed(5) : '--'}
                     />
                 </Box>
             </Popover>

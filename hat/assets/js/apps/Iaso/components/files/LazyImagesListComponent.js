@@ -43,40 +43,45 @@ class LazyImagesList extends Component {
             classes,
             onImageClick,
         } = this.props;
+        console.log('render images');
         return (
-            imageList.map((file, index) => (
+            <Grid container spacing={2}>
+                {
 
-                <Grid
-                    item
-                    xs={3}
-                    key={`${file.itemId}-${getFileName(file.path).name}`}
-                    className={classes.imageItem}
-                >
-                    <LazyImage
-                        src={file.path}
-                        visibilitySensorProps={{
-                            partialVisibility: true,
-                        }}
-                    >
-                        {(src, loading, isVisible) => (
-                            <div
-                                onClick={() => onImageClick(index)}
-                                role="button"
-                                tabIndex={0}
-                                className={classes.imageContainer}
-                                style={{
-                                    backgroundImage: loading ? 'none' : `url('${src}')`,
+                    imageList.map((file, index) => (
+                        <Grid
+                            item
+                            xs={3}
+                            key={`${file.itemId}-${getFileName(file.path).name}`}
+                            className={classes.imageItem}
+                        >
+                            <LazyImage
+                                src={file.path}
+                                visibilitySensorProps={{
+                                    partialVisibility: true,
                                 }}
                             >
-                                {
-                                    loading && isVisible && <LoadingSpinner fixed={false} transparent padding={4} size={25} />
-                                }
+                                {(src, loading, isVisible) => (
+                                    <div
+                                        onClick={() => onImageClick(index)}
+                                        role="button"
+                                        tabIndex={0}
+                                        className={classes.imageContainer}
+                                        style={{
+                                            backgroundImage: loading ? 'none' : `url('${src}')`,
+                                        }}
+                                    >
+                                        {
+                                            loading && isVisible && <LoadingSpinner fixed={false} transparent padding={4} size={25} />
+                                        }
 
-                            </div>
-                        )}
-                    </LazyImage>
-                </Grid>
-            ))
+                                    </div>
+                                )}
+                            </LazyImage>
+                        </Grid>
+                    ))
+                }
+            </Grid>
         );
     }
 }

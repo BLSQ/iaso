@@ -6,6 +6,8 @@ import { injectIntl, intlShape } from 'react-intl';
 import {
     Grid,
     withStyles,
+    Tabs,
+    Tab,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -18,7 +20,46 @@ import InstancePopover from '../popover/InstancePopoverComponent';
 import { sortFilesType } from '../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../utils/requests';
 
+const minTabHeight = 'calc(100vh - 470px)';
+
+const MESSAGES = {
+    images: {
+        defaultMessage: 'Images',
+        id: 'iaso.label.images',
+    },
+    videos: {
+        defaultMessage: 'Videos',
+        id: 'iaso.label.videos',
+    },
+    documents: {
+        defaultMessage: 'Documents',
+        id: 'iaso.label.documents',
+    },
+    others: {
+        defaultMessage: 'Others',
+        id: 'iaso.label.others',
+    },
+};
+
 const styles = () => ({
+    root: {
+        position: 'relative',
+    },
+    images: {
+        height: 'auto',
+        width: '100%',
+    },
+    hiddenImages: {
+        width: '100%',
+        height: minTabHeight,
+        overflow: 'hidden',
+        position: 'absolute',
+        zIndex: '-1',
+    },
+    tabContainer: {
+        minHeight: minTabHeight,
+        backgroundColor: 'white',
+    },
 });
 
 class InstancesFilesList extends Component {
@@ -29,6 +70,7 @@ class InstancesFilesList extends Component {
             viewerIsOpen: false,
             sortedFiles: sortFilesType(props.files),
             instanceDetail: null,
+            tab: 'images',
         };
     }
 
@@ -87,6 +129,12 @@ class InstancesFilesList extends Component {
         });
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     render() {
         const {
             fetching,
@@ -102,6 +150,7 @@ class InstancesFilesList extends Component {
             viewerIsOpen,
             sortedFiles,
             instanceDetail,
+            tab,
         } = this.state;
         if (fetching) return null;
         if (files.length === 0) {
@@ -119,13 +168,70 @@ class InstancesFilesList extends Component {
                 </Grid>
             );
         }
-
         return (
-            <Grid container spacing={2}>
-                <LazyImagesList
-                    imageList={sortedFiles.images}
-                    onImageClick={index => this.openLightbox(index)}
-                />
+            <section className={classes.root}>
+                <Tabs
+                    indicatorColor="primary"
+                    value={tab}
+                    classes={{
+                        root: classes.tabs,
+                        indicator: classes.indicator,
+                    }}
+                    onChange={(event, newtab) => this.handleChangeTab(newtab)
+                    }
+                >
+                    {
+                        Object.keys(sortedFiles).map((fileKey) => {
+                            const filesByType = sortedFiles[fileKey];
+                            let filesCount = 0;
+                            if (Array.isArray(filesByType)) {
+                                filesCount = filesByType.length;
+                            } else {
+                                Object.keys(filesByType).forEach((fileSubKey) => {
+                                    filesCount += filesByType[fileSubKey].length;
+                                });
+                            }
+                            return (
+                                <Tab
+                                    disabled={filesCount === 0}
+                                    key={fileKey}
+                                    value={fileKey}
+                                    label={`${formatMessage(MESSAGES[fileKey])} (${filesCount})`}
+                                />
+                            );
+                        })
+                    }
+                </Tabs>
+                <div className={tab !== 'images' ? classes.hiddenImages : classes.images}>
+                    <LazyImagesList
+                        imageList={sortedFiles.images}
+                        onImageClick={index => this.openLightbox(index)}
+                    />
+                </div>
+                {
+                    tab === 'vidéos'
+                    && (
+                        <div className={classes.tabContainer}>
+                            VIDEOS
+                        </div>
+                    )
+                }
+                {
+                    tab === 'documents'
+                    && (
+                        <div className={classes.tabContainer}>
+                            documents
+                        </div>
+                    )
+                }
+                {
+                    tab === 'others'
+                    && (
+                        <div className={classes.tabContainer}>
+                            Autres
+                        </div>
+                    )
+                }
                 {
                     viewerIsOpen
                     && (
@@ -138,7 +244,7 @@ class InstancesFilesList extends Component {
                         />
                     )
                 }
-            </Grid>
+            </section>
         );
     }
 }

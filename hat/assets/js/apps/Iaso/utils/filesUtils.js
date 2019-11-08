@@ -9,28 +9,28 @@ export const getFileName = (path) => {
     });
 };
 
+
 export const sortFilesType = (files) => {
     const filesList = {
         images: [],
         videos: [],
-        files: {
+        documents: {
             pdf: [],
             word: [],
             txt: [],
-            other: [],
         },
+        others: [],
     };
     files.forEach((f) => {
         const fileName = getFileName(f.path);
         if (imgExtensions.indexOf(fileName.extension) !== -1) {
             filesList.images.push(f);
-        }
-        if (videoExtensions.indexOf(fileName.extension) !== -1) {
+        } else if (videoExtensions.indexOf(fileName.extension) !== -1) {
             filesList.videos.push(f);
-        } else if (!filesList.files[fileName.extension]) {
-            filesList.files.other.push(f);
+        } else if (!filesList.documents[fileName.extension]) {
+            filesList.others.push(f);
         } else {
-            filesList.files[fileName.extension].push(f);
+            filesList.documents[fileName.extension].push(f);
         }
     });
     return (filesList);

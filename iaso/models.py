@@ -635,6 +635,7 @@ class Instance(models.Model):
     def as_small_dict(self):
         return {
             "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,

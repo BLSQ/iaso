@@ -16,6 +16,7 @@ import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 import ImageGallery from '../dialogs/ImageGalleryComponent';
 import LazyImagesList from './LazyImagesListComponent';
 import DocumentsList from './DocumentsListComponent';
+import VideosList from './VideosListComponent';
 import InstancePopover from '../popover/InstancePopoverComponent';
 
 import { sortFilesType } from '../../utils/filesUtils';
@@ -210,10 +211,10 @@ class InstancesFilesList extends Component {
                     />
                 </div>
                 {
-                    tab === 'vidéos'
+                    tab === 'videos'
                     && (
                         <div className={classes.tabContainer}>
-                            VIDEOS
+                            <VideosList videoList={sortedFiles.videos} />
                         </div>
                     )
                 }

@@ -38,8 +38,7 @@ export const getInstancesFilesList = (instances) => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,
-                    // path,
-                    path: `https://s3.eu-central-1.amazonaws.com/iaso-stg/instancefiles/${path.replace('/media/instancefiles/', '')}`,
+                    path,
                 };
                 filesList.push(file);
             });

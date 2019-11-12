@@ -26,6 +26,7 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'space-between',
+        justifyItem: 'center',
         flexDirection: 'column',
         cursor: 'pointer',
     },

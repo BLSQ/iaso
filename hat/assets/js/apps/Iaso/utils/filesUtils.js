@@ -3,10 +3,12 @@ const videoExtensions = ['mp4'];
 const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
 
 export const getFileName = (path) => {
-    const fullName = path.split('/').slice(-1)[0].split('.');
+    const fullFileName = path.split('/').slice(-1)[0];
+    const extension = fullFileName.match(/\.[0-9a-z]+$/i)[0];
+    const name = fullFileName.replace(extension, '');
     return ({
-        name: fullName[0],
-        extension: fullName[1],
+        name,
+        extension: extension.replace('.', ''),
     });
 };
 

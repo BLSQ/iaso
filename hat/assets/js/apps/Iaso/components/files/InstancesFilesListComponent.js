@@ -15,12 +15,13 @@ import PropTypes from 'prop-types';
 import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 import ImageGallery from '../dialogs/ImageGalleryComponent';
 import LazyImagesList from './LazyImagesListComponent';
+import DocumentsList from './DocumentsListComponent';
 import InstancePopover from '../popover/InstancePopoverComponent';
 
 import { sortFilesType } from '../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../utils/requests';
 
-const minTabHeight = 'calc(100vh - 470px)';
+const minTabHeight = 'calc(100vh - 500px)';
 
 const MESSAGES = {
     images: {
@@ -220,7 +221,7 @@ class InstancesFilesList extends Component {
                     tab === 'documents'
                     && (
                         <div className={classes.tabContainer}>
-                            documents
+                            <DocumentsList docsList={sortedFiles.documents} />
                         </div>
                     )
                 }
@@ -228,7 +229,7 @@ class InstancesFilesList extends Component {
                     tab === 'others'
                     && (
                         <div className={classes.tabContainer}>
-                            Autres
+                            <DocumentsList docsList={sortedFiles.others} />
                         </div>
                     )
                 }

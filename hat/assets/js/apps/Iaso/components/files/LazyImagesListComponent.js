@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import LazyImage from 'react-lazy-progressive-image';
 import isEqual from 'lodash/isEqual';
 
@@ -92,10 +91,4 @@ LazyImagesList.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = state => ({});
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-});
-
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(LazyImagesList));
+export default withStyles(styles)(LazyImagesList);

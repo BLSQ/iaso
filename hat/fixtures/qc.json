@@ -491,5 +491,26 @@
       "has_other_parasite": false, "is_clear": false, "is_confirmed_case": false, "is_good_place": false,
       "created_at": "2019-01-01T00:00:00Z", "updated_at": "2019-01-01T00:00:00Z"
     }
+  },
+
+
+
+  {
+    "model": "cases.case",
+    "pk": 162,
+    "fields": {
+      "source": "mobile_backup", "document_id": "x162", "document_date": "2016-01-05T00:00:00Z", "ZS": "Mosango",
+      "AS": "Muwanda-koso", "village": "Polongo", "latitude": 4.3871, "longitude": 15.9700, "sex": "female",
+      "device_id": "device_3", "test_catt": 1, "normalized_patient_id": 103, "normalized_AS_id": 211,
+      "normalized_village_id": 2111
+    }
+  },
+  {
+    "model": "patient.test",
+    "pk": 1621,
+    "fields": {
+      "type": "CATT", "result": 1, "date": "2018-01-07T00:00:00Z", "form": "162", "village": 1111,
+      "tester_id": 11, "created_at": "2018-01-07T00:00:00Z", "updated_at": "2018-01-07T00:00:00Z"
+    }
   }
 ]

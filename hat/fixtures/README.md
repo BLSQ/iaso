@@ -54,17 +54,18 @@ the village `1111` is in AS `111`, ZS `11` and province `1`.
 
 ## Quality Control
 
-| Base ID | Test type | result | QC2 | QC3 |
-|:--------|:----------|:-------|:----|:----|
-| 150     | CATT      | +      | +   |     |
-| 151     | CATT      | +      | -   |     |
-| 152     | CATT      | +      | -   |     |
-| 153     | CATT      | +      | +   | +   |
-| 154     | CATT      | +      | +   | -   |
-| 155     | RDT       | +      | -   |     |
-| 156     | PG        | +      | +   | +   |
-| 157     | PG        | +      | +   | -   |
-| 158     | PG        | +      | -   |     |
-| 159     | PG        | -      | -   |     |
-| 160     | PG        | -      |     |     |
-| 161     | CATT      | +      | +   | -   |
+| Base ID | Test type | result | QC2 | QC3 | Tester | Img/Vid? |
+|:--------|:----------|:-------|:----|:----|:-------|:---------|
+| 150     | CATT      | +      | +   |     | 11     | Image    |
+| 151     | CATT      | +      | -   |     | 11     | Image    |
+| 152     | CATT      | +      | -   |     | 11     | Image    |
+| 153     | CATT      | +      | +   | +   | 11     | Image    |
+| 154     | CATT      | +      | +   | -   | 11     | Image    |
+| 155     | RDT       | +      | -   |     | 11     | Image    |
+| 156     | PG        | +      | +   | +   | 12     | Video    |
+| 157     | PG        | +      | +   | -   | 12     | Video    |
+| 158     | PG        | +      | -   |     | 12     | Video    |
+| 159     | PG        | -      | -   |     | 12     | Video    |
+| 160     | PG        | -      |     |     | 10     | Video    |
+| 161     | CATT      | +      | +   | -   | 11     | Image    |
+| 162     | CATT      | -      |     |     | 11     | -        |

@@ -30,7 +30,7 @@ const styles = theme => ({
     },
     image: {
         width: '110%',
-        height: '100%',
+        height: '95%',
         objectFit: 'contain',
         maxWidth: '80vw',
     },

@@ -9,7 +9,7 @@ import {
 import PropTypes from 'prop-types';
 
 import { getFileName } from '../../utils/filesUtils';
-import DocumentsItem from './DocumentsItemComponent';
+import VideoItem from './VideoItemComponent';
 
 const styles = theme => ({
     root: {
@@ -18,14 +18,14 @@ const styles = theme => ({
     },
 });
 
-class DocumentsListComponent extends Component {
+class VideosListComponent extends Component {
     shouldComponentUpdate(nextProps) {
-        return !isEqual(nextProps.docsList, this.props.docsList);
+        return !isEqual(nextProps.videoList, this.props.videoList);
     }
 
     render() {
         const {
-            docsList,
+            videoList,
             classes,
         } = this.props;
         return (
@@ -33,14 +33,13 @@ class DocumentsListComponent extends Component {
                 <Grid container spacing={2} className={classes.root}>
                     {
 
-                        docsList.map(file => (
+                        videoList.map(file => (
                             <Grid
                                 item
-                                sm={2}
-                                md={1}
+                                md={6}
                                 key={`${file.itemId}-${getFileName(file.path).name}`}
                             >
-                                <DocumentsItem file={file} />
+                                <VideoItem videoItem={file} />
                             </Grid>
                         ))
                     }
@@ -50,9 +49,9 @@ class DocumentsListComponent extends Component {
     }
 }
 
-DocumentsListComponent.propTypes = {
-    docsList: PropTypes.array.isRequired,
+VideosListComponent.propTypes = {
+    videoList: PropTypes.array.isRequired,
     classes: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(DocumentsListComponent);
+export default withStyles(styles)(VideosListComponent);

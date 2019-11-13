@@ -141,6 +141,11 @@ class TestStatsViewSet(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST,
                 )
 
+            coordination = request.user.profile.coordination
+
+            if coordination:
+                queryset = queryset.filter(tester__coordination=coordination)
+
             if from_date is not None:
                 queryset = queryset.filter(date__gte=from_date)
 
@@ -157,7 +162,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(tester__tester_type=tester_type)
 
             if validator_ids:
-                queryset = queryset.filter(check__validator__id__in=validator_ids.split(","))
+                queryset = queryset.filter(
+                    check__validator__id__in=validator_ids.split(",")
+                )
 
             grouped_queryset = (
                 queryset.values(*grouping_fields)
@@ -165,40 +172,56 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(catt_count=Count("id", distinct=True, filter=Q(type=CATT)))
                 .annotate(rdt_count=Count("id", distinct=True, filter=Q(type=RDT)))
                 .annotate(
-                    screening_count=Count("id", distinct=True, filter=Q(type=CATT) | Q(type=RDT))
+                    screening_count=Count(
+                        "id", distinct=True, filter=Q(type=CATT) | Q(type=RDT)
+                    )
                 )
                 .annotate(pg_count=Count("id", distinct=True, filter=Q(type=PG)))
                 .annotate(
                     pg_count_positive=Count(
-                        "id", distinct=True, filter=Q(type=PG) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PG) & Q(result__gte=RES_POSITIVE),
                     )
                 )
-                .annotate(ctcwoo_count=Count("id", distinct=True, filter=Q(type=CTCWOO)))
+                .annotate(
+                    ctcwoo_count=Count("id", distinct=True, filter=Q(type=CTCWOO))
+                )
                 .annotate(
                     ctcwoo_count_positive=Count(
-                        "id", distinct=True, filter=Q(type=CTCWOO) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=CTCWOO) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(maect_count=Count("id", distinct=True, filter=Q(type=MAECT)))
                 .annotate(
                     maect_count_positive=Count(
-                        "id", distinct=True, filter=Q(type=MAECT) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=MAECT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(pl_count=Count("id", distinct=True, filter=Q(type=PL)))
                 .annotate(
                     pl_count_positive=Count(
-                        "id", distinct=True, filter=Q(type=PL) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PL) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     pl_count_stage1=Count(
-                        "id", distinct=True, filter=Q(type=PL) & Q(form__test_pl_result="stage1")
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PL) & Q(form__test_pl_result="stage1"),
                     )
                 )
                 .annotate(
                     pl_count_stage2=Count(
-                        "id", distinct=True, filter=Q(type=PL) & Q(form__test_pl_result="stage2")
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PL) & Q(form__test_pl_result="stage2"),
                     )
                 )
                 .annotate(
@@ -208,17 +231,23 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     positive_catt_count=Count(
-                        "id", distinct=True, filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     positive_rdt_count=Count(
-                        "id", distinct=True, filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     negative_catt_count=Count(
-                        "id", distinct=True, filter=Q(type=CATT) & Q(result=RES_NEGATIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=CATT) & Q(result=RES_NEGATIVE),
                     )
                 )
                 .annotate(
@@ -228,14 +257,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     positive_screening_test_count=Count(
-                        "id", distinct=True,
+                        "id",
+                        distinct=True,
                         filter=(Q(type=RDT) & Q(result__gte=RES_POSITIVE))
                         | (Q(type=CATT) & Q(result__gte=RES_POSITIVE)),
                     )
                 )
                 .annotate(
                     positive_confirmation_test_count=Count(
-                        "id", distinct=True,
+                        "id",
+                        distinct=True,
                         filter=(
                             Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE)
                         ),
@@ -243,7 +274,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     is_clear=Count(
-                        "id", distinct=True,
+                        "id",
+                        distinct=True,
                         filter=(
                             Q(check__level=province_level)
                             & Q(type__in=TYPES_CONFIRMATION)
@@ -253,7 +285,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     is_good_place=Count(
-                        "id", distinct=True,
+                        "id",
+                        distinct=True,
                         filter=(
                             Q(check__level=province_level)
                             & Q(type__in=TYPES_CONFIRMATION)
@@ -386,15 +419,20 @@ class TestStatsViewSet(viewsets.ViewSet):
                     grouped_queryset = (
                         grouped_queryset.annotate(
                             rdt_test_pictures=Count(
-                                "id", distinct=True, filter=Q(image__isnull=False) & Q(type=RDT)
+                                "id",
+                                distinct=True,
+                                filter=Q(image__isnull=False) & Q(type=RDT),
                             )
                         )
                         .annotate(
-                            test_pictures=Count("id", distinct=True, filter=Q(image__isnull=False))
+                            test_pictures=Count(
+                                "id", distinct=True, filter=Q(image__isnull=False)
+                            )
                         )
                         .annotate(
                             rdt_test_positive_pictures=Count(
-                                "id", distinct=True,
+                                "id",
+                                distinct=True,
                                 filter=Q(image__isnull=False)
                                 & Q(type=RDT)
                                 & Q(result__gte=RES_POSITIVE),
@@ -402,7 +440,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                         .annotate(
                             rdt_test_negative_pictures=Count(
-                                "id", distinct=True,
+                                "id",
+                                distinct=True,
                                 filter=Q(image__isnull=False)
                                 & Q(type=RDT)
                                 & Q(result__lt=RES_POSITIVE),
@@ -410,12 +449,15 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                         .annotate(
                             catt_test_pictures=Count(
-                                "id", distinct=True, filter=Q(image__isnull=False) & Q(type=CATT)
+                                "id",
+                                distinct=True,
+                                filter=Q(image__isnull=False) & Q(type=CATT),
                             )
                         )
                         .annotate(
                             catt_test_positive_pictures=Count(
-                                "id", distinct=True,
+                                "id",
+                                distinct=True,
                                 filter=Q(image__isnull=False)
                                 & Q(type=CATT)
                                 & Q(result__gte=RES_POSITIVE),
@@ -423,7 +465,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                         .annotate(
                             catt_test_negative_pictures=Count(
-                                "id", distinct=True,
+                                "id",
+                                distinct=True,
                                 filter=Q(image__isnull=False)
                                 & Q(type=CATT)
                                 & Q(result__lt=RES_POSITIVE),
@@ -442,14 +485,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                 else:
                     grouped_queryset = grouped_queryset.annotate(
                         confirmation_video_count=Count(
-                            "id", distinct=True,
+                            "id",
+                            distinct=True,
                             filter=(
                                 Q(type__in=TYPES_CONFIRMATION) & Q(video__isnull=False)
                             ),
                         )
                     ).annotate(
                         confirmation_positive_video_count=Count(
-                            "id", distinct=True,
+                            "id",
+                            distinct=True,
                             filter=(
                                 Q(type__in=TYPES_CONFIRMATION)
                                 & Q(video__isnull=False)
@@ -467,7 +512,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                 grouped_queryset = (
                     grouped_queryset.annotate(
                         checked=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=province_level) & Q(type__in=test_types)
                             ),
@@ -475,7 +521,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_ok=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=province_level)
                                 & Q(check__result=F("result"))
@@ -485,7 +532,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_ko=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=province_level)
                                 & ~Q(check__result=F("result"))
@@ -495,7 +543,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_ok_central=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=central_level)
                                 & Q(check__result=F("result"))
@@ -505,7 +554,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_ko_central=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=central_level)
                                 & ~Q(check__result=F("result"))
@@ -515,7 +565,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_mismatch=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level=province_level)
                                 & (
@@ -534,7 +585,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_unreadable=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level__lte=province_level)
                                 & Q(check__result=RES_UNREADABLE)
@@ -544,7 +596,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                     .annotate(
                         checked_invalid=Count(
-                            "check__test_id", distinct=True,
+                            "check__test_id",
+                            distinct=True,
                             filter=(
                                 Q(check__level__lte=province_level)
                                 & (
@@ -581,7 +634,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     confirmation_tests_positive=Count(
-                        "id", distinct=True,
+                        "id",
+                        distinct=True,
                         filter=Q(type__in=TYPES_CONFIRMATION)
                         & Q(result__gte=RES_POSITIVE),
                     )
@@ -589,13 +643,17 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(catt_tests=Count("id", distinct=True, filter=Q(type=CATT)))
                 .annotate(
                     catt_tests_positive=Count(
-                        "id", distinct=True, filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(rdt_tests=Count("id", distinct=True, filter=Q(type=RDT)))
                 .annotate(
                     rdt_tests_positive=Count(
-                        "id", distinct=True, filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE)
+                        "id",
+                        distinct=True,
+                        filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(pg_tests=Count("id", distinct=True, filter=Q(type=PG)))
@@ -604,12 +662,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(pl_tests=Count("id", distinct=True, filter=Q(type=PL)))
                 .annotate(
                     pl_stage1=Count(
-                        "id", distinct=True, filter=Q(type=PL) & Q(form__test_pl_result="stage1")
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PL) & Q(form__test_pl_result="stage1"),
                     )
                 )
                 .annotate(
                     pl_stage2=Count(
-                        "id", distinct=True, filter=Q(type=PL) & Q(form__test_pl_result="stage2")
+                        "id",
+                        distinct=True,
+                        filter=Q(type=PL) & Q(form__test_pl_result="stage2"),
                     )
                 )
             )

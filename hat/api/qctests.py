@@ -43,9 +43,11 @@ class QCTestsViewSet(viewsets.ViewSet):
         limit = int(request.GET.get("limit", 50))
         orders = request.GET.get("order", "date").split(",")
         test_types = request.GET.get("type", None)
-        media_type = request.GET.get("media_type", 'image')
+        media_type = request.GET.get("media_type", "image")
         user_ids = request.GET.get("user_ids", None)
         checked = request.GET.get("checked", False)
+        coordination = request.user.profile.coordination
+
         province_ids = get_authorized_geo(
             request.user,
             "province",
@@ -59,6 +61,9 @@ class QCTestsViewSet(viewsets.ViewSet):
         )
 
         qs = Test.objects.all()
+
+        if coordination:
+            qs = qs.filter(tester__coordination=coordination)
 
         if from_date is not None:
             qs = qs.filter(date__date__gte=from_date)

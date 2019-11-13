@@ -6,7 +6,6 @@ from rest_framework.response import Response
 
 from hat.common.utils import get_request_as_array
 from hat.patient.models import Test
-from hat.quality.models import Check
 from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4, get_authorized_geo
 from hat.cases.models import (
     RES_POSITIVE,

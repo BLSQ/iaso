@@ -9,7 +9,8 @@ from pg_utils import DistinctSum
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-from hat.users.models import LEVEL_1, LEVEL_2, LEVEL_3, LEVEL_4
+from hat.common.utils import get_request_as_array
+
 from hat.cases.models import (
     RES_POSITIVE,
     RES_UNREADABLE,
@@ -33,6 +34,7 @@ from hat.patient.models import Test
 from hat.patient.teststats_report import generate_report
 from hat.patient.teststats_quality import generate_stats_xlsx
 from .authentication import CsrfExemptSessionAuthentication
+from hat.users.models import LEVEL_2, LEVEL_3, get_authorized_geo
 
 
 class TestStatsViewSet(viewsets.ViewSet):
@@ -142,6 +144,42 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
 
             coordination = request.user.profile.coordination
+
+            province_ids = get_authorized_geo(
+                request.user,
+                "province",
+                get_request_as_array(request.GET, "province_ids", None),
+            )
+            zs_ids = get_authorized_geo(
+                request.user, "ZS", get_request_as_array(request.GET, "zs_ids", None)
+            )
+            as_ids = get_authorized_geo(
+                request.user, "AS", get_request_as_array(request.GET, "as_ids", None)
+            )
+
+            if province_ids:
+                if len(province_ids) == 0:
+                    return Response(
+                        {"error": "not province allowed in this request for this user"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                queryset = queryset.filter(
+                    village__AS__ZS__province_id__in=province_ids
+                )
+            if zs_ids:
+                if len(zs_ids) == 0:
+                    return Response(
+                        {"error": "not ZS allowed in this request for this user"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                queryset = queryset.filter(village__AS__ZS_id__in=zs_ids)
+            if as_ids:
+                if len(as_ids) == 0:
+                    return Response(
+                        {"error": "not AS allowed in this request for this user"},
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+                queryset = queryset.filter(village__AS_id__in=as_ids)
 
             if coordination:
                 queryset = queryset.filter(tester__coordination=coordination)

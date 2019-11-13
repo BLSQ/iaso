@@ -129,6 +129,7 @@ class UserModale extends Component {
                 formatMessage,
             },
             institutions,
+            coordinations,
             userTypes,
             userLevels,
             provinces,
@@ -173,6 +174,7 @@ class UserModale extends Component {
                             <UserInfosComponent
                                 password={password}
                                 institutions={institutions}
+                                coordinations={coordinations}
                                 teams={teams}
                                 user={user}
                                 updatePassword={newPassword => this.updatePassword(newPassword)}
@@ -264,6 +266,7 @@ UserModale.propTypes = {
     user: PropTypes.object,
     saveData: PropTypes.func.isRequired,
     institutions: PropTypes.array.isRequired,
+    coordinations: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
     testerTypes: PropTypes.array.isRequired,
     userLevels: PropTypes.array.isRequired,

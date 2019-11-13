@@ -63,7 +63,7 @@ def is_authorized_user(user, province, zone, area):
     return is_authorized
 
 
-def get_authorized_geo(user, geo_type='province', requested_ids=None):
+def get_authorized_geo(user, geo_type="province", requested_ids=None):
     key = geo_type + "_scope" if "_scope" not in geo_type else geo_type
     allowed_ids = get_user_geo_list(user, key)
     if allowed_ids is None or len(allowed_ids) == 0:
@@ -142,7 +142,7 @@ class Team(models.Model):
             "name": self.name,
             "id": self.id,
             "capacity": self.capacity,
-            "team_type": self.team_type
+            "team_type": self.team_type,
         }
         if planning_id is not None:
             from hat.planning.models import TeamActionZone
@@ -231,6 +231,10 @@ class Profile(models.Model):
     ZS_scope = models.ManyToManyField(ZS, blank=True)
     AS_scope = models.ManyToManyField(AS, blank=True)
 
+    coordination = models.ForeignKey(
+        Coordination, blank=True, on_delete=models.SET_NULL, null=True
+    )
+
     password_reset = models.BooleanField(default=False)
 
     phone = models.TextField(null=True, blank=True)
@@ -238,8 +242,13 @@ class Profile(models.Model):
     tester_type = models.TextField(
         "Type de tester", choices=TESTER_TYPE_CHOICES, null=True, blank=True
     )
-    screening_type = models.TextField("Dépistage actif/passif", choices=SCREENING_TYPE_CHOICES, null=True, blank=True,
-                                      default=SCREENING_ACTIVE)
+    screening_type = models.TextField(
+        "Dépistage actif/passif",
+        choices=SCREENING_TYPE_CHOICES,
+        null=True,
+        blank=True,
+        default=SCREENING_ACTIVE,
+    )
     level = models.IntegerField(
         choices=LEVEL_CHOICES, null=True, blank=True, default=LEVEL_1
     )
@@ -261,12 +270,18 @@ class Profile(models.Model):
         institution = None
         if self.institution:
             institution = {"name": self.institution.name, "id": self.institution.id}
-        userType = None
+
+        coordination = None
+        if self.coordination:
+            coordination = {"name": self.coordination.name, "id": self.coordination.id}
+
+        user_type = None
         if self.userType and not self.userType.is_erased:
-            userType = self.userType.as_dict()
+            user_type = self.userType.as_dict()
         team = None
         if self.team:
             team = self.team.id
+
         return {
             "id": self.id,
             "firstName": self.user.first_name,
@@ -281,7 +296,8 @@ class Profile(models.Model):
                 ).values_list("id", flat=True)
             ),
             "institution": institution,
-            "userType": userType,
+            "coordination": coordination,
+            "userType": user_type,
             "AS": self.AS_scope.all().values_list("id", flat=True),
             "ZS": self.ZS_scope.all().values_list("id", flat=True),
             "province": self.province_scope.all().values_list("id", flat=True),
@@ -292,6 +308,7 @@ class Profile(models.Model):
             "level": self.level,
             "screening_type": self.screening_type,
         }
+
     def as_short_dict(self):
         return {
             "id": self.id,

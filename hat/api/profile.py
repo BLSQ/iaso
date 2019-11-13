@@ -11,6 +11,7 @@ from hat.users.models import (
     LEVEL_1,
     Profile,
     Institution,
+    Coordination,
     UserType,
     Team,
     SCREENING_TYPE_CHOICES,
@@ -169,6 +170,7 @@ class ProfilesViewSet(viewsets.ViewSet):
 
         team = request.data.get("team", None)
         institution = request.data.get("institution", None)
+        coordination = request.data.get("coordination", None)
         user_type = request.data.get("userType", None)
 
         new_team = None
@@ -180,6 +182,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         if institution and institution.get("id"):
             new_institution = get_object_or_404(Institution, id=institution.get("id"))
         profile.institution = new_institution
+
+        new_coordination = None
+        if coordination and coordination.get("id"):
+            new_coordination = get_object_or_404(
+                Coordination, id=coordination.get("id")
+            )
+        profile.coordination = new_coordination
 
         new_user_type = None
         if user_type:

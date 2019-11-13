@@ -47,6 +47,7 @@ class UserInfosComponent extends Component {
         const { formatMessage } = this.props.intl;
         const {
             institutions,
+            coordinations,
             teams,
             password,
             testerTypes,
@@ -276,7 +277,26 @@ class UserInfosComponent extends Component {
                         onChange={institutionId => this.props.updateUserField('institution', { id: institutionId })}
                     />
                 </div>
-
+                <div>
+                    <label
+                        htmlFor="coordination"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.coordination"
+                            defaultMessage="Coordination"
+                        />
+                        :
+                    </label>
+                    <Select
+                        simpleValue
+                        name="coordination_id"
+                        value={this.state.user.coordination ? this.state.user.coordination.id : null}
+                        placeholder={formatMessage(LOCAL_MESSAGES.none)}
+                        options={coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
+                        onChange={coordinationId => this.props.updateUserField('coordination', { id: coordinationId })}
+                    />
+                </div>
                 <div>
                     <CheckBox
                         isChecked={Boolean(this.state.user.passwordReset)}
@@ -312,6 +332,7 @@ UserInfosComponent.propTypes = {
     user: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     institutions: PropTypes.array.isRequired,
+    coordinations: PropTypes.array.isRequired,
     teams: PropTypes.array.isRequired,
     updateUserField: PropTypes.func.isRequired,
     updatePassword: PropTypes.func.isRequired,

@@ -37,6 +37,7 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.fetchProvinces(dispatch));
         dispatch(userActions.fetchTeams(dispatch));
         dispatch(userActions.fetchPermissions(dispatch));
+        dispatch(userActions.fetchCoordinations(dispatch));
         dispatch(userActions.fetchUserTypes(dispatch));
         dispatch(userActions.fetchTesterTypes(dispatch));
         dispatch(userActions.fetchUserLevels(dispatch));
@@ -170,6 +171,7 @@ class ManagementUsers extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
+            coordinationsList,
             institutionsList,
             userTypes,
             testerTypes,
@@ -198,6 +200,7 @@ class ManagementUsers extends React.Component {
                             closeModal={() => this.props.selectUser(null)}
                             user={selectedUser}
                             saveData={newData => this.saveData(newData)}
+                            coordinations={coordinationsList}
                             institutions={institutionsList}
                             userTypes={userTypes}
                             testerTypes={testerTypes}
@@ -337,6 +340,7 @@ ManagementUsers.propTypes = {
     userUpdated: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
     institutionsList: PropTypes.array.isRequired,
+    coordinationsList: PropTypes.array.isRequired,
     userTypes: PropTypes.array.isRequired,
     testerTypes: PropTypes.array.isRequired,
     userLevels: PropTypes.array.isRequired,
@@ -358,6 +362,7 @@ const ManagementUsersIntl = injectIntl(ManagementUsers);
 const MapStateToProps = state => ({
     load: state.load,
     institutionsList: state.users.institutions,
+    coordinationsList: state.users.coordinations,
     userTypes: state.users.userTypes,
     testerTypes: state.users.testerTypes,
     userLevels: state.users.userLevels,

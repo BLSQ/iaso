@@ -9,6 +9,7 @@ export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
 export const SET_TESTER_TYPES = 'hat/management/users/SET_TESTER_TYPES';
 export const SET_USER_LEVELS = 'hat/management/users/SET_USER_LEVELS';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
+export const SET_COORDINATIONS = 'hat/management/users/SET_COORDINATIONS';
 export const SET_PROVINCES = 'hat/management/users/SET_PROVINCES';
 export const SET_TEAMS = 'hat/management/users/SET_TEAMS';
 export const SET_ZONES = 'hat/management/users/SET_ZONES';
@@ -47,6 +48,11 @@ export const setUserLevels = payload => ({
 
 export const setPermissions = payload => ({
     type: SET_PERMISSIONS,
+    payload,
+});
+
+export const setCoordinations = payload => ({
+    type: SET_COORDINATIONS,
     payload,
 });
 
@@ -120,6 +126,22 @@ export const fetchPermissions = (dispatch) => {
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
             console.error('Error while fetching permissions', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
+
+export const fetchCoordinations = (dispatch) => {
+    req
+        .get('/api/coordinations/')
+        .then((result) => {
+            dispatch(setCoordinations(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error while fetching coordinations', err);
         });
     return ({
         type: FETCH_ACTION_NO_UPDATE,
@@ -372,6 +394,7 @@ export const userActions = {
     selectUser,
     fetchInstitutions,
     fetchPermissions,
+    fetchCoordinations,
     fetchProvinces,
     selectProvince,
     selectZone,
@@ -460,6 +483,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 permissions,
+            };
+        }
+
+        case SET_COORDINATIONS: {
+            const coordinations = action.payload;
+            return {
+                ...state,
+                coordinations,
             };
         }
 

@@ -137,7 +137,9 @@ class CasesViewSet(viewsets.ViewSet):
             )
 
         if stage is not None:
-            queryset = CaseView.objects.filter(test_pl_result=stage)
+            queryset = Case.objects.filter(test_pl_result=stage)
+
+        queryset = CaseView.add_caseview_fields_to_case_queryset(queryset)
 
         if not show_deleted:
             queryset = queryset.filter(mark_for_deletion=False)

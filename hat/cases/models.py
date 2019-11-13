@@ -1,8 +1,8 @@
 from datetime import datetime
 
 from django.db import models
-from django.db.models import Q
-from django.db.models.functions import Coalesce, Cast, ExtractYear
+from django.db.models import Q, Max
+from django.db.models.functions import Coalesce, Cast, ExtractYear, Greatest
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
@@ -779,6 +779,13 @@ class CaseView(CaseAbstract):
         result = result.annotate(
             normalized_year=Coalesce(Cast(ExtractYear("document_date"), models.PositiveSmallIntegerField()),
                                      "form_year"))
+        result = result.annotate(
+            confirmation_result=Greatest("test_pg", "test_ctcwoo", "test_maect", "test_pl", "test_ge", "test_lcr",
+                                         "test_sf")
+        )
+        result = result.annotate(
+            screening_result=Greatest("test_catt", "test_rdt")
+        )
         return result
 
 

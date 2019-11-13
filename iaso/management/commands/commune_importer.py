@@ -133,7 +133,7 @@ class Command(BaseCommand):
                 unit.sub_source = source_name
                 unit.version = version
                 unit.source_ref = code_com
-                unit.sub_source = "renaloc"
+                unit.sub_source = "commune"
                 unit.validated = False
                 unit.parent = d
                 unit.save()

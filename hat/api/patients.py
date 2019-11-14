@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from django.contrib.gis.geos import Point
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.core.paginator import Paginator
@@ -9,6 +9,7 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
+from hat.cases.forms import DATE_FORMAT
 from hat.cases.models import CaseView, Case, RES_POSITIVE
 from hat.common.utils import queryset_iterator
 from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS, SCREENING_TYPE_CHOICES
@@ -110,7 +111,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 )
             if date_to:
                 test_with_date_in_range = test_with_date_in_range.filter(
-                    date__lte=date_to
+                    date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
                 )
 
             queryset = queryset.annotate(

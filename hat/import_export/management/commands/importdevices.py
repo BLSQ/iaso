@@ -21,7 +21,7 @@ class Command(BaseCommand):
         num_errors = sum(1 for r in results if r['error'] is not None)
 
         message = f"""
-            ----------- Import done (${env_name}) -----------
+            ----------- Import done ({env_name}) -----------
             Started: {str(start_date)}, time spent: {time.time()-start_time} sec
             Total number of records:    {num_total}
             Number of imported records: {num_imported}

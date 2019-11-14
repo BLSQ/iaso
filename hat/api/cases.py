@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from copy import copy
 
 from django.core.paginator import Paginator
@@ -11,6 +12,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, CASE_API
+from hat.cases.forms import DATE_FORMAT
 from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
@@ -176,9 +178,11 @@ class CasesViewSet(viewsets.ViewSet):
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
         if from_date:
-            queryset = queryset.filter(Q(document_date__gte=from_date) | (Q(document_date__isnull=True) & Q(form_year__gte=from_date[:4])))
+            queryset = queryset.filter(Q(document_date__gte=from_date) | (Q(document_date__isnull=True) &
+                                                                          Q(form_year__gte=from_date[:4])))
         if to_date:
-            queryset = queryset.filter(Q(document_date__lte=to_date) | (Q(document_date__isnull=True) & Q(form_year__lte=to_date[:4])))
+            queryset = queryset.filter(Q(document_date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
+                                       | (Q(document_date__isnull=True) & Q(form_year__lte=to_date[:4])))
 
         if source:
             queryset = queryset.filter(source=source)

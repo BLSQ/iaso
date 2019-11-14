@@ -11,6 +11,8 @@ If the locations load processes experiment low performance in the future they
 should also be switched to the same SQL sentences.
 """
 import logging
+import os
+import traceback
 
 import dateutil
 import numpy
@@ -361,9 +363,11 @@ def create_cases(df: DataFrame) -> None:
             if patient_created:
                 create_potential_duplicates_for_patient(patient)
         except Exception as exc:
+            env_name = os.environ.get("ENVIRONMENT_NAME", "unknown env")
+            full_exc = traceback.format_exc()
             logger.error("Error importing document %s: %s", json_document_id, exc, exc_info=1)
-            sns_notify("Error importing document %s: %s" % (json_document_id, repr(exc)))
-            slack_notify(plain_text="Error importing document %s: %s" % (json_document_id, repr(exc)),
+            sns_notify("%s: Error importing document %s: %s" % (env_name, json_document_id, full_exc))
+            slack_notify(plain_text="%s: Error importing document %s: %s" % (env_name, json_document_id, full_exc),
                          icon="exclamation")
             raise
 

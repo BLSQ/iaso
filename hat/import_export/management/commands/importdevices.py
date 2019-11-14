@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 
@@ -11,6 +12,7 @@ class Command(BaseCommand):
     help = 'Import synced devices data'
 
     def handle(self, *args, **options):
+        env_name = os.environ.get("ENVIRONMENT_NAME", "Unknown env")
         start_time = time.time()
         start_date = datetime.now()
         results = import_synced_devices()
@@ -19,7 +21,7 @@ class Command(BaseCommand):
         num_errors = sum(1 for r in results if r['error'] is not None)
 
         message = f"""
-            ----------- Import done -----------
+            ----------- Import done (${env_name}) -----------
             Started: {str(start_date)}, time spent: {time.time()-start_time} sec
             Total number of records:    {num_total}
             Number of imported records: {num_imported}

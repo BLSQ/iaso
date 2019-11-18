@@ -41,3 +41,7 @@ SCREENING_PASSIVE = "passive"
 SCREENING_TYPE_CHOICES = ((SCREENING_ACTIVE, "Dépistage actif"), (SCREENING_PASSIVE, "Dépistage passif"))
 
 GPS_SRID = 4326
+
+PL_STAGE1 = "stage1"
+PL_STAGE2 = "stage2"
+PL_STAGE_UNKNOWN = "unknown"

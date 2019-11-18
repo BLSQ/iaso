@@ -449,6 +449,7 @@
     "main.label.stage": "Stade",
     "main.label.stage1": "Stade 1",
     "main.label.stage2": "Stade 2",
+    "main.label.stageUnk": "Stade inconnu",
     "main.label.stageTest": "Détermination du stade",
     "main.label.stats": "Statistiques",
     "main.label.submit.error": "Erreur lors de la sauvegarde",

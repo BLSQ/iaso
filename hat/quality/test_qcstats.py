@@ -28,19 +28,21 @@ class CasesTest(APITestCase):
         self.assertEquals(result.count(), 1, "Only one screener")
         compare_dict(
             self,
-            {'total_count': 8, 'total_confirmation_tests': 0, 'total_confirmation_tests_positive': 0, 'total_catt': 7,
-             'total_catt_positive': 6, 'total_rdt': 1, 'total_rdt_positive': 1, 'total_pg': 0, 'total_ctc': 0,
-             'total_maect': 0, 'total_pl': 0, 'total_pl_stage1': 0, 'total_pl_stage2': 0},
+            {'total_count': 12, 'total_confirmation_tests': 0, 'total_confirmation_tests_positive': 0, 'total_catt': 10,
+             'total_catt_positive': 9, 'total_rdt': 2, 'total_rdt_positive': 2, 'total_pg': 0, 'total_ctc': 0,
+             'total_maect': 0, 'total_pl': 0, 'total_pl_stage1': 0, 'total_pl_stage2': 0, 'total_pl_stage_unk': 0},
             total
         )
         compare_dict(
             self,
             {'tester_id': 11, 'tester__user__last_name': 'Ner', 'tester__user__first_name': 'Scree',
-             'tester__team__coordination__name': None, 'test_count': 8, 'catt_count': 7, 'rdt_count': 1,
-             'screening_count': 8, 'pg_count': 0, 'pg_count_positive': 0, 'ctcwoo_count': 0, 'ctcwoo_count_positive': 0,
-             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 0, 'pl_count_positive': 0, 'pl_count_stage1': 0,
-             'pl_count_stage2': 0, 'confirmation_count': 0, 'positive_catt_count': 6, 'positive_rdt_count': 1,
-             'negative_catt_count': 1, 'negative_rdt_count': 0, 'positive_screening_test_count': 7,
+             'tester__team__coordination__name': None, 'test_count': 12, 'catt_count': 10, 'rdt_count': 2,
+             'screening_count': 12, 'pg_count': 0, 'pg_count_positive': 0, 'ctcwoo_count': 0,
+             'ctcwoo_count_positive': 0,
+             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 0, 'pl_count_positive': 0,
+             'pl_count_stage1': 0, 'pl_count_stage2': 0, 'pl_count_stage_unk': 0,
+             'confirmation_count': 0, 'positive_catt_count': 9, 'positive_rdt_count': 2,
+             'negative_catt_count': 1, 'negative_rdt_count': 0, 'positive_screening_test_count': 11,
              'positive_confirmation_test_count': 0, 'is_clear': 0, 'is_good_place': 0, 'total_population': 1004,
              'rdt_test_pictures': 1, 'test_pictures': 7, 'rdt_test_positive_pictures': 1,
              'rdt_test_negative_pictures': 0, 'catt_test_pictures': 6, 'catt_test_positive_pictures': 6,
@@ -63,8 +65,9 @@ class CasesTest(APITestCase):
             {'tester_id': 10, 'tester__user__last_name': '', 'tester__user__first_name': '',
              'tester__team__coordination__name': None, 'test_count': 1, 'catt_count': 0, 'rdt_count': 0,
              'screening_count': 0, 'pg_count': 1, 'pg_count_positive': 0, 'ctcwoo_count': 0, 'ctcwoo_count_positive': 0,
-             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 0, 'pl_count_positive': 0, 'pl_count_stage1': 0,
-             'pl_count_stage2': 0, 'confirmation_count': 1, 'positive_catt_count': 0, 'positive_rdt_count': 0,
+             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 0, 'pl_count_positive': 0,
+             'pl_count_stage1': 0, 'pl_count_stage2': 0, 'pl_count_stage_unk': 0,
+             'confirmation_count': 1, 'positive_catt_count': 0, 'positive_rdt_count': 0,
              'negative_catt_count': 0, 'negative_rdt_count': 0, 'positive_screening_test_count': 0,
              'positive_confirmation_test_count': 0, 'is_clear': 0, 'is_good_place': 0, 'total_population': 1004,
              'confirmation_video_count': 1, 'confirmation_positive_video_count': 0, 'checked': 0, 'checked_ok': 0,
@@ -76,12 +79,13 @@ class CasesTest(APITestCase):
         compare_dict(
             self,
             {'tester_id': 12, 'tester__user__last_name': 'Firmer', 'tester__user__first_name': 'Con',
-             'tester__team__coordination__name': None, 'test_count': 4, 'catt_count': 0, 'rdt_count': 0,
+             'tester__team__coordination__name': None, 'test_count': 7, 'catt_count': 0, 'rdt_count': 0,
              'screening_count': 0, 'pg_count': 4, 'pg_count_positive': 3, 'ctcwoo_count': 0, 'ctcwoo_count_positive': 0,
-             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 0, 'pl_count_positive': 0, 'pl_count_stage1': 0,
-             'pl_count_stage2': 0, 'confirmation_count': 4, 'positive_catt_count': 0, 'positive_rdt_count': 0,
+             'maect_count': 0, 'maect_count_positive': 0, 'pl_count': 3, 'pl_count_positive': 1,
+             'pl_count_stage1': 2, 'pl_count_stage2': 1, 'pl_count_stage_unk': 3,
+             'confirmation_count': 7, 'positive_catt_count': 0, 'positive_rdt_count': 0,
              'negative_catt_count': 0, 'negative_rdt_count': 0, 'positive_screening_test_count': 0,
-             'positive_confirmation_test_count': 3, 'is_clear': 4, 'is_good_place': 4, 'total_population': 1004,
+             'positive_confirmation_test_count': 4, 'is_clear': 4, 'is_good_place': 4, 'total_population': 1004,
              'confirmation_video_count': 4, 'confirmation_positive_video_count': 3, 'checked': 4, 'checked_ok': 3,
              'checked_ko': 1, 'checked_ok_central': 1, 'checked_ko_central': 1, 'checked_mismatch': 1,
              'checked_unreadable': 0, 'checked_invalid': 0},
@@ -89,9 +93,9 @@ class CasesTest(APITestCase):
         )
         compare_dict(
             self,
-            {'total_count': 5, 'total_confirmation_tests': 5, 'total_confirmation_tests_positive': 3, 'total_catt': 0,
+            {'total_count': 8, 'total_confirmation_tests': 8, 'total_confirmation_tests_positive': 4, 'total_catt': 0,
              'total_catt_positive': 0, 'total_rdt': 0, 'total_rdt_positive': 0, 'total_pg': 5, 'total_ctc': 0,
-             'total_maect': 0, 'total_pl': 0, 'total_pl_stage1': 0, 'total_pl_stage2': 0},
+             'total_maect': 0, 'total_pl': 3, 'total_pl_stage1': 2, 'total_pl_stage2': 1, 'total_pl_stage_unk': 5},
             total,
             "total:"
         )

@@ -36,7 +36,7 @@ def get_village_row(row, row_num, **kwargs):
         row["positive_confirmation_test_count"],
         row["pl_count_stage1"],
         row["pl_count_stage2"],
-        0,  # INC ?
+        row["pl_count_stage_unk"],
         f"=L{row_num}/F{row_num}" if row["screening_count"] else "",
     ]
 
@@ -57,6 +57,7 @@ columns_date = [
     {"title": "Tests de\ndépistage positifs", "width": 10},
     {"title": "PL stade 1"},
     {"title": "PL stade 2"},
+    {"title": "PL stade Inconnu"},
     {"title": "Confirmations\npositives", "width": 10},
     {"title": "PG positifs"},
     {"title": "CTCWOO positifs"},
@@ -82,6 +83,7 @@ def get_month_row(row, **kwargs):
         row["positive_screening_test_count"],
         row["pl_count_stage1"],
         row["pl_count_stage2"],
+        row["pl_count_stage_unk"],
         row["positive_confirmation_test_count"],
         row["pg_count_positive"],
         row["ctcwoo_count_positive"],

@@ -54,18 +54,25 @@ the village `1111` is in AS `111`, ZS `11` and province `1`.
 
 ## Quality Control
 
-| Base ID | Test type | result | QC2 | QC3 | Tester | Img/Vid? |
-|:--------|:----------|:-------|:----|:----|:-------|:---------|
-| 150     | CATT      | +      | +   |     | 11     | Image    |
-| 151     | CATT      | +      | -   |     | 11     | Image    |
-| 152     | CATT      | +      | -   |     | 11     | Image    |
-| 153     | CATT      | +      | +   | +   | 11     | Image    |
-| 154     | CATT      | +      | +   | -   | 11     | Image    |
-| 155     | RDT       | +      | -   |     | 11     | Image    |
-| 156     | PG        | +      | +   | +   | 12     | Video    |
-| 157     | PG        | +      | +   | -   | 12     | Video    |
-| 158     | PG        | +      | -   |     | 12     | Video    |
-| 159     | PG        | -      | -   |     | 12     | Video    |
-| 160     | PG        | -      |     |     | 10     | Video    |
-| 161     | CATT      | +      | +   | -   | 11     | Image    |
-| 162     | CATT      | -      |     |     | 11     | -        |
+| Base ID | Test type | result | Stage | QC2 | QC3 | Tester | Img/Vid? |
+|:--------|:----------|:-------|:------|:----|:----|:-------|:---------|
+| 150     | CATT      | +      | -     | +   |     | 11     | Image    |
+| 151     | CATT      | +      | -     | -   |     | 11     | Image    |
+| 152     | CATT      | +      | -     | -   |     | 11     | Image    |
+| 153     | CATT      | +      | -     | +   | +   | 11     | Image    |
+| 154     | CATT      | +      | -     | +   | -   | 11     | Image    |
+| 155     | RDT       | +      | -     | -   |     | 11     | Image    |
+| 156     | RDT       | +      | unk   |     |     | 11     | -        |
+|         | PG        | +      |       | +   | +   | 12     | Video    |
+| 157     | PG        | +      | unk   | +   | -   | 12     | Video    |
+| 158     | PG        | +      | unk   | -   |     | 12     | Video    |
+| 159     | PG        | -      | unk   | -   |     | 12     | Video    |
+| 160     | PG        | -      | unk   |     |     | 10     | Video    |
+| 161     | CATT      | +      | -     | +   | -   | 11     | Image    |
+| 162     | CATT      | -      | -     |     |     | 11     | -        |
+| 163     | CATT      | +      | stg 2 |     |     | 11     | -        |
+|         | PL        | +      |       |     |     | 12     | -        |
+| 164     | CATT      | +      | stg 1 |     |     | 11     | -        |
+|         | PL        | - gb:2 |       |     |     | 12     | -        |
+| 165     | CATT      | +      | stg 1 |     |     | 11     | -        |
+|         | PL        | - gb:3 |       |     |     | 12     | -        |

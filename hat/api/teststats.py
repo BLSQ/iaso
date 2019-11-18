@@ -263,6 +263,16 @@ class TestStatsViewSet(viewsets.ViewSet):
                     )
                 )
                 .annotate(
+                    pl_count_stage_unk=Count(
+                        "id",
+                        distinct=True,
+                        filter=(
+                            Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE) &
+                            ~Q(form__test_pl_result="stage2") & ~Q(form__test_pl_result="stage1")
+                        )
+                    )
+                )
+                .annotate(
                     confirmation_count=Count(
                         "id", distinct=True, filter=Q(type__in=TYPES_CONFIRMATION)
                     )
@@ -346,6 +356,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "positive_screening_test_count",
                     "pl_count_stage1",
                     "pl_count_stage2",
+                    "pl_count_stage_unk",
                     "positive_confirmation_test_count",
                     "pg_count_positive",
                     "ctcwoo_count_positive",
@@ -369,6 +380,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "positive_confirmation_test_count",
                     "pl_count_stage1",
                     "pl_count_stage2",
+                    "pl_count_stage_unk",
                     "confirmation_count",
                     "screening_count",
                 )
@@ -392,6 +404,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "positive_confirmation_test_count",
                     "pl_count_stage1",
                     "pl_count_stage2",
+                    "pl_count_stage_unk",
                     "confirmation_count",
                     "screening_count",
                     "village__population",
@@ -437,6 +450,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                     "pl_count_positive",
                     "pl_count_stage1",
                     "pl_count_stage2",
+                    "pl_count_stage_unk",
                     "pg_count_positive",
                     "ctcwoo_count_positive",
                     "maect_count_positive",
@@ -712,6 +726,14 @@ class TestStatsViewSet(viewsets.ViewSet):
                         filter=Q(type=PL) & Q(form__test_pl_result="stage2"),
                     )
                 )
+                .annotate(
+                    pl_stage_unk=Count(
+                        "id",
+                        distinct=True,
+                        filter=(Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE) &
+                                ~Q(form__test_pl_result="stage2") & ~Q(form__test_pl_result="stage1")),
+                    )
+                )
             )
 
             total_queryset = case_queryset.aggregate(
@@ -737,6 +759,8 @@ class TestStatsViewSet(viewsets.ViewSet):
                 total_pl=Count("pl_tests", filter=Q(pl_tests__gt=0)),
                 total_pl_stage1=Count("pl_tests", filter=Q(pl_stage1__gt=0)),
                 total_pl_stage2=Count("pl_tests", filter=Q(pl_stage2__gt=0)),
+                total_pl_stage_unk=Count("pl_tests", filter=(Q(pl_stage1=0) & Q(pl_stage2=0)
+                                                             & Q(type__in=TYPES_CONFIRMATION))),
             )
             result = {"result": grouped_queryset, "total": total_queryset}
             cache.set(absolute_url, result, 30 * 60)

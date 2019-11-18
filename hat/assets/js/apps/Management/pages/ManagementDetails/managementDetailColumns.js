@@ -133,7 +133,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Stage 1',
+                        defaultMessage: 'Stade 1',
                         id: 'main.label.stage1',
                     }),
                     accessor: 'pl_count_stage1',
@@ -144,7 +144,7 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Stage 2',
+                        defaultMessage: 'Stade 2',
                         id: 'main.label.stage2',
                     }),
                     accessor: 'pl_count_stage2',
@@ -152,6 +152,17 @@ const managementDetailColumns = (formatMessage, tableTotal) => (
                     width: 80,
                     resizable: false,
                     Footer: () => (tableTotal ? formatThousand(tableTotal.total_pl_stage2) : ''),
+                },
+                {
+                    Header: formatMessage({
+                        defaultMessage: 'Stade inconnu',
+                        id: 'main.label.stageUnk',
+                    }),
+                    accessor: 'pl_count_stage_unk',
+                    className: 'small',
+                    width: 80,
+                    resizable: false,
+                    Footer: () => (tableTotal ? formatThousand(tableTotal.total_pl_stage_unk) : ''),
                 },
             ],
         },

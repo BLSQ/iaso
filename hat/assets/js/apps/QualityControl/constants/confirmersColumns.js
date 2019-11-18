@@ -60,18 +60,26 @@ const confirmersColumns = formatMessage => (
         {
             Header: `${formatMessage({
                 defaultMessage: 'Stage',
-                id: 'main.label.stage',
-            })} 1`,
+                id: 'main.label.stage1',
+            })}`,
             className: 'small',
             accessor: 'pl_count_stage1',
         },
         {
             Header: `${formatMessage({
                 defaultMessage: 'Stage',
-                id: 'main.label.stage',
-            })} 2`,
+                id: 'main.label.stage2',
+            })}`,
             className: 'small',
             accessor: 'pl_count_stage2',
+        },
+        {
+            Header: `${formatMessage({
+                defaultMessage: 'Stage',
+                id: 'main.label.stageUnk',
+            })}`,
+            className: 'small',
+            accessor: 'pl_count_stage_unk',
         },
         {
             Header: formatMessage({

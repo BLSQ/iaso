@@ -54,8 +54,9 @@ columns_confirmer = [
     {"title": "PG", "width": 15},
     {"title": "MAECT", "width": 15},
     {"title": "PL", "width": 15},
-    {"title": "Stage 1", "width": 15},
-    {"title": "Stage 2", "width": 15},
+    {"title": "Stade 1", "width": 15},
+    {"title": "Stade 2", "width": 15},
+    {"title": "Stade inconnu", "width": 20},
     {"title": "Vidéos", "width": 15},
 ]
 
@@ -71,6 +72,7 @@ def get_confirmer_row(row, row_num, **kwargs):
         row["pl_count"],
         row["pl_count_stage1"],
         row["pl_count_stage2"],
+        row["pl_count_stage_unk"],
         row["confirmation_video_count"],
     ]
 

@@ -30,7 +30,8 @@ from hat.geo.models import Village, AS
 from hat.import_export.mapping import CASE_IGNORE, mobile_get_location_from_coordinates, \
     mobile_get_date, historic_get_screening_type
 from hat.patient.duplicates import create_potential_duplicates_for_patient
-from hat.patient.identify import get_or_create_patient_from_case, create_test_data, create_or_udpate_treatments
+from hat.patient.identify import get_or_create_patient_from_case, create_test_data, create_or_udpate_treatments, \
+    PL_STAGE2, PL_STAGE1, PL_STAGE_UNKNOWN
 from hat.patient.models import Test
 from hat.sync.models import JSONDocument, DeviceDB
 from hat.users.models import Team
@@ -307,6 +308,7 @@ def create_cases(df: DataFrame) -> None:
                         setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
             case.screening_type = get_screening_type(case, ignored_columns)
+            case.test_pl_result = get_pl_stage(case)
             json_document_id = ignored_columns.get("json_document_id", None)
             treatments = ignored_columns.get("treatments", [])
             # Avoid having to check for None, nan, '' etc everywhere in the code
@@ -390,6 +392,7 @@ def update_cases(df: DataFrame) -> int:
                         setattr(case, column_name, convert_to_db_type(Case, column_name, value))
 
             case.screening_type = get_screening_type(case, ignored_columns)
+            case.test_pl_result = get_pl_stage(case)
             json_document_id = ignored_columns.get("json_document_id", None)
             treatments = ignored_columns.get("treatments", [])
             # Avoid having to check for None, nan, '' etc everywhere in the code
@@ -447,6 +450,25 @@ def update_entries(duplicates: DataFrame) -> int:
         errors='ignore'
     )
     return update_cases(duplicates)
+
+
+def get_pl_stage(case):
+    """
+    test_pl_result contains stage1, stage2 or unknown, directly imported from historic data.
+    The mobile data on the other hand needs to determine this information from the white cells count.
+    """
+    if case.test_pl_result is None:
+        # We do set test_pl_result even if there is no PL test performed, it is then "unknown".
+        if case.test_pl is not None and case.test_pl >= 2:
+            return PL_STAGE2
+        elif case.test_pl_gb_mm3 is not None and int(case.test_pl_gb_mm3) > 5:
+            return PL_STAGE2
+        elif case.test_pl_gb_mm3 is not None and int(case.test_pl_gb_mm3) <=5:
+            return PL_STAGE1
+        else:
+            return PL_STAGE_UNKNOWN
+    else:
+        return case.test_pl_result
 
 
 def get_screening_type(case, ignored_columns):

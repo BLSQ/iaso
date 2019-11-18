@@ -189,7 +189,7 @@ def create_test_data(case: Case, patient_area, raw):
                 team_id=device_team_id,
                 longitude=raw.get(f"{test_field}_test_longitude"), latitude=raw.get(f"{test_field}_test_latitude"),
                 tester_id=device_last_profile_id,
-                level=getattr(case, f"{test_field}_level", None),  # CATT only
+                level=get_case_level(case, test_type, test_field),  # CATT level or PL stage
                 index=getattr(case, f"{test_field}_index", None),  # CATT only
             )
             if test_created:
@@ -197,6 +197,18 @@ def create_test_data(case: Case, patient_area, raw):
             tests.append(test)
 
     return tests, tests_created
+
+
+def get_case_level(case, test_type, test_field):
+    level = getattr(case, f"{test_field}_level", None)
+    if level is None and test_type == PL:
+        if case.test_pl_result == "stage1":
+            level = 1
+        elif case.test_pl_result == "stage2":
+            level = 2
+        else:
+            level = None
+    return level
 
 
 def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,

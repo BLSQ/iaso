@@ -1,0 +1,74 @@
+{
+   "_id": "participant-regular_confirmation_pl",
+   "_rev": "4-059cfc99b227f754d282b8258a478aaa",
+   "person": {
+       "forename": "john",
+       "postname": "fitzgerald",
+       "surname": "kennedy",
+       "birthYear": "1917",
+       "noBirthYear": false,
+       "gender": "Male",
+       "mothersSurname": "Rose",
+       "location": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1976"
+       }
+   },
+   "participant": {
+       "memberType": "resident",
+       "screeningLocation": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1976"
+       },
+       "hatId": "JOKEFIM1917R",
+       "screenings": {
+           "rdt": {
+               "result": "positive",
+               "testTime": "2019-01-07T13:52:13.297Z",
+               "position": {
+                   "accuracy": 16.597999572753906,
+                   "latitude": 50.8367366,
+                   "longitude": 4.4009156,
+                   "timestamp": 1547041933000
+               },
+               "device": "test_ms_conf",
+               "creationTime": "2019-01-07T13:52:09.742Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           },
+           "pl": {
+               "result": "positive",
+               "creationTime": "2019-01-09T16:29:34.087Z",
+               "testTime": "2019-01-09T16:29:47.364Z",
+               "device": "test_ms_conf",
+               "position": {
+                   "accuracy": 10.1850004196167,
+                   "latitude": 50.8367359,
+                   "longitude": 4.4009168,
+                   "timestamp": 1547051388000
+               },
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false,
+               "whiteCount": "0"
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 20.797000885009766,
+           "latitude": 50.8367345,
+           "longitude": 4.4009139,
+           "timestamp": 1547041930000
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-01-04T13:52:09.635Z",
+   "dateModified": "2019-01-09T13:52:13.298Z",
+   "deviceId": "test_ms_docs"
+}

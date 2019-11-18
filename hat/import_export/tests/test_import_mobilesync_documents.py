@@ -419,6 +419,91 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertTrue(rdt_test.hidden)
         self.assertIsNone(rdt_test.level)
         self.assertFalse(pl_test.hidden)
+        self.assertEquals(pl_test.level, 2, "result is positive and white blood cells are > 5 => stage 2")
+
+    def test_import_pl_white_above5(self):
+        test_json, device_db = load_document("regular_confirmation_pl_white_above5_stage2.json", "supervisor")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=test_json).json()
+        self.assertEqual(test_json['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        pl_test = case.test_set.get(type="PL")
+        self.assertEquals(pl_test.result, 1)
+        self.assertEquals(pl_test.level, 2, "result is negative but white blood cells are > 5 => stage 2")
+
+    def test_import_pl_white_under5(self):
+        test_json, device_db = load_document("regular_confirmation_pl_white_under5_stage1.json", "supervisor")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=test_json).json()
+        self.assertEqual(test_json['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        pl_test = case.test_set.get(type="PL")
+        self.assertEquals(pl_test.result, 1)
+        self.assertEquals(pl_test.level, 1, "result is negative and white blood cells are < 5 => stage 1")
+
+    def test_import_pl_pos_stage2(self):
+        test_json, device_db = load_document("regular_confirmation_pl_pos_stage2.json", "supervisor")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=test_json).json()
+        self.assertEqual(test_json['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        pl_test = case.test_set.get(type="PL")
+        self.assertEquals(pl_test.result, 2)
+        self.assertEquals(pl_test.level, 2, "result is positive and white blood cells are > 5 => stage 2")
+
+    def test_import_pl_stage_unk(self):
+        test_json, device_db = load_document("regular_confirmation_pl_stage_unk.json", "supervisor")
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=test_json).json()
+        self.assertEqual(test_json['_id'], p1['id'])
+
+        response = import_synced_devices()
+        stats = response[0]['stats']
+        self.assertEqual(stats.total, 1)
+        device_db.refresh_from_db()
+
+        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        self.assertEqual(device_cases.count(), 1)
+        case = device_cases[0]
+
+        # Test
+        pl_test = case.test_set.get(type="PL")
+        self.assertEquals(pl_test.result, 1)
+        self.assertIsNone(pl_test.level)
 
     def test_import_screening_catt(self):
         regular_pos_catt, device_db_scr = load_document("regular_pos_catt.json", "passive")

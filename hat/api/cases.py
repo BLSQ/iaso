@@ -353,7 +353,7 @@ class CasesViewSet(viewsets.ViewSet):
             columns = [
                 {"title": 'Identifiant', "width": 9},
                 {"title": 'UM', "width": 14},
-                {"title": 'Année', "width": 6},
+                {"title": 'Date dernier\ntest', "width": 15},
                 {"title": 'Source', "width": 10},
                 {"title": 'Province encodée', "width": 10},
                 {"title": 'ZS encodée', "width": 14},
@@ -382,7 +382,8 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.values(
                 "id",
                 "normalized_team_name",
-                "normalized_year",
+                "document_date",
+                "latest_test_date",
                 "source",
                 "normalized_province_name",
                 "normalized_zs_name",
@@ -413,7 +414,9 @@ class CasesViewSet(viewsets.ViewSet):
                 return [
                         case["id"],
                         case["normalized_team_name"],
-                        case["normalized_year"],
+                        case["latest_test_date"].strftime("%Y-%m-%d %H:%M")
+                        if type(case["latest_test_date"]) is datetime
+                        else case["document_date"].strftime("%Y-%m-%d %H:%M"),
                         case["source"],
                         case["normalized_province_name"],
                         case["normalized_zs_name"],

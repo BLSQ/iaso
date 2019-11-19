@@ -800,6 +800,7 @@
     "teamsdevices.sync_summary": "Total-Créé-Màj-Effacé",
     "teamsdevices.uploaded_images": "Images importées",
     "teamsdevices.vidéos_uploaded": "Vidéos importées",
+    "teamsdevices.missing": "manquantes",
     "testStatsSettings.catt_count": "Tests CATT effectués",
     "testStatsSettings.ctcwoo_count": "Tests CTCWOO effectués",
     "testStatsSettings.ctcwoo_count_positive": "Tests CTCWOO positifs",

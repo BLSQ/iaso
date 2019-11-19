@@ -129,7 +129,7 @@ export const renderCountCell = (count, formatMessage) => {
     if (count === undefined || count < 0 || count > 40) {
         daysClass = 'error';
     }
-    if (count !== undefined && count > 20 && count < 40) {
+    if (count !== undefined && count > 20 && count <= 40) {
         daysClass = 'warning';
     }
     return (

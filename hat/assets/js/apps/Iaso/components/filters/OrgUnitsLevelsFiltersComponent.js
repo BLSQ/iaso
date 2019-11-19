@@ -87,7 +87,6 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     buildUrl(base) {
         const {
             version,
-            validated,
         } = this.props.params;
         const source = this.props.params.source || this.props.source;
         let url = base;
@@ -97,9 +96,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         if (version) {
             url = `${url}&version=${version}`;
         }
-        if (validated) {
-            url = `${url}&validated=${validated}`;
-        }
+        url = `${url}&validated=both`;
         return url;
     }
 

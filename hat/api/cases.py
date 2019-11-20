@@ -96,7 +96,8 @@ class CasesViewSet(viewsets.ViewSet):
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
-        show_deleted = request.GET.get("show_deleted", False)
+        show_deleted = request.GET.get("showDeleted", None)
+        show_undeleted = request.GET.get("showUnDeleted", None)
 
         anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
         if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
@@ -143,8 +144,11 @@ class CasesViewSet(viewsets.ViewSet):
 
         queryset = CaseView.add_caseview_fields_to_case_queryset(queryset)
 
-        if not show_deleted:
+        if show_undeleted is not None and show_deleted is None:
             queryset = queryset.filter(mark_for_deletion=False)
+
+        if show_deleted is not None and show_undeleted is None:
+            queryset = queryset.filter(mark_for_deletion=True)
 
         if located != 'all' and is_locator != 'true':
             queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup")\
@@ -511,7 +515,10 @@ class CasesViewSet(viewsets.ViewSet):
             if not request.user.is_superuser:
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
-            result = full_delete_case(case)
+            try:
+                result = full_delete_case(case)
+            except Exception as exc:
+                return Response(str(exc), status=status.HTTP_424_FAILED_DEPENDENCY)
 
             return Response(result)
         else:
@@ -519,7 +526,7 @@ class CasesViewSet(viewsets.ViewSet):
             if not request.user.has_perm("menupermissions.x_datas_patient_edition"):
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
-            case.mark_for_deletion = True
+            case.mark_for_deletion = not case.mark_for_deletion
             case.save()
             return Response(case.as_dict())
 
@@ -537,6 +544,7 @@ def full_delete_case(case):
         "marked_documents": marked_documents,
         "deleted_tests": deleted_tests,
         "deleted_case": deleted_case,
+        "deleted_patient": None
     }
     if patient.case_set.count() == 0:
         # Treatment, duplicate pairs and duplicate ignore are cascaded and will report in this deleted_patient

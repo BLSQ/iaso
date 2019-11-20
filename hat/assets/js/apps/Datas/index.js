@@ -25,14 +25,14 @@ export default function datasApp(appConfig, element, baseUrl) {
     const dateTo = moment().format('YYYY-MM-DD');
     const defaultPathRegister = '/register/list/order/last_name/pageSize/50/page/1';
     const defaultPathDuplicates = '/register/duplicates/order/id/pageSize/50/page/1';
-    const defaultPathTests = `/tests/order/form_year/pageSize/50/page/1/date_from/${dateFrom}/date_to/${dateTo}`;
+    const defaultPathTests = `/tests/order/-latest_test_date/pageSize/50/page/1/date_from/${dateFrom}/date_to/${dateTo}/showUnDeleted/true`;
     const routes = [
         <Route
             path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
             '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
             '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)' +
-            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/back/:back)'}
+            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/anonymous/:anonymous)(/back/:back)'}
             component={CasesPage}
         />,
         <Route
@@ -42,7 +42,7 @@ export default function datasApp(appConfig, element, baseUrl) {
             '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)' +
             '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)' +
             '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)' +
-            '(/videos/:videos)(/tab/:tab)(/anonymous/:anonymous)'}
+            '(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/tab/:tab)(/anonymous/:anonymous)'}
             component={PatientDetailPage}
         />,
         <Route

@@ -24,6 +24,8 @@ import {
     videos,
     screeningType,
     stage,
+    showDeleted,
+    showUnDeleted,
 } from '../../../utils/constants/filters';
 
 // CASES
@@ -42,15 +44,23 @@ const filtersCases2 = (
     formatMessage,
     coordinationsList,
     teamsList,
-) => (
-    [
+    canEditPatientInfos,
+) => {
+    let tempFilter = [
         coordinations(coordinationsList),
         teams(teamsList),
         located(formatMessage),
         testerType(formatMessage),
         screeningType(formatMessage),
-    ]
-);
+    ];
+    if (canEditPatientInfos) {
+        tempFilter = tempFilter.concat([
+            showDeleted(),
+            showUnDeleted(),
+        ]);
+    }
+    return tempFilter;
+};
 
 const filtersCasesGeo = (
     provincesList,

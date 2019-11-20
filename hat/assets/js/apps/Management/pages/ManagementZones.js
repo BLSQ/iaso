@@ -7,7 +7,7 @@ import { FormattedMessage, injectIntl } from 'react-intl';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import ZoneModaleComponent from '../components/ZoneModaleComponent';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
+import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
 import ShapeModaleComponent from '../components/ShapeModaleComponent';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';

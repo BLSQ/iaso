@@ -9,7 +9,7 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
 import PlanningModaleComponent from '../components/PlanningModaleComponent';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
+import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
 import { saveFull, deleteFull, saveDuplicatePlanning } from '../../../utils/saveData';
 
 const baseApiUrl = '/api/plannings/?with_template=True';

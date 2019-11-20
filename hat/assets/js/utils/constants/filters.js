@@ -666,6 +666,29 @@ export const onlyDupes = () => (
     }
 );
 
+export const showDeleted = () => (
+    {
+        name: 'showDeleted',
+        urlKey: 'showDeleted',
+        label: {
+            id: 'main.cases.showDeleted',
+            defaultMessage: 'Show marked for deletion',
+        },
+        type: 'checkbox',
+    }
+);
+export const showUnDeleted = () => (
+    {
+        name: 'showUnDeleted',
+        urlKey: 'showUnDeleted',
+        label: {
+            id: 'main.cases.showUnDeleted',
+            defaultMessage: 'Show not marked for deletion',
+        },
+        type: 'checkbox',
+    }
+);
+
 export const users = (
     usersList,
     mainLabel = {

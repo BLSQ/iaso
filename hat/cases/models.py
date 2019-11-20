@@ -636,6 +636,8 @@ class Case(CaseAbstract):
             "circumstances_dp_hgr": self.circumstances_dp_hgr,
             "screening_type": self.screening_type,
             "latest_test_date": self.latest_test_date,
+            "normalized_date": self.normalized_date if hasattr(self, "normalized_date")
+            else (self.latest_test_date if self.latest_test_date else self.document_date),
             "infection_location": self.infection_location.as_short_dict() if self.infection_location else None,
             "infection_location_type": self.get_infection_location_type_display(),
         }
@@ -786,6 +788,7 @@ class CaseView(CaseAbstract):
         result = result.annotate(
             screening_result=Greatest("test_catt", "test_rdt")
         )
+        result = result.annotate(normalized_date=Coalesce("latest_test_date", "document_date"))
         return result
 
 

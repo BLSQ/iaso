@@ -35,12 +35,12 @@ const casesListColumns = formatMessage => (
                 defaultMessage: 'Date',
                 id: 'main.label.latest_test_date',
             }),
-            accessor: 'latest_test_date',
+            accessor: 'normalized_date',
             className: 'small',
             Cell: settings => (
                 <span>
                     {
-                        moment(settings.original.latest_test_date).format('YYYY-MM-DD')
+                            moment(settings.original.normalized_date).format('YYYY-MM-DD')
                     }
                 </span>
             ),

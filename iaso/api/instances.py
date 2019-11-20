@@ -39,7 +39,6 @@ def import_data(instances, api_import):
             instance_db = instances[0]
             instance_db.file_name = file_name
         elif len(instances) == 0:
-            print("file_name", file_name)
             instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
             instance_db.uuid = uuid
         else:
@@ -107,7 +106,9 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
         if org_unit_type_id:
-            queryset = queryset.filter(org_unit__org_unit_type__in=org_unit_type_id.split(','))
+            queryset = queryset.filter(
+                org_unit__org_unit_type__in=org_unit_type_id.split(",")
+            )
         if org_unit_id:
             queryset = queryset.filter(org_unit_id=org_unit_id)
 

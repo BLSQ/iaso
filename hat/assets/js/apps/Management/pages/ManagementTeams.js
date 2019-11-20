@@ -9,7 +9,7 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import TeamModaleComponent from '../components/TeamModaleComponent';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
+import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
 import { saveFull, deleteFull } from '../../../utils/saveData';
 import { teamsActions } from '../redux/teams';
 import { detailsActions } from '../redux/details';

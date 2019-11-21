@@ -477,6 +477,18 @@ class Group(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
+class GroupSet(models.Model):
+    name = models.TextField()
+    source_ref = models.TextField(null=True, blank=True)
+    source_version = models.ForeignKey(
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
+    )
+    groups = models.ManyToManyField(Group, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return "%s | %s " % (self.name, self.source_version)
 
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"

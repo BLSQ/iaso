@@ -179,6 +179,14 @@ const MESSAGES = {
         id: 'iaso.label.version',
         defaultMessage: 'Version',
     },
+    catchment: {
+        id: 'iaso.label.catchment',
+        defaultMessage: 'Catchment',
+    },
+    simplified_geom: {
+        id: 'iaso.forms.shape',
+        defaultMessage: 'Shape',
+    },
 };
 
 export default MESSAGES;

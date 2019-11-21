@@ -8,7 +8,7 @@ import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
 import VillageModaleComponent from '../components/VillageModaleComponent';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
+import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
 import villagesTableColumns from '../constants/villagesTableColumns';
 import { villageActions } from '../redux/villages';
 import { mapActions } from '../redux/mapReducer';

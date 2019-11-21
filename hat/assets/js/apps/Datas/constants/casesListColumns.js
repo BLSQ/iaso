@@ -1,7 +1,16 @@
 import React from 'react';
 import moment from 'moment';
+import { FormattedMessage } from 'react-intl';
+import { IconButton, Tooltip } from '@material-ui/core';
+import MapIcon from '@material-ui/icons/Map';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import DeleteIcon from '@material-ui/icons/Delete';
+import UnDelete from '@material-ui/icons/DeleteForever';
+import Clear from '@material-ui/icons/Clear';
 
-const casesListColumns = formatMessage => (
+const onLocateCase = caseItem => window.open(`/dashboard/locator/case_id/${caseItem.id}`, '_blank');
+
+const casesListColumns = (formatMessage, canEditPatientInfos, component) => (
     [
         {
             Header: formatMessage({
@@ -33,14 +42,16 @@ const casesListColumns = formatMessage => (
         {
             Header: formatMessage({
                 defaultMessage: 'Date',
-                id: 'main.label.latest_test_date',
+                id: 'main.label.date',
             }),
-            accessor: 'latest_test_date',
+            accessor: 'normalized_date',
             className: 'small',
             Cell: settings => (
                 <span>
                     {
-                        moment(settings.original.latest_test_date).format('YYYY-MM-DD')
+                        settings.original.normalized_date
+                            ? moment(settings.original.normalized_date).format('YYYY-MM-DD')
+                            : '--'
                     }
                 </span>
             ),
@@ -149,27 +160,81 @@ const casesListColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Location',
-                id: 'main.label.location',
+                defaultMessage: 'Actions',
+                id: 'main.label.actions',
             }),
+            sortable: false,
+            width: component.props.currentUser.is_superuser ? 200 : 150,
             className: 'small',
             Cell: settings => (
                 <section className={`table-row-action ${!settings.original.location.normalized.village ? 'not-located' : ''}`}>
                     {
-                        !settings.original.location.normalized.village &&
-                        <button
-                            className="button--tiny margin-right"
+                        !settings.original.location.normalized.village
+                        && (
+                            <Tooltip
+                                title={<FormattedMessage id="main.label.locateCase" defaultMessage="Locate" />}
+                            >
+                                <IconButton
+                                    onClick={() => onLocateCase(settings.original)}
+                                >
+                                    <MapIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )
+                    }
+                    <Tooltip
+                        title={<FormattedMessage id="main.label.see" defaultMessage="See" />}
+                    >
+                        <IconButton
+                            onClick={() => component.onSelectCase(settings.original)}
                         >
-                            <i className="fa fa-thumb-tack" />
-                            {formatMessage({
-                                defaultMessage: 'Locate ',
-                                id: 'main.label.locateCase',
-                            })}
-                        </button>
+                            <VisibilityIcon />
+                        </IconButton>
+                    </Tooltip>
+                    {
+                        canEditPatientInfos
+                        && !settings.original.mark_for_deletion
+                        && (
+                            <Tooltip
+                                title={<FormattedMessage id="main.label.delete" defaultMessage="Delete" />}
+                            >
+                                <IconButton
+                                    onClick={() => component.onDeleteCase(settings.original)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </Tooltip>
+                        )
                     }
                     {
-                        settings.original.location.normalized.village &&
-                        <i className="fa fa-check green-icon" />
+                        canEditPatientInfos
+                        && settings.original.mark_for_deletion
+                        && (
+                            <Tooltip
+                                title={<FormattedMessage id="main.label.cancelDelete" defaultMessage="Cancel delete" />}
+                            >
+                                <IconButton
+                                    onClick={() => component.onDeleteCase(settings.original)}
+                                >
+                                    <UnDelete />
+                                </IconButton>
+                            </Tooltip>
+                        )
+                    }
+                    {
+                        component.props.currentUser.is_superuser
+                        && settings.original.mark_for_deletion
+                        && (
+                            <Tooltip
+                                title={<FormattedMessage id="main.label.deleteForever" defaultMessage="Delete permanently" />}
+                            >
+                                <IconButton
+                                    onClick={() => component.toggleDeleteModale(settings.original)}
+                                >
+                                    <Clear />
+                                </IconButton>
+                            </Tooltip>
+                        )
                     }
                 </section>
             ),

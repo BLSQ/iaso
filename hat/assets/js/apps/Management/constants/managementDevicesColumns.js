@@ -72,7 +72,7 @@ const managementDevicesColumns = (formatMessage, component) => (
                             <span>
                                 <br />
                                 {missingCount} {formatMessage({
-                                    defaultMessage: 'manquantes',
+                                    defaultMessage: 'missing',
                                     id: 'teamsdevices.missing',
                                 })}
                             </span>
@@ -123,7 +123,7 @@ const managementDevicesColumns = (formatMessage, component) => (
                             <span>
                                 <br />
                                 {missingCount} {formatMessage({
-                                    defaultMessage: 'manquantes',
+                                    defaultMessage: 'missing',
                                     id: 'teamsdevices.missing',
                                 })}
                             </span>

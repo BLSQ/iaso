@@ -23,6 +23,9 @@ const styles = theme => ({
         backgroundColor: theme.palette.primary.main,
         color: 'white',
     },
+    cellMap: {
+        margin: -theme.spacing(2),
+    },
 });
 
 const ignoredKeys = [
@@ -41,11 +44,11 @@ const ignoredKeys = [
 
 const placeholder = '--';
 
-const renderValue = (linkKey, value) => {
+const renderValue = (linkKey, value, classes) => {
     if (!value || value.toString().length === 0) return placeholder;
     switch (linkKey) {
         case 'geo_json': {
-            return value ? <GeoJsonMap geoJson={value} /> : placeholder;
+            return <div className={classes.cellMap}><GeoJsonMap geoJson={value} /></div>;
         }
         case 'status': {
             return value
@@ -89,7 +92,7 @@ const LinksValue = ({
                 }
             </TableCell>
             <TableCell className={isDifferent ? differentClass : null}>
-                {renderValue(linkKey, value)}
+                {renderValue(linkKey, value, classes)}
             </TableCell>
         </TableRow>
     );

@@ -1,28 +1,33 @@
 import React, { Component } from 'react';
 import {
-    Map, TileLayer, Polygon,
+    Map, TileLayer,
 } from 'react-leaflet';
 import { injectIntl, intlShape } from 'react-intl';
+import L from 'leaflet';
 
 import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
+import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
+import MarkerComponent from './markers/MarkerComponent';
 
-const boundsOptions = { padding: [10, 10] };
+import commonStyles from '../../styles/common';
 
-const styles = () => ({
+const boundsOptions = { padding: [500, 500] };
+
+const styles = theme => ({
     mapContainer: {
+        ...commonStyles(theme).mapContainer,
         height: 400,
         minWidth: 200,
-        marginbottom: 0,
+        marginBottom: 0,
     },
 });
 
-class PolygonMap extends Component {
+class MarkerMap extends Component {
     componentDidMount() {
         const {
             intl: {
@@ -31,20 +36,27 @@ class PolygonMap extends Component {
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
+        this.fitToBounds();
     }
 
     fitToBounds() {
         const {
-            polygonPositions,
+            latitude,
+            longitude,
         } = this.props;
-        const bounds = getLatLngBounds(polygonPositions);
-        this.map.leafletElement.fitBounds(bounds, {
-            maxZoom: tiles.osm.maxZoom, padding: boundsOptions.padding,
+        const latlng = [L.latLng(latitude, longitude)];
+        const markerBounds = L.latLngBounds(latlng);
+        this.map.leafletElement.fitBounds(markerBounds, {
+            maxZoom: 9, padding: boundsOptions.padding,
         });
     }
 
     render() {
-        const { classes, polygonPositions } = this.props;
+        const {
+            classes,
+            latitude,
+            longitude,
+        } = this.props;
         const currentTile = tiles.osm;
         return (
             <div className={classes.mapContainer}>
@@ -53,29 +65,34 @@ class PolygonMap extends Component {
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
                     center={[0, 0]}
-                    bounds={getLatLngBounds(polygonPositions)}
-                    boundsOptions={boundsOptions}
                     ref={(ref) => {
                         this.map = ref;
                     }}
                     zoomControl={false}
                     keyboard={false}
+                    zoomSnap={0.1}
                 >
                     <TileLayer
                         attribution={currentTile.attribution ? currentTile.attribution : ''}
                         url={currentTile.url}
                     />
-                    <Polygon positions={polygonPositions} color="blue" />
+                    <MarkerComponent
+                        item={{
+                            latitude,
+                            longitude,
+                        }}
+                    />
                 </Map>
             </div>
         );
     }
 }
 
-PolygonMap.propTypes = {
+MarkerMap.propTypes = {
     classes: PropTypes.object.isRequired,
-    polygonPositions: PropTypes.array.isRequired,
+    latitude: PropTypes.any.isRequired,
+    longitude: PropTypes.any.isRequired,
     intl: intlShape.isRequired,
 };
 
-export default withStyles(styles)(injectIntl(PolygonMap));
+export default withStyles(styles)(injectIntl(MarkerMap));

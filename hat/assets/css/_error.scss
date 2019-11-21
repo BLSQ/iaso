@@ -1,0 +1,15 @@
+.trypelim {
+    .error-container {
+        color: $red;
+        background-color: rgba($red, .2);
+        border: 1px solid $red;
+        border-radius: 5px;
+        padding: $padding-unit / 4 $padding-unit / 2 $padding-unit / 2 $padding-unit / 2;
+
+        svg {
+            position: relative;
+            top: 5px;
+            margin-right: 5px;
+        }
+    }
+}

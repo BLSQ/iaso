@@ -247,6 +247,10 @@
     }
 }
 
+.modal-content {
+    padding: 0 $padding-unit / 4 $padding-unit / 4 $padding-unit / 4;
+}
+
 .edit-modal {
     width: 445px;
     .display-flex {

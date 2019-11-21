@@ -10,7 +10,7 @@ import CustomTableComponent from '../../../components/CustomTableComponent';
 import { createUrl } from '../../../utils/fetchData';
 import WorkzoneModaleComponent from '../components/WorkzoneModaleComponent';
 import { loadActions } from '../../../redux/load';
-import DeleteModaleComponent from '../components/DeleteModaleComponent';
+import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
 import { saveFull, deleteFull } from '../../../utils/saveData';
 import { formatThousand } from '../../../utils';
 import { teamsActions } from '../redux/teams';

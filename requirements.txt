@@ -52,6 +52,8 @@ typed-ast==1.1.0
 flake8==3.3.0
 flake8-mypy==17.3.3
 mock==2.0.0
+redgreenunittest==0.1.1
+responses==0.10.6
 sauceclient==0.2.1
 selenium==3.3.1
 
@@ -60,3 +62,4 @@ django-redis==4.10.0
 
 black==18.6b2
 pre-commit==1.14.4
+

@@ -1,5 +1,5 @@
 from django.test import TestCase, tag
-from .models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
+from ..models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
 from math import floor
 from rest_framework.test import APIClient
 import json

@@ -57,6 +57,8 @@ if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
+TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
+
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,

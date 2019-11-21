@@ -256,7 +256,7 @@ class Command(BaseCommand):
         )
 
         version_count = OrgUnit.objects.filter(version=version).count()
-        print("Orgunits in db for source and version ", source, version, version_count)
+        print(self.stdout, "Orgunits in db for source and version ", source, version, version_count)
         if version_count > 0 and not force:
             MyLogger.error(
                 "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"

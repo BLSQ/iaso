@@ -5,12 +5,12 @@ Introduction & Settings
 Introduction
 ============
 
-Sense HAT Dashboard is an online tool to see and manage data related to
+Trypelim Dashboard is an online tool to see and manage data related to
 Human African Trypanosomiasis and the activities undertaken by different
 organisations to eradicate it.
 
 The dashboard presents data from historical data sets and the mobile application.
-These data sets are stored in the Sense HAT Database.
+
 
 .. note:: The dashboard is optimized for Chrome and must be compatible with
           Chrome 40.0.0 and further versions.
@@ -280,3 +280,27 @@ If everything fails… **be drastic!**
 
 .. warning:: NEVER remove **db** or **couchdb** containers without backup or
              you'll loose all the data!!!
+
+Code formatting
+===============
+We have adopted Black `https://github.com/psf/black`__ as our code formatting tool.
+
+The easiest way to use is is to set it up as a pre-commit hook:
+
+1. Install pre-commit: pip install pre-commit
+2. Add pre-commit to requirements.txt (or requirements-dev.txt)
+3. Define .pre-commit-config.yaml with the hooks you want to include.
+4. Execute pre-commit install to install git hooks in your .git/ directory.
+
+Here is an example of pre-commit-config.yaml:
+
+.. code:: yaml
+
+    repos:
+    -   repo: https://github.com/ambv/black
+        rev: stable
+        hooks:
+        - id: black
+          language_version: python3.6
+
+..

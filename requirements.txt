@@ -43,12 +43,17 @@ beautifulsoup4==4.7.1
 # Documentation
 Sphinx==1.5.4
 
+# dhis2 api wrapper
+dhis2.py==2.0.2
+
 # test and linting
 mypy==0.510
 typed-ast==1.1.0
 flake8==3.3.0
 flake8-mypy==17.3.3
 mock==2.0.0
+redgreenunittest==0.1.1
+responses==0.10.6
 sauceclient==0.2.1
 selenium==3.3.1
 
@@ -57,3 +62,4 @@ django-redis==4.10.0
 
 black==18.6b2
 pre-commit==1.14.4
+

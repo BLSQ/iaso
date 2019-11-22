@@ -34,12 +34,12 @@ if an import already exist with the number, a warning will be displayed, you can
 
 
 class MyLogger:
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    END = '\033[0m'
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    END = "\033[0m"
 
-    INVERTED = '\033[7m'
+    INVERTED = "\033[7m"
 
     @classmethod
     def error(cls, s, *kwargs):
@@ -63,30 +63,44 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--dhis2_url",  type=str, help="Dhis2 url to import from (without user/password)"
+            "--dhis2_url",
+            type=str,
+            help="Dhis2 url to import from (without user/password)",
+            required=True,
         )
         parser.add_argument(
-            "--dhis2_user", type=str, help="dhis2 user name"
+            "--dhis2_user", type=str, help="dhis2 user name", required=True
         )
         parser.add_argument(
-            "--dhis2_password", type=str, help="dhis2 password of the dhis2_user"
+            "--dhis2_password",
+            type=str,
+            help="dhis2 password of the dhis2_user",
+            required=True,
         )
 
         parser.add_argument(
             "--org_unit_type_csv_file",
             type=str,
             help="Path to the org unit types csv file",
+            required=True,
         )
         parser.add_argument(
             "--source_name",
             type=str,
             help="The name of the source. It will be created if it doesn't exist",
+            required=True,
         )
         parser.add_argument(
-            "--version_number", type=int, help="An integer version number for the new version"
+            "--version_number",
+            type=int,
+            help="An integer version number for the new version",
+            required=True,
         )
         parser.add_argument(
-            "-f", "--force", action="store_true", help="Force the deletion of the pyramid snapshot prior importing"
+            "-f",
+            "--force",
+            action="store_true",
+            help="Force the deletion of the pyramid snapshot prior importing",
         )
 
     @staticmethod
@@ -95,9 +109,7 @@ class Command(BaseCommand):
         group = group_dict.get(name, None)
         if group is None:
             group, created = Group.objects.get_or_create(
-                name=name,
-                source_version=source_version,
-                source_ref=dhis2_group["id"]
+                name=name, source_version=source_version, source_ref=dhis2_group["id"]
             )
             print("group, created", group, created)
             group_dict[name] = group
@@ -106,7 +118,7 @@ class Command(BaseCommand):
 
     @staticmethod
     def row_without_coordinates(row):
-        return {i: row[i] for i in row if i != 'coordinates' and i != 'geometry'}
+        return {i: row[i] for i in row if i != "coordinates" and i != "geometry"}
 
     @staticmethod
     def guess_feature_type(coordinates):
@@ -133,28 +145,39 @@ class Command(BaseCommand):
 
     def fetch_orgunits(self, options):
         from dhis2 import Api
+
         api = Api(
             options.get("dhis2_url"),
             options.get("dhis2_user"),
-            options.get("dhis2_password")
+            options.get("dhis2_password"),
         )
 
         orgunits = []
 
         for page in api.get_paged(
-            'organisationUnits',
+            "organisationUnits",
             page_size=500,
             params={
-                "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"}
+                "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
+            },
         ):
-            orgunits.extend(page['organisationUnits'])
-            print("fetched ", page["pager"]["page"], "/", page["pager"]
-                  ["pageCount"], "(", len(orgunits), "/", page["pager"]["total"], "records)",)
+            orgunits.extend(page["organisationUnits"])
+            print(
+                "fetched ",
+                page["pager"]["page"],
+                "/",
+                page["pager"]["pageCount"],
+                "(",
+                len(orgunits),
+                "/",
+                page["pager"]["total"],
+                "records)",
+            )
 
-        return sorted(orgunits, key=lambda ou: ou['path'])
+        return sorted(orgunits, key=lambda ou: ou["path"])
 
     def map_coordinates(self, row, org_unit):
-        if ("coordinates" in row):
+        if "coordinates" in row:
             coordinates = row["coordinates"]
             feature_type = self.guess_feature_type(row["coordinates"])
 
@@ -166,8 +189,9 @@ class Command(BaseCommand):
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
                 except Exception as bad_coord:
-                    MyLogger.error("failed at importing POINT",
-                                   coordinates, bad_coord, row)
+                    MyLogger.error(
+                        "failed at importing POINT", coordinates, bad_coord, row
+                    )
 
             if feature_type == "POLYGON" and coordinates:
                 j = json.loads(coordinates)
@@ -178,7 +202,7 @@ class Command(BaseCommand):
                 org_unit.simplified_geom = Polygon(j[0][0])
 
     def map_geometry(self, row, org_unit):
-        if ("geometry" in row):
+        if "geometry" in row:
             coordinates = row["geometry"]["coordinates"]
             feature_type = row["geometry"]["type"]
 
@@ -189,8 +213,9 @@ class Command(BaseCommand):
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
                 except Exception as bad_coord:
-                    MyLogger.error("failed at importing POINT",
-                                   coordinates, bad_coord, row)
+                    MyLogger.error(
+                        "failed at importing POINT", coordinates, bad_coord, row
+                    )
 
             try:
                 if feature_type == "Polygon" and coordinates:
@@ -200,7 +225,9 @@ class Command(BaseCommand):
                     org_unit.simplified_geom = Polygon(coordinates[0][0])
 
             except Exception as bad_coord:
-                MyLogger.error("failed at importing ", feature_type, coordinates, bad_coord, row)
+                MyLogger.error(
+                    "failed at importing ", feature_type, coordinates, bad_coord, row
+                )
 
     def map_parent(self, row, org_unit, unit_dict):
         parent_id = None
@@ -210,8 +237,15 @@ class Command(BaseCommand):
         if parent_id:
             org_unit.parent = unit_dict.get(parent_id)
             if not org_unit.parent:
-                raise Exception("Parent nof found for "+org_unit.source_ref +
-                                parent_id+" details :"+str(org_unit)+" "+str(row))
+                raise Exception(
+                    "Parent nof found for "
+                    + org_unit.source_ref
+                    + parent_id
+                    + " details :"
+                    + str(org_unit)
+                    + " "
+                    + str(row)
+                )
 
     def map_org_unit_type(self, row, org_unit, type_dict, unknown_unit_type):
         for group in row["organisationUnitGroups"]:
@@ -231,14 +265,24 @@ class Command(BaseCommand):
     def print_stats(self, unit_dict, unknown_unit_type):
         print("** Stats ")
         print("orgunits\t", len(unit_dict))
-        print("orgunits with point\t", len([p for p in unit_dict.values() if p.latitude]))
-        print("areas with polygon\t", len([p for p in unit_dict.values() if p.simplified_geom]))
-        print("orgunits with unknown type\t", len(
-            [p for p in unit_dict.values() if p.org_unit_type == unknown_unit_type]))
+        print(
+            "orgunits with point\t", len([p for p in unit_dict.values() if p.latitude])
+        )
+        print(
+            "areas with polygon\t",
+            len([p for p in unit_dict.values() if p.simplified_geom]),
+        )
+        print(
+            "orgunits with unknown type\t",
+            len(
+                [p for p in unit_dict.values() if p.org_unit_type == unknown_unit_type]
+            ),
+        )
 
     """
     the trasanction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
     """
+
     @transaction.atomic
     def handle(self, *args, **options):
         start = time.time()
@@ -256,7 +300,13 @@ class Command(BaseCommand):
         )
 
         version_count = OrgUnit.objects.filter(version=version).count()
-        print(self.stdout, "Orgunits in db for source and version ", source, version, version_count)
+        print(
+            self.stdout,
+            "Orgunits in db for source and version ",
+            source,
+            version,
+            version_count,
+        )
         if version_count > 0 and not force:
             MyLogger.error(
                 "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
@@ -295,7 +345,7 @@ class Command(BaseCommand):
 
                 # log progress
                 if index % 100 == 0:
-                    print("%.2f" % (time.time()-start), "sec, processed", index)
+                    print("%.2f" % (time.time() - start), "sec, processed", index)
 
                 # org_unit should be saved before filling the groups
                 self.map_groups(row, org_unit, group_dict, version)
@@ -309,5 +359,5 @@ class Command(BaseCommand):
         MyLogger.ok("created orgunits", index)
 
         end = time.time()
-        MyLogger.ok("processed in %.2f seconds" % (end-start))
+        MyLogger.ok("processed in %.2f seconds" % (end - start))
         self.print_stats(unit_dict, unknown_unit_type)

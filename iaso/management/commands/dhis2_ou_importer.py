@@ -8,7 +8,7 @@ from django.contrib.gis.geos import Point
 from django.contrib.gis.geos import Polygon
 from django.db import transaction
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet
 
 # as geometry/coordinates might be big, increase the field size to its max
 csv.field_size_limit(sys.maxsize)
@@ -21,7 +21,7 @@ Example
 ./manage.py dhis2_ou_importer \
     --dhis2_user admin \
     --dhis2_password district \
-    --dhis2_url https://play.dhis2.org/2.32.2 \
+    --dhis2_url https://play.dhis2.org/2.32.3 \
     --source_name play \
     --version_number 1 \
     --org_unit_type_csv_file ./data/play_unit_types.csv
@@ -33,29 +33,32 @@ if an import already exist with the number, a warning will be displayed, you can
 """
 
 
-class MyLogger:
-    RED = '\033[91m'
-    GREEN = '\033[92m'
-    YELLOW = '\033[93m'
-    END = '\033[0m'
+class CommandLogger:
+    RED = "\033[91m"
+    GREEN = "\033[92m"
+    YELLOW = "\033[93m"
+    END = "\033[0m"
 
-    INVERTED = '\033[7m'
+    INVERTED = "\033[7m"
 
-    @classmethod
-    def error(cls, s, *kwargs):
-        print(cls.RED + "ERROR " + str(s) + cls.END, *kwargs)
+    def __init__(self, stdout):
+        self.stdout = stdout
 
-    @classmethod
-    def ok(cls, s, *kwargs):
-        print(cls.GREEN + str(s) + cls.END, *kwargs)
+    def print(self, s, *kwargs):
+        message = " ".join(list(map(lambda s: str(s), kwargs)))
+        self.stdout.write(s + message)
 
-    @classmethod
-    def warn(cls, s, *kwargs):
-        print(cls.YELLOW + "WARN " + str(s) + cls.END, *kwargs)
+    def error(self, s, *kwargs):
+        self.print(CommandLogger.RED + "ERROR " + str(s) + CommandLogger.END, *kwargs)
 
-    @classmethod
-    def info(cls, s, *kwargs):
-        print(str(s), *kwargs)
+    def ok(self, s, *kwargs):
+        self.print(CommandLogger.GREEN + str(s) + CommandLogger.END, *kwargs)
+
+    def warn(self, s, *kwargs):
+        self.print(CommandLogger.YELLOW + "WARN " + str(s) + CommandLogger.END, *kwargs)
+
+    def info(self, s, *kwargs):
+        self.print(str(s), *kwargs)
 
 
 class Command(BaseCommand):
@@ -63,11 +66,11 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--dhis2_url",  type=str, help="Dhis2 url to import from (without user/password)"
+            "--dhis2_url",
+            type=str,
+            help="Dhis2 url to import from (without user/password)",
         )
-        parser.add_argument(
-            "--dhis2_user", type=str, help="dhis2 user name"
-        )
+        parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
         parser.add_argument(
             "--dhis2_password", type=str, help="dhis2 password of the dhis2_user"
         )
@@ -83,30 +86,32 @@ class Command(BaseCommand):
             help="The name of the source. It will be created if it doesn't exist",
         )
         parser.add_argument(
-            "--version_number", type=int, help="An integer version number for the new version"
+            "--version_number",
+            type=int,
+            help="An integer version number for the new version",
         )
         parser.add_argument(
-            "-f", "--force", action="store_true", help="Force the deletion of the pyramid snapshot prior importing"
+            "-f",
+            "--force",
+            action="store_true",
+            help="Force the deletion of the pyramid snapshot prior importing",
         )
 
-    @staticmethod
-    def get_group(dhis2_group, group_dict, source_version):
+    def get_group(self, dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
         group = group_dict.get(name, None)
         if group is None:
             group, created = Group.objects.get_or_create(
-                name=name,
-                source_version=source_version,
-                source_ref=dhis2_group["id"]
+                name=name, source_version=source_version, source_ref=dhis2_group["id"]
             )
-            print("group, created", group, created)
+            self.iaso_logger.info("group, created ", group, created)
             group_dict[name] = group
 
         return group
 
     @staticmethod
     def row_without_coordinates(row):
-        return {i: row[i] for i in row if i != 'coordinates' and i != 'geometry'}
+        return {i: row[i] for i in row if i != "coordinates" and i != "geometry"}
 
     @staticmethod
     def guess_feature_type(coordinates):
@@ -131,30 +136,46 @@ class Command(BaseCommand):
 
         return type_dict
 
-    def fetch_orgunits(self, options):
+    def get_api(self, options):
         from dhis2 import Api
+
         api = Api(
             options.get("dhis2_url"),
             options.get("dhis2_user"),
-            options.get("dhis2_password")
+            options.get("dhis2_password"),
         )
 
+        return api
+
+    def fetch_orgunits(self, options):
+
+        api = self.get_api(options)
         orgunits = []
 
         for page in api.get_paged(
-            'organisationUnits',
+            "organisationUnits",
             page_size=500,
             params={
-                "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"}
+                "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
+            },
         ):
-            orgunits.extend(page['organisationUnits'])
-            print("fetched ", page["pager"]["page"], "/", page["pager"]
-                  ["pageCount"], "(", len(orgunits), "/", page["pager"]["total"], "records)",)
+            orgunits.extend(page["organisationUnits"])
+            self.iaso_logger.info(
+                "fetched ",
+                page["pager"]["page"],
+                "/",
+                page["pager"]["pageCount"],
+                "(",
+                len(orgunits),
+                "/",
+                page["pager"]["total"],
+                "records)",
+            )
 
-        return sorted(orgunits, key=lambda ou: ou['path'])
+        return sorted(orgunits, key=lambda ou: ou["path"])
 
     def map_coordinates(self, row, org_unit):
-        if ("coordinates" in row):
+        if "coordinates" in row:
             coordinates = row["coordinates"]
             feature_type = self.guess_feature_type(row["coordinates"])
 
@@ -166,8 +187,9 @@ class Command(BaseCommand):
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
                 except Exception as bad_coord:
-                    MyLogger.error("failed at importing POINT",
-                                   coordinates, bad_coord, row)
+                    self.iaso_logger.error(
+                        "failed at importing POINT", coordinates, bad_coord, row
+                    )
 
             if feature_type == "POLYGON" and coordinates:
                 j = json.loads(coordinates)
@@ -178,7 +200,7 @@ class Command(BaseCommand):
                 org_unit.simplified_geom = Polygon(j[0][0])
 
     def map_geometry(self, row, org_unit):
-        if ("geometry" in row):
+        if "geometry" in row:
             coordinates = row["geometry"]["coordinates"]
             feature_type = row["geometry"]["type"]
 
@@ -189,8 +211,9 @@ class Command(BaseCommand):
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
                 except Exception as bad_coord:
-                    MyLogger.error("failed at importing POINT",
-                                   coordinates, bad_coord, row)
+                    self.iaso_logger.error(
+                        "failed at importing POINT", coordinates, bad_coord, row
+                    )
 
             try:
                 if feature_type == "Polygon" and coordinates:
@@ -200,7 +223,9 @@ class Command(BaseCommand):
                     org_unit.simplified_geom = Polygon(coordinates[0][0])
 
             except Exception as bad_coord:
-                MyLogger.error("failed at importing ", feature_type, coordinates, bad_coord, row)
+                self.iaso_logger.error(
+                    "failed at importing ", feature_type, coordinates, bad_coord, row
+                )
 
     def map_parent(self, row, org_unit, unit_dict):
         parent_id = None
@@ -210,8 +235,15 @@ class Command(BaseCommand):
         if parent_id:
             org_unit.parent = unit_dict.get(parent_id)
             if not org_unit.parent:
-                raise Exception("Parent nof found for "+org_unit.source_ref +
-                                parent_id+" details :"+str(org_unit)+" "+str(row))
+                raise Exception(
+                    "Parent nof found for "
+                    + org_unit.source_ref
+                    + parent_id
+                    + " details :"
+                    + str(org_unit)
+                    + " "
+                    + str(row)
+                )
 
     def map_org_unit_type(self, row, org_unit, type_dict, unknown_unit_type):
         for group in row["organisationUnitGroups"]:
@@ -221,7 +253,9 @@ class Command(BaseCommand):
 
         if org_unit.org_unit_type is None:
             org_unit.org_unit_type = unknown_unit_type
-            MyLogger.warn("unknown type for ", self.row_without_coordinates(row))
+            self.iaso_logger.warn(
+                "unknown type for ", self.row_without_coordinates(row)
+            )
 
     def map_groups(self, row, org_unit, group_dict, version):
         for ougroup in row["organisationUnitGroups"]:
@@ -229,18 +263,63 @@ class Command(BaseCommand):
             group.org_units.add(org_unit)
 
     def print_stats(self, unit_dict, unknown_unit_type):
-        print("** Stats ")
-        print("orgunits\t", len(unit_dict))
-        print("orgunits with point\t", len([p for p in unit_dict.values() if p.latitude]))
-        print("areas with polygon\t", len([p for p in unit_dict.values() if p.simplified_geom]))
-        print("orgunits with unknown type\t", len(
-            [p for p in unit_dict.values() if p.org_unit_type == unknown_unit_type]))
+        self.iaso_logger.info("** Stats ")
+        self.iaso_logger.info("orgunits\t", len(unit_dict))
+        self.iaso_logger.info(
+            "orgunits with point\t", len([p for p in unit_dict.values() if p.latitude])
+        )
+        self.iaso_logger.info(
+            "areas with polygon\t",
+            len([p for p in unit_dict.values() if p.simplified_geom]),
+        )
+        self.iaso_logger.info(
+            "orgunits with unknown type\t",
+            len(
+                [p for p in unit_dict.values() if p.org_unit_type == unknown_unit_type]
+            ),
+        )
+
+    def load_groupsets(self, options, version, group_dict):
+        group_set_dict = {}
+        api = self.get_api(options)
+        dhis2_group_sets = api.get(
+            "organisationUnitGroupSets",
+            params={
+                "paging": "false",
+                "fields": "id,name,organisationUnitGroups[id,name]",
+            },
+        )
+        dhis2_group_sets = dhis2_group_sets.json()["organisationUnitGroupSets"]
+
+        for dhis2_group_set in dhis2_group_sets:
+            group_set = self.get_group_set(dhis2_group_set, group_set_dict, version)
+
+            for ougroup in dhis2_group_set["organisationUnitGroups"]:
+                group = self.get_group(ougroup, group_dict, version)
+                group_set.groups.add(group)
+
+    def get_group_set(self, dhis2_group_set, group_set_dict, source_version):
+        name = dhis2_group_set["name"]
+        group_set = group_set_dict.get(name, None)
+        if group_set is None:
+            group_set, created = GroupSet.objects.get_or_create(
+                name=name,
+                source_version=source_version,
+                source_ref=dhis2_group_set["id"],
+            )
+            self.iaso_logger.info("groupset, created ", group_set, created)
+            group_set_dict[id] = group_set
+
+        return group_set
 
     """
     the trasanction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
     """
+
     @transaction.atomic
     def handle(self, *args, **options):
+        iaso_logger = CommandLogger(self.stdout)
+        self.iaso_logger = iaso_logger
         start = time.time()
         orgunits = self.fetch_orgunits(options)
 
@@ -256,16 +335,18 @@ class Command(BaseCommand):
         )
 
         version_count = OrgUnit.objects.filter(version=version).count()
-        print(self.stdout, "Orgunits in db for source and version ", source, version, version_count)
+        iaso_logger.info(
+            "Orgunits in db for source and version ", source, version, version_count
+        )
         if version_count > 0 and not force:
-            MyLogger.error(
+            iaso_logger.error(
                 "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
                 % version_count
             )
             return
         else:
             OrgUnit.objects.filter(version=version).delete()
-            MyLogger.warn(("%d org units records deleted" % version_count).upper())
+            iaso_logger.warn(("%d org units records deleted" % version_count).upper())
 
         type_dict = self.parse_type_dict(org_unit_type_file_name)
 
@@ -274,7 +355,7 @@ class Command(BaseCommand):
 
         index = 0
         unit_dict = dict()
-        MyLogger.ok("about to create orgunits", len(orgunits))
+        iaso_logger.ok("about to create orgunits", len(orgunits))
         for row in orgunits:
             try:
                 org_unit = OrgUnit()
@@ -295,19 +376,22 @@ class Command(BaseCommand):
 
                 # log progress
                 if index % 100 == 0:
-                    print("%.2f" % (time.time()-start), "sec, processed", index)
+                    iaso_logger.info(
+                        "%.2f" % (time.time() - start), "sec, processed", index
+                    )
 
                 # org_unit should be saved before filling the groups
                 self.map_groups(row, org_unit, group_dict, version)
 
                 unit_dict[org_unit.source_ref] = org_unit
             except Exception as e:
-                MyLogger.error("Error %s for row %d" % (e, index), row)
+                iaso_logger.error("Error %s for row %d" % (e, index), row)
                 raise e
             index += 1
 
-        MyLogger.ok("created orgunits", index)
+        iaso_logger.ok("created orgunits", index)
+        self.load_groupsets(options, version, group_dict)
 
         end = time.time()
-        MyLogger.ok("processed in %.2f seconds" % (end-start))
+        iaso_logger.ok("processed in %.2f seconds" % (end - start))
         self.print_stats(unit_dict, unknown_unit_type)

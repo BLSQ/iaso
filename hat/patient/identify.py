@@ -30,7 +30,8 @@ def name_normalize(name):
 
 
 def get_or_create_patient_from_case(case: Case, origin_area, origin_village, phone, phone_date,
-                                    dead=False, death_date=None, death_device=None, death_location=None):
+                                    dead=False, death_date=None, death_device=None, death_location=None,
+                                    origin_country=None, traveller=False):
     if case.age is not None:
         age = case.age
     else:
@@ -45,16 +46,17 @@ def get_or_create_patient_from_case(case: Case, origin_area, origin_village, pho
         death_device_db = death_device
 
     return get_or_create_patient(case.prename, case.lastname, case.name, case.mothers_surname, case.sex,
-                                 case.year_of_birth, origin_area, origin_village, case.ZS, case.AS, case.village, age,
+                                 case.year_of_birth, origin_area, origin_village, case.ZS if not traveller else None,
+                                 case.AS if not traveller else None, case.village if not traveller else None, age,
                                  phone, phone_date,
                                  dead=dead, death_date=death_date, death_device=death_device_db,
-                                 death_location=death_location)
+                                 death_location=death_location, origin_country=origin_country)
 
 
 def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex, year_of_birth,
                           origin_area, origin_village, origin_raw_zs, origin_raw_as, origin_raw_village, age,
                           phone=None, phone_date=None,
-                          dead=None, death_date=None, death_device=None, death_location=None):
+                          dead=None, death_date=None, death_device=None, death_location=None, origin_country=None):
     first_name = name_normalize(first_name)
     last_name = name_normalize(last_name)
     post_name = name_normalize(post_name)
@@ -67,6 +69,7 @@ def get_or_create_patient(first_name, last_name, post_name, mothers_surname, sex
         mothers_surname=mothers_surname,
         sex=sex,
         year_of_birth=year_of_birth,
+        origin_country=origin_country,
     )
 
     if origin_area:

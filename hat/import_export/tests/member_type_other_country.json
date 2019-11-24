@@ -1,0 +1,61 @@
+{
+   "_id": "participant-18d2054af110478ca26044fd88c88806",
+   "_rev": "4-d720cc3a07a2c28448173334d3623b97",
+   "person": {
+       "forename": "Go",
+       "postname": "Funny",
+       "surname": "Send",
+       "phone": "55684566",
+       "birthYear": "",
+       "noBirthYear": true,
+       "gender": "Female",
+       "mothersSurname": "Film",
+       "location": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "153"
+       }
+   },
+   "participant": {
+       "memberType": "traveller-other-country",
+       "country": "Rwanda",
+       "screeningLocation": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "153"
+       },
+       "hatId": "SEFUGOFXXXXF",
+       "screenings": {
+           "rdt": {
+               "result": "negative",
+               "testTime": "2019-11-22T16:19:34.593Z",
+               "position": {
+                   "accuracy": 14.449999809265137,
+                   "latitude": 50.6813382,
+                   "longitude": 4.9569949,
+                   "timestamp": 1574439566487
+               },
+               "device": "f7651cad79052ac6",
+               "creationTime": "2019-11-22T16:19:31.971Z",
+               "shouldAskMediaForPositive": false,
+               "shouldAskMediaForNegative": false,
+               "shouldAskMedia": false
+           }
+       },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 14.449999809265137,
+           "latitude": 50.6813382,
+           "longitude": 4.9569949,
+           "timestamp": 1574439566487
+       }
+   },
+   "type": "participant",
+   "dateCreated": "2019-11-22T16:19:31.874Z",
+   "dateModified": "2019-11-22T16:19:34.594Z",
+   "deviceId": "f7651cad79052ac6"
+}

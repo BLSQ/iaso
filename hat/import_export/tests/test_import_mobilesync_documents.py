@@ -694,3 +694,29 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(case.infection_location.id, 1121)
         self.assertEquals(case.normalized_patient.phone_number, "8549569856")
 
+    # Resident with infection location "flottant" and existing patient
+    def test_import_member_type_other_country(self):
+        json_doc, device_db = load_document("member_type_other_country.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.normalized_village_id, 1111)
+        self.assertIsNone(case.normalized_patient.origin_village)
+        self.assertIsNone(case.normalized_patient.origin_area)
+        self.assertIsNone(case.normalized_patient.origin_raw_AS)
+        self.assertEquals(case.normalized_patient.origin_country, "Rwanda")
+

@@ -51,6 +51,7 @@ class Patient(models.Model):
     origin_raw_village = models.TextField(null=True, blank=True, db_index=True)
     origin_raw_AS = models.TextField(null=True, blank=True, db_index=True)
     origin_raw_ZS = models.TextField(null=True, blank=True, db_index=True)
+    origin_country = models.TextField(null=True, blank=True, db_index=True)
     dead = models.BooleanField(default=False)
     death_date = models.DateField(null=True, blank=True)
     death_device = models.ForeignKey(

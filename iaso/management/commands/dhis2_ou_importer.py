@@ -33,7 +33,7 @@ if an import already exist with the number, a warning will be displayed, you can
 """
 
 
-class MyLogger:
+class CommandLogger:
     RED = "\033[91m"
     GREEN = "\033[92m"
     YELLOW = "\033[93m"
@@ -69,12 +69,10 @@ class Command(BaseCommand):
             "--dhis2_url",
             type=str,
             help="Dhis2 url to import from (without user/password)",
-            required=True,
         )
         parser.add_argument(
             "--dhis2_user", type=str, help="dhis2 user name", required=True
         )
-        parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
         parser.add_argument(
             "--dhis2_password",
             type=str,
@@ -86,19 +84,16 @@ class Command(BaseCommand):
             "--org_unit_type_csv_file",
             type=str,
             help="Path to the org unit types csv file",
-            required=True,
         )
         parser.add_argument(
             "--source_name",
             type=str,
             help="The name of the source. It will be created if it doesn't exist",
-            required=True,
         )
         parser.add_argument(
             "--version_number",
             type=int,
             help="An integer version number for the new version",
-            required=True,
         )
         parser.add_argument(
             "-f",
@@ -170,7 +165,6 @@ class Command(BaseCommand):
             },
         ):
             orgunits.extend(page["organisationUnits"])
-
             self.iaso_logger.info(
                 "fetched ",
                 page["pager"]["page"],
@@ -274,7 +268,6 @@ class Command(BaseCommand):
             group.org_units.add(org_unit)
 
     def print_stats(self, unit_dict, unknown_unit_type):
-
         self.iaso_logger.info("** Stats ")
         self.iaso_logger.info("orgunits\t", len(unit_dict))
         self.iaso_logger.info(

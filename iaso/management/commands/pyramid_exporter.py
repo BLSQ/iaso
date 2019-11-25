@@ -49,27 +49,28 @@ class Command(BaseCommand):
         self.iaso_logger = iaso_logger
         start = time.time()
 
-        source_name = options["source_name"]
-
-        source = DataSource.objects.get(name=source_name)
-
-        version_number = options.get("version_number")
-        version = SourceVersion.objects.get(number=version_number, data_source=source)
-
-        source_name_ref = options["source_name_ref"]
-        source_ref = DataSource.objects.get(name=source_name_ref)
-
-        version_number_ref = options.get("version_number_ref")
-        version_ref = SourceVersion.objects.get(
-            number=version_number_ref, data_source=source_ref
+        _source, version = self.load_version(options, "source_name", "version_number")
+        _source_ref, version_ref = self.load_version(
+            options, "source_name_ref", "version_number_ref"
         )
+
         self.diff(version_ref, version)
 
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 
+    def load_version(self, options, source_name, version_number):
+        source_name = options[source_name]
+        source = DataSource.objects.get(name=source_name)
+
+        version_number = options.get(version_number)
+        version = SourceVersion.objects.get(number=version_number, data_source=source)
+        return (source, version)
+
     def diff(self, version_ref, version):
-        fields = ["name", "geometry"]
+        fields = ["name", "geometry", "parent"]
+        for group_set in GroupSet.objects.filter(source_version=version):
+            fields.append("groupset:" + group_set.source_ref + ":" + group_set.name)
         orgunits_dhis2 = OrgUnit.objects.filter(version=version).all()
         orgunit_refs = OrgUnit.objects.filter(version=version_ref).all()
         print(
@@ -86,7 +87,7 @@ class Command(BaseCommand):
         )
         # speed how to index_by(&:source_ref)
         diffs = []
-        print("diff starting")
+
         for orgunit_ref in orgunit_refs:
             orgunit_dhis2_with_ref = [
                 x for x in orgunits_dhis2 if x.source_ref == orgunit_ref.source_ref
@@ -99,12 +100,17 @@ class Command(BaseCommand):
             else:
                 status = "new"
 
-            status, comparisons = self.compare_fields(
-                status, orgunit_dhis2, orgunit_ref, fields
+            comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, fields)
+            some_modified = any(
+                filter(lambda comp: comp["status"] != "same", comparisons)
             )
+            if status != "new" and some_modified:
+                status = "modified"
 
             diff = {
-                "ou": orgunit_dhis2.as_dict() if orgunit_dhis2 else None,
+                "ou": orgunit_dhis2.as_dict()
+                if orgunit_dhis2
+                else orgunit_ref.as_dict(),
                 "status": status,
                 "comparisons": comparisons,
             }
@@ -112,7 +118,7 @@ class Command(BaseCommand):
 
         self.dump(diffs, fields)
 
-    def compare_fields(self, status, orgunit_dhis2, orgunit_ref, fields):
+    def compare_fields(self, orgunit_dhis2, orgunit_ref, fields):
         print("will compare ", orgunit_ref, " vs ", orgunit_dhis2)
 
         comparisons = []
@@ -130,12 +136,9 @@ class Command(BaseCommand):
                 "status": "same" if same else "modified",
             }
 
-            if not same:
-                status = "modified"
-
             comparisons.append(diff_field)
 
-        return (status, comparisons)
+        return comparisons
 
     def is_same(self, value, other_value):
         return value == other_value
@@ -156,19 +159,34 @@ class Command(BaseCommand):
                 return org_unit.simplified_geom
             return None
 
+        if field == "parent":
+            if org_unit.parent:
+                return org_unit.parent.source_ref
+            return None
+
+        if field.startswith("groupset:"):
+            groupset_ref = field.split(":")[1]
+            groups = []
+            for group in org_unit.group_set.all():
+                for groupset in group.groupset_set.all():
+                    if groupset.source_ref == groupset_ref:
+                        groups.append({"id": group.source_ref, "name": group.name})
+
+            return groups
+
         raise Exception("Unsupported field : '" + field + "'")
 
     def dump(self, diffs, fields):
         print(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
         display = []
-        header = [None, "ou status"]
+        header = ["dhis2Id", "name", "ou status"]
         for field in fields:
             header.append(field)
 
         display.append(header)
         for diff in diffs:
-            results = [diff["ou"]["name"] if diff["ou"] else None, diff["status"]]
+            results = [diff["ou"]["source_ref"], diff["ou"]["name"], diff["status"]]
 
             for field in fields:
                 comparison = list(
@@ -179,4 +197,14 @@ class Command(BaseCommand):
             display.append(results)
 
         for d in display:
-            print("\t".join(map(lambda s: str(s).ljust(20, " "), d)))
+            message = "\t".join(map(lambda s: str(s).ljust(20, " "), d))
+            if d[2] == "new":
+                self.iaso_logger.info(
+                    self.iaso_logger.colorize(message, CommandLogger.GREEN)
+                )
+            elif d[2] == "modified":
+                self.iaso_logger.info(
+                    self.iaso_logger.colorize(message, CommandLogger.RED)
+                )
+            else:
+                self.iaso_logger.info(message)

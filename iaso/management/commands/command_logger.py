@@ -9,18 +9,21 @@ class CommandLogger:
     def __init__(self, stdout):
         self.stdout = stdout
 
+    def colorize(self, s, color):
+        return color + str(s) + CommandLogger.END
+
     def print(self, s, *kwargs):
         message = " ".join(list(map(lambda s: str(s), kwargs)))
         self.stdout.write(s + message)
 
     def error(self, s, *kwargs):
-        self.print(CommandLogger.RED + "ERROR " + str(s) + CommandLogger.END, *kwargs)
+        self.print(self.colorize("ERROR " + str(s), CommandLogger.RED), *kwargs)
 
     def ok(self, s, *kwargs):
-        self.print(CommandLogger.GREEN + str(s) + CommandLogger.END, *kwargs)
+        self.print(self.colorize(str(s), CommandLogger.GREEN), *kwargs)
 
     def warn(self, s, *kwargs):
-        self.print(CommandLogger.YELLOW + "WARN " + str(s) + CommandLogger.END, *kwargs)
+        self.print(self.colorize("WARN " + str(s), CommandLogger.YELLOW), *kwargs)
 
     def info(self, s, *kwargs):
         self.print(str(s), *kwargs)

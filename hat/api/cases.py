@@ -182,11 +182,11 @@ class CasesViewSet(viewsets.ViewSet):
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
         if from_date:
-            queryset = queryset.filter(Q(document_date__gte=from_date) | (Q(document_date__isnull=True) &
+            queryset = queryset.filter(Q(normalized_date__gte=from_date) | (Q(normalized_date__isnull=True) &
                                                                           Q(form_year__gte=from_date[:4])))
         if to_date:
-            queryset = queryset.filter(Q(document_date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
-                                       | (Q(document_date__isnull=True) & Q(form_year__lte=to_date[:4])))
+            queryset = queryset.filter(Q(normalized_date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
+                                       | (Q(normalized_date__isnull=True) & Q(form_year__lte=to_date[:4])))
 
         if source:
             queryset = queryset.filter(source=source)

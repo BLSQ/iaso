@@ -112,7 +112,9 @@ class DataSource(models.Model):
 
 
 class SourceVersion(models.Model):
-    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE)
+    data_source = models.ForeignKey(
+        DataSource, on_delete=models.CASCADE, related_name="versions"
+    )
     number = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -477,6 +479,7 @@ class Group(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
+
 class GroupSet(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
@@ -489,6 +492,7 @@ class GroupSet(models.Model):
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
+
 
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"

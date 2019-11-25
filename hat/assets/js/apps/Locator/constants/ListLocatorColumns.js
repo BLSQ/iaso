@@ -8,7 +8,7 @@ const listLocatorColumns = formatMessage => (
                 defaultMessage: 'Form year',
                 id: 'main.label.form_year',
             }),
-            accessor: 'form_year',
+            accessor: 'normalized_year',
         },
         {
             Header: formatMessage({

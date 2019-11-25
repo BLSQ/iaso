@@ -178,7 +178,7 @@ class CasesViewSet(viewsets.ViewSet):
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:
-            queryset = queryset.filter(form_year__in=years.split(","))
+            queryset = queryset.filter(normalized_year__in=years.split(","))
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
         if from_date:

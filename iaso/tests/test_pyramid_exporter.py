@@ -80,6 +80,9 @@ class CommandTests(TestCase):
         org_unit.parent = parent
         org_unit.save()
 
+        group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
+        org_unit.group_set.add(group)
+
         out = StringIO()
         management.call_command(
             "pyramid_exporter",

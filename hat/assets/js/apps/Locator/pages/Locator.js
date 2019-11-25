@@ -84,8 +84,8 @@ export class Locator extends Component {
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.locatorState.villageId && (newProps.locatorState.villageId !==
-            this.props.locatorState.villageId)) {
+        if (newProps.locatorState.villageId && (newProps.locatorState.villageId
+            !== this.props.locatorState.villageId)) {
             this.setState({
                 isVillageDetailLoading: true,
             });
@@ -139,167 +139,180 @@ export class Locator extends Component {
         ];
         return (
             <section>
-                {this.props.kase &&
-                    <div className="widget__container">
-                        <div className="widget__content--tier locator-control-div">
-                            <div>
-                                <button
-                                    className="button--back"
-                                    onClick={() => this.goBack()}
-                                >
-                                    <i className="fa fa-arrow-left" />{' '}
-                                </button>
-                                <Case case={this.props.kase} />
-                            </div>
-                            <div>
-                                <div className="locator-title">
-                                    <FormattedMessage id="locator.label.search" defaultMessage="Search a village" />
+                {this.props.kase
+                    && (
+                        <div className="widget__container">
+                            <div className="widget__content--tier locator-control-div">
+                                <div>
+                                    <button
+                                        className="button--back"
+                                        onClick={() => this.goBack()}
+                                    >
+                                        <i className="fa fa-arrow-left" />
+                                        {' '}
+                                    </button>
+                                    <Case case={this.props.kase} />
                                 </div>
-                                <Filters
-                                    isClearable
-                                    filters={this.props.locatorState}
-                                    selectProvince={provinceId => this.props.selectProvince(provinceId)}
-                                    selectZone={zoneId => this.props.selectZone(
-                                        zoneId,
-                                        this.props.locatorState.currentTypes,
-                                    )}
-                                    selectArea={areaId =>
-                                        this.props.selectArea(
+                                <div>
+                                    <div className="locator-title">
+                                        <FormattedMessage id="locator.label.search" defaultMessage="Search a village" />
+                                    </div>
+                                    <Filters
+                                        isClearable
+                                        filters={this.props.locatorState}
+                                        selectProvince={provinceId => this.props.selectProvince(provinceId)}
+                                        selectZone={zoneId => this.props.selectZone(
+                                            zoneId,
+                                            this.props.locatorState.currentTypes,
+                                        )}
+                                        selectArea={areaId => this.props.selectArea(
                                             areaId,
                                             this.props.locatorState.currentTypes,
                                             this.props.locatorState.zoneId,
                                         )}
-                                    selectVillage={villageId =>
-                                        this.props.selectVillage(villageId)}
-                                />
-                                <div className="locator-village-validation">
-                                    {
-                                        this.state.isVillageDetailLoading &&
-                                        <div className="loading-small">
-                                            <i className="fa fa-spinner" />
-                                        </div>
-                                    }
-                                    {
-                                        this.state.villageDetail &&
-                                        !this.state.isVillageDetailLoading &&
-                                        <div>
-                                            {
-                                                this.state.villageDetail.population &&
-                                                <p>
-                                                    <FormattedMessage
-                                                        id="microplanning.selected.population"
-                                                        defaultMessage="Population estimée"
-                                                    />
-                                                    {': '}{this.state.villageDetail.population}
-                                                </p>
-                                            }
-                                            {
-                                                this.state.villageDetail.population_source &&
-                                                <p>
-                                                    <FormattedMessage
-                                                        id="microplanning.tooltip.population.source"
-                                                        defaultMessage="Population source"
-                                                    />
-                                                    {': '}{this.state.villageDetail.population_source}
-                                                </p>
-                                            }
-                                            {
-                                                this.state.villageDetail.population_year &&
-                                                <p>
-                                                    <FormattedMessage
-                                                        id="microplanning.tooltip.population.year"
-                                                        defaultMessage="Year surveyed population"
-                                                    />
-                                                    {': '}{this.state.villageDetail.population_year}
-                                                </p>
-                                            }
-                                            <button
-                                                className="button--save"
-                                                onClick={() => {
-                                                    this.props.saveVillage(
-                                                        this.props.kase.id,
-                                                        { village_id: this.state.villageId },
-                                                        this.props.params,
-                                                    );
-                                                }}
-                                            >
-                                                <i className="fa fa-save" />
-                                                <FormattedMessage id="locator.label.save" defaultMessage="Link village to case" />
-                                            </button>
-                                        </div>}
-                                    <button
-                                        className="button--save"
-                                        onClick={() => {
-                                            this.props.saveVillage(this.props.kase.id, { not_found: true }, this.props.params);
-                                        }}
-                                    >
-                                        <i className="fa fa-arrow-right" />
-                                        <FormattedMessage id="main.label.notfound" defaultMessage="Not found" />
-                                    </button>
+                                        selectVillage={villageId => this.props.selectVillage(villageId)}
+                                    />
+                                    <div className="locator-village-validation">
+                                        {
+                                            this.state.isVillageDetailLoading
+                                            && (
+                                                <div className="loading-small">
+                                                    <i className="fa fa-spinner" />
+                                                </div>
+                                            )
+                                        }
+                                        {
+                                            this.state.villageDetail
+                                            && !this.state.isVillageDetailLoading
+                                            && (
+                                                <div>
+                                                    {
+                                                        this.state.villageDetail.population
+                                                        && <p>
+                                                            <FormattedMessage
+                                                                id="microplanning.selected.population"
+                                                                defaultMessage="Population estimée"
+                                                            />
+                                                            {': '}
+                                                            {this.state.villageDetail.population}
+                                                        </p>
+                                                    }
+                                                    {
+                                                        this.state.villageDetail.population_source
+                                                        && <p>
+                                                            <FormattedMessage
+                                                                id="microplanning.tooltip.population.source"
+                                                                defaultMessage="Population source"
+                                                            />
+                                                            {': '}
+                                                            {this.state.villageDetail.population_source}
+                                                        </p>
+                                                    }
+                                                    {
+                                                        this.state.villageDetail.population_year
+                                                        && <p>
+                                                            <FormattedMessage
+                                                                id="microplanning.tooltip.population.year"
+                                                                defaultMessage="Year surveyed population"
+                                                            />
+                                                            {': '}
+                                                            {this.state.villageDetail.population_year}
+                                                        </p>
+                                                    }
+                                                    <button
+                                                        className="button--save"
+                                                        onClick={() => {
+                                                            this.props.saveVillage(
+                                                                this.props.kase.id,
+                                                                { village_id: this.state.villageId },
+                                                                this.props.params,
+                                                            );
+                                                        }}
+                                                    >
+                                                        <i className="fa fa-save" />
+                                                        <FormattedMessage id="locator.label.save" defaultMessage="Link village to case" />
+                                                    </button>
+                                                </div>
+                                            )}
+                                        <button
+                                            className="button--save"
+                                            onClick={() => {
+                                                this.props.saveVillage(this.props.kase.id, { not_found: true }, this.props.params);
+                                            }}
+                                        >
+                                            <i className="fa fa-arrow-right" />
+                                            <FormattedMessage id="main.label.notfound" defaultMessage="Not found" />
+                                        </button>
+                                    </div>
                                 </div>
-                            </div>
-                            <div>
-                                <div className="locator-title">
-                                    <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Text search (by village)" />
+                                <div>
+                                    <div className="locator-title">
+                                        <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Text search (by village)" />
+                                    </div>
+                                    <Search
+                                        placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
+                                        resultText={formatMessage(MESSAGES.searchResult)}
+                                        noResultText={formatMessage(MESSAGES.searchNoResult)}
+                                        noEnoughText={formatMessage(MESSAGES.searchMinChar)}
+                                        minCharCount={1}
+                                        onSearch={value => this.props.searchVillage(value)}
+                                        resetSearch={() => this.props.resetSearch()}
+                                        results={this.props.locatorState.searchResults}
+                                        isLoading={this.props.locatorState.searchLoading}
+                                        keys={searchResultsKeys}
+                                        disableBlurSearch
+                                        onSelect={village => this.props.selectProvince(village.AS__ZS__province__id, village.AS__ZS__id, village.AS_id, village.id)}
+                                    />
                                 </div>
-                                <Search
-                                    placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
-                                    resultText={formatMessage(MESSAGES.searchResult)}
-                                    noResultText={formatMessage(MESSAGES.searchNoResult)}
-                                    noEnoughText={formatMessage(MESSAGES.searchMinChar)}
-                                    minCharCount={1}
-                                    onSearch={value => this.props.searchVillage(value)}
-                                    resetSearch={() => this.props.resetSearch()}
-                                    results={this.props.locatorState.searchResults}
-                                    isLoading={this.props.locatorState.searchLoading}
-                                    keys={searchResultsKeys}
-                                    disableBlurSearch
-                                    onSelect={village => this.props.selectProvince(village.AS__ZS__province__id, village.AS__ZS__id, village.AS_id, village.id)}
-                                />
                             </div>
                         </div>
-                    </div>
+                    )
                 }
                 <div className="locator-container widget__container">
                     {
-                        this.props.load.loading &&
-                        <div className="widget__content">
-                            <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Loading',
-                                id: 'main.label.loading',
-                            })}
-                            />
-                        </div>
-                    }
-                    {this.props.kase &&
-                        <div>
-                            <div className="split-selector-container ">
-                                <LayersComponent
-                                    base={baseLayer}
-                                    change={(type, key) => this.props.changeLayer(type, key)}
+                        this.props.load.loading
+                        && (
+                            <div className="widget__content">
+                                <LoadingSpinner message={formatMessage({
+                                    defaultMessage: 'Loading',
+                                    id: 'main.label.loading',
+                                })}
                                 />
-                                <TypeFilters
-                                    currentTypes={this.props.locatorState.currentTypes}
-                                    selectType={newType =>
-                                        this.props.selectType(
+                            </div>
+                        )
+                    }
+                    {this.props.kase
+                        && (
+                            <div>
+                                <div className="split-selector-container ">
+                                    <LayersComponent
+                                        base={baseLayer}
+                                        change={(type, key) => this.props.changeLayer(type, key)}
+                                    />
+                                    <TypeFilters
+                                        currentTypes={this.props.locatorState.currentTypes}
+                                        selectType={newType => this.props.selectType(
                                             newType, this.props.locatorState.zoneId, this.props.locatorState.areaId,
                                             this.props.locatorState.currentTypes,
                                         )}
-                                />
+                                    />
+                                </div>
+                                <div className="split-map ">
+                                    {
+                                        this.props.locatorState.villages
+                                        && (
+                                            <Map
+                                                baseLayer={baseLayer}
+                                                villages={this.props.locatorState.villages}
+                                                selectVillage={villageId => this.props.selectVillage(villageId)}
+                                                selectedVillageId={this.props.locatorState.villageId}
+                                                getShape={type => this.props.getShape(type)}
+                                            />
+                                        )
+                                    }
+                                </div>
                             </div>
-                            <div className="split-map ">
-                                {
-                                    this.props.locatorState.villages &&
-                                        <Map
-                                            baseLayer={baseLayer}
-                                            villages={this.props.locatorState.villages}
-                                            selectVillage={villageId => this.props.selectVillage(villageId)}
-                                            selectedVillageId={this.props.locatorState.villageId}
-                                            getShape={type => this.props.getShape(type)}
-                                        />
-                                }
-                            </div>
-                        </div>
+                        )
                     }
                 </div>
             </section>

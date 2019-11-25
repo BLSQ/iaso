@@ -32,7 +32,7 @@ class SuperUserImageItem extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.isClear"
-                            defaultMessage="Netteté"
+                            defaultMessage="Clearness"
                         />:
                     </div>
                     <span>
@@ -48,7 +48,7 @@ class SuperUserImageItem extends React.Component {
                             <div className="quality-label inline">
                                 <FormattedMessage
                                     id="quality.main.search"
-                                    defaultMessage="Recherche parasite au bon endroit"
+                                    defaultMessage="Parasitic search in the right place"
                                 />:
                             </div>
                             <span>
@@ -61,7 +61,7 @@ class SuperUserImageItem extends React.Component {
                             <div className="quality-label inline">
                                 <FormattedMessage
                                     id="quality.main.confirm"
-                                    defaultMessage="Confirmation vue trypanosome"
+                                    defaultMessage="Trypanosome view confirmation"
                                 />:
                             </div>
                             <span>
@@ -76,7 +76,7 @@ class SuperUserImageItem extends React.Component {
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.otherParasites"
-                            defaultMessage="Autre parasite"
+                            defaultMessage="Other parasite"
                         />:
                     </div>
                     <span>
@@ -91,7 +91,7 @@ class SuperUserImageItem extends React.Component {
                         <div className="quality-label inline">
                             <FormattedMessage
                                 id="quality.comment"
-                                defaultMessage="Commentaire"
+                                defaultMessage="Comment"
                             />:
                         </div>
                         <span>

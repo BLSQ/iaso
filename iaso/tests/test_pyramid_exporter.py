@@ -97,5 +97,9 @@ class CommandTests(TestCase):
             version_number=1,
             source_name_ref="reference",
             version_number_ref=1,
+            export="true",
+            dhis2_url="https://play.dhis2.org/2.30",
+            dhis2_user="admin",
+            dhis2_password="district",
         )
         print(out.getvalue())

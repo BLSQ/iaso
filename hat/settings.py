@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     "hat.audit",
     "hat.menupermissions",
     "iaso",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [

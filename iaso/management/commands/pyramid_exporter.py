@@ -148,6 +148,8 @@ class Command(BaseCommand):
 
     def distance_field(self, dhis2_value, ref_value, field, same):
         if isinstance(dhis2_value, Point) and isinstance(ref_value, Point):
+            # TODO  is this the good way to calculate the distances ?
+            # https://docs.djangoproject.com/en/2.2/ref/contrib/gis/geos/#django.contrib.gis.geos.GEOSGeometry.distance
             return dhis2_value.distance(ref_value) * 100  # approx km
         return None
 
@@ -207,8 +209,24 @@ class Command(BaseCommand):
 
             display.append(results)
 
+        def color(status):
+            if status == "modified":
+                return CommandLogger.RED
+            if status == "same":
+                return CommandLogger.END
+            if status == "new":
+                return CommandLogger.GREEN
+            return CommandLogger.END
+
         for d in display:
-            message = "\t".join(map(lambda s: str(s).ljust(20, " "), d))
+            message = "\t".join(
+                map(
+                    lambda s: self.iaso_logger.colorize(
+                        str(s).ljust(20, " "), color(s)
+                    ),
+                    d,
+                )
+            )
             if d[2] == "new":
                 self.iaso_logger.info(
                     self.iaso_logger.colorize(message, CommandLogger.GREEN)

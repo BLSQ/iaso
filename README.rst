@@ -304,3 +304,16 @@ Here is an example of pre-commit-config.yaml:
           language_version: python3.6
 
 ..
+
+
+Jupyter Notebook
+=================
+
+To run a Jupyter Notebook, just activate the virtualenv and run
+
+
+.. code:: bash
+
+    python manage.py shell_plus --notebook
+
+..

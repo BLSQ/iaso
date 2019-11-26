@@ -3,6 +3,7 @@ import json
 
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from django.contrib.gis.geos import Point
 
 from .command_logger import CommandLogger
 
@@ -54,7 +55,8 @@ class Command(BaseCommand):
             options, "source_name_ref", "version_number_ref"
         )
 
-        self.diff(version_ref, version)
+        diffs, fields = self.diff(version_ref, version)
+        self.dump(diffs, fields)
 
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
@@ -71,6 +73,7 @@ class Command(BaseCommand):
         fields = ["name", "geometry", "parent"]
         for group_set in GroupSet.objects.filter(source_version=version):
             fields.append("groupset:" + group_set.source_ref + ":" + group_set.name)
+
         orgunits_dhis2 = OrgUnit.objects.filter(version=version).all()
         orgunit_refs = OrgUnit.objects.filter(version=version_ref).all()
         print(
@@ -116,7 +119,7 @@ class Command(BaseCommand):
             }
             diffs.append(diff)
 
-        self.dump(diffs, fields)
+        return (diffs, fields)
 
     def compare_fields(self, orgunit_dhis2, orgunit_ref, fields):
         print("will compare ", orgunit_ref, " vs ", orgunit_dhis2)
@@ -134,11 +137,19 @@ class Command(BaseCommand):
                 "after": ref_value,
                 "field": field,
                 "status": "same" if same else "modified",
+                "distance": 0
+                if same
+                else self.distance_field(dhis2_value, ref_value, field, same),
             }
 
             comparisons.append(diff_field)
 
         return comparisons
+
+    def distance_field(self, dhis2_value, ref_value, field, same):
+        if isinstance(dhis2_value, Point) and isinstance(ref_value, Point):
+            return dhis2_value.distance(ref_value) * 100  # approx km
+        return None
 
     def is_same(self, value, other_value):
         return value == other_value

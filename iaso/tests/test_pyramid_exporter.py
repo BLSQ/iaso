@@ -3,6 +3,8 @@ from io import StringIO
 from django.test import TestCase
 from django.core import management
 from django.core.management.base import CommandError
+from django.contrib.gis.geos import Point
+
 from os import environ
 import responses
 import json
@@ -82,6 +84,10 @@ class CommandTests(TestCase):
 
         group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
         org_unit.group_set.add(group)
+
+        chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
+        chp.location = Point(-13.3596, 9.5317)
+        chp.save()
 
         out = StringIO()
         management.call_command(

@@ -49,7 +49,7 @@ class Case extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.team" defaultMessage="Name" />
+                                <FormattedMessage id="main.label.name" defaultMessage="Name" />
                             </th>
                             <td>{this.props.case.patient.last_name ? this.props.case.patient.last_name : '--'}</td>
                         </tr>

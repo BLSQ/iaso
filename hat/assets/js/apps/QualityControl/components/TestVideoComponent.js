@@ -15,22 +15,25 @@ class TestVideoComponent extends React.Component {
         return (
             <div>
                 {
-                    isSuperUser &&
-                    <section>
-                        <h4>
-                            <FormattedMessage
-                                id="quality.finalCheck"
-                                defaultMessage="Finale check"
-                            />
-                        </h4>
-                    </section>
+                    isSuperUser
+                    && (
+                        <section>
+                            <h4>
+                                <FormattedMessage
+                                    id="quality.finalCheck"
+                                    defaultMessage="Finale check"
+                                />
+                            </h4>
+                        </section>
+                    )
                 }
                 <section>
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.isClear"
                             defaultMessage="Clearness"
-                        />:
+                        />
+                        :
                     </div>
                     <div className="quality-radio">
                         <input
@@ -59,7 +62,8 @@ class TestVideoComponent extends React.Component {
                         <FormattedMessage
                             id="quality.main.search"
                             defaultMessage="Parasitic search in the right place"
-                        />:
+                        />
+                        :
                     </div>
                     <div className="quality-radio">
                         <input
@@ -84,13 +88,13 @@ class TestVideoComponent extends React.Component {
                 </section>
 
 
-
                 <section>
                     <div className="quality-label inline">
                         <FormattedMessage
                             id="quality.main.confirm"
                             defaultMessage="Trypanosome view confirmation"
-                        />:
+                        />
+                        :
                     </div>
                     <div className="quality-radio">
                         <input
@@ -119,7 +123,8 @@ class TestVideoComponent extends React.Component {
                         <FormattedMessage
                             id="quality.main.otherParasites"
                             defaultMessage="Other parasite"
-                        />:
+                        />
+                        :
                     </div>
                     <div className="quality-radio">
                         <input
@@ -142,7 +147,8 @@ class TestVideoComponent extends React.Component {
                         <FormattedMessage id="main.label.no" defaultMessage="No" />
                     </div>
                 </section>
-            </div>);
+            </div>
+        );
     }
 }
 

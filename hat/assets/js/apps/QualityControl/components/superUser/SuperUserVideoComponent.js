@@ -23,36 +23,43 @@ class SuperUserVideoComponent extends React.Component {
         return (
             <Fragment>
                 {
-                    check1 &&
-                    <SuperUserVideoItem
-                        currentTest={check1}
-                        title={`${formatMessage({
-                            defaultMessage: 'Validation',
-                            id: 'quality.check',
-                        })} 1`}
-                    />
+                    check1
+                    && (
+                        <SuperUserVideoItem
+                            currentTest={check1}
+                            title={`${formatMessage({
+                                defaultMessage: 'Validation',
+                                id: 'quality.check',
+                            })} 1`}
+                        />
+                    )
                 }
                 {
-                    check2 &&
-                    <SuperUserVideoItem
-                        currentTest={check2}
-                        title={`${formatMessage({
-                            defaultMessage: 'Validation',
-                            id: 'quality.check',
-                        })} 2`}
-                    />
+                    check2
+                    && (
+                        <SuperUserVideoItem
+                            currentTest={check2}
+                            title={`${formatMessage({
+                                defaultMessage: 'Validation',
+                                id: 'quality.check',
+                            })} 2`}
+                        />
+                    )
                 }
                 {
-                    check3 &&
-                    <SuperUserVideoItem
-                        currentTest={check3}
-                        title={`${formatMessage({
-                            defaultMessage: 'Validation',
-                            id: 'quality.check',
-                        })} 3`}
-                    />
+                    check3
+                    && (
+                        <SuperUserVideoItem
+                            currentTest={check3}
+                            title={`${formatMessage({
+                                defaultMessage: 'Validation',
+                                id: 'quality.check',
+                            })} 3`}
+                        />
+                    )
                 }
-            </Fragment>);
+            </Fragment>
+        );
     }
 }
 

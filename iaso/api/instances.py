@@ -4,9 +4,10 @@ from rest_framework.response import Response
 
 from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
-from iaso.models import Instance, OrgUnit, DeviceOwnership, Form
+from iaso.models import Instance, OrgUnit, DeviceOwnership, Form, Project
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
+from rest_framework.authentication import BasicAuthentication
 
 from django.core.paginator import Paginator
 
@@ -18,11 +19,17 @@ from hat.api.export_utils import (
     timestamp_to_utc_datetime,
 )
 from iaso.utils import timestamp_to_datetime
+from .auth.authentication import CsrfExemptSessionAuthentication
 from time import gmtime, strftime
 import ntpath
 
 
-def import_data(instances, api_import):
+def import_data(instances, api_import, app_id=None):
+    try:
+        project = Project.objects.get(app_id=app_id)
+    except Project.DoesNotExist:
+        project = None
+
     for instance in instances:
         file_name = ntpath.basename(instance.get("file", None))
         uuid = instance.get("id", None)
@@ -72,16 +79,15 @@ def import_data(instances, api_import):
         instance_db.api_import = api_import
         if org_unit_location:
             instance_db.location = org_unit_location
-
+        instance_db.project = project
         instance_db.save()
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    authentication_classes = []
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
-        queryset = Instance.objects.order_by("-id")
         limit = request.GET.get("limit", None)
         as_small_dict = request.GET.get("asSmallDict", None)
         page_offset = request.GET.get("page", 1)
@@ -96,11 +102,16 @@ class InstancesViewSet(viewsets.ViewSet):
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         org_unit_id = request.GET.get("orgUnitId", None)
 
+        queryset = Instance.objects.order_by("-id")
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+            queryset = queryset.filter(project__account=profile.account)
+
         queryset = (
             queryset.exclude(file="")
             .exclude(device__test_device=True)
             .order_by(*orders)
-        )  ## quickfix to avoid updating the front, but here, we should also display entries without xml
+        )
 
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
@@ -173,7 +184,9 @@ class InstancesViewSet(viewsets.ViewSet):
                 return Response(
                     [
                         instance.as_small_dict()
-                        for instance in queryset.filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
+                        for instance in queryset.filter(
+                            Q(location__isnull=False) | Q(instancefile_count__gt=0)
+                        )
                         .prefetch_related("instancefile_set")
                         .prefetch_related("device")
                         .defer("json")
@@ -276,11 +289,13 @@ class InstancesViewSet(viewsets.ViewSet):
         api_import = APIImport()
         if not request.user.is_anonymous:
             api_import.user = request.user
+        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+
         api_import.import_type = "instance"
         api_import.json_body = instances
         api_import.save()
         try:
-            import_data(instances, api_import)
+            import_data(instances, api_import, app_id)
             return Response({"res": "ok"})
         except Exception as e:
             print("exception", e)

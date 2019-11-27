@@ -1,5 +1,13 @@
 from django.test import TestCase, tag
-from ..models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
+from ..models import (
+    OrgUnit,
+    Form,
+    InstanceFile,
+    Instance,
+    OrgUnitType,
+    Account,
+    Project,
+)
 from math import floor
 from rest_framework.test import APIClient
 import json
@@ -46,9 +54,7 @@ class BasicAPITestCase(TestCase):
 
         response = c.post("/api/orgunits/", data=[unit_body], format="json")
         self.assertEqual(response.status_code, 200)
-
         velpo_model = OrgUnit.objects.get(uuid=uuid)
-
         self.assertEqual(velpo_model.name, name)
 
         response = c.get("/api/orgunits/", accept="application/json")

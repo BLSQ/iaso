@@ -340,4 +340,5 @@ else:
         }
     }
 
+
 AUTH_PROFILE_MODULE = "hat.users.Profile"

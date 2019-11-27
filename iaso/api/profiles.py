@@ -1,12 +1,9 @@
-
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
-from hat.users.models import (
-    Profile,
-)
+from hat.users.models import Profile
 
-from .authentication import CsrfExemptSessionAuthentication
+from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
 
@@ -25,6 +22,5 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = Profile.objects.all()
-
 
         return Response([profile.as_short_dict() for profile in queryset])

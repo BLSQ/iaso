@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
-
+from django.conf import settings
 from iaso.utils import flat_parse_xml_file
 from urllib.request import urlopen
 from django.contrib.auth.models import User
@@ -31,6 +31,9 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)
+    default_version = models.ForeignKey(
+        "SourceVersion", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return "%s " % (self.name,)
@@ -89,6 +92,7 @@ class OrgUnitType(models.Model):
 
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    projects = models.ManyToManyField(Project, related_name="data_sources", blank=True)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -270,6 +274,7 @@ class OrgUnit(models.Model):
 
 
 class RecordType(models.Model):
+    projects = models.ManyToManyField(Project, related_name="record_types", blank=True)
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -282,6 +287,9 @@ class Record(models.Model):
     )
     org_unit = models.ForeignKey(
         OrgUnit, null=True, blank=True, on_delete=models.CASCADE
+    )
+    record_type = models.ForeignKey(
+        RecordType, on_delete=models.CASCADE, null=True, blank=True
     )
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -424,7 +432,6 @@ class Link(models.Model):
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    projects = models.ManyToManyField(Project, blank=True)
     form_id = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -461,6 +468,7 @@ class Group(models.Model):
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
+    projects = models.ManyToManyField(Project, related_name="groups", blank=True)
     org_units = models.ManyToManyField(OrgUnit, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -476,18 +484,21 @@ class Group(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
+
 class GroupSet(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
+    projects = models.ManyToManyField(Project, related_name="group_sets", blank=True)
     groups = models.ManyToManyField(Group, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
+
 
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"
@@ -528,6 +539,9 @@ class Instance(models.Model):
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    project = models.ForeignKey(
+        Project, blank=True, null=True, on_delete=models.DO_NOTHING
+    )
     json = JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
     device = models.ForeignKey(
@@ -690,6 +704,9 @@ class Device(models.Model):
 
 class DeviceOwnership(models.Model):
     device = models.ForeignKey(Device, on_delete=models.CASCADE)
+    project = models.ForeignKey(
+        Project, blank=True, null=True, on_delete=models.DO_NOTHING
+    )
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     start = models.DateTimeField(auto_now_add=True)
     end = models.DateTimeField(auto_now_add=True)
@@ -707,3 +724,26 @@ class DeviceOwnership(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
+
+class Profile(models.Model):
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    user = models.OneToOneField(
+        User, on_delete=models.CASCADE, related_name="iaso_profile"
+    )
+
+    def __str__(self):
+        return "%s -- %s" % (self.user, self.account)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "first_name": self.user.first_name,
+            "user_name": self.user.username,
+            "last_name": self.user.last_name,
+            "email": self.user.email,
+            "account": self.account.as_dict(),
+        }
+
+    def as_short_dict(self):
+        return self.as_dict()

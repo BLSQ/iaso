@@ -4,10 +4,12 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.response import Response
+from rest_framework.authentication import BasicAuthentication
 
 from iaso.models import Form
 from iaso.utils import timestamp_to_datetime
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
+from .auth.authentication import CsrfExemptSessionAuthentication
 
 
 class FormsViewSet(viewsets.ViewSet):
@@ -16,16 +18,20 @@ class FormsViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = []
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+
         all_apps = request.GET.get("all", None)
         if all_apps is not None:
             queryset = Form.objects.all()
         else:
             queryset = Form.objects.filter(projects__app_id=app_id)
+        if request.user and not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+            queryset = queryset.filter(project__account=profile.account)
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

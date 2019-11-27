@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
-from iaso.models import OrgUnit, Project, OrgUnitType, Instance
+from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
@@ -15,6 +15,7 @@ from rest_framework.authentication import BasicAuthentication
 from time import gmtime, strftime
 from iaso.utils import timestamp_to_datetime
 from django.http import StreamingHttpResponse, HttpResponse
+from django.core.exceptions import PermissionDenied
 from hat.api.export_utils import (
     Echo,
     generate_xlsx,
@@ -23,8 +24,20 @@ from hat.api.export_utils import (
 )
 
 
+def check_access(org_unit, user):
+    user_account = user.iaso_profile.account
+    projects = org_unit.version.data_source.projects
+    account_ids = [p.account_id for p in projects]
+    if user_account.id not in account_ids:
+        raise PermissionDenied("Your account does not have access to this org unit")
+
+
 def import_data(org_units, user, api_import):
     new_org_units = []
+    version = None
+    if not user.is_anonymous:
+        version = user.iaso_profile.account.default_version
+
     for org_unit in org_units:
         uuid = org_unit.get("id", None)
         latitude = org_unit.get("latitude", None)
@@ -69,6 +82,7 @@ def import_data(org_units, user, api_import):
                 org_unit_db.location = org_unit_location
 
             new_org_units.append(org_unit_db)
+            org_unit_db.version = version
             org_unit_db.save()
     return new_org_units
 
@@ -83,6 +97,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
+        queryset = OrgUnit.objects.all()
+        if not request.user.is_anonymous:
+            account = request.user.iaso_profile.account
+            version_ids = (
+                SourceVersion.objects.filter(data_source__projects__account=account)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+            queryset = queryset.filter(version_id__in=version_ids)
+
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
 
         limit = request.GET.get("limit", None)
@@ -115,9 +139,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             validated = False
 
         if validated != "both":
-            queryset = OrgUnit.objects.filter(validated=validated)
-        else:
-            queryset = OrgUnit.objects.all()
+            queryset = queryset.filter(validated=validated)
 
         queryset = queryset.filter(  # .exclude(org_unit_type=None)
             org_unit_type__projects__app_id=app_id
@@ -334,6 +356,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, id=pk)
+        check_access(org_unit, request.user)
         original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
@@ -364,7 +387,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.simplified_geom = None
 
-
         if (
             catchment
             and catchment["features"][0]["geometry"]
@@ -380,7 +402,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     "Only one polygon should be saved in the catchment shape",
                     status=status.HTTP_400_BAD_REQUEST,
                 )
-        else :
+        else:
             org_unit.catchment = None
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
@@ -448,6 +470,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
+        check_access(org_unit, request.user)
+
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         res["catchment"] = None

@@ -1,6 +1,34 @@
 from django.contrib.gis.geos import Point
 
 from iaso.models import OrgUnit, GroupSet
+import json
+
+
+class Dictable:
+    def as_dict(self):
+        return self.__dict__
+
+    def __str__(self):
+        return "%s %s" % (self.__class__.__name__, self.as_dict())
+
+
+class Diff(Dictable):
+    def __init__(self, org_unit, status, comparisons):
+        self.org_unit = org_unit
+        self.status = status
+        self.comparisons = comparisons
+
+    def comparison(self, field):
+        return next(x for x in self.comparisons if x.field == field)
+
+
+class Comparison(Dictable):
+    def __init__(self, field, status, before, after, distance):
+        self.field = field
+        self.before = before
+        self.after = after
+        self.status = status
+        self.distance = distance
 
 
 class Differ:
@@ -42,19 +70,15 @@ class Differ:
                 status = "new"
 
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, fields)
-            some_modified = any(
-                filter(lambda comp: comp["status"] != "same", comparisons)
-            )
+            some_modified = any(filter(lambda comp: comp.status != "same", comparisons))
             if status != "new" and some_modified:
                 status = "modified"
 
-            diff = {
-                "ou": orgunit_dhis2.as_dict()
-                if orgunit_dhis2
-                else orgunit_ref.as_dict(),
-                "status": status,
-                "comparisons": comparisons,
-            }
+            diff = Diff(
+                org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref,
+                status=status,
+                comparisons=comparisons,
+            )
             diffs.append(diff)
 
         return (diffs, fields)
@@ -70,17 +94,17 @@ class Differ:
 
             same = self.is_same(dhis2_value, ref_value)
 
-            diff_field = {
-                "before": dhis2_value,
-                "after": ref_value,
-                "field": field,
-                "status": "same" if same else "modified",
-                "distance": 0
-                if same
-                else self.distance_field(dhis2_value, ref_value, field, same),
-            }
-
-            comparisons.append(diff_field)
+            comparisons.append(
+                Comparison(
+                    before=dhis2_value,
+                    after=ref_value,
+                    field=field,
+                    status="same" if same else "modified",
+                    distance=0
+                    if same
+                    else self.distance_field(dhis2_value, ref_value, field, same),
+                )
+            )
 
         return comparisons
 

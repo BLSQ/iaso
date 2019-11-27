@@ -1,4 +1,5 @@
 import json
+
 from iaso.management.commands.command_logger import CommandLogger
 
 
@@ -7,6 +8,8 @@ class ShapelyJsonEncoder(json.JSONEncoder):
         super(ShapelyJsonEncoder, self).__init__(**kwargs)
 
     def default(self, obj):
+        if hasattr(obj, "as_dict"):
+            return obj.as_dict()
         return obj.wkt
 
 
@@ -20,17 +23,20 @@ class Dumper:
         display = []
         header = ["dhis2Id", "name", "ou status"]
         for field in fields:
-            header.append(field)
+            if field.startswith("groupset:"):
+                header.append(field.split(":")[2])
+            else:
+                header.append(field)
 
         display.append(header)
         for diff in diffs:
-            results = [diff["ou"]["source_ref"], diff["ou"]["name"], diff["status"]]
+            results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
 
             for field in fields:
-                comparison = list(
-                    filter(lambda x: x["field"] == field, diff["comparisons"])
-                )[0]
-                results.append(comparison["status"])
+                comparison = list(filter(lambda x: x.field == field, diff.comparisons))[
+                    0
+                ]
+                results.append(comparison.status)
 
             display.append(results)
 

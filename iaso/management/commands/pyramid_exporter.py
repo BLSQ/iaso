@@ -49,7 +49,7 @@ class Command(BaseCommand):
         )
         parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
         parser.add_argument(
-            "--dhis2_password", type=str, help="dhis2 password of the dhis2_user",
+            "--dhis2_password", type=str, help="dhis2 password of the dhis2_user"
         )
 
     def get_api(self, options):
@@ -74,21 +74,39 @@ class Command(BaseCommand):
         _source_ref, version_ref = self.load_version(
             options, "source_name_ref", "version_number_ref"
         )
+        print("================= Diffing =================")
 
         diffs, fields = Differ(iaso_logger).diff(version_ref, version, options)
         Dumper(iaso_logger).dump(diffs, fields)
         export = options.get("export")
         if export:
+            print("================= Exporting =================")
             self.export_to_dhis2(self.get_api(options), diffs)
 
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 
     def export_to_dhis2(self, api, diffs):
-        to_create_diffs = list(filter(lambda x: x["status"] == "new", diffs))
+
+        to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
 
         for to_create in to_create_diffs:
+            name_comparison = to_create.comparison("name")
+
             print(to_create)
+            #       contactPerson, imgUrl,
+            # email: components[1],
+            payload = {
+                # id: components[0],
+                # name: ,
+                # shortName: components[3],
+                # openingDate: "1960-08-03T00:00:00.000",
+                # parent: {id: components[4]},
+                # address: components[30],
+                # coordinates: JSON.stringify(
+                # [parseFloat(components[9]), parseFloat(components[8])]
+                # ),
+            }
 
     def load_version(self, options, source_name, version_number):
         source_name = options[source_name]

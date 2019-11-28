@@ -159,8 +159,17 @@ class Command(BaseCommand):
 
     def load_version(self, options, source_name, version_number):
         source_name = options[source_name]
+        version_number = options[version_number]
+        print("loading ", source_name, version_number)
         source = DataSource.objects.get(name=source_name)
-
-        version_number = options.get(version_number)
-        version = SourceVersion.objects.get(number=version_number, data_source=source)
+        try:
+            version = SourceVersion.objects.get(
+                number=version_number, data_source=source
+            )
+        except Exception as e:
+            print(
+                "available versions ",
+                SourceVersion.objects.filter(data_source=source).values("number"),
+            )
+            raise e
         return (source, version)

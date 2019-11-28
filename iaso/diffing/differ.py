@@ -56,8 +56,9 @@ class Differ:
         )
         # speed how to index_by(&:source_ref)
         diffs = []
-
+        index = 0
         for orgunit_ref in orgunit_refs:
+            index = index + 1
             orgunit_dhis2_with_ref = [
                 x for x in orgunits_dhis2 if x.source_ref == orgunit_ref.source_ref
             ]
@@ -69,6 +70,8 @@ class Differ:
             else:
                 status = "new"
 
+            if index % 100 == 0:
+                print(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, fields)
             some_modified = any(filter(lambda comp: comp.status != "same", comparisons))
             if status != "new" and some_modified:
@@ -84,7 +87,7 @@ class Differ:
         return (diffs, fields)
 
     def compare_fields(self, orgunit_dhis2, orgunit_ref, fields):
-        print("will compare ", orgunit_ref, " vs ", orgunit_dhis2)
+        #
 
         comparisons = []
 

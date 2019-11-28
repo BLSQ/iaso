@@ -28,7 +28,8 @@ class FormsViewSet(viewsets.ViewSet):
         if all_apps is not None:
             queryset = Form.objects.all()
         else:
-            queryset = Form.objects.filter(projects__app_id=app_id)
+            queryset = Form.objects.filter(project__app_id=app_id)
+
         if request.user and not request.user.is_anonymous:
             profile = request.user.iaso_profile
             queryset = queryset.filter(project__account=profile.account)

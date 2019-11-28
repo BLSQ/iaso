@@ -26,7 +26,7 @@ from hat.api.export_utils import (
 
 def check_access(org_unit, user):
     user_account = user.iaso_profile.account
-    projects = org_unit.version.data_source.projects
+    projects = org_unit.version.data_source.projects.all()
     account_ids = [p.account_id for p in projects]
     if user_account.id not in account_ids:
         raise PermissionDenied("Your account does not have access to this org unit")
@@ -92,7 +92,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
     list:
     """
 
-    # Check with Mobile application if not broken
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
@@ -106,8 +105,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 .distinct()
             )
             queryset = queryset.filter(version_id__in=version_ids)
-
-        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+            default_app_id = None
+        else:
+            default_app_id = "org.bluesquarehub.iaso"
+        app_id = request.GET.get("app_id", default_app_id)
 
         limit = request.GET.get("limit", None)
         validated = request.GET.get("validated", "true")
@@ -141,9 +142,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if validated != "both":
             queryset = queryset.filter(validated=validated)
 
-        queryset = queryset.filter(  # .exclude(org_unit_type=None)
-            org_unit_type__projects__app_id=app_id
-        ).order_by(*order)
+        if app_id:
+            queryset = queryset.filter(  # .exclude(org_unit_type=None)
+                org_unit_type__projects__app_id=app_id
+            )
+        queryset = queryset.order_by(*order)
+
         queryset = queryset.prefetch_related("version__data_source")
 
         if search:

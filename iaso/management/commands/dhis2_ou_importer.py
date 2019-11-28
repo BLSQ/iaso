@@ -184,7 +184,7 @@ class Command(BaseCommand):
             if feature_type == "POINT" and coordinates:
                 try:
                     tuple = json.loads(coordinates)
-                    pnt = Point(float(tuple[0]), float(tuple[1]))
+                    pnt = Point((float(tuple[0]), float(tuple[1])))
                     org_unit.location = pnt
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
@@ -194,9 +194,13 @@ class Command(BaseCommand):
                     )
 
             if feature_type == "POLYGON" and coordinates:
-                j = json.loads(coordinates)
-                org_unit.simplified_geom = Polygon(j[0][0])
-
+                try:
+                    j = json.loads(coordinates)
+                    org_unit.simplified_geom = Polygon(j[0])
+                except Exception as bad_polygon:
+                    MyLogger.error(
+                        "failed at importing POLYGON", coordinates, bad_polygon, row
+                    )
             if feature_type == "MULTI_POLYGON" and coordinates:
                 j = json.loads(coordinates)
                 org_unit.simplified_geom = Polygon(j[0][0])
@@ -208,7 +212,7 @@ class Command(BaseCommand):
 
             if feature_type == "Point" and coordinates:
                 try:
-                    pnt = Point(coordinates[0], coordinates[1])
+                    pnt = Point((coordinates[0], coordinates[1]))
                     org_unit.location = pnt
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y
@@ -340,7 +344,7 @@ class Command(BaseCommand):
                 self.map_coordinates(row, org_unit)
                 # if dhis2 version >= 2.32
                 self.map_geometry(row, org_unit)
-
+                print("---------------", org_unit.location, type(org_unit.location))
                 org_unit.save()
 
                 # log progress

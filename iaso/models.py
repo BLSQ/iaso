@@ -271,6 +271,17 @@ class OrgUnit(models.Model):
             "source_name": self.version.data_source.name if self.version else None,
         }
 
+    def path(self):
+        path_components = []
+        cur = self
+        while cur:
+            if cur.source_ref:
+                path_components.insert(0, cur.source_ref)
+            cur = cur.parent
+        if len(path_components) > 0:
+            return "/" + ("/".join(path_components))
+        return None
+
 
 class RecordType(models.Model):
     name = models.TextField()

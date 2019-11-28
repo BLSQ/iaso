@@ -1,9 +1,9 @@
 from io import StringIO
-
+import re
 from django.test import TestCase
 from django.core import management
 from django.core.management.base import CommandError
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, Polygon
 
 from os import environ
 import responses
@@ -60,6 +60,45 @@ class CommandTests(TestCase):
         if environ.get("DEBUG_TEST") is not None:
             print(out.getvalue())
 
+    def introduce_pyramid_changes(self, source_ref, version_ref):
+        # change name
+        parent = OrgUnit.objects.get(source_ref="kJq2mPyFEHo", version=version_ref)
+        parent.name = "modified Gorama Mende"
+        parent.save()
+
+        # add new chiefdom
+        org_unit_chief = OrgUnit()
+        org_unit_chief.name = "new Chiefdom"
+        org_unit_chief.sub_source = source_ref
+        org_unit_chief.version = version_ref
+        org_unit_chief.source_ref = None
+        org_unit_chief.validated = False
+        org_unit_chief.parent = parent
+        org_unit_chief.simplified_geom = Polygon(
+            [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
+        )
+        org_unit_chief.save()
+
+        group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
+        org_unit_chief.group_set.add(group)
+
+        # add new health center
+
+        org_unit = OrgUnit()
+        org_unit.name = "new children"
+        org_unit.sub_source = source_ref
+        org_unit.version = version_ref
+        org_unit.source_ref = None
+        org_unit.validated = False
+        org_unit.parent = org_unit_chief
+        org_unit.location = Point(-1.3596, 2.5317)
+        org_unit.save()
+
+        # update existing chp coordinates
+        chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
+        chp.location = Point(-13.3596, 9.5317)
+        chp.save()
+
     @responses.activate
     def test_command(self):
         self.setup()
@@ -67,27 +106,21 @@ class CommandTests(TestCase):
         source_ref = DataSource.objects.get(name="reference")
         version_ref = SourceVersion.objects.get(number="1", data_source=source_ref)
 
-        # change name
-        parent = OrgUnit.objects.get(source_ref="KXSqt7jv6DU", version=version_ref)
-        parent.name = "modified Gorama Mende"
-        parent.save()
+        self.introduce_pyramid_changes(source_ref, version_ref)
 
-        # add new orgunit
-        org_unit = OrgUnit()
-        org_unit.name = "new Chiefdom"
-        org_unit.sub_source = source_ref
-        org_unit.version = version_ref
-        org_unit.source_ref = None
-        org_unit.validated = False
-        org_unit.parent = parent
-        org_unit.save()
+        posted_request = []
 
-        group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
-        org_unit.group_set.add(group)
+        def request_callback(request):
+            payload = json.loads(request.body)
+            posted_request.append(payload)
+            return (200, {}, json.dumps({}))
 
-        chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
-        chp.location = Point(-13.3596, 9.5317)
-        chp.save()
+        responses.add_callback(
+            responses.POST,
+            "https://play.dhis2.org/2.30/api/organisationUnits",
+            callback=request_callback,
+            content_type="application/json",
+        )
 
         out = StringIO()
         management.call_command(
@@ -101,5 +134,40 @@ class CommandTests(TestCase):
             dhis2_url="https://play.dhis2.org/2.30",
             dhis2_user="admin",
             dhis2_password="district",
+        )
+        new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
+        new_children = OrgUnit.objects.get(name="new children", version=version_ref)
+
+        self.assertEquals(
+            posted_request,
+            [
+                {
+                    "id": new_chief_dom.source_ref,
+                    "name": "new Chiefdom",
+                    "shortName": "new Chiefdom",
+                    "openingDate": "1960-08-03T00:00:00.000",
+                    "parent": {"id": "kJq2mPyFEHo"},
+                    "geometry": {
+                        "type": "Polygon",
+                        "coordinates": [
+                            [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
+                        ],
+                    },
+                    "coordinates": [
+                        [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
+                    ],
+                    "featureType": "POLYGON",
+                },
+                {
+                    "id": new_children.source_ref,
+                    "name": "new children",
+                    "shortName": "new children",
+                    "openingDate": "1960-08-03T00:00:00.000",
+                    "parent": {"id": new_chief_dom.source_ref},
+                    "geometry": {"type": "Point", "coordinates": [-1.3596, 2.5317]},
+                    "coordinates": [-1.3596, 2.5317],
+                    "featureType": "POINT",
+                },
+            ],
         )
         print(out.getvalue())

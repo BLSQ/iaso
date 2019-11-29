@@ -284,7 +284,7 @@ class Command(BaseCommand):
         )
 
     """
-    the trasanction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
+    the transaction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
     """
 
     @transaction.atomic

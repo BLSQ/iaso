@@ -3,6 +3,16 @@ import json
 from iaso.management.commands.command_logger import CommandLogger
 
 
+def color(status):
+    if status == "modified":
+        return CommandLogger.RED
+    if status == "same":
+        return CommandLogger.END
+    if status == "new":
+        return CommandLogger.GREEN
+    return CommandLogger.END
+
+
 class ShapelyJsonEncoder(json.JSONEncoder):
     def __init__(self, **kwargs):
         super(ShapelyJsonEncoder, self).__init__(**kwargs)
@@ -18,10 +28,48 @@ class Dumper:
         self.iaso_logger = logger
 
     def dump(self, diffs, fields):
+        stats = self.dump_stats(diffs, fields)
+        self.dump_as_table(diffs, fields, stats)
+
+    def dump_stats(self, diffs, fields):
+        stats_ou = {}
+
+        for diff in diffs:
+            if not diff.status in stats_ou:
+                stats_ou[diff.status] = 1
+            else:
+                stats_ou[diff.status] += 1
+
+        print("Orgunits status", stats_ou)
+
+        stats_comparison_by_field = {}
+
+        for diff in diffs:
+            for comp in diff.comparisons:
+                if not comp.field in stats_comparison_by_field:
+                    stats_comparison_by_field[comp.field] = {}
+                comp_stats = stats_comparison_by_field[comp.field]
+                if not comp.status in comp_stats:
+                    comp_stats[comp.status] = {}
+                if not "count" in comp_stats[comp.status]:
+                    comp_stats[comp.status]["count"] = 1
+                else:
+                    comp_stats[comp.status]["count"] += 1
+                comp_stats[comp.status]["sample"] = diff.org_unit.source_ref
+
+        stats = {"orgUnits": stats_ou, "orgUnitsByField": stats_comparison_by_field}
+        print(json.dumps(stats, indent=4))
+        return stats
+
+    def dump_as_json(self, diffs, fields):
         print(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
+    def dump_as_table(self, diffs, fields, stats):
         display = []
         header = ["dhis2Id", "name", "ou status"]
+        fields = list(
+            filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields)
+        )
         for field in fields:
             if field.startswith("groupset:"):
                 header.append(field.split(":")[2])
@@ -30,24 +78,26 @@ class Dumper:
 
         display.append(header)
         for diff in diffs:
-            results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
+            if diff.status != "same":
+                results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
 
-            for field in fields:
-                comparison = list(filter(lambda x: x.field == field, diff.comparisons))[
-                    0
-                ]
-                results.append(comparison.status)
+                for field in fields:
+                    comparison = list(
+                        filter(lambda x: x.field == field, diff.comparisons)
+                    )[0]
+                    if comparison.status == "same":
+                        results.append("same")
+                    else:
+                        results.append(
+                            self.iaso_logger.colorize(
+                                " vs ".join(
+                                    [str(comparison.before), str(comparison.after)]
+                                ),
+                                color(comparison.status),
+                            )
+                        )
 
-            display.append(results)
-
-        def color(status):
-            if status == "modified":
-                return CommandLogger.RED
-            if status == "same":
-                return CommandLogger.END
-            if status == "new":
-                return CommandLogger.GREEN
-            return CommandLogger.END
+                display.append(results)
 
         for d in display:
             message = "\t".join(

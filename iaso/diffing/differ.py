@@ -1,5 +1,5 @@
 from django.contrib.gis.geos import Point
-
+from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 import json
 
@@ -31,6 +31,26 @@ class Comparison(Dictable):
         self.distance = distance
 
 
+def load_pyramid(version):
+    return (
+        OrgUnit.objects.prefetch_related("group_set")
+        .prefetch_related("group_set__groupset_set")
+        .select_related("org_unit_type")
+        .select_related("parent")
+        .select_related("parent")
+        .select_related("parent__parent")
+        .filter(version=version)
+        .all()
+    )
+
+
+def index_pyramid(orgunits):
+    orgunits_by_source_ref = {}
+    for orgunit in orgunits:
+        orgunits_by_source_ref[orgunit.source_ref] = [orgunit]
+    return orgunits_by_source_ref
+
+
 class Differ:
     def __init__(self, logger):
         self.iaso_logger = logger
@@ -40,8 +60,8 @@ class Differ:
         for group_set in GroupSet.objects.filter(source_version=version):
             fields.append("groupset:" + group_set.source_ref + ":" + group_set.name)
 
-        orgunits_dhis2 = OrgUnit.objects.filter(version=version).all()
-        orgunit_refs = OrgUnit.objects.filter(version=version_ref).all()
+        orgunits_dhis2 = load_pyramid(version)
+        orgunit_refs = load_pyramid(version_ref)
         print(
             "comparing ",
             version_ref,
@@ -57,11 +77,12 @@ class Differ:
         # speed how to index_by(&:source_ref)
         diffs = []
         index = 0
+        orgunits_dhis2_by_ref = index_pyramid(orgunits_dhis2)
         for orgunit_ref in orgunit_refs:
             index = index + 1
-            orgunit_dhis2_with_ref = [
-                x for x in orgunits_dhis2 if x.source_ref == orgunit_ref.source_ref
-            ]
+            orgunit_dhis2_with_ref = orgunits_dhis2_by_ref.get(
+                orgunit_ref.source_ref, []
+            )
             status = "same"
             orgunit_dhis2 = None
 

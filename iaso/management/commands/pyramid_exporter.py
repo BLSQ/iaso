@@ -83,15 +83,16 @@ class Command(BaseCommand):
         _source_ref, version_ref = self.load_version(
             options, "source_name_ref", "version_number_ref"
         )
-        print("================= Diffing =================")
+        iaso_logger.ok("================= Diffing =================")
 
         diffs, fields = Differ(iaso_logger).diff(version_ref, version, options)
         Dumper(iaso_logger).dump(diffs, fields)
         export = options.get("export")
         if export:
-            print("================= Exporting =================")
+            iaso_logger.ok("================= Exporting =================")
             self.export_to_dhis2(self.get_api(options), diffs)
-
+        else:
+            iaso_logger.warn("not exporting, specify --export")
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 

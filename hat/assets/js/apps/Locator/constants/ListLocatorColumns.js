@@ -89,8 +89,8 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Founded AS',
-                id: 'main.label.foundedAS',
+                defaultMessage: 'Found AS',
+                id: 'main.label.foundAS',
             }),
             accessor: 'normalized_as_name',
             sortable: true,

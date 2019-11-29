@@ -18,91 +18,97 @@ class Filters extends React.Component {
                         <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
                     </div>
                     {
-                        filters.provinces &&
-                        <Select
-                            multi={this.props.isMultiSelect}
-                            clearable={this.props.isClearable}
-                            simpleValue
-                            name="provinceId"
-                            value={provinceValue}
-                            placeholder="--"
-                            options={filters.provinces.map(province =>
-                                ({ label: province.name, value: province.id }))}
-                            onChange={value => this.props.selectProvince(value)}
-                        />
+                        filters.provinces
+                        && (
+                            <Select
+                                multi={this.props.isMultiSelect}
+                                clearable={this.props.isClearable}
+                                simpleValue
+                                name="provinceId"
+                                value={provinceValue}
+                                placeholder="--"
+                                options={filters.provinces.map(province => ({ label: province.name, value: province.id }))}
+                                onChange={value => this.props.selectProvince(value)}
+                            />
+                        )
                     }
                 </div>
-                {filters.zones && filters.zones.length !== 0 &&
-                    <div className="locator-filter">
-                        <div className="locator-subtitle">
-                            <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
-                        </div>
-                        <div>
-                            <Select
-                                multi={this.props.isMultiSelect}
-                                clearable={this.props.isClearable}
-                                simpleValue
-                                name="zoneId"
-                                value={filters.zoneId}
-                                placeholder="--"
-                                options={filters.zones.map(zone =>
-                                    ({ label: zone.name, value: zone.id }))}
-                                onChange={value => this.props.selectZone(value)}
-                            />
-                        </div>
-                    </div>
-                }
-                {filters.areas && filters.areas.length !== 0 &&
-                    <div className="locator-filter">
-                        <div className="locator-subtitle">
-                            <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
-                        </div>
-                        <div>
-                            <Select
-                                multi={this.props.isMultiSelect}
-                                clearable={this.props.isClearable}
-                                simpleValue
-                                name="areaId"
-                                value={filters.areaId}
-                                placeholder="--"
-                                options={filters.areas.map(area =>
-                                    ({ label: area.name, value: area.id }))}
-                                onChange={value => this.props.selectArea(value)}
-                            />
-                        </div>
-                    </div>
-                }
-                {
-                    this.props.showVillages &&
-                    filters.villages &&
-                    filters.villages.length !== 0 &&
-                    <div>
+                {filters.zones && filters.zones.length !== 0
+                    && (
                         <div className="locator-filter">
                             <div className="locator-subtitle">
-                                <FormattedMessage id="main.label.village" defaultMessage="Village" />
+                                <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
                             </div>
-                            <Select
-                                multi={this.props.isMultiSelect}
-                                clearable={this.props.isClearable}
-                                simpleValue
-                                name="villageId"
-                                value={filters.villageId}
-                                placeholder="--"
-                                options={filters.villages.map(village =>
-                                    ({ label: village.name, value: village.id }))}
-                                onChange={value => this.props.selectVillage(value)}
-                                noResultsText={<FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />}
-                            />
+                            <div>
+                                <Select
+                                    multi={this.props.isMultiSelect}
+                                    clearable={this.props.isClearable}
+                                    simpleValue
+                                    name="zoneId"
+                                    value={filters.zoneId}
+                                    placeholder="--"
+                                    options={filters.zones.map(zone => ({ label: zone.name, value: zone.id }))}
+                                    onChange={value => this.props.selectZone(value)}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )
                 }
-                {filters.villages && this.props.showVillages &&
-                    filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId &&
-                    <div className="locator-filter">
-                        <div className="locator-subtitle no-result">
-                            <FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />
+                {filters.areas && filters.areas.length !== 0
+                    && (
+                        <div className="locator-filter">
+                            <div className="locator-subtitle">
+                                <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
+                            </div>
+                            <div>
+                                <Select
+                                    multi={this.props.isMultiSelect}
+                                    clearable={this.props.isClearable}
+                                    simpleValue
+                                    name="areaId"
+                                    value={filters.areaId}
+                                    placeholder="--"
+                                    options={filters.areas.map(area => ({ label: area.name, value: area.id }))}
+                                    onChange={value => this.props.selectArea(value)}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )
+                }
+                {
+                    this.props.showVillages
+                    && filters.villages
+                    && filters.villages.length !== 0
+                    && (
+                        <div>
+                            <div className="locator-filter">
+                                <div className="locator-subtitle">
+                                    <FormattedMessage id="main.label.village" defaultMessage="Village" />
+                                </div>
+                                <Select
+                                    multi={this.props.isMultiSelect}
+                                    clearable={this.props.isClearable}
+                                    simpleValue
+                                    name="villageId"
+                                    value={filters.villageId}
+                                    placeholder="--"
+                                    options={filters.villages.map(village => ({ label: village.name, value: village.id }))}
+                                    onChange={value => this.props.selectVillage(value)}
+                                    noResultsText={<FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />}
+                                />
+                            </div>
+                        </div>
+                    )
+                }
+                {filters.villages && this.props.showVillages
+                    && filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId
+                    && (
+                        <div className="locator-filter">
+                            <div className="locator-subtitle no-result">
+                                <FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />
+                            </div>
+                        </div>
+                    )
                 }
             </div>
         );
@@ -113,7 +119,7 @@ Filters.defaultProps = {
     isMultiSelect: false,
     showVillages: true,
     isClearable: false,
-    selectVillage: () => {},
+    selectVillage: () => { },
 };
 
 Filters.propTypes = {

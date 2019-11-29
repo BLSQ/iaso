@@ -329,6 +329,8 @@
     "main.label.duplicate": "Copier",
     "main.label.duplicate_single": "doublon",
     "main.label.duplicates": "Doublons",
+    "main.label.foundAS": "AS trouvée",
+    "main.label.givenAS": "AS introduite",
     "main.label.see": "Voir",
     "main.label.edit": "Editer",
     "main.label.editMap": "Editer la forme",

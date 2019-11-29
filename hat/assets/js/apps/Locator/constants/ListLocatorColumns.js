@@ -50,8 +50,8 @@ const listLocatorColumns = formatMessage => (
                 defaultMessage: 'Province',
                 id: 'main.label.province',
             }),
-            accessor: 'province',
-            sortable: false,
+            accessor: 'normalized_province_name',
+            sortable: true,
             Cell: settings => (
                 <span>
                     {
@@ -62,8 +62,8 @@ const listLocatorColumns = formatMessage => (
         },
         {
             Header: 'ZS',
-            accessor: 'ZS',
-            sortable: false,
+            accessor: 'normalized_zs_name',
+            sortable: true,
             Cell: settings => (
                 <span>
                     {
@@ -78,7 +78,7 @@ const listLocatorColumns = formatMessage => (
                 id: 'main.label.givenAS',
             }),
             accessor: 'AS',
-            sortable: false,
+            sortable: true,
             Cell: settings => (
                 <span>
                     {
@@ -92,8 +92,8 @@ const listLocatorColumns = formatMessage => (
                 defaultMessage: 'Founded AS',
                 id: 'main.label.foundedAS',
             }),
-            accessor: 'normalized_AS_name',
-            sortable: false,
+            accessor: 'normalized_as_name',
+            sortable: true,
             Cell: settings => (
                 <span
                     className={!settings.original.location.normalized || !settings.original.location.normalized.as ? 'bullet' : ''}

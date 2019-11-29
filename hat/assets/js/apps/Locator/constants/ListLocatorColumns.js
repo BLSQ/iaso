@@ -73,7 +73,10 @@ const listLocatorColumns = formatMessage => (
             ),
         },
         {
-            Header: 'AS',
+            Header: formatMessage({
+                defaultMessage: 'Given AS',
+                id: 'main.label.givenAS',
+            }),
             accessor: 'AS',
             sortable: false,
             Cell: settings => (
@@ -85,7 +88,10 @@ const listLocatorColumns = formatMessage => (
             ),
         },
         {
-            Header: 'AS match',
+            Header: formatMessage({
+                defaultMessage: 'Founded AS',
+                id: 'main.label.foundedAS',
+            }),
             accessor: 'normalized_AS_name',
             sortable: false,
             Cell: settings => (

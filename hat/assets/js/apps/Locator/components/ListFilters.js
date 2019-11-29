@@ -69,17 +69,16 @@ class ListFilters extends React.Component {
                     <Search
                         placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
                         allowEmptySearch
-                        onSearch={value =>
-                            this.props.redirect({
-                                ...this.props.params, search: value,
-                            })}
+                        onSearch={value => this.props.redirect({
+                            ...this.props.params, search: value,
+                        })}
                         resetSearch={() => this.props.resetSearch()}
                         displayResults={false}
                         searchString={this.props.params.search}
                     />
                     <span className="map__text--select align-right">
                         <CheckBox
-                            isChecked={this.props.params.normalized === 'true' || !this.props.params.normalized ? 'checked' : ''}
+                            isChecked={!!(this.props.params.normalized === 'true' || !this.props.params.normalized)}
                             keyValue="with normalized as"
                             labelObj={{
                                 id: 'locator.list.normalized',
@@ -90,7 +89,7 @@ class ListFilters extends React.Component {
                     </span>
                     <span className="map__text--select align-right">
                         <CheckBox
-                            isChecked={this.props.params.normalized === 'false' || !this.props.params.normalized ? 'checked' : ''}
+                            isChecked={!!(this.props.params.normalized === 'false' || !this.props.params.normalized)}
                             labelObj={{
                                 id: 'locator.list.notnormalized',
                                 defaultMessage: 'Area not found',
@@ -115,12 +114,10 @@ class ListFilters extends React.Component {
                             name="teams"
                             value={teams || ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
-                            options={this.props.filters.teams.map(team =>
-                                ({ label: team.name, value: team.id }))}
-                            onChange={newTeamsId =>
-                                this.props.redirect({
-                                    ...this.props.params, teams: newTeamsId,
-                                })}
+                            options={this.props.filters.teams.map(team => ({ label: team.name, value: team.id }))}
+                            onChange={newTeamsId => this.props.redirect({
+                                ...this.props.params, teams: newTeamsId,
+                            })}
                         />
                     </div>
                     <div className="filter-item">
@@ -138,8 +135,7 @@ class ListFilters extends React.Component {
                             name="years"
                             value={years || ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
-                            options={possibleYears.map(year =>
-                                ({ label: year, value: year }))}
+                            options={possibleYears.map(year => ({ label: year, value: year }))}
                             onChange={(yearsList) => {
                                 this.props.redirect({
                                     ...this.props.params, years: yearsList,

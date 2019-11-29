@@ -188,36 +188,42 @@ export class Locator extends Component {
                                                 <div>
                                                     {
                                                         this.state.villageDetail.population
-                                                        && <p>
-                                                            <FormattedMessage
-                                                                id="microplanning.selected.population"
-                                                                defaultMessage="Population estimée"
-                                                            />
-                                                            {': '}
-                                                            {this.state.villageDetail.population}
-                                                        </p>
+                                                        && (
+                                                            <p>
+                                                                <FormattedMessage
+                                                                    id="microplanning.selected.population"
+                                                                    defaultMessage="Population estimée"
+                                                                />
+                                                                {': '}
+                                                                {this.state.villageDetail.population}
+                                                            </p>
+                                                        )
                                                     }
                                                     {
                                                         this.state.villageDetail.population_source
-                                                        && <p>
-                                                            <FormattedMessage
-                                                                id="microplanning.tooltip.population.source"
-                                                                defaultMessage="Population source"
-                                                            />
-                                                            {': '}
-                                                            {this.state.villageDetail.population_source}
-                                                        </p>
+                                                        && (
+                                                            <p>
+                                                                <FormattedMessage
+                                                                    id="microplanning.tooltip.population.source"
+                                                                    defaultMessage="Population source"
+                                                                />
+                                                                {': '}
+                                                                {this.state.villageDetail.population_source}
+                                                            </p>
+                                                        )
                                                     }
                                                     {
                                                         this.state.villageDetail.population_year
-                                                        && <p>
-                                                            <FormattedMessage
-                                                                id="microplanning.tooltip.population.year"
-                                                                defaultMessage="Year surveyed population"
-                                                            />
-                                                            {': '}
-                                                            {this.state.villageDetail.population_year}
-                                                        </p>
+                                                        && (
+                                                            <p>
+                                                                <FormattedMessage
+                                                                    id="microplanning.tooltip.population.year"
+                                                                    defaultMessage="Year surveyed population"
+                                                                />
+                                                                {': '}
+                                                                {this.state.villageDetail.population_year}
+                                                            </p>
+                                                        )
                                                     }
                                                     <button
                                                         className="button--save"

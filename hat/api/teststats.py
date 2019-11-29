@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.core.cache import cache
 from django.db.models import Count, Min, Max, TextField, F
@@ -9,6 +9,8 @@ from pg_utils import DistinctSum
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+
+from hat.cases.forms import DATE_FORMAT
 from hat.common.utils import get_request_as_array
 
 from hat.cases.models import (
@@ -188,7 +190,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(date__gte=from_date)
 
             if to_date is not None:
-                queryset = queryset.filter(date__lte=to_date)
+                queryset = queryset.filter(date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
 
             if device_id:
                 queryset = queryset.filter(form__device_id=device_id)

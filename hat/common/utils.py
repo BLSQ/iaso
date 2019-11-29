@@ -151,8 +151,8 @@ def slack_notify(plain_text=None, icon="information_source", channel=None, attac
                              "short": "false"  # Will show the field next to another one if there is enough space
                          }
                      ],
-                     "text": "Notification text"
-                     "pretext": "Shown before the attachments section"
+                     "text": "Notification text",
+                     "pretext": "Shown before the attachments section",
                  }
              ]
     :return: Nothing

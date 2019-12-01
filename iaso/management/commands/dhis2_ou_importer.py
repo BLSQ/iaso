@@ -103,6 +103,12 @@ class Command(BaseCommand):
             help="Force the deletion of the pyramid snapshot prior importing",
         )
 
+        parser.add_argument(
+            "--validate",
+            action="store_true",
+            help="Mark all the newly imported units as validated",
+        )
+
     @staticmethod
     def get_group(dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
@@ -113,7 +119,6 @@ class Command(BaseCommand):
             )
             print("group, created", group, created)
             group_dict[name] = group
-
         return group
 
     @staticmethod
@@ -296,6 +301,7 @@ class Command(BaseCommand):
         source_name = options["source_name"]
         version_number = options.get("version_number")
         force = options.get("force")
+        validate = options.get("validate")
 
         source, _created = DataSource.objects.get_or_create(name=source_name)
 
@@ -323,7 +329,9 @@ class Command(BaseCommand):
 
         type_dict = self.parse_type_dict(org_unit_type_file_name)
 
-        unknown_unit_type, _created = OrgUnitType.objects.get_or_create(name="Inconnu")
+        unknown_unit_type, _created = OrgUnitType.objects.get_or_create(
+            name="%s-%s" % (source_name, "Unknown")
+        )
         group_dict = {}
 
         index = 0
@@ -336,7 +344,7 @@ class Command(BaseCommand):
                 org_unit.sub_source = source_name
                 org_unit.version = version
                 org_unit.source_ref = row["id"].strip()
-                org_unit.validated = False
+                org_unit.validated = validate
 
                 self.map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
                 self.map_parent(row, org_unit, unit_dict)

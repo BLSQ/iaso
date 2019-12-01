@@ -258,7 +258,7 @@ Restart the ``hat`` container to load the new SQL queries:
     docker-compose restart hat
 
 
-If everything fails… **be drastic!**
+If everything fails� **be drastic!**
 
 .. code:: shell
 
@@ -283,7 +283,7 @@ If everything fails… **be drastic!**
 
 Code formatting
 ===============
-We have adopted Black `https://github.com/psf/black`__ as our code formatting tool.
+We have adopted Black `<https://github.com/psf/black>`__ as our code formatting tool.
 
 The easiest way to use is is to set it up as a pre-commit hook:
 

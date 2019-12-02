@@ -68,7 +68,12 @@ class Dumper:
         display = []
         header = ["dhis2Id", "name", "ou status"]
         fields = list(
-            filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields)
+            set(
+                list(
+                    filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields)
+                )
+                + list(filter(lambda f: "new" in stats["orgUnitsByField"][f], fields))
+            )
         )
         for field in fields:
             if field.startswith("groupset:"):

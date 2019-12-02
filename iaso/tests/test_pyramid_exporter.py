@@ -113,12 +113,41 @@ class CommandTests(TestCase):
         def request_callback(request):
             payload = json.loads(request.body)
             posted_request.append(payload)
+
             return (200, {}, json.dumps({}))
 
         responses.add_callback(
             responses.POST,
             "https://play.dhis2.org/2.30/api/organisationUnits",
             callback=request_callback,
+            content_type="application/json",
+        )
+
+        gets_request = []
+
+        def mock_orgunit_page(request):
+            gets_request.append(1)
+            fixture_name = "orgunits"
+            if len(gets_request) > 1:
+                fixture_name = "orgunits_page" + str(len(gets_request))
+            print(len(gets_request) > 1)
+            return (200, {}, json.dumps(self.fixture_json(fixture_name)))
+
+        responses.add_callback(
+            responses.GET,
+            "https://play.dhis2.org/2.30/api/organisationUnits",
+            callback=mock_orgunit_page,
+            content_type="application/json",
+        )
+
+        def request_callback_update(request):
+            print(json.loads(request.body))
+            return (200, {}, json.dumps({}))
+
+        responses.add_callback(
+            responses.POST,
+            "https://play.dhis2.org/2.30/api/metadata",
+            callback=request_callback_update,
             content_type="application/json",
         )
 

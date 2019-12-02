@@ -41,30 +41,35 @@ class PatientTestComponent extends React.Component {
                         <tr>
                             <th colSpan="2">
                                 {
-                                    test.type && (test.type === 'CATT' || test.type === 'RDT') &&
-                                    <strong><FormattedMessage id="main.label.screening_result" defaultMessage="Dépistage" /></strong>
+                                    test.type && (test.type === 'CATT' || test.type === 'RDT')
+                                    && <strong><FormattedMessage id="main.label.screening_result" defaultMessage="Dépistage" /></strong>
                                 }
                                 {
-                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL') &&
-                                    <strong><FormattedMessage id="main.label.confirmation_result" defaultMessage="Confirmation" /></strong>
+                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL')
+                                    && <strong><FormattedMessage id="main.label.confirmation_result" defaultMessage="Confirmation" /></strong>
                                 }
                                 {
-                                    test.type && test.type === 'PL' &&
-                                    <strong><FormattedMessage id="main.label.stageTest" defaultMessage="Stage" /></strong>
+                                    test.type && test.type === 'PL'
+                                    && <strong><FormattedMessage id="main.label.stageTest" defaultMessage="Stage" /></strong>
                                 }
                                 {
-                                    test.hidden &&
-                                    <strong> <FormattedMessage id="main.label.duplicate_single" defaultMessage="duplicate" /></strong>
+                                    test.hidden
+                                    && (
+                                        <strong>
+                                            {' '}
+                                            <FormattedMessage id="main.label.duplicate_single" defaultMessage="duplicate" />
+                                        </strong>
+                                    )
                                 }
                                 {
-                                    test.hidden &&
-                                    this.state.open &&
-                                    <i className="fa fa-chevron-down chevron" />
+                                    test.hidden
+                                    && this.state.open
+                                    && <i className="fa fa-chevron-down chevron" />
                                 }
                                 {
-                                    test.hidden &&
-                                    !this.state.open &&
-                                    <i className="fa fa-chevron-right chevron" />
+                                    test.hidden
+                                    && !this.state.open
+                                    && <i className="fa fa-chevron-right chevron" />
                                 }
                             </th>
                         </tr>
@@ -105,12 +110,12 @@ class PatientTestComponent extends React.Component {
                         <tr>
                             <th>
                                 {
-                                    test.type && test.type === 'PL' &&
-                                    <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
+                                    test.type && test.type === 'PL'
+                                    && <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
                                 }
                                 {
-                                    test.type && test.type !== 'PL' &&
-                                    <FormattedMessage id="main.label.result" defaultMessage="Result" />
+                                    test.type && test.type !== 'PL'
+                                    && <FormattedMessage id="main.label.result" defaultMessage="Result" />
                                 }
                             </th>
                             <td className={`${similarTest && (similarTest.result !== test.result) ? 'error' : ''}`}>
@@ -119,174 +124,198 @@ class PatientTestComponent extends React.Component {
                         </tr>
 
                         {
-                            test.type && (test.type === 'CATT' || test.type === 'RDT') &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="main.label.photo" defaultMessage="Photo" />
-                                </th>
-                                <td className={`${(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''} ${test.image ? 'align-center' : ''}`}>
-                                    {
-                                        !test.image_filename && !test.image &&
-                                        <span>
-                                            <i className="fa fa-camera small-padding-right" />
-                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.image_filename && !test.image &&
-                                        <span>
-                                            <i className="fa fa-upload small-padding-right" />
-                                            <FormattedMessage id="main.label.notUploadedFem" defaultMessage="Non transmise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.image &&
-                                        <ImgModal
-                                            imgPath={test.image}
-                                            altText={formatMessage({
-                                                defaultMessage: 'Screening result',
-                                                id: 'main.label.screening_result_long',
-                                            })}
-                                        />
-                                    }
-                                </td>
-                            </tr>
+                            test.type && (test.type === 'CATT' || test.type === 'RDT')
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.photo" defaultMessage="Photo" />
+                                    </th>
+                                    <td className={`${(test.image_filename && !test.image) || (!test.image_filename && !test.image) ? 'error-text' : ''} ${test.image ? 'align-center' : ''}`}>
+                                        {
+                                            !test.image_filename && !test.image
+                                            && (
+                                                <span>
+                                                    <i className="fa fa-camera small-padding-right" />
+                                                    <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
+                                                </span>
+                                            )
+                                        }
+                                        {
+                                            test.image_filename && !test.image
+                                            && (
+                                                <span>
+                                                    <i className="fa fa-upload small-padding-right" />
+                                                    <FormattedMessage id="main.label.notUploadedFem" defaultMessage="Non transmise" />
+                                                </span>
+                                            )
+                                        }
+                                        {
+                                            test.image
+                                            && (
+                                                <ImgModal
+                                                    imgPath={test.image}
+                                                    altText={formatMessage({
+                                                        defaultMessage: 'Screening result',
+                                                        id: 'main.label.screening_result_long',
+                                                    })}
+                                                />
+                                            )
+                                        }
+                                    </td>
+                                </tr>
+                            )
                         }
                         {
-                            test.image && test.type === 'CATT' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Photo index" />
-                                </th>
-                                <td className={!test.index ? 'error-text' : ''}>
-                                    {test.index ? test.index : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />}
-                                </td>
-                            </tr>
+                            test.image && test.type === 'CATT'
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Photo index" />
+                                    </th>
+                                    <td className={!test.index ? 'error-text' : ''}>
+                                        {test.index ? test.index : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />}
+                                    </td>
+                                </tr>
+                            )
                         }
                         {
-                            test.type === 'CATT' &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="patientsCasesTests.cattSessiontype" defaultMessage="Session type" />
-                                </th>
-                                <td className={!currentCase.test_catt_session_type ? 'error-text' : ''}>
-                                    {
-                                        currentCase.test_catt_session_type &&
-                                        <span>
+                            test.type === 'CATT'
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="patientsCasesTests.cattSessiontype" defaultMessage="Session type" />
+                                    </th>
+                                    <td className={!currentCase.test_catt_session_type ? 'error-text' : ''}>
+                                        {
+                                            currentCase.test_catt_session_type
+                                            && (
+                                                <span>
+                                                    {
+                                                        currentCase.test_catt_session_type === 'doorToDoor'
+                                                        && <FormattedMessage id="patientsCasesTests.cattSessiontype.doorToDoor" defaultMessage="Door to door" />
+                                                    }
+                                                    {
+                                                        (currentCase.test_catt_session_type === 'onTheSpot' || currentCase.test_catt_session_type === 'onSite')
+                                                        && <FormattedMessage id="patientsCasesTests.cattSessiontype.onSite" defaultMessage="On site" />
+                                                    }
+                                                </span>
+                                            )
+                                        }
+                                        {
+                                            !currentCase.test_catt_session_type
+                                            && <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
+                                        }
+                                    </td>
+                                </tr>
+                            )
+                        }
+                        {
+                            test.type === 'PL'
+                            && (
+                                <Fragment>
+                                    <tr>
+                                        <th>
+                                            <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="White blood cells/mm&sup3;" />
+                                        </th>
+                                        <td>
                                             {
-                                                currentCase.test_catt_session_type === 'doorToDoor' &&
-                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.doorToDoor" defaultMessage="Door to door" />
+                                                currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumin" />
+                                        </th>
+                                        <td>
+                                            {
+                                                currentCase.test_pl_albumine ? currentCase.test_pl_albumine : '--'
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
+                                        </th>
+                                        <td>
+                                            {
+                                                currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
+                                        </th>
+                                        <td>
+                                            {
+                                                currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
+                                            }
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            <FormattedHTMLMessage id="main.label.stage" defaultMessage="Stade" />
+                                        </th>
+                                        <td>
+                                            {
+                                                currentCase.test_pl_result === 'stage1' ? '1' : ''
                                             }
                                             {
-                                                (currentCase.test_catt_session_type === 'onTheSpot' || currentCase.test_catt_session_type === 'onSite') &&
-                                                <FormattedMessage id="patientsCasesTests.cattSessiontype.onSite" defaultMessage="On site" />
+                                                currentCase.test_pl_result === 'stage2' ? '2' : ''
                                             }
-                                        </span>
-                                    }
-                                    {
-                                        !currentCase.test_catt_session_type &&
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
-                                    }
-                                </td>
-                            </tr>
-                        }
-                        {
-                            test.type === 'PL' &&
-                            <Fragment>
-                                <tr>
-                                    <th>
-                                        <FormattedHTMLMessage id="patientsCasesTests.test_pl_gb_mm3" defaultMessage="White blood cells/mm&sup3;" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_gb_mm3 ? currentCase.test_pl_gb_mm3 : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_albumine" defaultMessage="Albumin" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_albumine ? currentCase.test_pl_albumine : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCasesTests.test_pl_lcr" defaultMessage="LCR" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_lcr ? currentCase.test_pl_lcr : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_comments ? currentCase.test_pl_comments : '--'
-                                        }
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th>
-                                        <FormattedHTMLMessage id="main.label.stage" defaultMessage="Stade" />
-                                    </th>
-                                    <td>
-                                        {
-                                            currentCase.test_pl_result === 'stage1' ? '1' : ''
-                                        }
-                                        {
-                                            currentCase.test_pl_result === 'stage2' ? '2' : ''
-                                        }
-                                        {
-                                            !currentCase.test_pl_result ? '--' : ''
-                                        }
-                                        {
-                                            currentCase.test_pl_result === 'unknown' ?
-                                                <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
-                                        }
-                                    </td>
-                                </tr>
-                            </Fragment>
-                        }
-                        {
-                            test.type && (test.type !== 'CATT' && test.type !== 'RDT') &&
-                            <tr>
-                                <th>
-                                    <FormattedMessage id="main.label.video" defaultMessage="Video" />
-                                </th>
-                                <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
-                                    {
-                                        !test.video_filename && !test.video &&
-                                        <span>
-                                            <i className="fa fa-video-camera small-padding-right" />
-                                            <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.video_filename && !test.video &&
-                                        <span>
-                                            <i className="fa fa-upload small-padding-right" />
-                                            <FormattedMessage id="main.label..notUploadedFem" defaultMessage="Non transmise" />
-                                        </span>
-                                    }
-                                    {
-                                        test.video &&
-                                        <VideoComponent videoItem={
                                             {
-                                                video: test.video,
+                                                !currentCase.test_pl_result ? '--' : ''
                                             }
+                                            {
+                                                currentCase.test_pl_result === 'unknown'
+                                                    ? <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
+                                            }
+                                        </td>
+                                    </tr>
+                                </Fragment>
+                            )
+                        }
+                        {
+                            test.type && (test.type !== 'CATT' && test.type !== 'RDT')
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.video" defaultMessage="Video" />
+                                    </th>
+                                    <td className={(test.video_filename && !test.video) || (!test.video_filename && !test.video) ? 'error-text' : ''}>
+                                        {
+                                            !test.video_filename && !test.video
+                                            && (
+                                                <span>
+                                                    <i className="fa fa-video-camera small-padding-right" />
+                                                    <FormattedMessage id="main.label.notDoneFem" defaultMessage="Non prise" />
+                                                </span>
+                                            )
                                         }
-                                        />
-                                    }
-                                </td>
-                            </tr>
+                                        {
+                                            test.video_filename && !test.video
+                                            && (
+                                                <span>
+                                                    <i className="fa fa-upload small-padding-right" />
+                                                    <FormattedMessage id="main.label..notUploadedFem" defaultMessage="Non transmise" />
+                                                </span>
+                                            )
+                                        }
+                                        {
+                                            test.video
+                                            && (
+                                                <VideoComponent videoItem={
+                                                    {
+                                                        video: test.video,
+                                                    }
+                                                }
+                                                />
+                                            )
+                                        }
+                                    </td>
+                                </tr>
+                            )
                         }
                         <tr>
                             <th>
@@ -294,9 +323,9 @@ class PatientTestComponent extends React.Component {
                             </th>
                             <td className={!test.latitude ? 'error-text' : ''}>
                                 {
-                                    test.latitude ?
-                                        test.latitude :
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
+                                    test.latitude
+                                        ? test.latitude
+                                        : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
                                 }
                             </td>
                         </tr>
@@ -306,9 +335,9 @@ class PatientTestComponent extends React.Component {
                             </th>
                             <td className={!test.longitude ? 'error-text' : ''}>
                                 {
-                                    test.longitude ?
-                                        test.longitude :
-                                        <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
+                                    test.longitude
+                                        ? test.longitude
+                                        : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
                                 }
                             </td>
                         </tr>

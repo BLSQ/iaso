@@ -93,10 +93,13 @@ class Differ:
 
             if index % 100 == 0:
                 print(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
+
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, fields)
-            some_modified = any(filter(lambda comp: comp.status != "same", comparisons))
-            if status != "new" and some_modified:
+            all_same = all(map(lambda comp: comp.status == "same", comparisons))
+            if status != "new" and not all_same:
                 status = "modified"
+            elif status != "new" and all_same:
+                status = "same"
 
             diff = Diff(
                 org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref,
@@ -108,22 +111,28 @@ class Differ:
         return (diffs, fields)
 
     def compare_fields(self, orgunit_dhis2, orgunit_ref, fields):
-        #
-
         comparisons = []
 
         for field in fields:
             dhis2_value = self.access_field(orgunit_dhis2, field)
             ref_value = self.access_field(orgunit_ref, field)
 
-            same = self.is_same(dhis2_value, ref_value)
+            status = None
+            same = self.is_same(field, dhis2_value, ref_value)
+            if same:
+                status = "same"
+            else:
+                status = "modified"
+
+            if dhis2_value is None and ref_value is not None:
+                status = "new"
 
             comparisons.append(
                 Comparison(
                     before=dhis2_value,
                     after=ref_value,
                     field=field,
-                    status="same" if same else "modified",
+                    status=status,
                     distance=0
                     if same
                     else self.distance_field(dhis2_value, ref_value, field, same),
@@ -139,7 +148,12 @@ class Differ:
             return dhis2_value.distance(ref_value) * 100  # approx km ?
         return None
 
-    def is_same(self, value, other_value):
+    def is_same(self, field, value, other_value):
+        if field.startswith("groupset:"):
+            val = sorted(map(lambda g: g["id"], value or []))
+            other_val = sorted(map(lambda g: g["id"], other_value or []))
+            return val == other_val
+
         return value == other_value
 
     def access_field(self, org_unit, field):

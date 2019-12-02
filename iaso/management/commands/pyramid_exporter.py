@@ -17,7 +17,7 @@ from iaso.models import (
     GroupSet,
     generate_id_for_dhis_2,
 )
-from iaso.diffing import Differ, Dumper
+from iaso.diffing import Differ, Dumper, Exporter
 
 
 class Command(BaseCommand):
@@ -90,73 +90,11 @@ class Command(BaseCommand):
         export = options.get("export")
         if export:
             iaso_logger.ok("================= Exporting =================")
-            self.export_to_dhis2(self.get_api(options), diffs)
+            Exporter(self.iaso_logger).export_to_dhis2(self.get_api(options), diffs)
         else:
             iaso_logger.warn("not exporting, specify --export")
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
-
-    def export_to_dhis2(self, api, diffs):
-
-        to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
-
-        # ideally should run on diff
-        # assign source_ref for orgunits to avoid double creation
-        for to_create in to_create_diffs:
-            if to_create.org_unit.source_ref is None:
-                to_create.org_unit.source_ref = generate_id_for_dhis_2()
-                to_create.org_unit.save()
-
-        for to_create in to_create_diffs:
-            to_create.org_unit.refresh_from_db()
-
-        def by_path(ou):
-            path = ou.path()
-            return path if path else "z/Z/z/z/z/z/Z/"
-
-        # make sure we create new parent first
-        to_create_diffs = sorted(to_create_diffs, key=lambda d: by_path(d.org_unit))
-
-        # build the payloads
-        for to_create in to_create_diffs:
-            name_comparison = to_create.comparison("name")
-
-            print("----", name_comparison.after, to_create.org_unit.path())
-            #       contactPerson, imgUrl,
-            # email: components[1],
-            payload = {
-                "id": to_create.org_unit.source_ref,
-                "name": name_comparison.after,
-                "shortName": name_comparison.after,
-                "openingDate": "1960-08-03T00:00:00.000",
-            }
-
-            if to_create.org_unit.parent:
-                payload["parent"] = {"id": to_create.org_unit.parent.source_ref}
-
-            geometry_comparison = to_create.comparison("geometry")
-            if geometry_comparison.after:
-                point_or_shape = GEOSGeometry(geometry_comparison.after)
-                geometry = json.loads(point_or_shape.geojson)
-                # if dhis2 >= 2.32
-                payload["geometry"] = geometry
-                # if dhis2 < 2.32
-                payload["coordinates"] = geometry["coordinates"]
-                payload["featureType"] = self.to_dhis2_feature_type(geometry["type"])
-
-            print("will post ", payload)
-            api.post("organisationUnits", payload)
-
-    def to_dhis2_feature_type(self, type):
-        # TODO better way : to snake case upper case ?
-        if type == "Point":
-            return "POINT"
-
-        if type == "Polygon":
-            return "POLYGON"
-
-        if type == "MultiPolygon":
-            return "MULTI_POLYGON"
 
     def load_version(self, options, source_name, version_number):
         source_name = options[source_name]

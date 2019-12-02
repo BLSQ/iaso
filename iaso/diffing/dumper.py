@@ -40,8 +40,6 @@ class Dumper:
             else:
                 stats_ou[diff.status] += 1
 
-        print("Orgunits status", stats_ou)
-
         stats_comparison_by_field = {}
 
         for diff in diffs:

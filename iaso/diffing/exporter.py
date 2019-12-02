@@ -95,8 +95,16 @@ class Exporter:
             return "MULTI_POLYGON"
 
     def update_orgunits(self, api, diffs):
-        to_update_diffs = list(filter(lambda x: x.status == "modified", diffs))
-        to_update_diffs = self.sort_by_path(diffs)
+        support_by_update_fields = ("name", "parent", "geometry")
+        to_update_diffs = list(
+            filter(
+                lambda x: x.status == "modified"
+                and x.are_fields_modified(support_by_update_fields),
+                diffs,
+            )
+        )
+        print("to_update_diffs", len(to_update_diffs))
+        to_update_diffs = self.sort_by_path(to_update_diffs)
         self.iaso_logger.info("modified", len(to_update_diffs))
 
         slices = all_slices(to_update_diffs, 5)
@@ -129,9 +137,9 @@ class Exporter:
                         "groupset:"
                     ):
                         self.apply_comparison(dhis2_payload, comparison)
-            self.iaso_logger.info(" will post slice", dhis2_payloads)
+            # self.iaso_logger.info(" will post slice", dhis2_payloads)
             resp = api.post("metadata", {"organisationUnits": dhis2_payloads})
-            self.iaso_logger.info(resp)
+            self.iaso_logger.info(resp, resp.json())
 
     def apply_comparison(self, payload, comparison):
         if comparison.field == "name":

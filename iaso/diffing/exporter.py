@@ -137,7 +137,7 @@ class Exporter:
                         "groupset:"
                     ):
                         self.apply_comparison(dhis2_payload, comparison)
-            # self.iaso_logger.info(" will post slice", dhis2_payloads)
+            self.iaso_logger.info(" will post slice", dhis2_payloads)
             resp = api.post("metadata", {"organisationUnits": dhis2_payloads})
             self.iaso_logger.info(resp, resp.json())
 
@@ -148,10 +148,9 @@ class Exporter:
         if comparison.field == "geometry":
             point_or_shape = GEOSGeometry(comparison.after)
             geometry = json.loads(point_or_shape.geojson)
-            if "geometry" in payload:
-                payload["geometry"] = geometry
-            else:
-                payload["coordinates"] = geometry["coordinates"]
-                payload["featureType"] = self.to_dhis2_feature_type(geometry["type"])
+            payload["geometry"] = geometry
+
+            payload["coordinates"] = geometry["coordinates"]
+            payload["featureType"] = self.to_dhis2_feature_type(geometry["type"])
             return
         raise Exception("unsupported field", comparison.field)

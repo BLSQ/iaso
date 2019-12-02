@@ -18,7 +18,7 @@ class DataSourceViewSet(viewsets.ViewSet):
         sources = DataSource.objects.all()
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
-            sources = sources.filter(projects__account=profile.account)
+            sources = sources.filter(projects__account=profile.account).distinct()
         return Response(
             {"sources": [source.as_dict() for source in sources.order_by("name")]}
         )

@@ -27,7 +27,7 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
 
         if app_id:
             queryset = queryset.filter(projects__app_id=app_id)
-        queryset = queryset.order_by("depth")
+        queryset = queryset.order_by("depth").distinct()
 
         return Response(
             {"orgUnitTypes": [unit.as_dict(app_id=app_id) for unit in queryset]}

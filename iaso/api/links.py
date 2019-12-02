@@ -102,7 +102,7 @@ class LinkViewSet(viewsets.ViewSet):
                 Q(destination__org_unit_type_id__in=org_unit_type_id.split(","))
                 | Q(source__org_unit_type_id__in=org_unit_type_id.split(","))
             )
-
+        queryset = queryset.distinct()
         if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)

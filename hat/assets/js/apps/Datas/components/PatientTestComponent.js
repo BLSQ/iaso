@@ -27,6 +27,8 @@ class PatientTestComponent extends React.Component {
             intl: {
                 formatMessage,
             },
+            displayEdit,
+            toggleModal,
         } = this.props;
         if (!test) {
             return null;
@@ -70,6 +72,20 @@ class PatientTestComponent extends React.Component {
                                     test.hidden
                                     && !this.state.open
                                     && <i className="fa fa-chevron-right chevron" />
+                                }
+
+                                {
+                                    displayEdit
+                                    && (
+                                        <span
+                                            tabIndex={0}
+                                            role="button"
+                                            className="edit-button"
+                                            onClick={() => toggleModal(test)}
+                                        >
+                                            <i className="fa fa-edit" />
+                                        </span>
+                                    )
                                 }
                             </th>
                         </tr>
@@ -353,6 +369,8 @@ PatientTestComponent.defaultProps = {
     similarTest: undefined,
     test: undefined,
     currentCase: undefined,
+    displayEdit: false,
+    toggleModal: () => null,
 };
 
 
@@ -362,6 +380,8 @@ PatientTestComponent.propTypes = {
     similarTest: PropTypes.object,
     currentCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
+    displayEdit: PropTypes.bool,
+    toggleModal: PropTypes.func,
 };
 
 const PatientTestComponentWithIntl = injectIntl(PatientTestComponent);

@@ -3,6 +3,8 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { IconButton, Tooltip } from '@material-ui/core';
+import Add from '@material-ui/icons/AddCircle';
 
 import PatientInfos from './PatientInfos';
 import EditPatientInfos from './EditPatientInfos';
@@ -12,6 +14,8 @@ import PatientCasesTests from './PatientCasesTests';
 import TreatmentComponent from './TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
+import TestModal from './TestModalComponent';
+
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
@@ -54,6 +58,8 @@ class PatientDetailsWrapper extends React.Component {
             currentTab: 'infos',
             canEditPatientInfos: false,
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
+            showTestModale: false,
+            editedTest: null,
         };
     }
 
@@ -137,6 +143,13 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
+    toggleTestModal(editedTest) {
+        this.setState({
+            showTestModale: !this.state.showTestModale,
+            editedTest,
+        });
+    }
+
     render() {
         const {
             patient,
@@ -162,6 +175,8 @@ class PatientDetailsWrapper extends React.Component {
             canEditPatientInfos,
             baseUrl,
             editEnabled,
+            showTestModale,
+            editedTest,
         } = this.state;
         return (
             <section>
@@ -240,6 +255,28 @@ class PatientDetailsWrapper extends React.Component {
                                                     id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                     className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                 >
+                                                    <Tooltip
+                                                        title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
+                                                    >
+                                                        <IconButton
+                                                            className="add-test-button"
+                                                            onClick={() => this.toggleTestModal()}
+                                                        >
+                                                            <Add color="primary" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    {
+                                                        showTestModale
+                                                        && (
+                                                            <TestModal
+                                                                testsMapping={testsMapping}
+                                                                showModale={showTestModale}
+                                                                toggleModal={() => this.toggleTestModal()}
+                                                                caseItem={c}
+                                                                currentTest={editedTest}
+                                                            />
+                                                        )
+                                                    }
                                                     <div className="case-id">
                                                         <span>Hat ID</span>
                                                         :
@@ -262,6 +299,7 @@ class PatientDetailsWrapper extends React.Component {
                                                             tests={c.tests}
                                                             testsMapping={testsMapping}
                                                             currentCase={c}
+                                                            toggleModal={test => this.toggleTestModal(test)}
                                                         />
                                                     </div>
                                                 </li>

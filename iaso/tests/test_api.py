@@ -193,8 +193,13 @@ class BasicAPITestCase(TestCase):
         org_unit_types = json_response["orgUnitTypes"]
         self.assertEqual(len(org_unit_types), 2)
 
-        org_unit_type = org_unit_types[0]
+        found = False
+        for org_unit_type in org_unit_types:
+            if org_unit_type["name"] == "Hospital":
+                self.assertTrue(
+                    org_unit_type["created_at"] < org_unit_type["updated_at"]
+                )
+                self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)
+                found = True
 
-        self.assertEqual(org_unit_type["name"], "Hospital")
-        self.assertTrue(org_unit_type["created_at"] < org_unit_type["updated_at"])
-        self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)
+        self.assertTrue(found)

@@ -90,7 +90,9 @@ class Command(BaseCommand):
         export = options.get("export")
         if export:
             iaso_logger.ok("================= Exporting =================")
-            Exporter(self.iaso_logger).export_to_dhis2(self.get_api(options), diffs)
+            Exporter(self.iaso_logger).export_to_dhis2(
+                self.get_api(options), diffs, fields
+            )
         else:
             iaso_logger.warn("not exporting, specify --export")
         end = time.time()

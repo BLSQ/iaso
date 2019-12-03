@@ -1,7 +1,9 @@
 import json
 
-from iaso.models import generate_id_for_dhis_2
 from django.contrib.gis.geos import GEOSGeometry
+
+from iaso.models import generate_id_for_dhis_2
+from .comparisons import as_field_types
 
 
 def all_slices(iterables, size: int):
@@ -51,13 +53,13 @@ class Exporter:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def export_to_dhis2(self, api, diffs):
+    def export_to_dhis2(self, api, diffs, fields):
         self.iaso_logger.ok("   ------ New org units----")
         self.create_missings(api, diffs)
         self.iaso_logger.ok("   ------ Modified org units----")
         self.update_orgunits(api, diffs)
         self.iaso_logger.ok("   ------ Modified groups----")
-        self.update_orgunits(api, diffs)
+        self.update_groups(api, diffs, fields)
 
     def create_missings(self, api, diffs):
         to_create_diffs = list(filter(lambda x: x.status == "new", diffs))
@@ -159,3 +161,55 @@ class Exporter:
     def fill_parent_id(self, comparison, payload):
         if comparison.after:
             payload["parent"] = {"id": comparison.after}
+
+    def update_groups(self, api, diffs, fields):
+
+        support_by_update_fields = [
+            field for field in fields if field.startswith("groupset:")
+        ]
+        to_update_diffs = list(
+            filter(
+                lambda x: (x.status == "modified" or x.status == "new")
+                and x.are_fields_modified(support_by_update_fields),
+                diffs,
+            )
+        )
+
+        print("orgunits with groups to change", len(to_update_diffs))
+        if len(to_update_diffs) == 0:
+            self.iaso_logger.ok("nothing to update in the groups")
+            return
+
+        groupset_field_types = as_field_types(support_by_update_fields)
+
+        for groupset_field_type in groupset_field_types:
+            print(
+                "---",
+                groupset_field_type.groupset_ref,
+                groupset_field_type.groupset_name,
+            )
+            dhis2_groups = api.get(
+                "organisationUnitGroups",
+                params={
+                    "fields": ":all",
+                    "filter": "groupSets.id:eq:" + groupset_field_type.groupset_ref,
+                    "paging": "false",
+                },
+            ).json()["organisationUnitGroups"]
+            for dhis2_group in dhis2_groups:
+                print("group", dhis2_group["id"], dhis2_group["name"])
+
+                for diff in to_update_diffs:
+                    comparison = diff.comparison(groupset_field_type.field_name)
+                    if comparison.status == "new" or comparison.status == "modified":
+                        tokeep = [
+                            g["id"]
+                            for g in comparison.after
+                            if g["id"] == dhis2_group["id"]
+                        ]
+                        if len(tokeep) > 0:
+                            print("should contains ", diff.org_unit.source_ref)
+                        else:
+                            print("should remove ", diff.org_unit.source_ref)
+
+        return

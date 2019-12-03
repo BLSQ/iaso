@@ -12,28 +12,6 @@ class Dictable:
         return "%s %s" % (self.__class__.__name__, self.as_dict())
 
 
-class Diff(Dictable):
-    def __init__(self, org_unit, status, comparisons):
-        self.org_unit = org_unit
-        self.status = status
-        self.comparisons = comparisons
-
-    def comparison(self, field):
-        return next(x for x in self.comparisons if x.field == field)
-
-    def are_fields_modified(self, fields):
-        return (
-            len(
-                list(
-                    x
-                    for x in self.comparisons
-                    if x.field in fields and x.status != "same"
-                )
-            )
-            > 0
-        )
-
-
 class FieldType(Dictable):
     def __init__(self, field_name):
         self.field_name = field_name
@@ -86,6 +64,7 @@ class GroupSetFieldType(FieldType):
     def __init__(self, field_name):
         super().__init__(field_name)
         self.groupset_ref = field_name.split(":")[1]
+        self.groupset_name = field_name.split(":")[2]
 
     def access(self, org_unit):
         if org_unit is None:
@@ -118,6 +97,28 @@ def as_field_types(field_names):
         else:
             raise Exception("Unsupported field : '" + field_name + "'")
     return field_types
+
+
+class Diff(Dictable):
+    def __init__(self, org_unit, status, comparisons):
+        self.org_unit = org_unit
+        self.status = status
+        self.comparisons = comparisons
+
+    def comparison(self, field):
+        return next(x for x in self.comparisons if x.field == field)
+
+    def are_fields_modified(self, fields):
+        return (
+            len(
+                list(
+                    x
+                    for x in self.comparisons
+                    if x.field in fields and x.status != "same"
+                )
+            )
+            > 0
+        )
 
 
 class Comparison(Dictable):

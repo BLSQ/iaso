@@ -154,6 +154,16 @@ class CommandTests(TestCase):
             content_type="application/json",
         )
 
+        for uid in ("Cbuj0VCyDjL", "Bpx0589u8y0", "J5jldMd8OHv", "uIuxlbV1vRT"):
+            responses.add(
+                responses.GET,
+                "https://play.dhis2.org/2.30/api/organisationUnitGroups.json?fields=:all&filter=groupSets.id:eq:"
+                + uid
+                + "&paging=false",
+                json=self.fixture_json("organisationUnitGroups-" + uid),
+                status=200,
+            )
+
         out = StringIO()
         management.call_command(
             "pyramid_exporter",

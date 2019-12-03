@@ -47,12 +47,19 @@ class MultiTenantTestCase(TestCase):
 
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
+
+        self.form = Form(name="Hydroponics study")
+        self.form.save()
+        self.project.forms.add(self.form)
+
         user = User.objects.create(username="yoda")
         user.set_password("ActuallyTheDarkSideRule2")
         user.save()
         p = Profile(user=user, account=account)
         p.save()
         self.yoda = user
+        self.yoda_client = APIClient()
+        self.yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
 
         account = Account(name="Marvel")
         account.save()
@@ -64,13 +71,16 @@ class MultiTenantTestCase(TestCase):
         p.save()
         self.raccoon = user
 
+        self.raccoon_client = APIClient()
+        self.raccoon_client.login(username="rraccoon", password="OhSweetNatasha")
+
         OrgUnit.objects.create(name="Tatooine", org_unit_type=unit_type_2)
 
     @tag("iaso_only")
     def test_org_unit_access(self):
         """Checking access to org units based on account"""
-        yoda_client = APIClient()
-        yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
+        yoda_client = self.yoda_client
+        raccoon_client = self.raccoon_client
         planet_unit_type = OrgUnitType.objects.get(name="Planet")
         uuid = "f6ec1671-aa59-4fb2-a4a0-4af80573e2ae"
         name = "Coruscant"
@@ -93,9 +103,6 @@ class MultiTenantTestCase(TestCase):
 
         json_response = json.loads(response.content)
         coruscant_id = json_response[0]["id"]
-
-        raccoon_client = APIClient()
-        raccoon_client.login(username="rraccoon", password="OhSweetNatasha")
 
         response = raccoon_client.get("/api/orgunits/", accept="application/json")
         json_response = json.loads(response.content)
@@ -120,6 +127,8 @@ class MultiTenantTestCase(TestCase):
     @tag("iaso_only")
     def test_instance_access(self):
         """Checking access to org units based on account"""
+        yoda_client = self.yoda_client
+        raccoon_client = self.raccoon_client
         c = APIClient()
         planet_unit_type = OrgUnitType.objects.get(name="Planet")
 
@@ -143,8 +152,6 @@ class MultiTenantTestCase(TestCase):
         instance_uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b4"
         name = "Wooooh wooooh woo riii"
 
-        form = Form(name="Hydroponics study")
-        form.save()
         instance_body = [
             {
                 "id": instance_uuid,
@@ -152,7 +159,7 @@ class MultiTenantTestCase(TestCase):
                 "created_at": 1565258153704,
                 "updated_at": 1565258153704,
                 "orgUnitId": unit_uuid,
-                "formId": form.id,
+                "formId": self.form.id,
                 "longitude": 4.4,
                 "accuracy": 10,
                 "altitude": 100,
@@ -172,17 +179,12 @@ class MultiTenantTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         instance = Instance.objects.get(uuid=instance_uuid)
 
-        yoda_client = APIClient()
-        yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
         response = yoda_client.get(
             "/api/instances/%s/" % instance.id, accept="application/json"
         )
         self.assertEqual(
             response.status_code, 200
         )  # yoda authorized to see Star Wars data
-
-        raccoon_client = APIClient()
-        raccoon_client.login(username="rraccoon", password="OhSweetNatasha")
 
         response = raccoon_client.get(
             "/api/instances/%s/" % instance.id, accept="application/json"
@@ -221,3 +223,33 @@ class MultiTenantTestCase(TestCase):
                 found = True
 
         self.assertFalse(found)  # raccoon not supposed to see Star Wars data
+
+    @tag("iaso_only")
+    def test_form_access(self):
+        response = self.raccoon_client.get("/api/forms/", accept="application/json")
+        content = json.loads(response.content)
+        self.assertEqual(content["forms"], [])
+        response = self.yoda_client.get("/api/forms/", accept="application/json")
+        content = json.loads(response.content)
+        self.assertEqual(len(content["forms"]), 1)
+
+        response = self.yoda_client.get(
+            "/api/forms/%s/" % self.form.id, accept="application/json"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.raccoon_client.get(
+            "/api/forms/%s/" % self.form.id, accept="application/json"
+        )
+        self.assertEqual(response.status_code, 403)
+
+    @tag("iaso_only")
+    def test_source_access(self):
+        response = self.raccoon_client.get(
+            "/api/datasources/", accept="application/json"
+        )
+        content = json.loads(response.content)
+        self.assertEqual(content["sources"], [])
+        response = self.yoda_client.get("/api/datasources/", accept="application/json")
+        content = json.loads(response.content)
+        self.assertEqual(len(content["sources"]), 1)

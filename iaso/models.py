@@ -41,7 +41,7 @@ class Account(models.Model):
 
 class Project(models.Model):
     name = models.TextField(null=True, blank=True)
-    forms = models.ManyToManyField("Form", blank=True)
+    forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey(
         Account, on_delete=models.DO_NOTHING, null=True, blank=True
     )

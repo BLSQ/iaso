@@ -271,26 +271,30 @@ class CasesViewSet(viewsets.ViewSet):
 
         if test_types:
             for test_type in test_types.split(","):
-                if test_type == "catt":
+                if test_type == "CATT":
                     queryset = queryset.filter(test_catt__isnull=False)
-                if test_type == "rdt":
+                if test_type == "RDT":
                     queryset = queryset.filter(test_rdt__isnull=False)
-                if test_type == "ctc":
+                if test_type == "CTCWOO":
                     queryset = queryset.filter(test_ctcwoo__isnull=False)
-                if test_type == "ge":
+                if test_type == "GE":
                     queryset = queryset.filter(test_ge__isnull=False)
-                if test_type == "lcr":
+                if test_type == "LCR":
                     queryset = queryset.filter(test_lcr__isnull=False)
-                if test_type == "lnp":
+                if test_type == "LNP":
                     queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
-                if test_type == "sf":
+                if test_type == "SF":
                     queryset = queryset.filter(test_sf__isnull=False)
-                if test_type == "pg":
+                if test_type == "PG":
                     queryset = queryset.filter(test_pg__isnull=False)
-                if test_type == "maect":
+                if test_type == "MAECT":
                     queryset = queryset.filter(test_maect__isnull=False)
-                if test_type == "pl":
+                if test_type == "PL":
                     queryset = queryset.filter(test_pl__isnull=False)
+                if test_type == "research_pl":
+                    queryset = queryset.filter(test_research_pl__isnull=False)
+                if test_type == "clinicalsigns":
+                    queryset = queryset.filter(test_clinicalsigns__isnull=False)
 
         if tester_type:
             devices = DeviceDB.objects.filter(

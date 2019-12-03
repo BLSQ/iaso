@@ -28,11 +28,11 @@ class ManualDuplicate extends Component {
         } = this.props;
         const { isOpen } = this.state;
         if ((patientA || patientB) && !isOpen) this.toggleExpandable();
-        if (!duplicateId &&
-            patientA && patientB &&
-            ((!prevProps.patientA || !prevProps.patientB) ||
-                (patientA.id !== prevProps.patientA.id ||
-                    patientB.id !== prevProps.patientB.id))) {
+        if (!duplicateId
+            && patientA && patientB
+            && ((!prevProps.patientA || !prevProps.patientB)
+                || (patientA.id !== prevProps.patientA.id
+                    || patientB.id !== prevProps.patientB.id))) {
             fetchDuplicatePair(patientA, patientB);
         }
     }

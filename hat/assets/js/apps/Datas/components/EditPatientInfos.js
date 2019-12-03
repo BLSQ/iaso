@@ -49,10 +49,10 @@ class EditPatientInfos extends React.Component {
 
         if (newProps.isUpdated) {
             newState.isModified = false;
-        } else if ((newProps.params.prov_id !== this.props.params.prov_id) ||
-            (newProps.params.ZS_id !== this.props.params.ZS_id) ||
-            (newProps.params.AS_id !== this.props.params.AS_id) ||
-            (newProps.params.vil_id !== this.props.params.vil_id)) {
+        } else if ((newProps.params.prov_id !== this.props.params.prov_id)
+            || (newProps.params.ZS_id !== this.props.params.ZS_id)
+            || (newProps.params.AS_id !== this.props.params.AS_id)
+            || (newProps.params.vil_id !== this.props.params.vil_id)) {
             newState.isModified = true;
         }
         this.setState(newState);
@@ -140,91 +140,109 @@ class EditPatientInfos extends React.Component {
                                         <td>
                                             <div>
                                                 {
-                                                    currentField.type === 'text' &&
-                                                    <input
-                                                        type="text"
-                                                        name={key}
-                                                        id={key}
-                                                        value={patient[key]}
-                                                        onChange={event => this.updatePatientField(key, event.currentTarget.value)}
-                                                    />
+                                                    currentField.type === 'text'
+                                                    && (
+                                                        <input
+                                                            type="text"
+                                                            name={key}
+                                                            id={key}
+                                                            value={patient[key]}
+                                                            onChange={event => this.updatePatientField(key, event.currentTarget.value)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    currentField.type === 'select' &&
-                                                    <Select
-                                                        multi={false}
-                                                        clearable={false}
-                                                        simpleValue
-                                                        name={key}
-                                                        value={patient[key]}
-                                                        placeholder="--"
-                                                        options={currentField.options}
-                                                        onChange={value => this.updatePatientField(key, value)}
-                                                    />
+                                                    currentField.type === 'select'
+                                                    && (
+                                                        <Select
+                                                            multi={false}
+                                                            clearable={false}
+                                                            simpleValue
+                                                            name={key}
+                                                            value={patient[key]}
+                                                            placeholder="--"
+                                                            options={currentField.options}
+                                                            onChange={value => this.updatePatientField(key, value)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    currentField.type === 'int' &&
-                                                    <input
-                                                        type="number"
-                                                        min={currentField.min}
-                                                        max={moment().format('YYYY')}
-                                                        name={key}
-                                                        id={key}
-                                                        placeholder="- - - -"
-                                                        value={patient[key] ? patient[key] : ''}
-                                                        onChange={event => this.updatePatientField(key, event.currentTarget.value)}
-                                                    />
+                                                    currentField.type === 'int'
+                                                    && (
+                                                        <input
+                                                            type="number"
+                                                            min={currentField.min}
+                                                            max={moment().format('YYYY')}
+                                                            name={key}
+                                                            id={key}
+                                                            placeholder="- - - -"
+                                                            value={patient[key] ? patient[key] : ''}
+                                                            onChange={event => this.updatePatientField(key, event.currentTarget.value)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    currentField.type === 'date' &&
-                                                    <DatePicker
-                                                        dateFormat="DD-MM-YYYY"
-                                                        dateFormatCalendar="YYYY-MM-DD"
-                                                        selected={patient[key] ? moment(patient[key]) : null}
-                                                        onChange={date => this.updatePatientField(key, date)}
-                                                        maxDate={moment()}
-                                                        placeholderText="--"
-                                                    />
+                                                    currentField.type === 'date'
+                                                    && (
+                                                        <DatePicker
+                                                            dateFormat="DD-MM-YYYY"
+                                                            dateFormatCalendar="YYYY-MM-DD"
+                                                            selected={patient[key] ? moment(patient[key]) : null}
+                                                            onChange={date => this.updatePatientField(key, date)}
+                                                            maxDate={moment()}
+                                                            placeholderText="--"
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    key === 'year_of_birth' &&
-                                                    <span className="years">
-                                                        {
-                                                            ` ${getAgeFromYear(patient.year_of_birth)} ${formatMessage(MESSAGES.years)}`
-                                                        }
-                                                    </span>
+                                                    key === 'year_of_birth'
+                                                    && (
+                                                        <span className="years">
+                                                            {
+                                                                ` ${getAgeFromYear(patient.year_of_birth)} ${formatMessage(MESSAGES.years)}`
+                                                            }
+                                                        </span>
+                                                    )
                                                 }
                                                 {
-                                                    key === 'province' &&
-                                                    <FiltersComponent
-                                                        params={params}
-                                                        baseUrl={baseUrl}
-                                                        filters={filtersProvinces(provinces, this)}
-                                                    />
+                                                    key === 'province'
+                                                    && (
+                                                        <FiltersComponent
+                                                            params={params}
+                                                            baseUrl={baseUrl}
+                                                            filters={filtersProvinces(provinces, this)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    key === 'ZS' &&
-                                                    <FiltersComponent
-                                                        params={params}
-                                                        baseUrl={baseUrl}
-                                                        filters={filtersZones(zones, this)}
-                                                    />
+                                                    key === 'ZS'
+                                                    && (
+                                                        <FiltersComponent
+                                                            params={params}
+                                                            baseUrl={baseUrl}
+                                                            filters={filtersZones(zones, this)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    key === 'AS' &&
-                                                    <FiltersComponent
-                                                        params={params}
-                                                        baseUrl={baseUrl}
-                                                        filters={filtersAreas(areas, this)}
-                                                    />
+                                                    key === 'AS'
+                                                    && (
+                                                        <FiltersComponent
+                                                            params={params}
+                                                            baseUrl={baseUrl}
+                                                            filters={filtersAreas(areas, this)}
+                                                        />
+                                                    )
                                                 }
                                                 {
-                                                    key === 'village' &&
-                                                    <FiltersComponent
-                                                        params={params}
-                                                        baseUrl={baseUrl}
-                                                        filters={filtersVillage(villages, this)}
-                                                    />
+                                                    key === 'village'
+                                                    && (
+                                                        <FiltersComponent
+                                                            params={params}
+                                                            baseUrl={baseUrl}
+                                                            filters={filtersVillage(villages, this)}
+                                                        />
+                                                    )
                                                 }
                                             </div>
                                         </td>
@@ -236,16 +254,20 @@ class EditPatientInfos extends React.Component {
                 </table>
                 <div className="align-right margin-top">
                     {
-                        this.props.isUpdated &&
-                        <div className="align-right text--success margin-bottom">
-                            <FormattedMessage id="main.label.patientUpdated" defaultMessage="Patient sauvegardé" />
-                        </div>
+                        this.props.isUpdated
+                        && (
+                            <div className="align-right text--success margin-bottom">
+                                <FormattedMessage id="main.label.patientUpdated" defaultMessage="Patient sauvegardé" />
+                            </div>
+                        )
                     }
                     {
-                        this.props.hasError &&
-                        <div className="align-right text--error margin-bottom">
-                            <FormattedMessage id="main.label.patientUpdateError" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
-                        </div>
+                        this.props.hasError
+                        && (
+                            <div className="align-right text--error margin-bottom">
+                                <FormattedMessage id="main.label.patientUpdateError" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            </div>
+                        )
                     }
                     <button
                         className="button margin-right"

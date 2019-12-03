@@ -15,11 +15,14 @@ import {
 import {
     testType,
 } from '../../../utils/constants/filters';
+import TimeSelect from '../../../components/TimeSelectComponent';
 
 const placeholder = {
     id: 'main.label.selectOption',
     defaultMessage: 'Select an option',
 };
+
+const dateFormat = 'DD-MM-YYYY';
 
 const getAvailableTestTypes = (testTypes, caseItem) => {
     const testTypesList = [];
@@ -50,7 +53,8 @@ class TestModalComponent extends Component {
             ...this.state.currentTest,
             [key]: value,
         };
-        console.log(currentTest);
+        console.log('key', key);
+        console.log('value', value);
         this.setState({
             currentTest,
         });
@@ -88,8 +92,9 @@ class TestModalComponent extends Component {
             false,
         );
         const saveDisabled = true;
-        const availableTestType = getAvailableTestTypes(testTypeSelect.options, caseItem);
         const isNewTest = currentTest.id === 0;
+        const availableTestType = isNewTest
+            ? getAvailableTestTypes(testTypeSelect.options, caseItem) : testTypeSelect.options;
         return (
             <ReactModal
                 isOpen={showModale}
@@ -106,6 +111,7 @@ class TestModalComponent extends Component {
                                     id="main.label.test.edit"
                                     defaultMessage="Test"
                                 />
+                                <span>{' '}</span>
                                 {` ID: ${currentTest.id}`}
                             </Fragment>
                         )
@@ -193,13 +199,31 @@ class TestModalComponent extends Component {
                         <Grid xs={8} item container justify="flex-start">
                             <div className="filter__container__select date-select">
                                 <DatePicker
-                                    dateFormat="DD-MM-YYYY"
-                                    dateFormatCalendar="DD-MM-YYYY"
+                                    dateFormat={dateFormat}
+                                    dateFormatCalendar="YYYY-MM-DD"
                                     selected={currentTest.date && moment(currentTest.date)}
-                                    onChange={date => this.onChange('date', moment(date))}
-                                    // showTimeSelect
+                                    onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
                                 />
                             </div>
+                        </Grid>
+                        <Grid
+                            xs={4}
+                            item
+                            container
+                            justify="flex-end"
+                            alignItems="center"
+                        >
+                            <FormattedMessage
+                                id="main.label.time"
+                                defaultMessage="Time"
+                            />
+                            :
+                        </Grid>
+                        <Grid xs={8} item container justify="flex-start">
+                            <TimeSelect
+                                dateTime={moment(currentTest.date)}
+                                onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                            />
                         </Grid>
                     </Grid>
 

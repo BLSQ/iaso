@@ -124,6 +124,7 @@ class TestsMap extends Component {
             });
         }
     }
+
     updateVillages() {
         const { cases } = this.props;
         const villages = mapCasesToVillages(cases);
@@ -199,8 +200,8 @@ class TestsMap extends Component {
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container" />
                     {
-                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
-                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area)
+                        && <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
                     }
                 </section>
             </ReactResizeDetector>

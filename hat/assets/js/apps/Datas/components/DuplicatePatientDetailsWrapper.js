@@ -5,7 +5,7 @@ import PatientInfos from './PatientInfos';
 import PatientCasesInfos from './PatientCasesInfos';
 import PatientCasesLocation from './PatientCasesLocation';
 import PatientTestComponent from './PatientTestComponent';
-import TreatmentComponent from '../components/TreatmentComponent';
+import TreatmentComponent from './TreatmentComponent';
 
 class DuplicatePatientDetailsWrapper extends React.Component {
     render() {
@@ -24,47 +24,53 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                 <table className={`no-style duplicate-table ${patient.cases.length > 0 || patient.cases.length < duplicatePatient.cases.length ? 'margin-bottom' : ''}`}>
                     <thead>
                         {
-                            !manualMerge &&
-                            <tr>
-                                <td className="align-center padding-bottom">
-                                    <button
-                                        className="button"
-                                        onClick={() => mergeDuplicates(patient.id, params.duplicate_id, this)}
-                                    >
-                                        <FormattedMessage
-                                            id="patientsDuplicate.merge"
-                                            defaultMessage="Merge patients into {value}"
-                                            values={{
-                                                value: 'A',
-                                            }}
-                                        />
-                                    </button>
-                                </td>
-                                <td className="align-center padding-bottom">
-                                    <button
-                                        className="button"
-                                        onClick={() => mergeDuplicates(duplicatePatient.id, params.duplicate_id, this)}
-                                    >
-                                        <FormattedMessage
-                                            id="patientsDuplicate.merge"
-                                            defaultMessage="Merge patients into {value}"
-                                            values={{
-                                                value: 'B',
-                                            }}
-                                        />
-                                    </button>
-                                </td>
-                            </tr>
+                            !manualMerge
+                            && (
+                                <tr>
+                                    <td className="align-center padding-bottom">
+                                        <button
+                                            className="button"
+                                            onClick={() => mergeDuplicates(patient.id, params.duplicate_id, this)}
+                                        >
+                                            <FormattedMessage
+                                                id="patientsDuplicate.merge"
+                                                defaultMessage="Merge patients into {value}"
+                                                values={{
+                                                    value: 'A',
+                                                }}
+                                            />
+                                        </button>
+                                    </td>
+                                    <td className="align-center padding-bottom">
+                                        <button
+                                            className="button"
+                                            onClick={() => mergeDuplicates(duplicatePatient.id, params.duplicate_id, this)}
+                                        >
+                                            <FormattedMessage
+                                                id="patientsDuplicate.merge"
+                                                defaultMessage="Merge patients into {value}"
+                                                values={{
+                                                    value: 'B',
+                                                }}
+                                            />
+                                        </button>
+                                    </td>
+                                </tr>
+                            )
                         }
                         <tr>
                             <td>
                                 <h2 className="widget__heading">
-                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" /> A:
+                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" />
+                                    {' '}
+                                    A:
                                 </h2>
                             </td>
                             <td>
                                 <h2 className="widget__heading">
-                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" /> B:
+                                    <FormattedMessage id="main.label.record" defaultMessage="Enregistrement" />
+                                    {' '}
+                                    B:
                                 </h2>
                             </td>
                         </tr>
@@ -99,19 +105,27 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                             <td>
                                                 <h2 className="widget__heading">
                                                     <span className="case-id">
-                                                        <span>Hat ID</span>: {caseItem.hat_id}
+                                                        <span>Hat ID</span>
+                                                        :
+                                                        {' '}
+                                                        {caseItem.hat_id}
                                                     </span>
                                                 </h2>
                                             </td>
                                             {
-                                                similarCase &&
-                                                <td>
-                                                    <h2 className="widget__heading">
-                                                        <span className="case-id">
-                                                            <span>Hat ID</span>: {similarCase.hat_id}
-                                                        </span>
-                                                    </h2>
-                                                </td>
+                                                similarCase
+                                                && (
+                                                    <td>
+                                                        <h2 className="widget__heading">
+                                                            <span className="case-id">
+                                                                <span>Hat ID</span>
+                                                                :
+                                                                {' '}
+                                                                {similarCase.hat_id}
+                                                            </span>
+                                                        </h2>
+                                                    </td>
+                                                )
                                             }
                                         </tr>
                                     </thead>
@@ -173,8 +187,8 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                             })
                                         }
                                         {
-                                            similarCase && (caseItem.tests.length < similarCase.tests.length) && // display extras test from similar case
-                                            similarCase.tests.map((similarTest, similarIndex) => {
+                                            similarCase && (caseItem.tests.length < similarCase.tests.length) // display extras test from similar case
+                                            && similarCase.tests.map((similarTest, similarIndex) => {
                                                 if (!caseItem.tests[similarIndex]) {
                                                     return (
                                                         <tr key={similarTest.id}>
@@ -200,8 +214,8 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                     })
                 }
                 {
-                    patient.cases.length < duplicatePatient.cases.length && // display extras cases from similar patient
-                    duplicatePatient.cases.map((similarCase, similarCaseIndex) => {
+                    patient.cases.length < duplicatePatient.cases.length // display extras cases from similar patient
+                    && duplicatePatient.cases.map((similarCase, similarCaseIndex) => {
                         if (!patient.cases[similarCaseIndex]) {
                             return (
                                 <section key={similarCase.id}>
@@ -212,7 +226,17 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 <td>
                                                     <h2 className="widget__heading">
                                                         <span className="case-id">
-                                                            <span>Hat ID</span>: {similarCase.hat_id} - <span>ID</span>: {similarCase.id}
+                                                            <span>Hat ID</span>
+                                                            :
+                                                            {' '}
+                                                            {similarCase.hat_id}
+                                                            {' '}
+                                                            -
+                                                            {' '}
+                                                            <span>ID</span>
+                                                            :
+                                                            {' '}
+                                                            {similarCase.id}
                                                         </span>
                                                     </h2>
                                                 </td>
@@ -262,66 +286,72 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                 }
 
                 {
-                    (patient.treatments.length > 0 || duplicatePatient.treatments.length > 0) &&
-                    <section>
-                        <table className="no-style duplicate-table">
-                            <thead>
-                                <tr>
-                                    <td>
-                                        <h2 className="widget__heading">
-                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
-                                        </h2>
-                                    </td>
-                                    <td>
-                                        <h2 className="widget__heading">
-                                            <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
-                                        </h2>
-                                    </td>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {
-                                    patient.treatments.map((t, tIndex) => {
-                                        const duplicateTreatments = duplicatePatient.treatments[tIndex];
-                                        return (
-                                            <tr key={`treatement${t.id}`}>
-                                                <td>
-                                                    <TreatmentComponent
-                                                        treatment={t}
-                                                    />
-                                                </td>
-                                                <td className={duplicateTreatments ? '' : 'empty'}>
-                                                    {
-                                                        duplicateTreatments &&
-                                                        <TreatmentComponent
-                                                            treatment={duplicateTreatments}
-                                                        />
-                                                    }
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                }
-                                {
-                                    duplicatePatient.treatments.map((t, tIndex) => {
-                                        if (!patient.treatments[tIndex]) {
+                    (patient.treatments.length > 0 || duplicatePatient.treatments.length > 0)
+                    && (
+                        <section>
+                            <table className="no-style duplicate-table">
+                                <thead>
+                                    <tr>
+                                        <td>
+                                            <h2 className="widget__heading">
+                                                <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />
+                                                :
+                                            </h2>
+                                        </td>
+                                        <td>
+                                            <h2 className="widget__heading">
+                                                <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />
+                                                :
+                                            </h2>
+                                        </td>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {
+                                        patient.treatments.map((t, tIndex) => {
+                                            const duplicateTreatments = duplicatePatient.treatments[tIndex];
                                             return (
                                                 <tr key={`treatement${t.id}`}>
-                                                    <td className="empty" />
                                                     <td>
                                                         <TreatmentComponent
                                                             treatment={t}
                                                         />
                                                     </td>
+                                                    <td className={duplicateTreatments ? '' : 'empty'}>
+                                                        {
+                                                            duplicateTreatments
+                                                            && (
+                                                                <TreatmentComponent
+                                                                    treatment={duplicateTreatments}
+                                                                />
+                                                            )
+                                                        }
+                                                    </td>
                                                 </tr>
                                             );
-                                        }
-                                        return null;
-                                    })
-                                }
-                            </tbody>
-                        </table>
-                    </section>
+                                        })
+                                    }
+                                    {
+                                        duplicatePatient.treatments.map((t, tIndex) => {
+                                            if (!patient.treatments[tIndex]) {
+                                                return (
+                                                    <tr key={`treatement${t.id}`}>
+                                                        <td className="empty" />
+                                                        <td>
+                                                            <TreatmentComponent
+                                                                treatment={t}
+                                                            />
+                                                        </td>
+                                                    </tr>
+                                                );
+                                            }
+                                            return null;
+                                        })
+                                    }
+                                </tbody>
+                            </table>
+                        </section>
+                    )
                 }
             </section>
         );

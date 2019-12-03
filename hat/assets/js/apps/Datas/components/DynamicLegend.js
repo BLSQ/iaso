@@ -45,23 +45,27 @@ class DynamicLegend extends Component {
                                 className={!village.isLocalised ? 'error-text no-cursor' : ''}
                             >
                                 {
-                                    village.isLocalised && village.displayed &&
-                                    <i className="fa fa-check-square-o" />
+                                    village.isLocalised && village.displayed
+                                    && <i className="fa fa-check-square-o" />
                                 }
                                 {
-                                    village.isLocalised && !village.displayed &&
-                                    <i className="fa fa-square-o" />
+                                    village.isLocalised && !village.displayed
+                                    && <i className="fa fa-square-o" />
                                 }
                                 {
-                                    !village.isLocalised &&
-                                    <i className="fa fa-times" />
+                                    !village.isLocalised
+                                    && <i className="fa fa-times" />
                                 }
                                 {village.name}
                                 {
-                                    !village.isLocalised &&
-                                    <span className="text-padding-left">
-                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />)
-                                    </span>
+                                    !village.isLocalised
+                                    && (
+                                        <span className="text-padding-left">
+                                            (
+                                            <FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />
+                                            )
+                                        </span>
+                                    )
                                 }
                             </div>
                             <ul>
@@ -73,34 +77,41 @@ class DynamicLegend extends Component {
                                                 onClick={() => this.toggleDisplayed(null, test.id)}
                                                 role="button"
                                                 tabIndex={0}
-                                                className={parseInt(test.result, 10) > 1 || !hasLocalisation ?
-                                                    `error-text ${!hasLocalisation ? 'no-cursor' : ''}` : ''}
+                                                className={parseInt(test.result, 10) > 1 || !hasLocalisation
+                                                    ? `error-text ${!hasLocalisation ? 'no-cursor' : ''}` : ''}
                                             >
                                                 {
-                                                    !hasLocalisation &&
-                                                    <i className="fa fa-times" />
+                                                    !hasLocalisation
+                                                    && <i className="fa fa-times" />
                                                 }
                                                 {
-                                                    hasLocalisation && test.displayed &&
-                                                    <i className="fa fa-check-square-o" />
+                                                    hasLocalisation && test.displayed
+                                                    && <i className="fa fa-check-square-o" />
                                                 }
                                                 {
-                                                    hasLocalisation && !test.displayed &&
-                                                    <i className="fa fa-square-o" />
+                                                    hasLocalisation && !test.displayed
+                                                    && <i className="fa fa-square-o" />
                                                 }
-                                                {test.type}-{test.id}
+                                                {test.type}
+                                                -
+                                                {test.id}
                                                 {
-                                                    !hasLocalisation &&
-                                                    <span className="text-padding-left">
-                                                        (<FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />)
-                                                    </span>
+                                                    !hasLocalisation
+                                                    && (
+                                                        <span className="text-padding-left">
+                                                            (
+                                                            <FormattedMessage id="datas.label.dynamicLegend.noLocation" defaultMessage="No location" />
+                                                            )
+                                                        </span>
+                                                    )
                                                 }
                                             </div>
                                         </li>
                                     );
                                 })}
                             </ul>
-                        </li>))}
+                        </li>
+                    ))}
                 </ul>
             </div>
         );

@@ -28,8 +28,8 @@ class TreatmentComponent extends React.Component {
                             <FormattedMessage id="patient.treatment.medeicine" defaultMessage="Médicament" />
                         </th>
                         <td>
-                            {treatment.medicine && treatmentsMedecineMessages[treatment.medicine] ?
-                                formatMessage(treatmentsMedecineMessages[treatment.medicine])
+                            {treatment.medicine && treatmentsMedecineMessages[treatment.medicine]
+                                ? formatMessage(treatmentsMedecineMessages[treatment.medicine])
                                 : '--'}
                         </td>
                     </tr>
@@ -55,29 +55,33 @@ class TreatmentComponent extends React.Component {
                         </th>
                         <td>
                             {
-                                treatment.issues.length > 0 &&
-                                <ul>
-                                    {
-                                        treatment.issues.map((i, index) => {
-                                            if (i !== 'other') {
-                                                return (
-                                                    <li key={`${i}-${index}`}>
-                                                        {
-                                                            treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''
-                                                        }
-                                                    </li>
-                                                );
-                                            }
-                                            return null;
-                                        })
-                                    }
-                                    {
-                                        treatment.otherIssues !== '' &&
-                                        <li>
-                                            {treatment.otherIssues}
-                                        </li>
-                                    }
-                                </ul>
+                                treatment.issues.length > 0
+                                && (
+                                    <ul>
+                                        {
+                                            treatment.issues.map((i, index) => {
+                                                if (i !== 'other') {
+                                                    return (
+                                                        <li key={`${i}-${index}`}>
+                                                            {
+                                                                treatmentsEventsMessages[i] ? `${formatMessage(treatmentsEventsMessages[i])} ` : ''
+                                                            }
+                                                        </li>
+                                                    );
+                                                }
+                                                return null;
+                                            })
+                                        }
+                                        {
+                                            treatment.otherIssues !== ''
+                                            && (
+                                                <li>
+                                                    {treatment.otherIssues}
+                                                </li>
+                                            )
+                                        }
+                                    </ul>
+                                )
                             }
                             {
                                 treatment.issues.length === 0 && '--'
@@ -89,10 +93,9 @@ class TreatmentComponent extends React.Component {
                             <FormattedMessage id="patient.treatment.complete" defaultMessage="Terminé" />
                         </th>
                         <td>
-                            {treatment.complete ?
-                                <i className="fa fa-check-square success-text" />
-                                :
-                                <i className="fa fa-times error-text" />}
+                            {treatment.complete
+                                ? <i className="fa fa-check-square success-text" />
+                                : <i className="fa fa-times error-text" />}
                         </td>
                     </tr>
                     <tr>
@@ -101,19 +104,20 @@ class TreatmentComponent extends React.Component {
                         </th>
                         <td>
                             {
-                                treatment.incomplete_reasons.length > 0 &&
-                                <ul>
-                                    {
-                                        treatment.incomplete_reasons.map((r, index) =>
-                                            (
+                                treatment.incomplete_reasons.length > 0
+                                && (
+                                    <ul>
+                                        {
+                                            treatment.incomplete_reasons.map((r, index) => (
                                                 <li key={`${r}-${index}`}>
                                                     {
                                                         incompleteReasonsMessages[r] ? `${formatMessage(incompleteReasonsMessages[r])} ` : ''
                                                     }
                                                 </li>
                                             ))
-                                    }
-                                </ul>
+                                        }
+                                    </ul>
+                                )
                             }
                             {
                                 treatment.incomplete_reasons.length === 0 && '--'

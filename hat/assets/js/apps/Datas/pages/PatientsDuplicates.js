@@ -163,11 +163,13 @@ class PatientsDuplicates extends Component {
         return (
             <section className="cases-list-container">
                 {
-                    this.props.load.loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Loading',
-                        id: 'main.label.loading',
-                    })}
-                    />
+                    this.props.load.loading && (
+                        <LoadingSpinner message={formatMessage({
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
+                        })}
+                        />
+                    )
                 }
 
                 <div className="widget__container ">
@@ -215,29 +217,31 @@ class PatientsDuplicates extends Component {
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 {
-                    this.state.tableUrl &&
-                    <div className="widget__container  no-border">
-                        <CustomTableComponent
-                            isSortable
-                            showPagination
-                            endPointUrl={this.state.tableUrl}
-                            columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'id', desc: false }]}
-                            params={params}
-                            defaultPath={baseUrl}
-                            dataKey="patientduplicatepairs"
-                            onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
-                            multiSort
-                            onDataLoaded={(newDuplicatePatientList, count, pages) => setDuplicatePatientList(newDuplicatePatientList, true, params, count, pages)}
-                            reduxPage={reduxPage}
-                        />
-                        <div className="align-right">
-                            <DownloadButtonsComponent
-                                csvUrl={this.getEndpointUrl(true, 'csv')}
-                                xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                    this.state.tableUrl
+                    && (
+                        <div className="widget__container  no-border">
+                            <CustomTableComponent
+                                isSortable
+                                showPagination
+                                endPointUrl={this.state.tableUrl}
+                                columns={this.state.tableColumns}
+                                defaultSorted={[{ id: 'id', desc: false }]}
+                                params={params}
+                                defaultPath={baseUrl}
+                                dataKey="patientduplicatepairs"
+                                onRowClicked={duplicateItem => this.selectDuplicate(duplicateItem)}
+                                multiSort
+                                onDataLoaded={(newDuplicatePatientList, count, pages) => setDuplicatePatientList(newDuplicatePatientList, true, params, count, pages)}
+                                reduxPage={reduxPage}
                             />
+                            <div className="align-right">
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getEndpointUrl(true, 'csv')}
+                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                />
+                            </div>
                         </div>
-                    </div>
+                    )
                 }
             </section>
         );

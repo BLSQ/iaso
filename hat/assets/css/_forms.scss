@@ -4,6 +4,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 .login__container {
 
     input[type="text"],
+    input[type="time"],
     input[type="number"],
     input[type="email"],
     input[type="password"],
@@ -42,6 +43,18 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
     input[type="date"] {
         width: 200px;
+    }
+
+    input[type="time"] {
+        width: 70px;
+    }
+
+    input[type="time"]::-webkit-clear-button {
+        display: none;
+    }
+
+    input[type="time"]::-ms-clear {
+        display: none;
     }
 
     form {
@@ -199,6 +212,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         position: relative;
         top: 6px;
         margin-left: 10px;
+
         &.primary {
             fill: $blue;
         }

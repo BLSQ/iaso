@@ -1,46 +1,8 @@
 from django.contrib.gis.geos import Point
 from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
+from .comparisons import as_field_types, Diff, Comparison
 import json
-
-
-class Dictable:
-    def as_dict(self):
-        return self.__dict__
-
-    def __str__(self):
-        return "%s %s" % (self.__class__.__name__, self.as_dict())
-
-
-class Diff(Dictable):
-    def __init__(self, org_unit, status, comparisons):
-        self.org_unit = org_unit
-        self.status = status
-        self.comparisons = comparisons
-
-    def comparison(self, field):
-        return next(x for x in self.comparisons if x.field == field)
-
-    def are_fields_modified(self, fields):
-        return (
-            len(
-                list(
-                    x
-                    for x in self.comparisons
-                    if x.field in fields and x.status != "same"
-                )
-            )
-            > 0
-        )
-
-
-class Comparison(Dictable):
-    def __init__(self, field, status, before, after, distance):
-        self.field = field
-        self.before = before
-        self.after = after
-        self.status = status
-        self.distance = distance
 
 
 def load_pyramid(version):
@@ -68,9 +30,13 @@ class Differ:
         self.iaso_logger = logger
 
     def diff(self, version_ref, version, options):
-        fields = ["name", "geometry", "parent"]
+        field_names = ["name", "geometry", "parent"]
         for group_set in GroupSet.objects.filter(source_version=version):
-            fields.append("groupset:" + group_set.source_ref + ":" + group_set.name)
+            field_names.append(
+                "groupset:" + group_set.source_ref + ":" + group_set.name
+            )
+
+        field_types = as_field_types(field_names)
 
         orgunits_dhis2 = load_pyramid(version)
         orgunit_refs = load_pyramid(version_ref)
@@ -104,9 +70,11 @@ class Differ:
                 status = "new"
 
             if index % 100 == 0:
-                print(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
+                self.iaso_logger.info(
+                    index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2
+                )
 
-            comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, fields)
+            comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, field_types)
             all_same = all(map(lambda comp: comp.status == "same", comparisons))
             if status != "new" and not all_same:
                 status = "modified"
@@ -120,17 +88,17 @@ class Differ:
             )
             diffs.append(diff)
 
-        return (diffs, fields)
+        return (diffs, field_names)
 
-    def compare_fields(self, orgunit_dhis2, orgunit_ref, fields):
+    def compare_fields(self, orgunit_dhis2, orgunit_ref, field_types):
         comparisons = []
 
-        for field in fields:
-            dhis2_value = self.access_field(orgunit_dhis2, field)
-            ref_value = self.access_field(orgunit_ref, field)
+        for field in field_types:
+            dhis2_value = field.access(orgunit_dhis2)
+            ref_value = field.access(orgunit_ref)
 
             status = None
-            same = self.is_same(field, dhis2_value, ref_value)
+            same = field.is_same(dhis2_value, ref_value)
             if same:
                 status = "same"
             else:
@@ -143,60 +111,10 @@ class Differ:
                 Comparison(
                     before=dhis2_value,
                     after=ref_value,
-                    field=field,
+                    field=field.field_name,
                     status=status,
-                    distance=0
-                    if same
-                    else self.distance_field(dhis2_value, ref_value, field, same),
+                    distance=0 if same else field.distance(dhis2_value, ref_value),
                 )
             )
 
         return comparisons
-
-    def distance_field(self, dhis2_value, ref_value, field, same):
-        if isinstance(dhis2_value, Point) and isinstance(ref_value, Point):
-            # TODO  is this the good way to calculate the distances ?
-            # https://docs.djangoproject.com/en/2.2/ref/contrib/gis/geos/#django.contrib.gis.geos.GEOSGeometry.distance
-            return dhis2_value.distance(ref_value) * 100  # approx km ?
-        return None
-
-    def is_same(self, field, value, other_value):
-        if field.startswith("groupset:"):
-            val = sorted(map(lambda g: g["id"], value or []))
-            other_val = sorted(map(lambda g: g["id"], other_value or []))
-            return val == other_val
-
-        return value == other_value
-
-    def access_field(self, org_unit, field):
-        if org_unit is None:
-            return None
-
-        if field == "name":
-            return org_unit.name
-
-        if field == "geometry":
-            if org_unit.location:
-                return org_unit.location
-            if org_unit.geom:
-                return org_unit.geom
-            if org_unit.simplified_geom:
-                return org_unit.simplified_geom
-            return None
-
-        if field == "parent":
-            if org_unit.parent:
-                return org_unit.parent.source_ref
-            return None
-
-        if field.startswith("groupset:"):
-            groupset_ref = field.split(":")[1]
-            groups = []
-            for group in org_unit.group_set.all():
-                for groupset in group.groupset_set.all():
-                    if groupset.source_ref == groupset_ref:
-                        groups.append({"id": group.source_ref, "name": group.name})
-
-            return groups
-
-        raise Exception("Unsupported field : '" + field + "'")

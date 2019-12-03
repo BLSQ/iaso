@@ -18,6 +18,7 @@ class CommandTests(TestCase):
             return json.load(json_file)
 
     def setup(self):
+        self.maxDiff = None
         out = StringIO()
         responses.add(
             responses.GET,
@@ -97,6 +98,7 @@ class CommandTests(TestCase):
         # update existing chp coordinates
         chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
         chp.location = Point(-13.3596, 9.5317)
+        chp.parent = parent
         chp.save()
 
     @responses.activate
@@ -128,9 +130,10 @@ class CommandTests(TestCase):
         def mock_orgunit_page(request):
             gets_request.append(1)
             fixture_name = "orgunits"
-            if len(gets_request) > 1:
-                fixture_name = "orgunits_page" + str(len(gets_request))
-            print(len(gets_request) > 1)
+            # if len(gets_request) > 1:
+            fixture_name = "orgunits_page" + str(len(gets_request))
+            print("mock_orgunit_page", len(gets_request), fixture_name)
+
             return (200, {}, json.dumps(self.fixture_json(fixture_name)))
 
         responses.add_callback(
@@ -166,7 +169,7 @@ class CommandTests(TestCase):
         )
         new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
         new_children = OrgUnit.objects.get(name="new children", version=version_ref)
-
+        print(new_chief_dom.source_ref)
         self.assertEquals(
             posted_request,
             [
@@ -200,3 +203,5 @@ class CommandTests(TestCase):
             ],
         )
         print(out.getvalue())
+
+        # TODO add assertion on "metadata" POST

@@ -1,4 +1,5 @@
 from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
@@ -22,17 +23,20 @@ class FormsViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+        # The way this endpoint has been structured is due to the fact that the first mobile application
+        # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
+        # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
+        # would send back the forms for the app_id org.bluesquarehub.iaso
+        # Once the org.bluesquarehub.iaso, we should switch to an API that will not assume it's the default
 
-        all_apps = request.GET.get("all", None)
-        if all_apps is not None:
-            queryset = Form.objects.all()
-        else:
-            queryset = Form.objects.filter(project__app_id=app_id)
+        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
+        queryset = Form.objects.all()
 
         if request.user and not request.user.is_anonymous:
             profile = request.user.iaso_profile
-            queryset = queryset.filter(project__account=profile.account)
+            queryset = queryset.filter(projects__account=profile.account)
+        else:
+            queryset = Form.objects.filter(projects__app_id=app_id)
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -141,5 +145,13 @@ class FormsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         form = get_object_or_404(Form, pk=pk)
-        res = form.as_dict()
-        return Response(res)
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
+
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+            accounts = [project.account for project in form.projects.all()]
+            if profile.account not in accounts:
+                raise PermissionDenied("Your account does not have access to this form")
+
+        return Response(form.as_dict())

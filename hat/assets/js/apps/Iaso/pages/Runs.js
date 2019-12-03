@@ -14,7 +14,7 @@ import {
     deleteAlgorithmRun,
     runAlgorithm,
     fetchSources,
-    fetchProfiles,
+    fetchIasoProfiles,
 } from '../utils/requests';
 
 import {
@@ -73,7 +73,7 @@ class Runs extends Component {
             .then(sources => this.props.setSources(sources));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
-        fetchProfiles(dispatch)
+        fetchIasoProfiles(dispatch)
             .then(profiles => this.props.setProfiles(profiles));
     }
 

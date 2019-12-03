@@ -35,6 +35,14 @@ class Account(models.Model):
         "SourceVersion", null=True, blank=True, on_delete=models.SET_NULL
     )
 
+    def as_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
     def __str__(self):
         return "%s " % (self.name,)
 

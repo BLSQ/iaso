@@ -52,6 +52,7 @@ import * as zoomBar from '../../components/leaflet/zoom-bar';
 export default function datasApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
+
     const routes = [
         <Route
             path={formsPath}

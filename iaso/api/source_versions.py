@@ -1,3 +1,4 @@
+from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import DataSource, SourceVersion
@@ -16,9 +17,11 @@ class SourceVersionViewSet(viewsets.ViewSet):
 
     def list(self, request):
         versions = SourceVersion.objects.all()
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            versions = versions.filter(data_source__account=profile.account)
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
+
+        profile = request.user.iaso_profile
+        versions = versions.filter(data_source__projects__account=profile.account)
 
         source_id = request.GET.get("source", None)
         if source_id:

@@ -253,3 +253,30 @@ class MultiTenantTestCase(TestCase):
         response = self.yoda_client.get("/api/datasources/", accept="application/json")
         content = json.loads(response.content)
         self.assertEqual(len(content["sources"]), 1)
+
+    @tag("iaso_only")
+    def test_profile_access(self):
+        response = self.raccoon_client.get("/api/profiles/", accept="application/json")
+        content = json.loads(response.content)
+        self.assertEqual(content["profiles"][0]["user_name"], "rraccoon")
+
+        response = self.yoda_client.get("/api/profiles/", accept="application/json")
+        content = json.loads(response.content)
+        self.assertEqual(len(content["profiles"]), 1)
+
+    @tag("iaso_only")
+    def test_version_access(self):
+        response = APIClient().get("/api/sourceversions/", accept="application/json")
+        self.assertEqual(response.status_code, 403)
+
+        response = self.raccoon_client.get(
+            "/api/sourceversions/", accept="application/json"
+        )
+        content = json.loads(response.content)
+        self.assertEqual(content["versions"], [])
+
+        response = self.yoda_client.get(
+            "/api/sourceversions/", accept="application/json"
+        )
+        content = json.loads(response.content)
+        self.assertEqual(len(content["versions"]), 1)

@@ -68,7 +68,7 @@ class MultiTenantTestCase(TestCase):
 
     @tag("iaso_only")
     def test_org_unit_access(self):
-        """Creating Org Units through the API"""
+        """Checking access to org units based on account"""
         yoda_client = APIClient()
         yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
         planet_unit_type = OrgUnitType.objects.get(name="Planet")
@@ -116,3 +116,108 @@ class MultiTenantTestCase(TestCase):
         self.assertEqual(
             response.status_code, 200
         )  # yoda authorized to see Star Wars data
+
+    @tag("iaso_only")
+    def test_instance_access(self):
+        """Checking access to org units based on account"""
+        c = APIClient()
+        planet_unit_type = OrgUnitType.objects.get(name="Planet")
+
+        unit_uuid = "f6ec1671-aa49-4fb2-a4a0-4af8e573e2ae"
+        name = "Kashyyyk"
+        unit_body = {
+            "id": unit_uuid,
+            "latitude": 0,
+            "created_at": 1565194077692,
+            "updated_at": 1565194077693,
+            "orgUnitTypeId": planet_unit_type.id,
+            "parentId": None,
+            "longitude": 0,
+            "accuracy": 0,
+            "altitude": 0,
+            "time": 0,
+            "name": name,
+        }
+
+        c.post("/api/orgunits/", data=[unit_body], format="json")
+        instance_uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b4"
+        name = "Wooooh wooooh woo riii"
+
+        form = Form(name="Hydroponics study")
+        form.save()
+        instance_body = [
+            {
+                "id": instance_uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": unit_uuid,
+                "formId": form.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "hydroponics_test_upload.xml",
+                "name": name,
+            }
+        ]
+
+        response = c.post(
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=instance_body,
+            format="json",
+        )
+        # if you don't provide an app id, the instances will not be added to a project, and consequently, not be shown to anybody
+        # notice that the instance won't appear in the /instances/ endpoint until a file is uploaded. You can access it directly through its id, though.
+
+        self.assertEqual(response.status_code, 200)
+        instance = Instance.objects.get(uuid=instance_uuid)
+
+        yoda_client = APIClient()
+        yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
+        response = yoda_client.get(
+            "/api/instances/%s/" % instance.id, accept="application/json"
+        )
+        self.assertEqual(
+            response.status_code, 200
+        )  # yoda authorized to see Star Wars data
+
+        raccoon_client = APIClient()
+        raccoon_client.login(username="rraccoon", password="OhSweetNatasha")
+
+        response = raccoon_client.get(
+            "/api/instances/%s/" % instance.id, accept="application/json"
+        )
+        self.assertEqual(
+            response.status_code, 403
+        )  # raccoon not authorized to see Star Wars data
+
+        # now uploading the file content, so that it will appear in /instances/ for the Star Wars account
+        with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as fp:
+            c.post(
+                "/sync/form_upload/",
+                {"name": "hydroponics_test_upload.xml", "xml_submission_file": fp},
+            )
+
+        response = yoda_client.get("/api/instances/", accept="application/json")
+        self.assertEqual(
+            response.status_code, 200
+        )  # yoda authorized to see Star Wars data
+        content = json.loads(response.content)
+        instances = content["instances"]
+        found = False
+        for instance in instances:
+            if instance["uuid"] == instance_uuid:
+                found = True
+
+        self.assertTrue(found)  # yoda authorized to see Star Wars data
+
+        response = raccoon_client.get("/api/instances/", accept="application/json")
+
+        content = json.loads(response.content)
+        instances = content["instances"]
+        found = False
+        for instance in instances:
+            if instance["uuid"] == instance_uuid:
+                found = True
+
+        self.assertFalse(found)  # raccoon not supposed to see Star Wars data

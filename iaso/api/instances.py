@@ -8,7 +8,7 @@ from iaso.models import Instance, OrgUnit, DeviceOwnership, Form, Project
 from django.db.models import Q, Count
 from django.shortcuts import get_object_or_404
 from rest_framework.authentication import BasicAuthentication
-
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 
 from django.http import StreamingHttpResponse, HttpResponse
@@ -22,6 +22,13 @@ from iaso.utils import timestamp_to_datetime
 from .auth.authentication import CsrfExemptSessionAuthentication
 from time import gmtime, strftime
 import ntpath
+
+
+def check_access(instance, user):
+    user_account = user.iaso_profile.account
+    instance_account = instance.project.account
+    if instance_account.id != user_account.id:
+        raise PermissionDenied("Your account does not have access to this instance")
 
 
 def import_data(instances, api_import, app_id=None):
@@ -57,7 +64,6 @@ def import_data(instances, api_import, app_id=None):
         if str(tentative_org_unit_id).isdigit():
             instance_db.org_unit_id = tentative_org_unit_id
         else:
-            print("tentative_org_unit_id", tentative_org_unit_id)
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
             instance_db.org_unit = org_unit
 
@@ -305,5 +311,6 @@ class InstancesViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         instance = get_object_or_404(Instance, pk=pk)
+        check_access(instance, request.user)
         res = instance.as_full_model()
         return Response(res)

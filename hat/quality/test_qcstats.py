@@ -46,8 +46,8 @@ class CasesTest(APITestCase):
              'positive_confirmation_test_count': 0, 'is_clear': 0, 'is_good_place': 0, 'total_population': 1004,
              'rdt_test_pictures': 1, 'test_pictures': 7, 'rdt_test_positive_pictures': 1,
              'rdt_test_negative_pictures': 0, 'catt_test_pictures': 6, 'catt_test_positive_pictures': 6,
-             'catt_test_negative_pictures': 0, 'checked': 7, 'checked_ok': 5, 'checked_ko': 2, 'checked_ok_central': 1,
-             'checked_ko_central': 3, 'checked_mismatch': 2, 'checked_unreadable': 0, 'checked_invalid': 0},
+             'catt_test_negative_pictures': 0, 'checked': 7, 'checked_ok': 5, 'checked_ko': 2, 'checked_ok_central': 3,
+             'checked_ko_central': 1, 'checked_mismatch': 2, 'checked_unreadable': 0, 'checked_invalid': 0},
             result.first())
 
     def test_qcstats_level40_confirmer(self):

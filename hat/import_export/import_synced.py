@@ -49,7 +49,7 @@ def import_synced_devices() -> List[ImportResult]:
     for device in DeviceDB.objects.all():
         result: ImportResult = {
             'device_id': device.device_id,
-            'device_user': device.last_user.username,
+            'device_user': device.last_user.username if device.last_user else None,
             'typename': _('synced data'),
             'error': None,
             'stats': None

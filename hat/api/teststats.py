@@ -595,8 +595,10 @@ class TestStatsViewSet(viewsets.ViewSet):
                             ),
                         )
                     )
+                    # Checks will only go to the central level if the coordination had a different result than
+                    # the tester. So Central KO means that the central has the same result as the tester.
                     .annotate(
-                        checked_ok_central=Count(
+                        checked_ko_central=Count(
                             "check__test_id",
                             distinct=True,
                             filter=(
@@ -607,7 +609,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                     )
                     .annotate(
-                        checked_ko_central=Count(
+                        checked_ok_central=Count(
                             "check__test_id",
                             distinct=True,
                             filter=(

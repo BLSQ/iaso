@@ -20,6 +20,13 @@ from iaso.models import (
 from iaso.diffing import Differ, Dumper, Exporter
 
 
+def get_option(options, key):
+    val = options.get(key)
+    if val is None:
+        raise Exception("no value for parameter : --" + key)
+    return val
+
+
 class Command(BaseCommand):
     help = "Diff and export a iaso pyramid in dhis2 instance"
 
@@ -65,9 +72,9 @@ class Command(BaseCommand):
         from dhis2 import Api
 
         api = Api(
-            options.get("dhis2_url"),
-            options.get("dhis2_user"),
-            options.get("dhis2_password"),
+            get_option(options, "dhis2_url"),
+            get_option(options, "dhis2_user"),
+            get_option(options, "dhis2_password"),
         )
 
         return api
@@ -98,19 +105,46 @@ class Command(BaseCommand):
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))
 
-    def load_version(self, options, source_name, version_number):
-        source_name = options[source_name]
-        version_number = options[version_number]
-        print("loading ", source_name, version_number)
-        source = DataSource.objects.get(name=source_name)
+    def load_version(self, options, param_source_name, param_version_number):
+        source_name = options[param_source_name]
+        version_number = options[param_version_number]
+        self.iaso_logger.info("loading ", source_name, version_number)
+        source = None
+        try:
+            source = DataSource.objects.get(name=source_name)
+        except Exception as e:
+            message = " ".join(
+                (
+                    "--" + param_source_name,
+                    " : No source '" + str(source_name) + "' but we have ",
+                    ", ".join(DataSource.objects.values_list("name", flat=True)),
+                )
+            )
+            self.iaso_logger.error(message)
+            raise Exception(message)
+
         try:
             version = SourceVersion.objects.get(
                 number=version_number, data_source=source
             )
         except Exception as e:
-            print(
-                "available versions ",
-                SourceVersion.objects.filter(data_source=source).values("number"),
+            message = " ".join(
+                (
+                    "--" + param_version_number,
+                    " : No Version number '" + str(version_number) + "' but we have ",
+                    ", ".join(
+                        list(
+                            map(
+                                lambda x: str(x),
+                                SourceVersion.objects.filter(
+                                    data_source=source
+                                ).values_list("number", flat=True),
+                            )
+                        )
+                    ),
+                    "for source_name",
+                )
             )
-            raise e
+            self.iaso_logger.error(message)
+            raise Exception(message)
         return (source, version)

@@ -132,7 +132,6 @@ class CommandTests(TestCase):
             fixture_name = "orgunits"
             # if len(gets_request) > 1:
             fixture_name = "orgunits_page" + str(len(gets_request))
-            print("mock_orgunit_page", len(gets_request), fixture_name)
 
             return (200, {}, json.dumps(self.fixture_json(fixture_name)))
 
@@ -144,7 +143,7 @@ class CommandTests(TestCase):
         )
 
         def request_callback_update(request):
-            print(json.loads(request.body))
+            # print(json.loads(request.body))
             return (200, {}, json.dumps({}))
 
         responses.add_callback(
@@ -163,6 +162,13 @@ class CommandTests(TestCase):
                 json=self.fixture_json("organisationUnitGroups-" + uid),
                 status=200,
             )
+        for group_id in ["f25dqv3Y7Z0"]:
+            responses.add(
+                responses.PUT,
+                "https://play.dhis2.org/2.30/api/organisationUnitGroups/" + group_id,
+                json="{}",
+                status=200,
+            )
 
         out = StringIO()
         management.call_command(
@@ -179,7 +185,7 @@ class CommandTests(TestCase):
         )
         new_chief_dom = OrgUnit.objects.get(name="new Chiefdom", version=version_ref)
         new_children = OrgUnit.objects.get(name="new children", version=version_ref)
-        print(new_chief_dom.source_ref)
+
         self.assertEquals(
             posted_request,
             [
@@ -212,6 +218,7 @@ class CommandTests(TestCase):
                 },
             ],
         )
-        print(out.getvalue())
+        if environ.get("DEBUG_TEST") is not None:
+            print(out.getvalue())
 
         # TODO add assertion on "metadata" POST

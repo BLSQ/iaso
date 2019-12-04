@@ -56,11 +56,11 @@ class Dumper:
                 comp_stats[comp.status]["sample"] = diff.org_unit.source_ref
 
         stats = {"orgUnits": stats_ou, "orgUnitsByField": stats_comparison_by_field}
-        print(json.dumps(stats, indent=4))
+        self.iaso_logger.info(json.dumps(stats, indent=4))
         return stats
 
     def dump_as_json(self, diffs, fields):
-        print(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
+        self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
     def dump_as_table(self, diffs, fields, stats):
         display = []

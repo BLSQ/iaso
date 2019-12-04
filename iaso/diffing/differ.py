@@ -1,4 +1,3 @@
-from django.contrib.gis.geos import Point
 from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
@@ -40,7 +39,7 @@ class Differ:
 
         orgunits_dhis2 = load_pyramid(version)
         orgunit_refs = load_pyramid(version_ref)
-        print(
+        self.iaso_logger.info(
             "comparing ",
             version_ref,
             "(",

@@ -46,11 +46,15 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
     }
 
     input[type="time"] {
-        width: 70px;
+        width: 65px;
     }
 
     input[type="time"]::-webkit-clear-button {
         display: none;
+    }
+
+    input[type="time"]::-webkit-inner-spin-button {
+        opacity: 1
     }
 
     input[type="time"]::-ms-clear {

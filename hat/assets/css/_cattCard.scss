@@ -1,0 +1,30 @@
+.catt-card {
+    border: 1px solid $gray;
+    border-radius: 5px;
+    display: flex;
+    flex-flow: row wrap;
+    padding: $padding-unit / 4;
+    background-color: $background-highlight-gray;
+    width: 394px;
+    box-sizing: border-box;
+
+    li {
+        list-style: none;
+        cursor: pointer;
+        margin: $padding-unit / 8;
+        width: 65px;
+        height: 65px;
+        border: 1px solid $gray;
+        border-radius: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        content: '';
+        background-color: white;
+
+        &.selected {
+            background-color: $red;
+            color: white;
+        }
+    }
+}

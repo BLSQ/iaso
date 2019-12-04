@@ -15,7 +15,14 @@ import {
 import {
     testType,
 } from '../../../utils/constants/filters';
+import {
+    defaultTestResults,
+    testResults,
+    pgTestResults,
+} from '../../../utils/constants/testsResults';
 import TimeSelect from '../../../components/TimeSelectComponent';
+import ModalItem from './ModalItemComponent';
+import CattCard from './CattCardComponent';
 
 const placeholder = {
     id: 'main.label.selectOption',
@@ -95,6 +102,16 @@ class TestModalComponent extends Component {
         const isNewTest = currentTest.id === 0;
         const availableTestType = isNewTest
             ? getAvailableTestTypes(testTypeSelect.options, caseItem) : testTypeSelect.options;
+        let results = testResults;
+        if (currentTest.type === 'PG') {
+            results = pgTestResults;
+        } else if (isNewTest) {
+            results = defaultTestResults;
+        }
+        let { result } = currentTest;
+        if (result > 2) {
+            result = 2;
+        }
         return (
             <ReactModal
                 isOpen={showModale}
@@ -128,103 +145,106 @@ class TestModalComponent extends Component {
                 </div>
                 <section className="large-modal-content">
                     <Grid container spacing={2} className="margin-bottom">
-                        <Grid
-                            xs={4}
-                            item
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            <FormattedMessage
-                                id="main.label.testType"
-                                defaultMessage="Test type"
-                            />
-                            :
-                        </Grid>
-                        <Grid xs={8} item container justify="flex-start">
-                            <Select
-                                multi={testTypeSelect.isMultiSelect}
-                                clearable={testTypeSelect.isClearable}
-                                simpleValue
-                                name={testTypeSelect.name}
-                                value={currentTest.type}
-                                placeholder={formatMessage(placeholder)}
-                                options={availableTestType}
-                                onChange={value => this.onChange('type', value)}
-                            />
-                        </Grid>
-                        <Grid
-                            xs={4}
-                            item
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            {
-                                currentTest.type && currentTest.type === 'PL'
-                                && <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
-                            }
-                            {
-                                (!currentTest.type || (currentTest.type && currentTest.type !== 'PL'))
-                                && <FormattedMessage id="main.label.result" defaultMessage="Result" />
-                            }
-                            :
-                        </Grid>
-                        <Grid xs={8} item container justify="flex-start">
-                            <Select
-                                multi={false}
-                                clearable={false}
-                                simpleValue
-                                name="result"
-                                value={currentTest.result}
-                                placeholder={formatMessage(placeholder)}
-                                options={Object.keys(testsMapping).map(fieldKey => (
-                                    { value: fieldKey, label: testsMapping[fieldKey] }))}
-                                onChange={value => this.onChange('result', value)}
-                            />
-                        </Grid>
-                        <Grid
-                            xs={4}
-                            item
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            <FormattedMessage
-                                id="main.label.date"
-                                defaultMessage="Date"
-                            />
-                            :
-                        </Grid>
-                        <Grid xs={8} item container justify="flex-start">
-                            <div className="filter__container__select date-select">
-                                <DatePicker
-                                    dateFormat={dateFormat}
-                                    dateFormatCalendar="YYYY-MM-DD"
-                                    selected={currentTest.date && moment(currentTest.date)}
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.testType"
+                                    defaultMessage="Test type"
+                                />
+                            )}
+                            fieldComponent={(
+                                <Select
+                                    multi={testTypeSelect.isMultiSelect}
+                                    clearable={testTypeSelect.isClearable}
+                                    simpleValue
+                                    name={testTypeSelect.name}
+                                    value={currentTest.type}
+                                    placeholder={formatMessage(placeholder)}
+                                    options={availableTestType}
+                                    onChange={value => this.onChange('type', value)}
+                                />
+                            )}
+                        />
+                        {
+                            currentTest.type === 'CATT'
+                            && (
+                                <ModalItem
+                                    labelComponent={(
+                                        <FormattedMessage
+                                            id="main.label.index"
+                                            defaultMessage="Index"
+                                        />
+                                    )}
+                                    fieldComponent={(
+                                        <CattCard
+                                            cattIndex={currentTest.index}
+                                            onChange={newIndex => this.onChange('index', newIndex)}
+                                        />
+                                    )}
+                                />
+                            )
+                        }
+                        <ModalItem
+                            labelComponent={(
+                                <Fragment>
+                                    {
+                                        currentTest.type && currentTest.type === 'PL'
+                                        && <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
+                                    }
+                                    {
+                                        (!currentTest.type || (currentTest.type && currentTest.type !== 'PL'))
+                                        && <FormattedMessage id="main.label.result" defaultMessage="Result" />
+                                    }
+                                </Fragment>
+                            )}
+                            fieldComponent={(
+                                <Select
+                                    multi={false}
+                                    clearable={false}
+                                    simpleValue
+                                    name="result"
+                                    value={result}
+                                    placeholder={formatMessage(placeholder)}
+                                    options={results.map(r => ({
+                                        value: r.value,
+                                        label: formatMessage(r.label),
+                                    }))}
+                                    onChange={value => this.onChange('result', value)}
+                                />
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.date"
+                                    defaultMessage="Date"
+                                />
+                            )}
+                            fieldComponent={(
+                                <div className="filter__container__select date-select">
+                                    <DatePicker
+                                        dateFormat={dateFormat}
+                                        dateFormatCalendar="YYYY-MM-DD"
+                                        selected={currentTest.date && moment(currentTest.date)}
+                                        onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                    />
+                                </div>
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.time"
+                                    defaultMessage="Time"
+                                />
+                            )}
+                            fieldComponent={(
+                                <TimeSelect
+                                    dateTime={moment(currentTest.date)}
                                     onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
                                 />
-                            </div>
-                        </Grid>
-                        <Grid
-                            xs={4}
-                            item
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                        >
-                            <FormattedMessage
-                                id="main.label.time"
-                                defaultMessage="Time"
-                            />
-                            :
-                        </Grid>
-                        <Grid xs={8} item container justify="flex-start">
-                            <TimeSelect
-                                dateTime={moment(currentTest.date)}
-                                onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
-                            />
-                        </Grid>
+                            )}
+                        />
                     </Grid>
 
                     <Grid container spacing={2}>
@@ -259,6 +279,7 @@ class TestModalComponent extends Component {
 TestModalComponent.defaultProps = {
     currentTest: {
         id: 0,
+        date: new Date(),
     },
 };
 

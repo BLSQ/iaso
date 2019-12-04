@@ -296,6 +296,13 @@
     .Select {
         width: 100%;
     }
+
+    input[type="text"],
+    input[type="time"] {
+        background-color: white;
+        box-shadow: none;
+    }
+
 }
 
 .edit-modal {
@@ -330,8 +337,15 @@
     }
 
     input[type="checkbox"] {
-        margin: 5px 0;
+        margin-left: 5px 0;
         // width: 100%;
+    }
+
+    input[type="text"],
+    input[type="time"] {
+        margin-left: 7px;
+        background-color: white;
+        box-shadow: none;
     }
 
     &.user-modale {

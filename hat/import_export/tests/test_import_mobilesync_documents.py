@@ -720,3 +720,49 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNone(case.normalized_patient.origin_raw_AS)
         self.assertEquals(case.normalized_patient.origin_country, "Rwanda")
 
+    def test_import_catt_2steps(self):
+        json_doc, device_db = load_document("test_catt_override_1.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertIsNotNone(case)
+        self.assertEquals(case.normalized_village_id, 1111)
+        self.assertEquals(case.test_set.count(), 0, "The test is marked as not done, so is not created")
+
+        # Import the second document from a different device
+        json_doc_2, device_db_2 = load_document("test_catt_override_2.json", "supervisor")
+        device_db_2.last_user = User.objects.get(username="hannibal")
+        device_db_2.save()
+
+        # create documents in device db and sync
+        p2 = api.post(device_db_2.db_name, json=json_doc_2).json()
+        self.assertEqual(json_doc_2['_id'], p2['id'])
+
+        res = import_synced_devices()
+        stats = next(x for x in res if x['device_id'] == device_db_2.device_id)['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 0)
+        self.assertEqual(stats.updated, 1)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db_2.refresh_from_db()
+        case.refresh_from_db()
+        self.assertEquals(case.test_set.count(), 1)
+        catt_test = case.test_set.first()
+        self.assertEquals(catt_test.type, "CATT")
+        self.assertEquals(catt_test.result, 1)
+        self.assertEquals(case.test_catt, 1)
+

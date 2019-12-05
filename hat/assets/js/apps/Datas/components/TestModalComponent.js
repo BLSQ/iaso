@@ -2,11 +2,10 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
 import ReactModal from 'react-modal';
 import Select from 'react-select';
 import DatePicker from 'react-datepicker';
-import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 import moment from 'moment';
 import {
     Grid,
@@ -24,17 +23,19 @@ import TimeSelect from '../../../components/TimeSelectComponent';
 import ModalItem from './ModalItemComponent';
 import CattCard from './CattCardComponent';
 
-const placeholder = {
+const selectPlaceholder = {
     id: 'main.label.selectOption',
     defaultMessage: 'Select an option',
 };
 
+const inputPlaceHolder = '--';
+
 const dateFormat = 'DD-MM-YYYY';
 
-const getAvailableTestTypes = (testTypes, caseItem) => {
+const getAvailableTestTypes = (testTypes, currentCase) => {
     const testTypesList = [];
     testTypes.forEach((tt) => {
-        const testTypeExist = Boolean(caseItem.tests.find(t => t.type === tt.value));
+        const testTypeExist = Boolean(currentCase.tests.find(t => t.type === tt.value));
         if (!testTypeExist) {
             testTypesList.push(tt);
         }
@@ -48,6 +49,7 @@ class TestModalComponent extends Component {
         moment.locale('fr');
         this.state = {
             currentTest: props.currentTest,
+            currentCase: props.currentCase,
         };
     }
 
@@ -55,42 +57,36 @@ class TestModalComponent extends Component {
         ReactModal.setAppElement('.container--main');
     }
 
-    onChange(key, value) {
-        const currentTest = {
-            ...this.state.currentTest,
-            [key]: value,
+    onChange(key, value, type) {
+        const newState = {
+            ...this.state,
+            [type]: {
+                ...this.state[type],
+                [key]: value,
+            },
         };
-        console.log('key', key);
-        console.log('value', value);
-        this.setState({
-            currentTest,
-        });
+        this.setState(newState);
     }
 
     onSave() {
         const {
             currentTest,
         } = this.state;
-        console.log(currentTest);
+        console.log('SAVE', currentTest);
     }
 
-    render() {
+    getComponentValues() {
         const {
-            toggleModal,
-            showModale,
-            caseItem,
+            currentCase,
             intl: {
                 formatMessage,
             },
-            load: {
-                loading,
-            },
-            testsMapping,
         } = this.props;
         const {
             currentTest,
         } = this.state;
-        const testTypeSelect = testType(
+        const initValues = {};
+        initValues.testTypeSelect = testType(
             formatMessage,
             {
                 id: 'main.label.test_type_select',
@@ -98,20 +94,47 @@ class TestModalComponent extends Component {
             },
             false,
         );
-        const saveDisabled = true;
-        const isNewTest = currentTest.id === 0;
-        const availableTestType = isNewTest
-            ? getAvailableTestTypes(testTypeSelect.options, caseItem) : testTypeSelect.options;
-        let results = testResults;
+        initValues.saveDisabled = true;
+        initValues.isNewTest = currentTest.id === 0;
+        initValues.availableTestType = initValues.isNewTest
+            ? getAvailableTestTypes(initValues.testTypeSelect.options, currentCase) : initValues.testTypeSelect.options;
+        initValues.results = testResults;
         if (currentTest.type === 'PG') {
-            results = pgTestResults;
-        } else if (isNewTest) {
-            results = defaultTestResults;
+            initValues.results = pgTestResults;
+        } else if (initValues.isNewTest) {
+            initValues.results = defaultTestResults;
         }
-        let { result } = currentTest;
-        if (result > 2) {
-            result = 2;
+        initValues.result = currentTest.result;
+        if (initValues.result > 2) {
+            initValues.result = 2;
         }
+        return initValues;
+    }
+
+
+    render() {
+        const {
+            toggleModal,
+            showModale,
+            intl: {
+                formatMessage,
+            },
+            // load: {
+            //     loading,
+            // },
+        } = this.props;
+        const {
+            currentTest,
+            currentCase,
+        } = this.state;
+        const {
+            testTypeSelect,
+            saveDisabled,
+            isNewTest,
+            availableTestType,
+            results,
+            result,
+        } = this.getComponentValues();
         return (
             <ReactModal
                 isOpen={showModale}
@@ -157,11 +180,10 @@ class TestModalComponent extends Component {
                                     multi={testTypeSelect.isMultiSelect}
                                     clearable={testTypeSelect.isClearable}
                                     simpleValue
-                                    name={testTypeSelect.name}
                                     value={currentTest.type}
-                                    placeholder={formatMessage(placeholder)}
+                                    placeholder={formatMessage(selectPlaceholder)}
                                     options={availableTestType}
-                                    onChange={value => this.onChange('type', value)}
+                                    onChange={value => this.onChange('type', value, 'currentTest')}
                                 />
                             )}
                         />
@@ -178,7 +200,7 @@ class TestModalComponent extends Component {
                                     fieldComponent={(
                                         <CattCard
                                             cattIndex={currentTest.index}
-                                            onChange={newIndex => this.onChange('index', newIndex)}
+                                            onChange={newIndex => this.onChange('index', newIndex, 'currentTest')}
                                         />
                                     )}
                                 />
@@ -202,14 +224,13 @@ class TestModalComponent extends Component {
                                     multi={false}
                                     clearable={false}
                                     simpleValue
-                                    name="result"
                                     value={result}
-                                    placeholder={formatMessage(placeholder)}
+                                    placeholder={formatMessage(selectPlaceholder)}
                                     options={results.map(r => ({
                                         value: r.value,
                                         label: formatMessage(r.label),
                                     }))}
-                                    onChange={value => this.onChange('result', value)}
+                                    onChange={value => this.onChange('result', value, 'currentTest')}
                                 />
                             )}
                         />
@@ -226,7 +247,7 @@ class TestModalComponent extends Component {
                                         dateFormat={dateFormat}
                                         dateFormatCalendar="YYYY-MM-DD"
                                         selected={currentTest.date && moment(currentTest.date)}
-                                        onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                        onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
                                     />
                                 </div>
                             )}
@@ -241,7 +262,77 @@ class TestModalComponent extends Component {
                             fieldComponent={(
                                 <TimeSelect
                                     dateTime={moment(currentTest.date)}
-                                    onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                    onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
+                                />
+                            )}
+                        />
+                        {
+                            currentTest.type === 'PL'
+                            && (
+                                <Fragment>
+                                    <ModalItem
+                                        labelComponent={(
+                                            <FormattedHTMLMessage
+                                                id="patientsCasesTests.test_pl_gb_mm3"
+                                                defaultMessage="White blood cells/mm&sup3;"
+                                            />
+                                        )}
+                                        fieldComponent={(
+                                            <input
+                                                type="number"
+                                                min={0}
+                                                placeholder={inputPlaceHolder}
+                                                value={currentCase.test_pl_gb_mm3}
+                                                onChange={event => this.onChange('test_pl_gb_mm3', event.currentTarget.value, 'currentCase')}
+                                            />
+                                        )}
+                                    />
+                                    <ModalItem
+                                        labelComponent={(
+                                            <FormattedMessage
+                                                id="patientsCasesTests.test_pl_albumine"
+                                                defaultMessage="Albumin"
+                                            />
+                                        )}
+                                        fieldComponent={(
+                                            <input
+                                                type="text"
+                                                placeholder={inputPlaceHolder}
+                                                value={currentCase.test_pl_albumine}
+                                                onChange={event => this.onChange('test_pl_albumine', event.currentTarget.value, 'currentCase')}
+                                            />
+                                        )}
+                                    />
+                                    <ModalItem
+                                        labelComponent={(
+                                            <FormattedMessage
+                                                id="patientsCasesTests.test_pl_lcr"
+                                                defaultMessage="LCR"
+                                            />
+                                        )}
+                                        fieldComponent={(
+                                            <input
+                                                type="text"
+                                                placeholder={inputPlaceHolder}
+                                                value={currentCase.test_pl_lcr}
+                                                onChange={event => this.onChange('test_pl_lcr', event.currentTarget.value, 'currentCase')}
+                                            />
+                                        )}
+                                    />
+                                </Fragment>
+                            )
+                        }
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.comments"
+                                    defaultMessage="Comments"
+                                />
+                            )}
+                            fieldComponent={(
+                                <textarea
+                                    value={currentCase.test_pl_comments}
+                                    onChange={event => this.onChange('comment', event.currentTarget.value, 'currentTest')}
                                 />
                             )}
                         />
@@ -287,11 +378,9 @@ TestModalComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
-    dispatch: PropTypes.func.isRequired,
-    caseItem: PropTypes.object.isRequired,
+    currentCase: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     currentTest: PropTypes.object,
-    testsMapping: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({

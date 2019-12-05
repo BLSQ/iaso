@@ -26,8 +26,12 @@ const CattCardComponent = ({
     </div>
 );
 
+CattCardComponent.defaultProps = {
+    cattIndex: null,
+};
+
 CattCardComponent.propTypes = {
-    cattIndex: PropTypes.number.isRequired,
+    cattIndex: PropTypes.number,
     onChange: PropTypes.func.isRequired,
 };
 

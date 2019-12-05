@@ -4,6 +4,7 @@ import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { createHistory } from 'history';
 import moment from 'moment';
+import DatePickerStyles from 'react-datepicker/dist/react-datepicker.css';
 
 import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';

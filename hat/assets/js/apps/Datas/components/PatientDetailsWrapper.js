@@ -269,10 +269,9 @@ class PatientDetailsWrapper extends React.Component {
                                                         showTestModale
                                                         && (
                                                             <TestModal
-                                                                testsMapping={testsMapping}
                                                                 showModale={showTestModale}
                                                                 toggleModal={() => this.toggleTestModal()}
-                                                                caseItem={c}
+                                                                currentCase={c}
                                                                 currentTest={editedTest}
                                                             />
                                                         )

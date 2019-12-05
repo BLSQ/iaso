@@ -17,7 +17,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         box-shadow: $input-inner-shadow;
         border-radius: 4px;
         font-family: $body-font-family;
-        font-size: $font-size-standard;
+        font-size: $font-size-standard !important;
         color: $dark-blue;
         line-height: 1;
 

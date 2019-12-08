@@ -67,8 +67,8 @@ const screenersColumns = formatMessage => (
                 <span>
                     {
                         (settings.original.checked_ok_central !== undefined) ?
-                            `${settings.original.checked_ok_central + settings.original.checked_ko_central} (${formatPercentage(
-                                settings.original.checked_ok_central + settings.original.checked_ok_central, settings.original.checked)})`
+                            `${settings.original.checked_ok_central} (${formatPercentage(
+                                settings.original.checked_ok_central, settings.original.checked)})`
                             : '-'
                     }
                 </span>

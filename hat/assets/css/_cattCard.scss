@@ -5,15 +5,15 @@
     flex-flow: row wrap;
     padding: $padding-unit / 4;
     background-color: $background-highlight-gray;
-    width: 394px;
+    width: 262px;
     box-sizing: border-box;
 
     li {
         list-style: none;
         cursor: pointer;
         margin: $padding-unit / 8;
-        width: 65px;
-        height: 65px;
+        width: 38px;
+        height: 38px;
         border: 1px solid $gray;
         border-radius: 100%;
         display: flex;

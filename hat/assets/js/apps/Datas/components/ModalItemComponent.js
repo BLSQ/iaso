@@ -13,16 +13,23 @@ const ModalItem = ({
 }) => (
     <Fragment>
         <Grid
-            xs={4}
+            xs={5}
             item
             container
             justify="flex-end"
+            className="margin-bottom small-padding-right"
             alignItems={alignItems}
         >
             {labelComponent}
             :
         </Grid>
-        <Grid xs={8} item container justify="flex-start">
+        <Grid
+            xs={7}
+            item
+            container
+            className="margin-bottom"
+            justify="flex-start"
+        >
             {fieldComponent}
         </Grid>
     </Fragment>

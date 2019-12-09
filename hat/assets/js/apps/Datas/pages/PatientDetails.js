@@ -10,6 +10,7 @@ import { patientsActions } from '../redux/patients';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 import { filterActions } from '../../../redux/filtersRedux';
+import { smallMapActions } from '../../../redux/smallMapReducer';
 
 class PatientDetails extends React.Component {
     constructor(props) {
@@ -23,6 +24,7 @@ class PatientDetails extends React.Component {
         this.props.fetchProvinces();
         this.props.fetchDetails(this.props.params.patient_id);
         this.props.fetchCurrentUserInfos();
+        this.props.fetchGeoDatas();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -153,6 +155,7 @@ PatientDetails.propTypes = {
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
+    fetchGeoDatas: PropTypes.func.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -170,6 +173,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
+    fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(PatientDetailsIntl);

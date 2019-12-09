@@ -2,54 +2,33 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
-import Select from 'react-select';
-import DatePicker from 'react-datepicker';
 import moment from 'moment';
 import {
     Grid,
 } from '@material-ui/core';
 
-import {
-    testType,
-} from '../../../utils/constants/filters';
-import {
-    defaultTestResults,
-    testResults,
-    pgTestResults,
-} from '../../../utils/constants/testsResults';
-
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { profileActions } from '../../../redux/profilesReducer';
 import { testActions } from '../redux/testReducer';
+import TabsComponent from '../../../components/TabsComponent';
+import LocationMapComponent from '../../../components/LocationMapComponent';
+import isEqual from 'lodash/isEqual';
 
-import TimeSelect from '../../../components/TimeSelectComponent';
-import ModalItem from './ModalItemComponent';
-import CattCard from './CattCardComponent';
-import CheckBox from '../../../components/CheckBoxComponent';
-import getDisplayName from '../../../utils/profilesUtils';
+import TestInfosComponent from './TestInfosComponent';
 
-const selectPlaceholder = {
-    id: 'main.label.selectOption',
-    defaultMessage: 'Select an option',
-};
+const MESSAGES = defineMessages({
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'main.label.informations',
+    },
+    localisation: {
+        defaultMessage: 'Localisation',
+        id: 'main.label.location',
+    },
+});
 
-const inputPlaceHolder = '--';
-
-const dateFormat = 'DD-MM-YYYY';
-
-const getAvailableTestTypes = (testTypes, currentCase) => {
-    const testTypesList = [];
-    testTypes.forEach((tt) => {
-        const testTypeExist = Boolean(currentCase.tests.find(t => t.type === tt.value));
-        if (!testTypeExist) {
-            testTypesList.push(tt);
-        }
-    });
-    return testTypesList;
-};
-// TO_DO =  village,lat long, Signes cliniques + Validation
 class TestModalComponent extends Component {
     constructor(props) {
         super(props);
@@ -61,6 +40,7 @@ class TestModalComponent extends Component {
                 form: props.currentCase.id,
             },
             currentCase: props.currentCase,
+            currentTab: 'infos',
         };
     }
 
@@ -71,6 +51,23 @@ class TestModalComponent extends Component {
         }
         if (this.props.profiles.length === 0) {
             this.props.fetchProfiles();
+        }
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!isEqual(this.props.currentTest, nextProps.currentTest)) {
+            this.setState({
+                currentTest: {
+                    ...nextProps.currentTest,
+                    tester: nextProps.currentTest.tester ? nextProps.currentTest.tester.id : null,
+                    form: nextProps.currentCase.id,
+                },
+            });
+        }
+        if (!isEqual(this.props.currentCase, nextProps.currentCase)) {
+            this.setState({
+                currentCase: nextProps.currentCase,
+            });
         }
     }
 
@@ -101,48 +98,17 @@ class TestModalComponent extends Component {
         }
     }
 
-    getComponentValues() {
-        const {
-            currentCase,
-            intl: {
-                formatMessage,
-            },
-            currentUser,
-        } = this.props;
+    updateTestPosition(lat, lng) {
+        this.onChange('latitude', parseFloat(lat, 10), 'currentTest');
+        this.onChange('longitude', parseFloat(lng, 10), 'currentTest');
+    }
+
+    updateTestLocation(location) {
         const {
             currentTest,
         } = this.state;
-        const initValues = {};
-        initValues.testTypeSelect = testType(
-            formatMessage,
-            {
-                id: 'main.label.test_type_select',
-                defaultMessage: 'Test type',
-            },
-            false,
-        );
-        initValues.saveDisabled = false;
-        initValues.isNewTest = currentTest.id === 0;
-        initValues.availableTestType = initValues.isNewTest
-            ? getAvailableTestTypes(initValues.testTypeSelect.options, currentCase) : initValues.testTypeSelect.options;
-        initValues.results = testResults;
-        if (currentTest.type === 'PG') {
-            initValues.results = pgTestResults;
-        } else if (initValues.isNewTest) {
-            initValues.results = defaultTestResults;
-        }
-        initValues.result = currentTest.result;
-        if (initValues.result > 2) {
-            initValues.result = 2;
-        }
-        initValues.tester = currentTest.tester;
-        // if (initValues.isNewTest && !initValues.tester) {
-        //     initValues.tester = currentUser ? currentUser.id : null;
-        // }
-
-        return initValues;
+        console.log(location);
     }
-
 
     render() {
         const {
@@ -151,21 +117,16 @@ class TestModalComponent extends Component {
             intl: {
                 formatMessage,
             },
-            profiles,
+            params,
         } = this.props;
         const {
             currentTest,
             currentCase,
+            currentTab,
         } = this.state;
-        const {
-            testTypeSelect,
-            saveDisabled,
-            isNewTest,
-            availableTestType,
-            results,
-            result,
-            tester,
-        } = this.getComponentValues();
+        const isNewTest = currentTest.id === 0;
+        const saveDisabled = false;
+        console.log(currentTest);
         return (
             <ReactModal
                 isOpen={showModale}
@@ -173,240 +134,64 @@ class TestModalComponent extends Component {
                 onRequestClose={() => toggleModal()}
             >
 
-                <div className="widget__header">
-                    {
-                        !isNewTest
-                        && (
-                            <Fragment>
-                                <FormattedMessage
-                                    id="main.label.test.edit"
-                                    defaultMessage="Test"
-                                />
-                                <span>{' '}</span>
-                                {` ID: ${currentTest.id}`}
-                            </Fragment>
-                        )
-                    }
-                    {
-                        isNewTest
-                        && (
-                            <FormattedMessage
-                                id="main.label.test.add"
-                                defaultMessage="Add a test"
-                            />
-                        )
-                    }
-                </div>
                 <section className="large-modal-content">
-                    <Grid container spacing={2} className="margin-bottom">
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.testType"
-                                    defaultMessage="Test type"
-                                />
-                            )}
-                            fieldComponent={(
-                                <Select
-                                    multi={testTypeSelect.isMultiSelect}
-                                    clearable={testTypeSelect.isClearable}
-                                    simpleValue
-                                    value={currentTest.type}
-                                    placeholder={formatMessage(selectPlaceholder)}
-                                    options={availableTestType}
-                                    onChange={value => this.onChange('type', value, 'currentTest')}
-                                />
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.test.tester"
-                                    defaultMessage="Tester"
-                                />
-                            )}
-                            fieldComponent={(
-                                <Select
-                                    multi={false}
-                                    clearable={false}
-                                    simpleValue
-                                    value={tester}
-                                    placeholder={formatMessage(selectPlaceholder)}
-                                    options={profiles.map(p => ({
-                                        value: p.id,
-                                        label: getDisplayName(p),
-                                    }))}
-                                    onChange={value => this.onChange('tester', value, 'currentTest')}
-                                />
-                            )}
-                        />
+                    <TabsComponent
+                        selectTab={key => (this.setState({ currentTab: key }))}
+                        isRedirecting={false}
+                        currentTab={currentTab}
+                        tabs={[
+                            { label: formatMessage(MESSAGES.infos), key: 'infos' },
+                            { label: formatMessage(MESSAGES.localisation), key: 'localisation' },
+                        ]}
+                        defaultSelect={currentTab}
+                    />
+                    <div className="widget__header">
                         {
-                            currentTest.type === 'CATT'
-                            && (
-                                <ModalItem
-                                    labelComponent={(
-                                        <FormattedMessage
-                                            id="main.label.index"
-                                            defaultMessage="Index"
-                                        />
-                                    )}
-                                    fieldComponent={(
-                                        <CattCard
-                                            cattIndex={currentTest.index}
-                                            onChange={newIndex => this.onChange('index', newIndex, 'currentTest')}
-                                        />
-                                    )}
-                                />
-                            )
-                        }
-                        <ModalItem
-                            labelComponent={(
-                                <Fragment>
-                                    {
-                                        currentTest.type && currentTest.type === 'PL'
-                                        && <FormattedMessage id="patientsCasesTests.plResult" defaultMessage="Présence trypanosomes" />
-                                    }
-                                    {
-                                        (!currentTest.type || (currentTest.type && currentTest.type !== 'PL'))
-                                        && <FormattedMessage id="main.label.result" defaultMessage="Result" />
-                                    }
-                                </Fragment>
-                            )}
-                            fieldComponent={(
-                                <Select
-                                    multi={false}
-                                    clearable={false}
-                                    simpleValue
-                                    value={result}
-                                    placeholder={formatMessage(selectPlaceholder)}
-                                    options={results.map(r => ({
-                                        value: r.value,
-                                        label: formatMessage(r.label),
-                                    }))}
-                                    onChange={value => this.onChange('result', value, 'currentTest')}
-                                />
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.date"
-                                    defaultMessage="Date"
-                                />
-                            )}
-                            fieldComponent={(
-                                <div className="filter__container__select date-select">
-                                    <DatePicker
-                                        dateFormat={dateFormat}
-                                        dateFormatCalendar="YYYY-MM-DD"
-                                        selected={currentTest.date && moment(currentTest.date)}
-                                        onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
-                                    />
-                                </div>
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.time"
-                                    defaultMessage="Time"
-                                />
-                            )}
-                            fieldComponent={(
-                                <TimeSelect
-                                    dateTime={moment(currentTest.date)}
-                                    onChange={date => this.onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
-                                />
-                            )}
-                        />
-                        {
-                            currentTest.type === 'PL'
+                            !isNewTest
                             && (
                                 <Fragment>
-                                    <ModalItem
-                                        labelComponent={(
-                                            <FormattedHTMLMessage
-                                                id="patientsCasesTests.test_pl_gb_mm3"
-                                                defaultMessage="White blood cells/mm&sup3;"
-                                            />
-                                        )}
-                                        fieldComponent={(
-                                            <input
-                                                type="number"
-                                                min={0}
-                                                placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_gb_mm3}
-                                                onChange={event => this.onChange('test_pl_gb_mm3', event.currentTarget.value, 'currentCase')}
-                                            />
-                                        )}
+                                    <FormattedMessage
+                                        id="main.label.test.edit"
+                                        defaultMessage="Test"
                                     />
-                                    <ModalItem
-                                        labelComponent={(
-                                            <FormattedMessage
-                                                id="patientsCasesTests.test_pl_albumine"
-                                                defaultMessage="Albumin"
-                                            />
-                                        )}
-                                        fieldComponent={(
-                                            <input
-                                                type="text"
-                                                placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_albumine}
-                                                onChange={event => this.onChange('test_pl_albumine', event.currentTarget.value, 'currentCase')}
-                                            />
-                                        )}
-                                    />
-                                    <ModalItem
-                                        labelComponent={(
-                                            <FormattedMessage
-                                                id="patientsCasesTests.test_pl_lcr"
-                                                defaultMessage="LCR"
-                                            />
-                                        )}
-                                        fieldComponent={(
-                                            <input
-                                                type="text"
-                                                placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_lcr}
-                                                onChange={event => this.onChange('test_pl_lcr', event.currentTarget.value, 'currentCase')}
-                                            />
-                                        )}
-                                    />
+                                    <span>{' '}</span>
+                                    {` ID: ${currentTest.id}`}
                                 </Fragment>
                             )
                         }
-                        <ModalItem
-                            labelComponent={(
+                        {
+                            isNewTest
+                            && (
                                 <FormattedMessage
-                                    id="main.label.hidden"
-                                    defaultMessage="Hidden"
+                                    id="main.label.test.add"
+                                    defaultMessage="Add a test"
                                 />
-                            )}
-                            fieldComponent={(
-                                <CheckBox
-                                    isChecked={currentTest.hidden}
-                                    keyValue="hidden"
-                                    toggleCheckbox={isChecked => this.onChange('hidden', isChecked, 'currentTest')}
+                            )
+                        }
+                    </div>
+                    <section className="margin-bottom">
+                        {
+                            currentTab === 'infos'
+                            && (
+                                <TestInfosComponent
+                                    currentCase={currentCase}
+                                    currentTest={currentTest}
+                                    onChange={(key, value, type) => this.onChange(key, value, type)}
                                 />
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.comments"
-                                    defaultMessage="Comments"
-                                />
-                            )}
-                            alignItems="flex-start"
-                            fieldComponent={(
-                                <textarea
-                                    value={currentTest.comment || ''}
-                                    onChange={event => this.onChange('comment', event.currentTarget.value, 'currentTest')}
-                                />
-                            )}
-                        />
-                    </Grid>
-
+                            )
+                        }
+                        <section className={currentTab !== 'localisation' ? 'hidden-opacity' : ''}>
+                            <LocationMapComponent
+                                location={currentTest}
+                                updateField={(key, value) => this.onChange(key, value, 'currentTest')}
+                                filters={[]}
+                                params={params}
+                                updatePosition={(lat, lng) => this.updateTestPosition(lat, lng)}
+                                updateLocation={location => this.updateTestLocation(location)}
+                                baseUrl="datas/tests/detail"
+                            />
+                        </section>
+                    </section>
                     <Grid container spacing={2}>
                         <Grid
                             xs={12}
@@ -455,6 +240,7 @@ TestModalComponent.propTypes = {
     createTest: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
+    params: PropTypes.object.isRequired,
     patientId: PropTypes.number.isRequired,
 };
 

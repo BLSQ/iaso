@@ -13,7 +13,7 @@ import L from 'leaflet';
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
 import {
-    updateBaseLayer,
+    arcgisPattern,
     MESSAGES,
     onResizeMap,
     defaultFitToBound,
@@ -25,6 +25,15 @@ import {
     mapCasesToVillages,
     mapCasesToTests,
 } from '../../../utils/map/mapUtils';
+
+const tileOptions = { keepBuffer: 4 };
+export const BASE_LAYERS = {
+    blank: L.tileLayer(''),
+    osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
+    'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),
+    'arcgis-satellite': L.tileLayer(arcgisPattern.replace('{}', 'World_Imagery'), { ...tileOptions, maxZoom: 16 }),
+    'arcgis-topo': L.tileLayer(arcgisPattern.replace('{}', 'World_Topo_Map'), { ...tileOptions, maxZoom: 17 }),
+};
 
 let exportControl;
 
@@ -50,7 +59,7 @@ class TestsMap extends Component {
         this.VillagesGroup = new L.FeatureGroup();
         this.map.addLayer(this.VillagesGroup);
         includeDefaultLayersInMap(this);
-        updateBaseLayer(this.map, this.props.baseLayer);
+        this.updateBaseLayer(this.props.baseLayer);
     }
 
     componentDidUpdate(prevProps) {
@@ -59,7 +68,7 @@ class TestsMap extends Component {
 
         map.whenReady(() => {
             if (hasChanged(prevProps, this.props, 'baseLayer')) {
-                updateBaseLayer(this.map, this.props.baseLayer);
+                this.updateBaseLayer(this.props.baseLayer);
             }
             if (this.props.cases && this.props.cases.length > 0) {
                 this.updateTests();
@@ -85,6 +94,17 @@ class TestsMap extends Component {
         exportControl = onResizeMap(width, height, exportControl, map, 'Liste Villages');
     }
 
+    updateBaseLayer(baseLayer) {
+        const { map } = this;
+        Object.keys(BASE_LAYERS).forEach((key) => {
+            const layer = BASE_LAYERS[key];
+            if (key === baseLayer) {
+                layer.addTo(map);
+            } else if (map.hasLayer(layer)) {
+                map.removeLayer(layer);
+            }
+        });
+    }
     /*
 ***************************************************************************
 * CREATE MAP

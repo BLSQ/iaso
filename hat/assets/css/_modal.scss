@@ -291,10 +291,14 @@
 }
 
 .large-modal-content {
-    width: 600px;
+    width: 900px;
 
     .Select {
         width: 100%;
+    }
+
+    .filter__container__select__label {
+        background-color: transparent;
     }
 
     input[type="text"],
@@ -313,14 +317,43 @@
     textarea {
         resize: vertical;
     }
+
     .check-box__icon {
         top: 0;
         margin-left: 0;
+    }
+
+    .tabs-container {
+        position: absolute;
+        top: -36px;
+        left: 0px;
+
+        li {
+            padding: 8px 32px;
+            border: none;
+
+            &.selected {
+                padding: 10px 34px;
+
+                &:after {
+                    left: 0;
+                    width: 100%;
+                }
+            }
+        }
     }
 }
 
 .edit-modal {
     width: 445px;
+
+    .array-field-container {
+        width: 65%;
+
+        input[type="text"] {
+            margin-left: 0;
+        }
+    }
 
     .display-flex {
         .array-field-container {

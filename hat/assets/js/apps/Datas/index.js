@@ -12,6 +12,7 @@ import App from '../App';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { patientsReducer, patientsInitialState } from './redux/patients';
 import { casesReducer, casesInitialState } from './redux/cases';
+import { smallMapReducer, smallMapInitialState } from '../../redux/smallMapReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { profileReducer, profileInitialState } from '../../redux/profilesReducer';
@@ -99,6 +100,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         patients: patientsInitialState,
         cases: casesInitialState,
         map: mapInitialState,
+        smallMap: smallMapInitialState,
         currentUser: currentUserInitialState,
         geoFilters: filtersInitialState,
         profiles: profileInitialState,
@@ -107,6 +109,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         testsFilters: filtersReducer,
         patientsFilters: filtersReducer,
         patients: patientsReducer,
+        smallMap: smallMapReducer,
         cases: casesReducer,
         map: mapReducer,
         currentUser: currentUserReducer,

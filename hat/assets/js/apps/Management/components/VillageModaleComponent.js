@@ -9,7 +9,7 @@ import { deepEqual } from '../../../utils';
 import { filterActions } from '../../../redux/filtersRedux';
 import filtersGeo from '../constants/geoFilters';
 import VillageInfosComponent from './VillageInfosComponent';
-import VillageMapComponent from './VillageMapComponent';
+import LocationMapComponent from '../../../components/LocationMapComponent';
 import TabsComponent from '../../../components/TabsComponent';
 
 const MESSAGES = defineMessages({
@@ -131,15 +131,15 @@ class VillageModale extends Component {
     }
 
     isSavedDisabled() {
-        return (this.state.village.name === '' ||
-            !this.state.village.name ||
-            !this.state.village.AS__ZS__province_id ||
-            !this.state.village.AS__ZS_id ||
-            !this.state.village.AS_id ||
-            !this.state.village.village_official ||
-            this.state.village.latitude === 0 ||
-            this.state.village.longitude === 0 ||
-            (!this.state.isChanged && this.state.village.id !== 0));
+        return (this.state.village.name === ''
+            || !this.state.village.name
+            || !this.state.village.AS__ZS__province_id
+            || !this.state.village.AS__ZS_id
+            || !this.state.village.AS_id
+            || !this.state.village.village_official
+            || this.state.village.latitude === 0
+            || this.state.village.longitude === 0
+            || (!this.state.isChanged && this.state.village.id !== 0));
     }
 
     render() {
@@ -178,34 +178,41 @@ class VillageModale extends Component {
                     />
 
                     {
-                        this.state.currentTab === 'infos' &&
-                        <VillageInfosComponent
-                            village={this.state.village}
-                            updateVillageField={(key, value) => this.updateVillageField(key, value)}
-                            villageSources={villageSources}
-                        />
+                        this.state.currentTab === 'infos'
+                        && (
+                            <VillageInfosComponent
+                                village={this.state.village}
+                                updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                                villageSources={villageSources}
+                            />
+                        )
                     }
-                    <section className={this.state.currentTab !== 'localisation' ? 'hidden-opacity' : ''} >
-                        <VillageMapComponent
-                            village={this.state.village}
-                            updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                    <section className={this.state.currentTab !== 'localisation' ? 'hidden-opacity' : ''}>
+                        <LocationMapComponent
+                            location={this.state.village}
+                            updateField={(key, value) => this.updateVillageField(key, value)}
                             filters={geo}
                             params={params}
-                            updateVillagePosition={(lat, lng) => this.updateVillagePosition(lat, lng)}
-                            updateVillageLocation={location => this.updateVillageLocation(location)}
+                            updatePosition={(lat, lng) => this.updateVillagePosition(lat, lng)}
+                            updateLocation={location => this.updateVillageLocation(location)}
+                            baseUrl="management/villages"
                         />
                     </section>
                     {
-                        this.state.isUpdated &&
-                        <div className="align-right text--success">
-                            <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village sauvegardé" />
-                        </div>
+                        this.state.isUpdated
+                        && (
+                            <div className="align-right text--success">
+                                <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village sauvegardé" />
+                            </div>
+                        )
                     }
                     {
-                        this.state.error &&
-                        <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
-                        </div>
+                        this.state.error
+                        && (
+                            <div className="align-right text--error">
+                                <FormattedMessage id="main.label.error" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
+                            </div>
+                        )
                     }
                     <div className="align-right">
                         <button

@@ -54,14 +54,18 @@ class TestsViewSet(viewsets.ViewSet):
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
 
-        location = request.data.get("location", None)
-        if location:
+        latitude = request.data.get("latitude", None)
+        longitude = request.data.get("longitude", None)
+        if longitude and latitude:
             new_test.location = Point(
-                x=location.get("coordinates")[0],
-                y=location.get("coordinates")[1],
+                x=longitude,
+                y=latitude,
                 srid=4326,
             )
 
+        clinical_signs = request.data.get("clinicalsigns", None)
+        if clinical_signs:
+            print("TODO, save clinical signs !!!")
 
         form_id = request.data.get("form")
         form_item = get_object_or_404(Case, id=form_id)
@@ -90,11 +94,13 @@ class TestsViewSet(viewsets.ViewSet):
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
 
-        location = request.data.get("location", None)
-        if location:
+
+        latitude = request.data.get("latitude", None)
+        longitude = request.data.get("longitude", None)
+        if longitude and latitude:
             new_test.location = Point(
-                x=location.get("coordinates")[0],
-                y=location.get("coordinates")[1],
+                x=longitude,
+                y=latitude,
                 srid=4326,
             )
 

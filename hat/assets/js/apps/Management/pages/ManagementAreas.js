@@ -17,7 +17,7 @@ import DownloadButtonsComponent from '../../../components/DownloadButtonsCompone
 import { areaActions } from '../redux/areas';
 import { filterActions } from '../../../redux/filtersRedux';
 import { currentUserActions } from '../../../redux/currentUserReducer';
-import { mapActions } from '../redux/mapReducer';
+import { smallMapActions } from '../../../redux/smallMapReducer';
 
 import { filtersSearch, filtersGeo, filtersShapes } from '../constants/areasFilters';
 
@@ -342,7 +342,7 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentArea: areaId => dispatch(areaActions.updateCurrentArea(areaId)),
     selectArea: area => dispatch(areaActions.selectArea(area)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     fetchAreaDetail: areaId => dispatch(areaActions.fetchAreaDetail(dispatch, areaId)),

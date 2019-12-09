@@ -58,6 +58,11 @@ const patientInfosMessages = formatMessage => ({
         type: 'int',
         min: 1900,
     },
+    origin_country: {
+        defaultMessage: 'Country of origin',
+        id: 'main.label.countryOrigin',
+        type: 'text'
+    },
     province: {
         defaultMessage: 'Province of origin',
         id: 'main.label.provinceOrigin',

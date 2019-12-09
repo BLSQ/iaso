@@ -8,6 +8,7 @@ import PropTypes from 'prop-types';
 
 const ModalItem = ({
     labelComponent,
+    alignItems,
     fieldComponent,
 }) => (
     <Fragment>
@@ -16,7 +17,7 @@ const ModalItem = ({
             item
             container
             justify="flex-end"
-            alignItems="center"
+            alignItems={alignItems}
         >
             {labelComponent}
             :
@@ -27,7 +28,12 @@ const ModalItem = ({
     </Fragment>
 );
 
+ModalItem.defaultProps = {
+    alignItems: 'center',
+};
+
 ModalItem.propTypes = {
+    alignItems: PropTypes.string,
     labelComponent: PropTypes.object.isRequired,
     fieldComponent: PropTypes.object.isRequired,
 };

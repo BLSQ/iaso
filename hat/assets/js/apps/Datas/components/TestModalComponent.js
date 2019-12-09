@@ -19,9 +19,16 @@ import {
     testResults,
     pgTestResults,
 } from '../../../utils/constants/testsResults';
+
+import { currentUserActions } from '../../../redux/currentUserReducer';
+import { profileActions } from '../../../redux/profilesReducer';
+import { testActions } from '../redux/testReducer';
+
 import TimeSelect from '../../../components/TimeSelectComponent';
 import ModalItem from './ModalItemComponent';
 import CattCard from './CattCardComponent';
+import CheckBox from '../../../components/CheckBoxComponent';
+import getDisplayName from '../../../utils/profilesUtils';
 
 const selectPlaceholder = {
     id: 'main.label.selectOption',
@@ -42,19 +49,29 @@ const getAvailableTestTypes = (testTypes, currentCase) => {
     });
     return testTypesList;
 };
-
+// TO_DO =  village,lat long, Signes cliniques + Validation
 class TestModalComponent extends Component {
     constructor(props) {
         super(props);
         moment.locale('fr');
         this.state = {
-            currentTest: props.currentTest,
+            currentTest: {
+                ...props.currentTest,
+                tester: props.currentTest.tester ? props.currentTest.tester.id : null,
+                form: props.currentCase.id,
+            },
             currentCase: props.currentCase,
         };
     }
 
     componentWillMount() {
         ReactModal.setAppElement('.container--main');
+        if (!this.props.currentUser) {
+            this.props.fetchCurrentUserInfos();
+        }
+        if (this.props.profiles.length === 0) {
+            this.props.fetchProfiles();
+        }
     }
 
     onChange(key, value, type) {
@@ -72,7 +89,16 @@ class TestModalComponent extends Component {
         const {
             currentTest,
         } = this.state;
-        console.log('SAVE', currentTest);
+        const {
+            updateTest,
+            createTest,
+            patientId,
+        } = this.props;
+        if (currentTest.id !== 0) {
+            updateTest(currentTest, patientId);
+        } else {
+            createTest(currentTest, patientId);
+        }
     }
 
     getComponentValues() {
@@ -81,6 +107,7 @@ class TestModalComponent extends Component {
             intl: {
                 formatMessage,
             },
+            currentUser,
         } = this.props;
         const {
             currentTest,
@@ -94,7 +121,7 @@ class TestModalComponent extends Component {
             },
             false,
         );
-        initValues.saveDisabled = true;
+        initValues.saveDisabled = false;
         initValues.isNewTest = currentTest.id === 0;
         initValues.availableTestType = initValues.isNewTest
             ? getAvailableTestTypes(initValues.testTypeSelect.options, currentCase) : initValues.testTypeSelect.options;
@@ -108,6 +135,11 @@ class TestModalComponent extends Component {
         if (initValues.result > 2) {
             initValues.result = 2;
         }
+        initValues.tester = currentTest.tester;
+        // if (initValues.isNewTest && !initValues.tester) {
+        //     initValues.tester = currentUser ? currentUser.id : null;
+        // }
+
         return initValues;
     }
 
@@ -119,9 +151,7 @@ class TestModalComponent extends Component {
             intl: {
                 formatMessage,
             },
-            // load: {
-            //     loading,
-            // },
+            profiles,
         } = this.props;
         const {
             currentTest,
@@ -134,6 +164,7 @@ class TestModalComponent extends Component {
             availableTestType,
             results,
             result,
+            tester,
         } = this.getComponentValues();
         return (
             <ReactModal
@@ -184,6 +215,28 @@ class TestModalComponent extends Component {
                                     placeholder={formatMessage(selectPlaceholder)}
                                     options={availableTestType}
                                     onChange={value => this.onChange('type', value, 'currentTest')}
+                                />
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.test.tester"
+                                    defaultMessage="Tester"
+                                />
+                            )}
+                            fieldComponent={(
+                                <Select
+                                    multi={false}
+                                    clearable={false}
+                                    simpleValue
+                                    value={tester}
+                                    placeholder={formatMessage(selectPlaceholder)}
+                                    options={profiles.map(p => ({
+                                        value: p.id,
+                                        label: getDisplayName(p),
+                                    }))}
+                                    onChange={value => this.onChange('tester', value, 'currentTest')}
                                 />
                             )}
                         />
@@ -325,13 +378,29 @@ class TestModalComponent extends Component {
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage
+                                    id="main.label.hidden"
+                                    defaultMessage="Hidden"
+                                />
+                            )}
+                            fieldComponent={(
+                                <CheckBox
+                                    isChecked={currentTest.hidden}
+                                    keyValue="hidden"
+                                    toggleCheckbox={isChecked => this.onChange('hidden', isChecked, 'currentTest')}
+                                />
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
                                     id="main.label.comments"
                                     defaultMessage="Comments"
                                 />
                             )}
+                            alignItems="flex-start"
                             fieldComponent={(
                                 <textarea
-                                    value={currentCase.test_pl_comments}
+                                    value={currentTest.comment || ''}
                                     onChange={event => this.onChange('comment', event.currentTarget.value, 'currentTest')}
                                 />
                             )}
@@ -379,18 +448,30 @@ TestModalComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     currentCase: PropTypes.object.isRequired,
-    load: PropTypes.object.isRequired,
     currentTest: PropTypes.object,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
+    fetchProfiles: PropTypes.func.isRequired,
+    updateTest: PropTypes.func.isRequired,
+    createTest: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
+    profiles: PropTypes.array.isRequired,
+    patientId: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
     deleteResult: state.cases.deleteResult,
     deleteError: state.cases.deleteError,
+    currentUser: state.currentUser.user,
+    profiles: state.profiles.list,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+    fetchProfiles: () => dispatch(profileActions.fetchProfiles(dispatch)),
+    updateTest: (test, patientId) => dispatch(testActions.updateTest(dispatch, test, patientId)),
+    createTest: (test, patientId) => dispatch(testActions.createTest(dispatch, test, patientId)),
 });
 
 

@@ -21,10 +21,14 @@ function CheckBoxComponent(props) {
     return (
         <Fragment>
             <span className="check-box__container">
-                <label htmlFor={`checkbox-${keyValue}`} className={labelClassName}>
-                    {formatMessage(labelObj)}
-                    {showSemicolon ? ':' : ''}
-                </label>
+                {
+                    labelObj && (
+                        <label htmlFor={`checkbox-${keyValue}`} className={labelClassName}>
+                            {formatMessage(labelObj)}
+                            {showSemicolon ? ':' : ''}
+                        </label>
+                    )
+                }
                 <span>
                     {
                         isChecked
@@ -63,6 +67,8 @@ CheckBoxComponent.defaultProps = {
     showSemicolon: false,
     keyValue: '',
     labelClassName: '',
+    labelObj: null,
+
 };
 
 CheckBoxComponent.propTypes = {
@@ -70,7 +76,7 @@ CheckBoxComponent.propTypes = {
     isDisabled: PropTypes.bool,
     showSemicolon: PropTypes.bool,
     keyValue: PropTypes.string,
-    labelObj: PropTypes.object.isRequired,
+    labelObj: PropTypes.object,
     toggleCheckbox: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
     labelClassName: PropTypes.string,

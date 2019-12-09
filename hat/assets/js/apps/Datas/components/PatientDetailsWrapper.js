@@ -273,6 +273,7 @@ class PatientDetailsWrapper extends React.Component {
                                                                 toggleModal={() => this.toggleTestModal()}
                                                                 currentCase={c}
                                                                 currentTest={editedTest}
+                                                                patientId={patient.id}
                                                             />
                                                         )
                                                     }

@@ -4,32 +4,33 @@ from iaso.models import OrgUnit, OrgUnitType, Instance
 from django.db import connection
 from django.core.paginator import Paginator
 
-
 """
-supported   Value type	    Description
-n        Age	              -
-n        Coordinate	        A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
-n        Date	            Dates rendered as calendar widget in data entry.
-n        Date & time	    -
-n        Email	            Email.
-n        File	            A file resource where you can store external files, for example documents and photos.
-y        Integer	        Any whole number (positive and negative), including zero.
-n        Letter	            A single letter.
-y        Long text	        Textual value. Renders as text area with no length constraint in forms.
-y        Negative integer	Any whole number less than (but not including) zero.
-y        Number	            Any real numeric value with a single decimal point. Thousands separators and scientific notation is not supported.
-n        Percentage	        Whole numbers inclusive between 0 and 100.
-n        Phone number	    Phone number.
-y        Positive integer	Any whole number greater than (but not including) zero.
-y        Positive of zero integer	Any positive whole number, including zero.
-n        Organisation unit	Organisation units rendered as a hierarchy tree widget.
-n        Unit interval	    Any real number greater than or equal to 0 and less than or equal to 1.
-y        Text	            Textual value. The maximum number of allowed characters per value is 50,000.
-n        Time	            "Time is stored in HH:mm format. HH is a number between 0 and 23 mm is a number between 00 and 59"
-n        Tracker associate	Tracked entity instance. Rendered as dialog with a list of tracked entity instances and a search field.
-n        Username	        DHIS 2 user. Rendered as a dialog with a list of users and a search field.
-n        Yes/No	            Boolean values, renders as drop-down lists in data entry.
-n        Yes only	        True values, renders as check-boxes in data entry.
+https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_csv_data_elements
+
+supported   Value type	        Description
+n        Age	                  -
+n        COORDINATE             Coordinate     A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
+n        DATE                   Date           Dates rendered as calendar widget in data entry.
+n        DATETIME               Date & time	        -
+n        EMAIL                  Email	                Email.
+n        FILE_RESOURCE          File            A file resource where you can store external files, for example documents and photos.
+y        INTEGER                Integer	        Any whole number (positive and negative), including zero.
+n        LETTER                 Letter              A single letter.
+y        LONG_TEXT              Long text           Textual value. Renders as text area with no length constraint in forms.
+y        INTEGER_NEGATIVE       Negative integer	Any whole number less than (but not including) zero.
+y        NUMBER                 Number	            Any real numeric value with a single decimal point. Thousands separators and scientific notation is not supported.
+n        PERCENTAGE             Percentage	        Whole numbers inclusive between 0 and 100.
+n        PHONE_NUMBER           Phone number	        Phone number.
+y        INTEGER_POSITIVE       Positive integer	Any whole number greater than (but not including) zero.
+y        INTEGER_ZERO_OR_POSITIVE   Positive of zero integer	Any positive whole number, including zero.
+n        Organisation unit	    Organisation units rendered as a hierarchy tree widget.
+n        UNIT_INTERVAL          Unit interval    Any real number greater than or equal to 0 and less than or equal to 1.
+y        TEXT                   Text            Textual value. The maximum number of allowed characters per value is 50,000.
+n        ??                     Time	            "Time is stored in HH:mm format. HH is a number between 0 and 23 mm is a number between 00 and 59"
+n        ???                    Tracker associate	Tracked entity instance. Rendered as dialog with a list of tracked entity instances and a search field.
+n        ???                    Username	        DHIS 2 user. Rendered as a dialog with a list of users and a search field.
+y        BOOLEAN                Yes/No	            Boolean values, renders as drop-down lists in data entry.
+n        TRUE_ONLY              Yes only	        True values, renders as check-boxes in data entry.
 """
 
 
@@ -51,8 +52,8 @@ def format_value(data_element, raw_value):
     if (
         data_element_type == "INTEGER_ZERO_OR_POSITIVE"
         or data_element_type == "INTEGER"
-        or data_element_type == "POSITIVE_INTEGER"
-        or data_element_type == "NEGATIVE_INTEGER"
+        or data_element_type == "INTEGER_POSITIVE"
+        or data_element_type == "INTEGER_NEGATIVE"
     ):
         if raw_value == "":
             return None

@@ -5,6 +5,34 @@ from django.db import connection
 from django.core.paginator import Paginator
 
 
+"""
+supported   Value type	    Description
+n        Age	              -
+n        Coordinate	        A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
+n        Date	            Dates rendered as calendar widget in data entry.
+n        Date & time	    -
+n        Email	            Email.
+n        File	            A file resource where you can store external files, for example documents and photos.
+y        Integer	        Any whole number (positive and negative), including zero.
+n        Letter	            A single letter.
+y        Long text	        Textual value. Renders as text area with no length constraint in forms.
+y        Negative integer	Any whole number less than (but not including) zero.
+y        Number	            Any real numeric value with a single decimal point. Thousands separators and scientific notation is not supported.
+n        Percentage	        Whole numbers inclusive between 0 and 100.
+n        Phone number	    Phone number.
+y        Positive integer	Any whole number greater than (but not including) zero.
+y        Positive of zero integer	Any positive whole number, including zero.
+n        Organisation unit	Organisation units rendered as a hierarchy tree widget.
+n        Unit interval	    Any real number greater than or equal to 0 and less than or equal to 1.
+y        Text	            Textual value. The maximum number of allowed characters per value is 50,000.
+n        Time	            "Time is stored in HH:mm format. HH is a number between 0 and 23 mm is a number between 00 and 59"
+n        Tracker associate	Tracked entity instance. Rendered as dialog with a list of tracked entity instances and a search field.
+n        Username	        DHIS 2 user. Rendered as a dialog with a list of users and a search field.
+n        Yes/No	            Boolean values, renders as drop-down lists in data entry.
+n        Yes only	        True values, renders as check-boxes in data entry.
+"""
+
+
 def format_value(data_element, raw_value):
     data_element_type = None
     if "valueType" in data_element:
@@ -12,13 +40,28 @@ def format_value(data_element, raw_value):
     else:
         raise Exception("no valueType for ", data_element)
 
-    if data_element_type == "INTEGER_ZERO_OR_POSITIVE":
+    if data_element_type == "NUMBER":
+        if raw_value == "":
+            return None
+        try:
+            return float(raw_value)
+        except:
+            raise Exception("Bad value for float", raw_value, data_element)
+
+    if (
+        data_element_type == "INTEGER_ZERO_OR_POSITIVE"
+        or data_element_type == "INTEGER"
+        or data_element_type == "POSITIVE_INTEGER"
+        or data_element_type == "NEGATIVE_INTEGER"
+    ):
+        if raw_value == "":
+            return None
         try:
             return int(raw_value)
         except:
-            return Exception("Bad value for int", raw_value, data_element)
+            raise Exception("Bad value for int", raw_value, data_element)
 
-    if data_element_type == "TEXT":
+    if data_element_type == "TEXT" or data_element_type == "LONG_TEXT":
         if "option_set" in data_element:
             for options in data_element["option_set"]["options"]:
                 if options["odk"] == raw_value:
@@ -50,33 +93,38 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
 
         instances_qs = (
-            Instance.objects.filter(form__form_id="RDC_Data_CS")
+            Instance.objects.filter(
+                form__form_id="RDC_Data_CS"
+                # , org_unit__validated= True ?
+            )
             .prefetch_related("org_unit")
             .prefetch_related("form")
+            .order_by("id")
             .all()
         )
-        paginator = Paginator(instances_qs, 10)
+        paginator = Paginator(instances_qs, 100)
         mapping = self.load_mapping()
         events = []
+        errors = []
 
         for page in range(1, paginator.num_pages + 1):
             for instance in paginator.page(page).object_list:
-                event = {
-                    "program": mapping["program_id"],
-                    "event": instance.export_id,
-                    "orgUnit": instance.org_unit.source_ref,
-                    "eventDate": "TODO",
-                    "status": "COMPLETED",
-                    "dataValues": [],
-                }
-                if instance.location:
-                    event["coordinate"] = {
-                        "latitude": instance.location.y,
-                        "longitude": instance.location.x,
-                    }
-
                 if instance.json:
+                    event = {
+                        "program": mapping["program_id"],
+                        "event": instance.export_id,
+                        "orgUnit": instance.org_unit.source_ref,
+                        "eventDate": instance.json["today"],
+                        "status": "COMPLETED",
+                        "dataValues": [],
+                    }
+                    if instance.location:
+                        event["coordinate"] = {
+                            "latitude": instance.location.y,
+                            "longitude": instance.location.x,
+                        }
                     errored = False
+                    event_errors = []
                     question_mappings = mapping["question_mappings"]
                     for question_key in instance.json.keys():
                         if question_key in question_mappings:
@@ -91,12 +139,17 @@ class Command(BaseCommand):
                                 event["dataValues"].append(data_value)
                             except Exception as error:
                                 errored = True
-
+                                event_errors.append([question_key, error])
                                 print("ERROR", error, question_key)
                     if not errored:
                         events.append(event)
+                    else:
+                        errors.append(event_errors)
 
-            print("done processing page %d/%d" % (page, paginator.num_pages))
+            print(
+                "done processing page %d/%d" % (page, paginator.num_pages), len(events)
+            )
+        print(json.dumps(events, indent=4))
 
     def load_mapping(self):
         with open("./testdata/form-ihp.json") as json_file:

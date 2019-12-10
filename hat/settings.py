@@ -133,6 +133,7 @@ INSTALLED_APPS = [
     "hat.audit",
     "hat.menupermissions",
     "iaso",
+    "django_extensions",
 ]
 
 MIDDLEWARE = [
@@ -339,5 +340,6 @@ else:
             "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
         }
     }
+
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"

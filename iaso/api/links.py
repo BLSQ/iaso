@@ -43,6 +43,12 @@ class LinkViewSet(viewsets.ViewSet):
         xlsx_format = request.GET.get("xlsx", None)
         queryset = Link.objects.order_by(*order)
 
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+            queryset = queryset.filter(
+                source__version__data_source__projects__account=profile.account
+            )
+
         if search:
             queryset = queryset.filter(
                 Q(destination__name__icontains=search)
@@ -53,9 +59,9 @@ class LinkViewSet(viewsets.ViewSet):
                 | Q(source__aliases__contains=[search])
             )
 
-        if validated == 'true':
+        if validated == "true":
             queryset = queryset.filter(validated=True)
-        if validated == 'false':
+        if validated == "false":
             queryset = queryset.filter(validated=False)
 
         if destination:
@@ -82,7 +88,7 @@ class LinkViewSet(viewsets.ViewSet):
         if run_id:
             queryset = queryset.filter(algorithm_run=run_id)
         if score:
-            scoreList = score.split(',')
+            scoreList = score.split(",")
             score_lower_bound = scoreList[0]
             score_upper_bound = scoreList[1]
             if score_lower_bound:
@@ -93,10 +99,10 @@ class LinkViewSet(viewsets.ViewSet):
 
         if org_unit_type_id:
             queryset = queryset.filter(
-                Q(destination__org_unit_type_id__in=org_unit_type_id.split(','))
-                | Q(source__org_unit_type_id__in=org_unit_type_id.split(','))
+                Q(destination__org_unit_type_id__in=org_unit_type_id.split(","))
+                | Q(source__org_unit_type_id__in=org_unit_type_id.split(","))
             )
-
+        queryset = queryset.distinct()
         if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)

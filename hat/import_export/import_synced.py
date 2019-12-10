@@ -48,6 +48,8 @@ def import_synced_devices() -> List[ImportResult]:
     results = []
     for device in DeviceDB.objects.all():
         result: ImportResult = {
+            'device_id': device.device_id,
+            'device_user': device.last_user.username if device.last_user else None,
             'typename': _('synced data'),
             'error': None,
             'stats': None
@@ -86,7 +88,7 @@ def import_synced_devices() -> List[ImportResult]:
                     last_synced_seq=device.last_synced_seq,
                 ).save()
         except Exception as ex:
-            if hasattr(ex,'response') and ex.response.status_code == 404:
+            if hasattr(ex, 'response') and ex.response.status_code == 404:
                 logger.error("Could not find CouchDB for device " + device.device_id)
             else:
                 logger.exception(str(ex))
@@ -158,7 +160,7 @@ def import_synced_population(docs: JsonType, device_id: str):
                 device=device,
                 population_year=date_modified.year,
                 village=normalized_village,
-                population=doc.get('ptr'),
+                population=int(doc.get('ptr')) % 2147483647,
                 defaults={'report_date': date_modified},
             )
 

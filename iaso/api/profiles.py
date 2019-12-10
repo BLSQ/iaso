@@ -1,12 +1,11 @@
+from django.core.exceptions import PermissionDenied
 
-from rest_framework import viewsets, status
+from rest_framework import viewsets
 from rest_framework.response import Response
 
-from hat.users.models import (
-    Profile,
-)
+from iaso.models import Profile
 
-from .authentication import CsrfExemptSessionAuthentication
+from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
 
@@ -24,7 +23,11 @@ class ProfilesViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
-        queryset = Profile.objects.all()
 
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
 
-        return Response([profile.as_short_dict() for profile in queryset])
+        account = request.user.iaso_profile.account
+        queryset = Profile.objects.filter(account=account)
+
+        return Response({"profiles": [profile.as_short_dict() for profile in queryset]})

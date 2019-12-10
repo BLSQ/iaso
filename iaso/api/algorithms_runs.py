@@ -3,13 +3,8 @@ from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 
-from iaso.models import (
-    AlgorithmRun,
-    DataSource,
-    SourceVersion,
-    MatchingAlgorithm,
-)
-from .authentication import CsrfExemptSessionAuthentication
+from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
+from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 import importlib
 
@@ -37,7 +32,6 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         origin_version = request.GET.get("originVersion", None)
         destination_version = request.GET.get("destinationVersion", None)
         launcher_id = request.GET.get("launcher", None)
-
 
         queryset = AlgorithmRun.objects.all()
         if algorithm_id:
@@ -85,11 +79,11 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         return Response(True)
 
     def update(self, request, pk=None):
-        algo_id = request.data.get('algoId', -1)
-        source_origin_id = request.data.get('sourceOriginId', -1)
-        version_origin = request.data.get('versionOrigin', -1)
-        source_destination_id = request.data.get('sourceDestinationId', -1)
-        version_destination = request.data.get('versionDestination', -1)
+        algo_id = request.data.get("algoId", -1)
+        source_origin_id = request.data.get("sourceOriginId", -1)
+        version_origin = request.data.get("versionOrigin", -1)
+        source_destination_id = request.data.get("sourceDestinationId", -1)
+        version_destination = request.data.get("versionDestination", -1)
 
         algorithm = MatchingAlgorithm.objects.get(id=algo_id)
         source_1 = DataSource.objects.get(id=source_origin_id)

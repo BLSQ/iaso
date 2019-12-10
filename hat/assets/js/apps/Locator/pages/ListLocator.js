@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
@@ -9,11 +9,14 @@ import { createUrl } from '../../../utils/fetchData';
 import LoadingSpinner from '../../../components/loading-spinner';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import listLocatorColumns from '../constants/ListLocatorColumns';
+import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
 
 import { locatorActions } from '../redux/locator';
 import { caseActions } from '../redux/case';
 import { provinceActions } from '../redux/province';
 import SearchButton from '../../../components/SearchButton';
+
+import { currentUserActions } from '../../../redux/currentUserReducer';
 
 const baseUrl = 'list';
 
@@ -30,6 +33,7 @@ export class ListLocator extends Component {
         Promise.all([
             this.props.fetchProvinces(),
             this.props.fetchTeams(),
+            this.props.fetchCurrentUserInfos(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id);
@@ -63,7 +67,7 @@ export class ListLocator extends Component {
         });
     }
 
-    getEndpointUrl() {
+    getEndpointUrl(toExport = false, exportType = 'csv') {
         let url = '/api/cases/?';
         const urlParams = {
             province_id: this.props.params.province_id,
@@ -76,6 +80,10 @@ export class ListLocator extends Component {
             isLocator: 'true',
             located: this.props.params.located,
         };
+
+        if (toExport) {
+            urlParams[exportType] = true;
+        }
 
         Object.keys(urlParams).forEach((key) => {
             const value = urlParams[key];
@@ -160,33 +168,45 @@ export class ListLocator extends Component {
                     />
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
-                <div className="locator-container widget__container no-border">
+                <div className="locator-container">
                     {
-                        this.props.load.loading &&
-                        <div>
-                            <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Loading',
-                                id: 'main.label.loading',
-                            })}
-                            />
-                        </div>
+                        this.props.load.loading
+                        && (
+                            <div>
+                                <LoadingSpinner message={formatMessage({
+                                    defaultMessage: 'Loading',
+                                    id: 'main.label.loading',
+                                })}
+                                />
+                            </div>
+                        )
                     }
                     {
-                        this.state.tableUrl &&
-                        <CustomTableComponent
-                            isSortable
-                            showPagination
-                            endPointUrl={this.state.tableUrl}
-                            columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'form_year', desc: false }]}
-                            params={params}
-                            defaultPath="list"
-                            dataKey="cases"
-                            onRowClicked={caseItem => this.selectCase(caseItem)}
-                            multiSort
-                            onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
-                            reduxPage={reduxPage}
-                        />
+                        this.state.tableUrl
+                        && (
+                            <div className="widget__container  no-border">
+                                <CustomTableComponent
+                                    isSortable
+                                    showPagination
+                                    endPointUrl={this.state.tableUrl}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'form_year', desc: false }]}
+                                    params={params}
+                                    defaultPath="list"
+                                    dataKey="cases"
+                                    onRowClicked={caseItem => this.selectCase(caseItem)}
+                                    multiSort
+                                    onDataLoaded={(newCasesList, count, pages) => setCasesList(newCasesList, true, params, count, pages)}
+                                    reduxPage={reduxPage}
+                                />
+                                <div className="align-right">
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(true, 'csv')}
+                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                    />
+                                </div>
+                            </div>
+                        )
                     }
                 </div>
             </section>
@@ -212,6 +232,7 @@ ListLocator.propTypes = {
     fetchTeams: PropTypes.func.isRequired,
     reduxPage: PropTypes.object,
     setCasesList: PropTypes.func.isRequired,
+    fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 
 const LocatorWithIntl = injectIntl(ListLocator);
@@ -224,6 +245,7 @@ const MapDispatchToProps = dispatch => ({
     selectZone: (zoneId, areaId) => dispatch(locatorActions.selectZone(zoneId, undefined, dispatch, false, areaId)),
     selectArea: (areaId, zoneId) => dispatch(locatorActions.selectArea(areaId, undefined, dispatch, false, zoneId)),
     resetSearch: () => dispatch(locatorActions.resetSearch()),
+    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     setCasesList: (patientList, showPagination, params, count, pages) => dispatch(caseActions.setCasesList(patientList, showPagination, params, count, pages)),
 });
 

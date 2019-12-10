@@ -57,8 +57,8 @@ class Command(BaseCommand):
             province_dict['zones'] = zones
             provinces.append(province_dict)
 
-        f = open('location.js', 'w')
-        f.write('module.exports = {provinces: ')
+        f = open('/tmp/location.js', 'w')
+        f.write('module.exports = {"provinces": ')
         f.write(json.dumps(provinces))
         f.write('};')
         f.close()

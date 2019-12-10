@@ -178,7 +178,7 @@ export const validator = profileList => (
         isMultiSelect: false,
         isClearable: true,
         options: profileList.map(u => ({
-            label: getDisplayName(u),
+            label: u.user_name,
             value: u.id,
         })),
         label: MESSAGES.validator,

@@ -19,7 +19,11 @@ from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
 from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB
-from hat.users.models import get_user_geo_list, is_authorized_user, SCREENING_TYPE_CHOICES
+from hat.users.models import (
+    get_user_geo_list,
+    is_authorized_user,
+    SCREENING_TYPE_CHOICES,
+)
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
 
@@ -55,9 +59,7 @@ class CasesViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_required = [
-        'menupermissions.x_locator', 'menupermissions.x_case_cases'
-    ]
+    permission_required = ["menupermissions.x_locator", "menupermissions.x_case_cases"]
 
     def list(self, request):
         limit = int(request.GET.get("limit", 50))
@@ -80,7 +82,7 @@ class CasesViewSet(viewsets.ViewSet):
         normalized = request.GET.get("normalized", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        located = request.GET.get("located", 'all')
+        located = request.GET.get("located", "all")
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
         source = request.GET.get("source", None)
@@ -99,14 +101,24 @@ class CasesViewSet(viewsets.ViewSet):
         show_deleted = request.GET.get("showDeleted", None)
         show_undeleted = request.GET.get("showUnDeleted", None)
 
-        anonymous = (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser) or anonymous_request
-        if located not in ['all', 'only_not_located', 'only_not_located_and_not_found', 'only_located']:
-            return Response('Invalid located parameter', status=status.HTTP_400_BAD_REQUEST)
+        anonymous = (
+            request.user.has_perm("menupermissions.x_anonymous")
+            and not request.user.is_superuser
+        ) or anonymous_request
+        if located not in [
+            "all",
+            "only_not_located",
+            "only_not_located_and_not_found",
+            "only_located",
+        ]:
+            return Response(
+                "Invalid located parameter", status=status.HTTP_400_BAD_REQUEST
+            )
 
-        if located == 'all':
+        if located == "all":
             queryset = Case.objects.order_by(*orders)
 
-        if is_locator == 'true':
+        if is_locator == "true":
             queryset = (
                 Case.objects.filter(confirmed_case=True)
                 .exclude(source="mobile_sync")
@@ -121,22 +133,19 @@ class CasesViewSet(viewsets.ViewSet):
                 .order_by(*orders)
             )
 
-        if located == 'only_not_located':
-            queryset = (
-                Case.objects.filter(normalized_village=None, normalized_village_not_found=False)
-                .order_by(*orders)
-            )
+        if located == "only_not_located":
+            queryset = Case.objects.filter(
+                normalized_village=None, normalized_village_not_found=False
+            ).order_by(*orders)
 
-        if located == 'only_not_located_and_not_found':
-            queryset = (
-                Case.objects.filter(normalized_village=None, normalized_village_not_found=True)
-                .order_by(*orders)
-            )
+        if located == "only_not_located_and_not_found":
+            queryset = Case.objects.filter(
+                normalized_village=None, normalized_village_not_found=True
+            ).order_by(*orders)
 
-        if located == 'only_located':
-            queryset = (
-                Case.objects.filter(normalized_village__isnull=False)
-                .order_by(*orders)
+        if located == "only_located":
+            queryset = Case.objects.filter(normalized_village__isnull=False).order_by(
+                *orders
             )
 
         if stage is not None:
@@ -150,24 +159,42 @@ class CasesViewSet(viewsets.ViewSet):
         if show_deleted is not None and show_undeleted is None:
             queryset = queryset.filter(mark_for_deletion=True)
 
-        if located != 'all' and is_locator != 'true':
-            queryset = queryset.exclude(source="mobile_sync").exclude(source="mobile_backup")\
-                .exclude(province__icontains="kas").exclude(province__icontains="kinsh")\
-                .exclude(province__icontains="bas").exclude(province__icontains="maniema")\
-                .exclude(province__icontains="k.").exclude(province__icontains="equateur")
+        if located != "all" and is_locator != "true":
+            queryset = (
+                queryset.exclude(source="mobile_sync")
+                .exclude(source="mobile_backup")
+                .exclude(province__icontains="kas")
+                .exclude(province__icontains="kinsh")
+                .exclude(province__icontains="bas")
+                .exclude(province__icontains="maniema")
+                .exclude(province__icontains="k.")
+                .exclude(province__icontains="equateur")
+            )
 
         if coordination_ids:
-            queryset = queryset.filter(normalized_team__coordination__id__in=coordination_ids.split(","))
+            queryset = queryset.filter(
+                normalized_team__coordination__id__in=coordination_ids.split(",")
+            )
 
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(normalized_AS__ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(
+                normalized_AS__ZS__province_id__in=get_user_geo_list(
+                    request.user, "province_scope"
+                )
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(normalized_AS__ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(
+                normalized_AS__ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            queryset = queryset.filter(normalized_AS_id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            queryset = queryset.filter(
+                normalized_AS_id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
 
         if province_ids and not zs_ids and not as_ids:
-            queryset = queryset.filter(normalized_AS__ZS__province_id__in=province_ids.split(","))
+            queryset = queryset.filter(
+                normalized_AS__ZS__province_id__in=province_ids.split(",")
+            )
         else:
             if zs_ids and not as_ids:
                 queryset = queryset.filter(normalized_AS__ZS_id__in=zs_ids.split(","))
@@ -178,53 +205,57 @@ class CasesViewSet(viewsets.ViewSet):
         if village_ids:
             queryset = queryset.filter(normalized_village_id__in=village_ids.split(","))
         if years:
-            queryset = queryset.filter(form_year__in=years.split(","))
+            queryset = queryset.filter(normalized_year__in=years.split(","))
         if teams:
             queryset = queryset.filter(normalized_team_id__in=teams.split(","))
         if from_date:
-            queryset = queryset.filter(Q(document_date__gte=from_date) | (Q(document_date__isnull=True) &
-                                                                          Q(form_year__gte=from_date[:4])))
+            queryset = queryset.filter(
+                Q(normalized_date__gte=from_date)
+                | (Q(normalized_date__isnull=True) & Q(form_year__gte=from_date[:4]))
+            )
         if to_date:
-            queryset = queryset.filter(Q(document_date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
-                                       | (Q(document_date__isnull=True) & Q(form_year__lte=to_date[:4])))
+            queryset = queryset.filter(
+                Q(
+                    normalized_date__lte=datetime.strptime(to_date, DATE_FORMAT)
+                    + timedelta(days=1)
+                )
+                | (Q(normalized_date__isnull=True) & Q(form_year__lte=to_date[:4]))
+            )
 
         if source:
             queryset = queryset.filter(source=source)
-        if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
+        if not (
+            request.user.has_perm("menupermissions.x_anonymous")
+            and not request.user.is_superuser
+        ):
             if search_name:
-                queryset = queryset.filter(
-                    Q(name__icontains=search_name)
-                )
+                queryset = queryset.filter(Q(name__icontains=search_name))
             if search_prename:
-                queryset = queryset.filter(
-                    Q(prename__icontains=search_prename)
-                )
+                queryset = queryset.filter(Q(prename__icontains=search_prename))
             if search_lastname:
-                queryset = queryset.filter(
-                    Q(lastname__icontains=search_lastname)
-                )
+                queryset = queryset.filter(Q(lastname__icontains=search_lastname))
             if search_mother_name:
                 queryset = queryset.filter(
                     Q(mothers_surname__icontains=search_mother_name)
                 )
 
         if screening_result is not None:
-            if screening_result == 'true':
+            if screening_result == "true":
                 queryset = queryset.filter(screening_result__gte=RES_POSITIVE)
-            elif screening_result == 'false':
+            elif screening_result == "false":
                 queryset = queryset.filter(screening_result__lt=RES_POSITIVE)
-            elif screening_result == 'not_done':
+            elif screening_result == "not_done":
                 queryset = queryset.filter(screening_result__isnull=True)
         if confirmation_result is not None:
-            if confirmation_result == 'true':
+            if confirmation_result == "true":
                 queryset = queryset.filter(confirmation_result__gte=RES_POSITIVE)
-            elif confirmation_result == 'false':
+            elif confirmation_result == "false":
                 queryset = queryset.filter(confirmation_result__lt=RES_POSITIVE)
-            elif confirmation_result == 'not_done':
+            elif confirmation_result == "not_done":
                 queryset = queryset.filter(confirmation_result__isnull=True)
 
         if normalized is not None:
-            if normalized != 'true':
+            if normalized != "true":
                 queryset = queryset.filter(normalized_AS__isnull=True)
             else:
                 queryset = queryset.exclude(normalized_AS__isnull=True)
@@ -234,7 +265,9 @@ class CasesViewSet(viewsets.ViewSet):
 
         if geo_search:
             queryset = queryset.filter(
-                Q(village__icontains=geo_search) | Q(ZS__icontains=geo_search) | Q(AS__icontains=geo_search)
+                Q(village__icontains=geo_search)
+                | Q(ZS__icontains=geo_search)
+                | Q(AS__icontains=geo_search)
             )
 
         if test_types:
@@ -261,59 +294,71 @@ class CasesViewSet(viewsets.ViewSet):
                     queryset = queryset.filter(test_pl__isnull=False)
 
         if tester_type:
-            devices = DeviceDB.objects.filter(last_user__profile__tester_type__in=tester_type.split(',')).values_list('device_id', flat=True)
+            devices = DeviceDB.objects.filter(
+                last_user__profile__tester_type__in=tester_type.split(",")
+            ).values_list("device_id", flat=True)
             queryset = queryset.filter(device_id__in=devices)
 
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
-                return Response(f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
-                                status=status.HTTP_400_BAD_REQUEST)
+                return Response(
+                    f"Invalid screening_type, should be {SCREENING_TYPE_CHOICES}",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
             queryset = queryset.filter(screening_type=screening_type)
 
         if device_ids:
             queryset = queryset.filter(device_id__in=device_ids.split(","))
 
         if pictures:
-            has_pictures = Test.objects\
-                .filter(form_id=OuterRef("id"))\
-                .filter(type__in=TYPES_WITH_IMAGES)\
+            has_pictures = (
+                Test.objects.filter(form_id=OuterRef("id"))
+                .filter(type__in=TYPES_WITH_IMAGES)
                 .filter(image_filename__isnull=False)
-            if pictures == 'with_pictures':
-                queryset = queryset.annotate(has_pictures=Exists(has_pictures))\
-                    .filter(has_pictures=True)
-            elif pictures == 'without_pictures':
-                queryset = queryset.annotate(has_pictures=Exists(has_pictures))\
-                    .filter(has_pictures=False)
-            elif pictures == 'with_pictures_uploaded':
+            )
+            if pictures == "with_pictures":
+                queryset = queryset.annotate(has_pictures=Exists(has_pictures)).filter(
+                    has_pictures=True
+                )
+            elif pictures == "without_pictures":
+                queryset = queryset.annotate(has_pictures=Exists(has_pictures)).filter(
+                    has_pictures=False
+                )
+            elif pictures == "with_pictures_uploaded":
                 has_uploaded_pictures = has_pictures.filter(image_id__isnull=False)
-                queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
-                    .filter(has_uploaded_pictures=True)
-            elif pictures == 'without_pictures_uploaded':  # but with pictures:
+                queryset = queryset.annotate(
+                    has_uploaded_pictures=Exists(has_uploaded_pictures)
+                ).filter(has_uploaded_pictures=True)
+            elif pictures == "without_pictures_uploaded":  # but with pictures:
                 has_uploaded_pictures = has_pictures.filter(image_id__isnull=True)
-                queryset = queryset.annotate(has_uploaded_pictures=Exists(has_uploaded_pictures))\
-                    .filter(has_uploaded_pictures=True)
+                queryset = queryset.annotate(
+                    has_uploaded_pictures=Exists(has_uploaded_pictures)
+                ).filter(has_uploaded_pictures=True)
 
         if videos:
-            has_videos = Test.objects\
-                .filter(form_id=OuterRef("id"))\
-                .filter(type__in=TYPES_WITH_VIDEOS)\
+            has_videos = (
+                Test.objects.filter(form_id=OuterRef("id"))
+                .filter(type__in=TYPES_WITH_VIDEOS)
                 .filter(video_filename__isnull=False)
-            if videos == 'with_videos':
-                queryset = queryset.annotate(has_videos=Exists(has_videos))\
-                    .filter(has_videos=True)
-            elif videos == 'without_videos':
-                queryset = queryset.annotate(has_videos=Exists(has_videos))\
-                    .filter(has_videos=False)
-            elif videos == 'with_videos_uploaded':
-                has_uploaded_videos = has_videos \
-                    .filter(video_id__isnull=False)
-                queryset = queryset.annotate(has_uploaded_videos=Exists(has_uploaded_videos))\
-                    .filter(has_uploaded_videos=True)
-            elif videos == 'without_videos_uploaded':  # but with videos:
-                has_unuploaded_videos = has_videos\
-                    .filter(video_id__isnull=True)
-                queryset = queryset.annotate(has_unuploaded_videos=Exists(has_unuploaded_videos))\
-                    .filter(has_unuploaded_videos=True)
+            )
+            if videos == "with_videos":
+                queryset = queryset.annotate(has_videos=Exists(has_videos)).filter(
+                    has_videos=True
+                )
+            elif videos == "without_videos":
+                queryset = queryset.annotate(has_videos=Exists(has_videos)).filter(
+                    has_videos=False
+                )
+            elif videos == "with_videos_uploaded":
+                has_uploaded_videos = has_videos.filter(video_id__isnull=False)
+                queryset = queryset.annotate(
+                    has_uploaded_videos=Exists(has_uploaded_videos)
+                ).filter(has_uploaded_videos=True)
+            elif videos == "without_videos_uploaded":  # but with videos:
+                has_unuploaded_videos = has_videos.filter(video_id__isnull=True)
+                queryset = queryset.annotate(
+                    has_unuploaded_videos=Exists(has_unuploaded_videos)
+                ).filter(has_unuploaded_videos=True)
 
         queryset = CaseView.add_caseview_fields_to_case_queryset(queryset)
 
@@ -328,9 +373,14 @@ class CasesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("normalized_patient")
         queryset = queryset.prefetch_related("normalized_patient__origin_area")
         queryset = queryset.prefetch_related("normalized_patient__origin_area__ZS")
-        queryset = queryset.prefetch_related("normalized_patient__origin_area__ZS__province")
+        queryset = queryset.prefetch_related(
+            "normalized_patient__origin_area__ZS__province"
+        )
         queryset = queryset.prefetch_related("normalized_patient__origin_village")
         queryset = queryset.prefetch_related("normalized_team")
+        queryset = queryset.prefetch_related("infection_location")
+        queryset = queryset.prefetch_related("infection_location__AS")
+        queryset = queryset.prefetch_related("infection_location__AS__ZS")
 
         if csv_format is None and xlsx_format is None:
 
@@ -342,8 +392,13 @@ class CasesViewSet(viewsets.ViewSet):
             page = paginator.page(page_offset)
 
             res["cases"] = list(
-                map(lambda x: x.as_dict(additional_fields=CaseView.caseview_additional_fields),
-                    page.object_list))  # just the map breaks the tests
+                map(
+                    lambda x: x.as_dict(
+                        additional_fields=CaseView.caseview_additional_fields
+                    ),
+                    page.object_list,
+                )
+            )  # just the map breaks the tests
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset
@@ -352,37 +407,43 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(res)
         else:
-            if (not request.user.has_perm("menupermissions.x_datas_download") and not request.user.is_superuser):
-                return Response('Unauthorized', status=401)
+            if (
+                not request.user.has_perm("menupermissions.x_datas_download")
+                and not request.user.is_superuser
+            ):
+                return Response("Unauthorized", status=401)
             columns = [
-                {"title": 'Identifiant', "width": 9},
-                {"title": 'UM', "width": 14},
-                {"title": 'Date', "width": 15},
-                {"title": 'Source', "width": 10},
-                {"title": 'Province encodée', "width": 10},
-                {"title": 'ZS encodée', "width": 14},
-                {"title": 'AS encodée', "width": 14},
-                {"title": 'Village encodé', "width": 20},
-                {"title": 'Nom', "width": 18},
-                {"title": 'Postnom', "width": 18},
-                {"title": 'Prénom', "width": 18},
-                {"title": 'Nom de\nla mère', "width": 15},
-                {"title": 'Sexe', "width": 6},
-                {"title": 'Age', "width": 4},
-                {"title": 'Dépistage\nactif/passif', "width": 10},
-                {"title": 'CATT', "width": 7},
-                {"title": 'RDT', "width": 7},
-                {"title": 'PG', "width": 7},
-                {"title": 'CTCWOO', "width": 7},
-                {"title": 'GE', "width": 7},
-                {"title": 'LCR', "width": 7},
-                {"title": 'Ponction\nNoeud\nLymph.', "width": 8},
-                {"title": 'Sang\nfrais', "width": 7},
-                {"title": 'MAECT', "width": 7},
-                {"title": 'PL', "width": 7},
+                {"title": "Identifiant", "width": 9},
+                {"title": "UM", "width": 14},
+                {"title": "Date", "width": 15},
+                {"title": "Source", "width": 10},
+                {"title": "Province encodée", "width": 10},
+                {"title": "ZS encodée", "width": 14},
+                {"title": "AS encodée", "width": 14},
+                {"title": "Village encodé", "width": 20},
+                {"title": "Nom", "width": 18},
+                {"title": "Postnom", "width": 18},
+                {"title": "Prénom", "width": 18},
+                {"title": "Nom de\nla mère", "width": 15},
+                {"title": "Sexe", "width": 6},
+                {"title": "Age", "width": 4},
+                {"title": "Dépistage\nactif/passif", "width": 10},
+                {"title": "CATT", "width": 7},
+                {"title": "RDT", "width": 7},
+                {"title": "PG", "width": 7},
+                {"title": "CTCWOO", "width": 7},
+                {"title": "GE", "width": 7},
+                {"title": "LCR", "width": 7},
+                {"title": "Ponction\nNoeud\nLymph.", "width": 8},
+                {"title": "Sang\nfrais", "width": 7},
+                {"title": "MAECT", "width": 7},
+                {"title": "PL", "width": 7},
+                {"title": "ZS infection", "width": 14},
+                {"title": "AS infection", "width": 14},
+                {"title": "Village infection", "width": 20},
             ]
 
-            filename = 'cases'
+            filename = "cases"
             queryset = queryset.values(
                 "id",
                 "normalized_team_name",
@@ -411,67 +472,90 @@ class CasesViewSet(viewsets.ViewSet):
                 "test_sf",
                 "test_maect",
                 "test_pl",
+                "infection_location__AS__ZS__name",
+                "infection_location__AS__name",
+                "infection_location__name",
             )
 
             def get_row(case, **kwargs):
                 return [
-                        case["id"],
-                        case["normalized_team_name"],
-                        case["normalized_date"].strftime("%Y-%m-%d %H:%M")
-                        if type(case["normalized_date"]) is datetime else case["normalized_date"],
-                        case["source"],
-                        case["normalized_province_name"],
-                        case["normalized_zs_name"],
-                        case["normalized_as_name"] if case["normalized_as_name"] else case["AS"],
-                        case["normalized_village__name"] if case["normalized_village__name"] else case["village"],
-                        case["normalized_patient__last_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
-                        case["normalized_patient__post_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
-                        case["normalized_patient__first_name"] if not anonymous else ANONYMOUS_PLACEHOLDER,
-                        case["normalized_patient__mothers_surname"] if not anonymous else ANONYMOUS_PLACEHOLDER,
-                        case["normalized_patient__sex"],
-                        case["normalized_patient__age"],
-                        case["screening_type"],
-                        testResultString(case["test_catt"]),
-                        testResultString(case["test_rdt"]),
-                        testResultString(case["test_pg"]),
-                        testResultString(case["test_ctcwoo"]),
-                        testResultString(case["test_ge"]),
-                        testResultString(case["test_lcr"]),
-                        testResultString(case["test_lymph_node_puncture"]),
-                        testResultString(case["test_sf"]),
-                        testResultString(case["test_maect"]),
-                        testResultString(case["test_pl"])
-                    ]
+                    case["id"],
+                    case["normalized_team_name"],
+                    case["normalized_date"].strftime("%Y-%m-%d %H:%M")
+                    if type(case["normalized_date"]) is datetime
+                    else case["normalized_date"],
+                    case["source"],
+                    case["normalized_province_name"],
+                    case["normalized_zs_name"],
+                    case["normalized_as_name"]
+                    if case["normalized_as_name"]
+                    else case["AS"],
+                    case["normalized_village__name"]
+                    if case["normalized_village__name"]
+                    else case["village"],
+                    case["normalized_patient__last_name"]
+                    if not anonymous
+                    else ANONYMOUS_PLACEHOLDER,
+                    case["normalized_patient__post_name"]
+                    if not anonymous
+                    else ANONYMOUS_PLACEHOLDER,
+                    case["normalized_patient__first_name"]
+                    if not anonymous
+                    else ANONYMOUS_PLACEHOLDER,
+                    case["normalized_patient__mothers_surname"]
+                    if not anonymous
+                    else ANONYMOUS_PLACEHOLDER,
+                    case["normalized_patient__sex"],
+                    case["normalized_patient__age"],
+                    case["screening_type"],
+                    testResultString(case["test_catt"]),
+                    testResultString(case["test_rdt"]),
+                    testResultString(case["test_pg"]),
+                    testResultString(case["test_ctcwoo"]),
+                    testResultString(case["test_ge"]),
+                    testResultString(case["test_lcr"]),
+                    testResultString(case["test_lymph_node_puncture"]),
+                    testResultString(case["test_sf"]),
+                    testResultString(case["test_maect"]),
+                    testResultString(case["test_pl"]),
+                    case["infection_location__AS__ZS__name"],
+                    case["infection_location__AS__name"],
+                    case["infection_location__name"],
+                ]
 
             if xlsx_format:
-                filename = filename + '.xlsx'
+                filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx('Cas', columns, queryset, get_row),
-                    content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+                    generate_xlsx("Cas", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             elif csv_format:
                 response = StreamingHttpResponse(
                     streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                    content_type='text/csv',
+                    content_type="text/csv",
                 )
-                filename = filename + '.csv'
+                filename = filename + ".csv"
             else:
-                return Response('Invalid format parameter parameter', status=status.HTTP_400_BAD_REQUEST)
-            response['Content-Disposition'] = 'attachment; filename=%s' % filename
+                return Response(
+                    "Invalid format parameter parameter",
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
     def retrieve(self, request, pk=None):
-        full = request.GET.get('full')
+        full = request.GET.get("full")
         case = get_object_or_404(Case, pk=pk)
         is_authorized = is_authorized_user(
             request.user,
             case.normalized_AS.ZS.province.id if case.normalized_AS else None,
             case.normalized_AS.ZS.id if case.normalized_AS else None,
-            case.normalized_AS.id if case.normalized_AS else None)
+            case.normalized_AS.id if case.normalized_AS else None,
+        )
         if is_authorized:
             return Response(case.as_dict(full is not None))
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def partial_update(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
@@ -479,7 +563,7 @@ class CasesViewSet(viewsets.ViewSet):
             request.user,
             case.normalized_AS.ZS.province.id if case.normalized_AS else None,
             case.normalized_AS.ZS.id if case.normalized_AS else None,
-            case.normalized_AS.id if case.normalized_AS else None
+            case.normalized_AS.id if case.normalized_AS else None,
         )
 
         if is_authorized:
@@ -505,12 +589,12 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(case.as_dict())
         else:
-            return Response('Unauthorized', status=status.HTTP_401_UNAUTHORIZED)
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
     def delete(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
 
-        full_delete=request.query_params.get("full_delete", None)
+        full_delete = request.query_params.get("full_delete", None)
         if full_delete and full_delete.lower() == "true":
             if not request.user.is_superuser:
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
@@ -544,7 +628,7 @@ def full_delete_case(case):
         "marked_documents": marked_documents,
         "deleted_tests": deleted_tests,
         "deleted_case": deleted_case,
-        "deleted_patient": None
+        "deleted_patient": None,
     }
     if patient.case_set.count() == 0:
         # Treatment, duplicate pairs and duplicate ignore are cascaded and will report in this deleted_patient

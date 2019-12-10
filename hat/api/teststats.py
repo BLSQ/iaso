@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.core.cache import cache
 from django.db.models import Count, Min, Max, TextField, F
@@ -9,6 +9,8 @@ from pg_utils import DistinctSum
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+
+from hat.cases.forms import DATE_FORMAT
 from hat.common.utils import get_request_as_array
 
 from hat.cases.models import (
@@ -188,7 +190,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(date__gte=from_date)
 
             if to_date is not None:
-                queryset = queryset.filter(date__lte=to_date)
+                queryset = queryset.filter(date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
 
             if device_id:
                 queryset = queryset.filter(form__device_id=device_id)
@@ -206,28 +208,28 @@ class TestStatsViewSet(viewsets.ViewSet):
 
             grouped_queryset = (
                 queryset.values(*grouping_fields)
-                .annotate(test_count=Count("id", distinct=True))
-                .annotate(catt_count=Count("id", distinct=True, filter=Q(type=CATT)))
-                .annotate(rdt_count=Count("id", distinct=True, filter=Q(type=RDT)))
+                .annotate(test_count=Count("form_id", distinct=True))
+                .annotate(catt_count=Count("form_id", distinct=True, filter=Q(type=CATT)))
+                .annotate(rdt_count=Count("form_id", distinct=True, filter=Q(type=RDT)))
                 .annotate(
                     screening_count=Count(
-                        "id", distinct=True, filter=Q(type=CATT) | Q(type=RDT)
+                        "form_id", distinct=True, filter=Q(type=CATT) | Q(type=RDT)
                     )
                 )
                 .annotate(pg_count=Count("id", distinct=True, filter=Q(type=PG)))
                 .annotate(
                     pg_count_positive=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=PG) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
-                    ctcwoo_count=Count("id", distinct=True, filter=Q(type=CTCWOO))
+                    ctcwoo_count=Count("form_id", distinct=True, filter=Q(type=CTCWOO))
                 )
                 .annotate(
                     ctcwoo_count_positive=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=CTCWOO) & Q(result__gte=RES_POSITIVE),
                     )
@@ -235,7 +237,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(maect_count=Count("id", distinct=True, filter=Q(type=MAECT)))
                 .annotate(
                     maect_count_positive=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=MAECT) & Q(result__gte=RES_POSITIVE),
                     )
@@ -243,28 +245,28 @@ class TestStatsViewSet(viewsets.ViewSet):
                 .annotate(pl_count=Count("id", distinct=True, filter=Q(type=PL)))
                 .annotate(
                     pl_count_positive=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=PL) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     pl_count_stage1=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=PL) & Q(form__test_pl_result="stage1"),
                     )
                 )
                 .annotate(
                     pl_count_stage2=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=PL) & Q(form__test_pl_result="stage2"),
                     )
                 )
                 .annotate(
                     pl_count_stage_unk=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=(
                             Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE) &
@@ -274,38 +276,38 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     confirmation_count=Count(
-                        "id", distinct=True, filter=Q(type__in=TYPES_CONFIRMATION)
+                        "form_id", distinct=True, filter=Q(type__in=TYPES_CONFIRMATION)
                     )
                 )
                 .annotate(
                     positive_catt_count=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=CATT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     positive_rdt_count=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=RDT) & Q(result__gte=RES_POSITIVE),
                     )
                 )
                 .annotate(
                     negative_catt_count=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=Q(type=CATT) & Q(result=RES_NEGATIVE),
                     )
                 )
                 .annotate(
                     negative_rdt_count=Count(
-                        "id", distinct=True, filter=Q(type=RDT) & Q(result=RES_NEGATIVE)
+                        "form_id", distinct=True, filter=Q(type=RDT) & Q(result=RES_NEGATIVE)
                     )
                 )
                 .annotate(
                     positive_screening_test_count=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=(Q(type=RDT) & Q(result__gte=RES_POSITIVE))
                         | (Q(type=CATT) & Q(result__gte=RES_POSITIVE)),
@@ -313,7 +315,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     positive_confirmation_test_count=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=(
                             Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE)
@@ -322,7 +324,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     is_clear=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=(
                             Q(check__level=province_level)
@@ -333,7 +335,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     is_good_place=Count(
-                        "id",
+                        "form_id",
                         distinct=True,
                         filter=(
                             Q(check__level=province_level)
@@ -593,8 +595,10 @@ class TestStatsViewSet(viewsets.ViewSet):
                             ),
                         )
                     )
+                    # Checks will only go to the central level if the coordination had a different result than
+                    # the tester. So Central KO means that the central has the same result as the tester.
                     .annotate(
-                        checked_ok_central=Count(
+                        checked_ko_central=Count(
                             "check__test_id",
                             distinct=True,
                             filter=(
@@ -605,7 +609,7 @@ class TestStatsViewSet(viewsets.ViewSet):
                         )
                     )
                     .annotate(
-                        checked_ko_central=Count(
+                        checked_ok_central=Count(
                             "check__test_id",
                             distinct=True,
                             filter=(

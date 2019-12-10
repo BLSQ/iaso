@@ -191,6 +191,14 @@ export const fetchProfiles = dispatch => getRequest('/api/profiles')
         throw error;
     });
 
+export const fetchIasoProfiles = dispatch => getRequest('/api/profiles')
+    .then(response => response.profiles)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchProfilesError')));
+        console.error('Error while fetching profiles list:', error);
+        throw error;
+    });
+
 export const fetchAlgorithms = dispatch => getRequest('/api/algorithms')
     .then(algorithms => algorithms)
     .catch((error) => {

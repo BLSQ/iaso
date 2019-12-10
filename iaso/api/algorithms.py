@@ -1,9 +1,8 @@
-
 from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from iaso.models import MatchingAlgorithm
-from .authentication import CsrfExemptSessionAuthentication
+from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
 
@@ -22,6 +21,5 @@ class AlgorithmsViewSet(viewsets.ViewSet):
 
     def list(self, request):
         queryset = MatchingAlgorithm.objects.all()
-
 
         return Response([algo.as_dict() for algo in queryset])

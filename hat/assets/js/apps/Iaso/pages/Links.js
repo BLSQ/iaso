@@ -13,7 +13,7 @@ import {
     fetchOrgUnitsTypes,
     saveLink,
     fetchSources,
-    fetchProfiles,
+    fetchIasoProfiles,
     fetchAlgorithms,
     fetchAlgorithmRuns,
 } from '../utils/requests';
@@ -76,7 +76,7 @@ class Links extends Component {
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchSources(dispatch)
             .then(sources => this.props.setSources(sources));
-        fetchProfiles(dispatch)
+        fetchIasoProfiles(dispatch)
             .then(profiles => this.props.setProfiles(profiles));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));

@@ -1651,6 +1651,16 @@ MAPPING: List[JsonType] = [
         },
     },
     {
+        "field": "participant_origin_country",
+        "case_ignore": True,
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.country")
+            },
+        },
+    },
+    {
         "field": "participant_origin_province",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],

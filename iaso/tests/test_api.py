@@ -1,5 +1,13 @@
 from django.test import TestCase, tag
-from ..models import OrgUnit, Form, InstanceFile, Instance, OrgUnitType, Account, Project
+from ..models import (
+    OrgUnit,
+    Form,
+    InstanceFile,
+    Instance,
+    OrgUnitType,
+    Account,
+    Project,
+)
 from math import floor
 from rest_framework.test import APIClient
 import json
@@ -46,9 +54,7 @@ class BasicAPITestCase(TestCase):
 
         response = c.post("/api/orgunits/", data=[unit_body], format="json")
         self.assertEqual(response.status_code, 200)
-
         velpo_model = OrgUnit.objects.get(uuid=uuid)
-
         self.assertEqual(velpo_model.name, name)
 
         response = c.get("/api/orgunits/", accept="application/json")
@@ -187,10 +193,13 @@ class BasicAPITestCase(TestCase):
         org_unit_types = json_response["orgUnitTypes"]
         self.assertEqual(len(org_unit_types), 2)
 
-        org_unit_type = org_unit_types[0]
+        found = False
+        for org_unit_type in org_unit_types:
+            if org_unit_type["name"] == "Hospital":
+                self.assertTrue(
+                    org_unit_type["created_at"] < org_unit_type["updated_at"]
+                )
+                self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)
+                found = True
 
-        # {'id': 1, 'name': 'Hospital', 'short_name': 'Hosp', 'created_at': 1565542769.836227, 'updated_at': 1565542769.83625, 'sub_unit_types': []}
-        # self.assertEqual(org_unit_type["id"], 1)
-        self.assertEqual(org_unit_type["name"], "Hospital")
-        self.assertTrue(org_unit_type["created_at"] < org_unit_type["updated_at"])
-        self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)
+        self.assertTrue(found)

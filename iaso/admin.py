@@ -17,6 +17,7 @@ from .models import (
     AlgorithmRun,
     Link,
     Group,
+    Profile,
 )
 
 
@@ -71,6 +72,7 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(FormVersion)
+admin.site.register(Profile)
 
 
 class GroupAdmin(admin.GeoModelAdmin):

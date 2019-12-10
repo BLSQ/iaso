@@ -322,15 +322,25 @@ def create_cases(df: DataFrame) -> None:
             if normalized_village:
                 case.normalized_village = normalized_village
 
-            if 'participant_member_type' in row.index and row['participant_member_type'] == 'traveller':
+            if 'participant_member_type' in row.index and row['participant_member_type'] == MEMBER_TYPE_TRAVELER:
                 patient_as, patient_village = normalize_location(
                     row.get('participant_origin_zone', None),
                     row.get('participant_origin_area', None),
                     None,
                 )
+                patient_country = None
+                traveler = True
+            elif 'participant_member_type' in row.index and \
+                    row['participant_member_type'] == MEMBER_TYPE_TRAVELER_OTHER_COUNTRY:
+                patient_as = None
+                patient_village = None
+                patient_country = row.get("participant_origin_country", None)
+                traveler = True
             else:
                 patient_as = normalized_AS
                 patient_village = normalized_village
+                patient_country = None
+                traveler = False
 
             extract_infection_location(case, ignored_columns)
 
@@ -344,7 +354,9 @@ def create_cases(df: DataFrame) -> None:
                 death_location=mobile_get_location_from_coordinates(
                     ignored_columns.get('death_position_longitude', None),
                     ignored_columns.get('death_position_latitude', None)
-                )
+                ),
+                origin_country=patient_country,
+                traveller=traveler,
             )
             case.normalized_patient = patient
             case.normalized_team = get_case_team(case)
@@ -367,9 +379,17 @@ def create_cases(df: DataFrame) -> None:
         except Exception as exc:
             env_name = os.environ.get("ENVIRONMENT_NAME", "unknown env")
             full_exc = traceback.format_exc()
-            logger.error("Error importing document %s: %s", json_document_id, exc, exc_info=1)
-            sns_notify("%s: Error importing document %s: %s" % (env_name, json_document_id, full_exc))
-            slack_notify(plain_text="%s: Error importing document %s: %s" % (env_name, json_document_id, full_exc),
+            if json_document_id:
+                doc = JSONDocument.objects.filter(id=json_document_id).first()
+                if doc:
+                    document_ref = f"[id:{json_document_id}, doc_id:{doc.doc_id}, device:{doc.device.device_id}]"
+                else:
+                    document_ref = f"[id:{json_document_id}]"
+            else:
+                document_ref = "[id: ?]"
+            logger.error("Error importing document %s: %s", document_ref, exc, exc_info=1)
+            sns_notify("%s: Error importing document %s: %s" % (env_name, document_ref, full_exc))
+            slack_notify(plain_text="%s: Error importing document %s: %s" % (env_name, document_ref, full_exc),
                          icon="exclamation")
             raise
 
@@ -484,6 +504,7 @@ def get_screening_type(case, ignored_columns):
 
 MEMBER_TYPE_RESIDENT = "resident"
 MEMBER_TYPE_TRAVELER = "traveller"
+MEMBER_TYPE_TRAVELER_OTHER_COUNTRY = "traveller-other-country"
 # v2.0.45 of the mobile app inverted testLocation and residenceLocation
 INFECTION_RESIDENT = ["testLocation", "residenceLocationNew"]
 INFECTION_TEST = ["residenceLocation", "testLocationNew"]
@@ -509,18 +530,19 @@ def extract_infection_location(case, ignored_columns):
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
         elif infection_location_type in INFECTION_TEST:
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
-        if infection_location_type in INFECTION_OTHER:
+        elif infection_location_type in INFECTION_OTHER:
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
-    elif participant_member_type == MEMBER_TYPE_TRAVELER:
+    elif participant_member_type == MEMBER_TYPE_TRAVELER \
+            or participant_member_type == MEMBER_TYPE_TRAVELER_OTHER_COUNTRY:
         if infection_location_type in INFECTION_RESIDENT:
             case.infection_location = case.normalized_village
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
         elif infection_location_type in INFECTION_TEST:
             case.infection_location = case.normalized_village
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
-        if infection_location_type in INFECTION_OTHER:
+        elif infection_location_type in INFECTION_OTHER:
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
     else:
         if participant_member_type:
             raise Exception(f"Participant member type {participant_member_type} is none of the expected choices: "
-                            f"resident or traveler")
+                            f"resident or traveller")

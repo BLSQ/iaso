@@ -43,6 +43,7 @@ class Command(BaseCommand):
             "--dhis2_url",
             type=str,
             help="Dhis2 url to import from (without user/password)",
+            required=True,
         )
         parser.add_argument(
             "--dhis2_user", type=str, help="dhis2 user name", required=True
@@ -58,16 +59,19 @@ class Command(BaseCommand):
             "--org_unit_type_csv_file",
             type=str,
             help="Path to the org unit types csv file",
+            required=True,
         )
         parser.add_argument(
             "--source_name",
             type=str,
             help="The name of the source. It will be created if it doesn't exist",
+            required=True,
         )
         parser.add_argument(
             "--version_number",
             type=int,
             help="An integer version number for the new version",
+            required=True,
         )
         parser.add_argument(
             "-f",

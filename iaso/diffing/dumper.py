@@ -5,11 +5,13 @@ from iaso.management.commands.command_logger import CommandLogger
 
 def color(status):
     if status == "modified":
-        return CommandLogger.RED
+        return CommandLogger.YELLOW
     if status == "same":
         return CommandLogger.END
     if status == "new":
         return CommandLogger.GREEN
+    if status == "deleted":
+        return CommandLogger.RED
     return CommandLogger.END
 
 
@@ -95,6 +97,11 @@ class Dumper:
                             self.iaso_logger.colorize(
                                 " vs ".join(
                                     [str(comparison.before), str(comparison.after)]
+                                )
+                                + (
+                                    (" Dist : %.2f " % comparison.distance)
+                                    if comparison.distance
+                                    else ""
                                 ),
                                 color(comparison.status),
                             )

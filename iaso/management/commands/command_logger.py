@@ -17,13 +17,13 @@ class CommandLogger:
         self.stdout.write(s + message)
 
     def error(self, s, *kwargs):
-        self.print(self.colorize("ERROR " + str(s), CommandLogger.RED), *kwargs)
+        self.print(self.colorize("ERROR " + str(s) + " ", CommandLogger.RED), *kwargs)
 
     def ok(self, s, *kwargs):
-        self.print(self.colorize(str(s), CommandLogger.GREEN), *kwargs)
+        self.print(self.colorize(str(s) + " ", CommandLogger.GREEN), *kwargs)
 
     def warn(self, s, *kwargs):
-        self.print(self.colorize("WARN " + str(s), CommandLogger.YELLOW), *kwargs)
+        self.print(self.colorize("WARN " + str(s) + " ", CommandLogger.YELLOW), *kwargs)
 
     def info(self, s, *kwargs):
-        self.print(str(s), *kwargs)
+        self.print(str(s) + " ", *kwargs)

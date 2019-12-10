@@ -4,19 +4,6 @@ from .comparisons import as_field_types, Diff, Comparison
 import json
 
 
-def load_pyramid(version):
-    return (
-        OrgUnit.objects.prefetch_related("group_set")
-        .prefetch_related("group_set__groupset_set")
-        .select_related("org_unit_type")
-        .select_related("parent")
-        .select_related("parent")
-        .select_related("parent__parent")
-        .filter(version=version)
-        .all()
-    )
-
-
 def index_pyramid(orgunits):
     orgunits_by_source_ref = {}
     for orgunit in orgunits:
@@ -28,17 +15,31 @@ class Differ:
     def __init__(self, logger):
         self.iaso_logger = logger
 
+    def load_pyramid(self, version):
+        self.iaso_logger.info("loading pyramid ", version.data_source, version)
+        orgunits = (
+            OrgUnit.objects.prefetch_related("group_set")
+            .prefetch_related("group_set__groupset_set")
+            .select_related("org_unit_type")
+            .select_related("parent")
+            .select_related("parent__parent")
+            .select_related("parent__parent__parent")
+            .filter(version=version)
+            .all()
+        )
+        return orgunits
+
     def diff(self, version_ref, version, options):
         field_names = ["name", "geometry", "parent"]
         for group_set in GroupSet.objects.filter(source_version=version):
             field_names.append(
                 "groupset:" + group_set.source_ref + ":" + group_set.name
             )
-
+        self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 
-        orgunits_dhis2 = load_pyramid(version)
-        orgunit_refs = load_pyramid(version_ref)
+        orgunits_dhis2 = self.load_pyramid(version)
+        orgunit_refs = self.load_pyramid(version_ref)
         self.iaso_logger.info(
             "comparing ",
             version_ref,
@@ -105,6 +106,12 @@ class Differ:
 
             if dhis2_value is None and ref_value is not None:
                 status = "new"
+            if (
+                not same
+                and dhis2_value is not None
+                and (ref_value is None or ref_value == [])
+            ):
+                status = "deleted"
 
             comparisons.append(
                 Comparison(

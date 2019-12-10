@@ -3,6 +3,7 @@ import json
 from iaso.models import OrgUnit, OrgUnitType, Instance
 from django.db import connection
 from django.core.paginator import Paginator
+from dhis2 import Api
 
 """
 https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_csv_data_elements
@@ -91,6 +92,54 @@ def format_value(data_element, raw_value):
 class Command(BaseCommand):
     help = "Export to instances (form submissions) to a dhis2"
 
+    def add_arguments(self, parser):
+        parser.add_argument(
+            "--dhis2_url",
+            type=str,
+            help="Dhis2 url to import from (without user/password)",
+            required=True,
+        )
+        parser.add_argument(
+            "--dhis2_user", type=str, help="dhis2 user name", required=True
+        )
+        parser.add_argument(
+            "--dhis2_password",
+            type=str,
+            help="dhis2 password of the dhis2_user",
+            required=True,
+        )
+
+    def get_api(self, options):
+        return Api(
+            options.get("dhis2_url"),
+            options.get("dhis2_user"),
+            options.get("dhis2_password"),
+        )
+
+    """
+    base on program id generate a template for odk mapping
+    assumes codes are the question_key in the form
+    """
+
+    def seed_mapping(self, api, program_id):
+        program = api.get(
+            "programs/" + program_id,
+            params={
+                "fields": ":all,programStages[id,name,programStageDataElements[dataElement[id,code,name,valueType,optionSet[id,name,options[id,name,code]]]]]"
+            },
+        )
+        question_mappings = {}
+        for program_stage in program.json()["programStages"]:
+            for psde in program_stage["programStageDataElements"]:
+                question_mappings[psde["dataElement"]["code"]] = psde["dataElement"]
+
+        mapping = {
+            "type": "simple_event",
+            "program_id": program_id,
+            "question_mappings": question_mappings,
+        }
+        print(json.dumps(mapping, indent=4))
+
     def handle(self, *args, **options):
 
         instances_qs = (
@@ -105,6 +154,10 @@ class Command(BaseCommand):
         )
         paginator = Paginator(instances_qs, 100)
         mapping = self.load_mapping()
+
+        print("How to create a mapping file from a program id")
+        self.seed_mapping(self.get_api(options), mapping["program_id"])
+
         events = []
         errors = []
 
@@ -115,7 +168,7 @@ class Command(BaseCommand):
                         "program": mapping["program_id"],
                         "event": instance.export_id,
                         "orgUnit": instance.org_unit.source_ref,
-                        "eventDate": instance.json["today"],
+                        "eventDate": instance.created_at.strftime("%Y-%m-%d"),
                         "status": "COMPLETED",
                         "dataValues": [],
                     }

@@ -1,0 +1,678 @@
+{
+  "type": "simple_event",
+  "program_id": "im79c92MOfX",
+  "question_mappings": {
+    "cs_105": {
+      "code": "cs_105",
+      "name": "EDL - CS - 105. Type de  Formation Sanitaire",
+      "id": "YF4JLtENIKg",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "type_fosa",
+        "id": "fIgdh0z66AT",
+        "options": [
+          {
+            "code": "cs",
+            "name": "1. Centre de Santé",
+            "id": "ehqvlIc6gWk",
+            "odk": "type_fosa1"
+          },
+          {
+            "code": "ps",
+            "name": "2. Poste de santé",
+            "id": "WdPe4IkfBtR",
+            "odk": "type_fosa2"
+          }
+        ]
+      }
+    },
+    "cs_106": {
+      "code": "cs_106",
+      "name": "EDL - CS - 106. Adresse Physique de la FOSA",
+      "id": "i9waOuhju5f",
+      "valueType": "TEXT"
+    },
+    "cs_108": {
+      "code": "cs_108",
+      "name": "EDL - CS - 108. Appartenance",
+      "id": "u4iUbzjj147",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "appartenance",
+        "id": "wMUIVnJXRmJ",
+        "options": [
+          {
+            "code": "pub",
+            "name": "1. Publique",
+            "id": "Jlvcb2t4f1o",
+            "odk": "1"
+          },
+          {
+            "code": "ong",
+            "name": "2. Organisation Non Gouvernementale / Privée non lucratif",
+            "id": "kgBM3YLU9Ed",
+            "odk": "2"
+          },
+          {
+            "code": "priv",
+            "name": "3. Privé lucratif",
+            "id": "h4ZXEqnMKQv",
+            "odk": "3"
+          },
+          {
+            "code": "conf",
+            "name": "4. Confessionnelle",
+            "id": "RsdpKRkua4w",
+            "odk": "4"
+          },
+          {
+            "code": "aut",
+            "name": "5. Autre",
+            "id": "BtIHE3R61vA",
+            "odk": "5"
+          }
+        ]
+      }
+    },
+    "cs_116": {
+      "code": "cs_116",
+      "name": "EDL - CS - 116. Nombre des villages",
+      "id": "y4tHDkdfRSE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_120": {
+      "code": "cs_120",
+      "name": "EDL - CS - 120. Enclavement total prévisible à certaines périodes de l'année suite à des intempéries",
+      "id": "q9Lw6rf3ynD",
+      "valueType": "BOOLEAN"
+    },
+    "cs_121": {
+      "code": "cs_121",
+      "name": "EDL - CS - 121. Si enclavement, pendant quel trimestre de l'année ? ",
+      "id": "doANSm9qYIk",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "trimestre",
+        "id": "PROpkJEuzN6",
+        "options": [
+          {
+            "code": "q1",
+            "name": "Trimestre 1",
+            "id": "CmYSE2QGRmc",
+            "odk": "trimestre1"
+          },
+          {
+            "code": "q2",
+            "name": "Trimestre 2",
+            "id": "BCeaextENBF",
+            "odk": "trimestre2"
+          },
+          {
+            "code": "q3",
+            "name": "Trimestre 3",
+            "id": "HrU6B45wdUY",
+            "odk": "trimestre3"
+          },
+          {
+            "code": "q4",
+            "name": "Trimestre 4",
+            "id": "AK4yzRjuQnl",
+            "odk": "trimestre4"
+          }
+        ]
+      }
+    },
+    "cs_122": {
+      "code": "cs_122",
+      "name": "EDL - CS - 122. Prise en charge des patients ,y compris les cas d'urgence, 24h/24h ",
+      "id": "VWp1xLM5Jnw",
+      "valueType": "BOOLEAN"
+    },
+    "cs_124": {
+      "code": "cs_124",
+      "name": "EDL - CS - 124. Population totale de l'aire de santé pour le Centre de Santé  de responsabilité",
+      "id": "ntvU3UaUdTB",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_125": {
+      "code": "cs_125",
+      "name": "EDL - CS - 125. Population couverte dans l'aire de santé ",
+      "id": "Hz4iOZrUGbv",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_201_homme": {
+      "code": "cs_201_homme",
+      "name": "EDL - CS - 201 - Nombre de médecin - femme",
+      "id": "MxNVdnF4sKM",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.1_homme": {
+      "code": "cs_202.1_homme",
+      "name": "EDL - CS - 202.1 Nombre d'infirmiers - Licencié A0 - homme ",
+      "id": "rQT4uF9lhi8",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.1_femme": {
+      "code": "cs_202.1_femme",
+      "name": "EDL - CS - 202.1 Nombre d'infirmiers - Licencié A1 - femme",
+      "id": "TJUlWLSvAfc",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.2_femme": {
+      "code": "cs_202.2_femme",
+      "name": "EDL - CS - 202.2 Nombre d'infirmiers - Gradué A1 - femme ",
+      "id": "wNMy1kaIMJD",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.2_homme": {
+      "code": "cs_202.2_homme",
+      "name": "EDL - CS - 202.2 Nombre d'infirmiers - Gradué A1 - homme ",
+      "id": "nOzE1FXWqoE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.3_femme": {
+      "code": "cs_202.3_femme",
+      "name": "EDL - CS - 202.3 Nombre d'infirmiers - Diplômé A2 - femme",
+      "id": "P43KDlKrb4z",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_202.3_homme": {
+      "code": "cs_202.3_homme",
+      "name": "EDL - CS - 202.3 Nombre d'infirmiers - Diplômé A2 - homme",
+      "id": "bbi9RuEp9n3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_201_femme": {
+      "code": "cs_201_femme",
+      "name": "EDL - CS - 202 - Nombre de médecin - homme",
+      "id": "Gf1EoFII3iw",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_203_femme": {
+      "code": "cs_203_femme",
+      "name": "EDL - CS - 203. Nombre d'Infirmiers A3 - femme",
+      "id": "W5ZdMiuEsRH",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_203_homme": {
+      "code": "cs_203_homme",
+      "name": "EDL - CS - 203. Nombre d'Infirmiers A3 - homme",
+      "id": "xSyq7WpexRU",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_204_femme": {
+      "code": "cs_204_femme",
+      "name": "EDL - CS - 204. Nombre de Pharmaciens - femme",
+      "id": "m1g3w2RkUHZ",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_204_homme": {
+      "code": "cs_204_homme",
+      "name": "EDL - CS - 204. Nombre de Pharmaciens - homme",
+      "id": "qWZpEqnoNyA",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_205_femme": {
+      "code": "cs_205_femme",
+      "name": "EDL - CS - 205. Nombre d'assistants de pharmacie - femme",
+      "id": "KqKUoKUvkMv",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_205_homme": {
+      "code": "cs_205_homme",
+      "name": "EDL - CS - 205. Nombre d'assistants de pharmacie - homme",
+      "id": "stGVnQoXHtE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_206_femme": {
+      "code": "cs_206_femme",
+      "name": "EDL - CS - 206. Nombre de Sage-Femme gradué (A1) - femme",
+      "id": "mJE20Ftp3c8",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_206_homme": {
+      "code": "cs_206_homme",
+      "name": "EDL - CS - 206. Nombre de Sage-Femme gradué (A1) - homme",
+      "id": "EzDAXZsi4EV",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_207_femme": {
+      "code": "cs_207_femme",
+      "name": "EDL - CS - 207. Nombre d'accoucheuse diplômé  (A2) - femme",
+      "id": "u6DJQPBiLJe",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_207_homme": {
+      "code": "cs_207_homme",
+      "name": "EDL - CS - 207. Nombre d'accoucheuse diplômé  (A2) - homme",
+      "id": "eeGF9B721Vz",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_208_femme": {
+      "code": "cs_208_femme",
+      "name": "EDL - CS - 208. Nombre de Matronnes/Accoucheuses - femme",
+      "id": "MGoFT1hCEy5",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_208_homme": {
+      "code": "cs_208_homme",
+      "name": "EDL - CS - 208. Nombre de Matronnes/Accoucheuses - homme",
+      "id": "jEJf7xWldtM",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_209.1_femme": {
+      "code": "cs_209.1_femme",
+      "name": "EDL - CS - 209.1 Nombre de  biologiste médical - femme",
+      "id": "A5MJEUrSdqf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_209.1_homme": {
+      "code": "cs_209.1_homme",
+      "name": "EDL - CS - 209.1 Nombre de  biologiste médical - homme",
+      "id": "gUDVm2POyyo",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_209_femme": {
+      "code": "cs_209_femme",
+      "name": "EDL - CS - 209. Nombre de Techniciens de Labo gradué ou  Diplômé (A2) - femme",
+      "id": "fVOKehoBvxi",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_209_homme": {
+      "code": "cs_209_homme",
+      "name": "EDL - CS - 209. Nombre de Techniciens de Labo gradué ou  Diplômé (A2) - homme",
+      "id": "IUqzvN5wQp5",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_210_femme": {
+      "code": "cs_210_femme",
+      "name": "EDL - CS - 210. Nombre de microscopistes - femme",
+      "id": "Vw7yoi7ZLPY",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_210_homme": {
+      "code": "cs_210_homme",
+      "name": "EDL - CS - 210. Nombre de microscopistes - homme",
+      "id": "lBQewBQ8nap",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_211_femme": {
+      "code": "cs_211_femme",
+      "name": "EDL - CS - 211. Nombre de nutritionnistes - femme",
+      "id": "jbkTwiFaS4L",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_211_homme": {
+      "code": "cs_211_homme",
+      "name": "EDL - CS - 211. Nombre de nutritionnistes - homme",
+      "id": "GZziqntLwBk",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_212_femme": {
+      "code": "cs_212_femme",
+      "name": "EDL - CS - 212. Nombre de personnel administratif - femme",
+      "id": "wyFCbGXKnrn",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_212_homme": {
+      "code": "cs_212_homme",
+      "name": "EDL - CS - 212. Nombre de personnel administratif - homme",
+      "id": "q5Su6eP3cOP",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_213_2femme": {
+      "code": "cs_213_2femme",
+      "name": "EDL - CS - 213.2  Autre personnel de santé non qualifié  Femmes :",
+      "id": "QVrzBucHl9K",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_213_2homme": {
+      "code": "cs_213_2homme",
+      "name": "EDL - CS - 213.2  Autre personnel de santé non qualifié  Hommes :",
+      "id": "OAHAx30qE8J",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_213_femme": {
+      "code": "cs_213_femme",
+      "name": "EDL - CS - 213. Nombre Total du personnel du centre de santé - femme",
+      "id": "Qz0dh8Dcue3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_213_homme": {
+      "code": "cs_213_homme",
+      "name": "EDL - CS - 213. Nombre Total du personnel du centre de santé - homme",
+      "id": "OYxGT7qDdmK",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_401": {
+      "code": "cs_401",
+      "name": "EDL - CS - 401. Type de batiment de la FOSA  ",
+      "id": "GGUG7drMuSf",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "type-batiment",
+        "id": "ZGbESg7WrHe",
+        "options": [
+          {
+            "code": "dur",
+            "name": "1. Durables ",
+            "id": "nKkxe5SFCy3",
+            "odk": "type-batiment1"
+          },
+          {
+            "code": "sem_dur",
+            "name": "2. Semi-durables ",
+            "id": "mbf3CKvEPtX",
+            "odk": "type-batiment2"
+          },
+          {
+            "code": "pis",
+            "name": "3. En pisé",
+            "id": "jV5IKz6916F",
+            "odk": "type-batiment3"
+          }
+        ]
+      }
+    },
+    "cs_405": {
+      "code": "cs_405",
+      "name": "EDL - CS - 405. Existence d'une salle de consultation",
+      "id": "Pc1KLmITbxA",
+      "valueType": "BOOLEAN"
+    },
+    "cs_409": {
+      "code": "cs_409",
+      "name": "EDL - CS - 409. Existence d'une salle pour le laboratoire",
+      "id": "Dz05fPRO9zJ",
+      "valueType": "BOOLEAN"
+    },
+    "cs_410": {
+      "code": "cs_410",
+      "name": "EDL - CS - 410. Existence d'une salle d'accouchement",
+      "id": "wahPVwSrjsP",
+      "valueType": "BOOLEAN"
+    },
+    "cs_412": {
+      "code": "cs_412",
+      "name": "EDL - CS - 412. Existence d’une salle d'observation en post partum",
+      "id": "Mr7udRtf9hr",
+      "valueType": "BOOLEAN"
+    },
+    "cs_415": {
+      "code": "cs_415",
+      "name": "EDL - CS - 415. Une réhabilitation legère (Portes, fenetres, pavement, peinture, plafond)",
+      "id": "AL7OM1ZgcLm",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_416": {
+      "code": "cs_416",
+      "name": "EDL - CS - 416. Une réhabilitation lourde (toiture, murs, autres)",
+      "id": "qhiQxtxHEKL",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_417": {
+      "code": "cs_417",
+      "name": "EDL - CS - 417. Une construction",
+      "id": "hWgrPMoaiZI",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_423": {
+      "code": "cs_423",
+      "name": "EDL - CS - 423. Principale source d'eau utilisée par la formation sanitaire en ce moment",
+      "id": "j7PsQllPOHl",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "source_eau",
+        "id": "PfZPdSNJ4Tm",
+        "options": [
+          {
+            "code": "eau_cou",
+            "name": "1. Eau courante dans les locaux ",
+            "id": "qE3Al38XzRw",
+            "odk": "source_eau1"
+          },
+          {
+            "code": "eau_rac",
+            "name": "2. Eaux raccordées  dans la parcelle",
+            "id": "KGxCxiZgOG5",
+            "odk": "source_eau2"
+          },
+          {
+            "code": "born",
+            "name": "3. Borne Fontaine, Forage, puits tubé",
+            "id": "Tq64Qo2xj9y",
+            "odk": "source_eau3"
+          },
+          {
+            "code": "puit",
+            "name": "4. Puits ordinaires protégés",
+            "id": "T3JVeyup5lS",
+            "odk": "source_eau4"
+          },
+          {
+            "code": "pluie",
+            "name": "5. Collecte d'eau de pluie ",
+            "id": "dzJTJPbTAgd",
+            "odk": "source_eau5"
+          },
+          {
+            "code": "aut",
+            "name": "6. Autres à préciser ",
+            "id": "Knk7Sg05IAt",
+            "odk": "source_eau6"
+          }
+        ]
+      }
+    },
+    "cs_425": {
+      "code": "cs_425",
+      "name": "EDL - CS - 425. Latrines hygiéniques  fonctionnelles pour les malades au niveau de la FOSA",
+      "id": "AqwcFdXI4nl",
+      "valueType": "BOOLEAN"
+    },
+    "cs_427": {
+      "code": "cs_427",
+      "name": "EDL - CS - 427. Incinérateur fonctionnel",
+      "id": "y40rxKykane",
+      "valueType": "BOOLEAN"
+    },
+    "cs_432": {
+      "code": "cs_432",
+      "name": "EDL - CS - 432. Approvisionnement en électricité",
+      "id": "SRPH1VXsalC",
+      "valueType": "BOOLEAN"
+    },
+    "cs_433": {
+      "code": "cs_433",
+      "name": "EDL - CS - 433. Principale source d'électricité de la FOSA",
+      "id": "dE3qGtJxHTS",
+      "valueType": "TEXT",
+      "option_set": {
+        "name": "source_elect",
+        "id": "xMLYTZ8gNrN",
+        "options": [
+          {
+            "code": "pub",
+            "name": "1. Reseau Public ",
+            "id": "WN417JJFVSr",
+            "odk": "source_elect1"
+          },
+          {
+            "code": "priv",
+            "name": "2. Reseau Privé ",
+            "id": "S4FFRtvJLYo",
+            "odk": "source_elect2"
+          },
+          {
+            "code": "gr_el",
+            "name": "3. Groupe electrogène",
+            "id": "GxIXZ0QtfLs",
+            "odk": "source_elect3"
+          },
+          {
+            "code": "sol",
+            "name": "4. Sytème solaire",
+            "id": "HfzvoeglUhp",
+            "odk": "source_elect4"
+          },
+          {
+            "code": "aut",
+            "name": "5. Autres à préciser ",
+            "id": "I024BCkgSoH",
+            "odk": "source_elect5"
+          }
+        ]
+      }
+    },
+    "cs_442": {
+      "code": "cs_442",
+      "name": "EDL - CS - 442. Autoclave",
+      "id": "APXwUrf44lY",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_443": {
+      "code": "cs_443",
+      "name": "EDL - CS - 443. Microscope binoculaire diagnostic TB",
+      "id": "CLqeDIxz719",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_444": {
+      "code": "cs_444",
+      "name": "EDL - CS - 444. Hemoglobinomètre ",
+      "id": "N56ACYN6yKa",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_445": {
+      "code": "cs_445",
+      "name": "EDL - CS - 445. Centrifugeuse électrique ou manuel ",
+      "id": "B24BhWIn79z",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_446": {
+      "code": "cs_446",
+      "name": "EDL - CS - 446. Aspirateur manuel ou electrique a pression ≤ 130mm/Hg",
+      "id": "W0YRjo8FyEL",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_447": {
+      "code": "cs_447",
+      "name": "EDL - CS - 447. Ventouse obstétricale",
+      "id": "uYgjW3H3oju",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_448": {
+      "code": "cs_448",
+      "name": "EDL - CS - 448. Spéculum vaginal ",
+      "id": "DIo45yXERm3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_449": {
+      "code": "cs_449",
+      "name": "EDL - CS - 449. Otoscope ",
+      "id": "C34oxU0pvby",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_450_1": {
+      "code": "cs_450_1",
+      "name": "EDL - CS - 450.1 Table d'examen",
+      "id": "UEKtsEtyMNf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_450_2": {
+      "code": "cs_450_2",
+      "name": "EDL - CS - 450.2 Table d'accouchement",
+      "id": "s4UxaOGiP91",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_450": {
+      "code": "cs_450",
+      "name": "EDL - CS - 450. Ballon autogonflable (Ambu) + masques N°0/1",
+      "id": "KwwLAGFFYiq",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_451": {
+      "code": "cs_451",
+      "name": "EDL - CS - 451. Table pour les soins  du Nouveau-né",
+      "id": "ztQG9XdLKkf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_452": {
+      "code": "cs_452",
+      "name": "EDL - CS - 452. Table chauffante pour Nouveau-né",
+      "id": "RBHY8Vft0dJ",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_453": {
+      "code": "cs_453",
+      "name": "EDL - CS - 453. Balance Pèse bébé",
+      "id": "oBsXByZdw8G",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_454": {
+      "code": "cs_454",
+      "name": "EDL - CS - 454. Balance enfant ",
+      "id": "ijHdErECIkU",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_455": {
+      "code": "cs_455",
+      "name": "EDL - CS - 455. Balance adulte ",
+      "id": "pSjFzVcWumO",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_456": {
+      "code": "cs_456",
+      "name": "EDL - CS - 456. Source de lumière ( lampe d'examen)",
+      "id": "JYLFrMw4wGA",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_457": {
+      "code": "cs_457",
+      "name": "EDL - CS - 457. Tensiomètre fonctionnel ",
+      "id": "AqMbslHPmSq",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_458": {
+      "code": "cs_458",
+      "name": "EDL - CS - 458. Sthetoscope fonctionnel ",
+      "id": "grF9tjcoUdP",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_459": {
+      "code": "cs_459",
+      "name": "EDL - CS - 459. Thermomètre  ",
+      "id": "O7131suSaQu",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_460": {
+      "code": "cs_460",
+      "name": "EDL - CS - 460. Toise ",
+      "id": "cTGk6OWZ6Gw",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_461": {
+      "code": "cs_461",
+      "name": "EDL - CS - 461. Metre ruban ( MUAC) ",
+      "id": "jatblNaRLAt",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_462_1": {
+      "code": "cs_462_1",
+      "name": "EDL - CS - 462.1 Boite de petite chirurgie",
+      "id": "QURdbn0hfw3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_462_2": {
+      "code": "cs_462_2",
+      "name": "EDL - CS - 462.2 Boite d'accouchement",
+      "id": "rAZnQm0VeHN",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "cs_462": {
+      "code": "cs_462",
+      "name": "EDL - CS - 462. Minuterie ",
+      "id": "smpQHm52aox",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    }
+  }
+}

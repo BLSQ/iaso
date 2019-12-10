@@ -85,8 +85,7 @@ class Command(BaseCommand):
             help="Mark all the newly imported units as validated",
         )
 
-    @staticmethod
-    def get_group(dhis2_group, group_dict, source_version):
+    def get_group(self, dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
         group = group_dict.get(name, None)
         if group is None:
@@ -184,12 +183,17 @@ class Command(BaseCommand):
                     j = json.loads(coordinates)
                     org_unit.simplified_geom = Polygon(j[0])
                 except Exception as bad_polygon:
-                    MyLogger.error(
+                    self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
                     )
             if feature_type == "MULTI_POLYGON" and coordinates:
-                j = json.loads(coordinates)
-                org_unit.simplified_geom = Polygon(j[0][0])
+                try:
+                    j = json.loads(coordinates)
+                    org_unit.simplified_geom = Polygon(j[0][0])
+                except Exception as bad_polygon:
+                    self.iaso_logger.error(
+                        "failed at importing POLYGON", coordinates, bad_polygon, row
+                    )
 
     def map_geometry(self, row, org_unit):
         if "geometry" in row:
@@ -366,7 +370,6 @@ class Command(BaseCommand):
                 self.map_coordinates(row, org_unit)
                 # if dhis2 version >= 2.32
                 self.map_geometry(row, org_unit)
-                print("---------------", org_unit.location, type(org_unit.location))
                 org_unit.save()
 
                 # log progress

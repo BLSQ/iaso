@@ -103,6 +103,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         smallMap: smallMapInitialState,
         currentUser: currentUserInitialState,
         geoFilters: filtersInitialState,
+        testLocationFilters: filtersInitialState,
         profiles: profileInitialState,
     }, {
         load: loadReducer,
@@ -115,6 +116,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         currentUser: currentUserReducer,
         profiles: profileReducer,
         geoFilters: filtersReducer,
+        testLocationFilters: filtersReducer,
     }, [
         routerMiddleware(history),
     ]);

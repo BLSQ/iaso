@@ -46,9 +46,9 @@ export const testActions = {
     createTest,
 };
 
-export const profileInitialState = {};
+export const testInitialState = {};
 
-export const profileReducer = (state = {}, action = {}) => {
+export const testReducer = (state = {}, action = {}) => {
     switch (action.type) {
         case PATCH_ACTION: {
             return {};

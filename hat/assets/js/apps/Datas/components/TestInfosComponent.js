@@ -82,7 +82,7 @@ const getComponentValues = (
     return initValues;
 };
 
-// TO_DO =  village, Validation
+// TO_DO =  village, Validation, traveler area, infection location
 const TestInfoComponent = ({
     intl: {
         formatMessage,

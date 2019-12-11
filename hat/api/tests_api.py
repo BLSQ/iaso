@@ -68,8 +68,16 @@ class TestsViewSet(viewsets.ViewSet):
             print("TODO, save clinical signs !!!")
 
         form_id = request.data.get("form")
-        form_item = get_object_or_404(Case, id=form_id)
-        new_test.form = form_item
+        case_item = get_object_or_404(Case, id=form_id)
+        current_case = request.data.get("currentCase")
+        case_item.test_pl_gb_mm3 = current_case.get("test_pl_gb_mm3", None)
+        case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
+        case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
+
+        case_item.save()
+        new_test.form = case_item
+
+
         new_test.save()
         return Response(new_test.as_dict())
 
@@ -105,8 +113,8 @@ class TestsViewSet(viewsets.ViewSet):
             )
 
         form_id = request.data.get("form")
-        form_item = get_object_or_404(Case, id=form_id)
-        new_test.form = form_item
+        case_item = get_object_or_404(Case, id=form_id)
+        new_test.form = case_item
         new_test.save()
 
         return Response(new_test.as_dict())

@@ -4,6 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
+import isEqual from 'lodash/isEqual';
 import moment from 'moment';
 import {
     Grid,
@@ -12,9 +13,11 @@ import {
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import { profileActions } from '../../../redux/profilesReducer';
 import { testActions } from '../redux/testReducer';
+import { filterActions } from '../../../redux/filtersRedux';
+
 import TabsComponent from '../../../components/TabsComponent';
 import LocationMapComponent from '../../../components/LocationMapComponent';
-import isEqual from 'lodash/isEqual';
+import testLocationFiltersConstant from '../constants/testLocationFilters';
 
 import TestInfosComponent from './TestInfosComponent';
 
@@ -52,6 +55,20 @@ class TestModalComponent extends Component {
         if (this.props.profiles.length === 0) {
             this.props.fetchProfiles();
         }
+
+        const {
+            selectTestProvince,
+            selectTestZone,
+            selectTestArea,
+            currentTest,
+        } = this.props;
+        if (currentTest.province_id) {
+            selectTestProvince(currentTest.province_id, currentTest.ZS_id, currentTest.AS_id);
+        } else if (currentTest.ZS_id) {
+            selectTestZone(currentTest.ZS_id, currentTest.AS_id);
+        } else if (currentTest.AS_id) {
+            selectTestArea(currentTest.AS_id, currentTest.ZS_id);
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -69,6 +86,20 @@ class TestModalComponent extends Component {
                 currentCase: nextProps.currentCase,
             });
         }
+
+        const {
+            selectTestProvince,
+            selectTestZone,
+            selectTestArea,
+            currentTest,
+        } = this.props;
+        if (nextProps.currentTest.province_id !== currentTest.province_id) {
+            selectTestProvince(nextProps.currentTest.province_id, nextProps.currentTest.ZS_id, nextProps.currentTest.AS_id);
+        } else if (nextProps.currentTest.ZS_id !== currentTest.ZS_id) {
+            selectTestZone(nextProps.currentTest.ZS_id, nextProps.currentTest.AS_id);
+        } else if (nextProps.currentTest.AS_id !== currentTest.AS_id) {
+            selectTestArea(nextProps.currentTest.AS_id, nextProps.currentTest.ZS_id);
+        }
     }
 
     onChange(key, value, type) {
@@ -85,12 +116,14 @@ class TestModalComponent extends Component {
     onSave() {
         const {
             currentTest,
+            currentCase,
         } = this.state;
         const {
             updateTest,
             createTest,
             patientId,
         } = this.props;
+        currentTest.currentCase = currentCase;
         if (currentTest.id !== 0) {
             updateTest(currentTest, patientId);
         } else {
@@ -118,6 +151,11 @@ class TestModalComponent extends Component {
                 formatMessage,
             },
             params,
+            testLocationFilters: {
+                provinces,
+                zones,
+                areas,
+            },
         } = this.props;
         const {
             currentTest,
@@ -126,6 +164,13 @@ class TestModalComponent extends Component {
         } = this.state;
         const isNewTest = currentTest.id === 0;
         const saveDisabled = false;
+
+        const testLocation = testLocationFiltersConstant(
+            provinces,
+            zones,
+            areas,
+            this,
+        );
         console.log(currentTest);
         return (
             <ReactModal
@@ -184,7 +229,7 @@ class TestModalComponent extends Component {
                             <LocationMapComponent
                                 location={currentTest}
                                 updateField={(key, value) => this.onChange(key, value, 'currentTest')}
-                                filters={[]}
+                                filters={testLocation}
                                 params={params}
                                 updatePosition={(lat, lng) => this.updateTestPosition(lat, lng)}
                                 updateLocation={location => this.updateTestLocation(location)}
@@ -242,6 +287,10 @@ TestModalComponent.propTypes = {
     profiles: PropTypes.array.isRequired,
     params: PropTypes.object.isRequired,
     patientId: PropTypes.number.isRequired,
+    testLocationFilters: PropTypes.object.isRequired,
+    selectTestProvince: PropTypes.func.isRequired,
+    selectTestZone: PropTypes.func.isRequired,
+    selectTestArea: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -250,6 +299,7 @@ const MapStateToProps = state => ({
     deleteError: state.cases.deleteError,
     currentUser: state.currentUser.user,
     profiles: state.profiles.list,
+    testLocationFilters: state.testLocationFilters,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -258,6 +308,9 @@ const MapDispatchToProps = dispatch => ({
     fetchProfiles: () => dispatch(profileActions.fetchProfiles(dispatch)),
     updateTest: (test, patientId) => dispatch(testActions.updateTest(dispatch, test, patientId)),
     createTest: (test, patientId) => dispatch(testActions.createTest(dispatch, test, patientId)),
+    selectTestProvince: (provinceId, zoneId, areaId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
+    selectTestZone: (zoneId, areaId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId)),
+    selectTestArea: (areaId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId)),
 });
 
 

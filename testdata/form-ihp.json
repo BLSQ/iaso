@@ -7,7 +7,7 @@
       "name": "EDL - CS - 105. Type de  Formation Sanitaire",
       "id": "YF4JLtENIKg",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "type_fosa",
         "id": "fIgdh0z66AT",
         "options": [
@@ -37,7 +37,7 @@
       "name": "EDL - CS - 108. Appartenance",
       "id": "u4iUbzjj147",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "appartenance",
         "id": "wMUIVnJXRmJ",
         "options": [
@@ -91,7 +91,7 @@
       "name": "EDL - CS - 121. Si enclavement, pendant quel trimestre de l'année ? ",
       "id": "doANSm9qYIk",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "trimestre",
         "id": "PROpkJEuzN6",
         "options": [
@@ -349,7 +349,7 @@
       "name": "EDL - CS - 401. Type de batiment de la FOSA  ",
       "id": "GGUG7drMuSf",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "type-batiment",
         "id": "ZGbESg7WrHe",
         "options": [
@@ -421,7 +421,7 @@
       "name": "EDL - CS - 423. Principale source d'eau utilisée par la formation sanitaire en ce moment",
       "id": "j7PsQllPOHl",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "source_eau",
         "id": "PfZPdSNJ4Tm",
         "options": [
@@ -487,7 +487,7 @@
       "name": "EDL - CS - 433. Principale source d'électricité de la FOSA",
       "id": "dE3qGtJxHTS",
       "valueType": "TEXT",
-      "option_set": {
+      "optionSet": {
         "name": "source_elect",
         "id": "xMLYTZ8gNrN",
         "options": [

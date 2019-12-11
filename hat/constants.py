@@ -45,3 +45,5 @@ GPS_SRID = 4326
 PL_STAGE1 = "stage1"
 PL_STAGE2 = "stage2"
 PL_STAGE_UNKNOWN = "unknown"
+
+DATE_FORMAT = '%Y-%m-%d'

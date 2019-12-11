@@ -10,8 +10,8 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.forms import DATE_FORMAT
 from hat.common.utils import get_request_as_array
+from hat.constants import DATE_FORMAT
 
 from hat.cases.models import (
     RES_POSITIVE,
@@ -190,7 +190,10 @@ class TestStatsViewSet(viewsets.ViewSet):
                 queryset = queryset.filter(date__gte=from_date)
 
             if to_date is not None:
-                queryset = queryset.filter(date__lte=datetime.strptime(to_date, DATE_FORMAT) + timedelta(days=1))
+                queryset = queryset.filter(
+                    date__lte=datetime.strptime(to_date, DATE_FORMAT)
+                    + timedelta(days=1)
+                )
 
             if device_id:
                 queryset = queryset.filter(form__device_id=device_id)
@@ -209,7 +212,9 @@ class TestStatsViewSet(viewsets.ViewSet):
             grouped_queryset = (
                 queryset.values(*grouping_fields)
                 .annotate(test_count=Count("form_id", distinct=True))
-                .annotate(catt_count=Count("form_id", distinct=True, filter=Q(type=CATT)))
+                .annotate(
+                    catt_count=Count("form_id", distinct=True, filter=Q(type=CATT))
+                )
                 .annotate(rdt_count=Count("form_id", distinct=True, filter=Q(type=RDT)))
                 .annotate(
                     screening_count=Count(
@@ -269,9 +274,11 @@ class TestStatsViewSet(viewsets.ViewSet):
                         "form_id",
                         distinct=True,
                         filter=(
-                            Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE) &
-                            ~Q(form__test_pl_result="stage2") & ~Q(form__test_pl_result="stage1")
-                        )
+                            Q(type__in=TYPES_CONFIRMATION)
+                            & Q(result__gte=RES_POSITIVE)
+                            & ~Q(form__test_pl_result="stage2")
+                            & ~Q(form__test_pl_result="stage1")
+                        ),
                     )
                 )
                 .annotate(
@@ -302,7 +309,9 @@ class TestStatsViewSet(viewsets.ViewSet):
                 )
                 .annotate(
                     negative_rdt_count=Count(
-                        "form_id", distinct=True, filter=Q(type=RDT) & Q(result=RES_NEGATIVE)
+                        "form_id",
+                        distinct=True,
+                        filter=Q(type=RDT) & Q(result=RES_NEGATIVE),
                     )
                 )
                 .annotate(
@@ -734,8 +743,12 @@ class TestStatsViewSet(viewsets.ViewSet):
                     pl_stage_unk=Count(
                         "id",
                         distinct=True,
-                        filter=(Q(type__in=TYPES_CONFIRMATION) & Q(result__gte=RES_POSITIVE) &
-                                ~Q(form__test_pl_result="stage2") & ~Q(form__test_pl_result="stage1")),
+                        filter=(
+                            Q(type__in=TYPES_CONFIRMATION)
+                            & Q(result__gte=RES_POSITIVE)
+                            & ~Q(form__test_pl_result="stage2")
+                            & ~Q(form__test_pl_result="stage1")
+                        ),
                     )
                 )
             )
@@ -763,12 +776,17 @@ class TestStatsViewSet(viewsets.ViewSet):
                 total_pl=Count("pl_tests", filter=Q(pl_tests__gt=0)),
                 total_pl_stage1=Count("pl_tests", filter=Q(pl_stage1__gt=0)),
                 total_pl_stage2=Count("pl_tests", filter=Q(pl_stage2__gt=0)),
-                total_pl_stage_unk=Count("pl_tests", filter=(Q(pl_stage1=0) & Q(pl_stage2=0)
-                                                             & Q(type__in=TYPES_CONFIRMATION))),
+                total_pl_stage_unk=Count(
+                    "pl_tests",
+                    filter=(
+                        Q(pl_stage1=0) & Q(pl_stage2=0) & Q(type__in=TYPES_CONFIRMATION)
+                    ),
+                ),
             )
             result = {"result": grouped_queryset, "total": total_queryset}
             cache.set(absolute_url, result, 30 * 60)
         # end of data fetch if not in cache
+        #
 
         if xlsx_format is not None:
             if not grouping == "tester":

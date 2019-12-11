@@ -9,10 +9,9 @@ from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.cases.forms import DATE_FORMAT
 from hat.cases.models import CaseView, Case, RES_POSITIVE
 from hat.common.utils import queryset_iterator
-from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS, SCREENING_TYPE_CHOICES
+from hat.constants import TYPES_WITH_IMAGES, TYPES_WITH_VIDEOS, SCREENING_TYPE_CHOICES, DATE_FORMAT
 from hat.geo.models import AS, Village
 from hat.patient.models import Patient, Test, PatientDuplicatesPair, Treatment
 from hat.patient.utils import *
@@ -105,16 +104,7 @@ class PatientsViewSet(viewsets.ViewSet):
             test_with_date_in_range = Test.objects.filter(
                 form__normalized_patient_id=OuterRef("id")
             )
-            if date_from:
-                test_with_date_in_range = test_with_date_in_range.filter(
-                    date__gte=date_from
-                )
-            if date_to:
-                test_with_date_in_range = test_with_date_in_range.filter(
-                    date__lte=datetime.strptime(date_to, DATE_FORMAT)
-                    + timedelta(days=1)
-                )
-
+            test_with_date_in_range = Test.query_date_range(test_with_date_in_range, date_from, date_to)
             queryset = queryset.annotate(
                 test_with_date_in_range=Exists(test_with_date_in_range)
             ).filter(test_with_date_in_range=True)
@@ -123,6 +113,7 @@ class PatientsViewSet(viewsets.ViewSet):
             teams_cases = Case.objects.filter(
                 normalized_team_id__in=teams.split(",")
             ).filter(normalized_patient_id=OuterRef("id"))
+            teams_cases = Case.query_date_range(teams_cases, date_from, date_to)
             queryset = queryset.annotate(teams_cases=Exists(teams_cases)).filter(
                 teams_cases=True
             )
@@ -131,6 +122,7 @@ class PatientsViewSet(viewsets.ViewSet):
             coord_cases = Case.objects.filter(
                 normalized_team__coordination_id__in=coordination_id.split(",")
             ).filter(normalized_patient_id=OuterRef("id"))
+            coord_cases = Case.query_date_range(coord_cases, date_from, date_to)
             queryset = queryset.annotate(teams_cases=Exists(coord_cases)).filter(
                 teams_cases=True
             )
@@ -139,6 +131,7 @@ class PatientsViewSet(viewsets.ViewSet):
             test_with_type_in = Test.objects.filter(
                 form__normalized_patient_id=OuterRef("id")
             ).filter(type__in=test_types.upper().split(","))
+            test_with_type_in = Test.query_date_range(test_with_type_in, date_from, date_to)
             queryset = queryset.annotate(
                 test_with_type_in=Exists(test_with_type_in)
             ).filter(test_with_type_in=True)
@@ -148,6 +141,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 none_screening_cases = CaseView.objects.filter(
                     screening_result__isnull=True
                 ).filter(normalized_patient_id=OuterRef("id"))
+                none_screening_cases = CaseView.query_date_range(none_screening_cases, date_from, date_to)
                 queryset = queryset.annotate(
                     has_none_screening_case=Exists(none_screening_cases)
                 ).filter(has_none_screening_case=True)
@@ -156,6 +150,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 positive_screening_cases = CaseView.objects.filter(
                     screening_result__gte=RES_POSITIVE
                 ).filter(normalized_patient_id=OuterRef("id"))
+                positive_screening_cases = CaseView.query_date_range(positive_screening_cases, date_from, date_to)
                 queryset = queryset.annotate(
                     has_positive_screening_case=Exists(positive_screening_cases)
                 ).filter(
@@ -166,6 +161,7 @@ class PatientsViewSet(viewsets.ViewSet):
             stage_query = CaseView.objects.filter(test_pl_result=stage).filter(
                 normalized_patient_id=OuterRef("id")
             )
+            stage_query = CaseView.query_date_range(stage_query, date_from, date_to)
             queryset = queryset.annotate(has_stage=Exists(stage_query)).filter(
                 has_stage=True
             )
@@ -179,6 +175,7 @@ class PatientsViewSet(viewsets.ViewSet):
             cases_of_screening_type = Case.objects.filter(
                 screening_type=screening_type
             ).filter(normalized_patient_id=OuterRef("id"))
+            cases_of_screening_type = Case.query_date_range(cases_of_screening_type, date_from, date_to)
             queryset = queryset.annotate(
                 has_cases_of_screening_type=Exists(cases_of_screening_type)
             ).filter(has_cases_of_screening_type=True)
@@ -188,6 +185,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 none_confirmed_case = CaseView.objects.filter(
                     confirmation_result__isnull=True
                 ).filter(normalized_patient_id=OuterRef("id"))
+                none_confirmed_case = CaseView.query_date_range(none_confirmed_case, date_from, date_to)
                 queryset = queryset.annotate(
                     has_none_confirmed_case=Exists(none_confirmed_case)
                 ).filter(has_none_confirmed_case=True)
@@ -195,6 +193,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 confirmed_cases = Case.objects.filter(confirmed_case=True).filter(
                     normalized_patient_id=OuterRef("id")
                 )
+                confirmed_cases = Case.query_date_range(confirmed_cases, date_from, date_to)
                 queryset = queryset.annotate(
                     has_confirmed_case=Exists(confirmed_cases)
                 ).filter(has_confirmed_case=(confirmation_result.lower() == "true"))
@@ -252,12 +251,14 @@ class PatientsViewSet(viewsets.ViewSet):
             cases = Case.objects.filter(device_id__in=devices).values_list(
                 "pk", flat=True
             )
+            cases = Case.query_date_range(cases, date_from, date_to)
             queryset = queryset.filter(case__in=cases)
 
         if device_ids:
             cases = Case.objects.filter(
                 device_id__in=device_ids.split(",")
             ).values_list("pk", flat=True)
+            cases = Case.query_date_range(cases, date_from, date_to)
             queryset = queryset.filter(case__in=cases)
 
         if pictures:
@@ -266,6 +267,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(type__in=TYPES_WITH_IMAGES)
                 .filter(image_filename__isnull=False)
             )
+            picture_tests = Test.query_date_range(picture_tests, date_from, date_to)
 
             if pictures == "with_pictures":
                 queryset = queryset.annotate(
@@ -298,6 +300,7 @@ class PatientsViewSet(viewsets.ViewSet):
                 .filter(type__in=TYPES_WITH_VIDEOS)
                 .filter(video_filename__isnull=False)
             )
+            has_videos = Test.query_date_range(has_videos, date_from, date_to)
 
             if videos == "with_videos":
                 queryset = queryset.annotate(

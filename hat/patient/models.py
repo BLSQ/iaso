@@ -1,35 +1,29 @@
 import json
+from datetime import datetime, timedelta
 
 from django.contrib.gis.db import models as gis_models
 from django.contrib.gis.db.models import PointField
+from django.contrib.postgres import fields as contrib
 from django.contrib.postgres.fields import ArrayField
 from django.db import models
 from django.db.models import Q, CASCADE, TextField
-from django.contrib.postgres import fields as contrib
 
 from hat.cases.models import Case
+from hat.cases.models import (
+    RES_NEGATIVE,
+    RES_UNSURE,
+)
+from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import (
     TEST_TYPE_CHOICES,
     TYPES_WITH_VIDEOS,
     TYPES_WITH_IMAGES,
     GPS_SRID,
-)
+    DATE_FORMAT)
 from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
-from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.users.middleware import get_current_user
 from hat.users.models import Profile
-from hat.cases.models import (
-    RES_POSITIVE_POSITIVE_POSITIVE,
-    RES_POSITIVE_POSITIVE,
-    RES_POSITIVE,
-    RES_NEGATIVE,
-    RES_ABSENT,
-    RES_MISSING,
-    RES_UNREADABLE,
-    RES_INVALID,
-    RES_UNSURE,
-)
 
 
 class Patient(models.Model):
@@ -284,6 +278,18 @@ class Test(models.Model):
             ]
 
         return res
+
+    @classmethod
+    def query_date_range(cls, queryset, date_from, date_to):
+        if date_from:
+            queryset = queryset.filter(
+                date__gte=date_from
+            )
+        if date_to:
+            queryset = queryset.filter(
+                date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+            )
+        return queryset
 
 
 class Treatment(models.Model):

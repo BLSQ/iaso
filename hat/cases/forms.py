@@ -12,7 +12,6 @@ from django.utils.translation import ugettext as _
 from hat.geo.models import Village, ZS, AS, Province
 from .models import Case
 
-DATE_FORMAT = '%Y-%m-%d'
 logger = logging.getLogger('cases.forms.py')
 
 

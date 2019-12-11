@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.db import models
 from django.db.models import Q, Max
@@ -6,7 +6,7 @@ from django.db.models.functions import Coalesce, Cast, ExtractYear, Greatest
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from hat.constants import SCREENING_TYPE_CHOICES
+from hat.constants import SCREENING_TYPE_CHOICES, DATE_FORMAT
 from hat.geo.models import AS as ASModel
 from hat.geo.models import Village
 from hat.sync.models import DeviceDB
@@ -664,6 +664,21 @@ class Case(CaseAbstract):
 
         return d
 
+    @classmethod
+    def query_date_range(cls, queryset, date_from, date_to):
+        if date_from or date_to:
+            queryset = queryset.annotate(normalized_date_for_range=Coalesce("latest_test_date", "document_date"))
+        if date_from:
+            queryset = queryset.filter(
+                normalized_date_for_range__gte=date_from
+            )
+        if date_to:
+            queryset = queryset.filter(
+                normalized_date_for_range__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+            )
+        return queryset
+
+
 
 def compute_confirmation(sender, instance: Case, **kwargs):
     instance.confirmed_case = instance.confirmed()
@@ -790,6 +805,18 @@ class CaseView(CaseAbstract):
         )
         result = result.annotate(normalized_date=Coalesce("latest_test_date", "document_date"))
         return result
+
+    @classmethod
+    def query_date_range(cls, queryset, date_from, date_to):
+        if date_from:
+            queryset = queryset.filter(
+                normalized_date__gte=date_from
+            )
+        if date_to:
+            queryset = queryset.filter(
+                normalized_date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+            )
+        return queryset
 
 
 class Location(models.Model):

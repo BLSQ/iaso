@@ -123,7 +123,13 @@ class PatientInfos extends React.Component {
                                                 )
                                             }
                                             {
-                                                ((key !== 'sex' && key !== 'death_date' && key !== 'year_of_birth')) &&
+                                                (key === 'origin_country') &&
+                                                    (
+                                                        patient[key] ? patient[key] : "(RDC)"
+                                                    )
+                                            }
+                                            {
+                                                ((key !== 'sex' && key !== 'death_date' && key !== 'year_of_birth' && key !== 'origin_country')) &&
                                                     (
                                                         patient[key] ? patient[key] : fieldPlaceholder
                                                     )

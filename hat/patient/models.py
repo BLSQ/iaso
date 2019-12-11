@@ -59,7 +59,9 @@ class Patient(models.Model):
     )
     death_location = gis_models.PointField(srid=GPS_SRID, null=True)
     phone_number = models.TextField("Numéro de téléphone", null=True, blank=True)
-    phone_number_date = models.DateField("Date de collecte du numéro de téléphone", null=True, blank=True)
+    phone_number_date = models.DateField(
+        "Date de collecte du numéro de téléphone", null=True, blank=True
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -97,6 +99,7 @@ class Patient(models.Model):
             "mothers_surname": self.mothers_surname
             if not is_anonymised
             else ANONYMOUS_PLACEHOLDER,
+            "origin_country": self.origin_country,
             "province": province,
             "ZS": ZS,
             "AS": AS,
@@ -182,6 +185,7 @@ class Patient(models.Model):
             "cases": cases,
             "tests": tests,
             "similar_patients": similar_patients,
+            "origin_country": self.origin_country,
             "province": province,
             "ZS": ZS,
             "AS": AS,
@@ -368,7 +372,9 @@ class Treatment(models.Model):
         null=True,
         blank=True,
     )
-    device = models.ForeignKey("sync.DeviceDB", on_delete=CASCADE, null=True, blank=True)
+    device = models.ForeignKey(
+        "sync.DeviceDB", on_delete=CASCADE, null=True, blank=True
+    )
     death_moment = models.TextField(null=True, blank=True, choices=DEATH_MOMENT_CHOICES)
 
     def __str__(self):

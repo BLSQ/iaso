@@ -111,7 +111,8 @@ class PatientsViewSet(viewsets.ViewSet):
                 )
             if date_to:
                 test_with_date_in_range = test_with_date_in_range.filter(
-                    date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+                    date__lte=datetime.strptime(date_to, DATE_FORMAT)
+                    + timedelta(days=1)
                 )
 
             queryset = queryset.annotate(
@@ -487,6 +488,12 @@ class PatientsViewSet(viewsets.ViewSet):
                 new_patient.origin_village = new_village
             else:
                 new_patient.origin_village = None
+
+            origin_country = request.data.get("origin_country", None)
+            if origin_country:
+                new_patient.origin_country = (
+                    origin_country if len(origin_country) > 0 else None
+                )
 
             death = request.data.get("death", None)
             if death:

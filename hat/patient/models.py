@@ -19,7 +19,8 @@ from hat.constants import (
     TYPES_WITH_VIDEOS,
     TYPES_WITH_IMAGES,
     GPS_SRID,
-    DATE_FORMAT)
+    DATE_FORMAT,
+)
 from hat.geo.models import Village, AS
 from hat.sync.models import VideoUpload, ImageUpload
 from hat.users.middleware import get_current_user
@@ -282,9 +283,7 @@ class Test(models.Model):
     @classmethod
     def query_date_range(cls, queryset, date_from, date_to):
         if date_from:
-            queryset = queryset.filter(
-                date__gte=date_from
-            )
+            queryset = queryset.filter(date__gte=date_from)
         if date_to:
             queryset = queryset.filter(
                 date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)

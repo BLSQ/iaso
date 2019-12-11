@@ -299,7 +299,9 @@ class CaseAbstract(models.Model):
     latitude = models.DecimalField(max_digits=10, decimal_places=8, null=True)
     longitude = models.DecimalField(max_digits=11, decimal_places=8, null=True)
 
-    screening_type = models.TextField(null=True, blank=True, choices=SCREENING_TYPE_CHOICES, db_index=True)
+    screening_type = models.TextField(
+        null=True, blank=True, choices=SCREENING_TYPE_CHOICES, db_index=True
+    )
     circumstances_da_um = models.TextField(null=True, blank=True)
     circumstances_dp_um = models.TextField(null=True, blank=True)
     circumstances_dp_cs = models.TextField(null=True, blank=True)
@@ -320,16 +322,28 @@ class CaseAbstract(models.Model):
     INFECTION_LOCATION_TYPE_RESIDENCE = "residence"
     INFECTION_LOCATION_TYPE_TEST = "test"
     INFECTION_LOCATION_TYPE_OTHER = "other"
-    INFECTION_LOCATION_TYPE_CHOICES=(
-        (INFECTION_LOCATION_TYPE_AMBIGUOUS, "Lieu ambigu dans l'app mobile version 2.0.45"),
+    INFECTION_LOCATION_TYPE_CHOICES = (
+        (
+            INFECTION_LOCATION_TYPE_AMBIGUOUS,
+            "Lieu ambigu dans l'app mobile version 2.0.45",
+        ),
         (INFECTION_LOCATION_TYPE_RESIDENCE, "Lieu de résidence"),
         (INFECTION_LOCATION_TYPE_TEST, "Lieu du test"),
         (INFECTION_LOCATION_TYPE_OTHER, "Autre"),
     )
-    infection_location_type = models.TextField("Type d'endroit où l'infection a été rapportée",
-                                               choices=INFECTION_LOCATION_TYPE_CHOICES, null=True, blank=True)
-    infection_location = models.ForeignKey(Village, null=True, blank=True, on_delete=models.SET_NULL,
-                                           related_name="infection_cases")
+    infection_location_type = models.TextField(
+        "Type d'endroit où l'infection a été rapportée",
+        choices=INFECTION_LOCATION_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
+    infection_location = models.ForeignKey(
+        Village,
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="infection_cases",
+    )
 
     treatment_center = models.TextField("Centre de traitement", null=True, blank=True)
     treatment_start_date = models.DateTimeField(
@@ -489,7 +503,9 @@ class CaseAbstract(models.Model):
     confirmed_case = models.NullBooleanField("Cas confirmé", default=False)
     # log field: used to know how many times has been updated
     version_number = models.PositiveIntegerField(default=0)
-    mark_for_deletion = models.BooleanField("Item is marked for deletion", default=False)
+    mark_for_deletion = models.BooleanField(
+        "Item is marked for deletion", default=False
+    )
 
     latest_test_date = models.DateTimeField(null=True, blank=True, db_index=True)
 
@@ -636,9 +652,14 @@ class Case(CaseAbstract):
             "circumstances_dp_hgr": self.circumstances_dp_hgr,
             "screening_type": self.screening_type,
             "latest_test_date": self.latest_test_date,
-            "normalized_date": self.normalized_date if hasattr(self, "normalized_date")
-            else (self.latest_test_date if self.latest_test_date else self.document_date),
-            "infection_location": self.infection_location.as_short_dict() if self.infection_location else None,
+            "normalized_date": self.normalized_date
+            if hasattr(self, "normalized_date")
+            else (
+                self.latest_test_date if self.latest_test_date else self.document_date
+            ),
+            "infection_location": self.infection_location.as_short_dict()
+            if self.infection_location
+            else None,
             "infection_location_type": self.get_infection_location_type_display(),
         }
 
@@ -667,17 +688,17 @@ class Case(CaseAbstract):
     @classmethod
     def query_date_range(cls, queryset, date_from, date_to):
         if date_from or date_to:
-            queryset = queryset.annotate(normalized_date_for_range=Coalesce("latest_test_date", "document_date"))
-        if date_from:
-            queryset = queryset.filter(
-                normalized_date_for_range__gte=date_from
+            queryset = queryset.annotate(
+                normalized_date_for_range=Coalesce("latest_test_date", "document_date")
             )
+        if date_from:
+            queryset = queryset.filter(normalized_date_for_range__gte=date_from)
         if date_to:
             queryset = queryset.filter(
-                normalized_date_for_range__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+                normalized_date_for_range__lte=datetime.strptime(date_to, DATE_FORMAT)
+                + timedelta(days=1)
             )
         return queryset
-
 
 
 def compute_confirmation(sender, instance: Case, **kwargs):
@@ -721,8 +742,9 @@ class CaseView(CaseAbstract):
     """
 
     # Avoid confusion with Case in reverse mapping
-    infection_location = models.ForeignKey(Village, null=True, blank=True, on_delete=models.SET_NULL,
-                                           related_name="+")
+    infection_location = models.ForeignKey(
+        Village, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
 
     # calculated fields
     document_date_day = models.DateTimeField(null=True)
@@ -772,7 +794,7 @@ class CaseView(CaseAbstract):
             }
         )
 
-    caseview_additional_fields=[
+    caseview_additional_fields = [
         "normalized_village_name",
         "normalized_as_name",
         "normalized_zs_name",
@@ -784,37 +806,62 @@ class CaseView(CaseAbstract):
     @staticmethod
     def add_caseview_fields_to_case_queryset(queryset):
         result = queryset.annotate(
-            normalized_team_name=Coalesce(Cast("normalized_team__name", models.TextField()), "mobile_unit"))
-        result = result.annotate(
-            normalized_village_name=Coalesce(Cast("normalized_village__name", models.TextField()), "village"))
-        result = result.annotate(
-            normalized_as_name=Coalesce(Cast("normalized_AS__name", models.TextField()), "AS"))
-        result = result.annotate(
-            normalized_zs_name=Coalesce(Cast("normalized_AS__ZS__name", models.TextField()), "ZS"))
-        result = result.annotate(
-            normalized_province_name=Coalesce(Cast("normalized_AS__ZS__province__name", models.TextField()), "province"))
-        result = result.annotate(
-            normalized_year=Coalesce(Cast(ExtractYear("document_date"), models.PositiveSmallIntegerField()),
-                                     "form_year"))
-        result = result.annotate(
-            confirmation_result=Greatest("test_pg", "test_ctcwoo", "test_maect", "test_pl", "test_ge", "test_lcr",
-                                         "test_sf")
+            normalized_team_name=Coalesce(
+                Cast("normalized_team__name", models.TextField()), "mobile_unit"
+            )
         )
         result = result.annotate(
-            screening_result=Greatest("test_catt", "test_rdt")
+            normalized_village_name=Coalesce(
+                Cast("normalized_village__name", models.TextField()), "village"
+            )
         )
-        result = result.annotate(normalized_date=Coalesce("latest_test_date", "document_date"))
+        result = result.annotate(
+            normalized_as_name=Coalesce(
+                Cast("normalized_AS__name", models.TextField()), "AS"
+            )
+        )
+        result = result.annotate(
+            normalized_zs_name=Coalesce(
+                Cast("normalized_AS__ZS__name", models.TextField()), "ZS"
+            )
+        )
+        result = result.annotate(
+            normalized_province_name=Coalesce(
+                Cast("normalized_AS__ZS__province__name", models.TextField()),
+                "province",
+            )
+        )
+        result = result.annotate(
+            normalized_year=Coalesce(
+                Cast(ExtractYear("document_date"), models.PositiveSmallIntegerField()),
+                "form_year",
+            )
+        )
+        result = result.annotate(
+            confirmation_result=Greatest(
+                "test_pg",
+                "test_ctcwoo",
+                "test_maect",
+                "test_pl",
+                "test_ge",
+                "test_lcr",
+                "test_sf",
+            )
+        )
+        result = result.annotate(screening_result=Greatest("test_catt", "test_rdt"))
+        result = result.annotate(
+            normalized_date=Coalesce("latest_test_date", "document_date")
+        )
         return result
 
     @classmethod
     def query_date_range(cls, queryset, date_from, date_to):
         if date_from:
-            queryset = queryset.filter(
-                normalized_date__gte=date_from
-            )
+            queryset = queryset.filter(normalized_date__gte=date_from)
         if date_to:
             queryset = queryset.filter(
-                normalized_date__lte=datetime.strptime(date_to, DATE_FORMAT) + timedelta(days=1)
+                normalized_date__lte=datetime.strptime(date_to, DATE_FORMAT)
+                + timedelta(days=1)
             )
         return queryset
 

@@ -38,7 +38,10 @@ TYPES_WITH_VIDEOS = {PG, CTCWOO, MAECT, PL}
 
 SCREENING_ACTIVE = "active"
 SCREENING_PASSIVE = "passive"
-SCREENING_TYPE_CHOICES = ((SCREENING_ACTIVE, "Dépistage actif"), (SCREENING_PASSIVE, "Dépistage passif"))
+SCREENING_TYPE_CHOICES = (
+    (SCREENING_ACTIVE, "Dépistage actif"),
+    (SCREENING_PASSIVE, "Dépistage passif"),
+)
 
 GPS_SRID = 4326
 
@@ -46,4 +49,4 @@ PL_STAGE1 = "stage1"
 PL_STAGE2 = "stage2"
 PL_STAGE_UNKNOWN = "unknown"
 
-DATE_FORMAT = '%Y-%m-%d'
+DATE_FORMAT = "%Y-%m-%d"

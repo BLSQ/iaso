@@ -97,10 +97,12 @@ const fetchTestMapping = (dispatch) => {
     });
 };
 
-const fetchDetails = (dispatch, patientId) => {
+const fetchDetails = (dispatch, patientId, resetDetail = true) => {
     dispatch(loadActions.startLoading());
-    dispatch(loadCurrentDetail({}));
-    dispatch(fetchTestMapping(dispatch));
+    if (resetDetail) {
+        dispatch(loadCurrentDetail({}));
+        dispatch(fetchTestMapping(dispatch));
+    }
     req
         .get(`/api/patients/${patientId}`)
         .then((result) => {

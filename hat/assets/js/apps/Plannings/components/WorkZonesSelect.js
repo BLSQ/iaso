@@ -171,11 +171,11 @@ class WorkZonesSelect extends Component {
                         </section>
                         <div className="expand-collapse">
                             <div>
-                                <div className="locator-filter">
+                                <div className="location-filter">
                                     <div
                                         role="button"
                                         tabIndex={0}
-                                        className={`locator-subtitle ${this.state.unUsedAreas.length > 0 ? 'alert' : ''}`}
+                                        className={`location-subtitle ${this.state.unUsedAreas.length > 0 ? 'alert' : ''}`}
                                         onClick={() => this.setState({
                                             isAreasOpen: !this.state.isAreasOpen,
                                         })}

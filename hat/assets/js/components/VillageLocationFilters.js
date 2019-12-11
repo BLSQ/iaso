@@ -13,8 +13,8 @@ class Filters extends React.Component {
         const provinceValue = filters.provinceId;
         return (
             <div>
-                <div className="locator-filter">
-                    <div className="locator-subtitle">
+                <div className="location-filter">
+                    <div className="location-subtitle">
                         <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
                     </div>
                     {
@@ -35,8 +35,8 @@ class Filters extends React.Component {
                 </div>
                 {filters.zones && filters.zones.length !== 0
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
                             </div>
                             <div>
@@ -56,8 +56,8 @@ class Filters extends React.Component {
                 }
                 {filters.areas && filters.areas.length !== 0
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
                             </div>
                             <div>
@@ -81,8 +81,8 @@ class Filters extends React.Component {
                     && filters.villages.length !== 0
                     && (
                         <div>
-                            <div className="locator-filter">
-                                <div className="locator-subtitle">
+                            <div className="location-filter">
+                                <div className="location-subtitle">
                                     <FormattedMessage id="main.label.village" defaultMessage="Village" />
                                 </div>
                                 <Select
@@ -103,8 +103,8 @@ class Filters extends React.Component {
                 {filters.villages && this.props.showVillages
                     && filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle no-result">
+                        <div className="location-filter">
+                            <div className="location-subtitle no-result">
                                 <FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />
                             </div>
                         </div>

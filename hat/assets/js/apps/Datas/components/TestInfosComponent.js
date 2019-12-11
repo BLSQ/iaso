@@ -21,6 +21,7 @@ import {
 } from '../../../utils/constants/testsResults';
 
 import TimeSelect from '../../../components/TimeSelectComponent';
+import TestLocationComponent from './TestLocationComponent';
 import ModalItem from './ModalItemComponent';
 import CattCard from './CattCardComponent';
 import CheckBox from '../../../components/CheckBoxComponent';
@@ -82,7 +83,7 @@ const getComponentValues = (
     return initValues;
 };
 
-// TO_DO =  village, Validation, traveler area, infection location
+// TO_DO =  Validation + message on save / error, traveler area,
 const TestInfoComponent = ({
     intl: {
         formatMessage,
@@ -217,6 +218,38 @@ const TestInfoComponent = ({
                                 />
                             )}
                         />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.date"
+                                    defaultMessage="Date"
+                                />
+                            )}
+                            fieldComponent={(
+                                <div className="filter__container__select date-select">
+                                    <DatePicker
+                                        dateFormat={dateFormat}
+                                        dateFormatCalendar="YYYY-MM-DD"
+                                        selected={currentTest.date && moment(currentTest.date)}
+                                        onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
+                                    />
+                                </div>
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.time"
+                                    defaultMessage="Time"
+                                />
+                            )}
+                            fieldComponent={(
+                                <TimeSelect
+                                    dateTime={moment(currentTest.date)}
+                                    onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
+                                />
+                            )}
+                        />
                         {
                             currentTest.type === 'CATT'
                             && (
@@ -304,38 +337,6 @@ const TestInfoComponent = ({
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage
-                                    id="main.label.date"
-                                    defaultMessage="Date"
-                                />
-                            )}
-                            fieldComponent={(
-                                <div className="filter__container__select date-select">
-                                    <DatePicker
-                                        dateFormat={dateFormat}
-                                        dateFormatCalendar="YYYY-MM-DD"
-                                        selected={currentTest.date && moment(currentTest.date)}
-                                        onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
-                                    />
-                                </div>
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.time"
-                                    defaultMessage="Time"
-                                />
-                            )}
-                            fieldComponent={(
-                                <TimeSelect
-                                    dateTime={moment(currentTest.date)}
-                                    onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
-                                />
-                            )}
-                        />
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
                                     id="main.label.comments"
                                     defaultMessage="Comments"
                                 />
@@ -362,6 +363,10 @@ const TestInfoComponent = ({
                                     toggleCheckbox={isChecked => onChange('hidden', isChecked, 'currentTest')}
                                 />
                             )}
+                        />
+
+                        <TestLocationComponent
+                            onChange={(key, value, type) => onChange(key, value, type)}
                         />
                     </Grid>
                 </Grid>

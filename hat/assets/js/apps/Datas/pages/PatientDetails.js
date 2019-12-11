@@ -31,14 +31,6 @@ class PatientDetails extends React.Component {
         this.setState({
             patient: nextProps.patient,
         });
-        if (nextProps.patient.province_id !== this.props.patient.province_id) {
-            this.props.selectProvince(
-                nextProps.patient.province_id,
-                nextProps.patient.ZS_id,
-                nextProps.patient.AS_id,
-                nextProps.params.village_id,
-            );
-        }
     }
 
     goBack() {

@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { getPossibleYears } from '../../../utils';
 import Search from '../../../components/Search';
-import Filters from './Filters';
+import Filters from '../../../components/VillageLocationFilters';
 import CheckBox from '../../../components/CheckBoxComponent';
 
 
@@ -176,7 +176,7 @@ class ListFilters extends React.Component {
                         />
                     </div>
                 </div>
-                <div className="list-locator-filters">
+                <div className="list-location-filters">
                     <Filters
                         isMultiSelect={false} // need to update api to work with multiple ids
                         showVillages={false}

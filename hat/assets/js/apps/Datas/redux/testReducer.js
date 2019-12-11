@@ -12,7 +12,7 @@ const updateTest = (dispatch, test, patientId) => {
         .set('Content-Type', 'application/json')
         .send(test)
         .then(() => {
-            dispatch(patientsActions.fetchDetails(dispatch, patientId));
+            dispatch(patientsActions.fetchDetails(dispatch, patientId, false));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -30,7 +30,7 @@ const createTest = (dispatch, test, patientId) => {
         .set('Content-Type', 'application/json')
         .send(test)
         .then(() => {
-            dispatch(patientsActions.fetchDetails(dispatch, patientId));
+            dispatch(patientsActions.fetchDetails(dispatch, patientId, false));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {

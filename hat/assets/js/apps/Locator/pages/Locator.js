@@ -4,7 +4,7 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import Case from '../components/Case';
-import Filters from '../components/Filters';
+import Filters from '../../../components/VillageLocationFilters';
 import TypeFilters from '../components/TypeFilters';
 
 import { locatorActions } from '../redux/locator';

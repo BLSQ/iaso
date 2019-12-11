@@ -22,6 +22,7 @@ import { mapActions } from '../redux/mapReducer';
 import { scrollTo, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
+import { loadActions } from '../../../redux/load';
 import DynamicLegend from './DynamicLegend';
 
 const MESSAGES = defineMessages({
@@ -93,6 +94,7 @@ class PatientDetailsWrapper extends React.Component {
     componentWillReceiveProps(newProps) {
         const {
             currentUser,
+            dispatch,
             permissions,
             params: {
                 prov_id,
@@ -118,10 +120,19 @@ class PatientDetailsWrapper extends React.Component {
             }, 10000);
         }
         if (prov_id !== this.props.params.prov_id) {
+            if (prov_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectProvince(prov_id, ZS_id, AS_id, vil_id);
         } else if (ZS_id !== this.props.params.ZS_id) {
+            if (ZS_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectZone(ZS_id, AS_id, vil_id);
         } else if (AS_id !== this.props.params.AS_id) {
+            if (AS_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectArea(AS_id, vil_id);
         } else if (vil_id !== this.props.params.vil_id) {
             this.props.selectVillage(vil_id);
@@ -138,6 +149,15 @@ class PatientDetailsWrapper extends React.Component {
     }
 
     toggleEdit() {
+        const {
+            patient,
+        } = this.props;
+        this.props.selectProvince(
+            patient.province_id,
+            patient.ZS_id,
+            patient.AS_id,
+            patient.village_id,
+        );
         this.setState({
             editEnabled: !this.state.editEnabled,
         });
@@ -429,9 +449,9 @@ const MapDispatchToProps = dispatch => ({
     savePatient: patient => dispatch(patientsActions.savePatient(dispatch, patient)),
     setIsUpdated: value => dispatch(patientsActions.setIsUpdated(value)),
     setHasError: value => dispatch(patientsActions.setErrorOnUpdated(value)),
-    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, false, 'YES,NO,OTHER')),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, false, 'YES,NO,OTHER')),
+    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, true, 'YES,NO,OTHER')),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, true, 'YES,NO,OTHER')),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, true, 'YES,NO,OTHER')),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId)),
     setCaseslist: cases => dispatch(mapActions.setCaseslist(cases)),
 });

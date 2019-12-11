@@ -199,7 +199,8 @@ class EditPatientInfos extends React.Component {
                                                     && (
                                                         <span className="years">
                                                             {
-                                                                ` ${getAgeFromYear(patient.year_of_birth)} ${formatMessage(MESSAGES.years)}`
+                                                                patient.year_of_birth
+                                                                && ` ${getAgeFromYear(patient.year_of_birth)} ${formatMessage(MESSAGES.years)}`
                                                             }
                                                         </span>
                                                     )

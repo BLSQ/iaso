@@ -31,56 +31,56 @@ export default function datasApp(appConfig, element, baseUrl) {
     const defaultPathTests = `/tests/order/-latest_test_date/pageSize/50/page/1/date_from/${dateFrom}/date_to/${dateTo}/showUnDeleted/true`;
     const routes = [
         <Route
-            path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
-            '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
-            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)' +
-            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/anonymous/:anonymous)(/back/:back)'}
+            path={'/tests/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to'
+            + '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)'
+            + '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)'
+            + '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)'
+            + '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/anonymous/:anonymous)(/back/:back)'}
             component={CasesPage}
         />,
         <Route
-            path={'/tests/detail/patient_id/:patient_id/case_id/:case_id/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to' +
-            '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)' +
-            '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)' +
-            '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)' +
-            '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)' +
-            '(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/tab/:tab)(/anonymous/:anonymous)'}
+            path={'/tests/detail/patient_id/:patient_id/case_id/:case_id/order/:order/pageSize/:pageSize/page/:page/date_from/:date_from/date_to/:date_to'
+            + '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)'
+            + '(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_mother_name/:search_mother_name)'
+            + '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/screening_type/:screening_type)(/stage/:stage)'
+            + '(/located/:located)(/test_type/:test_type)(/tester_type/:tester_type)(/prov_id/:prov_id)'
+            + '(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)'
+            + '(/videos/:videos)(/showDeleted/:showDeleted)(/showUnDeleted/:showUnDeleted)(/tab/:tab)(/anonymous/:anonymous)'}
             component={PatientDetailPage}
         />,
         <Route
-            path={'/register/list/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)' +
-            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
-            '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
-            '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
-            '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)' +
-            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/stage/:stage)(/back/:back)(/merged/:merged)'}
+            path={'/register/list/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)'
+            + '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)'
+            + '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)'
+            + '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)'
+            + '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)'
+            + '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/stage/:stage)(/back/:back)(/merged/:merged)'}
             component={PatientsPage}
         />,
         <Route
-            path={'/register/detail/patient_id/:patient_id/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)' +
-            '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
-            '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)' +
-            '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/only_dupes/:only_dupes)' +
-            '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)(/screening_type/:screening_type)(/stage/:stage)' +
-            '(/prov_id/:prov_id)(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
+            path={'/register/detail/patient_id/:patient_id/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)'
+            + '(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)'
+            + '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)(/search_prename/:search_prename)'
+            + '(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/only_dupes/:only_dupes)'
+            + '(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)(/tab/:tab)(/screening_type/:screening_type)(/stage/:stage)'
+            + '(/prov_id/:prov_id)(/ZS_id/:ZS_id)(/AS_id/:AS_id)(/vil_id/:vil_id)(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)'}
             component={PatientDetailPage}
         />,
         <Route
-            path={'/register/duplicates/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)' +
-            '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)' +
-            '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)' +
-            '(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/back/:back)'}
+            path={'/register/duplicates/order/:order/pageSize/:pageSize/page/:page(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)'
+            + '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_id/:village_id)(/screening_result/:screening_result)'
+            + '(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)'
+            + '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)'
+            + '(/search_mother_name/:search_mother_name)(/test_type/:test_type)(/back/:back)'}
             component={PatientsDuplicates}
         />,
         <Route
-            path={'/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2/duplicate_id/:duplicate_id(/order/:order)(/pageSize/:pageSize)' +
-            '(/page/:page)(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)' +
-            '(/village_id/:village_id)(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)' +
-            '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)' +
-            '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)' +
-            '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/manual_merge/:manual_merge)(/register/:register)'}
+            path={'/register/duplicates/detail/patient_id/:patient_id/patient_id_2/:patient_id_2/duplicate_id/:duplicate_id(/order/:order)(/pageSize/:pageSize)'
+            + '(/page/:page)(/date_from/:date_from)(/date_to/:date_to)(/workzone_id/:workzone_id)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'
+            + '(/village_id/:village_id)(/screening_result/:screening_result)(/confirmation_result/:confirmation_result)(/source/:source)(/search_name/:search_name)'
+            + '(/search_prename/:search_prename)(/search_lastname/:search_lastname)(/teams/:teams)(/coordination_id/:coordination_id)(/search_mother_name/:search_mother_name)'
+            + '(/test_type/:test_type)(/only_dupes/:only_dupes)(/treatment_medicine/:treatment_medicine)(/with_treatment/:with_treatment)(/dead/:dead)(/tester_type/:tester_type)'
+            + '(/device_id/:device_id)(/pictures/:pictures)(/videos/:videos)(/anonymous/:anonymous)(/screening_type/:screening_type)(/manual_merge/:manual_merge)(/register/:register)'}
             component={PatientDuplicateDetails}
         />,
         <Redirect path="/register/list" to={defaultPathRegister} />,

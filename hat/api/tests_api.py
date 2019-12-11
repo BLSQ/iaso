@@ -53,13 +53,10 @@ class TestsViewSet(viewsets.ViewSet):
         if village_id:
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
-
-        latitude = request.data.get("latitude", None)
-        longitude = request.data.get("longitude", None)
-        if longitude and latitude:
+            print (village.longitude)
             new_test.location = Point(
-                x=longitude,
-                y=latitude,
+                x=float(village.longitude),
+                y=float(village.latitude),
                 srid=4326,
             )
 
@@ -83,38 +80,47 @@ class TestsViewSet(viewsets.ViewSet):
 
     def create(self, request):
         new_test = Test()
+
         new_test.type = request.data.get("type", None)
         new_test.index = request.data.get("index", None)
         new_test.result = request.data.get("result", None)
         new_test.comment = request.data.get("comment", None)
         new_test.hidden = request.data.get("hidden", False)
-
         new_test.date = request.data.get("date", None)
         profile_id = request.data.get("tester", None)
-        testerProfile = None
-        if profile_id:
-            testerProfile = get_object_or_404(Profile, id=profile_id)
 
-        new_test.tester = testerProfile
+        tester = None
+        if profile_id:
+            tester = get_object_or_404(Profile, id=profile_id)
+
+        new_test.tester = tester
 
         village_id = request.data.get("villageId", None)
         if village_id:
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
-
-
-        latitude = request.data.get("latitude", None)
-        longitude = request.data.get("longitude", None)
-        if longitude and latitude:
+            print (village.longitude)
             new_test.location = Point(
-                x=longitude,
-                y=latitude,
+                x=float(village.longitude),
+                y=float(village.latitude),
                 srid=4326,
             )
 
+        clinical_signs = request.data.get("clinicalsigns", None)
+        if clinical_signs:
+            print("TODO, save clinical signs !!!")
+
         form_id = request.data.get("form")
         case_item = get_object_or_404(Case, id=form_id)
+        current_case = request.data.get("currentCase")
+        case_item.test_pl_gb_mm3 = current_case.get("test_pl_gb_mm3", None)
+        case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
+        case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
+
+        case_item.save()
         new_test.form = case_item
+
+
         new_test.save()
 
         return Response(new_test.as_dict())

@@ -137,8 +137,8 @@ class GeoScope extends Component {
                         <div className="bold-subtitle">
                             {this.props.team.name}
                         </div>
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.zones" defaultMessage="Health zone" />
                             </div>
                             <div>
@@ -157,8 +157,8 @@ class GeoScope extends Component {
                                 }
                             </div>
                         </div>
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
                             </div>
                             <div>

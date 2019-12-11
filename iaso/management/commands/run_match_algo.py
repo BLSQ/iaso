@@ -1,13 +1,6 @@
 from django.core.management.base import BaseCommand
-import csv
-from iaso.models import (
-    OrgUnit,
-    OrgUnitType,
-    DataSource,
-    SourceVersion,
-    MatchingAlgorithm,
-)
-from django.contrib.gis.geos import Point
+from iaso.models import DataSource, SourceVersion
+
 import importlib
 
 
@@ -32,5 +25,4 @@ class Command(BaseCommand):
         )
         algo_module = importlib.import_module("iaso.matching." + options["algo_name"])
         algo = algo_module.Algorithm()
-        print(algo)
         algo.match(version_1, version_2)

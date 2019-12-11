@@ -3,7 +3,7 @@ from datetime import datetime
 
 
 class Algorithm:
-    description = "Matching on external id"
+    description = "ID Matching"
 
     def match(self, version_1, version_2, user=None):
 

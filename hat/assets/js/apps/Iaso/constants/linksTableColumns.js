@@ -102,7 +102,7 @@ const linksTableColumns = (formatMessage, component, classes) => (
             }),
             accessor: 'algorithm_run',
             Cell: settings => (
-                settings.original.algorithm_run.algorithm.name
+                settings.original.algorithm_run ? settings.original.algorithm_run.algorithm.description : '?'
             ),
         },
         {

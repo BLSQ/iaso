@@ -1,12 +1,4 @@
-from iaso.models import (
-    OrgUnit,
-    OrgUnitType,
-    DataSource,
-    SourceVersion,
-    MatchingAlgorithm,
-    Link,
-    AlgorithmRun,
-)
+from iaso.models import OrgUnit, MatchingAlgorithm, Link, AlgorithmRun
 from datetime import datetime
 
 
@@ -18,7 +10,8 @@ def remove_words(dest, words):
 
 
 class Algorithm:
-    description = "Matching on name similarity and parent names similarity"
+    description = "Name and parent similarity"
+
     words_to_strip = [
         "aire de santé",
         "poste de santé",

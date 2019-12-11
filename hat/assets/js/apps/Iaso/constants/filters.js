@@ -198,7 +198,7 @@ export const profile = (
         isMultiSelect,
         isClearable: true,
         options: profileList.map(u => ({
-            label: getDisplayName(u),
+            label: u.user_name,
             value: u.id,
         })),
         label: labelString !== '' ? null : label,
@@ -237,7 +237,7 @@ export const algo = algoList => (
         isMultiSelect: false,
         isClearable: true,
         options: algoList.map(a => ({
-            label: a.name,
+            label: a.description,
             value: a.id,
         })),
         label: MESSAGES.algo,

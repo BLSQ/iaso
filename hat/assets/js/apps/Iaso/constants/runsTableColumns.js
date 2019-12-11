@@ -45,7 +45,7 @@ const runsTableColumns = (formatMessage, component) => (
             accessor: 'algorithm__name',
             Cell: settings => (
                 <span>
-                    {settings.original.algorithm.name}
+                    {settings.original.algorithm.description}
                 </span>
             ),
         },

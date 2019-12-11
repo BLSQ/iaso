@@ -13,7 +13,9 @@ from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
-
+from iaso.models import MatchingAlgorithm
+from iaso import matching
+import pkgutil
 
 router = routers.DefaultRouter()
 
@@ -34,3 +36,15 @@ router.register(r"profiles", ProfilesViewSet, base_name="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsruns")
 urlpatterns = [url(r"^", include(router.urls))]
+
+
+##########   creating algorithms in the database so that they will appear in the API  ##########
+import importlib
+
+for pkg in pkgutil.iter_modules(matching.__path__):
+    full_name = "iaso.matching." + pkg.name
+    algo_module = importlib.import_module(full_name)
+    algo = algo_module.Algorithm()
+    MatchingAlgorithm.objects.get_or_create(
+        name=full_name, defaults={"description": algo.description}
+    )

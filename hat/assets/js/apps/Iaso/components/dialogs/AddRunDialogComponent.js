@@ -139,7 +139,7 @@ class AddRunDialogComponent extends Component {
                                     value={algoId}
                                     type="select"
                                     options={algorithms.map(a => ({
-                                        label: a.name,
+                                        label: a.description,
                                         value: a.id,
                                     }))}
                                     label={{

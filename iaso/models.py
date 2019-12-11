@@ -315,7 +315,7 @@ class MatchingAlgorithm(models.Model):
         )
 
     def as_dict(self):
-        return {"name": self.name, "id": self.id}
+        return {"name": self.name, "id": self.id, "description": self.description}
 
 
 class AlgorithmRun(models.Model):
@@ -418,7 +418,9 @@ class Link(models.Model):
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
-            "algorithm_run": self.algorithm_run.as_dict(),
+            "algorithm_run": self.algorithm_run.as_dict()
+            if self.algorithm_run
+            else None,
         }
 
     def as_full_dict(self):
@@ -434,7 +436,9 @@ class Link(models.Model):
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
-            "algorithm_run": self.algorithm_run.as_dict(),
+            "algorithm_run": self.algorithm_run.as_dict()
+            if self.algorithm_run
+            else None,
         }
 
 

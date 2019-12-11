@@ -452,6 +452,7 @@ class Form(models.Model):
         return "%s %s " % (self.name, self.form_id)
 
     def as_dict(self, additional_fields=None):
+        latest_form_version = self.form_versions.order_by("-created_at").first()
         res = {
             "form_id": self.form_id,
             "name": self.name,
@@ -461,6 +462,9 @@ class Form(models.Model):
             "updated_at": self.updated_at.timestamp()
             if self.updated_at
             else self.created_at.timestamp(),
+            "latest_form_version": latest_form_version.as_dict()
+            if latest_form_version
+            else None,
         }
         if additional_fields:
             for field in additional_fields:
@@ -510,7 +514,9 @@ class GroupSet(models.Model):
 
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"
-    form = models.ForeignKey(Form, on_delete=models.CASCADE)
+    form = models.ForeignKey(
+        Form, on_delete=models.CASCADE, related_name="form_versions"
+    )
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     version_id = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -531,6 +537,15 @@ class FormVersion(models.Model):
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "form_id": self.form_id,
+            "file": self.file.url,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
 
 
 class Instance(models.Model):

@@ -26,9 +26,9 @@ const getMergedPatient = (itemA, itemB) => {
                         }
                         break;
                     case 'string':
-                        if (itemA && itemB &&
-                            itemA[key] && itemB[key] &&
-                            (itemA[key].toLowerCase() === itemB[key].toLowerCase())) {
+                        if (itemA && itemB
+                            && itemA[key] && itemB[key]
+                            && (itemA[key].toLowerCase() === itemB[key].toLowerCase())) {
                             mergedItem[key] = itemA[key];
                         } else {
                             hasconflict(key);

@@ -4,6 +4,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 .login__container {
 
     input[type="text"],
+    input[type="time"],
     input[type="number"],
     input[type="email"],
     input[type="password"],
@@ -16,7 +17,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         box-shadow: $input-inner-shadow;
         border-radius: 4px;
         font-family: $body-font-family;
-        font-size: $font-size-standard;
+        font-size: $font-size-standard !important;
         color: $dark-blue;
         line-height: 1;
 
@@ -42,6 +43,22 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
     input[type="date"] {
         width: 200px;
+    }
+
+    input[type="time"] {
+        width: 65px;
+    }
+
+    input[type="time"]::-webkit-clear-button {
+        display: none;
+    }
+
+    input[type="time"]::-webkit-inner-spin-button {
+        opacity: 1
+    }
+
+    input[type="time"]::-ms-clear {
+        display: none;
     }
 
     form {
@@ -134,7 +151,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         }
 
         &:disabled {
-            background-color: #007fff !important;
+            background-color: #3f51b5 !important;
             cursor: default;
             opacity: 0.6;
         }
@@ -175,7 +192,7 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
     button {
         &:disabled {
-            background-color: #007fff !important;
+            background-color: #3f51b5 !important;
             cursor: default;
             opacity: 0.6;
         }
@@ -199,6 +216,8 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
         position: relative;
         top: 6px;
         margin-left: 10px;
+        fill: $gray;
+
         &.primary {
             fill: $blue;
         }

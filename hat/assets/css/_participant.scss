@@ -1,25 +1,31 @@
 .patient-infos-container {
     width: 100%;
+
     table {
         tbody {
             tr {
                 td {
                     overflow: visible;
+
                     input {
                         box-sizing: border-box;
                         background-color: white;
                     }
+
                     input[type='number'] {
                         width: 80px;
                         text-align: center;
                     }
+
                     input[type='text'] {
                         width: 100%;
                     }
+
                     .react-datepicker-wrapper {
                         border: 1px solid $light-gray;
                         border-radius: 5px;
                         position: relative;
+
                         &:after {
                             display: inline-block;
                             font: normal normal normal 14px/1 FontAwesome;
@@ -32,12 +38,15 @@
                             content: "\f073";
                         }
                     }
+
                     .filter-item {
                         padding-bottom: 0;
+
                         .filter-item-subtitle {
                             display: none;
                         }
                     }
+
                     .years {
                         margin-left: 10px;
                         display: inline-block;
@@ -56,10 +65,12 @@
     strong {
         display: inline-block;
     }
+
     li {
         &>span {
             display: inline-block;
             min-width: 100px;
+
             &.error {
                 background-color: transparent;
                 height: auto;
@@ -72,9 +83,11 @@
 
 .cases-list {
     list-style: none;
+
     li {
         margin-top: $padding-unit * 2;
         position: relative;
+
         &:after {
             width: calc(100% + #{$padding-unit * 2});
             background-color: $gray;
@@ -85,27 +98,48 @@
             position: absolute;
             bottom: -$padding-unit;
         }
+
         &:first-child {
             margin-top: 0;
         }
+
         &:last-child {
             &:after {
                 display: none;
             }
         }
+
         &.selected-case {
             padding: $padding-unit;
             border: 1px solid green;
             border-radius: 5px;
+
             .case-id {
                 color: green;
             }
+            .MuiSvgIcon-colorPrimary {
+                color: green;
+            }
+            .add-test-button {
+                right: $padding-unit / 2;
+                top: $padding-unit / 4;
+            }
+        }
+
+
+        .add-test-button {
+            position: absolute;
+            right: -$padding-unit / 2;
+            top: -20px;
         }
     }
+
     table {
         margin-bottom: $padding-unit;
     }
+
     .tests-list>div {
+
         > :last-child,
         > :nth-last-child(2) {
             table {
@@ -113,6 +147,7 @@
             }
         }
     }
+
     @media (min-width: 1100px) {
         .tests-list>div {
             > :nth-child(odd) {
@@ -120,18 +155,22 @@
                 float: left;
                 padding-right: $padding-unit / 2 !important;
             }
+
             > :nth-child(even) {
                 width: 50%;
                 float: right;
                 padding-left: $padding-unit / 2 !important;
+
                 &+div {
                     clear: both;
                 }
             }
         }
     }
+
     @media (max-width: 1100px) {
         .tests-list>div {
+
             > :last-child,
             > :nth-last-child(2) {
                 table {
@@ -145,6 +184,7 @@
 .case-id,
 .treatment-id {
     margin-bottom: $padding-unit / 2;
+
     span {
         font-weight: bold;
     }
@@ -154,22 +194,27 @@
     list-style: none;
     display: flex;
     flex-flow: row wrap;
+
     &:after {
         content: '';
         clear: both;
         display: block;
     }
+
     >li {
         box-sizing: border-box;
         flex-basis: 50%;
+
         &:last-child,
         &:nth-last-child(2) {
             table {
                 margin-bottom: 0 !important;
             }
         }
+
         table {
             margin-bottom: $padding-unit / 2 !important;
+
             td {
                 width: 80%;
             }
@@ -184,6 +229,7 @@
             float: left;
             padding-right: $padding-unit / 2 !important;
         }
+
         &:nth-child(even) {
             width: 50%;
             float: right;
@@ -194,6 +240,7 @@
 
 @media (max-width: 1100px) {
     .treatments-list>li {
+
         &:last-child,
         &:nth-last-child(2) {
             table {

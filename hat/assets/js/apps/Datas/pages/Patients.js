@@ -290,12 +290,12 @@ class Patients extends Component {
                     <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 {
-                    reduxPage.list && userHasPermission(permissions, currentUser, 'x_duplicates') &&
-                    <ManualDuplicate
-                        toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
-                        params={params}
-                    />
-                }
+                    reduxPage.list && userHasPermission(permissions, currentUser, 'x_duplicates') && (
+                        <ManualDuplicate
+                            toggleManualDuplicate={patient => this.toggleManualDuplicate(patient)}
+                            params={params}
+                        />
+                    )}
                 {
                     tableUrl
                     && (

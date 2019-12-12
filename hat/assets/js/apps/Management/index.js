@@ -24,6 +24,7 @@ import ManagementAreasPage from './pages/ManagementAreas';
 import { coordinationsReducer, coordinationsInitialState } from './redux/coordinations';
 import { teamsReducer, teamsInitialState } from './redux/teams';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
+import { smallMapReducer, smallMapInitialState } from '../../redux/smallMapReducer';
 import { planningsReducer, planningsInitialState } from './redux/plannings';
 import { detailsReducer, detailsInitialState } from './redux/details';
 import { userReducer, usersInitialState } from './redux/users';
@@ -110,6 +111,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         teams: teamsInitialState,
         plannings: planningsInitialState,
         map: mapInitialState,
+        smallMap: smallMapInitialState,
         details: detailsInitialState,
         users: usersInitialState,
         zones: zonesInitialState,
@@ -128,6 +130,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         teams: teamsReducer,
         plannings: planningsReducer,
         map: mapReducer,
+        smallMap: smallMapReducer,
         details: detailsReducer,
         users: userReducer,
         zones: zoneReducer,

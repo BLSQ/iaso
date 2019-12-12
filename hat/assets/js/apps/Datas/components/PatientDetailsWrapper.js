@@ -3,21 +3,26 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
+import { IconButton, Tooltip } from '@material-ui/core';
+import Add from '@material-ui/icons/AddCircle';
 
-import PatientInfos from '../components/PatientInfos';
-import EditPatientInfos from '../components/EditPatientInfos';
-import PatientCasesInfos from '../components/PatientCasesInfos';
-import PatientCasesLocation from '../components/PatientCasesLocation';
-import PatientCasesTests from '../components/PatientCasesTests';
-import TreatmentComponent from '../components/TreatmentComponent';
+import PatientInfos from './PatientInfos';
+import EditPatientInfos from './EditPatientInfos';
+import PatientCasesInfos from './PatientCasesInfos';
+import PatientCasesLocation from './PatientCasesLocation';
+import PatientCasesTests from './PatientCasesTests';
+import TreatmentComponent from './TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
+import TestModal from './TestModalComponent';
+
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
 import { scrollTo, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
+import { loadActions } from '../../../redux/load';
 import DynamicLegend from './DynamicLegend';
 
 const MESSAGES = defineMessages({
@@ -54,6 +59,8 @@ class PatientDetailsWrapper extends React.Component {
             currentTab: 'infos',
             canEditPatientInfos: false,
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
+            showTestModale: false,
+            editedTest: null,
         };
     }
 
@@ -68,9 +75,7 @@ class PatientDetailsWrapper extends React.Component {
             dispatch(mapActions.setMappedCaseslist(patient.cases));
         }
         if (this.props.params.case_id && this.props.params.tab === 'tests') {
-            setTimeout(() => {
-                scrollTo('selected-case');
-            }, 500);
+            scrollTo('selected-case');
         }
         if (patient) {
             const newParams = {
@@ -87,6 +92,7 @@ class PatientDetailsWrapper extends React.Component {
     componentWillReceiveProps(newProps) {
         const {
             currentUser,
+            dispatch,
             permissions,
             params: {
                 prov_id,
@@ -112,10 +118,19 @@ class PatientDetailsWrapper extends React.Component {
             }, 10000);
         }
         if (prov_id !== this.props.params.prov_id) {
+            if (prov_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectProvince(prov_id, ZS_id, AS_id, vil_id);
         } else if (ZS_id !== this.props.params.ZS_id) {
+            if (ZS_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectZone(ZS_id, AS_id, vil_id);
         } else if (AS_id !== this.props.params.AS_id) {
+            if (AS_id) {
+                dispatch(loadActions.startLoading());
+            }
             this.props.selectArea(AS_id, vil_id);
         } else if (vil_id !== this.props.params.vil_id) {
             this.props.selectVillage(vil_id);
@@ -132,8 +147,29 @@ class PatientDetailsWrapper extends React.Component {
     }
 
     toggleEdit() {
+        const {
+            patient,
+        } = this.props;
+        this.props.selectProvince(
+            patient.province_id,
+            patient.ZS_id,
+            patient.AS_id,
+            patient.village_id,
+        );
         this.setState({
             editEnabled: !this.state.editEnabled,
+        });
+    }
+
+    toggleTestModal(editedTest, scrollToBottom) {
+        if (scrollToBottom) {
+            if (!this.state.editedTest) {
+                scrollTo('bottom-tests');
+            }
+        }
+        this.setState({
+            showTestModale: !this.state.showTestModale,
+            editedTest,
         });
     }
 
@@ -162,6 +198,8 @@ class PatientDetailsWrapper extends React.Component {
             canEditPatientInfos,
             baseUrl,
             editEnabled,
+            showTestModale,
+            editedTest,
         } = this.state;
         return (
             <section>
@@ -178,112 +216,158 @@ class PatientDetailsWrapper extends React.Component {
                 />
 
                 {
-                    currentTab === 'infos' &&
-                    <div className="widget__container" >
-                        <div className="widget__content patient-detail">
-                            {
-                                canEditPatientInfos &&
-                                editEnabled &&
-                                <EditPatientInfos
-                                    patient={patient}
-                                    savePatient={newPatient => this.savePatient(newPatient)}
-                                    hasError={hasError}
-                                    isUpdated={isUpdated}
-                                    geoFilters={geoFilters}
-                                    params={params}
-                                    redirectTo={redirectTo}
-                                    baseUrl={baseUrl}
-                                    closeEdit={() => this.toggleEdit()}
-                                />
-                            }
-                            {
-                                (!canEditPatientInfos || (canEditPatientInfos && !editEnabled)) &&
-                                <PatientInfos patient={patient} />
-                            }
-                            {
-                                canEditPatientInfos &&
-                                !editEnabled &&
-                                <div className="align-right margin-top">
-                                    <button
-                                        className="button"
-                                        onClick={() => this.toggleEdit()}
-                                    >
-                                        <FormattedMessage
-                                            id="main.label.edit"
-                                            defaultMessage="Edit"
+                    currentTab === 'infos'
+                    && (
+                        <div className="widget__container">
+                            <div className="widget__content patient-detail">
+                                {
+                                    canEditPatientInfos
+                                    && editEnabled
+                                    && (
+                                        <EditPatientInfos
+                                            patient={patient}
+                                            savePatient={newPatient => this.savePatient(newPatient)}
+                                            hasError={hasError}
+                                            isUpdated={isUpdated}
+                                            geoFilters={geoFilters}
+                                            params={params}
+                                            redirectTo={redirectTo}
+                                            baseUrl={baseUrl}
+                                            closeEdit={() => this.toggleEdit()}
                                         />
-                                    </button>
-                                </div>
-                            }
+                                    )
+                                }
+                                {
+                                    (!canEditPatientInfos || (canEditPatientInfos && !editEnabled))
+                                    && <PatientInfos patient={patient} />
+                                }
+                                {
+                                    canEditPatientInfos
+                                    && !editEnabled
+                                    && (
+                                        <div className="align-right margin-top">
+                                            <button
+                                                className="button"
+                                                onClick={() => this.toggleEdit()}
+                                            >
+                                                <FormattedMessage
+                                                    id="main.label.edit"
+                                                    defaultMessage="Edit"
+                                                />
+                                            </button>
+                                        </div>
+                                    )
+                                }
+                            </div>
                         </div>
-                    </div>
+                    )
                 }
 
                 {
-                    patient.cases &&
-                    currentTab === 'tests' &&
-                    <section>
-                        <div className="widget__container" >
-                            <div className="widget__content">
-                                <ul className="cases-list">
-                                    {
-                                        patient.cases.map(c => (
-                                            <li
-                                                key={c.id}
-                                                id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
-                                                className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
-                                            >
-                                                <div className="case-id">
-                                                    <span>Hat ID</span>: {c.hat_id} - <span>ID</span>: {c.id}
-                                                </div>
-                                                <div className="widget__content--half perfect-fill">
-                                                    <PatientCasesInfos currentCase={c} />
-                                                    <PatientCasesLocation currentCase={c} />
-                                                </div>
-                                                <div className="tests-list">
-                                                    <PatientCasesTests
-                                                        tests={c.tests}
-                                                        testsMapping={testsMapping}
-                                                        currentCase={c}
-                                                    />
-                                                </div>
-                                            </li>
-                                        ))
-                                    }
-                                </ul>
-                            </div>
-                        </div>
-
-                        {
-                            patient.treatments.length > 0 &&
-                            <div className="widget__container" >
-                                <div className="widget__header">
-                                    <h2 className="widget__heading">
-                                        <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />:
-                                    </h2>
-                                </div>
+                    patient.cases
+                    && currentTab === 'tests'
+                    && (
+                        <section>
+                            <div className="widget__container">
                                 <div className="widget__content">
-                                    <ul className="treatments-list">
+                                    <ul className="cases-list">
                                         {
-                                            patient.treatments.map(t => (
+                                            patient.cases.map(c => (
                                                 <li
-                                                    key={t.id}
+                                                    key={c.id}
+                                                    id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
+                                                    className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                 >
-                                                    <TreatmentComponent
-                                                        treatment={t}
-                                                    />
+                                                    <Tooltip
+                                                        title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
+                                                    >
+                                                        <IconButton
+                                                            className="add-test-button"
+                                                            onClick={() => this.toggleTestModal()}
+                                                        >
+                                                            <Add color="primary" />
+                                                        </IconButton>
+                                                    </Tooltip>
+                                                    {
+                                                        showTestModale
+                                                        && (
+                                                            <TestModal
+                                                                params={params}
+                                                                showModale={showTestModale}
+                                                                toggleModal={scrollToBottom => this.toggleTestModal(null, scrollToBottom)}
+                                                                currentCase={c}
+                                                                currentTest={editedTest}
+                                                                patientId={patient.id}
+                                                            />
+                                                        )
+                                                    }
+                                                    <div className="case-id">
+                                                        <span>Hat ID</span>
+                                                        :
+                                                        {' '}
+                                                        {c.hat_id}
+                                                        {' '}
+                                                        -
+                                                        {' '}
+                                                        <span>ID</span>
+                                                        :
+                                                        {' '}
+                                                        {c.id}
+                                                    </div>
+                                                    <div className="widget__content--half perfect-fill">
+                                                        <PatientCasesInfos currentCase={c} />
+                                                        <PatientCasesLocation currentCase={c} />
+                                                    </div>
+                                                    <div className="tests-list">
+                                                        <PatientCasesTests
+                                                            tests={c.tests}
+                                                            testsMapping={testsMapping}
+                                                            currentCase={c}
+                                                            toggleModal={test => this.toggleTestModal(test)}
+                                                        />
+                                                    </div>
                                                 </li>
                                             ))
                                         }
                                     </ul>
+                                    <span id="bottom-tests" />
                                 </div>
                             </div>
-                        }
-                    </section>
+
+                            {
+                                patient.treatments.length > 0
+                                && (
+                                    <div className="widget__container">
+                                        <div className="widget__header">
+                                            <h2 className="widget__heading">
+                                                <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />
+                                                :
+                                            </h2>
+                                        </div>
+                                        <div className="widget__content">
+                                            <ul className="treatments-list">
+                                                {
+                                                    patient.treatments.map(t => (
+                                                        <li
+                                                            key={t.id}
+                                                        >
+                                                            <TreatmentComponent
+                                                                treatment={t}
+                                                            />
+                                                        </li>
+                                                    ))
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                )
+                            }
+                        </section>
+                    )
                 }
 
-                <section className={this.state.currentTab !== 'map' ? 'hidden-opacity' : ''} >
-                    <div className="widget__container" >
+                <section className={this.state.currentTab !== 'map' ? 'hidden-opacity' : ''}>
+                    <div className="widget__container">
                         <div className="flex-container">
                             <div className="split-selector-container ">
                                 <DynamicLegend cases={cases} setCaseslist={newCases => setCaseslist(newCases)} />
@@ -369,9 +453,9 @@ const MapDispatchToProps = dispatch => ({
     savePatient: patient => dispatch(patientsActions.savePatient(dispatch, patient)),
     setIsUpdated: value => dispatch(patientsActions.setIsUpdated(value)),
     setHasError: value => dispatch(patientsActions.setErrorOnUpdated(value)),
-    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, false, 'YES,NO,OTHER')),
-    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, false, 'YES,NO,OTHER')),
+    selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, true, 'YES,NO,OTHER')),
+    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, true, 'YES,NO,OTHER')),
+    selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, true, 'YES,NO,OTHER')),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId)),
     setCaseslist: cases => dispatch(mapActions.setCaseslist(cases)),
 });

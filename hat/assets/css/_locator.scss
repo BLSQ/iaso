@@ -15,7 +15,7 @@
 .type-filters-containers {
     font-size: 11px;
     margin-top: 20px;
-    .locator-subtitle {
+    .location-subtitle {
         font-weight: bold;
         color: $mid-gray;
     }
@@ -147,7 +147,7 @@
     font-weight: normal;
 }
 
-.locator-subtitle {
+.location-subtitle {
     padding: 0;
     display: block;
     margin-bottom: 6px;
@@ -157,7 +157,7 @@
     }
 }
 
-.locator-filter {
+.location-filter {
     font-weight: bold;
     color: $mid-gray;
     font-size: 12px;
@@ -167,10 +167,10 @@
 .locator-cases-left {
     margin-top: 10px;
 }
-.list-locator-filters {
+.list-location-filters {
     padding: $padding-unit 0 0 0;
     &>div {
-        .locator-filter{
+        .location-filter{
             padding-bottom: 15px;
             >span {
                 font-weight: bold;

@@ -234,6 +234,7 @@ class Test(models.Model):
     )
     tester = models.ForeignKey(Profile, on_delete=models.PROTECT, blank=True, null=True)
     location = PointField(srid=4326, null=True)
+    comment = models.TextField(null=True, blank=True)
 
     def __str__(self):
         return "%s %s %s %s " % (self.type, self.index, self.date, self.created_at)
@@ -255,6 +256,7 @@ class Test(models.Model):
             "tester": self.tester.as_dict() if self.tester else None,
             "hidden": self.hidden,
             "device": self.device_id,
+            "comment": self.comment,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
         }

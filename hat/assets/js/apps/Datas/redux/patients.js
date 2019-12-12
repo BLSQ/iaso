@@ -97,15 +97,20 @@ const fetchTestMapping = (dispatch) => {
     });
 };
 
-const fetchDetails = (dispatch, patientId) => {
+const fetchDetails = (dispatch, patientId, resetDetail = true, toggleModal) => {
     dispatch(loadActions.startLoading());
-    dispatch(loadCurrentDetail({}));
-    dispatch(fetchTestMapping(dispatch));
+    if (resetDetail) {
+        dispatch(loadCurrentDetail({}));
+        dispatch(fetchTestMapping(dispatch));
+    }
     req
         .get(`/api/patients/${patientId}`)
         .then((result) => {
             dispatch(loadActions.successLoadingNoData());
             dispatch(loadCurrentDetail(result.body));
+            if (toggleModal) {
+                toggleModal(true);
+            }
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));

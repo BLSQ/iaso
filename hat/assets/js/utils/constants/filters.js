@@ -6,6 +6,8 @@ import {
 } from '../selectGeo';
 import { treatmentsMedecineMessages } from './treatmentsMessages';
 
+import testTypes from './testTypes';
+
 const tempTreatmentsMedecineMessages = {
     ...treatmentsMedecineMessages,
 };
@@ -50,14 +52,6 @@ export const MESSAGES = {
     notLocatedNotFound: {
         defaultMessage: 'Only not located and not found cases',
         id: 'main.label.notLocatedNotFound',
-    },
-    test_lymph_node_puncture: {
-        defaultMessage: 'Lymphatic node puncture',
-        id: 'main.label.test_lymph_node_puncture',
-    },
-    sf: {
-        defaultMessage: 'Fresh blood',
-        id: 'main.label.sf',
     },
     screener: {
         defaultMessage: 'Screener',
@@ -147,62 +141,29 @@ export const MESSAGES = {
 
 const getMessage = key => MESSAGES[key];
 
-export const testType = formatMessage => (
+export const testType = (
+    formatMessage,
+    label = {
+        id: 'main.label.test_type',
+        defaultMessage: 'Test(s) done',
+    },
+    isMultiSelect = true,
+    placeholder = {
+        id: 'main.label.allMale',
+        defaultMessage: 'All',
+    },
+) => (
     {
         name: 'test_type',
         urlKey: 'test_type',
-        isMultiSelect: true,
+        isMultiSelect,
         isClearable: true,
-        options: [
-            {
-                label: 'CATT',
-                value: 'catt',
-            },
-            {
-                label: 'RDT',
-                value: 'rdt',
-            },
-            {
-                label: 'CTCWOO',
-                value: 'ctcwoo',
-            },
-            // {
-            //     label: 'GE',
-            //     value: 'ge',
-            // },
-            // {
-            //     label: 'LCR',
-            //     value: 'lcr',
-            // },
-            // {
-            //     label: formatMessage(getMessage('test_lymph_node_puncture')),
-            //     value: 'lnp',
-            // },
-            // {
-            //     label: formatMessage(getMessage('sf')),
-            //     value: 'sf',
-            // },
-            {
-                label: 'PG',
-                value: 'pg',
-            },
-            {
-                label: 'MAECT',
-                value: 'maect',
-            },
-            {
-                label: 'PL',
-                value: 'pl',
-            },
-        ],
-        placeholder: {
-            id: 'main.label.allMale',
-            defaultMessage: 'All',
-        },
-        label: {
-            id: 'main.label.test_type',
-            defaultMessage: 'Test(s) done',
-        },
+        options: testTypes.map(tt => ({
+            label: formatMessage(tt.label),
+            value: tt.key,
+        })),
+        placeholder,
+        label,
         type: 'select',
     }
 );

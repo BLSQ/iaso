@@ -24,7 +24,8 @@
     }
 }
 
-.village-map-container {
+.village-map-container,
+.location-map-container {
     height: 450px;
     flex-basis: 66% !important;
     padding-right: 0 !important;
@@ -51,24 +52,19 @@
     }
 }
 
-.village-map-layers-container {
+.location-map-layers-container {
     text-align: left;
     width: 100%;
     margin-top: $padding-unit / 2;
     .map__option {
-        display: flex;
+        margin-top: $padding-unit / 2;
         .map__option__header {
-            flex-basis: 30%;
             text-align: right;
             font-size: 14px;
             font-weight: normal;
-            &:after {
-                display: inline-block;
-                content: ':';
-            }
         }
         ul {
-            flex-basis: 70%;
+            margin-top: $padding-unit / 2 !important;
             box-sizing: border-box;
             padding-left: 5px;
             margin-top: -10px;

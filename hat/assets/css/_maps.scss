@@ -1105,6 +1105,7 @@ path.map-marker {
 .route-map,
 .split-map,
 .village-map-container,
+.location-map-container,
 .shape-map-container,
 .traps-map-container,
 .catches-map-container,
@@ -1259,7 +1260,8 @@ path.map-marker {
     }
 }
 
-.village-map-container {
+.village-map-container,
+.location-map-container  {
     .map-container {
         height: 450px;
     }

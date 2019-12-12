@@ -160,8 +160,7 @@ const filtersPatientsGeo = (
     urlKey,
     coordinationsList = null,
 ) => {
-    const geoFiltersArray =
-    [
+    const geoFiltersArray = [
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
@@ -185,4 +184,3 @@ export {
     filtersPatientsTreatments,
     filtersDuplicatesPatientsSearch,
 };
-

@@ -201,11 +201,18 @@ export const removePositionIndex = (array) => {
     return tempArray;
 };
 
-export const scrollTo = (selectorId) => {
-    const toElement = document.getElementById(selectorId);
-    if (toElement) {
-        toElement.scrollIntoView({ behavior: 'smooth' });
-    }
+export const scrollTo = (selectorId, headerOffset = 0) => {
+    setTimeout(() => {
+        const toElement = document.getElementById(selectorId);
+        const elementPosition = toElement.getBoundingClientRect().top;
+        const offsetPosition = elementPosition - headerOffset;
+        if (toElement) {
+            window.scrollTo({
+                behavior: 'smooth',
+                top: offsetPosition,
+            });
+        }
+    }, 500);
 };
 
 export const isCaseLocalised = kase => (

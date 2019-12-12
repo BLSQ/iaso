@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 
 class Filters extends React.Component {
     render() {
-        const { filters } = this.props;
+        const { filters, isRequired } = this.props;
         if (!filters) {
             return null;
         }
@@ -13,14 +13,15 @@ class Filters extends React.Component {
         const provinceValue = filters.provinceId;
         return (
             <div>
-                <div className="locator-filter">
-                    <div className="locator-subtitle">
+                <div className="location-filter">
+                    <div className="location-subtitle">
                         <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
                     </div>
                     {
                         filters.provinces
                         && (
                             <Select
+                                className={isRequired && !provinceValue ? 'form-error' : null}
                                 multi={this.props.isMultiSelect}
                                 clearable={this.props.isClearable}
                                 simpleValue
@@ -35,12 +36,13 @@ class Filters extends React.Component {
                 </div>
                 {filters.zones && filters.zones.length !== 0
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
                             </div>
                             <div>
                                 <Select
+                                    className={isRequired && !filters.zoneId ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -56,12 +58,13 @@ class Filters extends React.Component {
                 }
                 {filters.areas && filters.areas.length !== 0
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle">
+                        <div className="location-filter">
+                            <div className="location-subtitle">
                                 <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
                             </div>
                             <div>
                                 <Select
+                                    className={isRequired && (!filters.areaId && !filters.villageId) ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -81,11 +84,12 @@ class Filters extends React.Component {
                     && filters.villages.length !== 0
                     && (
                         <div>
-                            <div className="locator-filter">
-                                <div className="locator-subtitle">
+                            <div className="location-filter">
+                                <div className="location-subtitle">
                                     <FormattedMessage id="main.label.village" defaultMessage="Village" />
                                 </div>
                                 <Select
+                                    className={isRequired && !filters.villageId ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -103,8 +107,8 @@ class Filters extends React.Component {
                 {filters.villages && this.props.showVillages
                     && filters.villages.length === 0 && filters.areas.length !== 0 && filters.areaId
                     && (
-                        <div className="locator-filter">
-                            <div className="locator-subtitle no-result">
+                        <div className="location-filter">
+                            <div className="location-subtitle no-result">
                                 <FormattedMessage id="main.label.noVillage" defaultMessage="No village found" />
                             </div>
                         </div>
@@ -120,6 +124,7 @@ Filters.defaultProps = {
     showVillages: true,
     isClearable: false,
     selectVillage: () => { },
+    isRequired: false,
 };
 
 Filters.propTypes = {
@@ -131,6 +136,7 @@ Filters.propTypes = {
     isMultiSelect: PropTypes.bool,
     showVillages: PropTypes.bool,
     isClearable: PropTypes.bool,
+    isRequired: PropTypes.bool,
 };
 
 export default Filters;

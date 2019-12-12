@@ -56,43 +56,8 @@ export const setGeoAreas = payload => ({
 });
 
 
-export const fetchGeoDatas = (dispatch) => {
-    req
-        .get('/api/provinces/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoProvinces(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading provinces shape', err);
-        });
-    req
-        .get('/api/zs/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoZones(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading zones shape', err);
-        });
-    req
-        .get('/api/as/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoAreas(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading areas shape', err);
-        });
-    return ({
-        type: FETCH_ACTION,
-    });
-};
-
-
 export const mapActions = {
     changeLayer,
-    fetchGeoDatas,
 };
 
 export const mapInitialState = {

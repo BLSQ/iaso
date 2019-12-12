@@ -44,6 +44,7 @@ from .problems import ProblemsViewSet
 from .qcdetails import QCDetailsViewSet
 from .logs import LogsViewSet
 from .source_types import SourceTypeViewSet
+from .tests_api import TestsViewSet
 
 
 router = routers.DefaultRouter()
@@ -98,6 +99,7 @@ router.register(r"teamtypes", TeamTypeViewSet, base_name="teamtypes")
 router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems")
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
+router.register(r"tests", TestsViewSet, base_name="tests")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")

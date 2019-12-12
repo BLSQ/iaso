@@ -112,22 +112,22 @@ const duplicateListColumns = formatMessage => (
                         </strong>
                         <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error-text' : ''}`}>
                             {
-                                settings.original.patient1.sex === 'female' &&
-                                formatMessage({
+                                settings.original.patient1.sex === 'female'
+                                && formatMessage({
                                     defaultMessage: 'Female',
                                     id: 'main.label.female',
                                 })
                             }
                             {
-                                settings.original.patient1.sex === 'male' &&
-                                formatMessage({
+                                settings.original.patient1.sex === 'male'
+                                && formatMessage({
                                     defaultMessage: 'Male',
                                     id: 'main.label.male',
                                 })
                             }
                             {
-                                settings.original.patient1.sex !== 'male' && settings.original.patient1.sex !== 'female' &&
-                                '--'
+                                settings.original.patient1.sex !== 'male' && settings.original.patient1.sex !== 'female'
+                                && '--'
                             }
                         </span>
                     </li>
@@ -171,22 +171,22 @@ const duplicateListColumns = formatMessage => (
                     <li>
                         <span className={`${settings.original.patient1.sex !== settings.original.patient2.sex ? 'error-text' : ''}`}>
                             {
-                                settings.original.patient2.sex === 'female' &&
-                                formatMessage({
+                                settings.original.patient2.sex === 'female'
+                                && formatMessage({
                                     defaultMessage: 'Female',
                                     id: 'main.label.female',
                                 })
                             }
                             {
-                                settings.original.patient2.sex === 'male' &&
-                                formatMessage({
+                                settings.original.patient2.sex === 'male'
+                                && formatMessage({
                                     defaultMessage: 'Male',
                                     id: 'main.label.male',
                                 })
                             }
                             {
-                                settings.original.patient2.sex !== 'male' && settings.original.patient2.sex !== 'female' &&
-                                '--'
+                                settings.original.patient2.sex !== 'male' && settings.original.patient2.sex !== 'female'
+                                && '--'
                             }
                         </span>
                     </li>

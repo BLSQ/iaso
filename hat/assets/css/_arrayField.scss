@@ -5,7 +5,7 @@
     input {
         width: 100% !important;
         margin-bottom: 5px;
-        height: 32px !important;
+        height: 40px !important;
         box-sizing: border-box;
     }
     >span {
@@ -17,10 +17,13 @@
         }
     }
     button {
-        top: 3px;
         margin-right: 5px;
         i {
             margin: 0 !important;
+        }
+        &.button--danger {
+            position: relative;
+            top: -3px;
         }
     }
 }

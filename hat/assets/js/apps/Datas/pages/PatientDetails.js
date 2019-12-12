@@ -10,6 +10,7 @@ import { patientsActions } from '../redux/patients';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import PatientDetailsWrapper from '../components/PatientDetailsWrapper';
 import { filterActions } from '../../../redux/filtersRedux';
+import { smallMapActions } from '../../../redux/smallMapReducer';
 
 class PatientDetails extends React.Component {
     constructor(props) {
@@ -23,20 +24,13 @@ class PatientDetails extends React.Component {
         this.props.fetchProvinces();
         this.props.fetchDetails(this.props.params.patient_id);
         this.props.fetchCurrentUserInfos();
+        this.props.fetchGeoDatas();
     }
 
     componentWillReceiveProps(nextProps) {
         this.setState({
             patient: nextProps.patient,
         });
-        if (nextProps.patient.province_id !== this.props.patient.province_id) {
-            this.props.selectProvince(
-                nextProps.patient.province_id,
-                nextProps.patient.ZS_id,
-                nextProps.patient.AS_id,
-                nextProps.params.village_id,
-            );
-        }
     }
 
     goBack() {
@@ -89,11 +83,13 @@ class PatientDetails extends React.Component {
         return (
             <section>
                 {
-                    loading && <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Loading',
-                        id: 'main.label.loading',
-                    })}
-                    />
+                    loading && (
+                        <LoadingSpinner message={formatMessage({
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
+                        })}
+                        />
+                    )
                 }
                 <div className="widget__container big-margin-bottom">
                     <div className="widget__header with-button">
@@ -101,32 +97,39 @@ class PatientDetails extends React.Component {
                             className="button--back"
                             onClick={() => this.goBack()}
                         >
-                            <i className="fa fa-arrow-left" />{' '}
+                            <i className="fa fa-arrow-left" />
+                            {' '}
                         </button>
                         <h2 className="widget__heading with-button">
-                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Detailed informations" />:
+                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Detailed informations" />
+                            :
                         </h2>
                         {
-                            patient && patient.similar_patients && patient.similar_patients.length > 0 &&
-                            <button
-                                className="button--save"
-                                onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id, patient.similar_patients[0].duplicateId)}
-                            >
-                                <i className="fa fa-files-o" />
-                                <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Duplicate" />
-                            </button>
+                            patient && patient.similar_patients && patient.similar_patients.length > 0
+                            && (
+                                <button
+                                    className="button--save"
+                                    onClick={() => this.goToDuplicates(patient.id, patient.similar_patients[0].id, patient.similar_patients[0].duplicateId)}
+                                >
+                                    <i className="fa fa-files-o" />
+                                    <FormattedMessage id="datas.label.duplicates.button" defaultMessage="Duplicate" />
+                                </button>
+                            )
                         }
                     </div>
                 </div>
                 {
-                    patient && patient.id &&
-                    <PatientDetailsWrapper
-                        patient={patient}
-                        testsMapping={testsMapping}
-                        params={params}
-                    />
+                    patient && patient.id
+                    && (
+                        <PatientDetailsWrapper
+                            patient={patient}
+                            testsMapping={testsMapping}
+                            params={params}
+                        />
+                    )
                 }
-            </section>);
+            </section>
+        );
     }
 }
 
@@ -144,6 +147,7 @@ PatientDetails.propTypes = {
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
+    fetchGeoDatas: PropTypes.func.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -161,6 +165,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
+    fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(PatientDetailsIntl);

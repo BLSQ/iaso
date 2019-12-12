@@ -7,7 +7,7 @@ class typeFilters extends React.Component {
     render() {
         return (
             <div className="type-filters-containers">
-                <span className="locator-subtitle">
+                <span className="location-subtitle">
                     <FormattedMessage id="main.label.villageType" defaultMessage="Villages types" />
                 </span>
                 <ul>

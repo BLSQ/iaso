@@ -19,7 +19,7 @@ import { filtersSearch, filtersGeo, filtersShapes } from '../constants/zonesFilt
 import { zoneActions } from '../redux/zones';
 import { filterActions } from '../../../redux/filtersRedux';
 import { currentUserActions } from '../../../redux/currentUserReducer';
-import { mapActions } from '../redux/mapReducer';
+import { smallMapActions } from '../../../redux/smallMapReducer';
 
 import { userHasPermission } from '../../../utils';
 import { createUrl } from '../../../utils/fetchData';
@@ -344,7 +344,7 @@ const MapDispatchToProps = dispatch => ({
     fetchZoneDetail: zoneId => dispatch(zoneActions.fetchZoneDetail(dispatch, zoneId)),
     resetShapeItem: () => dispatch(zoneActions.resetShapeItem()),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(mapActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
 });

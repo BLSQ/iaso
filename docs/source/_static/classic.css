@@ -182,7 +182,7 @@ div.sphinxsidebar input {
 
 div.sphinxsidebar input:focus {
     outline: 0;
-    border: 1px solid #007fff;
+    border: 1px solid #3f51b5;
     box-shadow: inset 0px 1px 3px 0px rgba(black,.2), 0 0 1px 1px rgba(#333645, 0.15);
 }
 

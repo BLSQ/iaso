@@ -16,8 +16,8 @@ export const genericMap = mapNode => L.map(mapNode, {
 });
 
 const tileOptions = { keepBuffer: 4 };
-const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
-const BASE_LAYERS = {
+export const arcgisPattern = 'https://server.arcgisonline.com/ArcGIS/rest/services/{}/MapServer/tile/{z}/{y}/{x}.jpg';
+export const BASE_LAYERS = {
     blank: L.tileLayer(''),
     osm: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', tileOptions),
     'arcgis-street': L.tileLayer(arcgisPattern.replace('{}', 'World_Street_Map'), tileOptions),

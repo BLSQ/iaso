@@ -128,11 +128,11 @@ class WorkZoneElement extends Component {
                 </div>
                 <div className="expand-collapse">
                     <div>
-                        <div className="locator-filter">
+                        <div className="location-filter">
                             <div
                                 role="button"
                                 tabIndex={0}
-                                className="locator-subtitle"
+                                className="location-subtitle"
                                 onClick={() => this.toggelSubSection('isZonesOpen')}
                             >
                                 <FormattedMessage id="main.label.zonesOr" defaultMessage="Health zone(s)" />
@@ -158,11 +158,11 @@ class WorkZoneElement extends Component {
                                 />
                             </div>
                         </div>
-                        <div className="locator-filter">
+                        <div className="location-filter">
                             <div
                                 role="button"
                                 tabIndex={0}
-                                className="locator-subtitle"
+                                className="location-subtitle"
                                 onClick={() => this.toggelSubSection('isAreasOpen')}
                             >
                                 <FormattedMessage id="main.label.areasOr" defaultMessage="Health area(s)" />

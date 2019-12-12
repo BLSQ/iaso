@@ -39,8 +39,8 @@ class PatientInfos extends React.Component {
                                     className = `${hasConflict ? 'warning-light' : ''}`;
                                 }
                                 const geoFalsePositive = (key === 'province' || key === 'ZS') && patient.AS && hasConflict;
-                                className += `${geoFalsePositive ?
-                                    ' forbid-pointer' : ''}`;
+                                className += `${geoFalsePositive
+                                    ? ' forbid-pointer' : ''}`;
                                 return (
                                     <tr
                                         key={key}
@@ -59,66 +59,80 @@ class PatientInfos extends React.Component {
                                         </th>
                                         <td className={className}>
                                             {
-                                                key === 'sex' &&
-                                                <span>
-                                                    {
-                                                        patient.sex === 'female' &&
-                                                        <span>
-                                                            <i className="fa fa-female" /> {' - '}
-                                                            {
-                                                                formatMessage({
-                                                                    defaultMessage: 'Female',
-                                                                    id: 'main.label.female',
-                                                                })
-                                                            }
-                                                        </span>
-                                                    }
-                                                    {
-                                                        patient.sex === 'male' &&
-                                                        <span>
-                                                            <i className="fa fa-male" /> {' - '}
-                                                            {
-                                                                formatMessage({
-                                                                    defaultMessage: 'Male',
-                                                                    id: 'main.label.male',
-                                                                })
-                                                            }
-                                                        </span>
-                                                    }
-                                                    {
-                                                        patient.sex !== 'male' && patient.sex !== 'female' &&
-                                                        fieldPlaceholder
-                                                    }
-                                                </span>
+                                                key === 'sex'
+                                                && (
+                                                    <span>
+                                                        {
+                                                            patient.sex === 'female'
+                                                            && (
+                                                                <span>
+                                                                    <i className="fa fa-female" />
+                                                                    {' '}
+                                                                    {' - '}
+                                                                    {
+                                                                        formatMessage({
+                                                                            defaultMessage: 'Female',
+                                                                            id: 'main.label.female',
+                                                                        })
+                                                                    }
+                                                                </span>
+                                                            )
+                                                        }
+                                                        {
+                                                            patient.sex === 'male'
+                                                            && (
+                                                                <span>
+                                                                    <i className="fa fa-male" />
+                                                                    {' '}
+                                                                    {' - '}
+                                                                    {
+                                                                        formatMessage({
+                                                                            defaultMessage: 'Male',
+                                                                            id: 'main.label.male',
+                                                                        })
+                                                                    }
+                                                                </span>
+                                                            )
+                                                        }
+                                                        {
+                                                            patient.sex !== 'male' && patient.sex !== 'female'
+                                                            && fieldPlaceholder
+                                                        }
+                                                    </span>
+                                                )
                                             }
                                             {
-                                                key === 'death_date' &&
-                                                (
-                                                    patient.death && patient.death.dead ?
-                                                        <span>
-                                                            <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
-                                                            {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
-                                                        </span>
+                                                key === 'death_date'
+                                                && (
+                                                    patient.death && patient.death.dead
+                                                        ? (
+                                                            <span>
+                                                                <FormattedMessage id="patientsinfos.deathThe" defaultMessage="Décès le" />
+                                                                {`  ${moment(patient.death.death_date).format('DD-MM-YYYY')}`}
+                                                            </span>
+                                                        )
                                                         : fieldPlaceholder
                                                 )
                                             }
                                             {
-                                                key === 'death_date' && !hasConflict &&
-                                                (
+                                                key === 'death_date' && !hasConflict
+                                                && (
                                                     patient.death && patient.death.dead === false && fieldPlaceholder !== '--' ? '--' : ''
                                                 )
                                             }
                                             {
-                                                key === 'year_of_birth' &&
-                                                (
-                                                    patient.year_of_birth ?
-                                                        <span>
-                                                            {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)} ${
-                                                                formatMessage({
-                                                                    defaultMessage: 'years',
-                                                                    id: 'main.label.years',
-                                                                })})`}
-                                                        </span>
+                                                key === 'year_of_birth'
+                                                && (
+                                                    patient.year_of_birth
+                                                        ? (
+                                                            <span>
+                                                                {`${patient.year_of_birth} (${getAgeFromYear(patient.year_of_birth)} ${
+                                                                    formatMessage({
+                                                                        defaultMessage: 'years',
+                                                                        id: 'main.label.years',
+                                                                    })})`}
+                                                            </span>
+                                                        )
                                                         : fieldPlaceholder
                                                 )
                                             }
@@ -135,8 +149,15 @@ class PatientInfos extends React.Component {
                                                     )
                                             }
                                             {
-                                                geoFalsePositive &&
-                                                <span>{' '}(<FormattedMessage id="patientsinfos.selectAs" defaultMessage="sélectionnez l'aire de santé" />)</span>
+                                                geoFalsePositive
+                                                && (
+                                                    <span>
+                                                        {' '}
+                                                        (
+                                                        <FormattedMessage id="patientsinfos.selectAs" defaultMessage="sélectionnez l'aire de santé" />
+                                                        )
+                                                    </span>
+                                                )
                                             }
                                         </td>
                                     </tr>

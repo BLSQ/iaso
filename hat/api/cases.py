@@ -12,10 +12,9 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, CASE_API
-from hat.cases.forms import DATE_FORMAT
 from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
-from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES
+from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES, DATE_FORMAT
 from hat.geo.models import Village
 from hat.patient.models import Test
 from hat.sync.models import DeviceDB

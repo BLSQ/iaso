@@ -17,17 +17,21 @@ import { filterActions } from '../../../redux/filtersRedux';
 
 import TestInfosComponent from './TestInfosComponent';
 
+const getStateTest = (currentTest, currentCase) => (
+    {
+        ...currentTest,
+        tester: currentTest.tester ? currentTest.tester.id : null,
+        form: currentCase.id,
+        villageId: currentTest.village && currentTest.village.id,
+    }
+);
+
 class TestModalComponent extends Component {
     constructor(props) {
         super(props);
         moment.locale('fr');
         this.state = {
-            currentTest: {
-                ...props.currentTest,
-                tester: props.currentTest.tester ? props.currentTest.tester.id : null,
-                form: props.currentCase.id,
-                villageId: props.currentTest.village && props.currentTest.village.id,
-            },
+            currentTest: getStateTest(props.currentTest, props.currentCase),
             currentCase: props.currentCase,
         };
     }
@@ -57,12 +61,7 @@ class TestModalComponent extends Component {
     componentWillReceiveProps(nextProps) {
         if (!isEqual(this.props.currentTest, nextProps.currentTest)) {
             this.setState({
-                currentTest: {
-                    ...nextProps.currentTest,
-                    tester: nextProps.currentTest.tester ? nextProps.currentTest.tester.id : null,
-                    form: nextProps.currentCase.id,
-                    villageId: nextProps.currentTest.village && nextProps.currentTest.village.id,
-                },
+                currentTest: getStateTest(nextProps.currentTest, nextProps.currentCase),
             });
         }
         if (!isEqual(this.props.currentCase, nextProps.currentCase)) {
@@ -90,6 +89,17 @@ class TestModalComponent extends Component {
                 [key]: value,
             },
         };
+        if (key === 'type' && value === 'clinicalsigns') {
+            delete newState.currentTest.result;
+        }
+        if (key === 'type' && value !== 'clinicalsigns') {
+            delete newState.currentTest.clinicalsigns;
+        }
+        if (key === 'type' && value !== 'PL') {
+            newState.currentCase = {
+                ...this.props.currentCase,
+            };
+        }
         this.setState(newState);
     }
 
@@ -102,12 +112,13 @@ class TestModalComponent extends Component {
             updateTest,
             createTest,
             patientId,
+            toggleModal,
         } = this.props;
         currentTest.currentCase = currentCase;
         if (currentTest.id !== 0) {
-            updateTest(currentTest, patientId);
+            updateTest(currentTest, patientId, toggleModal);
         } else {
-            createTest(currentTest, patientId);
+            createTest(currentTest, patientId, toggleModal);
         }
     }
 
@@ -118,16 +129,18 @@ class TestModalComponent extends Component {
         } = this.state;
         const isNewTest = currentTest.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase)
-        && isEqual(currentTest, this.props.currentTest);
+        && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase));
         const isValid = (
             Boolean(currentTest.type)
-            && Boolean(currentTest.type === 'CATT' && currentTest.index)
-            && Boolean(currentTest.type === 'PL' && currentCase.test_pl_gb_mm3)
-            && Boolean(currentTest.type === 'clinicalsigns' && currentTest.clinicalsigns.length > 0)
+            && Boolean(currentTest.type !== 'CATT' || (currentTest.type === 'CATT' && currentTest.index))
+            && Boolean(currentTest.type !== 'PL' || (currentTest.type === 'PL' && currentCase.test_pl_gb_mm3))
+            && Boolean(currentTest.type !== 'clinicalsigns' || (currentTest.type === 'clinicalsigns' && currentTest.clinicalsigns && currentTest.clinicalsigns.length > 0))
+            && Boolean(currentTest.type === 'clinicalsigns' || (currentTest.type !== 'clinicalsigns' && currentTest.result !== undefined))
             && Boolean(currentTest.date)
             && Boolean(currentTest.villageId)
+            && Boolean(currentTest.tester)
         );
-        return ((isNewTest && isUnTouched) || !isValid);
+        return ((!isNewTest && isUnTouched) || !isValid);
     }
 
     render() {
@@ -244,8 +257,8 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     fetchProfiles: () => dispatch(profileActions.fetchProfiles(dispatch)),
-    updateTest: (test, patientId) => dispatch(testActions.updateTest(dispatch, test, patientId)),
-    createTest: (test, patientId) => dispatch(testActions.createTest(dispatch, test, patientId)),
+    updateTest: (test, patientId, toggleModal) => dispatch(testActions.updateTest(dispatch, test, patientId, toggleModal)),
+    createTest: (test, patientId, toggleModal) => dispatch(testActions.createTest(dispatch, test, patientId, toggleModal)),
     selectTestProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
 });
 

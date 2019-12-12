@@ -395,3 +395,7 @@ $directions: left right top bottom;
         border-radius: 5px;
     }
 }
+
+.MuiSnackbar-root {
+    z-index: 999999 !important;
+}

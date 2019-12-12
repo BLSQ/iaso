@@ -24,7 +24,7 @@ class PatientCasesTests extends React.Component {
                             similarTest = similarCase.tests[index];
                         }
                         return (
-                            <div key={t.id}>
+                            <div key={t.id} id={`test-${t.id}`}>
                                 <PatientTestComponent
                                     test={t}
                                     similarTest={similarTest}

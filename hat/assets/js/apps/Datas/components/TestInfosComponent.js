@@ -76,14 +76,13 @@ const getComponentValues = (
         initValues.result = 2;
     }
     initValues.tester = currentTest.tester;
-    // if (initValues.isNewTest && !initValues.tester) {
-    //     initValues.tester = currentUser ? currentUser.id : null;
-    // }
+    if (initValues.isNewTest && !initValues.tester) {
+        initValues.tester = currentUser && Boolean(currentUser.tester_type) ? currentUser.id : null;
+    }
 
     return initValues;
 };
 
-// TO_DO =  Validation + message on save / error, traveler area,
 const TestInfoComponent = ({
     intl: {
         formatMessage,
@@ -126,6 +125,7 @@ const TestInfoComponent = ({
                             )}
                             fieldComponent={(
                                 <Select
+                                    className={!currentTest.type ? 'form-error' : null}
                                     multi={testTypeSelect.isMultiSelect}
                                     clearable={testTypeSelect.isClearable}
                                     simpleValue
@@ -157,6 +157,7 @@ const TestInfoComponent = ({
                                             multi={false}
                                             clearable={false}
                                             simpleValue
+                                            className={!result ? 'form-error' : null}
                                             value={result}
                                             placeholder={formatMessage(selectPlaceholder)}
                                             options={results.map(r => ({
@@ -181,6 +182,9 @@ const TestInfoComponent = ({
                                     )}
                                     fieldComponent={(
                                         <Select
+                                            className={!currentTest.clinicalsigns
+                                                || (currentTest.clinicalsigns && currentTest.clinicalsigns.length === 0)
+                                                ? 'form-error' : null}
                                             multi
                                             clearable
                                             multiValue
@@ -205,6 +209,7 @@ const TestInfoComponent = ({
                             )}
                             fieldComponent={(
                                 <Select
+                                    className={!tester ? 'form-error' : null}
                                     multi={false}
                                     clearable={false}
                                     simpleValue
@@ -263,6 +268,7 @@ const TestInfoComponent = ({
                                     alignItems="flex-start"
                                     fieldComponent={(
                                         <CattCard
+                                            isRequired
                                             cattIndex={currentTest.index}
                                             onChange={newIndex => onChange('index', newIndex, 'currentTest')}
                                         />
@@ -283,10 +289,11 @@ const TestInfoComponent = ({
                                         )}
                                         fieldComponent={(
                                             <input
+                                                className={!currentCase.test_pl_gb_mm3 ? 'form-error' : null}
                                                 type="number"
                                                 min={0}
                                                 placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_gb_mm3}
+                                                value={currentCase.test_pl_gb_mm3 || inputPlaceHolder}
                                                 onChange={event => onChange('test_pl_gb_mm3', event.currentTarget.value, 'currentCase')}
                                             />
                                         )}
@@ -302,7 +309,7 @@ const TestInfoComponent = ({
                                             <input
                                                 type="text"
                                                 placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_albumine}
+                                                value={currentCase.test_pl_albumine || inputPlaceHolder}
                                                 onChange={event => onChange('test_pl_albumine', event.currentTarget.value, 'currentCase')}
                                             />
                                         )}
@@ -318,7 +325,7 @@ const TestInfoComponent = ({
                                             <input
                                                 type="text"
                                                 placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_lcr}
+                                                value={currentCase.test_pl_lcr || inputPlaceHolder}
                                                 onChange={event => onChange('test_pl_lcr', event.currentTarget.value, 'currentCase')}
                                             />
                                         )}

@@ -97,7 +97,7 @@ const fetchTestMapping = (dispatch) => {
     });
 };
 
-const fetchDetails = (dispatch, patientId, resetDetail = true) => {
+const fetchDetails = (dispatch, patientId, resetDetail = true, toggleModal) => {
     dispatch(loadActions.startLoading());
     if (resetDetail) {
         dispatch(loadCurrentDetail({}));
@@ -108,6 +108,9 @@ const fetchDetails = (dispatch, patientId, resetDetail = true) => {
         .then((result) => {
             dispatch(loadActions.successLoadingNoData());
             dispatch(loadCurrentDetail(result.body));
+            if (toggleModal) {
+                toggleModal(true);
+            }
         })
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));

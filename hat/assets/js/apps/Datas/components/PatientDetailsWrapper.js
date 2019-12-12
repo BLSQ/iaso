@@ -75,9 +75,7 @@ class PatientDetailsWrapper extends React.Component {
             dispatch(mapActions.setMappedCaseslist(patient.cases));
         }
         if (this.props.params.case_id && this.props.params.tab === 'tests') {
-            setTimeout(() => {
-                scrollTo('selected-case');
-            }, 500);
+            scrollTo('selected-case');
         }
         if (patient) {
             const newParams = {
@@ -163,7 +161,12 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
-    toggleTestModal(editedTest) {
+    toggleTestModal(editedTest, scrollToBottom) {
+        if (scrollToBottom) {
+            if (!this.state.editedTest) {
+                scrollTo('bottom-tests');
+            }
+        }
         this.setState({
             showTestModale: !this.state.showTestModale,
             editedTest,
@@ -291,7 +294,7 @@ class PatientDetailsWrapper extends React.Component {
                                                             <TestModal
                                                                 params={params}
                                                                 showModale={showTestModale}
-                                                                toggleModal={() => this.toggleTestModal()}
+                                                                toggleModal={scrollToBottom => this.toggleTestModal(null, scrollToBottom)}
                                                                 currentCase={c}
                                                                 currentTest={editedTest}
                                                                 patientId={patient.id}
@@ -327,6 +330,7 @@ class PatientDetailsWrapper extends React.Component {
                                             ))
                                         }
                                     </ul>
+                                    <span id="bottom-tests" />
                                 </div>
                             </div>
 

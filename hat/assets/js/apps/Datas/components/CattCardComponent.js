@@ -7,9 +7,10 @@ const cattMaxIndex = 10;
 const CattCardComponent = ({
     cattIndex,
     onChange,
+    isRequired,
 }) => (
     <div>
-        <ul className="catt-card">
+        <ul className={`catt-card ${isRequired && !cattIndex ? 'error' : null}`}>
             {
                 Array(cattMaxIndex).fill().map((_, i) => (
                     <li
@@ -28,11 +29,13 @@ const CattCardComponent = ({
 
 CattCardComponent.defaultProps = {
     cattIndex: null,
+    isRequired: false,
 };
 
 CattCardComponent.propTypes = {
     cattIndex: PropTypes.number,
     onChange: PropTypes.func.isRequired,
+    isRequired: PropTypes.bool,
 };
 
 

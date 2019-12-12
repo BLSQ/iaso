@@ -1,21 +1,24 @@
 import { loadActions } from '../../../redux/load';
 import { patientsActions } from './patients';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { succesfullSnackBar, errorSnackBar } from '../../../utils/constants/snackBars';
 
 const PATCH_ACTION = 'hat/tests/PATCH_ACTION';
 
 const req = require('superagent');
 
-const updateTest = (dispatch, test, patientId) => {
+const updateTest = (dispatch, test, patientId, toggleModal) => {
     dispatch(loadActions.startLoading());
     req
         .patch(`/api/tests/${test.id}/`)
         .set('Content-Type', 'application/json')
         .send(test)
         .then(() => {
-            dispatch(patientsActions.fetchDetails(dispatch, patientId, false));
-            dispatch(loadActions.successLoadingNoData());
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(patientsActions.fetchDetails(dispatch, patientId, false, toggleModal));
         })
         .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
             dispatch(loadActions.errorLoading(err));
         });
     return ({
@@ -23,17 +26,18 @@ const updateTest = (dispatch, test, patientId) => {
     });
 };
 
-const createTest = (dispatch, test, patientId) => {
+const createTest = (dispatch, test, patientId, toggleModal) => {
     dispatch(loadActions.startLoading());
     req
         .post('/api/tests/')
         .set('Content-Type', 'application/json')
         .send(test)
         .then(() => {
-            dispatch(patientsActions.fetchDetails(dispatch, patientId, false));
-            dispatch(loadActions.successLoadingNoData());
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(patientsActions.fetchDetails(dispatch, patientId, false, toggleModal));
         })
         .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
             dispatch(loadActions.errorLoading(err));
         });
     return ({

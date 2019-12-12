@@ -8,6 +8,10 @@
     width: 262px;
     box-sizing: border-box;
 
+    &.error {
+        border: 1px solid $red;
+    }
+
     li {
         list-style: none;
         cursor: pointer;

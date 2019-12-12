@@ -16,9 +16,15 @@ const TestLocationComponent = ({
 }) => (
     <section className="location-container">
         <VillageLocationFilters
+            isRequired
             isClearable
             filters={testLocationFilters}
-            selectProvince={provinceId => selectTestProvince(provinceId)}
+            selectProvince={provinceId => selectTestProvince(
+                provinceId,
+                null,
+                null,
+                null,
+            )}
             selectZone={zoneId => selectTestZone(
                 zoneId,
                 null,

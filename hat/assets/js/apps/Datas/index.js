@@ -16,6 +16,7 @@ import { smallMapReducer, smallMapInitialState } from '../../redux/smallMapReduc
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { profileReducer, profileInitialState } from '../../redux/profilesReducer';
+import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 
 import CasesPage from './pages/Cases';
 import PatientsPage from './pages/Patients';
@@ -105,6 +106,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         geoFilters: filtersInitialState,
         testLocationFilters: filtersInitialState,
         profiles: profileInitialState,
+        snackBar: snackBarsInitialState,
     }, {
         load: loadReducer,
         testsFilters: filtersReducer,
@@ -117,6 +119,7 @@ export default function datasApp(appConfig, element, baseUrl) {
         profiles: profileReducer,
         geoFilters: filtersReducer,
         testLocationFilters: filtersReducer,
+        snackBar: snackBarsReducer,
     }, [
         routerMiddleware(history),
     ]);

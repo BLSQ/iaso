@@ -5,7 +5,7 @@ import { FormattedMessage } from 'react-intl';
 
 class Filters extends React.Component {
     render() {
-        const { filters } = this.props;
+        const { filters, isRequired } = this.props;
         if (!filters) {
             return null;
         }
@@ -21,6 +21,7 @@ class Filters extends React.Component {
                         filters.provinces
                         && (
                             <Select
+                                className={isRequired && !provinceValue ? 'form-error' : null}
                                 multi={this.props.isMultiSelect}
                                 clearable={this.props.isClearable}
                                 simpleValue
@@ -41,6 +42,7 @@ class Filters extends React.Component {
                             </div>
                             <div>
                                 <Select
+                                    className={isRequired && !filters.zoneId ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -62,6 +64,7 @@ class Filters extends React.Component {
                             </div>
                             <div>
                                 <Select
+                                    className={isRequired && (!filters.areaId && !filters.villageId) ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -86,6 +89,7 @@ class Filters extends React.Component {
                                     <FormattedMessage id="main.label.village" defaultMessage="Village" />
                                 </div>
                                 <Select
+                                    className={isRequired && !filters.villageId ? 'form-error' : null}
                                     multi={this.props.isMultiSelect}
                                     clearable={this.props.isClearable}
                                     simpleValue
@@ -120,6 +124,7 @@ Filters.defaultProps = {
     showVillages: true,
     isClearable: false,
     selectVillage: () => { },
+    isRequired: false,
 };
 
 Filters.propTypes = {
@@ -131,6 +136,7 @@ Filters.propTypes = {
     isMultiSelect: PropTypes.bool,
     showVillages: PropTypes.bool,
     isClearable: PropTypes.bool,
+    isRequired: PropTypes.bool,
 };
 
 export default Filters;

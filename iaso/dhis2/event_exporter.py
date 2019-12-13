@@ -95,7 +95,7 @@ class EventExporter:
                         events.append(event)
                     else:
                         errors.append(event_errors)
-            if export:
+            if export and len(events) > 0:
                 try:
                     resp = api.post("events", {"events": events}).json()
                     print(resp)

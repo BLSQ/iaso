@@ -154,8 +154,12 @@ class CatchesViewSet(viewsets.ViewSet):
                 return [
                     cdict.get("id"),
                     cdict.get("uuid"),
-                    catch.setup_date.strftime("%Y-%m-%d %H:%M:%S"),
-                    catch.collect_date.strftime("%Y-%m-%d %H:%M:%S"),
+                    catch.setup_date.strftime("%Y-%m-%d %H:%M:%S")
+                    if catch.setup_date
+                    else None,
+                    catch.collect_date.strftime("%Y-%m-%d %H:%M:%S")
+                    if catch.collect_date
+                    else None,
                     cdict.get("male_count"),
                     cdict.get("female_count"),
                     cdict.get("unknown_count"),

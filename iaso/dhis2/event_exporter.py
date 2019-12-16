@@ -4,9 +4,8 @@ from .value_formatter import format_value
 import json
 
 
-def uniquify(seq, idfun=None):  # Alex Martelli ******* order preserving
+def uniquify(seq, idfun=None):
     if idfun is None:
-
         def idfun(x):
             return x
 
@@ -14,9 +13,6 @@ def uniquify(seq, idfun=None):  # Alex Martelli ******* order preserving
     result = []
     for item in seq:
         marker = idfun(item)
-        # in old Python versions:
-        # if seen.has_key(marker)
-        # but in new ones:
         if marker not in seen:
             seen[marker] = 1
             result.append(item)
@@ -44,8 +40,7 @@ def map_to_event(instance, form_mapping):
     event = {
         "program": form_mapping["program_id"],
         "event": instance.export_id,
-        # "orgUnit": instance.org_unit.source_ref,
-        "orgUnit": "Rp268JB6Ne4",
+        "orgUnit": instance.org_unit.source_ref,
         "eventDate": instance.created_at.strftime("%Y-%m-%d"),
         "status": "COMPLETED",
         "dataValues": [],
@@ -67,7 +62,6 @@ def map_to_event(instance, form_mapping):
                 data_value = {
                     "dataElement": data_element["id"],
                     "value": format_value(data_element, raw_value),
-                    # "debug": str(raw_value)+" "+str(data_element)
                     "debug": str(raw_value) + " " + question_key,
                 }
                 event["dataValues"].append(data_value)

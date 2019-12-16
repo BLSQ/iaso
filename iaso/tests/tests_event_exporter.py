@@ -19,12 +19,18 @@ def build_instance():
     org_unit = OrgUnit()
     org_unit.validated = True
     org_unit.source_ref = "OU_DHIS2_ID"
+    org_unit.save()
     instance = Instance()
     instance.export_id = "EVENT_DHIS2_UID"
     instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
     instance.org_unit = org_unit
     instance.json = {"question1": "1"}
     instance.location = Point(1.5, 7.3)
+    instance.save()
+    # force to past creation date
+    # looks the the first save don't take it
+    instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
+    instance.save()
     return instance
 
 
@@ -63,7 +69,7 @@ class EventExporterTests(TestCase):
                 "event": "EVENT_DHIS2_UID",
                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
                 "eventDate": "2018-02-16",
-                "orgUnit": "Rp268JB6Ne4",
+                "orgUnit": "OU_DHIS2_ID",
                 "program": "PROGRAM_DHIS2_ID",
                 "status": "COMPLETED",
             },
@@ -73,9 +79,7 @@ class EventExporterTests(TestCase):
     def test_event_export_works(self):
         # setup
         # persist an instance
-        instance = build_instance()
-        instance.org_unit.save()
-        instance.save()
+        instance = build_instance()    
 
         # mock expected calls
 
@@ -95,9 +99,6 @@ class EventExporterTests(TestCase):
         # setup
         # persist an instance
         instance = build_instance()
-        instance.org_unit.save()
-        instance.save()
-
         # mock expected calls
 
         responses.add(
@@ -107,8 +108,8 @@ class EventExporterTests(TestCase):
             status=409,
         )
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
+        # exercice
+        instances_qs = Instance.objects.prefetch_related("org_unit").order_by("id").all()
 
         EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True
@@ -119,12 +120,12 @@ class EventExporterTests(TestCase):
         # setup
         # persist an instance
         instance = build_instance()
-        instance.org_unit.save()
         instance.json = {"question1": "badvalue"}
         instance.save()
+       
 
-        # excercice
-        instances_qs = Instance.objects.order_by("id").all()
+        # exercice
+        instances_qs = Instance.objects.prefetch_related("org_unit").order_by("id").all()
 
         EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True

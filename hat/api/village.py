@@ -11,6 +11,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, VILLAGE_API
+from hat.cases.models import RES_POSITIVE
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -94,8 +95,12 @@ class VillageViewSet(viewsets.ViewSet):
         queryset = queryset.filter(is_erased=is_erased)
 
         if search:
-            aliases_query = RawSQL("select count(*) from unnest(""geo_village"".aliases) it where it ilike %s",
-                                   (f"%{search}%",))
+            aliases_query = RawSQL(
+                "select count(*) from unnest("
+                "geo_village"
+                ".aliases) it where it ilike %s",
+                (f"%{search}%",),
+            )
             queryset = queryset.annotate(alias_match=aliases_query)
             queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
             values = values + (
@@ -168,7 +173,7 @@ class VillageViewSet(viewsets.ViewSet):
             nr_positive_cases = Count(
                 "caseview",
                 filter=Q(
-                    caseview__confirmed_case=True,
+                    caseview__confirmation_result=RES_POSITIVE,
                     caseview__normalized_year__in=years_array,
                 ),
             )
@@ -179,7 +184,7 @@ class VillageViewSet(viewsets.ViewSet):
                 nr_positive_cases = Count(
                     "caseview",
                     filter=Q(
-                        caseview__confirmed_case=True,
+                        caseview__confirmation_result=RES_POSITIVE,
                         caseview__normalized_date__range=(from_date, to_date),
                     ),
                 )
@@ -187,7 +192,7 @@ class VillageViewSet(viewsets.ViewSet):
                 values = values + ("nr_positive_cases",)
             else:
                 nr_positive_cases = Count(
-                    "caseview", filter=Q(caseview__confirmed_case=True)
+                    "caseview", filter=Q(caseview__confirmation_result=RES_POSITIVE)
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)

@@ -154,54 +154,6 @@
                 ]
             }
         },
-        "ident_type_services": {
-            "code": "ident_type_services",
-            "name": "Ident - Type de services",
-            "id": "VuXeEu8EWXT",
-            "shortName": "Ident_type_services",
-            "valueType": "TEXT",
-            "optionSet": {
-                "name": "type_service",
-                "id": "utr9pbXL9ZS",
-                "options": [
-                    {
-                        "code": "serv_med",
-                        "name": "Service m\u00e9dical",
-                        "id": "Bd9BS8X35uV"
-                    },
-                    {
-                        "code": "serv_prot",
-                        "name": "Service de protection",
-                        "id": "nUnkVuh3drL"
-                    },
-                    {
-                        "code": "jurid",
-                        "name": "Service juridique",
-                        "id": "DpaiimlwCsD"
-                    },
-                    {
-                        "code": "psycho",
-                        "name": "Service psychosocial",
-                        "id": "cMpGomxQdUk"
-                    },
-                    {
-                        "code": "educ",
-                        "name": "Centre \u00e9ducatif",
-                        "id": "U2UMpyuQdCz"
-                    },
-                    {
-                        "code": "recope",
-                        "name": "RECOPE",
-                        "id": "PCscj4EyCRU"
-                    },
-                    {
-                        "code": "club",
-                        "name": "Club de jeunes",
-                        "id": "afkytuU1H7v"
-                    }
-                ]
-            }
-        },
         "ident_type_structure": {
             "code": "ident_type_structure",
             "name": "Ident - Type de structure",
@@ -215,22 +167,26 @@
                     {
                         "code": "cs",
                         "name": "Centre de sant\u00e9",
-                        "id": "pF3WRvzEft0"
+                        "id": "pF3WRvzEft0",
+                        "odk": "cs"
                     },
                     {
                         "code": "ecole",
                         "name": "Ecole",
-                        "id": "WeCWGdaDuoV"
+                        "id": "WeCWGdaDuoV",
+                        "odk": "eco"
                     },
                     {
                         "code": "esp_ami",
                         "name": "Espace ami des enfants",
-                        "id": "D0E8Xnin0RU"
+                        "id": "D0E8Xnin0RU",
+                        "odk": "es_ami"
                     },
                     {
                         "code": "ce",
                         "name": "Centre d'\u00e9coute",
-                        "id": "NVOUdrC9JCB"
+                        "id": "NVOUdrC9JCB",
+                        "odk": "ce"
                     },
                     {
                         "code": "poste",

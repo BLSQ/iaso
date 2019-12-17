@@ -101,6 +101,14 @@ class OrgUnitType(models.Model):
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
     projects = models.ManyToManyField(Project, related_name="data_sources", blank=True)
+    credentials = models.ForeignKey(
+        "ExternalCredentials",
+        on_delete=models.SET_NULL,
+        related_name="data_sources",
+        null=True,
+        blank=True,
+    )
+
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -550,6 +558,36 @@ class FormVersion(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
+
+class Mapping(models.Model):
+    form_version = models.ForeignKey(
+        FormVersion, on_delete=models.CASCADE, related_name="mappings"
+    )
+    name = models.TextField()
+    json = JSONField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = [["form_version", "name"]]
+
+    def __str__(self):
+        return "%s - %s" % (self.form_version, self.name)
+
+
+class ExternalCredentials(models.Model):
+    account = models.ForeignKey(
+        Account, on_delete=models.CASCADE, related_name="credentials"
+    )
+
+    name = models.TextField()
+    login = models.TextField()
+    password = models.TextField()
+    url = models.TextField()
+
+    def __str__(self):
+        return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
 
 class Instance(models.Model):

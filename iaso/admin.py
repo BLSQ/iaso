@@ -18,6 +18,8 @@ from .models import (
     Link,
     Group,
     Profile,
+    ExternalCredentials,
+    Mapping,
 )
 
 
@@ -73,6 +75,8 @@ admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(FormVersion)
 admin.site.register(Profile)
+admin.site.register(ExternalCredentials)
+admin.site.register(Mapping)
 
 
 class GroupAdmin(admin.GeoModelAdmin):

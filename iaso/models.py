@@ -100,6 +100,7 @@ class OrgUnitType(models.Model):
 
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
+    read_only = models.BooleanField(default=True)
     projects = models.ManyToManyField(Project, related_name="data_sources", blank=True)
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -255,6 +256,7 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "groups": [group.as_dict() for group in self.groups.all()],
         }
 
     def as_dict_for_csv(self):
@@ -455,7 +457,7 @@ class Form(models.Model):
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
 
-    def as_dict(self, additional_fields=None):
+    def as_dict(self, additional_fields=None, show_version=True):
         latest_form_version = self.form_versions.order_by("-created_at").first()
         res = {
             "form_id": self.form_id,
@@ -466,10 +468,12 @@ class Form(models.Model):
             "updated_at": self.updated_at.timestamp()
             if self.updated_at
             else self.created_at.timestamp(),
-            "latest_form_version": latest_form_version.as_dict()
-            if latest_form_version
-            else None,
         }
+
+        if show_version:
+            res["latest_form_version"] = (
+                latest_form_version.as_dict() if latest_form_version else None
+            )
         if additional_fields:
             for field in additional_fields:
                 if hasattr(self, field):
@@ -485,7 +489,7 @@ class Group(models.Model):
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
     projects = models.ManyToManyField(Project, related_name="groups", blank=True)
-    org_units = models.ManyToManyField(OrgUnit, blank=True)
+    org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="groups")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -545,7 +549,7 @@ class FormVersion(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "form_id": self.form_id,
+            "version_id": self.version_id,
             "file": self.file.url,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

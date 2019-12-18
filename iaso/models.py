@@ -596,11 +596,16 @@ class Instance(models.Model):
 
     def convert_device(self):
         if self.json and not self.device:
-            imei = self.json.get("deviceid", None)
+            device_field = self.form.device_field
+            if not device_field:
+                device_field = "deviceid"
+            imei = self.json.get(device_field, None)
             if imei is not None:
                 device, created = Device.objects.get_or_create(imei=imei)
                 self.device = device
                 self.save()
+                if self.project:
+                    self.device.projects.add(self.project)
 
     def get_and_save_json_of_xml(self):
         if self.json:
@@ -719,6 +724,7 @@ class Device(models.Model):
     test_device = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    projects = models.ManyToManyField(Project, related_name="devices", blank=True)
 
     def __str__(self):
         return "%s " % (self.imei,)

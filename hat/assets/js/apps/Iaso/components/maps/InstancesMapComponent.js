@@ -30,7 +30,13 @@ import { fetchInstanceDetail } from '../../utils/requests';
 const boundsOptions = { padding: [50, 50] };
 
 class InstancesMap extends Component {
-    componentDidMount() {
+
+    componentWillUnmount() {
+        this.props.resetMapReducer();
+    }
+
+    onMapLoaded(ref) {
+        this.map = ref;
         const {
             intl: {
                 formatMessage,
@@ -40,10 +46,6 @@ class InstancesMap extends Component {
         if (this.map) {
             zoomBar.addTo(this.map.leafletElement);
         }
-    }
-
-    componentWillUnmount() {
-        this.props.resetMapReducer();
     }
 
     fetchDetail(instance) {
@@ -108,9 +110,7 @@ class InstancesMap extends Component {
                     )}
                 >
                     <Map
-                        ref={(ref) => {
-                            this.map = ref;
-                        }}
+                        ref={ref => this.onMapLoaded(ref)}
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}

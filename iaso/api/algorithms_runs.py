@@ -34,6 +34,15 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         launcher_id = request.GET.get("launcher", None)
 
         queryset = AlgorithmRun.objects.all()
+
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+            sources = DataSource.objects.filter(
+                projects__account=profile.account
+            ).distinct()
+            queryset = queryset.filter(version_1__data_source__in=sources)
+            queryset = queryset.filter(version_2__data_source__in=sources)
+
         if algorithm_id:
             queryset = queryset.filter(algorithm__id=algorithm_id)
         if origin:

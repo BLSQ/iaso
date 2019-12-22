@@ -488,7 +488,6 @@ class Group(models.Model):
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
-    projects = models.ManyToManyField(Project, related_name="groups", blank=True)
     org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="groups")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -498,10 +497,13 @@ class Group(models.Model):
 
     def as_dict(self):
         return {
+            "id": self.id,
             "name": self.name,
             "source_ref": self.source_ref,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "source_version": self.source_version_id,
+            "org_unit_count": self.org_units.count(),
         }
 
 

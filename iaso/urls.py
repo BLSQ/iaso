@@ -13,6 +13,7 @@ from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
+from .api.groups import GroupsViewSet
 from iaso.models import MatchingAlgorithm
 from iaso import matching
 import pkgutil
@@ -35,6 +36,7 @@ router.register(r"links", LinkViewSet, base_name="links")
 router.register(r"profiles", ProfilesViewSet, base_name="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsruns")
+router.register(r"groups", GroupsViewSet, base_name="groups")
 urlpatterns = [url(r"^", include(router.urls))]
 
 

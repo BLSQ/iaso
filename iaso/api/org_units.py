@@ -121,6 +121,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_location = request.GET.get("withLocation", None)
         parent_id = request.GET.get("parent_id", None)
         source = request.GET.get("source", None)
+        group = request.GET.get("group", None)
         version = request.GET.get("version", None)
         order = request.GET.get("order", "id").split(",")
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
@@ -154,6 +155,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(aliases__contains=[search])
             )
+
+        if group:
+            queryset = queryset.filter(groups__in=group.split(","))
 
         if source:
             queryset = queryset.filter(version__data_source_id__in=source.split(","))

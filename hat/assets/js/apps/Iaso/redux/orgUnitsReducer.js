@@ -7,6 +7,7 @@ const SET_FETCHING = 'SET_FETCHING';
 const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 const SET_SOURCES = 'SET_SOURCES';
+const SET_GROUPS = 'SET_GROUPS';
 const SET_ORG_UNITS_LIST_FETCHING = 'SET_ORG_UNITS_LIST_FETCHING';
 const SET_SUB_ORG_UNITS_TYPES_SELECTED = 'SET_SUB_ORG_UNITS_TYPES_SELETED';
 const SET_SOURCES_SELECTED = 'SET_SOURCES_SELECTED';
@@ -65,6 +66,11 @@ export const setSourceTypes = sourceTypes => ({
 export const setSources = sources => ({
     type: SET_SOURCES,
     payload: sources,
+});
+
+export const setGroups = groups => ({
+    type: SET_GROUPS,
+    payload: groups,
 });
 
 
@@ -130,6 +136,7 @@ export const orgUnitsInitialState = {
         shapes: [],
     },
     filtersUpdated: true,
+    groups: [],
 };
 
 export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
@@ -178,6 +185,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         case SET_SOURCES: {
             const sources = action.payload;
             return { ...state, sources, orgUnitLevel: [] };
+        }
+
+        case SET_GROUPS: {
+            const groups = action.payload;
+            return { ...state, groups };
         }
 
         case RESET_ORG_UNITS: {

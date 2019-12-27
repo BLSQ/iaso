@@ -63,6 +63,10 @@ const MESSAGES = {
         id: 'iaso.label.parent',
         defaultMessage: 'Parent',
     },
+    groups: {
+        id: 'iaso.label.groups',
+        defaultMessage: 'Groups',
+    },
     created_at: {
         id: 'iaso.instance.created_at',
         defaultMessage: 'Created at',
@@ -118,6 +122,10 @@ class OrgUnitPopupComponent extends Component {
                 formatMessage,
             },
         } = this.props;
+        let groups = null;
+        if (currentOrgUnit && currentOrgUnit.groups.length > 0) {
+            groups = currentOrgUnit.groups.map(g => g.name).join(', ');
+        }
         return (
             <Popup className={classes.popup} ref={this.popup}>
                 {
@@ -136,6 +144,10 @@ class OrgUnitPopupComponent extends Component {
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.type)}
                                     value={currentOrgUnit.org_unit_type_name}
+                                />
+                                <PopupItemComponent
+                                    label={formatMessage(MESSAGES.groups)}
+                                    value={groups}
                                 />
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.source)}

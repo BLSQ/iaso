@@ -93,6 +93,8 @@
     "iaso.instance.updated_at": "Mise à jour",
     "iaso.label.catchment": "Rayon d'action",
     "iaso.label.from": "De",
+    "iaso.label.group": "Groupe",
+    "iaso.label.groups": "Groupes",
     "iaso.label.to": "vers",
     "iaso.label.version": "Version",
     "iaso.label.list": "Liste",

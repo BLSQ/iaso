@@ -103,6 +103,10 @@ export const orgUnitsPath = getPath({
         },
         {
             isRequired: false,
+            key: 'group',
+        },
+        {
+            isRequired: false,
             key: 'withShape',
         },
         {

@@ -41,7 +41,15 @@ const MESSAGES = {
     },
     fetchSourceTypesError: {
         id: 'iaso.snackBar.fetchSourceTypesError',
+        defaultMessage: 'An error occured while fetching sources types list',
+    },
+    fetchSourcesError: {
+        id: 'iaso.snackBar.fetchSourcesError',
         defaultMessage: 'An error occured while fetching sources list',
+    },
+    fetchGroupsError: {
+        id: 'iaso.snackBar.fetchGroupsError',
+        defaultMessage: 'An error occured while fetching groups list',
     },
     fetchOrgUnitTypesError: {
         id: 'iaso.snackBar.fetchOrgUnitTypesError',

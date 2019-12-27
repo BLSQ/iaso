@@ -17,13 +17,23 @@ function OrgUnitInfosComponent(props) {
         onChangeInfo,
         orgUnitTypes,
         sourceTypes,
-        sources,
         intl: {
             formatMessage,
         },
         baseUrl,
         params,
+        groups,
     } = props;
+    const onChangeGroups = (groupIds) => {
+        const newgroups = [];
+        groupIds.split(',').forEach((g) => {
+            const fullGroup = groups.find(fg => fg.id === parseInt(g, 10));
+            if (fullGroup) {
+                newgroups.push(fullGroup);
+            }
+        });
+        onChangeInfo('groups', newgroups);
+    };
     return (
         <Grid container spacing={4}>
             <Grid item xs={4}>
@@ -45,6 +55,20 @@ function OrgUnitInfosComponent(props) {
                         }))
                     }
                     label={MESSAGES.org_unit_type_id}
+                />
+                <InputComponent
+                    keyValue="groups"
+                    onChange={(key, values) => onChangeGroups(values)}
+                    multi
+                    value={orgUnit.groups.map(g => g.id)}
+                    type="select"
+                    options={
+                        groups.map(g => ({
+                            label: g.name,
+                            value: g.id,
+                        }))
+                    }
+                    label={MESSAGES.groups}
                 />
                 <InputComponent
                     keyValue="sub_source"
@@ -135,6 +159,7 @@ OrgUnitInfosComponent.propTypes = {
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
     sources: PropTypes.array.isRequired,
+    groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };
 

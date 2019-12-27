@@ -18,6 +18,7 @@ import {
     resetOrgUnits,
     setCurrentForms,
     setSources,
+    setGroups,
 } from '../redux/orgUnitsReducer';
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
@@ -29,6 +30,7 @@ import {
     fetchOrgUnitDetail,
     fetchForms,
     saveOrgUnit,
+    fetchGroups,
 } from '../utils/requests';
 import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtils';
 
@@ -61,18 +63,21 @@ class OrgUnitDetail extends Component {
     }
 
     componentDidMount() {
+        const {
+            dispatch,
+        } = this.props;
         this.props.resetOrgUnitsLevels();
         this.fetchDetail();
         if (this.props.orgUnitTypes.length === 0) {
-            fetchOrgUnitsTypes(this.props.dispatch)
+            fetchOrgUnitsTypes(dispatch)
                 .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         }
         if (this.props.sourceTypes.length === 0) {
-            fetchSourceTypes(this.props.dispatch)
+            fetchSourceTypes(dispatch)
                 .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
         }
         if (!this.props.sources) {
-            fetchSources(this.props.dispatch)
+            fetchSources(dispatch)
                 .then((data) => {
                     const sources = [];
                     data.forEach((s, i) => {
@@ -83,6 +88,10 @@ class OrgUnitDetail extends Component {
                     });
                     this.props.setSources(sources);
                 });
+        }
+
+        if (this.props.groups.length === 0) {
+            fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
         }
     }
 
@@ -131,19 +140,20 @@ class OrgUnitDetail extends Component {
                     redirectTo(baseUrl, newParams);
                 }
                 this.props.setCurrentOrgUnit(orgUnit);
-
-                fetchForms(this.props.dispatch, `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`)
-                    .then((data) => {
-                        const forms = [];
-                        const formsColors = [...chipColors].reverse();
-                        data.forms.forEach((f, i) => {
-                            forms.push({
-                                ...f,
-                                color: formsColors[i],
+                if (orgUnit.org_unit_type_id) {
+                    fetchForms(this.props.dispatch, `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`)
+                        .then((data) => {
+                            const forms = [];
+                            const formsColors = [...chipColors].reverse();
+                            data.forms.forEach((f, i) => {
+                                forms.push({
+                                    ...f,
+                                    color: formsColors[i],
+                                });
                             });
+                            this.props.setCurrentForms(forms);
                         });
-                        this.props.setCurrentForms(forms);
-                    });
+                }
                 this.setState({
                     currentOrgUnit: orgUnit,
                 });
@@ -253,6 +263,7 @@ class OrgUnitDetail extends Component {
             orgUnitTypes,
             sourceTypes,
             sources,
+            groups,
             params,
             router,
             prevPathname,
@@ -330,6 +341,7 @@ class OrgUnitDetail extends Component {
                                             orgUnitTypes={orgUnitTypes}
                                             sourceTypes={sourceTypes}
                                             sources={sources}
+                                            groups={groups}
                                             onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
                                         />
                                         <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
@@ -419,6 +431,8 @@ OrgUnitDetail.propTypes = {
     setSources: PropTypes.func.isRequired,
     sources: PropTypes.array,
     prevPathname: PropTypes.any,
+    groups: PropTypes.array.isRequired,
+    setGroups: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -430,6 +444,7 @@ const MapStateToProps = state => ({
     sourceTypes: state.orgUnits.sourceTypes,
     sources: state.orgUnits.sources,
     prevPathname: state.routerCustom.prevPathname,
+    groups: state.orgUnits.groups,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -443,6 +458,7 @@ const MapDispatchToProps = dispatch => ({
     resetOrgUnits: () => dispatch(resetOrgUnits()),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
     setSources: sources => dispatch(setSources(sources)),
+    setGroups: groups => dispatch(setGroups(groups)),
 });
 
 

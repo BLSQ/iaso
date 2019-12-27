@@ -18,6 +18,7 @@ import {
     fetchOrgUnitsTypes,
     fetchSources,
     fetchOrgUnitsList,
+    fetchGroups,
 } from '../utils/requests';
 
 import {
@@ -28,6 +29,7 @@ import {
     setSources,
     setFetchingOrgUnitTypes,
     setFiltersUpdated,
+    setGroups,
 } from '../redux/orgUnitsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
@@ -97,12 +99,12 @@ class OrgUnits extends Component {
         } = this.props;
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
-        fetchOrgUnitsTypes(this.props.dispatch).then((orgUnitTypes) => {
+        fetchOrgUnitsTypes(dispatch).then((orgUnitTypes) => {
             this.props.setOrgUnitTypes(orgUnitTypes);
             dispatch(this.props.setFetchingOrgUnitTypes(false));
         });
 
-        fetchSources(this.props.dispatch)
+        fetchSources(dispatch)
             .then((data) => {
                 const sources = [];
                 data.forEach((s, i) => {
@@ -116,6 +118,7 @@ class OrgUnits extends Component {
                     this.fetchOrgUnits(params.tab === 'map');
                 }
             });
+        fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
     }
 
     componentDidUpdate(prevProps) {
@@ -408,6 +411,7 @@ OrgUnits.propTypes = {
     fetchingOrgUnitTypes: PropTypes.bool.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
+    setGroups: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -429,6 +433,7 @@ const MapDispatchToProps = dispatch => ({
     setFetchingOrgUnitTypes: isFetching => dispatch(setFetchingOrgUnitTypes(isFetching)),
     setOrgUnitsLocations: orgUnitsList => dispatch(setOrgUnitsLocations(orgUnitsList)),
     setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
+    setGroups: groups => dispatch(setGroups(groups)),
 });
 
 export default withStyles(styles)(

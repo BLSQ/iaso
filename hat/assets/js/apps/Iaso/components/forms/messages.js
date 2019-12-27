@@ -187,6 +187,14 @@ const MESSAGES = {
         id: 'iaso.forms.shape',
         defaultMessage: 'Shape',
     },
+    group: {
+        id: 'iaso.label.group',
+        defaultMessage: 'Group',
+    },
+    groups: {
+        id: 'iaso.label.groups',
+        defaultMessage: 'Groups',
+    },
 };
 
 export default MESSAGES;

@@ -34,6 +34,25 @@ const orgUnitsTableColumns = (formatMessage, component, classes) => (
         },
         {
             Header: formatMessage({
+                defaultMessage: 'Groups',
+                id: 'iaso.label.groups',
+            }),
+            accessor: 'groups',
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.groups.length > 0
+                         && settings.original.groups.map(g => g.name).join(', ')
+                    }
+                    {
+                        settings.original.groups.length === 0
+                         && '--'
+                    }
+                </section>
+            ),
+        },
+        {
+            Header: formatMessage({
                 defaultMessage: 'Source',
                 id: 'iaso.orgUnits.source',
             }),

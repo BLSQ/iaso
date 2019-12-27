@@ -22,6 +22,7 @@ import {
     shape,
     location,
     locationsLimit,
+    group,
 } from '../../constants/filters';
 import {
     setFiltersUpdated,
@@ -67,6 +68,7 @@ class OrgUnitsFiltersComponent extends Component {
             sources,
             currentTab,
             filtersUpdated,
+            groups,
         } = this.props;
         const filters = [
             search(),
@@ -105,6 +107,7 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
+                                group(groups),
                                 source(sources || [], true, true),
                                 status(formatMessage),
                             ]}
@@ -137,6 +140,7 @@ class OrgUnitsFiltersComponent extends Component {
 OrgUnitsFiltersComponent.defaultProps = {
     baseUrl: '',
     sources: [],
+    groups: [],
 };
 
 OrgUnitsFiltersComponent.propTypes = {
@@ -151,10 +155,12 @@ OrgUnitsFiltersComponent.propTypes = {
     currentTab: PropTypes.string.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
+    groups: PropTypes.array,
 };
 
 const MapStateToProps = state => ({
     filtersUpdated: state.orgUnits.filtersUpdated,
+    groups: state.orgUnits.groups,
 });
 
 const MapDispatchToProps = dispatch => ({

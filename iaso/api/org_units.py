@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
-from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion
+from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
@@ -375,6 +375,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         simplified_geom = request.data.get("simplified_geom", None)
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
+        groups = request.data.get("groups")
         if (
             geo_json
             and geo_json["features"][0]["geometry"]
@@ -437,7 +438,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.parent = parent_org_unit
         else:
             org_unit.parent = None
-
+        new_groups = []
+        for group in groups:
+            temp_group = get_object_or_404(Group, id=group["id"])
+            new_groups.append(temp_group)
+        org_unit.groups.set(new_groups)
         log_modification(
             original_copy, org_unit, source=ORG_UNIT_API, user=request.user
         )

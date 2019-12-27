@@ -335,3 +335,17 @@ export const locationsLimit = () => (
         type: 'number',
     }
 );
+
+export const group = groupList => (
+    {
+        urlKey: 'group',
+        isMultiSelect: true,
+        isClearable: true,
+        options: groupList.map(a => ({
+            label: a.name,
+            value: a.id,
+        })),
+        label: MESSAGES.group,
+        type: 'select',
+    }
+);

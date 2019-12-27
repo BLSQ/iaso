@@ -236,6 +236,7 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
+            "groups": [group.as_dict() for group in self.groups.all()],
         }
 
     def as_dict_with_parents(self):
@@ -287,7 +288,7 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-            "org_unit_type": self.org_unit_type.name,
+            "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }

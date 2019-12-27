@@ -51,6 +51,14 @@ export const fetchSources = dispatch => getRequest('/api/datasources/')
         throw error;
     });
 
+export const fetchGroups = dispatch => getRequest('/api/groups/')
+    .then(res => res.groups)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchGroupsError')));
+        console.error('Error while fetching group list:', error);
+        throw error;
+    });
+
 export const fetchDevices = dispatch => getRequest('/api/iasodevices')
     .then(devices => devices)
     .catch((error) => {

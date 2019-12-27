@@ -223,7 +223,7 @@ class InputComponent extends Component {
                         size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
-                        value={value}
+                        value={value || ''}
                         type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
                     />

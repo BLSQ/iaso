@@ -5,6 +5,7 @@ import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { IconButton, Tooltip } from '@material-ui/core';
 import Add from '@material-ui/icons/AddCircle';
+import Edit from '@material-ui/icons/Edit';
 
 import PatientInfos from './PatientInfos';
 import EditPatientInfos from './EditPatientInfos';
@@ -15,6 +16,7 @@ import TreatmentComponent from './TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TestModal from './TestModalComponent';
+import CaseModal from './CaseModalComponent';
 
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
@@ -61,6 +63,8 @@ class PatientDetailsWrapper extends React.Component {
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
             showTestModale: false,
             editedTest: null,
+            showCaseModale: false,
+            editedCase: undefined,
         };
     }
 
@@ -173,6 +177,18 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
+    toggleCaseModal(editedCase, scrollToBottom) {
+        if (scrollToBottom) {
+            if (!this.state.editedCase) {
+                scrollTo('bottom-tests');
+            }
+        }
+        this.setState({
+            showCaseModale: !this.state.showCaseModale,
+            editedCase,
+        });
+    }
+
     render() {
         const {
             patient,
@@ -200,6 +216,8 @@ class PatientDetailsWrapper extends React.Component {
             editEnabled,
             showTestModale,
             editedTest,
+            showCaseModale,
+            editedCase,
         } = this.state;
         return (
             <section>
@@ -301,6 +319,13 @@ class PatientDetailsWrapper extends React.Component {
                                                             />
                                                         )
                                                     }
+                                                    <CaseModal
+                                                        params={params}
+                                                        showModale={showCaseModale}
+                                                        toggleModal={scrollToBottom => this.toggleCaseModal(undefined, scrollToBottom)}
+                                                        currentCase={editedCase}
+                                                        patientId={patient.id}
+                                                    />
                                                     <div className="case-id">
                                                         <span>Hat ID</span>
                                                         :
@@ -315,7 +340,10 @@ class PatientDetailsWrapper extends React.Component {
                                                         {c.id}
                                                     </div>
                                                     <div className="widget__content--half perfect-fill">
-                                                        <PatientCasesInfos currentCase={c} />
+                                                        <PatientCasesInfos
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseModal(c)}
+                                                        />
                                                         <PatientCasesLocation currentCase={c} />
                                                     </div>
                                                     <div className="tests-list">
@@ -330,6 +358,19 @@ class PatientDetailsWrapper extends React.Component {
                                             ))
                                         }
                                     </ul>
+
+                                    <div className="align-right margin-top">
+                                        <button
+                                            className="button"
+                                            onClick={() => this.toggleCaseModal(undefined)}
+                                        >
+                                            <i className="fa fa-plus" />
+                                            <FormattedMessage
+                                                id="main.cases.add"
+                                                defaultMessage="Add a Case"
+                                            />
+                                        </button>
+                                    </div>
                                     <span id="bottom-tests" />
                                 </div>
                             </div>

@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
 from copy import copy
+import uuid
 
 from django.core.paginator import Paginator
 
@@ -22,6 +23,7 @@ from hat.users.models import (
     get_user_geo_list,
     is_authorized_user,
     SCREENING_TYPE_CHOICES,
+    Team,
 )
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
@@ -587,12 +589,62 @@ class CasesViewSet(viewsets.ViewSet):
                 case.normalized_village_not_found = True
                 case.normalized_village_id = None
                 case.save()
+            else:
+                case.screening_type = request.data.get("screening_type", None)
+                case.test_pl_result = request.data.get("test_pl_result", None)
+                team = request.data.get("team", None)
+                if team:
+                    normalize_team_item = team.get("normalized_team")
+                    if normalize_team_item:
+                        normalize_team_id = normalize_team_item.get("id")
+                        if normalize_team_id:
+                            new_team = get_object_or_404(Team, id=normalize_team_id)
+                            case.normalized_team = new_team
+
+                case.device_id = request.data.get("device_id", None)
+                case.form_number = request.data.get("form_number", None)
+                case.form_year = request.data.get("form_year", None)
+                case.source = request.data.get("source", None)
+                case.circumstances_da_um = request.data.get("circumstances_da_um", None)
+                case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
+                case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
+                case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
+                case.circumstances_dp_hgr = request.data.get("circumstances_dp_hgr", None)
+                case.save()
 
             log_modification(original_copy, case, source=CASE_API, user=request.user)
 
             return Response(case.as_dict())
         else:
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+
+    def create(self, request):
+        new_case = Case()
+        new_case.screening_type = request.data.get("screening_type", None)
+        new_case.test_pl_result = request.data.get("test_pl_result", None)
+        team = request.data.get("team", None)
+        if team:
+            normalize_team_item = team.get("normalized_team")
+            if normalize_team_item:
+                normalize_team_id = normalize_team_item.get("id")
+                if normalize_team_id:
+                    new_team = get_object_or_404(Team, id=normalize_team_id)
+                    new_case.normalized_team = new_team
+
+        new_case.device_id = request.data.get("device_id", None)
+        new_case.form_number = request.data.get("form_number", None)
+        new_case.form_year = request.data.get("form_year", None)
+        new_case.source = request.data.get("source", None)
+        new_case.circumstances_da_um = request.data.get("circumstances_da_um", None)
+        new_case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
+        new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
+        new_case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
+        new_case.circumstances_dp_hgr = request.data.get("circumstances_dp_hgr", None)
+        new_case.document_id = uuid.uuid4()
+        new_case.save()
+        print('new_case', new_case)
+        return Response(new_case.as_dict())
 
     def delete(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)

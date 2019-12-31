@@ -39,6 +39,9 @@ $input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
 
     textarea {
         min-height: 100px;
+        &.small {
+            min-height: 50px;
+        }
     }
 
     input[type="date"] {

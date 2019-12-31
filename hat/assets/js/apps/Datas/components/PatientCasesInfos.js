@@ -29,6 +29,8 @@ const MESSAGES = {
     },
 };
 
+const placeholder = '--';
+
 const getTeamName = (currentCase) => {
     let teamName = '--';
     if (currentCase.team.normalized_team) {
@@ -42,7 +44,7 @@ const getTeamName = (currentCase) => {
 
 class PatientCasesInfo extends React.Component {
     render() {
-        const { currentCase, similarCase } = this.props;
+        const { currentCase, similarCase,toggleModal } = this.props;
         if (!currentCase) {
             return null;
         }
@@ -73,6 +75,14 @@ class PatientCasesInfo extends React.Component {
                                     )
                                 }
                                 <strong><FormattedMessage id="main.label.informations" defaultMessage="Informations" /></strong>
+                                <span
+                                    tabIndex={0}
+                                    role="button"
+                                    className="edit-button"
+                                    onClick={() => toggleModal()}
+                                >
+                                    <i className="fa fa-edit" />
+                                </span>
                             </th>
                         </tr>
                     </thead>
@@ -87,10 +97,10 @@ class PatientCasesInfo extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.screening_type" defaultMessage="Type de dépistage" />
+                                <FormattedMessage id="main.label.screening_type" defaultMessage="Screening type" />
                             </th>
                             <td>
-                                {!currentCase.screening_type && '--'}
+                                {!currentCase.screening_type && placeholder}
                                 {currentCase.screening_type === 'active'
                                     && <FormattedMessage id="main.label.active" defaultMessage="Active" />
                                 }
@@ -101,7 +111,7 @@ class PatientCasesInfo extends React.Component {
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.stage" defaultMessage="Stade" />
+                                <FormattedMessage id="main.label.stage" defaultMessage="Stage" />
                             </th>
                             <td>
                                 {
@@ -111,7 +121,7 @@ class PatientCasesInfo extends React.Component {
                                     currentCase.test_pl_result === 'stage2' ? '2' : ''
                                 }
                                 {
-                                    !currentCase.test_pl_result ? '--' : ''
+                                    !currentCase.test_pl_result ? placeholder : ''
                                 }
                                 {
                                     currentCase.test_pl_result === 'unknown'
@@ -119,69 +129,49 @@ class PatientCasesInfo extends React.Component {
                                 }
                             </td>
                         </tr>
-                        {currentCase.circumstances_da_um !== undefined
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="UM active screening" />
-                                    </th>
-                                    <td>
-                                        {currentCase.circumstances_da_um}
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {currentCase.circumstances_dp_um !== undefined
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="UM passive screening" />
-                                    </th>
-                                    <td>
-                                        {currentCase.circumstances_dp_um}
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {currentCase.circumstances_dp_cdtc !== undefined
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Passive screening CDTC" />
-                                    </th>
-                                    <td>
-                                        {currentCase.circumstances_dp_cdtc}
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {currentCase.circumstances_dp_cs !== undefined
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="CS passive screening" />
-                                    </th>
-                                    <td>
-                                        {currentCase.circumstances_dp_cs}
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {currentCase.circumstances_dp_hgr !== undefined
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="HGR passive screening" />
-                                    </th>
-                                    <td>
-                                        {currentCase.circumstances_dp_hgr}
-                                    </td>
-                                </tr>
-                            )
-                        }
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.team" defaultMessage="Equipe" />
+                                <FormattedMessage id="patientsCases.circumstances_da_um" defaultMessage="UM active screening" />
+                            </th>
+                            <td>
+                                {currentCase.circumstances_da_um || placeholder}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCases.circumstances_dp_um" defaultMessage="UM passive screening" />
+                            </th>
+                            <td>
+                                {currentCase.circumstances_dp_um || placeholder}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCases.circumstances_dp_cdtc" defaultMessage="Passive screening CDTC" />
+                            </th>
+                            <td>
+                                {currentCase.circumstances_dp_cdtc || placeholder}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCases.circumstances_dp_cs" defaultMessage="CS passive screening" />
+                            </th>
+                            <td>
+                                {currentCase.circumstances_dp_cs || placeholder}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="patientsCases.circumstances_dp_hgr" defaultMessage="HGR passive screening" />
+                            </th>
+                            <td>
+                                {currentCase.circumstances_dp_hgr || placeholder}
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.team" defaultMessage="Team" />
                             </th>
                             <td className={`${similarCase && (teamName !== duplicateTeamName) ? 'error' : ''} ${!currentCase.team.normalized_team ? 'error-text' : ''}`}>
                                 {
@@ -199,7 +189,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="main.label.form_number" defaultMessage="Form number" />
                             </th>
                             <td className={`${similarCase && (similarCase.form_number !== currentCase.form_number) ? 'error' : ''}`}>
-                                {currentCase.form_number ? currentCase.form_number : '--'}
+                                {currentCase.form_number ? currentCase.form_number : placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -207,7 +197,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="main.label.form_year" defaultMessage="Form year" />
                             </th>
                             <td className={`${similarCase && (similarCase.form_year !== currentCase.form_year) ? 'error' : ''}`}>
-                                {currentCase.form_year ? currentCase.form_year : '--'}
+                                {currentCase.form_year ? currentCase.form_year : placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -218,7 +208,7 @@ class PatientCasesInfo extends React.Component {
                                 {currentCase.source && MESSAGES[currentCase.source]
                                     ? formatMessage(MESSAGES[currentCase.source])
                                     : currentCase.source}
-                                {!currentCase.source && '--'}
+                                {!currentCase.source && placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -226,7 +216,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.last_user" defaultMessage="Device's user" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.last_user !== currentCase.device.last_user) ? 'error' : ''}`}>
-                                {currentCase.device && currentCase.device.last_user ? currentCase.device.last_user : '--'}
+                                {currentCase.device && currentCase.device.last_user ? currentCase.device.last_user : placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -234,7 +224,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.last_team" defaultMessage="Device's team" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.last_team !== currentCase.device.last_team) ? 'error' : ''}`}>
-                                {currentCase.device && currentCase.device.last_team ? currentCase.device.last_team : '--'}
+                                {currentCase.device && currentCase.device.last_team ? currentCase.device.last_team : placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -242,7 +232,7 @@ class PatientCasesInfo extends React.Component {
                                 <FormattedMessage id="patientsCases.device.id" defaultMessage="Tablet id" />
                             </th>
                             <td className={`${similarCase && currentCase.device && similarCase.device && (similarCase.device.device_id !== currentCase.device.device_id) ? 'error' : ''}`}>
-                                {currentCase.device && currentCase.device.device_id ? currentCase.device.device_id : '--'}
+                                {currentCase.device && currentCase.device.device_id ? currentCase.device.device_id : placeholder}
                             </td>
                         </tr>
                     </tbody>
@@ -262,6 +252,7 @@ PatientCasesInfo.propTypes = {
     currentCase: PropTypes.object,
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
+    toggleModal: PropTypes.func.isRequired,
 };
 
 const PatientCasesWithIntl = injectIntl(PatientCasesInfo);

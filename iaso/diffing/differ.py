@@ -18,8 +18,8 @@ class Differ:
     def load_pyramid(self, version):
         self.iaso_logger.info("loading pyramid ", version.data_source, version)
         orgunits = (
-            OrgUnit.objects.prefetch_related("group_set")
-            .prefetch_related("group_set__groupset_set")
+            OrgUnit.objects.prefetch_related("groups")
+            .prefetch_related("groups__group_sets")
             .select_related("org_unit_type")
             .select_related("parent")
             .select_related("parent__parent")

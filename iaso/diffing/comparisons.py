@@ -70,8 +70,8 @@ class GroupSetFieldType(FieldType):
         if org_unit is None:
             return None
         groups = []
-        for group in org_unit.group_set.all():
-            for groupset in group.groupset_set.all():
+        for group in org_unit.groups.all():
+            for groupset in group.group_sets.all():
                 if groupset.source_ref == self.groupset_ref:
                     groups.append({"id": group.source_ref, "name": group.name})
 

@@ -81,7 +81,7 @@ class CommandTests(TestCase):
         org_unit_chief.save()
 
         group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
-        org_unit_chief.group_set.add(group)
+        org_unit_chief.groups.add(group)
 
         # add new health center
 

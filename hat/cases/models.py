@@ -616,6 +616,7 @@ class Case(CaseAbstract):
 
         d = {
             "id": self.id,
+            "document_date": self.document_date,
             "location": {
                 "normalized": normalized_as_dict,
                 "ZS": ZS,

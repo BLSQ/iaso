@@ -5,7 +5,6 @@ import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { IconButton, Tooltip } from '@material-ui/core';
 import Add from '@material-ui/icons/AddCircle';
-import Edit from '@material-ui/icons/Edit';
 
 import PatientInfos from './PatientInfos';
 import EditPatientInfos from './EditPatientInfos';
@@ -21,7 +20,7 @@ import CaseModal from './CaseModalComponent';
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
-import { scrollTo, userHasPermission } from '../../../utils';
+import { scrollTo, scrollToTop, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
 import { loadActions } from '../../../redux/load';
@@ -62,7 +61,7 @@ class PatientDetailsWrapper extends React.Component {
             canEditPatientInfos: false,
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
             showTestModale: false,
-            editedTest: null,
+            editedTest: undefined,
             showCaseModale: false,
             editedCase: undefined,
         };
@@ -165,7 +164,7 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
-    toggleTestModal(editedTest, scrollToBottom) {
+    toggleTestModal(editedTest, editedCase, scrollToBottom) {
         if (scrollToBottom) {
             if (!this.state.editedTest) {
                 scrollTo('bottom-tests');
@@ -174,13 +173,14 @@ class PatientDetailsWrapper extends React.Component {
         this.setState({
             showTestModale: !this.state.showTestModale,
             editedTest,
+            editedCase,
         });
     }
 
     toggleCaseModal(editedCase, scrollToBottom) {
         if (scrollToBottom) {
             if (!this.state.editedCase) {
-                scrollTo('bottom-tests');
+                scrollToTop();
             }
         }
         this.setState({
@@ -288,6 +288,31 @@ class PatientDetailsWrapper extends React.Component {
                         <section>
                             <div className="widget__container">
                                 <div className="widget__content">
+                                    {
+                                        showCaseModale
+                                        && (
+                                            <CaseModal
+                                                params={params}
+                                                showModale={showCaseModale}
+                                                toggleModal={scrollToBottom => this.toggleCaseModal(undefined, scrollToBottom)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        showTestModale
+                                        && (
+                                            <TestModal
+                                                params={params}
+                                                showModale={showTestModale}
+                                                toggleModal={scrollToBottom => this.toggleTestModal(undefined, undefined, scrollToBottom)}
+                                                currentCase={editedCase}
+                                                currentTest={editedTest}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
                                     <ul className="cases-list">
                                         {
                                             patient.cases.map(c => (
@@ -301,31 +326,11 @@ class PatientDetailsWrapper extends React.Component {
                                                     >
                                                         <IconButton
                                                             className="add-test-button"
-                                                            onClick={() => this.toggleTestModal()}
+                                                            onClick={() => this.toggleTestModal(undefined, c)}
                                                         >
                                                             <Add color="primary" />
                                                         </IconButton>
                                                     </Tooltip>
-                                                    {
-                                                        showTestModale
-                                                        && (
-                                                            <TestModal
-                                                                params={params}
-                                                                showModale={showTestModale}
-                                                                toggleModal={scrollToBottom => this.toggleTestModal(null, scrollToBottom)}
-                                                                currentCase={c}
-                                                                currentTest={editedTest}
-                                                                patientId={patient.id}
-                                                            />
-                                                        )
-                                                    }
-                                                    <CaseModal
-                                                        params={params}
-                                                        showModale={showCaseModale}
-                                                        toggleModal={scrollToBottom => this.toggleCaseModal(undefined, scrollToBottom)}
-                                                        currentCase={editedCase}
-                                                        patientId={patient.id}
-                                                    />
                                                     <div className="case-id">
                                                         <span>Hat ID</span>
                                                         :
@@ -351,7 +356,7 @@ class PatientDetailsWrapper extends React.Component {
                                                             tests={c.tests}
                                                             testsMapping={testsMapping}
                                                             currentCase={c}
-                                                            toggleModal={test => this.toggleTestModal(test)}
+                                                            toggleModal={test => this.toggleTestModal(test, c)}
                                                         />
                                                     </div>
                                                 </li>

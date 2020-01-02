@@ -17,7 +17,7 @@ from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES, DATE_FORMAT
 from hat.geo.models import Village
-from hat.patient.models import Test
+from hat.patient.models import Test, Patient
 from hat.sync.models import DeviceDB
 from hat.users.models import (
     get_user_geo_list,
@@ -600,7 +600,7 @@ class CasesViewSet(viewsets.ViewSet):
                         if normalize_team_id:
                             new_team = get_object_or_404(Team, id=normalize_team_id)
                             case.normalized_team = new_team
-
+                case.document_date = request.data.get("document_date", None)
                 case.device_id = request.data.get("device_id", None)
                 case.form_number = request.data.get("form_number", None)
                 case.form_year = request.data.get("form_year", None)
@@ -632,6 +632,17 @@ class CasesViewSet(viewsets.ViewSet):
                     new_team = get_object_or_404(Team, id=normalize_team_id)
                     new_case.normalized_team = new_team
 
+        patient_id = request.data.get("patient_id", None)
+        patient = get_object_or_404(Patient, id=patient_id)
+        new_case.document_date = request.data.get("document_date", None)
+        new_case.normalized_patient = patient
+        new_case.name = patient.post_name
+        new_case.lastname = patient.last_name
+        new_case.prename = patient.first_name
+        new_case.age = patient.age
+        new_case.sex = patient.sex
+        new_case.year_of_birth = patient.year_of_birth
+        new_case.mothers_surname = patient.mothers_surname
         new_case.device_id = request.data.get("device_id", None)
         new_case.form_number = request.data.get("form_number", None)
         new_case.form_year = request.data.get("form_year", None)

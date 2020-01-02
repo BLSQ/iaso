@@ -221,6 +221,16 @@ export const scrollTo = (selectorId, headerOffset = 0) => {
     }, 500);
 };
 
+
+export const scrollToTop = () => {
+    setTimeout(() => {
+        window.scrollTo({
+            behavior: 'smooth',
+            top: 0,
+        });
+    }, 500);
+};
+
 export const isCaseLocalised = kase => (
     kase.location.normalized &&
     kase.location.normalized.as !== undefined &&

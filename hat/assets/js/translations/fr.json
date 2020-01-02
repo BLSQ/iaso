@@ -766,6 +766,7 @@
     "patientsCases.device.id": "Tablette id",
     "patientsCases.device.last_team": "Equipe tablette",
     "patientsCases.device.last_user": "Utilisateur tablette",
+    "patientsCasesLocation.villageNotFound": "Localisation non trouvée",
     "patientsCasesTests.cattSessiontype": "Type de session",
     "patientsCasesTests.cattSessiontype.doorToDoor": "Porte à porte",
     "patientsCasesTests.cattSessiontype.onSite": "Sur site",

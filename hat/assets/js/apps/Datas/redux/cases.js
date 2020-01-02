@@ -88,7 +88,10 @@ const createCase = (dispatch, caseItem, patientId, toggleModal) => {
     req
         .post('/api/cases/')
         .set('Content-Type', 'application/json')
-        .send(caseItem)
+        .send({
+            ...caseItem,
+            patient_id: patientId,
+        })
         .then(() => {
             dispatch(enqueueSnackbar(succesfullSnackBar()));
             dispatch(patientsActions.fetchDetails(dispatch, patientId, false, toggleModal));

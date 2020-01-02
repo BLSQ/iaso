@@ -171,6 +171,7 @@ CaseModalComponent.defaultProps = {
         team: {
             normalized_team: {},
         },
+        document_date: new Date(),
     },
 };
 

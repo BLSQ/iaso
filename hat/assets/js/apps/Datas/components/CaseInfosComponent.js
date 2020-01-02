@@ -4,6 +4,8 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import Select from 'react-select';
+import DatePicker from 'react-datepicker';
+import moment from 'moment';
 import {
     Grid,
 } from '@material-ui/core';
@@ -16,12 +18,15 @@ import {
 import ModalItem from './ModalItemComponent';
 import { getYears } from '../../../utils/index';
 
+import TimeSelect from '../../../components/TimeSelectComponent';
+
 const selectPlaceholder = {
     id: 'main.label.selectOption',
     defaultMessage: 'Select an option',
 };
 
 const inputPlaceHolder = '--';
+const dateFormat = 'DD-MM-YYYY';
 
 const CaseInfosComponent = ({
     intl: {
@@ -45,6 +50,38 @@ const CaseInfosComponent = ({
                         justify="flex-end"
                         alignContent="flex-start"
                     >
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.date"
+                                    defaultMessage="Date"
+                                />
+                            )}
+                            fieldComponent={(
+                                <div className="filter__container__select date-select">
+                                    <DatePicker
+                                        dateFormat={dateFormat}
+                                        dateFormatCalendar="YYYY-MM-DD"
+                                        selected={currentCase.document_date && moment(currentCase.document_date)}
+                                        onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                    />
+                                </div>
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.label.time"
+                                    defaultMessage="Time"
+                                />
+                            )}
+                            fieldComponent={(
+                                <TimeSelect
+                                    dateTime={moment(currentCase.document_date)}
+                                    onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                />
+                            )}
+                        />
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage
@@ -285,18 +322,10 @@ const CaseInfosComponent = ({
     );
 };
 
-CaseInfosComponent.defaultProps = {
-    currentCase: {
-        id: 0,
-        team: {
-            normalized_team: {},
-        },
-    },
-};
 
 CaseInfosComponent.propTypes = {
     intl: PropTypes.object.isRequired,
-    currentCase: PropTypes.object,
+    currentCase: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     teams: PropTypes.array.isRequired,
     devices: PropTypes.array.isRequired,

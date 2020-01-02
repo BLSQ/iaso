@@ -85,7 +85,7 @@ class Command(BaseCommand):
                 code_depart = row[8]
                 department = row[5]
                 code_com = row[6]
-                commune = row[9]
+                commune = row[3]
                 shape = row[14]
 
                 print("code_region", code_region)

@@ -95,6 +95,7 @@ const styles = theme => ({
         },
         '& .Select--multi .Select-value': {
             height: theme.spacing(4),
+            display: 'inline-block !important',
             padding: '0 !important',
             color: theme.palette.secondary.main,
             borderColor: theme.palette.secondary.main,
@@ -102,6 +103,9 @@ const styles = theme => ({
         },
         '& .Select--multi .Select-value .Select-value-icon': {
             borderColor: fade(theme.palette.secondary.main, 0.24),
+            width: '21px',
+            height: '100%',
+            paddingTop: '3px',
         },
         '& .Select--multi .Select-value .select-color': {
             display: 'inline-block',
@@ -113,9 +117,7 @@ const styles = theme => ({
             top: 3,
         },
         '& .Select--multi .Select-multi-value-wrapper': {
-            width: '100%',
-            display: 'flex',
-            flexWrap: 'wrap',
+            width: '97%',
             position: 'relative',
             top: 5,
         },
@@ -123,6 +125,14 @@ const styles = theme => ({
             position: 'relative',
             top: -5,
             paddingLeft: `${theme.spacing(1)}px !important`,
+        },
+        '& .Select--multi .Select-value-label': {
+            height: '27px',
+            width: 'auto',
+            overflow: 'hidden',
+            whiteSpace: 'nowrap',
+            textOverflow: 'ellipsis',
+            maxWidth: '20vw',
         },
     },
     icon: {

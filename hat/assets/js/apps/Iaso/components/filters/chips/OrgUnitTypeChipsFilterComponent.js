@@ -76,7 +76,6 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         const {
             orgUnitTypes,
         } = this.state;
-
         const orgUnitTypesSelected = [];
         let orgUnitTypesList = [];
         orgUnitTypes.forEach((ot) => {
@@ -90,7 +89,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
         this.setState({
             orgUnitTypesList,
-            isEmpty: orgUnitTypesList.length === 0,
+            isEmpty: orgUnitTypes.length === 0,
         });
     }
 
@@ -182,7 +181,8 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             orgUnitTypesList,
             isEmpty,
         } = this.state;
-        if (!orgUnitTypes || (orgUnitTypes && orgUnitTypes.length === 0) || isEmpty) return null;
+        if (!orgUnitTypes || (orgUnitTypes && orgUnitTypes.length === 0)) return null;
+
         return (
             <Fragment>
                 <Box

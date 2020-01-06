@@ -136,7 +136,6 @@ class TestModalComponent extends Component {
         const isNewTest = currentTest.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase)
         && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase, this.props.currentUser));
-        console.log(currentTest.tester);
         const isValid = (
             Boolean(currentTest.type)
             && Boolean(currentTest.type !== 'CATT' || (currentTest.type === 'CATT' && currentTest.index))

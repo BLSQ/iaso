@@ -44,7 +44,7 @@ const getTeamName = (currentCase) => {
 
 class PatientCasesInfo extends React.Component {
     render() {
-        const { currentCase, similarCase,toggleModal } = this.props;
+        const { currentCase, similarCase, toggleModal } = this.props;
         if (!currentCase) {
             return null;
         }

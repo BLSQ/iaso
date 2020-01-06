@@ -57,7 +57,6 @@ class TestsViewSet(viewsets.ViewSet):
         if village_id:
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
-            print (village.longitude)
             new_test.location = Point(
                 x=float(village.longitude),
                 y=float(village.latitude),

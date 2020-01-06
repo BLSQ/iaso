@@ -1,5 +1,5 @@
 
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
@@ -11,12 +11,11 @@ import {
 } from '@material-ui/core';
 
 import { casesActions } from '../redux/cases';
-import { filterActions } from '../../../redux/filtersRedux';
 
-import CaseInfosComponent from './CaseInfosComponent';
+import CaseLocationComponent from './CaseLocationComponent';
 
 
-class CaseModalComponent extends Component {
+class CaseLocationModalComponent extends Component {
     constructor(props) {
         super(props);
         moment.locale('fr');
@@ -27,12 +26,6 @@ class CaseModalComponent extends Component {
 
     componentWillMount() {
         ReactModal.setAppElement('.container--main');
-        if (this.props.teams.length === 0) {
-            this.props.fetchTeams();
-        }
-        if (this.props.devices.length === 0) {
-            this.props.fetchDevices();
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,19 +36,12 @@ class CaseModalComponent extends Component {
         }
     }
 
-    onChange(key, value, subKey, subSubKey) {
-        // change currrent case, subkeys are sub objects keys of case (case.team.nomralized_team.id)
+    onChange(key, value) {
         this.setState({
             ...this.state,
             currentCase: {
                 ...this.state.currentCase,
-                [key]: !subKey ? value : {
-                    ...this.state.currentCase[key],
-                    [subKey]: !subSubKey ? value : {
-                        ...this.state.currentCase[key][[subKey]],
-                        [subSubKey]: value,
-                    },
-                },
+                [key]: value,
             },
         });
     }
@@ -84,7 +70,7 @@ class CaseModalComponent extends Component {
         const isNewCase = currentCase.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase);
         const isValid = (
-            Boolean(currentCase.screening_type)
+            Boolean(currentCase.villageId)
         );
         return ((!isNewCase && isUnTouched) || !isValid);
     }
@@ -97,7 +83,6 @@ class CaseModalComponent extends Component {
         const {
             currentCase,
         } = this.state;
-        const isNewCase = currentCase.id === 0;
         return (
             <ReactModal
                 isOpen={showModale}
@@ -107,34 +92,32 @@ class CaseModalComponent extends Component {
 
                 <section className="large-modal-content">
                     <div className="widget__header">
-                        {
-                            !isNewCase
-                            && (
-                                <Fragment>
-                                    <FormattedMessage
-                                        id="main.cases.edit.title"
-                                        defaultMessage="Case"
-                                    />
-                                    <span>{' '}</span>
-                                    {` ID: ${currentCase.id}`}
-                                </Fragment>
-                            )
-                        }
-                        {
-                            isNewCase
-                            && (
-                                <FormattedMessage
-                                    id="main.cases.add"
-                                    defaultMessage="Add a case"
-                                />
-                            )
-                        }
+                        <FormattedMessage
+                            id="main.cases.edit.title"
+                            defaultMessage="Case"
+                        />
+                        <span>{' '}</span>
+                        {` ID: ${currentCase.id}`}
                     </div>
                     <section className="margin-bottom">
-                        <CaseInfosComponent
-                            currentCase={currentCase}
-                            onChange={(key, value, subKey, subSubKey) => this.onChange(key, value, subKey, subSubKey)}
-                        />
+
+                        <section className="large-modal-content">
+                            <Grid container spacing={1} className="margin-bottom">
+                                <Grid
+                                    xs={6}
+                                    item
+                                    container
+                                    justify="flex-end"
+                                    alignContent="flex-start"
+                                >
+
+                                    <CaseLocationComponent
+                                        onChange={value => this.onChange('villageId', value)}
+                                        currentCase={currentCase}
+                                    />
+                                </Grid>
+                            </Grid>
+                        </section>
                     </section>
                     <Grid container spacing={2}>
                         <Grid
@@ -165,7 +148,7 @@ class CaseModalComponent extends Component {
     }
 }
 
-CaseModalComponent.defaultProps = {
+CaseLocationModalComponent.defaultProps = {
     currentCase: {
         id: 0,
         team: {
@@ -175,32 +158,24 @@ CaseModalComponent.defaultProps = {
     },
 };
 
-CaseModalComponent.propTypes = {
+CaseLocationModalComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     currentCase: PropTypes.object,
     updateCase: PropTypes.func.isRequired,
     createCase: PropTypes.func.isRequired,
     patientId: PropTypes.number.isRequired,
-    fetchTeams: PropTypes.func.isRequired,
-    teams: PropTypes.array.isRequired,
-    fetchDevices: PropTypes.func.isRequired,
-    devices: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
-    teams: state.patientsFilters.teams,
-    devices: state.patientsFilters.devices,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
-    fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     updateCase: (caseItem, patientId, toggleModal) => dispatch(casesActions.updateCase(dispatch, caseItem, patientId, toggleModal)),
     createCase: (caseItem, patientId, toggleModal) => dispatch(casesActions.createCase(dispatch, caseItem, patientId, toggleModal)),
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(CaseModalComponent);
+export default connect(MapStateToProps, MapDispatchToProps)(CaseLocationModalComponent);

@@ -16,6 +16,7 @@ import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TestModal from './TestModalComponent';
 import CaseModal from './CaseModalComponent';
+import CaseLocationModal from './CaseLocationModalComponent';
 
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
@@ -63,6 +64,7 @@ class PatientDetailsWrapper extends React.Component {
             showTestModale: false,
             editedTest: undefined,
             showCaseModale: false,
+            showCaseLocationModale: false,
             editedCase: undefined,
         };
     }
@@ -177,14 +179,21 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
-    toggleCaseModal(editedCase, scrollToBottom) {
-        if (scrollToBottom) {
+    toggleCaseModal(editedCase, needScrollToTop) {
+        if (needScrollToTop) {
             if (!this.state.editedCase) {
                 scrollToTop();
             }
         }
         this.setState({
             showCaseModale: !this.state.showCaseModale,
+            editedCase,
+        });
+    }
+
+    toggleCaseLocationModal(editedCase) {
+        this.setState({
+            showCaseLocationModale: !this.state.showCaseLocationModale,
             editedCase,
         });
     }
@@ -217,6 +226,7 @@ class PatientDetailsWrapper extends React.Component {
             showTestModale,
             editedTest,
             showCaseModale,
+            showCaseLocationModale,
             editedCase,
         } = this.state;
         return (
@@ -301,6 +311,18 @@ class PatientDetailsWrapper extends React.Component {
                                         )
                                     }
                                     {
+                                        showCaseLocationModale
+                                        && (
+                                            <CaseLocationModal
+                                                params={params}
+                                                showModale={showCaseLocationModale}
+                                                toggleModal={() => this.toggleCaseLocationModal(undefined)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
                                         showTestModale
                                         && (
                                             <TestModal
@@ -349,7 +371,10 @@ class PatientDetailsWrapper extends React.Component {
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseModal(c)}
                                                         />
-                                                        <PatientCasesLocation currentCase={c} />
+                                                        <PatientCasesLocation
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                        />
                                                     </div>
                                                     <div className="tests-list">
                                                         <PatientCasesTests

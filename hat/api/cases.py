@@ -608,6 +608,12 @@ class CasesViewSet(viewsets.ViewSet):
                 case.form_number = request.data.get("form_number", None)
                 case.form_year = request.data.get("form_year", None)
                 case.source = request.data.get("source", None)
+
+                village_id = request.data.get("villageId", None)
+                if village_id:
+                    village = get_object_or_404(Village, id=village_id)
+                    case.normalized_village = village
+                    case.normalized_AS = village.AS
                 case.circumstances_da_um = request.data.get("circumstances_da_um", None)
                 case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
                 case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
@@ -652,6 +658,11 @@ class CasesViewSet(viewsets.ViewSet):
         new_case.form_number = request.data.get("form_number", None)
         new_case.form_year = request.data.get("form_year", None)
         new_case.source = request.data.get("source", None)
+        village_id = request.data.get("villageId", None)
+        if village_id:
+            village = get_object_or_404(Village, id=village_id)
+            new_case.normalized_village = village
+            new_case.normalized_AS = village.AS
         new_case.circumstances_da_um = request.data.get("circumstances_da_um", None)
         new_case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
         new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)

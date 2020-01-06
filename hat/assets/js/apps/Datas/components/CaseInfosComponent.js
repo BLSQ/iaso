@@ -37,8 +37,7 @@ const CaseInfosComponent = ({
     onChange,
     currentCase,
 }) => {
-    console.log(currentCase);
-    const years = getYears(50);
+    const years = getYears(30);
     return (
         <Fragment>
             <section className="large-modal-content">

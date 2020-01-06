@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from django.utils import dateparse
 from copy import copy
 import uuid
 
@@ -600,7 +601,9 @@ class CasesViewSet(viewsets.ViewSet):
                         if normalize_team_id:
                             new_team = get_object_or_404(Team, id=normalize_team_id)
                             case.normalized_team = new_team
-                case.document_date = request.data.get("document_date", None)
+                document_date = request.data.get("document_date", None)
+                if document_date:
+                    case.document_date = dateparse.parse_datetime(document_date)
                 case.device_id = request.data.get("device_id", None)
                 case.form_number = request.data.get("form_number", None)
                 case.form_year = request.data.get("form_year", None)
@@ -634,7 +637,9 @@ class CasesViewSet(viewsets.ViewSet):
 
         patient_id = request.data.get("patient_id", None)
         patient = get_object_or_404(Patient, id=patient_id)
-        new_case.document_date = request.data.get("document_date", None)
+        document_date = request.data.get("document_date", None)
+        if document_date:
+            new_case.document_date = dateparse.parse_datetime(document_date)
         new_case.normalized_patient = patient
         new_case.name = patient.post_name
         new_case.lastname = patient.last_name

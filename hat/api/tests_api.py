@@ -8,6 +8,7 @@ from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 from hat.api.export_utils import timestamp_to_utc_datetime
+from django.utils import dateparse
 
 from hat.patient.models import Test
 from hat.cases.models import Case
@@ -42,6 +43,9 @@ class TestsViewSet(viewsets.ViewSet):
         new_test.hidden = request.data.get("hidden", False)
         new_test.date = request.data.get("date", None)
         profile_id = request.data.get("tester", None)
+        date = request.data.get("date", None)
+        if date:
+            new_test.date = dateparse.parse_datetime(date)
 
         tester = None
         if profile_id:
@@ -86,8 +90,10 @@ class TestsViewSet(viewsets.ViewSet):
         new_test.result = request.data.get("result", None)
         new_test.comment = request.data.get("comment", None)
         new_test.hidden = request.data.get("hidden", False)
-        new_test.date = request.data.get("date", None)
         profile_id = request.data.get("tester", None)
+        date = request.data.get("date", None)
+        if date:
+            new_test.date = dateparse.parse_datetime(date)
 
         tester = None
         if profile_id:

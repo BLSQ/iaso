@@ -17,21 +17,27 @@ import { filterActions } from '../../../redux/filtersRedux';
 
 import TestInfosComponent from './TestInfosComponent';
 
-const getStateTest = (currentTest, currentCase) => (
-    {
-        ...currentTest,
-        tester: currentTest.tester ? currentTest.tester.id : null,
-        form: currentCase.id,
-        villageId: currentTest.village && currentTest.village.id,
+const getStateTest = (currentTest, currentCase, currentUser) => {
+    let tester = currentTest.tester ? currentTest.tester.id : null;
+    if (!tester) {
+        tester = currentUser && Boolean(currentUser.tester_type) ? currentUser.id : null;
     }
-);
+    return (
+        {
+            ...currentTest,
+            tester,
+            form: currentCase.id,
+            villageId: currentTest.village && currentTest.village.id,
+        }
+    );
+};
 
 class TestModalComponent extends Component {
     constructor(props) {
         super(props);
         moment.locale('fr');
         this.state = {
-            currentTest: getStateTest(props.currentTest, props.currentCase),
+            currentTest: getStateTest(props.currentTest, props.currentCase, props.currentUser),
             currentCase: props.currentCase,
         };
     }
@@ -61,7 +67,7 @@ class TestModalComponent extends Component {
     componentWillReceiveProps(nextProps) {
         if (!isEqual(this.props.currentTest, nextProps.currentTest)) {
             this.setState({
-                currentTest: getStateTest(nextProps.currentTest, nextProps.currentCase),
+                currentTest: getStateTest(nextProps.currentTest, nextProps.currentCase, nextProps.currentUser),
             });
         }
         if (!isEqual(this.props.currentCase, nextProps.currentCase)) {
@@ -129,7 +135,8 @@ class TestModalComponent extends Component {
         } = this.state;
         const isNewTest = currentTest.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase)
-        && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase));
+        && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase, this.props.currentUser));
+        console.log(currentTest.tester);
         const isValid = (
             Boolean(currentTest.type)
             && Boolean(currentTest.type !== 'CATT' || (currentTest.type === 'CATT' && currentTest.index))
@@ -224,7 +231,7 @@ class TestModalComponent extends Component {
 TestModalComponent.defaultProps = {
     currentTest: {
         id: 0,
-        date: new Date(),
+        date: moment().format('YYYY-MM-DDTHH:mmZ'),
         village: null,
     },
 };

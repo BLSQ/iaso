@@ -63,7 +63,7 @@ const CaseInfosComponent = ({
                                         dateFormat={dateFormat}
                                         dateFormatCalendar="YYYY-MM-DD"
                                         selected={currentCase.document_date && moment(currentCase.document_date)}
-                                        onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                        onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DD HH:mmZ'))}
                                     />
                                 </div>
                             )}
@@ -78,7 +78,7 @@ const CaseInfosComponent = ({
                             fieldComponent={(
                                 <TimeSelect
                                     dateTime={moment(currentCase.document_date)}
-                                    onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'))}
+                                    onChange={date => onChange('document_date', moment(date).format('YYYY-MM-DD HH:mmZ'))}
                                 />
                             )}
                         />

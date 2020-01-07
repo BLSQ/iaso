@@ -2,6 +2,7 @@ import logging
 
 from django.contrib.auth.models import User
 from django.contrib.postgres.fields import JSONField
+from django.core.serializers.json import DjangoJSONEncoder
 from django.db import models
 from django.db.models.signals import post_save, post_delete
 from django.dispatch import receiver
@@ -266,19 +267,23 @@ class VideoUploadForm(ModelForm):
 
 
 JSONDOCUMENT_TYPE_CHOICES = (
-    ('participant', 'participant information, including tests'),
+    ('participant', 'Participant information, including tests'),
     ('ptr', 'Population data provided by tablets'),
+    ('historic', 'Historic'),
+    ('pv', 'Pharmacovigilance'),
+    ('backup', 'Backup'),
 )
 
 
 class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
-    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
+    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE, null=True, blank=True)  # null for historic data
     case = models.ForeignKey(to="cases.Case", on_delete=models.SET_NULL, null=True, blank=True)
     population = models.ForeignKey(to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True)
     type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default='participant')
-    doc = JSONField()
+
+    doc = JSONField(encoder=DjangoJSONEncoder)
     deleted = models.BooleanField("The result of the document has been deleted, don't reimport", default=False)
 
     created_at = models.DateTimeField(auto_now_add=True)

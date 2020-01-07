@@ -756,6 +756,12 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
+            "pv": {
+                "field": ("tblFishedeDeclaration", "json_document_id")
+            },
+            "historic": {
+                "field": ("T_CARDS", "json_document_id")
+            },
             "mobile": {
                 "field": ("main", "json_document_id")
             }

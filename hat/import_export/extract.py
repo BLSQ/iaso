@@ -66,7 +66,7 @@ def extract_file_data(filename: str) -> Tuple[str, Union[Dict[str, str], JsonTyp
         elif IMPORT_CONFIG['pv']['main_table'] in tables:
             return ('pv', tables)
         else:
-            err_msg = _('Cannot import unkown mdb schema')
+            err_msg = _('Cannot import unknown mdb schema')
             raise ImportStageException(err_msg, ImportStage.filetype)
 
     elif suffix == '.enc':

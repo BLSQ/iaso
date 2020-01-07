@@ -613,7 +613,15 @@ class CasesViewSet(viewsets.ViewSet):
                 if village_id:
                     village = get_object_or_404(Village, id=village_id)
                     case.normalized_village = village
+                    case.latitude = village.latitude
+                    case.longitude = village.longitude
                     case.normalized_AS = village.AS
+                infection_location = request.data.get("infectionLocationVillageId", None)
+                if infection_location:
+                    infection_village = get_object_or_404(Village, id=infection_location)
+                    case.infection_location = infection_village
+                case.infection_location_type = request.data.get("infection_location_type", None)
+
                 case.circumstances_da_um = request.data.get("circumstances_da_um", None)
                 case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
                 case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
@@ -662,7 +670,14 @@ class CasesViewSet(viewsets.ViewSet):
         if village_id:
             village = get_object_or_404(Village, id=village_id)
             new_case.normalized_village = village
+            new_case.latitude = village.latitude
+            new_case.longitude = village.longitude
             new_case.normalized_AS = village.AS
+        infection_location = request.data.get("infectionLocationVillageId", None)
+        if infection_location:
+            infection_village = get_object_or_404(Village, id=infection_location)
+            new_case.infection_location = infection_village
+        new_case.infection_location_type = request.data.get("infection_location_type", None)
         new_case.circumstances_da_um = request.data.get("circumstances_da_um", None)
         new_case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
         new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)

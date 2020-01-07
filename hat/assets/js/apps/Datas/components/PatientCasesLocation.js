@@ -102,7 +102,6 @@ class PatientCasesLocation extends React.Component {
             intl: {
                 formatMessage,
             },
-            toggleModal,
         } = this.props;
         if (!currentCase) {
             return null;
@@ -144,14 +143,6 @@ class PatientCasesLocation extends React.Component {
                                     isLocalised
                                     && <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
                                 }
-                                <span
-                                    tabIndex={0}
-                                    role="button"
-                                    className={`edit-button ${!isLocalised ? 'not-localised' : ''}`}
-                                    onClick={() => toggleModal()}
-                                >
-                                    <i className="fa fa-edit" />
-                                </span>
                             </th>
                         </tr>
                     </thead>
@@ -260,7 +251,6 @@ PatientCasesLocation.propTypes = {
     currentCase: PropTypes.object,
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    toggleModal: PropTypes.func.isRequired,
 };
 
 const PatientCasesInfoWithIntl = injectIntl(PatientCasesLocation);

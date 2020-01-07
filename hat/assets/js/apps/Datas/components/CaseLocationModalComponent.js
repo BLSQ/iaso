@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
 import isEqual from 'lodash/isEqual';
-import moment from 'moment';
 import {
     Grid,
 } from '@material-ui/core';
@@ -18,7 +17,6 @@ import CaseLocationComponent from './CaseLocationComponent';
 class CaseLocationModalComponent extends Component {
     constructor(props) {
         super(props);
-        moment.locale('fr');
         this.state = {
             currentCase: props.currentCase,
         };
@@ -52,27 +50,22 @@ class CaseLocationModalComponent extends Component {
         } = this.state;
         const {
             updateCase,
-            createCase,
             patientId,
             toggleModal,
         } = this.props;
-        if (currentCase.id !== 0) {
-            updateCase(currentCase, patientId, toggleModal);
-        } else {
-            createCase(currentCase, patientId, toggleModal);
-        }
+
+        updateCase(currentCase, patientId, toggleModal);
     }
 
     isSaveDisabled() {
         const {
             currentCase,
         } = this.state;
-        const isNewCase = currentCase.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase);
         const isValid = (
             Boolean(currentCase.villageId)
         );
-        return ((!isNewCase && isUnTouched) || !isValid);
+        return (isUnTouched || !isValid);
     }
 
     render() {
@@ -90,34 +83,22 @@ class CaseLocationModalComponent extends Component {
                 onRequestClose={() => toggleModal()}
             >
 
-                <section className="large-modal-content">
+                <section className="medium-modal-content">
                     <div className="widget__header">
+                        <FormattedMessage id="main.label.location" defaultMessage="Localisation" />
+                        <span>&nbsp;</span>
                         <FormattedMessage
                             id="main.cases.edit.title"
                             defaultMessage="Case"
                         />
-                        <span>{' '}</span>
+                        <span>&nbsp;</span>
                         {` ID: ${currentCase.id}`}
                     </div>
                     <section className="margin-bottom">
-
-                        <section className="large-modal-content">
-                            <Grid container spacing={1} className="margin-bottom">
-                                <Grid
-                                    xs={6}
-                                    item
-                                    container
-                                    justify="flex-end"
-                                    alignContent="flex-start"
-                                >
-
-                                    <CaseLocationComponent
-                                        onChange={value => this.onChange('villageId', value)}
-                                        currentCase={currentCase}
-                                    />
-                                </Grid>
-                            </Grid>
-                        </section>
+                        <CaseLocationComponent
+                            onChange={value => this.onChange('villageId', value)}
+                            currentCase={currentCase}
+                        />
                     </section>
                     <Grid container spacing={2}>
                         <Grid
@@ -148,33 +129,19 @@ class CaseLocationModalComponent extends Component {
     }
 }
 
-CaseLocationModalComponent.defaultProps = {
-    currentCase: {
-        id: 0,
-        team: {
-            normalized_team: {},
-        },
-        document_date: moment().format('YYYY-MM-DDTHH:mmZ'),
-    },
-};
-
 CaseLocationModalComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
-    currentCase: PropTypes.object,
+    currentCase: PropTypes.object.isRequired,
     updateCase: PropTypes.func.isRequired,
-    createCase: PropTypes.func.isRequired,
     patientId: PropTypes.number.isRequired,
 };
 
-const MapStateToProps = state => ({
-    load: state.load,
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     updateCase: (caseItem, patientId, toggleModal) => dispatch(casesActions.updateCase(dispatch, caseItem, patientId, toggleModal)),
-    createCase: (caseItem, patientId, toggleModal) => dispatch(casesActions.createCase(dispatch, caseItem, patientId, toggleModal)),
 });
 
 

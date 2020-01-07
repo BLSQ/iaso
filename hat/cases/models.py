@@ -661,7 +661,8 @@ class Case(CaseAbstract):
             "infection_location": self.infection_location.as_short_dict()
             if self.infection_location
             else None,
-            "infection_location_type": self.get_infection_location_type_display(),
+            "infection_location_type_display": self.get_infection_location_type_display(),
+            "infection_location_type": self.infection_location_type,
         }
 
         if self.mark_for_deletion:

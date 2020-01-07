@@ -9,7 +9,8 @@ import Add from '@material-ui/icons/AddCircle';
 import PatientInfos from './PatientInfos';
 import EditPatientInfos from './EditPatientInfos';
 import PatientCasesInfos from './PatientCasesInfos';
-import PatientCasesLocation from './PatientCasesLocation';
+import CaseInfoLocation from './CaseInfoLocation';
+import CaseInfectionLocation from './CaseInfectionLocation';
 import PatientCasesTests from './PatientCasesTests';
 import TreatmentComponent from './TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
@@ -17,6 +18,7 @@ import LayersComponent from '../../../components/LayersComponent';
 import TestModal from './TestModalComponent';
 import CaseModal from './CaseModalComponent';
 import CaseLocationModal from './CaseLocationModalComponent';
+import CaseInfectionLocationModalComponent from './CaseInfectionLocationModalComponent';
 
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
@@ -65,6 +67,7 @@ class PatientDetailsWrapper extends React.Component {
             editedTest: undefined,
             showCaseModale: false,
             showCaseLocationModale: false,
+            showCaseInfectionLocationModale: false,
             editedCase: undefined,
         };
     }
@@ -198,6 +201,13 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
+    toggleCaseInfectionLocationModal(editedCase) {
+        this.setState({
+            showCaseInfectionLocationModale: !this.state.showCaseInfectionLocationModale,
+            editedCase,
+        });
+    }
+
     render() {
         const {
             patient,
@@ -227,6 +237,7 @@ class PatientDetailsWrapper extends React.Component {
             editedTest,
             showCaseModale,
             showCaseLocationModale,
+            showCaseInfectionLocationModale,
             editedCase,
         } = this.state;
         return (
@@ -323,6 +334,18 @@ class PatientDetailsWrapper extends React.Component {
                                         )
                                     }
                                     {
+                                        showCaseInfectionLocationModale
+                                        && (
+                                            <CaseInfectionLocationModalComponent
+                                                params={params}
+                                                showModale={showCaseInfectionLocationModale}
+                                                toggleModal={() => this.toggleCaseInfectionLocationModal(undefined)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
                                         showTestModale
                                         && (
                                             <TestModal
@@ -371,9 +394,13 @@ class PatientDetailsWrapper extends React.Component {
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseModal(c)}
                                                         />
-                                                        <PatientCasesLocation
+                                                        <CaseInfoLocation
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                        />
+                                                        <CaseInfectionLocation
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseInfectionLocationModal(c)}
                                                         />
                                                     </div>
                                                     <div className="tests-list">

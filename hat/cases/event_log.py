@@ -60,7 +60,7 @@ def get_event_of_type(table_type: EventTable, id: int) -> JsonType:
             SELECT *
             FROM hat_event a, {} b
             WHERE a.id = %s AND b.id = %s
-        '''.format(table_type.value)
+        '''.format(table_type.value if isinstance(table_type, EventTable) else table_type)
         cursor.execute(sql, [id, id])
         columns = [col[0] for col in cursor.description]
         return dict(zip(columns, cursor.fetchone()))

@@ -520,7 +520,7 @@ class Group(models.Model):
     def as_dict(self):
         return {
             "id": self.id,
-            "name": "%s (%s)" % (self.name, self.source_version),
+            "name": self.name,
             "source_ref": self.source_ref,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

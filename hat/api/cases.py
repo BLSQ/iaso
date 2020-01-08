@@ -591,6 +591,9 @@ class CasesViewSet(viewsets.ViewSet):
                 case.normalized_village_id = None
                 case.save()
             else:
+                if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+                    return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
                 case.screening_type = request.data.get("screening_type", None)
                 case.test_pl_result = request.data.get("test_pl_result", None)
                 team = request.data.get("team", None)
@@ -641,13 +644,9 @@ class CasesViewSet(viewsets.ViewSet):
         new_case.screening_type = request.data.get("screening_type", None)
         new_case.test_pl_result = request.data.get("test_pl_result", None)
         team = request.data.get("team", None)
-        if team:
-            normalize_team_item = team.get("normalized_team")
-            if normalize_team_item:
-                normalize_team_id = normalize_team_item.get("id")
-                if normalize_team_id:
-                    new_team = get_object_or_404(Team, id=normalize_team_id)
-                    new_case.normalized_team = new_team
+
+        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
         patient_id = request.data.get("patient_id", None)
         patient = get_object_or_404(Patient, id=patient_id)

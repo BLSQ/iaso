@@ -8,6 +8,7 @@ class CaseInfectionLocation extends React.Component {
         const {
             currentCase,
             toggleModal,
+            canEditPatientInfos,
         } = this.props;
         if (!currentCase) {
             return null;
@@ -22,14 +23,19 @@ class CaseInfectionLocation extends React.Component {
                         <tr>
                             <th colSpan="2">
                                 <strong><FormattedMessage id="main.label.infectionLocationTitle" defaultMessage="Infection location" /></strong>
-                                <span
-                                    tabIndex={0}
-                                    role="button"
-                                    className="edit-button"
-                                    onClick={() => toggleModal()}
-                                >
-                                    <i className="fa fa-edit" />
-                                </span>
+                                {
+                                    canEditPatientInfos
+                                    && (
+                                        <span
+                                            tabIndex={0}
+                                            role="button"
+                                            className="edit-button"
+                                            onClick={() => toggleModal()}
+                                        >
+                                            <i className="fa fa-edit" />
+                                        </span>
+                                    )
+                                }
                             </th>
                         </tr>
                     </thead>
@@ -103,6 +109,7 @@ CaseInfectionLocation.defaultProps = {
 CaseInfectionLocation.propTypes = {
     currentCase: PropTypes.object,
     toggleModal: PropTypes.func.isRequired,
+    canEditPatientInfos: PropTypes.bool.isRequired,
 };
 
 

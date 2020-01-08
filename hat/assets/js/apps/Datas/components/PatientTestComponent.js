@@ -27,7 +27,7 @@ class PatientTestComponent extends React.Component {
             intl: {
                 formatMessage,
             },
-            displayEdit,
+            canEditPatientInfos,
             toggleModal,
         } = this.props;
         if (!test) {
@@ -75,7 +75,7 @@ class PatientTestComponent extends React.Component {
                                 }
 
                                 {
-                                    displayEdit
+                                    canEditPatientInfos
                                     && (
                                         <span
                                             tabIndex={0}
@@ -369,7 +369,7 @@ PatientTestComponent.defaultProps = {
     similarTest: undefined,
     test: undefined,
     currentCase: undefined,
-    displayEdit: false,
+    canEditPatientInfos: false,
     toggleModal: () => null,
 };
 
@@ -380,7 +380,7 @@ PatientTestComponent.propTypes = {
     similarTest: PropTypes.object,
     currentCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    displayEdit: PropTypes.bool,
+    canEditPatientInfos: PropTypes.bool,
     toggleModal: PropTypes.func,
 };
 

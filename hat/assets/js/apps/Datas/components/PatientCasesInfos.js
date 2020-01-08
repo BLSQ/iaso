@@ -44,7 +44,12 @@ const getTeamName = (currentCase) => {
 
 class PatientCasesInfo extends React.Component {
     render() {
-        const { currentCase, similarCase, toggleModal } = this.props;
+        const {
+            currentCase,
+            similarCase,
+            toggleModal,
+            canEditPatientInfos,
+        } = this.props;
         if (!currentCase) {
             return null;
         }
@@ -75,14 +80,19 @@ class PatientCasesInfo extends React.Component {
                                     )
                                 }
                                 <strong><FormattedMessage id="main.label.informations" defaultMessage="Informations" /></strong>
-                                <span
-                                    tabIndex={0}
-                                    role="button"
-                                    className="edit-button"
-                                    onClick={() => toggleModal()}
-                                >
-                                    <i className="fa fa-edit" />
-                                </span>
+                                {
+                                    canEditPatientInfos
+                                    && (
+                                        <span
+                                            tabIndex={0}
+                                            role="button"
+                                            className="edit-button"
+                                            onClick={() => toggleModal()}
+                                        >
+                                            <i className="fa fa-edit" />
+                                        </span>
+                                    )
+                                }
                             </th>
                         </tr>
                     </thead>
@@ -253,6 +263,7 @@ PatientCasesInfo.propTypes = {
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
     toggleModal: PropTypes.func.isRequired,
+    canEditPatientInfos: PropTypes.bool.isRequired,
 };
 
 const PatientCasesWithIntl = injectIntl(PatientCasesInfo);

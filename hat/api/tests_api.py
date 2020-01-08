@@ -4,7 +4,7 @@ from django.db.models import OuterRef, Exists
 from django.db.models import Q
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 from hat.api.export_utils import timestamp_to_utc_datetime
@@ -34,6 +34,9 @@ class TestsViewSet(viewsets.ViewSet):
         return Response(test.as_dict())
 
     def partial_update(self, request, pk=None):
+        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
         new_test = get_object_or_404(Test, pk=pk)
 
         new_test.type = request.data.get("type", None)
@@ -82,6 +85,9 @@ class TestsViewSet(viewsets.ViewSet):
         return Response(new_test.as_dict())
 
     def create(self, request):
+        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
         new_test = Test()
 
         new_test.type = request.data.get("type", None)

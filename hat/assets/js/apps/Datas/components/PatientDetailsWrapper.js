@@ -366,16 +366,21 @@ class PatientDetailsWrapper extends React.Component {
                                                     id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                     className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                 >
-                                                    <Tooltip
-                                                        title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
-                                                    >
-                                                        <IconButton
-                                                            className="add-test-button"
-                                                            onClick={() => this.toggleTestModal(undefined, c)}
-                                                        >
-                                                            <Add color="primary" />
-                                                        </IconButton>
-                                                    </Tooltip>
+                                                    {
+                                                        canEditPatientInfos
+                                                        && (
+                                                            <Tooltip
+                                                                title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
+                                                            >
+                                                                <IconButton
+                                                                    className="add-test-button"
+                                                                    onClick={() => this.toggleTestModal(undefined, c)}
+                                                                >
+                                                                    <Add color="primary" />
+                                                                </IconButton>
+                                                            </Tooltip>
+                                                        )
+                                                    }
                                                     <div className="case-id">
                                                         <span>Hat ID</span>
                                                         :
@@ -393,14 +398,17 @@ class PatientDetailsWrapper extends React.Component {
                                                         <PatientCasesInfos
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
                                                         />
                                                         <CaseInfoLocation
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
                                                         />
                                                         <CaseInfectionLocation
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseInfectionLocationModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
                                                         />
                                                     </div>
                                                     <div className="tests-list">
@@ -409,25 +417,30 @@ class PatientDetailsWrapper extends React.Component {
                                                             testsMapping={testsMapping}
                                                             currentCase={c}
                                                             toggleModal={test => this.toggleTestModal(test, c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
                                                         />
                                                     </div>
                                                 </li>
                                             ))
                                         }
                                     </ul>
-
-                                    <div className="align-right margin-top">
-                                        <button
-                                            className="button"
-                                            onClick={() => this.toggleCaseModal(undefined)}
-                                        >
-                                            <i className="fa fa-plus" />
-                                            <FormattedMessage
-                                                id="main.cases.add"
-                                                defaultMessage="Add a Case"
-                                            />
-                                        </button>
-                                    </div>
+                                    {
+                                        canEditPatientInfos
+                                        && (
+                                            <div className="align-right margin-top">
+                                                <button
+                                                    className="button"
+                                                    onClick={() => this.toggleCaseModal(undefined)}
+                                                >
+                                                    <i className="fa fa-plus" />
+                                                    <FormattedMessage
+                                                        id="main.cases.add"
+                                                        defaultMessage="Add a Case"
+                                                    />
+                                                </button>
+                                            </div>
+                                        )
+                                    }
                                     <span id="bottom-tests" />
                                 </div>
                             </div>

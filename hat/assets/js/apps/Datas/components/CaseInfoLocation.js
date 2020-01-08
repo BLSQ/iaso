@@ -15,6 +15,7 @@ class CaseInfoLocation extends React.Component {
                 formatMessage,
             },
             toggleModal,
+            canEditPatientInfos,
         } = this.props;
         if (!currentCase) {
             return null;
@@ -56,14 +57,19 @@ class CaseInfoLocation extends React.Component {
                                     isLocalised
                                     && <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
                                 }
-                                <span
-                                    tabIndex={0}
-                                    role="button"
-                                    className={`edit-button ${!isLocalised ? 'not-localised' : ''}`}
-                                    onClick={() => toggleModal()}
-                                >
-                                    <i className="fa fa-edit" />
-                                </span>
+                                {
+                                    canEditPatientInfos
+                                    && (
+                                        <span
+                                            tabIndex={0}
+                                            role="button"
+                                            className={`edit-button ${!isLocalised ? 'not-localised' : ''}`}
+                                            onClick={() => toggleModal()}
+                                        >
+                                            <i className="fa fa-edit" />
+                                        </span>
+                                    )
+                                }
                             </th>
                         </tr>
                     </thead>
@@ -161,6 +167,7 @@ CaseInfoLocation.propTypes = {
     currentCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
     toggleModal: PropTypes.func.isRequired,
+    canEditPatientInfos: PropTypes.bool.isRequired,
 };
 
 const CaseInfoLocationWithIntl = injectIntl(CaseInfoLocation);

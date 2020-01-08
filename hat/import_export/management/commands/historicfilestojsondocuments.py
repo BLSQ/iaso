@@ -48,13 +48,14 @@ class Command(BaseCommand):
                 prepared = prepare_mdb_data(event['sub_type'], event['data'])
                 print("Save documents...", end="", flush=True)
                 # Do not attempt to save if it has already been
-                hash_already_imported = JSONDocument.objects.filter(doc_id=f"{file_hash}-1").first()
-                if event["sub_type"] == "historic" and hash_already_imported is None:
-                    save_documents(prepared.get("T_CARDS"), file_hash, type="historic")
+                hash_already_imported = JSONDocument.objects.filter(doc_id__istartswith=f"{file_hash}-").first()
+                tables = {"historic": "T_CARDS", "pv": "tblFishedeDeclaration"}
+                if event["sub_type"] in ["historic", "pv"] and hash_already_imported is None:
+                    save_documents(prepared.get(tables[event["sub_type"]]), file_hash, type=event["sub_type"])
                     print("Transform documents to try and find their case...", end="", flush=True)
-                    transformed = transform_source('historic', prepared)
+                    transformed = transform_source(event["sub_type"], prepared)
                     for index, row in transformed.iterrows():
-                        cases = Case.objects.filter(document_id=row['document_id']).filter(source='historic')
+                        cases = Case.objects.filter(document_id=row['document_id']).filter(source=event["sub_type"])
                         if cases.count() == 1:
                             JSONDocument.objects.filter(id=row["json_document_id"]).update(case_id=cases.first().id)
 

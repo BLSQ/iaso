@@ -27,11 +27,22 @@ class DeviceDB(models.Model):
         records were created/updated during the last successful sync import.
 
     """
+
     device_id = models.TextField(unique=True)
-    creator = models.ForeignKey(User, related_name='devicedb_creator', on_delete=models.DO_NOTHING, null=True,
-                                blank=True)
-    last_user = models.ForeignKey(User, related_name='devicedb_last_user', on_delete=models.DO_NOTHING, null=True,
-                                  blank=True)
+    creator = models.ForeignKey(
+        User,
+        related_name="devicedb_creator",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+    )
+    last_user = models.ForeignKey(
+        User,
+        related_name="devicedb_last_user",
+        on_delete=models.DO_NOTHING,
+        null=True,
+        blank=True,
+    )
 
     # used to log the sync execution
     last_synced_date = models.DateTimeField(null=True)
@@ -41,9 +52,11 @@ class DeviceDB(models.Model):
 
     def get_team(self):
         """Returns the team of the last user of this device"""
-        if self.last_user is None \
-                or not hasattr(self.last_user, "profile") \
-                or self.last_user.profile.team is None:
+        if (
+            self.last_user is None
+            or not hasattr(self.last_user, "profile")
+            or self.last_user.profile.team is None
+        ):
             return None
         else:
             return self.last_user.profile.team
@@ -63,20 +76,17 @@ class DeviceDB(models.Model):
         return self.device_id
 
     def as_dict(self, full=True):
-        result = {
-            'id': self.id,
-            'device_id': self.device_id,
-        }
+        result = {"id": self.id, "device_id": self.device_id}
         if full:
             last_user = ""
             last_team = ""
-            if self.last_user and hasattr(self.last_user, 'profile'):
+            if self.last_user and hasattr(self.last_user, "profile"):
                 last_user = self.last_user.profile.full_name()
                 if self.last_user.profile.team:
                     last_team = self.last_user.profile.team.name
-            result['last_user'] = last_user
-            result['last_team'] = last_team
-            result['is_test'] = self.is_test
+            result["last_user"] = last_user
+            result["last_team"] = last_team
+            result["is_test"] = self.is_test
 
         return result
 
@@ -97,9 +107,9 @@ class DeviceImportEvent(models.Model):
     ERROR = 2
 
     IMPORT_EVENT_TYPES = (
-        (FETCH_COUCHDB, 'Data fetched from CouchDB'),
-        (IMPORTED, 'Data actually imported into the DB'),
-        (ERROR, 'Any error')
+        (FETCH_COUCHDB, "Data fetched from CouchDB"),
+        (IMPORTED, "Data actually imported into the DB"),
+        (ERROR, "Any error"),
     )
     event_type = models.IntegerField(choices=IMPORT_EVENT_TYPES, default=FETCH_COUCHDB)
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
@@ -114,7 +124,7 @@ class DeviceImportEvent(models.Model):
 
 
 class DeviceDBView(models.Model):
-    '''
+    """
     References a postgresql view that retrieves data about devices and their
     last successful sync import. Sometimes the device data come only via
     encrypted backup files and not via sync.
@@ -131,7 +141,7 @@ class DeviceDBView(models.Model):
     :ivar integer  locations:    Number of visited villages with this device.
     :ivar integer  participants: Number of screened people with this device.
 
-    '''
+    """
 
     device_id = models.TextField(primary_key=True)
 
@@ -148,7 +158,7 @@ class DeviceDBView(models.Model):
 
     class Meta:
         managed = False
-        db_table = 'sync_devicedb_view'
+        db_table = "sync_devicedb_view"
 
 
 class DeviceStatus(models.Model):
@@ -171,42 +181,48 @@ class DeviceEvent(models.Model):
     COMMENT = 2
 
     EVENT_TYPES = (
-        (STATUS_CHANGE, 'Status Change'),
-        (ACTION, 'Action'),
-        (COMMENT, 'Comment')
+        (STATUS_CHANGE, "Status Change"),
+        (ACTION, "Action"),
+        (COMMENT, "Comment"),
     )
 
     device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE)
     date = models.DateTimeField(null=True, auto_now_add=True)
-    status = models.ForeignKey(DeviceStatus, null=True, blank=True, on_delete=models.CASCADE)
-    action = models.ForeignKey(DeviceAction, null=True, blank=True, on_delete=models.CASCADE)
+    status = models.ForeignKey(
+        DeviceStatus, null=True, blank=True, on_delete=models.CASCADE
+    )
+    action = models.ForeignKey(
+        DeviceAction, null=True, blank=True, on_delete=models.CASCADE
+    )
     comment = models.TextField(null=True, blank=True)
     event_type = models.IntegerField(choices=EVENT_TYPES, default=STATUS_CHANGE)
     reporter = models.ForeignKey(User, null=True, on_delete=models.CASCADE)
 
     def __str__(self):
-        return ("event %s - device %s - status %s - action %s - comment %s" % (self.event_type,
-                                                                               self.device_id,
-                                                                               self.status,
-                                                                               self.action,
-                                                                               self.comment
-                                                                               ))
+        return "event %s - device %s - status %s - action %s - comment %s" % (
+            self.event_type,
+            self.device_id,
+            self.status,
+            self.action,
+            self.comment,
+        )
 
 
 class DeviceEventForm(ModelForm):
     class Meta:
         model = DeviceEvent
-        fields = ('status', 'action', 'comment', 'event_type')
+        fields = ("status", "action", "comment", "event_type")
 
 
 class MobileUser(models.Model):
-    '''
+    """
     List of granted google user accounts.
     If the device user account is not in this table, the device is not allowed to sync.
 
     :ivar text email: **unique** --  Validated google user email.
 
-    '''
+    """
+
     email = models.EmailField(unique=True)
 
 
@@ -217,11 +233,11 @@ def mobile_user_post_delete(sender, instance, *args, **kwargs):  # type: ignore
 
 
 class ImageUpload(models.Model):
-    UPLOADED_TO = 'images/'
+    UPLOADED_TO = "images/"
     participant_uuid = models.TextField(null=True, blank=True, db_index=True)
     hat_id = models.TextField(null=True, blank=True)
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='CATT', choices=TEST_TYPE_CHOICES)
+    type = models.TextField(default="CATT", choices=TEST_TYPE_CHOICES)
     image = models.FileField(upload_to=UPLOADED_TO)
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -236,11 +252,11 @@ class ImageUpload(models.Model):
 
 
 class VideoUpload(models.Model):
-    UPLOADED_TO = 'videos/'
+    UPLOADED_TO = "videos/"
     participant_uuid = models.TextField(db_index=True)
     hat_id = models.TextField()
     group_id = models.TextField(null=True, blank=True, db_index=True)
-    type = models.TextField(default='PG', choices=TEST_TYPE_CHOICES)
+    type = models.TextField(default="PG", choices=TEST_TYPE_CHOICES)
     video = models.FileField(upload_to=UPLOADED_TO)
     upload_date = models.DateTimeField(auto_now_add=True)
 
@@ -257,34 +273,42 @@ class VideoUpload(models.Model):
 class ImageUploadForm(ModelForm):
     class Meta:
         model = ImageUpload
-        fields = ('image', 'participant_uuid', 'hat_id', 'group_id', 'type')
+        fields = ("image", "participant_uuid", "hat_id", "group_id", "type")
 
 
 class VideoUploadForm(ModelForm):
     class Meta:
         model = VideoUpload
-        fields = ('video', 'participant_uuid', 'hat_id', 'group_id', 'type')
+        fields = ("video", "participant_uuid", "hat_id", "group_id", "type")
 
 
 JSONDOCUMENT_TYPE_CHOICES = (
-    ('participant', 'Participant information, including tests'),
-    ('ptr', 'Population data provided by tablets'),
-    ('historic', 'Historic'),
-    ('pv', 'Pharmacovigilance'),
-    ('backup', 'Backup'),
+    ("participant", "Participant information, including tests"),
+    ("ptr", "Population data provided by tablets"),
+    ("historic", "Historic"),
+    ("pv", "Pharmacovigilance"),
+    ("backup", "Backup"),
 )
 
 
 class JSONDocument(models.Model):
     doc_id = models.TextField()
     doc_revision = models.TextField()
-    device = models.ForeignKey(DeviceDB, on_delete=models.CASCADE, null=True, blank=True)  # null for historic data
-    case = models.ForeignKey(to="cases.Case", on_delete=models.SET_NULL, null=True, blank=True)
-    population = models.ForeignKey(to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True)
-    type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default='participant')
+    device = models.ForeignKey(
+        DeviceDB, on_delete=models.CASCADE, null=True, blank=True
+    )  # null for historic data
+    case = models.ForeignKey(
+        to="cases.Case", on_delete=models.SET_NULL, null=True, blank=True
+    )
+    population = models.ForeignKey(
+        to=PopulationData, on_delete=models.SET_NULL, null=True, blank=True
+    )
+    type = models.TextField(choices=JSONDOCUMENT_TYPE_CHOICES, default="participant")
 
     doc = JSONField(encoder=DjangoJSONEncoder)
-    deleted = models.BooleanField("The result of the document has been deleted, don't reimport", default=False)
+    deleted = models.BooleanField(
+        "The result of the document has been deleted, don't reimport", default=False
+    )
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -292,7 +316,11 @@ class JSONDocument(models.Model):
 
     # To be activated when duplicates have been removed
     class Meta:
-        unique_together = ('doc_id', 'doc_revision')
+        unique_together = ("doc_id", "doc_revision")
 
     def __str__(self):
-        return "id %s - revision %s - device %s" % (self.doc_id, self.doc_revision, self.device)
+        return "id %s - revision %s - device %s" % (
+            self.doc_id,
+            self.doc_revision,
+            self.device,
+        )

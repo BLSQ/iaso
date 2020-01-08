@@ -1,4 +1,4 @@
-'''
+"""
 Transform data
 --------------
 
@@ -146,7 +146,7 @@ Configuration for the extraction of data from different sources
     }
 
 
-'''
+"""
 import re
 from enum import Enum
 from functools import reduce
@@ -163,7 +163,7 @@ from .utils import capitalize
 
 
 def series_to_str(s: Series) -> str:
-    return ', '.join(str(x) for x in s.dropna().values)
+    return ", ".join(str(x) for x in s.dropna().values)
 
 
 ################################################################################
@@ -174,10 +174,7 @@ def series_to_str(s: Series) -> str:
 def historic_get_sex(x: Optional[str]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return {
-        'Féminin': 'female',
-        'Masculin': 'male'
-    }.get(cast(str, x), None)
+    return {"Féminin": "female", "Masculin": "male"}.get(cast(str, x), None)
 
 
 def historic_get_result(x: Optional[int]) -> Optional[int]:
@@ -201,53 +198,39 @@ def historic_get_catt_blood_result(x: Optional[int]) -> Optional[int]:
 def historic_get_catt_dil_result(x: Optional[int]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return {
-        1: '1/2',
-        2: '1/4',
-        3: '1/8',
-        4: '1/16',
-        5: '1/32',
-    }.get(cast(int, x), None)
+    return {1: "1/2", 2: "1/4", 3: "1/8", 4: "1/16", 5: "1/32"}.get(cast(int, x), None)
 
 
 def historic_get_pl_result(x: Optional[int]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return {
-        1: 'stage1',
-        2: 'stage2',
-        3: 'unknown'
-    }.get(cast(int, x), None)
+    return {1: "stage1", 2: "stage2", 3: "unknown"}.get(cast(int, x), None)
 
 
 def historic_get_pl_liquid_result(x: Optional[int]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return {
-        1: 'clear',
-        2: 'unclear',
-        3: 'hemorrhagic',
-    }.get(cast(int, x), None)
+    return {1: "clear", 2: "unclear", 3: "hemorrhagic"}.get(cast(int, x), None)
 
 
 def historic_get_pl_lcr_result(x: Optional[int]) -> Optional[str]:
     if pandas.isnull(x):
         return None
     return {
-        1: '1/8',
-        2: '1/16',
-        3: '1/32',
-        4: '1/64',
-        5: '1/128',
-        6: '1/256',
-        7: '1/512',
-        8: '1/1024',
+        1: "1/8",
+        2: "1/16",
+        3: "1/32",
+        4: "1/64",
+        5: "1/128",
+        6: "1/256",
+        7: "1/512",
+        8: "1/1024",
     }.get(cast(int, x), None)
 
 
-def historic_get_followup_done(main_table: DataFrame,
-                               related_table: DataFrame,
-                               field: str) -> Series:
+def historic_get_followup_done(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     return Series(main_table.index, index=main_table.index).isin(related_table.index)
 
 
@@ -257,9 +240,9 @@ def historic_get_secondary_effects(x: Optional[int]) -> Optional[bool]:
     return cast(int, x) == 1
 
 
-def historic_get_followup_test_result(main_table: DataFrame,
-                                      related_table: DataFrame,
-                                      field: str) -> Series:
+def historic_get_followup_test_result(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(series_to_str)
 
@@ -298,7 +281,7 @@ def mobile_get_sex(x: Optional[str]) -> Optional[str]:
     return cast(str, x).lower()
 
 
-mobile_year_re = re.compile(r'^(\d{4})[,.]?\d*')
+mobile_year_re = re.compile(r"^(\d{4})[,.]?\d*")
 
 
 def mobile_get_year(x: Optional[str]) -> Optional[int]:
@@ -345,14 +328,16 @@ def mobile_get_result(x: Optional[str]) -> Optional[int]:
 def mobile_get_age(table: DataFrame, field: str) -> int:
     age_years = 0
     age_months = 0
-    if 'person.age.years' in table:
-        age_years = table['person.age.years'].fillna(0).astype(float)
-    if 'person.age.months' in table:
-        age_months = table['person.age.months'].fillna(0).astype(float) / 12
+    if "person.age.years" in table:
+        age_years = table["person.age.years"].fillna(0).astype(float)
+    if "person.age.months" in table:
+        age_months = table["person.age.months"].fillna(0).astype(float) / 12
     return age_years + age_months
 
 
-mobile_get_data_regex = re.compile(r"^(\d{4})\D(\d{2})\D(\d{2})")  # yyyy-mm-dd where the separator is any non-digit chr
+mobile_get_data_regex = re.compile(
+    r"^(\d{4})\D(\d{2})\D(\d{2})"
+)  # yyyy-mm-dd where the separator is any non-digit chr
 
 
 def mobile_get_date(x):
@@ -383,7 +368,7 @@ def mobile_get_null_boolean(x):
 def mobile_get_location_from_gps(gps):
     # We might also reject if "accuracy" is too bad
     if gps is not None and "latitude" in gps and "longitude" in gps:
-        return Point((gps['longitude'], gps['latitude']), srid=GPS_SRID)
+        return Point((gps["longitude"], gps["latitude"]), srid=GPS_SRID)
     else:
         return None
 
@@ -403,19 +388,16 @@ def mobile_get_location_from_coordinates(longitude=None, latitude=None):
 def pv_get_sex(x: Optional[str]) -> Optional[str]:
     if pandas.isnull(x):
         return None
-    return {
-        'Feminin': 'female',
-        'Masculin': 'male'
-    }.get(cast(str, x), None)
+    return {"Feminin": "female", "Masculin": "male"}.get(cast(str, x), None)
 
 
 def pv_get_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     # 0, +, NF
-    if cast(str, x) == '+':
+    if cast(str, x) == "+":
         return ResultValues.positive.value
-    elif cast(str, x) == 'NF':
+    elif cast(str, x) == "NF":
         return ResultValues.missing.value
     else:
         return ResultValues.negative.value
@@ -425,7 +407,7 @@ def pv_get_catt_blood_result(x: Optional[str]) -> Optional[int]:
     if pandas.isnull(x):
         return None
     # POS+, POS++, POS+++
-    if cast(str, x) in ['POS+', 'POS++', 'POS+++']:
+    if cast(str, x) in ["POS+", "POS++", "POS+++"]:
         return ResultValues.positive.value
     return ResultValues.negative.value
 
@@ -435,9 +417,9 @@ def pv_get_pl_result(x: Optional[str]) -> Optional[str]:
     if pandas.isnull(x):
         return None
     return {
-        'STADE 1': 'stage1',
-        'STADE 2': 'stage2',
-        'INCONNU(non faite)': 'unknown'
+        "STADE 1": "stage1",
+        "STADE 2": "stage2",
+        "INCONNU(non faite)": "unknown",
     }.get(cast(str, x), None)
 
 
@@ -445,11 +427,9 @@ def pv_get_pl_liquid_result(x: Optional[str]) -> Optional[str]:
     # convert to same as historic
     if pandas.isnull(x):
         return None
-    return {
-        'clair': 'clear',
-        'trouble': 'unclear',
-        'hémorragique': 'hemorrhagic',
-    }.get(cast(str, x), None)
+    return {"clair": "clear", "trouble": "unclear", "hémorragique": "hemorrhagic"}.get(
+        cast(str, x), None
+    )
 
 
 ################################################################################
@@ -465,45 +445,45 @@ def pv_get_pl_liquid_result(x: Optional[str]) -> Optional[str]:
 ################################################################################
 
 
-def pv_get_treatment_date(main_table: DataFrame,
-                          related_table: DataFrame,
-                          field: str) -> Series:
+def pv_get_treatment_date(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     # need to drop invalid dates and start on 'none'
     # otherwise invalid dates may be chosen over real dates
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series.dropna(), None))
 
 
-def pv_get_treatment(main_table: DataFrame,
-                     related_table: DataFrame,
-                     field: str) -> Series:
+def pv_get_treatment(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
-def pv_get_treatment_result(main_table: DataFrame,
-                            related_table: DataFrame,
-                            field: str) -> Series:
+def pv_get_treatment_result(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(lambda series: reduce(lambda a, x: x or a, series))
 
 
-def pv_has_secondary_effects(main_table: DataFrame,
-                             related_table: DataFrame,
-                             field: str) -> Series:
-    df_yes = related_table[related_table[field] == 'Oui']
+def pv_has_secondary_effects(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
+    df_yes = related_table[related_table[field] == "Oui"]
     return Series(main_table.index, index=main_table.index).isin(df_yes.index)
 
 
-def pv_get_followup_done(main_table: DataFrame,
-                         related_table: DataFrame,
-                         field: str) -> Series:
+def pv_get_followup_done(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     return Series(main_table.index, index=main_table.index).isin(related_table.index)
 
 
-def pv_get_followup_test_result(main_table: DataFrame,
-                                related_table: DataFrame,
-                                field: str) -> Series:
+def pv_get_followup_test_result(
+    main_table: DataFrame, related_table: DataFrame, field: str
+) -> Series:
     groups = related_table[field].groupby(related_table.index.values)
     return groups.agg(series_to_str)
 
@@ -568,259 +548,251 @@ class Export(Enum):
     suspects_anon = 4
 
 
-SCREENING_TEST = 'screening'
-CONFIRMATION_TEST = 'confirmation'
-STAGING_TEST = 'staging'
-UNKNOWN_TEST = 'unknown'
+SCREENING_TEST = "screening"
+CONFIRMATION_TEST = "confirmation"
+STAGING_TEST = "staging"
+UNKNOWN_TEST = "unknown"
 
 
 MAPPING: List[JsonType] = [
     # meta fields
     {
         "field": "source",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
     },
     {
         "field": "document_id",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
     },
     {
         "field": "document_date",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Date de diagnostique"),
-            },
-            "historic": {
-                "field": ("T_CARDS", "D_DATE"),
-            },
-            "mobile": {
-                "field": ("main", "dateCreated",),
-            }
+            "pv": {"field": ("tblFishedeDeclaration", "Date de diagnostique")},
+            "historic": {"field": ("T_CARDS", "D_DATE")},
+            "mobile": {"field": ("main", "dateCreated")},
         },
     },
     {
         "field": "device_id",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "deviceId",)
-            }
-        },
+        "sources": {"mobile": {"field": ("main", "deviceId")}},
     },
     {
         "field": "entry_date",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "historic": {
-                "field": ("T_CARDS", "F_TIMESTAMP"),
-            },
-            "mobile": {
-                "field": ("main", "dateModified",),
-            }
-        }
+            "historic": {"field": ("T_CARDS", "F_TIMESTAMP")},
+            "mobile": {"field": ("main", "dateModified")},
+        },
     },
-    {
-        "field": "entry_name",
-        "export_levels": [Export.full, Export.anon],
-    },
+    {"field": "entry_name", "export_levels": [Export.full, Export.anon]},
     {
         "field": "circumstances_da",
         "case_ignore": True,  # We have one field for DA/DP so no direct mapping here
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DA"),
-                "apply_to_column": historic_get_null_boolean
-            },
-        }
+                "apply_to_column": historic_get_null_boolean,
+            }
+        },
     },
     {
         "field": "circumstances_dp",
         "case_ignore": True,  # We have one field for DA/DP so no direct mapping here
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP"),
-                "apply_to_column": historic_get_null_boolean
-            },
-        }
+                "apply_to_column": historic_get_null_boolean,
+            }
+        },
     },
     {
         "field": "circumstances_da_um",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DA_UM"),
-                "apply_to_column": capitalize
-            },
-        }
+                "apply_to_column": capitalize,
+            }
+        },
     },
     {
         "field": "circumstances_dp_um",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_UM"),
-                "apply_to_column": capitalize
-            },
-        }
+                "apply_to_column": capitalize,
+            }
+        },
     },
     {
         "field": "circumstances_dp_cdtc",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_CDTC"),
-                "apply_to_column": capitalize
-            },
-        }
+                "apply_to_column": capitalize,
+            }
+        },
     },
     {
         "field": "circumstances_dp_cs",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_CS"),
-                "apply_to_column": capitalize
-            },
-        }
+                "apply_to_column": capitalize,
+            }
+        },
     },
     {
         "field": "circumstances_dp_hgr",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "historic": {
                 "field": ("T_CARDS", "D_CIRCUMSTANCES_DP_HGR"),
-                "apply_to_column": capitalize
-            },
-        }
+                "apply_to_column": capitalize,
+            }
+        },
     },
     {
         "field": "mobile_unit",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "UM"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
-            "historic": {
-                "field": ("T_CARDS", "IF_UM"),
-                "apply_to_column": capitalize
-            },
-        }
+            "historic": {"field": ("T_CARDS", "IF_UM"), "apply_to_column": capitalize},
+        },
     },
     {
         "field": "form_number",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Numero du cas")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IF_NBR")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Numero du cas")},
+            "historic": {"field": ("T_CARDS", "IF_NBR")},
+        },
     },
     {
         "field": "form_month",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Mois")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IF_MONTH")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Mois")},
+            "historic": {"field": ("T_CARDS", "IF_MONTH")},
+        },
     },
     {
         "field": "form_year",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Année")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IF_YEAR")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Année")},
+            "historic": {"field": ("T_CARDS", "IF_YEAR")},
+        },
     },
     # person fields
-    {
-        "field": "hat_id",
-        "export_levels": [Export.full, Export.suspects_full]
-    },
+    {"field": "hat_id", "export_levels": [Export.full, Export.suspects_full]},
     {
         "field": "json_document_id",
         "case_ignore": True,
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "json_document_id")
-            },
-            "historic": {
-                "field": ("T_CARDS", "json_document_id")
-            },
-            "mobile": {
-                "field": ("main", "json_document_id")
-            }
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "json_document_id")},
+            "historic": {"field": ("T_CARDS", "json_document_id")},
+            "mobile": {"field": ("main", "json_document_id")},
+        },
     },
     {
         "field": "name",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Nom")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_NAME")
-            },
-            "mobile": {
-                "field": ("main", "person.postname")
-            }
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Nom")},
+            "historic": {"field": ("T_CARDS", "IM_NAME")},
+            "mobile": {"field": ("main", "person.postname")},
+        },
     },
     {
         "field": "lastname",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Postnom")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_LASTNAME")
-            },
-            "mobile": {
-                "field": ("main", "person.surname")
-            }
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Postnom")},
+            "historic": {"field": ("T_CARDS", "IM_LASTNAME")},
+            "mobile": {"field": ("main", "person.surname")},
+        },
     },
     {
         "field": "prename",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Prénom")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_PRENAME")
-            },
-            "mobile": {
-                "field": ("main", "person.forename")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Prénom")},
+            "historic": {"field": ("T_CARDS", "IM_PRENAME")},
+            "mobile": {"field": ("main", "person.forename")},
+        },
     },
     {
         "field": "phone",
         "case_ignore": True,
         "export_levels": [Export.full, Export.suspects_full],
-        "sources": {
-            "mobile": {
-                "field": ("main", "person.phone")
-            },
-        }
+        "sources": {"mobile": {"field": ("main", "person.phone")}},
     },
     {
         "field": "sex",
@@ -828,87 +800,83 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sexe"),
-                "apply_to_column": pv_get_sex
+                "apply_to_column": pv_get_sex,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_SEX"),
-                "apply_to_column": historic_get_sex
+                "apply_to_column": historic_get_sex,
             },
             "mobile": {
                 "field": ("main", "person.gender"),
-                "apply_to_column": mobile_get_sex
-            }
-        }
+                "apply_to_column": mobile_get_sex,
+            },
+        },
     },
     {
         "field": "year_of_birth",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Année de naissance")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_BIRTHYEAR")
-            },
+            "pv": {"field": ("tblFishedeDeclaration", "Année de naissance")},
+            "historic": {"field": ("T_CARDS", "IM_BIRTHYEAR")},
             "mobile": {
                 "field": ("main", "person.birthYear"),
                 "apply_to_column": mobile_get_year,
-            }
-        }
+            },
+        },
     },
     {
         "field": "age",
         "export_levels": [Export.full, Export.anon, Export.suspects_full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Age"),
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_AGE"),
-            },
+            "pv": {"field": ("tblFishedeDeclaration", "Age")},
+            "historic": {"field": ("T_CARDS", "IM_AGE")},
             "mobile": {
                 "field": ("main", "person.age.years"),
                 "apply_to_table": mobile_get_age,
-            }
-        }
+            },
+        },
     },
     {
         "field": "mothers_surname",
         "export_levels": [Export.full],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Nom de la mère")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_MERE")
-            },
-            "mobile": {
-                "field": ("main", "person.mothersSurname")
-            }
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Nom de la mère")},
+            "historic": {"field": ("T_CARDS", "IM_MERE")},
+            "mobile": {"field": ("main", "person.mothersSurname")},
+        },
     },
     # location fields
     {
         "field": "province",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Provence"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_PROVINCE"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
-        }
+        },
     },
     {
         "field": "ZS",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "ZS"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_HEALTH_ZONE"),
@@ -918,11 +886,16 @@ MAPPING: List[JsonType] = [
                 "field": ("main", "person.location.zone"),
                 "apply_to_column": capitalize,
             },
-        }
+        },
     },
     {
         "field": "AS",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "AS"),
@@ -936,15 +909,20 @@ MAPPING: List[JsonType] = [
                 "field": ("main", "person.location.area"),
                 "apply_to_column": capitalize,
             },
-        }
+        },
     },
     {
         "field": "village",
-        "export_levels": [Export.full, Export.anon, Export.suspects_full, Export.suspects_anon],
+        "export_levels": [
+            Export.full,
+            Export.anon,
+            Export.suspects_full,
+            Export.suspects_anon,
+        ],
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Village"),
-                "apply_to_column": capitalize
+                "apply_to_column": capitalize,
             },
             "historic": {
                 "field": ("T_CARDS", "IM_AD_VILLAGE"),
@@ -954,20 +932,16 @@ MAPPING: List[JsonType] = [
                 "field": ("main", "person.location.village"),
                 "apply_to_column": capitalize,
             },
-        }
+        },
     },
     # treatment fields
     {
         "field": "treatment_center",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Centre recommandé2")
-            },
-            "historic": {
-                "field": ("T_CARDS", "IM_UM_CT")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Centre recommandé2")},
+            "historic": {"field": ("T_CARDS", "IM_UM_CT")},
+        },
     },
     {
         "field": "treatment_start_date",
@@ -975,12 +949,10 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Date début réel"),
-                "apply_to_table": pv_get_treatment_date
+                "apply_to_table": pv_get_treatment_date,
             },
-            "historic": {
-                "field": ("T_CARDS", "TP_DATE"),
-            },
-        }
+            "historic": {"field": ("T_CARDS", "TP_DATE")},
+        },
     },
     {
         "field": "treatment_end_date",
@@ -988,12 +960,10 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Date fin"),
-                "apply_to_table": pv_get_treatment_date
+                "apply_to_table": pv_get_treatment_date,
             },
-            "historic": {
-                "field": ("T_CARDS", "TP_DATE_END"),
-            },
-        }
+            "historic": {"field": ("T_CARDS", "TP_DATE_END")},
+        },
     },
     {
         "field": "treatment_prescribed",
@@ -1001,12 +971,10 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Traitement"),
-                "apply_to_table": pv_get_treatment
+                "apply_to_table": pv_get_treatment,
             },
-            "historic": {
-                "field": ("T_CARDS", "TP_TREATMENT")
-            },
-        }
+            "historic": {"field": ("T_CARDS", "TP_TREATMENT")},
+        },
     },
     {
         "field": "treatment_secondary_effects",
@@ -1014,26 +982,24 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblTraitementPrescrit", "Effets Secondaires?"),
-                "apply_to_table": pv_has_secondary_effects
+                "apply_to_table": pv_has_secondary_effects,
             },
             "historic": {
                 "field": ("T_CARDS", "TP_ADVERSE_EVENTS"),
                 "apply_to_column": historic_get_secondary_effects,
             },
-        }
+        },
     },
     {
         "field": "treatment_result",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv":  {
-                "field": ('tblTraitementPrescrit', 'Compliance du traitement'),
-                "apply_to_table": pv_get_treatment_result
+            "pv": {
+                "field": ("tblTraitementPrescrit", "Compliance du traitement"),
+                "apply_to_table": pv_get_treatment_result,
             },
-            "historic": {
-                "field": ("T_CARDS", "TP_RESULT")
-            },
-        }
+            "historic": {"field": ("T_CARDS", "TP_RESULT")},
+        },
     },
     # test fields
     {
@@ -1046,30 +1012,24 @@ MAPPING: List[JsonType] = [
             },
             "mobile": {
                 "field": ("main", "participant.screenings.rdt.result"),
-                "apply_to_column": mobile_get_result
+                "apply_to_column": mobile_get_result,
             },
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_rdt_picture_filename",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.rdt.image")
-            },
-        },
-        "test_type": SCREENING_TEST
+        "sources": {"mobile": {"field": ("main", "participant.screenings.rdt.image")}},
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_rdt_session_type",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.rdt.sessionType")
-            },
+            "mobile": {"field": ("main", "participant.screenings.rdt.sessionType")}
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_catt",
@@ -1077,7 +1037,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "CATT sang total"),
-                "apply_to_column": pv_get_catt_blood_result
+                "apply_to_column": pv_get_catt_blood_result,
             },
             "historic": {
                 "fields": [
@@ -1088,16 +1048,16 @@ MAPPING: List[JsonType] = [
                     {
                         "field": ("T_CARDS", "D_CATT_TOTAL_BLOOD"),
                         "apply_to_column": historic_get_catt_blood_result,
-                    }
+                    },
                 ],
-                "reduce": reduce_test_result
+                "reduce": reduce_test_result,
             },
             "mobile": {
                 "field": ("main", "participant.screenings.catt.result"),
-                "apply_to_column": mobile_get_result
+                "apply_to_column": mobile_get_result,
             },
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_catt_index",
@@ -1106,9 +1066,9 @@ MAPPING: List[JsonType] = [
             "mobile": {
                 "field": ("main", "participant.screenings.catt.screeningIndex"),
                 "apply_to_column": mobile_get_safe_int,
-            },
+            }
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_catt_level",
@@ -1117,29 +1077,23 @@ MAPPING: List[JsonType] = [
             "mobile": {
                 "field": ("main", "participant.screenings.catt.level"),
                 "apply_to_column": mobile_get_safe_int,
-            },
+            }
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_catt_picture_filename",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.catt.image")
-            },
-        },
-        "test_type": SCREENING_TEST
+        "sources": {"mobile": {"field": ("main", "participant.screenings.catt.image")}},
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_catt_session_type",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.catt.sessionType")
-            },
+            "mobile": {"field": ("main", "participant.screenings.catt.sessionType")}
         },
-        "test_type": SCREENING_TEST
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_maect",
@@ -1147,7 +1101,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang mAECT"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "fields": [
@@ -1162,26 +1116,24 @@ MAPPING: List[JsonType] = [
                     {
                         "field": ("T_CARDS", "MD_MAECT_BC"),
                         "apply_to_column": historic_get_result,
-                    }
+                    },
                 ],
-                "reduce": reduce_test_result
+                "reduce": reduce_test_result,
             },
             "mobile": {
                 "field": ("main", "participant.screenings.maect.result"),
-                "apply_to_column": mobile_get_result
+                "apply_to_column": mobile_get_result,
             },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_maect_video_filename",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.maect.video")
-            },
+            "mobile": {"field": ("main", "participant.screenings.maect.video")}
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_ge",
@@ -1189,7 +1141,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang GE"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "field": ("T_CARDS", "MD_GE"),
@@ -1197,10 +1149,10 @@ MAPPING: List[JsonType] = [
             },
             "mobile": {
                 "field": ("main", "participant.screenings.ge.result"),
-                "apply_to_column": mobile_get_result
-            }
+                "apply_to_column": mobile_get_result,
+            },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_pg",
@@ -1208,20 +1160,16 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pg.result"),
-                "apply_to_column": mobile_get_result
+                "apply_to_column": mobile_get_result,
             }
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_pg_video_filename",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pg.video")
-            },
-        },
-        "test_type": SCREENING_TEST
+        "sources": {"mobile": {"field": ("main", "participant.screenings.pg.video")}},
+        "test_type": SCREENING_TEST,
     },
     {
         "field": "test_ctcwoo",
@@ -1229,7 +1177,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang W00"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "field": ("T_CARDS", "MD_WOO"),
@@ -1237,20 +1185,18 @@ MAPPING: List[JsonType] = [
             },
             "mobile": {
                 "field": ("main", "participant.screenings.ctcwoo.result"),
-                "apply_to_column": mobile_get_result
-            }
+                "apply_to_column": mobile_get_result,
+            },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_ctcwoo_video_filename",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.ctcwoo.video")
-            },
+            "mobile": {"field": ("main", "participant.screenings.ctcwoo.video")}
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_pl",
@@ -1258,34 +1204,28 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pl.result"),
-                "apply_to_column": mobile_get_result
+                "apply_to_column": mobile_get_result,
             }
         },
-        "test_type": STAGING_TEST
+        "test_type": STAGING_TEST,
     },
     {
         "field": "test_pl_video_filename",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.video")
-            },
-        },
-        "test_type": STAGING_TEST
+        "sources": {"mobile": {"field": ("main", "participant.screenings.pl.video")}},
+        "test_type": STAGING_TEST,
     },
     {
         "field": "test_catt_dilution",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "CATT dilution")
-            },
+            "pv": {"field": ("tblFishedeDeclaration", "CATT dilution")},
             "historic": {
                 "field": ("T_CARDS", "D_CATT_DILUTION"),
-                "apply_to_column": historic_get_catt_dil_result
+                "apply_to_column": historic_get_catt_dil_result,
             },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_lymph_node_puncture",
@@ -1293,14 +1233,14 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Suc ganglionnaire"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "field": ("T_CARDS", "MD_LYMPH_NODE_PUNCTURE"),
                 "apply_to_column": historic_get_result,
             },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_sf",
@@ -1308,14 +1248,14 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Sang SF"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "field": ("T_CARDS", "MD_SF"),
                 "apply_to_column": historic_get_result,
             },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_lcr",
@@ -1323,7 +1263,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "LCR"),
-                "apply_to_column": pv_get_result
+                "apply_to_column": pv_get_result,
             },
             "historic": {
                 "fields": [
@@ -1338,12 +1278,12 @@ MAPPING: List[JsonType] = [
                     {
                         "field": ("T_CARDS", "MD_LCR_SCM"),
                         "apply_to_column": historic_get_result,
-                    }
+                    },
                 ],
-                "reduce": reduce_test_result
+                "reduce": reduce_test_result,
             },
         },
-        "test_type": CONFIRMATION_TEST
+        "test_type": CONFIRMATION_TEST,
     },
     {
         "field": "test_dil",
@@ -1352,9 +1292,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_DIL"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_parasit",
@@ -1363,9 +1303,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_PARASIT"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_sternal_puncture",
@@ -1374,9 +1314,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_STERNAL_PUNCTURE"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_ifat",
@@ -1385,9 +1325,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_IFAT"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_clinical_sickness",
@@ -1396,9 +1336,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_CLINICAL_SICKNESS"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_other",
@@ -1407,9 +1347,9 @@ MAPPING: List[JsonType] = [
             "historic": {
                 "field": ("T_CARDS", "MD_OTHER"),
                 "apply_to_column": historic_get_result,
-            },
+            }
         },
-        "test_type": UNKNOWN_TEST
+        "test_type": UNKNOWN_TEST,
     },
     {
         "field": "test_pl_liquid",
@@ -1417,7 +1357,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Aspect LCR"),
-                "apply_to_column": pv_get_pl_liquid_result
+                "apply_to_column": pv_get_pl_liquid_result,
             },
             "historic": {
                 "field": ("T_CARDS", "DS_PL_LIQUID"),
@@ -1429,60 +1369,40 @@ MAPPING: List[JsonType] = [
         "field": "test_pl_trypanosome",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Présence trypanosomes")
-            },
-            "historic": {
-                "field": ("T_CARDS", "DS_PL_TRYPANOSOME")
-            },
-        }
+            "pv": {"field": ("tblFishedeDeclaration", "Présence trypanosomes")},
+            "historic": {"field": ("T_CARDS", "DS_PL_TRYPANOSOME")},
+        },
     },
     {
         "field": "test_pl_gb_mm3",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "GB/mm3")
-            },
-            "historic": {
-                "field": ("T_CARDS", "DS_PL_GB_MM3")
-            },
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.whiteCount")
-            },
+            "pv": {"field": ("tblFishedeDeclaration", "GB/mm3")},
+            "historic": {"field": ("T_CARDS", "DS_PL_GB_MM3")},
+            "mobile": {"field": ("main", "participant.screenings.pl.whiteCount")},
         },
-        "test_type": STAGING_TEST
+        "test_type": STAGING_TEST,
     },
     {
         "field": "test_pl_albumine",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "historic": {
-                "field": ("T_CARDS", "DS_PL_ALBUMINE")
-            },
-        }
+        "sources": {"historic": {"field": ("T_CARDS", "DS_PL_ALBUMINE")}},
     },
     {
         "field": "test_pl_lcr",
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "pv": {
-                "field": ("tblFishedeDeclaration", "Latex LCR")
-            },
+            "pv": {"field": ("tblFishedeDeclaration", "Latex LCR")},
             "historic": {
                 "field": ("T_CARDS", "DS_PL_LCR"),
                 "apply_to_column": historic_get_pl_lcr_result,
             },
-        }
+        },
     },
     {
         "field": "test_pl_comments",
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "historic": {
-                "field": ("T_CARDS", "DS_PL_COMMENTS")
-            },
-        }
+        "sources": {"historic": {"field": ("T_CARDS", "DS_PL_COMMENTS")}},
     },
     {
         "field": "test_pl_result",
@@ -1490,14 +1410,14 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblFishedeDeclaration", "Stade"),
-                "apply_to_column": pv_get_pl_result
+                "apply_to_column": pv_get_pl_result,
             },
             "historic": {
                 "field": ("T_CARDS", "DS_PL_RESULT"),
                 "apply_to_column": historic_get_pl_result,
             },
         },
-        "test_type": STAGING_TEST
+        "test_type": STAGING_TEST,
     },
     # followup fields
     {
@@ -1506,13 +1426,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "SuiviId"),
-                "apply_to_table": pv_get_followup_done
+                "apply_to_table": pv_get_followup_done,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_ID"),
-                "apply_to_table": historic_get_followup_done
+                "apply_to_table": historic_get_followup_done,
             },
-        }
+        },
     },
     {
         "field": "test_followup_pg",
@@ -1520,13 +1440,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PG"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_PG"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_sf",
@@ -1534,13 +1454,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "SF"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_SF"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_ge",
@@ -1548,13 +1468,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "GE"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_GE"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_woo",
@@ -1562,13 +1482,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "Woo"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_WOO"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_maect",
@@ -1576,13 +1496,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "mAECT"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_MAECT"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_woo_maect",
@@ -1590,9 +1510,9 @@ MAPPING: List[JsonType] = [
         "sources": {
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_WOO_MAECT"),
-                "apply_to_table": historic_get_followup_test_result
-            },
-        }
+                "apply_to_table": historic_get_followup_test_result,
+            }
+        },
     },
     {
         "field": "test_followup_pl",
@@ -1600,9 +1520,9 @@ MAPPING: List[JsonType] = [
         "sources": {
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_PL"),
-                "apply_to_table": historic_get_followup_test_result
-            },
-        }
+                "apply_to_table": historic_get_followup_test_result,
+            }
+        },
     },
     {
         "field": "test_followup_pl_trypanosome",
@@ -1610,13 +1530,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PL Tryp"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_PL_TRYP"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_pl_gb",
@@ -1624,13 +1544,13 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "PL GB"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_PL_GB"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "test_followup_decision",
@@ -1638,63 +1558,45 @@ MAPPING: List[JsonType] = [
         "sources": {
             "pv": {
                 "field": ("tblSuivi", "Décision médicale"),
-                "apply_to_table": pv_get_followup_test_result
+                "apply_to_table": pv_get_followup_test_result,
             },
             "historic": {
                 "field": ("T_FOLLOWUPS", "S_DECISION"),
-                "apply_to_table": historic_get_followup_test_result
+                "apply_to_table": historic_get_followup_test_result,
             },
-        }
+        },
     },
     {
         "field": "participant_member_type",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.memberType")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.memberType")}},
     },
     {
         "field": "participant_origin_country",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.country")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.country")}},
     },
     {
         "field": "participant_origin_province",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "person.traveller.travellerProvince")
-            },
+            "mobile": {"field": ("main", "person.traveller.travellerProvince")}
         },
     },
     {
         "field": "participant_origin_zone",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "person.traveller.travellerZone")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "person.traveller.travellerZone")}},
     },
     {
         "field": "participant_origin_area",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "person.traveller.travellerArea")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "person.traveller.travellerArea")}},
     },
     #############
     # Test times
@@ -1703,9 +1605,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.catt.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.catt.testTime")}
         },
     },
     {
@@ -1713,9 +1613,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.rdt.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.rdt.testTime")}
         },
     },
     {
@@ -1723,9 +1621,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.ctcwoo.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.ctcwoo.testTime")}
         },
     },
     {
@@ -1733,9 +1629,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.maect.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.maect.testTime")}
         },
     },
     {
@@ -1743,9 +1637,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.pl.testTime")}
         },
     },
     {
@@ -1753,9 +1645,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pg.testTime")
-            },
+            "mobile": {"field": ("main", "participant.screenings.pg.testTime")}
         },
     },
     #################
@@ -1764,51 +1654,31 @@ MAPPING: List[JsonType] = [
         "field": "infection_location_type",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.infection.location")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.infection.location")}},
     },
     {
         "field": "infection_location_province",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.infection.province")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.infection.province")}},
     },
     {
         "field": "infection_location_zone",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.infection.zone")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.infection.zone")}},
     },
     {
         "field": "infection_location_area",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.infection.area")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.infection.area")}},
     },
     {
         "field": "infection_location_village",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.infection.village")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.infection.village")}},
     },
     #################
     # Test device IDs
@@ -1817,29 +1687,21 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.catt.device")
-            },
+            "mobile": {"field": ("main", "participant.screenings.catt.device")}
         },
     },
     {
         "field": "test_rdt_test_device",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.rdt.device")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.screenings.rdt.device")}},
     },
     {
         "field": "test_ctcwoo_test_device",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.ctcwoo.device")
-            },
+            "mobile": {"field": ("main", "participant.screenings.ctcwoo.device")}
         },
     },
     {
@@ -1847,30 +1709,20 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.maect.device")
-            },
+            "mobile": {"field": ("main", "participant.screenings.maect.device")}
         },
     },
     {
         "field": "test_pl_test_device",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.device")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.screenings.pl.device")}},
     },
     {
         "field": "test_pg_test_device",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pg.device")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.screenings.pg.device")}},
     },
     #################
     # Test location
@@ -1881,7 +1733,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.catt.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1891,7 +1743,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.catt.position.latitude")
-            },
+            }
         },
     },
     {
@@ -1901,7 +1753,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.rdt.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1911,7 +1763,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.rdt.position.latitude")
-            },
+            }
         },
     },
     {
@@ -1921,7 +1773,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.maect.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1931,7 +1783,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.maect.position.latitude")
-            },
+            }
         },
     },
     {
@@ -1941,7 +1793,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.ctcwoo.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1951,7 +1803,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.ctcwoo.position.latitude")
-            },
+            }
         },
     },
     {
@@ -1961,7 +1813,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pl.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1969,9 +1821,7 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pl.position.latitude")
-            },
+            "mobile": {"field": ("main", "participant.screenings.pl.position.latitude")}
         },
     },
     {
@@ -1981,7 +1831,7 @@ MAPPING: List[JsonType] = [
         "sources": {
             "mobile": {
                 "field": ("main", "participant.screenings.pg.position.longitude")
-            },
+            }
         },
     },
     {
@@ -1989,76 +1839,47 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {
-                "field": ("main", "participant.screenings.pg.position.latitude")
-            },
+            "mobile": {"field": ("main", "participant.screenings.pg.position.latitude")}
         },
     },
-
-
     ##################
     # Treatment/death
     {
         "field": "treatments",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "participant.treatments")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "participant.treatments")}},
     },
     {
         "field": "dead",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "death.dead")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "death.dead")}},
     },
     {
         "field": "death_date",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "death.deathDate")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "death.deathDate")}},
     },
     {
         "field": "death_device",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "death.device")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "death.device")}},
     },
     {
         "field": "death_position_latitude",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "death.position.latitude")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "death.position.latitude")}},
     },
     {
         "field": "death_position_longitude",
         "case_ignore": True,
         "export_levels": [],
-        "sources": {
-            "mobile": {
-                "field": ("main", "death.position.longitude")
-            },
-        },
+        "sources": {"mobile": {"field": ("main", "death.position.longitude")}},
     },
-
     # These fields might get added later and are currently placeholders with no source fields.
     # For now these are supported through the case sql view.
     {
@@ -2072,22 +1893,21 @@ MAPPING: List[JsonType] = [
     {
         "field": "stage_result",
         "export_levels": [Export.suspects_full, Export.suspects_anon],
-    }
+    },
 ]
 
-CASE_IGNORE = [f['field'] for f in MAPPING
-               if 'case_ignore' in f and f['case_ignore']]
-ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
-                      if Export.anon in f['export_levels']]
+CASE_IGNORE = [f["field"] for f in MAPPING if "case_ignore" in f and f["case_ignore"]]
+ANON_EXPORT_FIELDS = [f["field"] for f in MAPPING if Export.anon in f["export_levels"]]
 
-FULL_EXPORT_FIELDS = [f['field'] for f in MAPPING
-                      if Export.full in f['export_levels']]
+FULL_EXPORT_FIELDS = [f["field"] for f in MAPPING if Export.full in f["export_levels"]]
 
-SUSPECT_FULL_EXPORT_FIELDS = [f['field'] for f in MAPPING
-                              if Export.suspects_full in f['export_levels']]
+SUSPECT_FULL_EXPORT_FIELDS = [
+    f["field"] for f in MAPPING if Export.suspects_full in f["export_levels"]
+]
 
-SUSPECT_ANON_EXPORT_FIELDS = [f['field'] for f in MAPPING
-                              if Export.suspects_anon in f['export_levels']]
+SUSPECT_ANON_EXPORT_FIELDS = [
+    f["field"] for f in MAPPING if Export.suspects_anon in f["export_levels"]
+]
 
 
 ################################################################################
@@ -2109,14 +1929,11 @@ IMPORT_CONFIG: JsonType = {
         "import_options": {
             "T_CARDS": {
                 "index_col": 0,
-                "parse_dates": ['D_DATE', 'F_TIMESTAMP', "TP_DATE", "TP_DATE_END"],
+                "parse_dates": ["D_DATE", "F_TIMESTAMP", "TP_DATE", "TP_DATE_END"],
                 "infer_datetime_format": True,
             },
-            "T_FOLLOWUPS": {
-                "index_col": 1,
-                "infer_datetime_format": True,
-            }
-        }
+            "T_FOLLOWUPS": {"index_col": 1, "infer_datetime_format": True},
+        },
     },
     "pv": {
         "type": "pv",
@@ -2125,19 +1942,19 @@ IMPORT_CONFIG: JsonType = {
         "import_options": {
             "tblFishedeDeclaration": {
                 "index_col": 0,
-                "parse_dates": ['Date de diagnostique'],
+                "parse_dates": ["Date de diagnostique"],
                 "dtype": {
-                    'Années': 'str',           # nan, year(2006) or year range(2006-2007)
-                    'Latex LCR': 'str',        # nan, string('1/16')
-                    'Qualification de la personne2': 'str',  # can be nan or string
-                    'UM/CT_FchDecede': 'str',  # nan or string
-                    'Date du décès': 'str',    # nan or '02/01/09 00:00:00' datetime
-                    'Autre cause:': 'str',     # nan or string
-                    'Autres signes': 'str',    # nan or string
-                    'Autres signes1': 'str',   # nan or string
-                    'Autres signes2': 'str',   # nan or string
-                    'Autres signes3': 'str',   # nan or string
-                    "Infection du site d'injection": 'str',   # nan or string
+                    "Années": "str",  # nan, year(2006) or year range(2006-2007)
+                    "Latex LCR": "str",  # nan, string('1/16')
+                    "Qualification de la personne2": "str",  # can be nan or string
+                    "UM/CT_FchDecede": "str",  # nan or string
+                    "Date du décès": "str",  # nan or '02/01/09 00:00:00' datetime
+                    "Autre cause:": "str",  # nan or string
+                    "Autres signes": "str",  # nan or string
+                    "Autres signes1": "str",  # nan or string
+                    "Autres signes2": "str",  # nan or string
+                    "Autres signes3": "str",  # nan or string
+                    "Infection du site d'injection": "str",  # nan or string
                 },
                 "infer_datetime_format": True,
             },
@@ -2145,31 +1962,25 @@ IMPORT_CONFIG: JsonType = {
                 "index_col": 1,
                 "parse_dates": ["Date début réel", "Date fin"],
                 "dtype": {
-                    "DDR": 'str',                   # nan and datetime
-                    "Fréq pouls": 'str',            # numbers and dates
-                    "Température": 'str',           # numbers, strings like "normal", nan
-                    "Tension artériel": "str",      # fractions(9/8) and nan
-                    "Fréq respiratoire": 'str',     # numbers, dates, strings, "NF"
-                    "Traitement Prescrit": "str",   # strings and nan
-                    "Traitement Prescrit specifique": 'str',  # strings and nan
-                    "Date de prescription": 'str',  # datetimes and nan
-                    "Centre recommandé": 'str',     # nan and strings
+                    "DDR": "str",  # nan and datetime
+                    "Fréq pouls": "str",  # numbers and dates
+                    "Température": "str",  # numbers, strings like "normal", nan
+                    "Tension artériel": "str",  # fractions(9/8) and nan
+                    "Fréq respiratoire": "str",  # numbers, dates, strings, "NF"
+                    "Traitement Prescrit": "str",  # strings and nan
+                    "Traitement Prescrit specifique": "str",  # strings and nan
+                    "Date de prescription": "str",  # datetimes and nan
+                    "Centre recommandé": "str",  # nan and strings
                 },
                 "infer_datetime_format": True,
             },
-            "tblSuivi": {
-                "index_col": 1
-            }
-        }
+            "tblSuivi": {"index_col": 1},
+        },
     },
     "backup": {
         "type": "mobile_backup",
         "mapping_field": "mobile",
         "main_table": "main",
     },
-    "sync": {
-        "type": "mobile_sync",
-        "mapping_field": "mobile",
-        "main_table": "main",
-    },
+    "sync": {"type": "mobile_sync", "mapping_field": "mobile", "main_table": "main"},
 }

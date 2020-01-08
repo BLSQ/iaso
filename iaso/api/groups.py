@@ -28,6 +28,7 @@ class GroupsViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
 
+        queryset = queryset.distinct()
         if version:
             queryset = queryset.filter(source_version=version)
 

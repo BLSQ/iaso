@@ -1,7 +1,8 @@
-import React, { Fragment } from 'react';
+import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
+const inputPlaceHolder = '--';
 
 class CaseInfectionLocation extends React.Component {
     render() {
@@ -41,58 +42,61 @@ class CaseInfectionLocation extends React.Component {
                     </thead>
                     <tbody>
 
-                        {
-                            currentCase.infection_location_type
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="main.label.infectionLocation" defaultMessage="Infection location" />
-                                    </th>
-                                    <td>
-                                        {currentCase.infection_location_type_display}
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {
-                            currentCase.infection_location
-                            && (
-                                <Fragment>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="main.label.infectionLocationProvince" defaultMessage="Infection province" />
-                                        </th>
-                                        <td>
-                                            {currentCase.infection_location.province_name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="main.label.infectionLocationZone" defaultMessage="Infection zone" />
-                                        </th>
-                                        <td>
-                                            {currentCase.infection_location.ZS_name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="main.label.infectionLocationArea" defaultMessage="Infection area" />
-                                        </th>
-                                        <td>
-                                            {currentCase.infection_location.AS_name}
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <th>
-                                            <FormattedMessage id="main.label.infectionLocationVillage" defaultMessage="Infection village" />
-                                        </th>
-                                        <td>
-                                            {currentCase.infection_location.name}
-                                        </td>
-                                    </tr>
-                                </Fragment>
-                            )
-                        }
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.infectionLocation" defaultMessage="Infection location" />
+                            </th>
+                            <td>
+                                {currentCase.infection_location_type
+                                    ? currentCase.infection_location_type_display
+                                    : inputPlaceHolder
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.infectionLocationProvince" defaultMessage="Infection province" />
+                            </th>
+                            <td>
+                                {currentCase.infection_location
+                                    ? currentCase.infection_location.province_name
+                                    : inputPlaceHolder
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.infectionLocationZone" defaultMessage="Infection zone" />
+                            </th>
+                            <td>
+                                {currentCase.infection_location
+                                    ? currentCase.infection_location.ZS_name
+                                    : inputPlaceHolder
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.infectionLocationArea" defaultMessage="Infection area" />
+                            </th>
+                            <td>
+                                {currentCase.infection_location
+                                    ? currentCase.infection_location.AS_name
+                                    : inputPlaceHolder
+                                }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.label.infectionLocationVillage" defaultMessage="Infection village" />
+                            </th>
+                            <td>
+                                {currentCase.infection_location
+                                    ? currentCase.infection_location.name
+                                    : inputPlaceHolder
+                                }
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>

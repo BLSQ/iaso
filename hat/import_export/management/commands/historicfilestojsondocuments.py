@@ -1,6 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from hat.cases.event_log import get_events, get_event_of_type, EventTable
+from hat.cases.models import Case
 from hat.import_export.extract import prepare_mdb_data
 from hat.import_export.import_cases import save_documents
 from hat.import_export.load import update_cases
@@ -50,6 +51,13 @@ class Command(BaseCommand):
                 hash_already_imported = JSONDocument.objects.filter(doc_id=f"{file_hash}-1").first()
                 if event["sub_type"] == "historic" and hash_already_imported is None:
                     save_documents(prepared.get("T_CARDS"), file_hash, type="historic")
+                    print("Transform documents to try and find their case...", end="", flush=True)
+                    transformed = transform_source('historic', prepared)
+                    for index, row in transformed.iterrows():
+                        cases = Case.objects.filter(document_id=row['document_id']).filter(source='historic')
+                        if cases.count() == 1:
+                            JSONDocument.objects.filter(id=row["json_document_id"]).update(case_id=cases.first().id)
+
                 print("Update...", end="", flush=True)
 
                 print("done")

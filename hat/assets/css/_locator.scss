@@ -1,4 +1,3 @@
-
 /******************************************************************************
  * Locator styles
  ******************************************************************************/
@@ -15,13 +14,16 @@
 .type-filters-containers {
     font-size: 11px;
     margin-top: 20px;
+
     .location-subtitle {
         font-weight: bold;
         color: $mid-gray;
     }
+
     ul {
         border-radius: 3px;
         overflow: hidden;
+
         li {
             list-style: none;
             cursor: pointer;
@@ -29,9 +31,11 @@
             display: block;
             padding: 10px 0px 10px 37px;
             position: relative;
+
             &.active {
                 color: $blue;
             }
+
             &:before {
                 content: '';
                 border: 3px solid $gray;
@@ -44,24 +48,28 @@
                 left: 10px;
                 top: 8px;
             }
+
             &.official {
                 &:before {
                     background-color: rgba($dark-green, 0.5);
                     border-color: $dark-green;
                 }
             }
+
             &.not_official {
                 &:before {
                     background-color: rgba($blue, 0.5);
                     border-color: $blue;
                 }
             }
+
             &.from_campaign {
                 &:before {
                     background-color: rgba($dark-blue, 0.5);
                     border-color: $dark-blue;
                 }
             }
+
             &.satellite {
                 &:before {
                     background-color: rgba($purple, 0.5);
@@ -75,18 +83,21 @@
                     border-color: $mid-mid-gray;
                 }
             }
+
             &.notFull {
                 &:before {
                     background-color: transparent;
                     border-color: red;
                 }
             }
+
             &.full {
                 &:before {
                     background-color: rgba(green, 0.5);
                     border-color: green;
                 }
             }
+
             &.hover {
                 &:before {
                     background-color: rgba($blue, 0.5);
@@ -102,11 +113,14 @@
         table {
             border-radius: 3px;
             overflow: hidden;
+
             tbody {
                 font-size: 12px;
+
                 th {
                     max-width: 60px;
                 }
+
                 td {
                     text-align: center;
                 }
@@ -120,18 +134,22 @@
     text-align: right;
     display: block !important;
     margin-top: 8px;
+
     p {
         font-weight: bold;
         margin-bottom: 10px;
+
         span {
             font-weight: normal;
         }
     }
+
     >div {
         .button--save {
             margin-top: 15px;
         }
     }
+
     button {
         &.button--back {
             padding: 0.75em 1.5em;
@@ -141,7 +159,8 @@
     }
 }
 
-.locator-title, .sub-title {
+.locator-title,
+.sub-title {
     @include heading--medium;
     margin-bottom: 1em;
     font-weight: normal;
@@ -151,6 +170,7 @@
     padding: 0;
     display: block;
     margin-bottom: 6px;
+
     &.no-result {
         color: red;
         text-align: right;
@@ -167,11 +187,14 @@
 .locator-cases-left {
     margin-top: 10px;
 }
+
 .list-location-filters {
     padding: $padding-unit 0 0 0;
+
     &>div {
-        .location-filter{
+        .location-filter {
             padding-bottom: 15px;
+
             >span {
                 font-weight: bold;
                 color: #868486;
@@ -183,12 +206,18 @@
     }
 }
 
-.locator-case-container, .patient-infos-container {
+.locator-case-container,
+.patient-infos-container {
     width: calc(100% - 40px);
     display: inline-block;
 }
+
 .locator-container {
     .ReactTable {
         min-height: auto;
+    }
+
+    >div {
+        display: flex;
     }
 }

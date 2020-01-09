@@ -25,9 +25,10 @@ import xlsxwriter
 import io
 import csv
 
+
 @login_required()
 def change_password(request):
-    if request.method == 'POST':
+    if request.method == "POST":
         form = PasswordChangeForm(request.user, request.POST)
         if form.is_valid():
             original_user = copy(request.user)
@@ -36,277 +37,487 @@ def change_password(request):
             user.save()
             update_session_auth_hash(request, user)
             log_modification(original_user, user, PASSWORD_API, original_user)
-            messages.success(request, _('Your password was successfully updated'))
-            return redirect('/dashboard/home')
+            messages.success(request, _("Your password was successfully updated"))
+            return redirect("/dashboard/home")
     else:
         form = PasswordChangeForm(request.user)
-    return render(request, 'dashboard/change_password.html', {
-        'form': form
-    })
+    return render(request, "dashboard/change_password.html", {"form": form})
 
-@require_http_methods(['GET'])
+
+@require_http_methods(["GET"])
 def home(request: HttpRequest) -> HttpResponse:
     user = request.user
     if user.is_anonymous:
-        return render(request, 'dashboard/home.html', {'STATIC_URL': settings.STATIC_URL})
+        return render(
+            request, "dashboard/home.html", {"STATIC_URL": settings.STATIC_URL}
+        )
     else:
         if user.profile.password_reset:
-            return redirect('/dashboard/password')
+            return redirect("/dashboard/password")
         else:
-            return render(request, 'dashboard/home.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(user, reverse("dashboard:home"))})
+            return render(
+                request,
+                "dashboard/home.html",
+                {
+                    "STATIC_URL": settings.STATIC_URL,
+                    "menu": get_menu(user, reverse("dashboard:home")),
+                },
+            )
 
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_stats_graphs')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_stats_graphs")
+@require_http_methods(["GET"])
 def epidemiology(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:epidemiology"))})
+    return render(
+        request,
+        "dashboard/stats.html",
+        {"menu": get_menu(request.user, reverse("dashboard:epidemiology"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_stats_graphs')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_stats_graphs")
+@require_http_methods(["GET"])
 def data_monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:data_monitoring"))})
+    return render(
+        request,
+        "dashboard/stats.html",
+        {"menu": get_menu(request.user, reverse("dashboard:data_monitoring"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_stats_reports')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_stats_reports")
+@require_http_methods(["GET"])
 def reports(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/stats.html', {'menu': get_menu(request.user, reverse("dashboard:reports"))})
+    return render(
+        request,
+        "dashboard/stats.html",
+        {"menu": get_menu(request.user, reverse("dashboard:reports"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_plannings_microplanning')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_plannings_microplanning")
+@require_http_methods(["GET"])
 def plannings_micro(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:micro"))})
+    return render(
+        request,
+        "dashboard/plannings.html",
+        {"menu": get_menu(request.user, reverse("dashboard:micro"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_plannings_macroplanning')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_plannings_macroplanning")
+@require_http_methods(["GET"])
 def plannings_macro(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:macro"))})
+    return render(
+        request,
+        "dashboard/plannings.html",
+        {"menu": get_menu(request.user, reverse("dashboard:macro"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_plannings_routes')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_plannings_routes")
+@require_http_methods(["GET"])
 def plannings_routes(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/plannings.html', {'menu': get_menu(request.user, reverse("dashboard:routes"))})
+    return render(
+        request,
+        "dashboard/plannings.html",
+        {"menu": get_menu(request.user, reverse("dashboard:routes"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_devices')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_devices")
+@require_http_methods(["GET"])
 def device_management(request: HttpRequest) -> HttpResponse:
     # Use the start of tomorrow as the maximum date to omit records with wrong future dates
     today = datetime.today()
     max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
-    dates = CaseView.objects \
-                    .filter(source__icontains='mobile') \
-                    .filter(document_date__isnull=False) \
-                    .filter(document_date__lt=max_date) \
-                    .order_by('document_date_month') \
-                    .values_list('document_date_month', flat=True) \
-                    .distinct()
+    dates = (
+        CaseView.objects.filter(source__icontains="mobile")
+        .filter(document_date__isnull=False)
+        .filter(document_date__lt=max_date)
+        .order_by("document_date_month")
+        .values_list("document_date_month", flat=True)
+        .distinct()
+    )
 
-    json_data = json.dumps({
-        # dates formatted as 2014-06
-        'dates': [d.strftime('%Y-%m') for d in dates]
-    })
+    json_data = json.dumps(
+        {
+            # dates formatted as 2014-06
+            "dates": [d.strftime("%Y-%m") for d in dates]
+        }
+    )
 
-    return render(request, 'dashboard/management.html', {'json_data': json_data, 'menu': get_menu(request.user, reverse("dashboard:management_devices"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": json_data,
+            "menu": get_menu(request.user, reverse("dashboard:management_devices")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_teams')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_teams")
+@require_http_methods(["GET"])
 def teams_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_team"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_team")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_coordinations')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_coordinations")
+@require_http_methods(["GET"])
 def coordinations_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_coord"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_coord")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_workzones')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_workzones")
+@require_http_methods(["GET"])
 def workzones_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_workzone"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_workzone")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_plannings')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_plannings")
+@require_http_methods(["GET"])
 def plannings_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_planning"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_planning")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_users')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_users")
+@require_http_methods(["GET"])
 def users_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_user"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_user")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_villages')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_villages")
+@require_http_methods(["GET"])
 def villages_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_village"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_village")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_zones')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_zones")
+@require_http_methods(["GET"])
 def zones_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_zone"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_zone")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_management_areas')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_management_areas")
+@require_http_methods(["GET"])
 def areas_management(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:management_area"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:management_area")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_modifications')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_modifications")
+@require_http_methods(["GET"])
 def logs(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:logs"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {"json_data": [], "menu": get_menu(request.user, reverse("dashboard:logs"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_modifications')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_modifications")
+@require_http_methods(["GET"])
 def log_detail(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/management.html', {'json_data': [], 'menu': get_menu(request.user, reverse("dashboard:log_detail"))})
+    return render(
+        request,
+        "dashboard/management.html",
+        {
+            "json_data": [],
+            "menu": get_menu(request.user, reverse("dashboard:log_detail")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_locator')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_locator")
+@require_http_methods(["GET"])
 def locator(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/locator.html', {'menu': get_menu(request.user, reverse("dashboard:locator_list"))})
+    return render(
+        request,
+        "dashboard/locator.html",
+        {"menu": get_menu(request.user, reverse("dashboard:locator_list"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_vectorcontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_vectorcontrol")
+@require_http_methods(["GET"])
 def vector(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/vector.html', {'STATIC_URL': settings.STATIC_URL, 'menu': get_menu(request.user, reverse("dashboard:vector"))})
+    return render(
+        request,
+        "dashboard/vector.html",
+        {
+            "STATIC_URL": settings.STATIC_URL,
+            "menu": get_menu(request.user, reverse("dashboard:vector")),
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_vectorcontrolupload')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_vectorcontrolupload")
+@require_http_methods(["GET"])
 def vector_sync(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector_sync"))})
+    return render(
+        request,
+        "dashboard/vector.html",
+        {"menu": get_menu(request.user, reverse("dashboard:vector_sync"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_vectorcontrolupload')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_vectorcontrolupload")
+@require_http_methods(["GET"])
 def vector_upload(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/vector.html', {'menu': get_menu(request.user, reverse("dashboard:vector_upload"))})
+    return render(
+        request,
+        "dashboard/vector.html",
+        {"menu": get_menu(request.user, reverse("dashboard:vector_upload"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_qualitycontrol")
+@require_http_methods(["GET"])
 def quality_control(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+    return render(
+        request,
+        "dashboard/quality_control.html",
+        {"menu": get_menu(request.user, reverse("dashboard:quality-control"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_qualitycontrol")
+@require_http_methods(["GET"])
 def quality_control_stats(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control-stats"))})
+    return render(
+        request,
+        "dashboard/quality_control.html",
+        {"menu": get_menu(request.user, reverse("dashboard:quality-control-stats"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_qualitycontrol")
+@require_http_methods(["GET"])
 def quality_control_image(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+    return render(
+        request,
+        "dashboard/quality_control.html",
+        {"menu": get_menu(request.user, reverse("dashboard:quality-control"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_qualitycontrol")
+@require_http_methods(["GET"])
 def quality_control_monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control-monitoring"))})
+    return render(
+        request,
+        "dashboard/quality_control.html",
+        {
+            "menu": get_menu(
+                request.user, reverse("dashboard:quality-control-monitoring")
+            )
+        },
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_qualitycontrol')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_qualitycontrol")
+@require_http_methods(["GET"])
 def quality_control_video(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/quality_control.html', {'menu': get_menu(request.user, reverse("dashboard:quality-control"))})
+    return render(
+        request,
+        "dashboard/quality_control.html",
+        {"menu": get_menu(request.user, reverse("dashboard:quality-control"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_case_cases")
+@require_http_methods(["GET"])
 def cases_list(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:cases_list"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:cases_list"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_case_cases")
+@require_http_methods(["GET"])
 def cases_detail(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:cases_list"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:cases_list"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_case_cases")
+@require_http_methods(["GET"])
 def register(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:register"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_case_cases")
+@require_http_methods(["GET"])
 def register_detail(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:register"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_duplicates')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_duplicates")
+@require_http_methods(["GET"])
 def register_duplicates(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:register_duplicates"))},
+    )
+
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_duplicates')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_duplicates")
+@require_http_methods(["GET"])
 def register_duplicates_detail(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:register_duplicates"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:register_duplicates"))},
+    )
 
 
 @is_user_authorized
 @login_required()
-@permission_required('menupermissions.x_case_cases')
-@require_http_methods(['GET'])
+@permission_required("menupermissions.x_case_cases")
+@require_http_methods(["GET"])
 def monitoring(request: HttpRequest) -> HttpResponse:
-    return render(request, 'dashboard/datas.html', {'menu': get_menu(request.user, reverse("dashboard:monitoring"))})
+    return render(
+        request,
+        "dashboard/datas.html",
+        {"menu": get_menu(request.user, reverse("dashboard:monitoring"))},
+    )
 
 
-@login_required(login_url='/login-iaso/')
-@require_http_methods(['GET'])
+@login_required(login_url="/login/")
+@require_http_methods(["GET"])
 def iaso(request: HttpRequest) -> HttpResponse:
-    return render(request, 'iaso/index.html', {'STATIC_URL': settings.STATIC_URL})
-
+    return render(request, "iaso/index.html", {"STATIC_URL": settings.STATIC_URL})

@@ -74,7 +74,7 @@ const filtersCasesGeo = (
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
-        villages(villagesList),
+        villages(villagesList, Boolean(props.params.as_id && areasList.length > 0)),
     ]
 );
 
@@ -164,7 +164,7 @@ const filtersPatientsGeo = (
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
-        villages(villagesList),
+        villages(villagesList, Boolean(props.params.as_id && areasList.length > 0)),
     ];
     if (coordinationsList) {
         geoFiltersArray.unshift(coordinations(coordinationsList));

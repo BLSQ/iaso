@@ -72,7 +72,8 @@ class OrgUnitsFiltersComponent extends Component {
         } = this.props;
         const filters = [
             search(),
-            hasInstances(formatMessage),
+            orgUnitType(orgUnitTypes),
+            group(groups),
         ];
         if (currentTab === 'map') {
             filters.push(locationsLimit());
@@ -97,7 +98,7 @@ class OrgUnitsFiltersComponent extends Component {
                             filters={[
                                 location(formatMessage),
                                 shape(formatMessage),
-                                orgUnitType(orgUnitTypes),
+                                hasInstances(formatMessage),
                             ]}
                         />
                     </Grid>
@@ -107,9 +108,8 @@ class OrgUnitsFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                group(groups),
-                                source(sources || [], true, true),
                                 status(formatMessage),
+                                source(sources || [], true, true),
                             ]}
                         />
                         <OrgUnitsLevelsFiltersComponent

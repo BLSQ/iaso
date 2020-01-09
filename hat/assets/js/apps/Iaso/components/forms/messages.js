@@ -57,7 +57,7 @@ const MESSAGES = {
     },
     hasInstances: {
         id: 'iaso.forms.hasInstances',
-        defaultMessage: 'With encoded forms',
+        defaultMessage: 'Forms',
     },
     yes: {
         id: 'iaso.forms.yes',

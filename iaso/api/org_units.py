@@ -123,7 +123,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         source = request.GET.get("source", None)
         group = request.GET.get("group", None)
         version = request.GET.get("version", None)
-        order = request.GET.get("order", "id").split(",")
+        order = request.GET.get("order", "name").split(",")
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)

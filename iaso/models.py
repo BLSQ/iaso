@@ -170,6 +170,33 @@ class SourceVersion(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
+    def as_report_dict(self):
+        report = {}
+        report["org_units"] = self.orgunit_set.count()
+        report["org_units_with_location"] = self.orgunit_set.exclude(
+            location=None
+        ).count()
+        report["org_units_with_shapes"] = self.orgunit_set.filter(
+            simplified_geom__isnull=False
+        ).count()
+        org_unit_types = self.orgunit_set.values_list(
+            "org_unit_type__name", "org_unit_type__id"
+        ).distinct()
+        org_unit_types_report = {}
+        for t in org_unit_types:
+            name, ident = t
+            org_unit_types_report[name] = self.orgunit_set.filter(
+                org_unit_type_id=ident
+            ).count()
+        report["types"] = org_unit_types_report
+        group_report = {}
+        groups = self.orgunit_set.values_list("groups__name", "groups__id").distinct()
+        for group in groups:
+            name, ident = group
+            group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
+        report["groups"] = group_report
+        return report
+
 
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
@@ -578,33 +605,6 @@ class FormVersion(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
-
-    def as_report_dict(self):
-        report = {}
-        report["org_units"] = self.orgunit_set.count()
-        report["org_units_with_location"] = self.orgunit_set.exclude(
-            location=None
-        ).count()
-        report["org_units_with_shapes"] = self.orgunit_set.filter(
-            simplified_geom__isnull=False
-        ).count()
-        org_unit_types = self.orgunit_set.values_list(
-            "org_unit_type__name", "org_unit_type__id"
-        ).distinct()
-        org_unit_types_report = {}
-        for t in org_unit_types:
-            name, ident = t
-            org_unit_types_report[name] = self.orgunit_set.filter(
-                org_unit_type_id=ident
-            ).count()
-        report["types"] = org_unit_types_report
-        group_report = {}
-        groups = self.orgunit_set.values_list("groups__name", "groups__id").distinct()
-        for group in groups:
-            name, ident = group
-            group_report[name] = self.orgunit_set.filter(groups__id=ident).count()
-        report["groups"] = group_report
-        return report
 
 
 class Mapping(models.Model):

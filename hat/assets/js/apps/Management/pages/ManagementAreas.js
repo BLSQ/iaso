@@ -228,7 +228,7 @@ class ManagementAreas extends React.Component {
                             />
                         </h2>
                         <button
-                            className="button--add"
+                            className="button--save--tiny"
                             onClick={() => selectArea({ id: 0 })}
                         >
                             <i className="fa fa-plus" />

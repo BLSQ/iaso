@@ -64,6 +64,26 @@ export const updateZone = (dispatch, zone) => {
     });
 };
 
+export const createZone = (dispatch, zone) => {
+    dispatch(loadActions.startLoading());
+    req
+        .post('/api/zs/') // create
+        .set('Content-Type', 'application/json')
+        .send(zone)
+        .then(() => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(zoneUpdated(true));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
+            dispatch(loadActions.errorLoading(err));
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 // Delete action will only mark it as erased
 
 export const deleteZone = (dispatch, zone) => {
@@ -116,6 +136,7 @@ export const zonesInitialState = {
 
 export const zoneActions = {
     updateZone,
+    createZone,
     setZones,
     zoneUpdated,
     deleteZone,

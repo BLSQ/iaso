@@ -220,13 +220,20 @@ class ManagementZones extends React.Component {
                     )
                 }
                 <div className="widget__container management-control">
-                    <div className="widget__header">
+                    <div className="widget__header with-button">
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="main.label.zones"
                                 defaultMessage="Health zones"
                             />
                         </h2>
+                        <button
+                            className="button--save--tiny"
+                            onClick={() => selectZone({ id: 0 })}
+                        >
+                            <i className="fa fa-plus" />
+                            <FormattedMessage id="mangement.label.addZone" defaultMessage="New Zone" />
+                        </button>
 
                     </div>
                 </div>

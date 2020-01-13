@@ -31,7 +31,10 @@ class ZoneModale extends Component {
     }
 
     updateZoneField(key, value) {
-        const newZone = Object.assign({}, this.state.zone, { [key]: value });
+        const newZone = {
+            ...this.state.zone,
+            [key]: value,
+        };
         this.props.updateCurrentZone(newZone);
         this.setState({
             isChanged: true,
@@ -41,10 +44,14 @@ class ZoneModale extends Component {
     isSavedDisabled() {
         return (this.state.zone.name === ''
             || !this.state.zone.name
-            || (!this.state.isChanged && this.state.zone.id !== 0));
+            || (!this.state.isChanged && this.state.zone.id !== 0)
+            || !this.state.zone.province_id);
     }
 
     render() {
+        const {
+            geoProvinces,
+        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -55,6 +62,7 @@ class ZoneModale extends Component {
                     <ZoneInfosComponent
                         zone={this.state.zone}
                         updateZoneField={(key, value) => this.updateZoneField(key, value)}
+                        geoProvinces={geoProvinces}
                     />
                     <div className="align-right">
                         <button
@@ -87,9 +95,12 @@ ZoneModale.propTypes = {
     zone: PropTypes.object,
     saveZone: PropTypes.func.isRequired,
     updateCurrentZone: PropTypes.func.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    geoProvinces: state.smallMap.geoProvinces,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

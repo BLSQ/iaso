@@ -259,7 +259,6 @@ class ASViewSet(viewsets.ViewSet):
         area = AS()
         is_authorized = request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser
         if is_authorized:
-            original_area = copy(area)
             area.name = request.data.get("name", "")
             area.source = request.data.get("source", None)
             area.aliases = request.data.get("aliases", None)
@@ -279,7 +278,7 @@ class ASViewSet(viewsets.ViewSet):
             area.ZS = zone
 
             area.save()
-            log_modification(original_area, area, AREA_API, request.user)
+            log_modification(None, area, AREA_API, request.user)
             return Response(area.as_dict())
         else:
             return Response("Unauthorized", status=401)

@@ -7,7 +7,7 @@ import Select from 'react-select';
 import { deepEqual } from '../../../utils';
 import ArrayFieldInput from '../../../components/ArrayFieldInput';
 
-const getGeoList = (geoJson) => {
+export const getGeoList = (geoJson) => {
     const itemsList = [];
     geoJson.features.forEach((f) => {
         itemsList.push({
@@ -28,6 +28,21 @@ const getGeoZoneList = (geoJson, provinceId) => {
 };
 
 class AreaInfosComponent extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            area: props.area,
+        };
+    }
+
+    componentWillReceiveProps(nextProps) {
+        if (!deepEqual(nextProps.area, this.props.area, true)) {
+            this.setState({
+                area: nextProps.area,
+            });
+        }
+    }
+
     render() {
         const {
             updateAreaField,
@@ -36,10 +51,8 @@ class AreaInfosComponent extends Component {
             intl: {
                 formatMessage,
             },
-            area,
         } = this.props;
-        const zonesList = getGeoZoneList(geoZones, area.ZS__province_id);
-        console.log('area', area);
+        const { area } = this.state;
         return (
             <section>
                 <div>

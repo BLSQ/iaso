@@ -1,9 +1,12 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
+import Select from 'react-select';
+
 import { deepEqual } from '../../../utils';
 import ArrayFieldInput from '../../../components/ArrayFieldInput';
+import { getGeoList } from './AreaInfosComponent';
 
 class ZoneInfosComponent extends Component {
     constructor(props) {
@@ -24,10 +27,14 @@ class ZoneInfosComponent extends Component {
     render() {
         const {
             updateZoneField,
+            geoProvinces,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         const { zone } = this.state;
         return (
-            <div >
+            <div>
                 <div>
                     <label
                         htmlFor={`name-${zone.id}`}
@@ -36,7 +43,8 @@ class ZoneInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.name"
                             defaultMessage="Nom"
-                        />:
+                        />
+:
                     </label>
                     <input
                         type="text"
@@ -55,7 +63,8 @@ class ZoneInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.aliases"
                             defaultMessage="Alias"
-                        />:
+                        />
+:
                     </label>
                     <ArrayFieldInput
                         fieldList={zone.aliases}
@@ -72,7 +81,8 @@ class ZoneInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.source"
                             defaultMessage="Source du village"
-                        />:
+                        />
+:
                     </label>
                     <input
                         type="text"
@@ -80,6 +90,37 @@ class ZoneInfosComponent extends Component {
                         id={`source-${zone.id}`}
                         value={zone.source}
                         onChange={event => updateZoneField('source', event.currentTarget.value)}
+                    />
+                </div>
+                <div>
+                    <label
+                        htmlFor={`province-${zone.id}`}
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.province"
+                            defaultMessage="Province"
+                        />
+                        :
+                    </label>
+                    <Select
+                        className={!zone.province_id ? 'form-error' : null}
+                        multi={false}
+                        clearable={false}
+                        simpleValue
+                        name={`province-${zone.id}`}
+                        value={zone.province_id}
+                        placeholder={formatMessage({
+                            id: 'main.label.provinceSelect',
+                            defaultMessage: 'Select one province',
+                        })}
+                        options={getGeoList(geoProvinces).map(p => (
+                            {
+                                label: p.name,
+                                value: p.id,
+                            }
+                        ))}
+                        onChange={value => updateZoneField('province_id', value)}
                     />
                 </div>
             </div>
@@ -90,6 +131,8 @@ class ZoneInfosComponent extends Component {
 ZoneInfosComponent.propTypes = {
     zone: PropTypes.object.isRequired,
     updateZoneField: PropTypes.func.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
-export default ZoneInfosComponent;
+export default injectIntl(ZoneInfosComponent);

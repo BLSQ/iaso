@@ -4,8 +4,15 @@ import pandas
 import re
 from base64 import b64encode, b64decode
 from hashlib import md5
+
+import logging
 from pandas import Series
 from string import capwords
+
+from hat.cases.models import CaseAbstract
+
+
+logger = logging.getLogger(__name__)
 
 
 def capitalize(x: str) -> Optional[str]:
@@ -14,7 +21,7 @@ def capitalize(x: str) -> Optional[str]:
     return capwords(x)
 
 
-def create_documentid(row: Series) -> str:
+def create_documentid(row) -> str:
     '''
     Hash some columns to create the document id
     IMPORTANT: We use the `document_id` to identify cases. If something in
@@ -36,7 +43,19 @@ def create_documentid(row: Series) -> str:
         'ZS',
         'AS'
     ]
-    t = tuple(row[COLUMNS])
+
+    if isinstance(row, Series):
+        t = tuple(row[COLUMNS])
+    elif isinstance(row, CaseAbstract):
+        t = [getattr(row, x) for x in COLUMNS]
+    else:
+        logger.warning(f"Type of create_documentid is unexpected: {type(row)}, trying as a Series")
+        t = tuple(row[COLUMNS])
+
+    return create_documentid_tuple(t)
+
+
+def create_documentid_tuple(t) -> str:
     h = md5()
     for x in t:
         h.update(str(x).encode())
@@ -55,14 +74,18 @@ def strip_accents(s: str) -> str:
     return s
 
 
-def hat_id(row: Series) -> str:
+def hat_id(row) -> str:
     '''
     This generates a HAT-Id from a couple of values.
     It's important that it works the same as the function in sense-hat-mobile:
     https://github.com/eHealthAfrica/sense-hat-mobile/blob/develop/src/data/mapping.js#L110-L117
     '''
     empty = 'XX'
-    r2 = row.dropna()
+    if isinstance(row, Series):
+        r2 = row.dropna()
+    else:
+        COLUMNS = ["lastname", "name", "prename", "sex", "year_of_birth", "mothers_surname"]
+        r2 = {col: getattr(row, col) for col in COLUMNS if getattr(row, col, None) is not None}
 
     if 'lastname' in r2:
         lastname = strip_accents(r2['lastname'])

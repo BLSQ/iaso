@@ -28,6 +28,7 @@ from hat.users.models import (
 )
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from ..import_export.utils import create_documentid, hat_id
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -596,14 +597,7 @@ class CasesViewSet(viewsets.ViewSet):
 
                 case.screening_type = request.data.get("screening_type", None)
                 case.test_pl_result = request.data.get("test_pl_result", None)
-                team = request.data.get("team", None)
-                if team:
-                    normalize_team_item = team.get("normalized_team")
-                    if normalize_team_item:
-                        normalize_team_id = normalize_team_item.get("id")
-                        if normalize_team_id:
-                            new_team = get_object_or_404(Team, id=normalize_team_id)
-                            case.normalized_team = new_team
+                case.normalized_team = get_request_team(request.data.get("team", None))
                 document_date = request.data.get("document_date", None)
                 if document_date:
                     case.document_date = dateparse.parse_datetime(document_date)
@@ -619,6 +613,7 @@ class CasesViewSet(viewsets.ViewSet):
                     case.latitude = village.latitude
                     case.longitude = village.longitude
                     case.normalized_AS = village.AS
+                    case.document_id = create_documentid(case)  # Village is part of the document_id but not hat_id
                 infection_location = request.data.get("infectionLocationVillageId", None)
                 if infection_location:
                     infection_village = get_object_or_404(Village, id=infection_location)
@@ -643,7 +638,7 @@ class CasesViewSet(viewsets.ViewSet):
         new_case = Case()
         new_case.screening_type = request.data.get("screening_type", None)
         new_case.test_pl_result = request.data.get("test_pl_result", None)
-        team = request.data.get("team", None)
+        new_case.normalized_team = get_request_team(request.data.get("team", None))
 
         if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
@@ -682,9 +677,10 @@ class CasesViewSet(viewsets.ViewSet):
         new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
         new_case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
         new_case.circumstances_dp_hgr = request.data.get("circumstances_dp_hgr", None)
-        new_case.document_id = uuid.uuid4()
+        new_case.hat_id = hat_id(new_case)
+        new_case.document_id = create_documentid(new_case)
         new_case.save()
-        print('new_case', new_case)
+
         return Response(new_case.as_dict())
 
     def delete(self, request, pk=None):
@@ -731,3 +727,14 @@ def full_delete_case(case):
         response["deleted_patient"] = patient.delete()
 
     return response
+
+
+def get_request_team(team):
+    if team:
+        normalize_team_item = team.get("normalized_team")
+        if normalize_team_item:
+            normalize_team_id = normalize_team_item.get("id")
+            if normalize_team_id:
+                new_team = get_object_or_404(Team, id=normalize_team_id)
+                return new_team
+    return None

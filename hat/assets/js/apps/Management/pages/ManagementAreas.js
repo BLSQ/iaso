@@ -220,13 +220,20 @@ class ManagementAreas extends React.Component {
                     )
                 }
                 <div className="widget__container management-control">
-                    <div className="widget__header">
+                    <div className="widget__header with-button">
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="main.label.areas"
                                 defaultMessage="Health area"
                             />
                         </h2>
+                        <button
+                            className="button--add"
+                            onClick={() => selectArea({ id: 0 })}
+                        >
+                            <i className="fa fa-plus" />
+                            <FormattedMessage id="mangement.label.addArea" defaultMessage="New area" />
+                        </button>
 
                     </div>
                 </div>

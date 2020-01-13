@@ -31,7 +31,13 @@ class AreaModale extends Component {
     }
 
     updateAreaField(key, value) {
-        const newArea = Object.assign({}, this.state.area, { [key]: value });
+        const newArea = {
+            ...this.state.area,
+            [key]: value,
+        };
+        if (key === 'ZS__province_id') {
+            newArea.ZS_id = null;
+        }
         this.props.updateCurrentArea(newArea);
         this.setState({
             isChanged: true,
@@ -41,10 +47,16 @@ class AreaModale extends Component {
     isSavedDisabled() {
         return (this.state.area.name === ''
             || !this.state.area.name
-            || (!this.state.isChanged && this.state.area.id !== 0));
+            || (!this.state.isChanged && this.state.area.id !== 0)
+            || !this.state.area.ZS__province_id
+            || !this.state.area.ZS_id);
     }
 
     render() {
+        const {
+            geoProvinces,
+            geoZones,
+        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -55,6 +67,8 @@ class AreaModale extends Component {
                     <AreaInfosComponent
                         area={this.state.area}
                         updateAreaField={(key, value) => this.updateAreaField(key, value)}
+                        geoProvinces={geoProvinces}
+                        geoZones={geoZones}
                     />
                     <div className="align-right">
                         <button
@@ -87,9 +101,14 @@ AreaModale.propTypes = {
     area: PropTypes.object,
     saveArea: PropTypes.func.isRequired,
     updateCurrentArea: PropTypes.func.isRequired,
+    geoProvinces: PropTypes.object.isRequired,
+    geoZones: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = () => ({});
+const MapStateToProps = state => ({
+    geoProvinces: state.smallMap.geoProvinces,
+    geoZones: state.smallMap.geoZones,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

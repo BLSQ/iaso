@@ -65,6 +65,26 @@ export const updateArea = (dispatch, area) => {
     });
 };
 
+export const createArea = (dispatch, area) => {
+    dispatch(loadActions.startLoading());
+    req
+        .post('/api/as/') // create
+        .set('Content-Type', 'application/json')
+        .send(area)
+        .then(() => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(areaUpdated(true));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
+            dispatch(loadActions.errorLoading(err));
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 // Delete action will only mark it as erased
 
 export const deleteArea = (dispatch, area) => {
@@ -119,6 +139,7 @@ export const areasInitialState = {
 };
 
 export const areaActions = {
+    createArea,
     updateArea,
     setAreas,
     areaUpdated,

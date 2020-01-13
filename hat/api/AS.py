@@ -98,7 +98,6 @@ class ASViewSet(viewsets.ViewSet):
         if as_geo_json:
             queryset = queryset.filter(simplified_geom__isnull=False)
             geo_json = geojson_queryset(queryset, geometry_field='geo_as.simplified_geom', fields=['name', 'ZS'])
-
             return Response(geo_json)
         elif as_list:
             queryset = queryset.order_by(*orders)
@@ -235,7 +234,7 @@ class ASViewSet(viewsets.ViewSet):
             original_area = copy(area)
             area.name = request.data.get("name", "")
             area.source = request.data.get("source", None)
-            area.aliases = request.data.get("aliases", "")
+            area.aliases = request.data.get("aliases", None)
             area.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
             if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
@@ -245,6 +244,8 @@ class ASViewSet(viewsets.ViewSet):
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response("Only one polygon should be saved in the geo_json shape",
                                     status=status.HTTP_400_BAD_REQUEST)
+            else:
+                area.simplified_geom = None
 
             area.save()
             log_modification(original_area, area, AREA_API, request.user)

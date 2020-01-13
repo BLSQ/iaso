@@ -37,7 +37,6 @@ class ZSViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
-    # @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         as_geo_json = request.GET.get("geojson", None)
@@ -191,7 +190,7 @@ class ZSViewSet(viewsets.ViewSet):
             original_zone = copy(zone)
             zone.name = request.data.get("name", "")
             zone.source = request.data.get("source", None)
-            zone.aliases = request.data.get("aliases", "")
+            zone.aliases = request.data.get("aliases", None)
             zone.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
             if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
@@ -201,7 +200,8 @@ class ZSViewSet(viewsets.ViewSet):
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response("Only one polygon should be saved in the geo_json shape",
                                     status=status.HTTP_400_BAD_REQUEST)
-
+            else:
+                zone.simplified_geom = None
             zone.save()
             log_modification(original_zone, zone, ZONE_API, request.user)
             return Response(zone.as_dict())

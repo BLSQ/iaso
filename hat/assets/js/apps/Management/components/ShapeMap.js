@@ -14,6 +14,7 @@ import L from 'leaflet';
 import * as d3 from 'd3';
 import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
+import isEqual from 'lodash/isEqual';
 
 import {
     updateBaseLayer,
@@ -22,7 +23,9 @@ import {
     defaultFitToBound,
     zooms,
     genericMap,
+    MESSAGES,
 } from '../../../utils/map/mapUtils';
+import setDrawMessages from '../../../utils/map/drawMapMessages';
 
 const shapeOptions = (type, element) => ({
     pane: 'custom-pane-shapes',
@@ -37,8 +40,7 @@ const shapeOptions = (type, element) => ({
 
 const drawShapeOptions = element => ({
     pane: 'custom-draw',
-    stroke: false,
-    title: 'super title',
+    strokeWidth: 20,
     color: 'blue',
     onEachFeature: (feature, layer) => {
         element.addLayerEvents(layer, feature.properties);
@@ -66,11 +68,17 @@ class ShapeMap extends Component {
     }
 
     componentDidMount() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         this.createMap();
         includeControlsInMap(this, this.map);
         this.includeDefaultLayersInMap();
         updateBaseLayer(this.map, this.props.baseLayer);
-        this.srawshape(this.state.shapeItem);
+        this.drawshape(this.state.shapeItem);
+        setDrawMessages(formatMessage);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -80,9 +88,23 @@ class ShapeMap extends Component {
                 updateBaseLayer(this.map, nextProps.baseLayer);
             }
         });
-        this.setState({
-            shapeItem: nextProps.shapeItem,
-        });
+    }
+
+    componentDidUpdate(prevProps) {
+        if (!this.props.shapeItem.geo_json) {
+            this.drawshape(this.props.shapeItem);
+        }
+        const {
+            geoJson,
+        } = this.props;
+        if (!isEqual(geoJson.as, prevProps.geoJson.as)) {
+            this.asGroup.clearLayers();
+            this.asGroup.addLayer(L.geoJson(geoJson.as, shapeOptions('as', this)));
+        }
+        if (!isEqual(geoJson.zs, prevProps.geoJson.zs)) {
+            this.zsGroup.clearLayers();
+            this.zsGroup.addLayer(L.geoJson(geoJson.zs, shapeOptions('zs', this)));
+        }
     }
 
     componentWillUnmount() {
@@ -141,30 +163,61 @@ class ShapeMap extends Component {
 *************************************************************************** */
 
 
-    srawshape(shapeItem) {
+    drawshape(shapeItem) {
         const { map } = this;
-        const geoLayer = L.geoJson(shapeItem.geo_json, drawShapeOptions(this));
         if (map.hasLayer(this.shapesLayer)) {
             map.removeLayer(this.shapesLayer);
         }
-        this.shapesLayer = new L.FeatureGroup([geoLayer]);
+        if (shapeItem.geo_json) {
+            const geoLayer = L.geoJson(shapeItem.geo_json, drawShapeOptions(this));
+            this.shapesLayer = new L.FeatureGroup([geoLayer]);
 
-        const shape = geoLayer.getLayers()[0];
-        shape.editing.enable();
-        this.shapesLayer.addLayer(shape);
+            const shape = geoLayer.getLayers()[0];
+            shape.editing.enable();
+            this.shapesLayer.addLayer(shape);
 
-        map.addLayer(this.shapesLayer);
-        map.on('draw:editvertex', () => {
-            const newShapeItem = {
-                ...shapeItem,
-                geo_json: shape.toGeoJSON(),
-            };
-            this.props.updateShape(newShapeItem);
-        });
-        if (this.state.isFirstLoad) {
-            this.fitToBounds();
-            this.setState({
-                isFirstLoad: false,
+            map.addLayer(this.shapesLayer);
+            map.on('draw:editvertex', () => {
+                const newShapeItem = {
+                    ...shapeItem,
+                    geo_json: shape.toGeoJSON(),
+                };
+                this.props.updateShape(newShapeItem);
+            });
+            if (this.state.isFirstLoad) {
+                this.fitToBounds();
+                this.setState({
+                    isFirstLoad: false,
+                });
+            }
+        } else {
+            new L.Draw.Polygon(
+                this.map,
+                {
+                    shapeOptions: {
+                        ...drawShapeOptions(this),
+                    },
+                },
+            ).enable();
+
+            this.shapesLayer = new L.FeatureGroup([]);
+            map.addLayer(this.shapesLayer);
+            this.map.on('draw:created', (e) => {
+                e.layer.editing.enable();
+                this.shapesLayer.clearLayers();
+                this.shapesLayer.addLayer(e.layer);
+                const newShapeItem = {
+                    ...shapeItem,
+                    geo_json: e.layer.toGeoJSON(),
+                };
+                this.props.updateShape(newShapeItem);
+                map.on('draw:editvertex', () => {
+                    const modifiedShapeItem = {
+                        ...newShapeItem,
+                        geo_json: e.layer.toGeoJSON(),
+                    };
+                    this.props.updateShape(modifiedShapeItem);
+                });
             });
         }
     }
@@ -219,10 +272,20 @@ class ShapeMap extends Component {
     }
 
     render() {
+        const {
+            intl: {
+                formatMessage,
+            },
+            isLoadingShape,
+        } = this.props;
         return (
             <ReactResizeDetector handleWidth handleHeight onResize={(width, height) => this.onResize(width, height)}>
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container full" />
+                    {
+                        isLoadingShape
+                        && <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                    }
                 </section>
             </ReactResizeDetector>
         );
@@ -239,6 +302,7 @@ ShapeMap.propTypes = {
     shapeItem: PropTypes.object,
     updateShape: PropTypes.func.isRequired,
     intl: intlShape.isRequired,
+    isLoadingShape: PropTypes.bool.isRequired,
 };
 
 export default injectIntl(ShapeMap);

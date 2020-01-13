@@ -37,7 +37,12 @@ const areasTableColumns = (
             accessor: 'aliases',
             Cell: settings => (
                 <section>
-                    {settings.original.aliases && settings.original.aliases.map(a => (<span key={a}>{a}<br /></span>))}
+                    {settings.original.aliases && settings.original.aliases.map(a => (
+                        <span key={a}>
+                            {a}
+                            <br />
+                        </span>
+                    ))}
                     {(!settings.original.aliases || settings.original.aliases.length === 0) && '/'}
                 </section>
             ),
@@ -61,54 +66,61 @@ const areasTableColumns = (
             width: 300,
             Cell: settings => (
                 <section>
-                    {
-                        userCanEditShape && settings.original.has_shape &&
-                            <button
-                                className="button--edit--tiny  margin-right"
-                                onClick={() =>
-                                    component.editShape(settings.original)}
-                            >
-                                <i className="fa fa-map-o" />
-                                {
-                                    formatMessage({
-                                        defaultMessage: 'Edit shape',
-                                        id: 'main.label.editMap',
-                                    })
-                                }
-                            </button>
-                    }
-                    {userCanEditOrDelete &&
-                    <Fragment>
-                        <button
-                            className="button--edit--tiny  margin-right"
-                            onClick={() =>
-                                component.props.selectArea(settings.original)}
-                        >
-                            <i className="fa fa-pencil-square-o" />
-                            {
-                                formatMessage({
-                                    defaultMessage: 'Editer',
-                                    id: 'main.label.edit',
-                                })
-                            }
-                        </button>
-                        <button
-                            className="button--delete--tiny"
-                            onClick={() =>
-                                component.setState({
-                                    showDeleteModale: true,
-                                    dataDeleted: settings.original,
-                                })}
-                        >
-                            <i className="fa fa-trash" />
-                            {
-                                formatMessage({
-                                    defaultMessage: 'Effacer',
-                                    id: 'main.label.delete',
-                                })
-                            }
-                        </button>
-                    </Fragment>}
+                    {userCanEditOrDelete
+                        && (
+                            <Fragment>
+
+                                <button
+                                    className="button--edit--tiny  margin-right"
+                                    onClick={() => component.editShape(settings.original)}
+                                >
+                                    <i className="fa fa-map-o" />
+                                    {
+                                        settings.original.has_shape
+                                        && (
+                                            formatMessage({
+                                                defaultMessage: 'Edit shape',
+                                                id: 'main.label.editMap',
+                                            })
+                                        )}
+                                    {
+                                        !settings.original.has_shape
+                                        && (
+                                            formatMessage({
+                                                defaultMessage: 'Add shape',
+                                                id: 'main.label.addShape',
+                                            })
+                                        )}
+                                </button>
+                                <button
+                                    className="button--edit--tiny  margin-right"
+                                    onClick={() => component.props.selectArea(settings.original)}
+                                >
+                                    <i className="fa fa-pencil-square-o" />
+                                    {
+                                        formatMessage({
+                                            defaultMessage: 'Editer',
+                                            id: 'main.label.edit',
+                                        })
+                                    }
+                                </button>
+                                <button
+                                    className="button--delete--tiny"
+                                    onClick={() => component.setState({
+                                        showDeleteModale: true,
+                                        dataDeleted: settings.original,
+                                    })}
+                                >
+                                    <i className="fa fa-trash" />
+                                    {
+                                        formatMessage({
+                                            defaultMessage: 'Effacer',
+                                            id: 'main.label.delete',
+                                        })
+                                    }
+                                </button>
+                            </Fragment>
+                        )}
                 </section>
             ),
         });

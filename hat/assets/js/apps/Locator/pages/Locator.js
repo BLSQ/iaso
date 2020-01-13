@@ -274,7 +274,7 @@ export class Locator extends Component {
                         </div>
                     )
                 }
-                <div className="locator-container widget__container">
+                <div className="locator-container detail widget__container">
                     {
                         this.props.load.loading
                         && (

@@ -349,6 +349,8 @@
     "main.label.see": "Voir",
     "main.label.edit": "Editer",
     "main.label.editMap": "Editer la forme",
+    "main.label.deleteShape": "Effacer la forme",
+    "main.label.addShape": "Ajouter une forme",
     "main.label.email": "Email",
     "main.label.endemic": "endémique",
     "main.label.endemic-population": "Population endémique",

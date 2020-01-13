@@ -7,7 +7,7 @@ export const AREA_UPDATED = 'hat/management/areas/AREA_UPDATED';
 export const SELECT_AREA = 'hat/management/areas/SELECT_AREA';
 export const UPDATE_CURRENT_AREA = 'hat/management/areas/UPDATE_CURRENT_AREA';
 export const RESET_SHAPE_ITEM = 'hat/management/areas/RESET_SHAPE_ITEM';
-export const SET_ZONE_SHAPE = 'hat/management/areas/SET_ZONE_SHAPE';
+export const SET_AREA_SHAPE = 'hat/management/areas/SET_AREA_SHAPE';
 
 const req = require('superagent');
 
@@ -37,8 +37,8 @@ export const resetShapeItem = () => ({
     type: RESET_SHAPE_ITEM,
 });
 
-export const setZoneShape = payload => ({
-    type: SET_ZONE_SHAPE,
+export const setAreaShape = payload => ({
+    type: SET_AREA_SHAPE,
     payload,
 });
 
@@ -92,7 +92,7 @@ export const fetchAreaDetail = (dispatch, areaId) => {
         .get(`/api/as/${areaId}/`)
         .set('Content-Type', 'application/json')
         .then((res) => {
-            dispatch(setZoneShape(res.body));
+            dispatch(setAreaShape(res.body));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
@@ -172,7 +172,7 @@ export const areaReducer = (state = areasInitialState, action = {}) => {
             };
         }
 
-        case SET_ZONE_SHAPE: {
+        case SET_AREA_SHAPE: {
             const selectedShapeItem = action.payload;
             return {
                 ...state,

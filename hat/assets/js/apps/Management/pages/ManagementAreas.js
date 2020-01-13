@@ -162,7 +162,6 @@ class ManagementAreas extends React.Component {
             updateCurrentArea,
             selectedArea,
             isUpdated,
-            load,
             selectArea,
             selectedShapeItem,
             geoProvinces,
@@ -190,8 +189,6 @@ class ManagementAreas extends React.Component {
                             area={selectedArea}
                             saveArea={newArea => this.saveData(newArea)}
                             updateCurrentArea={area => updateCurrentArea(area)}
-                            isUpdated={isUpdated}
-                            error={load.error}
                             params={this.props.params}
                             geoProvinces={geoProvinces}
                         />
@@ -207,7 +204,6 @@ class ManagementAreas extends React.Component {
                             item={selectedShapeItem}
                             saveShape={newArea => this.saveData(newArea, true)}
                             isUpdated={isUpdated}
-                            error={load.error}
                         />
                     )
                 }

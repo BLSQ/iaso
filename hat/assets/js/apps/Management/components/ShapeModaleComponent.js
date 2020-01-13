@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
-import isEqual from 'lodash/isEqual';
 
 import { mapActions } from '../redux/mapReducer';
 
@@ -12,9 +11,6 @@ import ShapeMap from './ShapeMap';
 import LayersComponent from '../../../components/LayersComponent';
 
 
-let timerSuccess;
-let timerError;
-
 class ShapeModale extends Component {
     constructor(props) {
         super(props);
@@ -22,7 +18,6 @@ class ShapeModale extends Component {
             showModale: props.showModale,
             isChanged: false,
             isUpdated: false,
-            error: false,
             item: props.item,
         };
     }
@@ -32,38 +27,11 @@ class ShapeModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let newState = {};
         if (nextProps.isUpdated) {
-            newState.isUpdated = nextProps.isUpdated;
-            newState.error = false;
-            newState.isChanged = false;
-            timerSuccess = setTimeout(() => {
-                this.setState({
-                    isUpdated: false,
-                });
-            }, 10000);
-        }
-        if (nextProps.error) {
-            newState = {
-                error: nextProps.error,
+            this.setState({
                 isUpdated: false,
-                isChanged: true,
-            };
-            timerError = setTimeout(() => {
-                this.setState({
-                    error: false,
-                });
-            }, 10000);
-        }
-        this.setState(newState);
-    }
-
-    componentWillUnmount() {
-        if (timerSuccess) {
-            clearTimeout(timerSuccess);
-        }
-        if (timerError) {
-            clearTimeout(timerError);
+                isChanged: false,
+            });
         }
     }
 
@@ -177,14 +145,12 @@ class ShapeModale extends Component {
 }
 ShapeModale.defaultProps = {
     item: null,
-    error: null,
 };
 ShapeModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
     item: PropTypes.object,
     isUpdated: PropTypes.bool.isRequired,
-    error: PropTypes.any,
     saveShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     geoProvinces: PropTypes.object.isRequired,

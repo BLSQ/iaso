@@ -164,7 +164,6 @@ class ManagementZones extends React.Component {
             updateCurrentZone,
             selectedZone,
             isUpdated,
-            load,
             selectZone,
             selectedShapeItem,
             geoProvinces,
@@ -190,8 +189,6 @@ class ManagementZones extends React.Component {
                             zone={selectedZone}
                             saveZone={newZone => this.saveData(newZone)}
                             updateCurrentZone={zone => updateCurrentZone(zone)}
-                            isUpdated={isUpdated}
-                            error={load.error}
                             params={this.props.params}
                             geoProvinces={geoProvinces}
                         />
@@ -207,7 +204,6 @@ class ManagementZones extends React.Component {
                             item={selectedShapeItem}
                             saveShape={newZone => this.saveData(newZone, true)}
                             isUpdated={isUpdated}
-                            error={load.error}
                         />
                     )
                 }

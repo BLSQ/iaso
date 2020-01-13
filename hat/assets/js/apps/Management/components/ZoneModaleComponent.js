@@ -8,9 +8,6 @@ import { createUrl } from '../../../utils/fetchData';
 import { deepEqual } from '../../../utils';
 import ZoneInfosComponent from './ZoneInfosComponent';
 
-let timerSuccess;
-let timerError;
-
 class ZoneModale extends Component {
     constructor(props) {
         super(props);
@@ -18,8 +15,6 @@ class ZoneModale extends Component {
             showModale: props.showModale,
             zone: props.zone,
             isChanged: false,
-            isUpdated: false,
-            error: false,
         };
     }
 
@@ -28,40 +23,10 @@ class ZoneModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let newState = {};
-        newState.zone = nextProps.zone;
-        if (nextProps.isUpdated) {
-            newState.isUpdated = nextProps.isUpdated;
-            newState.error = false;
-            timerSuccess = setTimeout(() => {
-                this.setState({
-                    isUpdated: false,
-                });
-            }, 10000);
-        }
         if (!deepEqual(nextProps.zone, this.props.zone, true)) {
-            newState.zone = nextProps.zone;
-        } else if (nextProps.error) {
-            newState = {
-                error: nextProps.error,
-                isUpdated: false,
-                isChanged: true,
-            };
-            timerError = setTimeout(() => {
-                this.setState({
-                    error: false,
-                });
-            }, 10000);
-        }
-        this.setState(newState);
-    }
-
-    componentWillUnmount() {
-        if (timerSuccess) {
-            clearTimeout(timerSuccess);
-        }
-        if (timerError) {
-            clearTimeout(timerError);
+            this.setState(({
+                zone: nextProps.zone,
+            }));
         }
     }
 
@@ -74,9 +39,9 @@ class ZoneModale extends Component {
     }
 
     isSavedDisabled() {
-        return (this.state.zone.name === '' ||
-            !this.state.zone.name ||
-            (!this.state.isChanged && this.state.zone.id !== 0));
+        return (this.state.zone.name === ''
+            || !this.state.zone.name
+            || (!this.state.isChanged && this.state.zone.id !== 0));
     }
 
     render() {
@@ -91,18 +56,6 @@ class ZoneModale extends Component {
                         zone={this.state.zone}
                         updateZoneField={(key, value) => this.updateZoneField(key, value)}
                     />
-                    {
-                        this.state.isUpdated &&
-                        <div className="align-right text--success">
-                            <FormattedMessage id="main.label.zoneUpdated" defaultMessage="Health zone saved" />
-                        </div>
-                    }
-                    {
-                        this.state.error &&
-                        <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
-                        </div>
-                    }
                     <div className="align-right">
                         <button
                             className="button"
@@ -127,7 +80,6 @@ class ZoneModale extends Component {
 }
 ZoneModale.defaultProps = {
     zone: null,
-    error: null,
 };
 ZoneModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
@@ -135,8 +87,6 @@ ZoneModale.propTypes = {
     zone: PropTypes.object,
     saveZone: PropTypes.func.isRequired,
     updateCurrentZone: PropTypes.func.isRequired,
-    isUpdated: PropTypes.bool.isRequired,
-    error: PropTypes.any,
 };
 
 const MapStateToProps = () => ({});

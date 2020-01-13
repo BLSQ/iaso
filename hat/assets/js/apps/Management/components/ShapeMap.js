@@ -191,18 +191,19 @@ class ShapeMap extends Component {
                 });
             }
         } else {
-            new L.Draw.Polygon(
+            const newPolygon = new L.Draw.Polygon(
                 this.map,
                 {
                     shapeOptions: {
                         ...drawShapeOptions(this),
                     },
                 },
-            ).enable();
-
+            );
+            newPolygon.enable();
             this.shapesLayer = new L.FeatureGroup([]);
             map.addLayer(this.shapesLayer);
             this.map.on('draw:created', (e) => {
+                newPolygon.disable();
                 e.layer.editing.enable();
                 this.shapesLayer.clearLayers();
                 this.shapesLayer.addLayer(e.layer);

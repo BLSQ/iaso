@@ -8,9 +8,6 @@ import { createUrl } from '../../../utils/fetchData';
 import { deepEqual } from '../../../utils';
 import AreaInfosComponent from './AreaInfosComponent';
 
-let timerSuccess;
-let timerError;
-
 class AreaModale extends Component {
     constructor(props) {
         super(props);
@@ -18,8 +15,6 @@ class AreaModale extends Component {
             showModale: props.showModale,
             area: props.area,
             isChanged: false,
-            isUpdated: false,
-            error: false,
         };
     }
 
@@ -28,40 +23,10 @@ class AreaModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let newState = {};
-        newState.area = nextProps.area;
-        if (nextProps.isUpdated) {
-            newState.isUpdated = nextProps.isUpdated;
-            newState.error = false;
-            timerSuccess = setTimeout(() => {
-                this.setState({
-                    isUpdated: false,
-                });
-            }, 10000);
-        }
         if (!deepEqual(nextProps.area, this.props.area, true)) {
-            newState.area = nextProps.area;
-        } else if (nextProps.error) {
-            newState = {
-                error: nextProps.error,
-                isUpdated: false,
-                isChanged: true,
-            };
-            timerError = setTimeout(() => {
-                this.setState({
-                    error: false,
-                });
-            }, 10000);
-        }
-        this.setState(newState);
-    }
-
-    componentWillUnmount() {
-        if (timerSuccess) {
-            clearTimeout(timerSuccess);
-        }
-        if (timerError) {
-            clearTimeout(timerError);
+            this.setState(({
+                area: nextProps.area,
+            }));
         }
     }
 
@@ -74,9 +39,9 @@ class AreaModale extends Component {
     }
 
     isSavedDisabled() {
-        return (this.state.area.name === '' ||
-            !this.state.area.name ||
-            (!this.state.isChanged && this.state.area.id !== 0));
+        return (this.state.area.name === ''
+            || !this.state.area.name
+            || (!this.state.isChanged && this.state.area.id !== 0));
     }
 
     render() {
@@ -91,18 +56,6 @@ class AreaModale extends Component {
                         area={this.state.area}
                         updateAreaField={(key, value) => this.updateAreaField(key, value)}
                     />
-                    {
-                        this.state.isUpdated &&
-                        <div className="align-right text--success">
-                            <FormattedMessage id="main.label.areaUpdated" defaultMessage="Health area saved" />
-                        </div>
-                    }
-                    {
-                        this.state.error &&
-                        <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
-                        </div>
-                    }
                     <div className="align-right">
                         <button
                             className="button"
@@ -127,7 +80,6 @@ class AreaModale extends Component {
 }
 AreaModale.defaultProps = {
     area: null,
-    error: null,
 };
 AreaModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
@@ -135,8 +87,6 @@ AreaModale.propTypes = {
     area: PropTypes.object,
     saveArea: PropTypes.func.isRequired,
     updateCurrentArea: PropTypes.func.isRequired,
-    isUpdated: PropTypes.bool.isRequired,
-    error: PropTypes.any,
 };
 
 const MapStateToProps = () => ({});

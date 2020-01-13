@@ -35,6 +35,7 @@ import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { devicesReducer, devicesInitialState } from './redux/devices';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { logsReducer, logsInitialState } from '../../redux/logs';
+import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 
 export default function teamsDevicesApp(appConfig, element, baseUrl) {
     /*
@@ -123,6 +124,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         currentUser: currentUserInitialState,
         devicesFilters: filtersInitialState,
         logs: logsInitialState,
+        snackBar: snackBarsInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -142,6 +144,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         currentUser: currentUserReducer,
         devicesFilters: filtersReducer,
         logs: logsReducer,
+        snackBar: snackBarsReducer,
     }, [
         routerMiddleware(history),
     ]);

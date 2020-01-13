@@ -1,4 +1,6 @@
 import { loadActions } from '../../../redux/load';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { succesfullSnackBar, errorSnackBar } from '../../../utils/constants/snackBars';
 
 export const FETCH_ACTION = 'hat/management/areas/FETCH_ACTION';
 export const FETCH_ACTION_NO_UPDATE = 'hat/management/areas/FETCH_ACTION_NO_UPDATE';
@@ -50,10 +52,12 @@ export const updateArea = (dispatch, area) => {
         .set('Content-Type', 'application/json')
         .send(area)
         .then(() => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
             dispatch(areaUpdated(true));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
             dispatch(loadActions.errorLoading(err));
         });
     return ({

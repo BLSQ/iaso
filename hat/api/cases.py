@@ -592,7 +592,9 @@ class CasesViewSet(viewsets.ViewSet):
                 case.normalized_village_id = None
                 case.save()
             else:
-                if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+                if not request.user.is_superuser and not request.user.has_perm(
+                    "menupermissions.x_datas_patient_edition"
+                ):
                     return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
                 case.screening_type = request.data.get("screening_type", None)
@@ -613,18 +615,30 @@ class CasesViewSet(viewsets.ViewSet):
                     case.latitude = village.latitude
                     case.longitude = village.longitude
                     case.normalized_AS = village.AS
-                    case.document_id = create_documentid(case)  # Village is part of the document_id but not hat_id
-                infection_location = request.data.get("infectionLocationVillageId", None)
+                    case.document_id = create_documentid(
+                        case
+                    )  # Village is part of the document_id but not hat_id
+                infection_location = request.data.get(
+                    "infectionLocationVillageId", None
+                )
                 if infection_location:
-                    infection_village = get_object_or_404(Village, id=infection_location)
+                    infection_village = get_object_or_404(
+                        Village, id=infection_location
+                    )
                     case.infection_location = infection_village
-                case.infection_location_type = request.data.get("infection_location_type", None)
+                case.infection_location_type = request.data.get(
+                    "infection_location_type", None
+                )
 
                 case.circumstances_da_um = request.data.get("circumstances_da_um", None)
                 case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
-                case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
+                case.circumstances_dp_cdtc = request.data.get(
+                    "circumstances_dp_cdtc", None
+                )
                 case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
-                case.circumstances_dp_hgr = request.data.get("circumstances_dp_hgr", None)
+                case.circumstances_dp_hgr = request.data.get(
+                    "circumstances_dp_hgr", None
+                )
                 case.save()
 
             log_modification(original_copy, case, source=CASE_API, user=request.user)
@@ -633,14 +647,15 @@ class CasesViewSet(viewsets.ViewSet):
         else:
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
-
     def create(self, request):
         new_case = Case()
         new_case.screening_type = request.data.get("screening_type", None)
         new_case.test_pl_result = request.data.get("test_pl_result", None)
         new_case.normalized_team = get_request_team(request.data.get("team", None))
 
-        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "menupermissions.x_datas_patient_edition"
+        ):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
         patient_id = request.data.get("patient_id", None)
@@ -671,7 +686,9 @@ class CasesViewSet(viewsets.ViewSet):
         if infection_location:
             infection_village = get_object_or_404(Village, id=infection_location)
             new_case.infection_location = infection_village
-        new_case.infection_location_type = request.data.get("infection_location_type", None)
+        new_case.infection_location_type = request.data.get(
+            "infection_location_type", None
+        )
         new_case.circumstances_da_um = request.data.get("circumstances_da_um", None)
         new_case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
         new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)

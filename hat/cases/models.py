@@ -6,8 +6,25 @@ from django.db.models.functions import Coalesce, Cast, ExtractYear, Greatest
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from hat.constants import SCREENING_TYPE_CHOICES, DATE_FORMAT, CATT, RDT, PL, PG, CTCWOO, MAECT, SF, GE, LCR, IFAT, SP, \
-    CLINICAL_SICKNESS, DIL, PARASIT, LNP
+from hat.constants import (
+    SCREENING_TYPE_CHOICES,
+    DATE_FORMAT,
+    CATT,
+    RDT,
+    PL,
+    PG,
+    CTCWOO,
+    MAECT,
+    SF,
+    GE,
+    LCR,
+    IFAT,
+    SP,
+    CLINICAL_SICKNESS,
+    DIL,
+    PARASIT,
+    LNP,
+)
 from hat.geo.models import AS as ASModel
 from hat.geo.models import Village
 from hat.sync.models import DeviceDB
@@ -846,7 +863,7 @@ class CaseView(CaseAbstract):
                 "normalized_as_name": self.normalized_as_name,
                 "normalized_village_name": self.normalized_village_name,
                 "normalized_team_name": self.normalized_team_name,
-            }
+            },
         )
 
     caseview_additional_fields = [

@@ -22,16 +22,16 @@ class TestsViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_required = [
-        'menupermissions.x_locator', 'menupermissions.x_case_cases'
-    ]
+    permission_required = ["menupermissions.x_locator", "menupermissions.x_case_cases"]
 
     def retrieve(self, request, pk=None):
         test = get_object_or_404(Test, pk=pk)
         return Response(test.as_dict())
 
     def partial_update(self, request, pk=None):
-        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "menupermissions.x_datas_patient_edition"
+        ):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
         new_test = get_object_or_404(Test, pk=pk)
@@ -58,9 +58,7 @@ class TestsViewSet(viewsets.ViewSet):
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
             new_test.location = Point(
-                x=float(village.longitude),
-                y=float(village.latitude),
-                srid=4326,
+                x=float(village.longitude), y=float(village.latitude), srid=4326,
             )
 
         clinical_signs = request.data.get("clinicalsigns", None)
@@ -81,7 +79,9 @@ class TestsViewSet(viewsets.ViewSet):
         return Response(new_test.as_dict())
 
     def create(self, request):
-        if not request.user.is_superuser and not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+        if not request.user.is_superuser and not request.user.has_perm(
+            "menupermissions.x_datas_patient_edition"
+        ):
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
         new_test = Test()
@@ -106,11 +106,9 @@ class TestsViewSet(viewsets.ViewSet):
         if village_id:
             village = get_object_or_404(Village, id=village_id)
             new_test.village = village
-            print (village.longitude)
+            print(village.longitude)
             new_test.location = Point(
-                x=float(village.longitude),
-                y=float(village.latitude),
-                srid=4326,
+                x=float(village.longitude), y=float(village.latitude), srid=4326,
             )
 
         clinical_signs = request.data.get("clinicalsigns", None)
@@ -126,7 +124,6 @@ class TestsViewSet(viewsets.ViewSet):
         case_item.update_from_test(new_test)
         case_item.save()
         new_test.form = case_item
-
 
         new_test.save()
 

@@ -6,11 +6,15 @@ from django.db.models.functions import Coalesce, Cast, ExtractYear, Greatest
 from django.db.models.signals import pre_save
 from django.dispatch import receiver
 
-from hat.constants import SCREENING_TYPE_CHOICES, DATE_FORMAT
+from hat.constants import SCREENING_TYPE_CHOICES, DATE_FORMAT, CATT, RDT, PL, PG, CTCWOO, MAECT, SF, GE, LCR, IFAT, SP, \
+    CLINICAL_SICKNESS, DIL, PARASIT, LNP
 from hat.geo.models import AS as ASModel
 from hat.geo.models import Village
 from hat.sync.models import DeviceDB
 from hat.users.models import Team
+import logging
+
+logger = logging.getLogger(__name__)
 
 CASES_PERMISSIONS = (
     ("import", "Can import data"),
@@ -551,6 +555,55 @@ class CaseAbstract(models.Model):
         if self.test_sf == RES_POSITIVE:
             return True
         return False
+
+    def update_from_test(self, new_test):
+        """
+        This method updates the Case with the new data from the test. This is not used in the regular tablet import
+        flow but rather when manually typing in data and the test information doesn't flow from case to test but from
+        test to case.
+        :param new_test: test to update into Case
+        :return: Nothing
+        """
+        if new_test.type == CATT:
+            self.test_catt = new_test.result
+            self.test_catt_level = new_test.level
+            self.test_catt_index = new_test.index
+            self.test_catt_picture_filename = new_test.image_filename
+        elif new_test.type == RDT:
+            self.test_rdt = new_test.result
+            self.test_rdt_picture_filename = new_test.image_filename
+        elif new_test.type == PG:
+            self.test_pg = new_test.result
+            self.test_pg_video_filename = new_test.video_filename
+        elif new_test.type == PL:
+            self.test_pl = new_test.result
+            self.test_pl_video_filename = new_test.video_filename
+        elif new_test.type == CTCWOO:
+            self.test_ctcwoo = new_test.result
+            self.test_ctcwoo_video_filename = new_test.video_filename
+        elif new_test.type == MAECT:
+            self.test_maect = new_test.result
+            self.test_maect_video_filename = new_test.video_filename
+        elif new_test.type == SF:
+            self.test_sf = new_test.result
+        elif new_test.type == GE:
+            self.test_ge = new_test.result
+        elif new_test.type == SP:
+            self.test_sp = new_test.result
+        elif new_test.type == IFAT:
+            self.test_ifat = new_test.result
+        elif new_test.type == LCR:
+            self.test_lcr = new_test.result
+        elif new_test.type == DIL:
+            self.test_dil = new_test.result
+        elif new_test.type == LNP:
+            self.test_lnp = new_test.result
+        elif new_test.type == PARASIT:
+            self.test_parasit = new_test.result
+        elif new_test.type == CLINICAL_SICKNESS:
+            self.test_clinical_sickness = new_test.result
+        else:
+            logger.warning(f"Unhandled test type {new_test.type}, ignoring")
 
     def __str__(self):
         return "%s - %s - %s" % (self.lastname, self.name, self.prename)

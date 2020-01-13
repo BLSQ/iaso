@@ -7,21 +7,18 @@ from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
-from hat.api.export_utils import timestamp_to_utc_datetime
 from django.utils import dateparse
 
 from hat.patient.models import Test
 from hat.cases.models import Case
 from hat.users.models import Profile
 from hat.geo.models import Village
-from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 
 
 class TestsViewSet(viewsets.ViewSet):
     """
     API to allow creation or modification of tests.
-
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
@@ -76,10 +73,9 @@ class TestsViewSet(viewsets.ViewSet):
         case_item.test_pl_gb_mm3 = current_case.get("test_pl_gb_mm3", None)
         case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
         case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
-
+        case_item.update_from_test(new_test)
         case_item.save()
         new_test.form = case_item
-
 
         new_test.save()
         return Response(new_test.as_dict())
@@ -127,7 +123,7 @@ class TestsViewSet(viewsets.ViewSet):
         case_item.test_pl_gb_mm3 = current_case.get("test_pl_gb_mm3", None)
         case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
         case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
-
+        case_item.update_from_test(new_test)
         case_item.save()
         new_test.form = case_item
 

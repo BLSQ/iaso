@@ -101,6 +101,12 @@ export const getPossibleYears = () => {
     return possibleYears;
 };
 
+export const getYears = (yearsCount) => {
+    const currentYear = new Date().getFullYear();
+    const years = Array(yearsCount).fill().map((y, i) => currentYear - i);
+    return years;
+};
+
 export const NormalizeBarChartDatas = (settings, d) => {
     const newDatas = [];
     settings.map((setting, index) => {
@@ -212,6 +218,16 @@ export const scrollTo = (selectorId, headerOffset = 0) => {
                 top: offsetPosition,
             });
         }
+    }, 500);
+};
+
+
+export const scrollToTop = () => {
+    setTimeout(() => {
+        window.scrollTo({
+            behavior: 'smooth',
+            top: 0,
+        });
     }, 500);
 };
 

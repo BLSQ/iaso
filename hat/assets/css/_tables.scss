@@ -15,6 +15,11 @@ table {
                     color: $blue,
                 }
             }
+            &.not-localised {
+                position: absolute;
+                right: 80px;
+                top: 10px;
+            }
         }
         th {
             position: relative;

@@ -286,13 +286,20 @@
     }
 }
 
+.medium-modal-content {
+    width: 650px;
+}
+
 .modal-content {
     padding: 0 $padding-unit / 4 $padding-unit / 4 $padding-unit / 4;
 }
-
 .large-modal-content {
     width: 900px;
+}
 
+.large-modal-content,
+.modal-content,
+.medium-modal-content {
     .Select {
         width: 100%;
     }

@@ -125,7 +125,7 @@ class PatientCasesLocation extends React.Component {
                                         <div>
                                             <i className="fa fa-warning" />
                                             {'  '}
-                                            <strong><FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Localisation non trouvée" /></strong>
+                                            <strong><FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Location not found" /></strong>
                                             <button
                                                 className="button--tiny"
                                                 onClick={() => gotoLocator(currentCase.id)}
@@ -143,7 +143,6 @@ class PatientCasesLocation extends React.Component {
                                     isLocalised
                                     && <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
                                 }
-
                             </th>
                         </tr>
                     </thead>

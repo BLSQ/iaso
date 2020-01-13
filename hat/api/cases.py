@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
+from django.utils import dateparse
 from copy import copy
+import uuid
 
 from django.core.paginator import Paginator
 
@@ -16,15 +18,17 @@ from hat.cases.models import CaseView, Case, RES_POSITIVE, testResultString
 from hat.common.utils import ANONYMOUS_PLACEHOLDER
 from hat.constants import TYPES_WITH_VIDEOS, TYPES_WITH_IMAGES, DATE_FORMAT
 from hat.geo.models import Village
-from hat.patient.models import Test
+from hat.patient.models import Test, Patient
 from hat.sync.models import DeviceDB
 from hat.users.models import (
     get_user_geo_list,
     is_authorized_user,
     SCREENING_TYPE_CHOICES,
+    Team,
 )
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from ..import_export.utils import create_documentid, hat_id
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -587,12 +591,114 @@ class CasesViewSet(viewsets.ViewSet):
                 case.normalized_village_not_found = True
                 case.normalized_village_id = None
                 case.save()
+            else:
+                if not request.user.is_superuser and not request.user.has_perm(
+                    "menupermissions.x_datas_patient_edition"
+                ):
+                    return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+                case.screening_type = request.data.get("screening_type", None)
+                case.test_pl_result = request.data.get("test_pl_result", None)
+                case.normalized_team = get_request_team(request.data.get("team", None))
+                document_date = request.data.get("document_date", None)
+                if document_date:
+                    case.document_date = dateparse.parse_datetime(document_date)
+                case.device_id = request.data.get("device_id", None)
+                case.form_number = request.data.get("form_number", None)
+                case.form_year = request.data.get("form_year", None)
+                case.source = request.data.get("source", None)
+
+                village_id = request.data.get("villageId", None)
+                if village_id:
+                    village = get_object_or_404(Village, id=village_id)
+                    case.normalized_village = village
+                    case.latitude = village.latitude
+                    case.longitude = village.longitude
+                    case.normalized_AS = village.AS
+                    case.document_id = create_documentid(
+                        case
+                    )  # Village is part of the document_id but not hat_id
+                infection_location = request.data.get(
+                    "infectionLocationVillageId", None
+                )
+                if infection_location:
+                    infection_village = get_object_or_404(
+                        Village, id=infection_location
+                    )
+                    case.infection_location = infection_village
+                case.infection_location_type = request.data.get(
+                    "infection_location_type", None
+                )
+
+                case.circumstances_da_um = request.data.get("circumstances_da_um", None)
+                case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
+                case.circumstances_dp_cdtc = request.data.get(
+                    "circumstances_dp_cdtc", None
+                )
+                case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
+                case.circumstances_dp_hgr = request.data.get(
+                    "circumstances_dp_hgr", None
+                )
+                case.save()
 
             log_modification(original_copy, case, source=CASE_API, user=request.user)
 
             return Response(case.as_dict())
         else:
             return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+    def create(self, request):
+        new_case = Case()
+        new_case.screening_type = request.data.get("screening_type", None)
+        new_case.test_pl_result = request.data.get("test_pl_result", None)
+        new_case.normalized_team = get_request_team(request.data.get("team", None))
+
+        if not request.user.is_superuser and not request.user.has_perm(
+            "menupermissions.x_datas_patient_edition"
+        ):
+            return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
+
+        patient_id = request.data.get("patient_id", None)
+        patient = get_object_or_404(Patient, id=patient_id)
+        document_date = request.data.get("document_date", None)
+        if document_date:
+            new_case.document_date = dateparse.parse_datetime(document_date)
+        new_case.normalized_patient = patient
+        new_case.name = patient.post_name
+        new_case.lastname = patient.last_name
+        new_case.prename = patient.first_name
+        new_case.age = patient.age
+        new_case.sex = patient.sex
+        new_case.year_of_birth = patient.year_of_birth
+        new_case.mothers_surname = patient.mothers_surname
+        new_case.device_id = request.data.get("device_id", None)
+        new_case.form_number = request.data.get("form_number", None)
+        new_case.form_year = request.data.get("form_year", None)
+        new_case.source = request.data.get("source", None)
+        village_id = request.data.get("villageId", None)
+        if village_id:
+            village = get_object_or_404(Village, id=village_id)
+            new_case.normalized_village = village
+            new_case.latitude = village.latitude
+            new_case.longitude = village.longitude
+            new_case.normalized_AS = village.AS
+        infection_location = request.data.get("infectionLocationVillageId", None)
+        if infection_location:
+            infection_village = get_object_or_404(Village, id=infection_location)
+            new_case.infection_location = infection_village
+        new_case.infection_location_type = request.data.get(
+            "infection_location_type", None
+        )
+        new_case.circumstances_da_um = request.data.get("circumstances_da_um", None)
+        new_case.circumstances_dp_um = request.data.get("circumstances_dp_um", None)
+        new_case.circumstances_dp_cdtc = request.data.get("circumstances_dp_cdtc", None)
+        new_case.circumstances_dp_cs = request.data.get("circumstances_dp_cs", None)
+        new_case.circumstances_dp_hgr = request.data.get("circumstances_dp_hgr", None)
+        new_case.hat_id = hat_id(new_case)
+        new_case.document_id = create_documentid(new_case)
+        new_case.save()
+
+        return Response(new_case.as_dict())
 
     def delete(self, request, pk=None):
         case = get_object_or_404(Case, pk=pk)
@@ -638,3 +744,14 @@ def full_delete_case(case):
         response["deleted_patient"] = patient.delete()
 
     return response
+
+
+def get_request_team(team):
+    if team:
+        normalize_team_item = team.get("normalized_team")
+        if normalize_team_item:
+            normalize_team_id = normalize_team_item.get("id")
+            if normalize_team_id:
+                new_team = get_object_or_404(Team, id=normalize_team_id)
+                return new_team
+    return None

@@ -51,7 +51,6 @@ const getComponentValues = (
     currentCase,
     currentTest,
     formatMessage,
-    currentUser,
 ) => {
     const initValues = {};
     initValues.testTypeSelect = testType(
@@ -76,9 +75,6 @@ const getComponentValues = (
         initValues.result = 2;
     }
     initValues.tester = currentTest.tester;
-    if (initValues.isNewTest && !initValues.tester) {
-        initValues.tester = currentUser && Boolean(currentUser.tester_type) ? currentUser.id : null;
-    }
 
     return initValues;
 };
@@ -91,7 +87,6 @@ const TestInfoComponent = ({
     onChange,
     currentTest,
     currentCase,
-    currentUser,
 }) => {
     const {
         testTypeSelect,
@@ -103,7 +98,6 @@ const TestInfoComponent = ({
         currentCase,
         currentTest,
         formatMessage,
-        currentUser,
     );
     return (
         <Fragment>
@@ -236,7 +230,7 @@ const TestInfoComponent = ({
                                         dateFormat={dateFormat}
                                         dateFormatCalendar="YYYY-MM-DD"
                                         selected={currentTest.date && moment(currentTest.date)}
-                                        onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
+                                        onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mmZ'), 'currentTest')}
                                     />
                                 </div>
                             )}
@@ -251,7 +245,7 @@ const TestInfoComponent = ({
                             fieldComponent={(
                                 <TimeSelect
                                     dateTime={moment(currentTest.date)}
-                                    onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mm:ss.SSSSZ'), 'currentTest')}
+                                    onChange={date => onChange('date', moment(date).format('YYYY-MM-DDTHH:mmZ'), 'currentTest')}
                                 />
                             )}
                         />
@@ -382,19 +376,11 @@ const TestInfoComponent = ({
     );
 };
 
-TestInfoComponent.defaultProps = {
-    currentTest: {
-        id: 0,
-        date: new Date(),
-    },
-};
-
 TestInfoComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     currentCase: PropTypes.object.isRequired,
-    currentTest: PropTypes.object,
+    currentTest: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
-    currentUser: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
 };
 
@@ -402,7 +388,6 @@ const MapStateToProps = state => ({
     load: state.load,
     deleteResult: state.cases.deleteResult,
     deleteError: state.cases.deleteError,
-    currentUser: state.currentUser.user,
     profiles: state.profiles.list,
 });
 

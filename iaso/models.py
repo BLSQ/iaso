@@ -243,7 +243,7 @@ class OrgUnit(models.Model):
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
 
-    def as_dict(self):
+    def as_dict(self, with_groups=True):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -263,8 +263,11 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else self.longitude,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
-            "groups": [group.as_dict() for group in self.groups.all()],
         }
+
+        if with_groups:
+            res["groups"] = [group.as_dict() for group in self.groups.all()]
+
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res
@@ -558,7 +561,7 @@ class Group(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
-            "org_unit_count": self.org_units.count(),
+            # "org_unit_count": self.org_units.count(),
         }
 
 

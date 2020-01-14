@@ -118,9 +118,6 @@ def build_org_units_queryset(queryset, params):
     if validated != "both":
         queryset = queryset.filter(validated=validated)
 
-    queryset = queryset.prefetch_related("version__data_source")
-    queryset.prefetch_related("groups")
-
     if search:
         queryset = queryset.filter(
             Q(name__icontains=search) | Q(aliases__contains=[search])
@@ -198,7 +195,8 @@ def build_org_units_queryset(queryset, params):
 
     if source_id:
         queryset = queryset.filter(sub_source=source_id)
-
+    queryset = queryset.select_related("version__data_source")
+    queryset = queryset.select_related("org_unit_type")
     return queryset
 
 
@@ -255,6 +253,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if csv_format is None:
             if limit and not as_location:
+                queryset.prefetch_related("group_set")
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
@@ -270,7 +269,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             elif with_shapes:
-                queryset = queryset.select_related("org_unit_type")
+
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -309,7 +308,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
-                return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
+                return Response(
+                    {"orgUnits": [unit.as_dict(with_groups=False) for unit in queryset]}
+                )
         else:
             columns = [
                 {"title": "ID", "width": 20},

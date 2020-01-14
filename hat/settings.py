@@ -76,6 +76,10 @@ LOGGING = {
         "django": {"handlers": ["console"], "level": LOGGING_LEVEL},
         "hat": {"handlers": ["console"], "level": LOGGING_LEVEL},
         "rq": {"handlers": ["console"], "level": LOGGING_LEVEL},
+        # 'django.db.backends': {
+        #     'level': 'DEBUG',
+        #     'handlers': ['console', ],
+        # },
     },
 }
 

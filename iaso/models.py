@@ -244,7 +244,7 @@ class OrgUnit(models.Model):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
 
     def as_dict(self):
-        return {
+        res = {
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
@@ -265,6 +265,9 @@ class OrgUnit(models.Model):
             "version": self.version.number if self.version else None,
             "groups": [group.as_dict() for group in self.groups.all()],
         }
+        if hasattr(self, "search_index"):
+            res["search_index"] = self.search_index
+        return res
 
     def as_dict_with_parents(self):
         return {
@@ -307,7 +310,7 @@ class OrgUnit(models.Model):
         }
 
     def as_location(self):
-        return {
+        res = {
             "id": self.id,
             "name": self.name,
             "short_name": self.name,
@@ -319,6 +322,9 @@ class OrgUnit(models.Model):
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }
+        if hasattr(self, "search_index"):
+            res["search_index"] = self.search_index
+        return res
 
     def path(self):
         path_components = []

@@ -100,13 +100,16 @@ export const fetchOrgUnitsList = (dispatch, url) => getRequest(url)
         throw error;
     });
 
-export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
+export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit, fitToBounds = () => null) => {
     const url = `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=${orgUnit.id}`;
     return getRequest(url)
-        .then(data => ({
-            ...form,
-            instances: data.instances,
-        }))
+        .then((data) => {
+            fitToBounds();
+            return ({
+                ...form,
+                instances: data.instances,
+            });
+        })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceLocationError')));
             console.error('Error while fetching instances locations list:', error);
@@ -114,13 +117,18 @@ export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
         });
 };
 
-export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&withShapes=true&validated=both`;
+
+export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit, fitToBounds = () => null) => {
+    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true&validated=both`;
+
     return getRequest(url)
-        .then(data => ({
-            ...source,
-            orgUnits: data.orgUnits,
-        }))
+        .then((data) => {
+            fitToBounds();
+            return ({
+                ...source,
+                orgUnits: data.orgUnits,
+            });
+        })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
             console.error('Error while fetching org unit list:', error);

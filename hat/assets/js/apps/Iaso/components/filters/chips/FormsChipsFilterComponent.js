@@ -33,6 +33,7 @@ function FormsChipsFilterComponent(props) {
         currentForms,
         dispatch,
         currentOrgUnit,
+        fitToBounds,
     } = props;
     if (!currentForms || (currentForms && currentForms.length === 0)) return null;
     return (
@@ -57,6 +58,7 @@ function FormsChipsFilterComponent(props) {
                     dispatch,
                     form,
                     currentOrgUnit,
+                    fitToBounds,
                 )}
                 setSelectedItems={props.setFormsSelected}
                 selectedItems={formsSelected}
@@ -78,6 +80,7 @@ FormsChipsFilterComponent.propTypes = {
     formsSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fitToBounds: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

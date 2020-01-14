@@ -19,6 +19,7 @@ import {
     setCurrentForms,
     setSources,
     setGroups,
+    setFetching,
 } from '../redux/orgUnitsReducer';
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
@@ -70,20 +71,35 @@ class OrgUnitDetail extends Component {
             },
         } = this.props;
         this.props.resetOrgUnitsLevels();
-        this.fetchDetail();
+        dispatch(setFetching(true));
+        const promisesArray = [];
         if (this.props.orgUnitTypes.length === 0) {
-            fetchOrgUnitsTypes(dispatch)
-                .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+            promisesArray.push(fetchOrgUnitsTypes(dispatch)
+                .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes)));
         }
         if (this.props.sourceTypes.length === 0) {
-            fetchSourceTypes(dispatch)
-                .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
+            promisesArray.push(fetchSourceTypes(dispatch)
+                .then(sourceTypes => this.props.setSourceTypes(sourceTypes)));
         }
+
+        if (!this.props.sources) {
+            promisesArray.push(fetchSources(dispatch)
+                .then((data) => {
+                    const sources = [];
+                    data.forEach((s, i) => {
+                        sources.push({
+                            ...s,
+                            color: chipColors[i],
+                        });
+                    });
+                    this.props.setSources(sources);
+                }));
+        }
+
 
         if (this.props.groups.length === 0) {
-            fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
+            promisesArray.push(fetchGroups(dispatch).then(groups => this.props.setGroups(groups)));
         }
-
 
         fetchAssociatedDataSources(dispatch, orgUnitId)
             .then((data) => {
@@ -96,6 +112,15 @@ class OrgUnitDetail extends Component {
                 });
                 this.props.setSources(sources);
             });
+
+        Promise.all(promisesArray).then(() => {
+            this.fetchDetail().then(() => {
+                if (this.state.tab !== 'map') {
+                    dispatch(setFetching(false));
+                }
+            });
+        });
+
     }
 
     componentDidUpdate(prevProps) {
@@ -131,7 +156,7 @@ class OrgUnitDetail extends Component {
             dispatch,
         } = this.props;
         if (orgUnitId) {
-            fetchOrgUnitDetail(dispatch, orgUnitId).then((orgUnit) => {
+            return fetchOrgUnitDetail(dispatch, orgUnitId).then((orgUnit) => {
                 const orgUnitTree = getOrgUnitsTree(orgUnit);
                 if (orgUnitTree.length > 0) {
                     const { redirectTo, params } = this.props;
@@ -164,6 +189,7 @@ class OrgUnitDetail extends Component {
                 });
             });
         }
+        return null;
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -333,7 +359,7 @@ class OrgUnitDetail extends Component {
                     </Tabs>
                 </TopBar>
                 {
-                    fetchingSubOrgUnits && <LoadingSpinner />
+                    (fetching || fetchingSubOrgUnits) && <LoadingSpinner />
                 }
                 {!fetching
                     && currentOrgUnit

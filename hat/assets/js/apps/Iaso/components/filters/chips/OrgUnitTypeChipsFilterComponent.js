@@ -55,17 +55,9 @@ const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList, orgUnitTypesSel
 class OrgUnitTypeChipsFilterComponent extends Component {
     constructor(props) {
         super(props);
-        const coloredOrgUnitTypes = [];
-        props.orgUnitTypes.forEach((o, i) => {
-            coloredOrgUnitTypes.push({
-                ...o,
-                color: chipColors[i],
-            });
-        });
         this.state = {
             orgUnitTypesList: [],
-            orgUnitTypes: coloredOrgUnitTypes,
-            isEmpty: true,
+            orgUnitTypes: props.orgUnitTypes,
         };
     }
 
@@ -83,13 +75,13 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 orgUnitTypesSelected.push(ot);
             }
         });
-        orgUnitTypesSelected.forEach((ot) => {
+        orgUnitTypesSelected.forEach((ot, index) => {
+            orgUnitTypesSelected[index].color = chipColors[index];
             orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
         });
         this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
         this.setState({
             orgUnitTypesList,
-            isEmpty: orgUnitTypes.length === 0,
         });
     }
 
@@ -168,6 +160,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
             this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData);
             this.props.setFetching(false);
+            this.props.fitToBounds();
         });
     }
 
@@ -179,20 +172,25 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         } = this.props;
         const {
             orgUnitTypesList,
-            isEmpty,
         } = this.state;
         if (!orgUnitTypes || (orgUnitTypes && orgUnitTypes.length === 0)) return null;
 
         return (
             <Fragment>
-                <Box
-                    className={classes.innerDrawerToolbar}
-                    component="div"
-                >
-                    <Typography variant="subtitle1">
-                        <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
-                    </Typography>
-                </Box>
+                {
+                    (orgUnitTypesSelected.length > 0
+                    || orgUnitTypesList.length > 0)
+                    && (
+                        <Box
+                            className={classes.innerDrawerToolbar}
+                            component="div"
+                        >
+                            <Typography variant="subtitle1">
+                                <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
+                            </Typography>
+                        </Box>
+                    )
+                }
                 <Box
                     className={classes.content}
                     component="div"
@@ -250,6 +248,7 @@ OrgUnitTypeChipsFilterComponent.propTypes = {
     setCurrentSubOrgUnitTypesSelected: PropTypes.func.isRequired,
     setFetching: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fitToBounds: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

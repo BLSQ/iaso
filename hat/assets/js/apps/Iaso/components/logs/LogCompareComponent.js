@@ -67,6 +67,9 @@ const renderValue = (
         }
 
         case 'location': {
+            if (!fields.latitude || !fields.longitude) {
+                return value.toString();
+            }
             return (
                 <div className={classes.cellMap}>
                     <MarkerMap latitude={fields.latitude} longitude={fields.longitude} />

@@ -110,3 +110,4 @@ bin/
 include/python3.6m
 
 pip-selfcheck.json
+data

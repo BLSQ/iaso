@@ -11,6 +11,7 @@ from hat.audit.models import Modification
 from .authentication import CsrfExemptSessionAuthentication
 from hat.api.export_utils import timestamp_to_utc_datetime
 from .export_utils import Echo, generate_xlsx, iter_items
+from django.conf import settings
 
 
 class LogsViewSet(viewsets.ViewSet):
@@ -24,7 +25,8 @@ class LogsViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
-    permission_required = ["menupermissions.x_modifications"]
+    if settings.FLAVOR == "trypelim":
+        permission_required = ["menupermissions.x_modifications"]
 
     def list(self, request):
         from_date = request.GET.get("date_from", None)

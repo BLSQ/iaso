@@ -309,7 +309,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             else:
                 queryset = queryset.select_related("org_unit_type")
                 return Response(
-                    {"orgUnits": [unit.as_dict(with_groups=False) for unit in queryset]}
+                    {"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]}
                 )
         else:
             columns = [

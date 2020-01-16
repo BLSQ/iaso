@@ -44,6 +44,8 @@ class ZoneModale extends Component {
     isSavedDisabled() {
         return (this.state.zone.name === ''
             || !this.state.zone.name
+            || !this.state.zone.source
+            || this.state.zone.source === ''
             || (!this.state.isChanged && this.state.zone.id !== 0)
             || !this.state.zone.province_id);
     }

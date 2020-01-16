@@ -88,7 +88,8 @@ class ZoneInfosComponent extends Component {
                         type="text"
                         name="source"
                         id={`source-${zone.id}`}
-                        value={zone.source}
+                        className={(!zone.source || zone.source === '') ? 'form-error' : ''}
+                        value={zone.source || ''}
                         onChange={event => updateZoneField('source', event.currentTarget.value)}
                     />
                 </div>

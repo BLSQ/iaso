@@ -108,7 +108,8 @@ class AreaInfosComponent extends Component {
                         type="text"
                         name="source"
                         id={`source-${area.id}`}
-                        value={area.source}
+                        className={(!area.source || area.source === '') ? 'form-error' : ''}
+                        value={area.source || ''}
                         onChange={event => updateAreaField('source', event.currentTarget.value)}
                     />
                 </div>

@@ -47,6 +47,8 @@ class AreaModale extends Component {
     isSavedDisabled() {
         return (this.state.area.name === ''
             || !this.state.area.name
+            || !this.state.area.source
+            || this.state.area.source === ''
             || (!this.state.isChanged && this.state.area.id !== 0)
             || !this.state.area.ZS__province_id
             || !this.state.area.ZS_id);

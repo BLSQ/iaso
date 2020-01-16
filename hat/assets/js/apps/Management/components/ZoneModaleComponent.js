@@ -51,9 +51,6 @@ class ZoneModale extends Component {
     }
 
     render() {
-        const {
-            geoProvinces,
-        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -64,9 +61,8 @@ class ZoneModale extends Component {
                     <ZoneInfosComponent
                         zone={this.state.zone}
                         updateZoneField={(key, value) => this.updateZoneField(key, value)}
-                        geoProvinces={geoProvinces}
                     />
-                    <div className="align-right">
+                    <div className="align-right padding-right">
                         <button
                             className="button"
                             onClick={() => this.props.closeModal()}
@@ -97,12 +93,9 @@ ZoneModale.propTypes = {
     zone: PropTypes.object,
     saveZone: PropTypes.func.isRequired,
     updateCurrentZone: PropTypes.func.isRequired,
-    geoProvinces: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = state => ({
-    geoProvinces: state.smallMap.geoProvinces,
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

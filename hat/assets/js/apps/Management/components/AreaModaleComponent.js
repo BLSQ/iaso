@@ -55,10 +55,6 @@ class AreaModale extends Component {
     }
 
     render() {
-        const {
-            geoProvinces,
-            geoZones,
-        } = this.props;
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -69,10 +65,8 @@ class AreaModale extends Component {
                     <AreaInfosComponent
                         area={this.state.area}
                         updateAreaField={(key, value) => this.updateAreaField(key, value)}
-                        geoProvinces={geoProvinces}
-                        geoZones={geoZones}
                     />
-                    <div className="align-right">
+                    <div className="align-right padding-right">
                         <button
                             className="button"
                             onClick={() => this.props.closeModal()}
@@ -103,14 +97,9 @@ AreaModale.propTypes = {
     area: PropTypes.object,
     saveArea: PropTypes.func.isRequired,
     updateCurrentArea: PropTypes.func.isRequired,
-    geoProvinces: PropTypes.object.isRequired,
-    geoZones: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = state => ({
-    geoProvinces: state.smallMap.geoProvinces,
-    geoZones: state.smallMap.geoZones,
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

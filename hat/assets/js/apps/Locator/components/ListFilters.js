@@ -4,7 +4,7 @@ import Select from 'react-select';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { getPossibleYears } from '../../../utils';
 import Search from '../../../components/Search';
-import Filters from '../../../components/VillageLocationFilters';
+import Filters from '../../../components/LocationFilters';
 import CheckBox from '../../../components/CheckBoxComponent';
 
 

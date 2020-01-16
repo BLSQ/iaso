@@ -1,31 +1,13 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
-import Select from 'react-select';
+import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
 
 import { deepEqual } from '../../../utils';
 import ArrayFieldInput from '../../../components/ArrayFieldInput';
-
-export const getGeoList = (geoJson) => {
-    const itemsList = [];
-    geoJson.features.forEach((f) => {
-        itemsList.push({
-            id: f.id,
-            ...f.properties,
-        });
-    });
-    return itemsList;
-};
-
-const getGeoZoneList = (geoJson, provinceId) => {
-    const zonesList = getGeoList(geoJson);
-    if (provinceId) {
-        return (zonesList.filter(z => z.province === provinceId));
-    }
-
-    return zonesList;
-};
+import LocationFilters from '../../../components/LocationFilters';
+import { geoActions } from '../../../redux/geoRedux';
 
 class AreaInfosComponent extends Component {
     constructor(props) {
@@ -33,6 +15,24 @@ class AreaInfosComponent extends Component {
         this.state = {
             area: props.area,
         };
+    }
+
+    componentWillMount() {
+        const {
+            loadProvinces,
+            provinces,
+        } = this.props;
+        loadProvinces(provinces);
+    }
+
+    componentDidMount() {
+        const {
+            selectProvince,
+        } = this.props;
+        const {
+            area,
+        } = this.state;
+        selectProvince(area.ZS__province_id, area.ZS_id);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -43,14 +43,32 @@ class AreaInfosComponent extends Component {
         }
     }
 
+    selectProvince(provinceId) {
+        const {
+            updateAreaField,
+            selectProvince,
+        } = this.props;
+        updateAreaField('ZS__province_id', provinceId);
+        selectProvince(
+            provinceId,
+        );
+    }
+
+    selectZone(zoneId) {
+        const {
+            updateAreaField,
+            selectZone,
+        } = this.props;
+        updateAreaField('ZS_id', zoneId);
+        selectZone(
+            zoneId,
+        );
+    }
+
     render() {
         const {
             updateAreaField,
-            geoProvinces,
-            geoZones,
-            intl: {
-                formatMessage,
-            },
+            geoFilters,
         } = this.props;
         const { area } = this.state;
         return (
@@ -113,68 +131,15 @@ class AreaInfosComponent extends Component {
                         onChange={event => updateAreaField('source', event.currentTarget.value)}
                     />
                 </div>
-                <div>
-                    <label
-                        htmlFor={`province-${area.id}`}
-                        className="filter__container__select__label"
-                    >
-                        <FormattedMessage
-                            id="main.label.province"
-                            defaultMessage="Province"
-                        />
-                        :
-                    </label>
-                    <Select
-                        className={!area.ZS__province_id ? 'form-error' : null}
-                        multi={false}
-                        clearable={false}
-                        simpleValue
-                        name={`province-${area.id}`}
-                        value={area.ZS__province_id}
-                        placeholder={formatMessage({
-                            id: 'main.label.provinceSelect',
-                            defaultMessage: 'Select one province',
-                        })}
-                        options={getGeoList(geoProvinces).map(p => (
-                            {
-                                label: p.name,
-                                value: p.id,
-                            }
-                        ))}
-                        onChange={value => updateAreaField('ZS__province_id', value)}
-                    />
-                </div>
-                <div>
-                    <label
-                        htmlFor={`zone-${area.id}`}
-                        className="filter__container__select__label"
-                    >
-                        <FormattedMessage
-                            id="main.label.zone_short"
-                            defaultMessage="Zone"
-                        />
-                        :
-                    </label>
-                    <Select
-                        className={!area.ZS_id ? 'form-error' : null}
-                        disable={!area.ZS__province_id}
-                        multi={false}
-                        clearable={false}
-                        simpleValue
-                        name={`zone-${area.id}`}
-                        value={area.ZS_id}
-                        placeholder={formatMessage({
-                            id: 'main.label.zoneSelect',
-                            defaultMessage: 'Select a zone',
-                        })}
-                        noResultsText={<FormattedMessage id="main.label.noresult" defaultMessage="No result" />}
-                        options={getGeoZoneList(geoZones, area.ZS__province_id).map(z => (
-                            {
-                                label: z.name,
-                                value: z.id,
-                            }
-                        ))}
-                        onChange={value => updateAreaField('ZS_id', value)}
+                <div className="location-container">
+                    <LocationFilters
+                        isRequired
+                        isClearable
+                        filters={geoFilters}
+                        selectProvince={provinceId => this.selectProvince(provinceId)}
+                        selectZone={zoneId => this.selectZone(zoneId)}
+                        showAreas={false}
+                        showVillages={false}
                     />
                 </div>
             </section>
@@ -185,9 +150,22 @@ class AreaInfosComponent extends Component {
 AreaInfosComponent.propTypes = {
     area: PropTypes.object.isRequired,
     updateAreaField: PropTypes.func.isRequired,
-    geoProvinces: PropTypes.object.isRequired,
-    geoZones: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    geoFilters: PropTypes.object.isRequired,
+    loadProvinces: PropTypes.func.isRequired,
+    provinces: PropTypes.array.isRequired,
 };
+const MapStateToProps = state => ({
+    geoFilters: state.geoFiltersModale,
+    provinces: state.geoFilters.provinces,
+});
 
-export default injectIntl(AreaInfosComponent);
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    loadProvinces: provinces => dispatch(geoActions.loadProvinces(provinces)),
+    selectProvince: (provinceId, zoneId) => dispatch(geoActions.selectProvince(provinceId, dispatch, zoneId, null, null)),
+    selectZone: zoneId => dispatch(geoActions.selectZone(zoneId, dispatch, true, null, null)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(AreaInfosComponent);

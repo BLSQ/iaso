@@ -44,7 +44,7 @@ const filtersCases2 = (
     formatMessage,
     coordinationsList,
     teamsList,
-    canEditPatientInfos,
+    displayDeleteFilters,
 ) => {
     let tempFilter = [
         coordinations(coordinationsList),
@@ -53,7 +53,7 @@ const filtersCases2 = (
         testerType(formatMessage),
         screeningType(formatMessage),
     ];
-    if (canEditPatientInfos) {
+    if (displayDeleteFilters) {
         tempFilter = tempFilter.concat([
             showDeleted(),
             showUnDeleted(),

@@ -195,7 +195,7 @@ class Cases extends Component {
             formatMessage,
             coordinations || [],
             teams || [],
-            canEditPatientInfos,
+            canEditPatientInfos || canDeleteForever,
         );
         const search = filtersCasesSearch(formatMessage, this);
         const geo = filtersCasesGeo(

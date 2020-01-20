@@ -341,7 +341,7 @@ class PatientDetailsWrapper extends React.Component {
                                                 showModale={showCaseInfectionLocationModale}
                                                 toggleModal={() => this.toggleCaseInfectionLocationModal(undefined)}
                                                 currentCase={editedCase}
-                                                patientId={patient.id}
+                                                currentPatient={patient}
                                             />
                                         )
                                     }

@@ -101,6 +101,7 @@ class TestModalComponent extends Component {
         if (key === 'type' && value !== 'clinicalsigns') {
             delete newState.currentTest.clinicalsigns;
         }
+
         if (key === 'type' && value !== 'PL') {
             newState.currentCase = {
                 ...this.props.currentCase,
@@ -121,6 +122,12 @@ class TestModalComponent extends Component {
             toggleModal,
         } = this.props;
         currentTest.currentCase = currentCase;
+
+        if (currentTest.type === 'CATT'
+            && currentTest.result <= 0
+        ) {
+            delete currentTest.index;
+        }
         if (currentTest.id !== 0) {
             updateTest(currentTest, patientId, toggleModal);
         } else {
@@ -138,7 +145,9 @@ class TestModalComponent extends Component {
         && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase, this.props.currentUser));
         const isValid = (
             Boolean(currentTest.type)
-            && Boolean(currentTest.type !== 'CATT' || (currentTest.type === 'CATT' && currentTest.index))
+            && Boolean(currentTest.type !== 'CATT'
+                || (currentTest.type === 'CATT' && currentTest.index)
+                || (currentTest.type === 'CATT' && (currentTest.result > 0 || !currentTest.result) && !currentTest.index))
             && Boolean(currentTest.type !== 'PL' || (currentTest.type === 'PL' && currentCase.test_pl_gb_mm3))
             && Boolean(currentTest.type !== 'clinicalsigns' || (currentTest.type === 'clinicalsigns' && currentTest.clinicalsigns && currentTest.clinicalsigns.length > 0))
             && Boolean(currentTest.type === 'clinicalsigns' || (currentTest.type !== 'clinicalsigns' && currentTest.result !== undefined))

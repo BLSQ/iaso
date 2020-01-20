@@ -705,7 +705,9 @@ class CasesViewSet(viewsets.ViewSet):
 
         full_delete = request.query_params.get("full_delete", None)
         if full_delete and full_delete.lower() == "true":
-            if not request.user.is_superuser:
+            if not request.user.has_perm(
+                "menupermissions.x_datas_patient_edition"
+            ) or not request.user.has_perm("menupermissions.x_management_users"):
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
             try:
@@ -715,8 +717,9 @@ class CasesViewSet(viewsets.ViewSet):
 
             return Response(result)
         else:
-            # TODO support simple trypelim admins
-            if not request.user.has_perm("menupermissions.x_datas_patient_edition"):
+            if not request.user.has_perm(
+                "menupermissions.x_datas_patient_edition"
+            ) and not request.user.has_perm("menupermissions.x_management_users"):
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
             case.mark_for_deletion = not case.mark_for_deletion

@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.db import models
-from django.db.models import Q, Max
+from django.db.models import Q
 from django.db.models.functions import Coalesce, Cast, ExtractYear, Greatest
 from django.db.models.signals import pre_save
 from django.dispatch import receiver

@@ -171,8 +171,8 @@ const LogCompareComponent = ({
                                                 isDifferent = isDifferent && l.pk === compareLog[i].pk && l.model === compareLog[i].model;
                                                 if (!isDifferent && !allFields) return null;
                                                 differenceArray[i][fieldKey] = value;
-                                                if ((fieldKey === 'simplified_geom' || fieldKey === 'catchment') && currentField) {
-                                                    const polygonPositions = getPolygonPositionsFromSimplifiedGeom(currentField);
+                                                if ((fieldKey === 'simplified_geom' || fieldKey === 'catchment') && value) {
+                                                    const polygonPositions = getPolygonPositionsFromSimplifiedGeom(value);
                                                     return (
                                                         <TableRow key={fieldKey}>
                                                             <TableCell className={classes.cell}>

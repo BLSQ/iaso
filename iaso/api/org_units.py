@@ -22,6 +22,8 @@ from hat.api.export_utils import (
     iter_items,
     timestamp_to_utc_datetime,
 )
+import json
+from django.db.models import Value, IntegerField
 
 
 def check_access(org_unit, user):
@@ -87,6 +89,117 @@ def import_data(org_units, user, api_import):
     return new_org_units
 
 
+def build_org_units_queryset(queryset, params):
+    validated = params.get("validated", "true")
+    has_instances = params.get("hasInstances", None)
+    search = params.get("search", None)
+
+    org_unit_type_id = params.get("orgUnitTypeId", None)
+    source_id = params.get("sourceId", None)
+    with_shape = params.get("withShape", None)
+    with_location = params.get("withLocation", None)
+    parent_id = params.get("parent_id", None)
+    source = params.get("source", None)
+    group = params.get("group", None)
+    version = params.get("version", None)
+
+    org_unit_parent_id = params.get("orgUnitParentId", None)
+
+    linked_to = params.get("linkedTo", None)
+    link_validated = params.get("linkValidated", True)
+    link_source = params.get("linkSource", None)
+    link_version = params.get("linkVersion", None)
+
+    if validated == "true":
+        validated = True
+    if validated == "false":
+        validated = False
+
+    if validated != "both":
+        queryset = queryset.filter(validated=validated)
+
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) | Q(aliases__contains=[search])
+        )
+
+    if group:
+        queryset = queryset.filter(groups__in=group.split(","))
+
+    if source:
+        queryset = queryset.filter(version__data_source_id__in=source.split(","))
+
+    if version:
+        queryset = queryset.filter(version=version)
+
+    if has_instances is not None:
+        ids_with_instances = Instance.objects.filter(
+            org_unit__isnull=False
+        ).values_list("org_unit_id", flat=True)
+        if has_instances == "true":
+            queryset = queryset.filter(id__in=ids_with_instances)
+        else:
+            queryset = queryset.exclude(id__in=ids_with_instances)
+
+    if org_unit_type_id:
+        queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
+
+    if with_shape == "true":
+        queryset = queryset.filter(simplified_geom__isnull=False)
+
+    if with_shape == "false":
+        queryset = queryset.filter(simplified_geom__isnull=True)
+
+    if with_location == "true":
+        queryset = queryset.filter(
+            Q(location__isnull=False)
+            | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+        )
+
+    if with_location == "false":
+        queryset = queryset.filter(
+            Q(location__isnull=True)
+            & Q(latitude__isnull=True)
+            & Q(longitude__isnull=True)
+        )
+
+    if parent_id:
+        if parent_id == "0":
+            queryset = queryset.filter(parent__isnull=True)
+        else:
+            queryset = queryset.filter(parent__id=parent_id)
+
+    if org_unit_parent_id:
+        queryset = queryset.filter(
+            Q(id=org_unit_parent_id)
+            | Q(parent__id=org_unit_parent_id)
+            | Q(parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(
+                parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+            )
+        )
+
+    if linked_to:
+        queryset = queryset.filter(
+            destination_set__destination_id=linked_to,
+            destination_set__validated=link_validated,
+        )
+        if link_source:
+            queryset = queryset.filter(version__data_source_id=link_source)
+        if link_version:
+            queryset = queryset.filter(version_id=link_version)
+
+    if source_id:
+        queryset = queryset.filter(sub_source=source_id)
+    queryset = queryset.select_related("version__data_source")
+    queryset = queryset.select_related("org_unit_type")
+    return queryset
+
+
 class OrgUnitViewSet(viewsets.ViewSet):
     """
     list:
@@ -108,136 +221,41 @@ class OrgUnitViewSet(viewsets.ViewSet):
             default_app_id = None
         else:
             default_app_id = "org.bluesquarehub.iaso"
-        app_id = request.GET.get("app_id", default_app_id)
 
         limit = request.GET.get("limit", None)
-        validated = request.GET.get("validated", "true")
-        has_instances = request.GET.get("hasInstances", None)
-        search = request.GET.get("search", None)
         page_offset = request.GET.get("page", 1)
-        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
-        source_id = request.GET.get("sourceId", None)
-        with_shape = request.GET.get("withShape", None)
-        with_location = request.GET.get("withLocation", None)
-        parent_id = request.GET.get("parent_id", None)
-        source = request.GET.get("source", None)
-        group = request.GET.get("group", None)
-        version = request.GET.get("version", None)
-        order = request.GET.get("order", "id").split(",")
-        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
+        order = request.GET.get("order", "name").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
+
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
-
-        linked_to = request.GET.get("linkedTo", None)
-        link_validated = request.GET.get("linkValidated", True)
-        link_source = request.GET.get("linkSource", None)
-        link_version = request.GET.get("linkVersion", None)
-
-        if validated == "true":
-            validated = True
-        if validated == "false":
-            validated = False
-
-        if validated != "both":
-            queryset = queryset.filter(validated=validated)
-
+        app_id = request.GET.get("app_id", default_app_id)
         if app_id:
-            queryset = queryset.filter(  # .exclude(org_unit_type=None)
-                org_unit_type__projects__app_id=app_id
-            )
+            queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
+        searches = request.GET.get("searches", None)
+
+        if searches:
+            search_index = 0
+            base_queryset = queryset
+            for search in json.loads(searches):
+                additional_queryset = build_org_units_queryset(
+                    base_queryset, search
+                ).annotate(search_index=Value(search_index, IntegerField()))
+                if search_index == 0:
+                    queryset = additional_queryset
+                else:
+                    queryset = queryset.union(additional_queryset)
+                search_index += 1
+        else:
+            queryset = build_org_units_queryset(queryset, request.GET)
         queryset = queryset.order_by(*order)
-
-        queryset = queryset.prefetch_related("version__data_source")
-
-        if search:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(aliases__contains=[search])
-            )
-
-        if group:
-            queryset = queryset.filter(groups__in=group.split(","))
-
-        if source:
-            queryset = queryset.filter(version__data_source_id__in=source.split(","))
-
-        if version:
-            queryset = queryset.filter(version=version)
-
-        if has_instances is not None:
-            ids_with_instances = Instance.objects.filter(
-                org_unit__isnull=False
-            ).values_list("org_unit_id", flat=True)
-            if has_instances == "true":
-                queryset = queryset.filter(id__in=ids_with_instances)
-            else:
-                queryset = queryset.exclude(id__in=ids_with_instances)
-
-        if org_unit_type_id:
-            queryset = queryset.filter(
-                org_unit_type__id__in=org_unit_type_id.split(",")
-            )
-
-        if with_shape == "true":
-            queryset = queryset.filter(simplified_geom__isnull=False)
-
-        if with_shape == "false":
-            queryset = queryset.filter(simplified_geom__isnull=True)
-
-        if with_location == "true":
-            queryset = queryset.filter(
-                Q(location__isnull=False)
-                | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
-            )
-
-        if with_location == "false":
-            queryset = queryset.filter(
-                Q(location__isnull=True)
-                & Q(latitude__isnull=True)
-                & Q(longitude__isnull=True)
-            )
-
-        if parent_id:
-            if parent_id == "0":
-                queryset = queryset.filter(parent__isnull=True)
-            else:
-                queryset = queryset.filter(parent__id=parent_id)
-
-        if org_unit_parent_id:
-            queryset = queryset.filter(
-                Q(id=org_unit_parent_id)
-                | Q(parent__id=org_unit_parent_id)
-                | Q(parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(
-                    parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-                | Q(
-                    parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-            )
-
-        if linked_to:
-            queryset = queryset.filter(
-                destination_set__destination_id=linked_to,
-                destination_set__validated=link_validated,
-            )
-            if link_source:
-                queryset = queryset.filter(version__data_source_id=link_source)
-            if link_version:
-                queryset = queryset.filter(version_id=link_version)
-
-        if source_id:
-            queryset = queryset.filter(sub_source=source_id)
 
         if csv_format is None:
             if limit and not as_location:
+                queryset.prefetch_related("group_set")
                 limit = int(limit)
                 page_offset = int(page_offset)
-
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
                 if page_offset > paginator.num_pages:
@@ -251,7 +269,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 res["limit"] = limit
                 return Response(res)
             elif with_shapes:
-                queryset = queryset.select_related("org_unit_type")
+
                 org_units = []
                 for unit in queryset:
                     temp_org_unit = unit.as_dict()
@@ -290,7 +308,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
-                return Response({"orgUnits": [unit.as_dict() for unit in queryset]})
+                return Response(
+                    {"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]}
+                )
         else:
             columns = [
                 {"title": "ID", "width": 20},

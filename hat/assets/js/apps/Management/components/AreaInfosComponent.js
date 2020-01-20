@@ -2,8 +2,12 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
+import { connect } from 'react-redux';
+
 import { deepEqual } from '../../../utils';
 import ArrayFieldInput from '../../../components/ArrayFieldInput';
+import LocationFilters from '../../../components/LocationFilters';
+import { geoActions } from '../../../redux/geoRedux';
 
 class AreaInfosComponent extends Component {
     constructor(props) {
@@ -11,6 +15,24 @@ class AreaInfosComponent extends Component {
         this.state = {
             area: props.area,
         };
+    }
+
+    componentWillMount() {
+        const {
+            loadProvinces,
+            provinces,
+        } = this.props;
+        loadProvinces(provinces);
+    }
+
+    componentDidMount() {
+        const {
+            selectProvince,
+        } = this.props;
+        const {
+            area,
+        } = this.state;
+        selectProvince(area.ZS__province_id, area.ZS_id);
     }
 
     componentWillReceiveProps(nextProps) {
@@ -21,13 +43,36 @@ class AreaInfosComponent extends Component {
         }
     }
 
+    selectProvince(provinceId) {
+        const {
+            updateAreaField,
+            selectProvince,
+        } = this.props;
+        updateAreaField('ZS__province_id', provinceId);
+        selectProvince(
+            provinceId,
+        );
+    }
+
+    selectZone(zoneId) {
+        const {
+            updateAreaField,
+            selectZone,
+        } = this.props;
+        updateAreaField('ZS_id', zoneId);
+        selectZone(
+            zoneId,
+        );
+    }
+
     render() {
         const {
             updateAreaField,
+            geoFilters,
         } = this.props;
         const { area } = this.state;
         return (
-            <section >
+            <section>
                 <div>
                     <label
                         htmlFor={`name-${area.id}`}
@@ -36,7 +81,8 @@ class AreaInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.name"
                             defaultMessage="Nom"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
@@ -55,7 +101,8 @@ class AreaInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.aliases"
                             defaultMessage="Alias"
-                        />:
+                        />
+                        :
                     </label>
                     <ArrayFieldInput
                         fieldList={area.aliases}
@@ -72,14 +119,27 @@ class AreaInfosComponent extends Component {
                         <FormattedMessage
                             id="main.label.source"
                             defaultMessage="Source du village"
-                        />:
+                        />
+                        :
                     </label>
                     <input
                         type="text"
                         name="source"
                         id={`source-${area.id}`}
-                        value={area.source}
+                        className={(!area.source || area.source === '') ? 'form-error' : ''}
+                        value={area.source || ''}
                         onChange={event => updateAreaField('source', event.currentTarget.value)}
+                    />
+                </div>
+                <div className="location-container">
+                    <LocationFilters
+                        isRequired
+                        isClearable
+                        filters={geoFilters}
+                        selectProvince={provinceId => this.selectProvince(provinceId)}
+                        selectZone={zoneId => this.selectZone(zoneId)}
+                        showAreas={false}
+                        showVillages={false}
                     />
                 </div>
             </section>
@@ -90,6 +150,22 @@ class AreaInfosComponent extends Component {
 AreaInfosComponent.propTypes = {
     area: PropTypes.object.isRequired,
     updateAreaField: PropTypes.func.isRequired,
+    selectProvince: PropTypes.func.isRequired,
+    selectZone: PropTypes.func.isRequired,
+    geoFilters: PropTypes.object.isRequired,
+    loadProvinces: PropTypes.func.isRequired,
+    provinces: PropTypes.array.isRequired,
 };
+const MapStateToProps = state => ({
+    geoFilters: state.geoFiltersModale,
+    provinces: state.geoFilters.provinces,
+});
 
-export default AreaInfosComponent;
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    loadProvinces: provinces => dispatch(geoActions.loadProvinces(provinces)),
+    selectProvince: (provinceId, zoneId) => dispatch(geoActions.selectProvince(provinceId, dispatch, zoneId, null, null)),
+    selectZone: zoneId => dispatch(geoActions.selectZone(zoneId, dispatch, true, null, null)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(AreaInfosComponent);

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import AS
+from hat.geo.models import AS, ZS
 from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
 from hat.users.models import Team
@@ -98,7 +98,6 @@ class ASViewSet(viewsets.ViewSet):
         if as_geo_json:
             queryset = queryset.filter(simplified_geom__isnull=False)
             geo_json = geojson_queryset(queryset, geometry_field='geo_as.simplified_geom', fields=['name', 'ZS'])
-
             return Response(geo_json)
         elif as_list:
             queryset = queryset.order_by(*orders)
@@ -235,7 +234,7 @@ class ASViewSet(viewsets.ViewSet):
             original_area = copy(area)
             area.name = request.data.get("name", "")
             area.source = request.data.get("source", None)
-            area.aliases = request.data.get("aliases", "")
+            area.aliases = request.data.get("aliases", None)
             area.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
             if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
@@ -245,9 +244,41 @@ class ASViewSet(viewsets.ViewSet):
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response("Only one polygon should be saved in the geo_json shape",
                                     status=status.HTTP_400_BAD_REQUEST)
-
+            else:
+                area.simplified_geom = None
+            zone_id = request.data.get("ZS_id")
+            zone = get_object_or_404(ZS, id=zone_id)
+            area.ZS = zone
             area.save()
             log_modification(original_area, area, AREA_API, request.user)
+            return Response(area.as_dict())
+        else:
+            return Response("Unauthorized", status=401)
+
+    def create(self, request):
+        area = AS()
+        is_authorized = request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser
+        if is_authorized:
+            area.name = request.data.get("name", "")
+            area.source = request.data.get("source", None)
+            area.aliases = request.data.get("aliases", None)
+            area.is_erased = request.data.get("is_erased", False)
+            geo_json = request.data.get("geo_json", None)
+            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if len(geo_json["geometry"]["coordinates"]) == 1:
+                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response("Only one polygon should be saved in the geo_json shape",
+                                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                area.simplified_geom = None
+            zone_id = request.data.get("ZS_id")
+            zone = get_object_or_404(ZS, id=zone_id)
+            area.ZS = zone
+
+            area.save()
+            log_modification(None, area, AREA_API, request.user)
             return Response(area.as_dict())
         else:
             return Response("Unauthorized", status=401)

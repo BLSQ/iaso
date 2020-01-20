@@ -52,13 +52,13 @@ if settings.FLAVOR == "iaso":
         url(r"^api/", include("hat.api.urls")),
         url(r"^dashboard/", include("hat.dashboard.urls")),
         url(
-            r"^login-iaso/",
+            r"^login/",
             auth.views.LoginView.as_view(template_name="iaso/login.html"),
-            name="login-iaso",
+            name="login",
         ),
         url(
             r"^logout-iaso",
-            auth.views.LogoutView.as_view(next_page="login-iaso"),
+            auth.views.LogoutView.as_view(next_page="login"),
             name="logout-iaso",
         ),
         url(r"^sync/", include("hat.sync.urls")),

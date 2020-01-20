@@ -59,6 +59,11 @@ class ArrayFieldInput extends Component {
                                 type="text"
                                 name={name}
                                 id={`${baseId}-${a.position}`}
+                                ref={(node) => {
+                                    if (a.value === '' && node) {
+                                        node.focus();
+                                    }
+                                }}
                                 value={a.value}
                                 onChange={event => this.updateField(event.currentTarget.value, fieldIndex)}
                             />

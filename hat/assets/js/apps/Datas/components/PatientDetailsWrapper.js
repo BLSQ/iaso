@@ -9,17 +9,21 @@ import Add from '@material-ui/icons/AddCircle';
 import PatientInfos from './PatientInfos';
 import EditPatientInfos from './EditPatientInfos';
 import PatientCasesInfos from './PatientCasesInfos';
-import PatientCasesLocation from './PatientCasesLocation';
+import CaseInfoLocation from './CaseInfoLocation';
+import CaseInfectionLocation from './CaseInfectionLocation';
 import PatientCasesTests from './PatientCasesTests';
 import TreatmentComponent from './TreatmentComponent';
 import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TestModal from './TestModalComponent';
+import CaseModal from './CaseModalComponent';
+import CaseLocationModal from './CaseLocationModalComponent';
+import CaseInfectionLocationModalComponent from './CaseInfectionLocationModalComponent';
 
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
-import { scrollTo, userHasPermission } from '../../../utils';
+import { scrollTo, scrollToTop, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
 import { loadActions } from '../../../redux/load';
@@ -60,7 +64,11 @@ class PatientDetailsWrapper extends React.Component {
             canEditPatientInfos: false,
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
             showTestModale: false,
-            editedTest: null,
+            editedTest: undefined,
+            showCaseModale: false,
+            showCaseLocationModale: false,
+            showCaseInfectionLocationModale: false,
+            editedCase: undefined,
         };
     }
 
@@ -161,7 +169,7 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
-    toggleTestModal(editedTest, scrollToBottom) {
+    toggleTestModal(editedTest, editedCase, scrollToBottom) {
         if (scrollToBottom) {
             if (!this.state.editedTest) {
                 scrollTo('bottom-tests');
@@ -170,6 +178,33 @@ class PatientDetailsWrapper extends React.Component {
         this.setState({
             showTestModale: !this.state.showTestModale,
             editedTest,
+            editedCase,
+        });
+    }
+
+    toggleCaseModal(editedCase, needScrollToTop) {
+        if (needScrollToTop) {
+            if (!this.state.editedCase) {
+                scrollToTop();
+            }
+        }
+        this.setState({
+            showCaseModale: !this.state.showCaseModale,
+            editedCase,
+        });
+    }
+
+    toggleCaseLocationModal(editedCase) {
+        this.setState({
+            showCaseLocationModale: !this.state.showCaseLocationModale,
+            editedCase,
+        });
+    }
+
+    toggleCaseInfectionLocationModal(editedCase) {
+        this.setState({
+            showCaseInfectionLocationModale: !this.state.showCaseInfectionLocationModale,
+            editedCase,
         });
     }
 
@@ -200,6 +235,10 @@ class PatientDetailsWrapper extends React.Component {
             editEnabled,
             showTestModale,
             editedTest,
+            showCaseModale,
+            showCaseLocationModale,
+            showCaseInfectionLocationModale,
+            editedCase,
         } = this.state;
         return (
             <section>
@@ -270,6 +309,55 @@ class PatientDetailsWrapper extends React.Component {
                         <section>
                             <div className="widget__container">
                                 <div className="widget__content">
+                                    {
+                                        showCaseModale
+                                        && (
+                                            <CaseModal
+                                                params={params}
+                                                showModale={showCaseModale}
+                                                toggleModal={scrollToBottom => this.toggleCaseModal(undefined, scrollToBottom)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        showCaseLocationModale
+                                        && (
+                                            <CaseLocationModal
+                                                params={params}
+                                                showModale={showCaseLocationModale}
+                                                toggleModal={() => this.toggleCaseLocationModal(undefined)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        showCaseInfectionLocationModale
+                                        && (
+                                            <CaseInfectionLocationModalComponent
+                                                params={params}
+                                                showModale={showCaseInfectionLocationModale}
+                                                toggleModal={() => this.toggleCaseInfectionLocationModal(undefined)}
+                                                currentCase={editedCase}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
+                                    {
+                                        showTestModale
+                                        && (
+                                            <TestModal
+                                                params={params}
+                                                showModale={showTestModale}
+                                                toggleModal={scrollToBottom => this.toggleTestModal(undefined, undefined, scrollToBottom)}
+                                                currentCase={editedCase}
+                                                currentTest={editedTest}
+                                                patientId={patient.id}
+                                            />
+                                        )
+                                    }
                                     <ul className="cases-list">
                                         {
                                             patient.cases.map(c => (
@@ -278,27 +366,19 @@ class PatientDetailsWrapper extends React.Component {
                                                     id={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                     className={(params.case_id && parseInt(params.case_id, 10) === c.id) ? 'selected-case' : ''}
                                                 >
-                                                    <Tooltip
-                                                        title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
-                                                    >
-                                                        <IconButton
-                                                            className="add-test-button"
-                                                            onClick={() => this.toggleTestModal()}
-                                                        >
-                                                            <Add color="primary" />
-                                                        </IconButton>
-                                                    </Tooltip>
                                                     {
-                                                        showTestModale
+                                                        canEditPatientInfos
                                                         && (
-                                                            <TestModal
-                                                                params={params}
-                                                                showModale={showTestModale}
-                                                                toggleModal={scrollToBottom => this.toggleTestModal(null, scrollToBottom)}
-                                                                currentCase={c}
-                                                                currentTest={editedTest}
-                                                                patientId={patient.id}
-                                                            />
+                                                            <Tooltip
+                                                                title={<FormattedMessage id="main.label.test.add" defaultMessage="Add a test" />}
+                                                            >
+                                                                <IconButton
+                                                                    className="add-test-button"
+                                                                    onClick={() => this.toggleTestModal(undefined, c)}
+                                                                >
+                                                                    <Add color="primary" />
+                                                                </IconButton>
+                                                            </Tooltip>
                                                         )
                                                     }
                                                     <div className="case-id">
@@ -315,21 +395,52 @@ class PatientDetailsWrapper extends React.Component {
                                                         {c.id}
                                                     </div>
                                                     <div className="widget__content--half perfect-fill">
-                                                        <PatientCasesInfos currentCase={c} />
-                                                        <PatientCasesLocation currentCase={c} />
+                                                        <PatientCasesInfos
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
+                                                        />
+                                                        <CaseInfoLocation
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
+                                                        />
+                                                        <CaseInfectionLocation
+                                                            currentCase={c}
+                                                            toggleModal={() => this.toggleCaseInfectionLocationModal(c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
+                                                        />
                                                     </div>
                                                     <div className="tests-list">
                                                         <PatientCasesTests
                                                             tests={c.tests}
                                                             testsMapping={testsMapping}
                                                             currentCase={c}
-                                                            toggleModal={test => this.toggleTestModal(test)}
+                                                            toggleModal={test => this.toggleTestModal(test, c)}
+                                                            canEditPatientInfos={canEditPatientInfos}
                                                         />
                                                     </div>
                                                 </li>
                                             ))
                                         }
                                     </ul>
+                                    {
+                                        canEditPatientInfos
+                                        && (
+                                            <div className="align-right margin-top">
+                                                <button
+                                                    className="button"
+                                                    onClick={() => this.toggleCaseModal(undefined)}
+                                                >
+                                                    <i className="fa fa-plus" />
+                                                    <FormattedMessage
+                                                        id="main.cases.add"
+                                                        defaultMessage="Add a Case"
+                                                    />
+                                                </button>
+                                            </div>
+                                        )
+                                    }
                                     <span id="bottom-tests" />
                                 </div>
                             </div>

@@ -595,7 +595,7 @@ export const aires = (areasList, props, urlKey) => (
     }
 );
 
-export const villages = villagesList => (
+export const villages = (villagesList, displayEmpyLabel) => (
     {
         name: 'village_id',
         urlKey: 'village_id',
@@ -611,6 +611,10 @@ export const villages = villagesList => (
             id: 'main.label.villages',
             defaultMessage: 'Villages',
         },
+        emptyLabel: displayEmpyLabel ? {
+            id: 'main.label.noVillage',
+            defaultMessage: 'No village',
+        } : null,
         type: 'select',
     }
 );

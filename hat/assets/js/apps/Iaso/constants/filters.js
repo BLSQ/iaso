@@ -47,11 +47,11 @@ export const hasInstances = formatMessage => (
         isClearable: true,
         options: [
             {
-                label: formatMessage(MESSAGES.yes),
+                label: formatMessage(MESSAGES.with),
                 value: 'true',
             },
             {
-                label: formatMessage(MESSAGES.no),
+                label: formatMessage(MESSAGES.without),
                 value: 'false',
             },
         ],

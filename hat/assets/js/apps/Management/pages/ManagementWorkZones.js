@@ -313,7 +313,7 @@ class ManagementWorkZones extends React.Component {
                                 onChange={(value) => {
                                     this.onChangeFilters('planning_id', value);
                                 }}
-                                noResultsText={<FormattedMessage id="locator.label.noresult" defaultMessage="Aucun planning" />}
+                                noResultsText={<FormattedMessage id="locator.label.noresult" defaultMessage="No result" />}
                             />
 
                         </div>

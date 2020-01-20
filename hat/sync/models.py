@@ -80,12 +80,18 @@ class DeviceDB(models.Model):
         if full:
             last_user = ""
             last_team = ""
+            last_team_id = None
+            last_user_id = None
             if self.last_user and hasattr(self.last_user, "profile"):
                 last_user = self.last_user.profile.full_name()
+                last_user_id = self.last_user.profile.id
                 if self.last_user.profile.team:
                     last_team = self.last_user.profile.team.name
+                    last_team_id = self.last_user.profile.team.id
             result["last_user"] = last_user
             result["last_team"] = last_team
+            result["last_user_id"] = last_user_id
+            result["last_team_id"] = last_team_id
             result["is_test"] = self.is_test
 
         return result

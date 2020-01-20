@@ -293,6 +293,7 @@
 .modal-content {
     padding: 0 $padding-unit / 4 $padding-unit / 4 $padding-unit / 4;
 }
+
 .large-modal-content {
     width: 900px;
 }
@@ -402,7 +403,70 @@
 }
 
 .edit-modal {
-    width: 445px;
+    width: 470px;
+
+    .location-container {
+        width: 100%;
+
+        .location-subtitle:not(.no-result) {
+            justify-content: flex-end;
+            align-items: center;
+            flex-grow: 0;
+            max-width: 110px;
+            flex-basis: 110px;
+            font-size: 16px;
+            font-weight: normal;
+            color: $mid-gray;
+            font-size: 0.875rem !important;
+            display: flex;
+            height: 40px;
+            margin-bottom: 0;
+            margin-right: 8px;
+
+            &:after {
+                content: ':';
+                display: inline-block;
+                margin-right: 8px;
+            }
+        }
+
+
+        .location-subtitle.no-result {
+            justify-content: flex-end;
+            align-items: center;
+            flex-grow: 0;
+            max-width: 100%;
+            flex-basis: 100%;
+            font-size: 16px;
+            font-weight: normal;
+            display: flex;
+        }
+
+        >div {
+            width: 100%;
+        }
+
+        .location-filter {
+            width: 100%;
+            display: flex;
+
+            >div:not(.location-subtitle) {
+                flex-grow: 0;
+                max-width: 337px;
+                flex-basis: 337px;
+                width: 337px;
+                float: right;
+                position: relative;
+                top: 4px;
+                min-height: 34px;
+                display: flex;
+
+                >.Select {
+                    width: 100%;
+                }
+            }
+        }
+    }
 
     .array-field-container {
         width: 65%;
@@ -632,7 +696,7 @@
     >div,
     >section>div {
         label {
-            width: 100px;
+            width: 110px;
             height: 45px;
             box-sizing: border-box;
             padding-top: 5px;
@@ -670,4 +734,8 @@
     >div.img-modal {
         top: auto !important;
     }
+}
+
+.village-map-layers-container {
+    text-align: left;
 }

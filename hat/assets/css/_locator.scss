@@ -217,7 +217,7 @@
         min-height: auto;
     }
 
-    >div {
+    &.detail > div {
         display: flex;
     }
 }

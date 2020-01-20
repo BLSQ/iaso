@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import ZS, AS
+from hat.geo.models import ZS, AS, Province
 from django.db.models import Q
 from django.db.models import Count
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -37,7 +37,6 @@ class ZSViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
-    # @cache_control(max_age=24 * 60 * 60, public=True)
     def list(self, request):
         province_ids = request.GET.get("province_id", None)
         as_geo_json = request.GET.get("geojson", None)
@@ -191,7 +190,7 @@ class ZSViewSet(viewsets.ViewSet):
             original_zone = copy(zone)
             zone.name = request.data.get("name", "")
             zone.source = request.data.get("source", None)
-            zone.aliases = request.data.get("aliases", "")
+            zone.aliases = request.data.get("aliases", None)
             zone.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
             if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
@@ -201,9 +200,44 @@ class ZSViewSet(viewsets.ViewSet):
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response("Only one polygon should be saved in the geo_json shape",
                                     status=status.HTTP_400_BAD_REQUEST)
-
+            else:
+                zone.simplified_geom = None
+            province_id = request.data.get("province_id")
+            province = get_object_or_404(Province, id=province_id)
+            zone.province = province
             zone.save()
             log_modification(original_zone, zone, ZONE_API, request.user)
             return Response(zone.as_dict())
         else:
             return Response("Unauthorized", status=401)
+
+
+    def create(self, request):
+        newZone = ZS()
+        is_authorized = request.user.has_perm("menupermissions.x_management_edit_zones") or request.user.is_superuser
+        if is_authorized:
+            newZone.name = request.data.get("name", "")
+            newZone.source = request.data.get("source", None)
+            newZone.aliases = request.data.get("aliases", None)
+            newZone.is_erased = request.data.get("is_erased", False)
+            geo_json = request.data.get("geo_json", None)
+            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if len(geo_json["geometry"]["coordinates"]) == 1:
+                    newZone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response("Only one polygon should be saved in the geo_json shape",
+                                    status=status.HTTP_400_BAD_REQUEST)
+            else:
+                newZone.simplified_geom = None
+
+            province_id = request.data.get("province_id")
+            province = get_object_or_404(Province, id=province_id)
+            newZone.province = province
+
+            newZone.save()
+            log_modification(None, newZone, ZONE_API, request.user)
+            return Response(newZone.as_dict())
+        else:
+            return Response("Unauthorized", status=401)
+

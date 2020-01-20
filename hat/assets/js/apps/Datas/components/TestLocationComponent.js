@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { filterActions } from '../../../redux/filtersRedux';
-import VillageLocationFilters from '../../../components/VillageLocationFilters';
+import LocationFilters from '../../../components/LocationFilters';
 
 const TestLocationComponent = ({
     testLocationFilters,
@@ -15,7 +15,7 @@ const TestLocationComponent = ({
     onChange,
 }) => (
     <section className="location-container">
-        <VillageLocationFilters
+        <LocationFilters
             isRequired
             isClearable
             filters={testLocationFilters}

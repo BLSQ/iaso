@@ -36,6 +36,12 @@
         button:not(.button--back) {
             position: absolute;
             right: $padding-unit;
+            &.button--add {
+                top: 9px;
+            }
+            &.button--save--tiny {
+                top: 12px;
+            }
         }
     }
     &.with-button {

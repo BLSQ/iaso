@@ -1,6 +1,6 @@
 
 import Map from './Map';
-import Filters from '../../../components/VillageLocationFilters';
+import Filters from '../../../components/LocationFilters';
 
 export {
     Map,

@@ -15,7 +15,9 @@ import { smallMapActions } from '../../../redux/smallMapReducer';
 import { filterActions } from '../../../redux/filtersRedux';
 import FiltersComponent from '../../../components/FiltersComponent';
 import DownloadButtonsComponent from '../../../components/DownloadButtonsComponent';
-import { filtersZone1, filtersZone2, filtersSearch, filtersGeo } from '../constants/villagesFilters';
+import {
+    filtersZone1, filtersZone2, filtersSearch, filtersGeo,
+} from '../constants/villagesFilters';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
 
@@ -179,38 +181,49 @@ class ManagementVillages extends React.Component {
         return (
             <section>
                 {
-                    this.state.showEditModale &&
-                    <VillageModaleComponent
-                        showModale={this.state.showEditModale}
-                        closeModal={() => selectVillage(null)}
-                        village={selectedVillage}
-                        saveVillage={newVillage => this.saveData(newVillage)}
-                        updateCurrentVillage={village => updateCurrentVillage(village)}
-                        isUpdated={isUpdated}
-                        error={load.error}
-                        params={this.props.params}
-                        geoProvinces={geoProvinces}
-                        villageSources={villageSources}
-                    />
+                    this.state.showEditModale
+                    && (
+                        <VillageModaleComponent
+                            showModale={this.state.showEditModale}
+                            closeModal={() => selectVillage(null)}
+                            village={selectedVillage}
+                            saveVillage={newVillage => this.saveData(newVillage)}
+                            updateCurrentVillage={village => updateCurrentVillage(village)}
+                            isUpdated={isUpdated}
+                            error={load.error}
+                            params={this.props.params}
+                            geoProvinces={geoProvinces}
+                            villageSources={villageSources}
+                        />
+                    )
                 }
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.dataDeleted}
-                        deleteElement={element => this.deleteData(element)}
-                        message={this.state.dataDeleted.name}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.dataDeleted}
+                            deleteElement={element => this.deleteData(element)}
+                            message={this.state.dataDeleted.name}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
-                    <div className="widget__header">
+                    <div className="widget__header with-button">
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="main.label.villages"
                                 defaultMessage="Villages"
                             />
                         </h2>
+                        <button
+                            className="button--save--tiny"
+                            onClick={() => this.props.selectVillage(newItem)}
+                        >
+                            <i className="fa fa-plus" />
+                            <FormattedMessage id="main.label.new" defaultMessage="New" />
+                        </button>
 
                     </div>
                 </div>
@@ -245,62 +258,59 @@ class ManagementVillages extends React.Component {
                             />
                         </div>
                     </div>
-                    <SearchButton onSearch={() => this.onSearch()} >
-                        <button
-                            className="button--save--tiny margin-right"
-                            onClick={() => this.props.selectVillage(newItem)}
-                        >
-                            <i className="fa fa-plus" />
-                            <FormattedMessage id="main.label.new" defaultMessage="New" />
-                        </button>
-                    </SearchButton>
+                    <SearchButton onSearch={() => this.onSearch()}/>
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Chargement en cours',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     {
-                        this.state.tableUrl &&
-                        <section>
-                            <CustomTableComponent
-                                pageSize={50}
-                                withBorder={false}
-                                isSortable
-                                multiSort
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'name', desc: false }]}
-                                params={this.props.params}
-                                defaultPath={baseUrl}
-                                dataKey={baseUrl}
-                                onDataLoaded={villages => (this.props.setVillages(villages))}
-                                onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
-                                isUpdated={isUpdated}
-                                canSelect={false}
-                            />
-                            <div className="widget__content align-right border-top">
-                                <DownloadButtonsComponent
-                                    csvUrl={this.getEndpointUrl(true, 'csv')}
-                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        this.state.tableUrl
+                        && (
+                            <section>
+                                <CustomTableComponent
+                                    pageSize={50}
+                                    withBorder={false}
+                                    isSortable
+                                    multiSort
+                                    showPagination
+                                    endPointUrl={this.state.tableUrl}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    params={this.props.params}
+                                    defaultPath={baseUrl}
+                                    dataKey={baseUrl}
+                                    onDataLoaded={villages => (this.props.setVillages(villages))}
+                                    onDataUpdated={isDataUpdated => (this.props.villageUpdated(isDataUpdated))}
+                                    isUpdated={isUpdated}
+                                    canSelect={false}
                                 />
-                                <button
-                                    className="button--add"
-                                    onClick={() => this.props.selectVillage(newItem)}
-                                >
-                                    <i className="fa fa-plus" />
-                                    <FormattedMessage id="main.label.new" defaultMessage="New" />
-                                </button>
-                            </div>
-                        </section>
+                                <div className="widget__content align-right border-top">
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(true, 'csv')}
+                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                    />
+                                    <button
+                                        className="button--add"
+                                        onClick={() => this.props.selectVillage(newItem)}
+                                    >
+                                        <i className="fa fa-plus" />
+                                        <FormattedMessage id="main.label.new" defaultMessage="New" />
+                                    </button>
+                                </div>
+                            </section>
+                        )
                     }
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 
@@ -358,4 +368,3 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementVillagesIntl);
-

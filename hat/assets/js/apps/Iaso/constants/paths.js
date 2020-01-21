@@ -77,53 +77,12 @@ export const instancesPath = getPath({
     ],
 });
 
-
 export const orgUnitsPath = getPath({
     baseUrl: 'orgunits',
     params: [
         {
             isRequired: true,
-            key: 'validated',
-        },
-        {
-            isRequired: true,
             key: 'locationLimit',
-        },
-        {
-            isRequired: false,
-            key: 'orgUnitTypeId',
-        },
-        {
-            isRequired: false,
-            key: 'sourceId',
-        },
-        {
-            isRequired: false,
-            key: 'source',
-        },
-        {
-            isRequired: false,
-            key: 'group',
-        },
-        {
-            isRequired: false,
-            key: 'withShape',
-        },
-        {
-            isRequired: false,
-            key: 'withLocation',
-        },
-        {
-            isRequired: false,
-            key: 'search',
-        },
-        {
-            isRequired: false,
-            key: 'levels',
-        },
-        {
-            isRequired: false,
-            key: 'hasInstances',
         },
         {
             isRequired: false,
@@ -131,7 +90,15 @@ export const orgUnitsPath = getPath({
         },
         {
             isRequired: false,
+            key: 'searchTabIndex',
+        },
+        {
+            isRequired: false,
             key: 'searchActive',
+        },
+        {
+            isRequired: false,
+            key: 'searches',
         },
         ...paginationPathParams,
     ],

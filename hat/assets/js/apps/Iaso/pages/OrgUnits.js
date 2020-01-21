@@ -51,6 +51,8 @@ import chipColors from '../constants/chipColors';
 import { warningSnackBar } from '../components/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
 
+import DynamicTabs from '../components/nav/DynamicTabsComponent';
+
 const baseUrl = 'orgunits';
 let warningDisplayed = false;
 export const locationLimitMax = 3000;
@@ -283,6 +285,7 @@ class OrgUnits extends Component {
             sources,
             fetchingList,
             fetchingOrgUnitTypes,
+            redirectTo,
         } = this.props;
         const {
             tableColumns,
@@ -299,30 +302,18 @@ class OrgUnits extends Component {
                     id: 'iaso.orgUnits.title',
                 })}
                 >
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                            indicator: classes.indicator,
-                        }}
-                        onChange={(event, newtab) => this.handleChangeTab(newtab)
-                        }
-                    >
-                        <Tab
-                            value="list"
-                            label={formatMessage({
-                                defaultMessage: 'List',
-                                id: 'iaso.label.list',
-                            })}
-                        />
-                        <Tab
-                            value="map"
-                            label={formatMessage({
-                                defaultMessage: 'Map',
-                                id: 'iaso.label.map',
-                            })}
-                        />
-                    </Tabs>
+                    <DynamicTabs
+                        baseLabel={formatMessage({
+                            defaultMessage: 'Search',
+                            id: 'iaso.label.search',
+                        })}
+                        params={params}
+                        defaultItem={{ validated: 'both' }}
+                        paramKey="searches"
+                        tabParamKey="searchTabIndex"
+                        baseUrl={baseUrl}
+                        redirectTo={redirectTo}
+                    />
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
                     <OrgUnitsFiltersComponent
@@ -337,6 +328,31 @@ class OrgUnits extends Component {
                         params.searchActive
                         && (
                             <Fragment>
+                                <Tabs
+                                    value={tab}
+                                    classes={{
+                                        root: classes.tabs,
+                                    }}
+                                    className={classes.marginBottom}
+                                    indicatorColor="primary"
+                                    onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                    }
+                                >
+                                    <Tab
+                                        value="list"
+                                        label={formatMessage({
+                                            defaultMessage: 'List',
+                                            id: 'iaso.label.list',
+                                        })}
+                                    />
+                                    <Tab
+                                        value="map"
+                                        label={formatMessage({
+                                            defaultMessage: 'Map',
+                                            id: 'iaso.label.map',
+                                        })}
+                                    />
+                                </Tabs>
                                 {
                                     tab === 'list' && (
                                         <div className={classes.reactTable}>

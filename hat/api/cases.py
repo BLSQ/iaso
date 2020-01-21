@@ -448,6 +448,11 @@ class CasesViewSet(viewsets.ViewSet):
                 {"title": "ZS infection", "width": 14},
                 {"title": "AS infection", "width": 14},
                 {"title": "Village infection", "width": 20},
+                {"title": "DA UM", "width": 20},
+                {"title": "DP UM", "width": 20},
+                {"title": "DP CS", "width": 20},
+                {"title": "DP HGR", "width": 20},
+                {"title": "DP CDTC", "width": 20},
             ]
 
             filename = "cases"
@@ -482,6 +487,11 @@ class CasesViewSet(viewsets.ViewSet):
                 "infection_location__AS__ZS__name",
                 "infection_location__AS__name",
                 "infection_location__name",
+                "circumstances_da_um",
+                "circumstances_dp_um",
+                "circumstances_dp_cs",
+                "circumstances_dp_hgr",
+                "circumstances_dp_cdtc",
             )
 
             def get_row(case, **kwargs):
@@ -528,6 +538,11 @@ class CasesViewSet(viewsets.ViewSet):
                     case["infection_location__AS__ZS__name"],
                     case["infection_location__AS__name"],
                     case["infection_location__name"],
+                    case["circumstances_da_um"],
+                    case["circumstances_dp_um"],
+                    case["circumstances_dp_cs"],
+                    case["circumstances_dp_hgr"],
+                    case["circumstances_dp_cdtc"],
                 ]
 
             if xlsx_format:

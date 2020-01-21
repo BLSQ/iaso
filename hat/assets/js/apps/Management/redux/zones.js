@@ -1,4 +1,6 @@
 import { loadActions } from '../../../redux/load';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { succesfullSnackBar, errorSnackBar } from '../../../utils/constants/snackBars';
 
 export const FETCH_ACTION = 'hat/management/zones/FETCH_ACTION';
 export const FETCH_ACTION_NO_UPDATE = 'hat/management/zones/FETCH_ACTION_NO_UPDATE';
@@ -49,10 +51,32 @@ export const updateZone = (dispatch, zone) => {
         .set('Content-Type', 'application/json')
         .send(zone)
         .then(() => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
             dispatch(zoneUpdated(true));
             dispatch(loadActions.successLoadingNoData());
         })
         .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
+            dispatch(loadActions.errorLoading(err));
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+export const createZone = (dispatch, zone) => {
+    dispatch(loadActions.startLoading());
+    req
+        .post('/api/zs/') // create
+        .set('Content-Type', 'application/json')
+        .send(zone)
+        .then(() => {
+            dispatch(enqueueSnackbar(succesfullSnackBar()));
+            dispatch(zoneUpdated(true));
+            dispatch(loadActions.successLoadingNoData());
+        })
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar()));
             dispatch(loadActions.errorLoading(err));
         });
     return ({
@@ -112,6 +136,7 @@ export const zonesInitialState = {
 
 export const zoneActions = {
     updateZone,
+    createZone,
     setZones,
     zoneUpdated,
     deleteZone,

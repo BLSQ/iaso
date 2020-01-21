@@ -6,7 +6,7 @@ import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import ReactModal from 'react-modal';
 import { createUrl } from '../../../utils/fetchData';
 import { deepEqual } from '../../../utils';
-import { filterActions } from '../../../redux/filtersRedux';
+import { geoActions } from '../../../redux/geoRedux';
 import filtersGeo from '../constants/geoFilters';
 import VillageInfosComponent from './VillageInfosComponent';
 import LocationMapComponent from '../../../components/LocationMapComponent';
@@ -39,6 +39,11 @@ class VillageModale extends Component {
     }
 
     componentWillMount() {
+        const {
+            loadProvinces,
+            provinces,
+        } = this.props;
+        loadProvinces(provinces);
         ReactModal.setAppElement('.container--main');
         if (this.props.village.AS__ZS__province_id) {
             this.props.selectProvince(this.props.village.AS__ZS__province_id, this.props.village.AS__ZS_id, this.props.village.AS_id);
@@ -255,18 +260,22 @@ VillageModale.propTypes = {
     selectZone: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     villageSources: PropTypes.array.isRequired,
+    provinces: PropTypes.array.isRequired,
+    loadProvinces: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     geoFiltersModale: state.geoFiltersModale,
+    provinces: state.geoFilters.provinces,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    selectProvince: (provinceId, zoneId, areaId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
-    selectZone: (zoneId, areaId) => dispatch(filterActions.selectZone(zoneId, dispatch, false, areaId)),
-    selectArea: (areaId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, false, zoneId)),
+    loadProvinces: provinces => dispatch(geoActions.loadProvinces(provinces)),
+    selectProvince: (provinceId, zoneId, areaId) => dispatch(geoActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
+    selectZone: (zoneId, areaId) => dispatch(geoActions.selectZone(zoneId, dispatch, false, areaId)),
+    selectArea: (areaId, zoneId) => dispatch(geoActions.selectArea(areaId, dispatch, false, zoneId)),
 });
 
 

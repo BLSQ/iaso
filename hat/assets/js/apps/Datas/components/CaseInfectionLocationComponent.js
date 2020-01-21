@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 
 import { filterActions } from '../../../redux/filtersRedux';
-import VillageLocationFilters from '../../../components/VillageLocationFilters';
+import LocationFilters from '../../../components/LocationFilters';
 
 
 class CaseInfectionLocationComponent extends Component {
@@ -41,7 +41,7 @@ class CaseInfectionLocationComponent extends Component {
         } = this.props;
         return (
             <section className="location-container">
-                <VillageLocationFilters
+                <LocationFilters
                     isRequired
                     isClearable
                     filters={testLocationFilters}

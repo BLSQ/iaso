@@ -37,6 +37,7 @@ class Cases extends Component {
             tableColumns: [],
             tableUrl: null,
             canEditPatientInfos: false,
+            canDeleteForever: false,
             showDeleteModale: false,
             caseDeleted: null,
         };
@@ -78,9 +79,11 @@ class Cases extends Component {
         } = this.props;
         if (currentUser.id) {
             const canEditPatientInfos = userHasPermission(permissions, currentUser, 'x_datas_patient_edition') || currentUser.is_superuser;
+            const canDeleteForever = userHasPermission(permissions, currentUser, 'x_management_users') || currentUser.is_superuser;
             this.setState({
-                tableColumns: casesListColumns(formatMessage, canEditPatientInfos, this),
+                tableColumns: casesListColumns(formatMessage, canEditPatientInfos, canDeleteForever, this),
                 canEditPatientInfos,
+                canDeleteForever,
             });
         }
         if (newProps.params.province_id !== this.props.params.province_id) {
@@ -183,6 +186,7 @@ class Cases extends Component {
         } = this.props;
         const {
             canEditPatientInfos,
+            canDeleteForever,
             showDeleteModale,
             caseDeleted,
         } = this.state;
@@ -191,7 +195,7 @@ class Cases extends Component {
             formatMessage,
             coordinations || [],
             teams || [],
-            canEditPatientInfos,
+            canEditPatientInfos || canDeleteForever,
         );
         const search = filtersCasesSearch(formatMessage, this);
         const geo = filtersCasesGeo(

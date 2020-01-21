@@ -3,9 +3,9 @@ import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { FormattedMessage } from 'react-intl';
 
-class Filters extends React.Component {
+class LocationFilters extends React.Component {
     render() {
-        const { filters, isRequired } = this.props;
+        const { filters, isRequired, isMultiSelect } = this.props;
         if (!filters) {
             return null;
         }
@@ -15,7 +15,18 @@ class Filters extends React.Component {
             <div>
                 <div className="location-filter">
                     <div className="location-subtitle">
-                        <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
+                        {
+                            isMultiSelect
+                            && (
+                                <FormattedMessage id="main.label.provinces" defaultMessage="Provinces" />
+                            )
+                        }
+                        {
+                            !isMultiSelect
+                            && (
+                                <FormattedMessage id="main.label.province" defaultMessage="Province" />
+                            )
+                        }
                     </div>
                     {
                         filters.provinces
@@ -34,11 +45,22 @@ class Filters extends React.Component {
                         )
                     }
                 </div>
-                {filters.zones && filters.zones.length !== 0
+                {filters.zones && filters.zones.length !== 0 && this.props.showZones
                     && (
                         <div className="location-filter">
                             <div className="location-subtitle">
-                                <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
+                                {
+                                    isMultiSelect
+                                    && (
+                                        <FormattedMessage id="main.label.zones" defaultMessage="Health zones" />
+                                    )
+                                }
+                                {
+                                    !isMultiSelect
+                                    && (
+                                        <FormattedMessage id="main.label.zone" defaultMessage="Health zone" />
+                                    )
+                                }
                             </div>
                             <div>
                                 <Select
@@ -56,11 +78,22 @@ class Filters extends React.Component {
                         </div>
                     )
                 }
-                {filters.areas && filters.areas.length !== 0
+                {filters.areas && filters.areas.length !== 0 && this.props.showAreas
                     && (
                         <div className="location-filter">
                             <div className="location-subtitle">
-                                <FormattedMessage id="main.label.areas" defaultMessage="Health area" />
+                                {
+                                    isMultiSelect
+                                    && (
+                                        <FormattedMessage id="main.label.areas" defaultMessage="Health areas" />
+                                    )
+                                }
+                                {
+                                    !isMultiSelect
+                                    && (
+                                        <FormattedMessage id="main.label.area" defaultMessage="Health area" />
+                                    )
+                                }
                             </div>
                             <div>
                                 <Select
@@ -119,24 +152,30 @@ class Filters extends React.Component {
     }
 }
 
-Filters.defaultProps = {
+LocationFilters.defaultProps = {
     isMultiSelect: false,
     showVillages: true,
+    showAreas: true,
+    showZones: true,
     isClearable: false,
+    selectZone: () => { },
+    selectArea: () => { },
     selectVillage: () => { },
     isRequired: false,
 };
 
-Filters.propTypes = {
+LocationFilters.propTypes = {
     filters: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
-    selectZone: PropTypes.func.isRequired,
-    selectArea: PropTypes.func.isRequired,
+    selectZone: PropTypes.func,
+    selectArea: PropTypes.func,
     selectVillage: PropTypes.func,
     isMultiSelect: PropTypes.bool,
+    showZones: PropTypes.bool,
+    showAreas: PropTypes.bool,
     showVillages: PropTypes.bool,
     isClearable: PropTypes.bool,
     isRequired: PropTypes.bool,
 };
 
-export default Filters;
+export default LocationFilters;

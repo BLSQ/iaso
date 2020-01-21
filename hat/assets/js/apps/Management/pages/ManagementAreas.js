@@ -56,9 +56,9 @@ class ManagementAreas extends React.Component {
             showEditModale: nextProps.selectedArea !== null,
         });
         const { intl: { formatMessage }, permissions, currentUser } = nextProps;
-        if (nextProps.currentUser.id &&
-            permissions.length > 0 &&
-            this.state.tableColumns.length === 0) {
+        if (nextProps.currentUser.id
+            && permissions.length > 0
+            && this.state.tableColumns.length === 0) {
             const userCanEditOrDelete = userHasPermission(permissions, currentUser, 'x_management_edit_areas');
             const userCanEditShape = userHasPermission(permissions, currentUser, 'x_management_edit_shape_areas');
             this.setState({
@@ -118,12 +118,17 @@ class ManagementAreas extends React.Component {
         });
     }
 
-    saveData(newData) {
+    saveData(newData, shapeUpdated = false) {
         const { dispatch } = this.props;
         if (newData.id === 0) {
             dispatch(areaActions.createArea(dispatch, newData));
         } else {
             dispatch(areaActions.updateArea(dispatch, newData));
+        }
+        if (shapeUpdated) {
+            setTimeout(() => {
+                this.props.fetchGeoDatas(false, false, true);
+            }, 500);
         }
     }
 
@@ -157,7 +162,6 @@ class ManagementAreas extends React.Component {
             updateCurrentArea,
             selectedArea,
             isUpdated,
-            load,
             selectArea,
             selectedShapeItem,
             geoProvinces,
@@ -177,49 +181,59 @@ class ManagementAreas extends React.Component {
         return (
             <section>
                 {
-                    this.state.showEditModale &&
-                    <AreaModaleComponent
-                        showModale={this.state.showEditModale}
-                        closeModal={() => selectArea(null)}
-                        area={selectedArea}
-                        saveArea={newArea => this.saveData(newArea)}
-                        updateCurrentArea={area => updateCurrentArea(area)}
-                        isUpdated={isUpdated}
-                        error={load.error}
-                        params={this.props.params}
-                        geoProvinces={geoProvinces}
-                    />
+                    this.state.showEditModale
+                    && (
+                        <AreaModaleComponent
+                            showModale={this.state.showEditModale}
+                            closeModal={() => selectArea(null)}
+                            area={selectedArea}
+                            saveArea={newArea => this.saveData(newArea)}
+                            updateCurrentArea={area => updateCurrentArea(area)}
+                            params={this.props.params}
+                            geoProvinces={geoProvinces}
+                        />
+                    )
                 }
                 {
-                    this.state.showEditShape &&
-                    selectedShapeItem &&
-                    <ShapeModaleComponent
-                        showModale={this.state.showEditShape}
-                        closeModal={() => this.closeShapeModal()}
-                        item={selectedShapeItem}
-                        saveShape={newArea => this.saveData(newArea)}
-                        isUpdated={isUpdated}
-                        error={load.error}
-                    />
+                    this.state.showEditShape
+                    && selectedShapeItem
+                    && (
+                        <ShapeModaleComponent
+                            showModale={this.state.showEditShape}
+                            closeModal={() => this.closeShapeModal()}
+                            item={selectedShapeItem}
+                            saveShape={newArea => this.saveData(newArea, true)}
+                            isUpdated={isUpdated}
+                        />
+                    )
                 }
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.dataDeleted}
-                        deleteElement={element => this.deleteData(element)}
-                        message={this.state.dataDeleted.name}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.dataDeleted}
+                            deleteElement={element => this.deleteData(element)}
+                            message={this.state.dataDeleted.name}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
-                    <div className="widget__header">
+                    <div className="widget__header with-button">
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="main.label.areas"
                                 defaultMessage="Health area"
                             />
                         </h2>
+                        <button
+                            className="button--save--tiny"
+                            onClick={() => selectArea({ id: 0 })}
+                        >
+                            <i className="fa fa-plus" />
+                            <FormattedMessage id="mangement.label.addArea" defaultMessage="New area" />
+                        </button>
 
                     </div>
                 </div>
@@ -251,43 +265,48 @@ class ManagementAreas extends React.Component {
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Chargement en cours',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Chargement en cours',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     {
-                        this.state.tableUrl &&
-                        <section>
-                            <CustomTableComponent
-                                pageSize={50}
-                                withBorder={false}
-                                isSortable
-                                multiSort
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'name', desc: false }]}
-                                params={this.props.params}
-                                defaultPath={baseUrl}
-                                dataKey={baseUrl}
-                                onDataLoaded={areasList => (this.props.setAreas(areasList))}
-                                onDataUpdated={isDataUpdated => (this.props.areaUpdated(isDataUpdated))}
-                                isUpdated={isUpdated}
-                                canSelect={false}
-                            />
-                            <div className="widget__content align-right border-top">
-                                <DownloadButtonsComponent
-                                    csvUrl={this.getEndpointUrl(true, 'csv')}
-                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                        this.state.tableUrl
+                        && (
+                            <section>
+                                <CustomTableComponent
+                                    pageSize={50}
+                                    withBorder={false}
+                                    isSortable
+                                    multiSort
+                                    showPagination
+                                    endPointUrl={this.state.tableUrl}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    params={this.props.params}
+                                    defaultPath={baseUrl}
+                                    dataKey={baseUrl}
+                                    onDataLoaded={areasList => (this.props.setAreas(areasList))}
+                                    onDataUpdated={isDataUpdated => (this.props.areaUpdated(isDataUpdated))}
+                                    isUpdated={isUpdated}
+                                    canSelect={false}
                                 />
-                            </div>
-                        </section>
+                                <div className="widget__content align-right border-top">
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(true, 'csv')}
+                                        xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                    />
+                                </div>
+                            </section>
+                        )
                     }
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 
@@ -342,7 +361,7 @@ const MapDispatchToProps = dispatch => ({
     updateCurrentArea: areaId => dispatch(areaActions.updateCurrentArea(areaId)),
     selectArea: area => dispatch(areaActions.selectArea(area)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
-    fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
+    fetchGeoDatas: (withProvinces, withZones, withAreas) => dispatch(smallMapActions.fetchGeoDatas(dispatch, withProvinces, withZones, withAreas)),
     selectProvince: provinceId => dispatch(filterActions.selectProvince(provinceId, dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     fetchAreaDetail: areaId => dispatch(areaActions.fetchAreaDetail(dispatch, areaId)),
@@ -350,4 +369,3 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ManagementAreasIntl);
-

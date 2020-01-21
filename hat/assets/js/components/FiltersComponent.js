@@ -105,6 +105,22 @@ class FiltersComponent extends React.Component {
                                 || (filter.conditionnalCheck && this.props.params[filter.conditionnalCheck]);
                         }
 
+                        if (
+                            filter.type === 'select'
+                            && filter.options.length === 0
+                            && filter.emptyLabel
+                        ) {
+                            return (
+                                <div className="location-filter">
+                                    <div className="location-subtitle no-result">
+                                        {
+                                            formatMessage(filter.emptyLabel)
+                                        }
+                                    </div>
+                                </div>
+                            );
+                        }
+
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
                                 <div key={filter.name}>

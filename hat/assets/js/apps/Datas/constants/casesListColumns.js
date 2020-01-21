@@ -10,7 +10,7 @@ import Clear from '@material-ui/icons/Clear';
 
 const onLocateCase = caseItem => window.open(`/dashboard/locator/case_id/${caseItem.id}`, '_blank');
 
-const casesListColumns = (formatMessage, canEditPatientInfos, component) => (
+const casesListColumns = (formatMessage, canEditPatientInfos, canDeleteForever, component) => (
     [
         {
             Header: formatMessage({
@@ -222,7 +222,7 @@ const casesListColumns = (formatMessage, canEditPatientInfos, component) => (
                         )
                     }
                     {
-                        component.props.currentUser.is_superuser
+                        canDeleteForever
                         && settings.original.mark_for_deletion
                         && (
                             <Tooltip

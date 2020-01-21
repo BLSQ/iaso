@@ -44,7 +44,7 @@ const filtersCases2 = (
     formatMessage,
     coordinationsList,
     teamsList,
-    canEditPatientInfos,
+    displayDeleteFilters,
 ) => {
     let tempFilter = [
         coordinations(coordinationsList),
@@ -53,7 +53,7 @@ const filtersCases2 = (
         testerType(formatMessage),
         screeningType(formatMessage),
     ];
-    if (canEditPatientInfos) {
+    if (displayDeleteFilters) {
         tempFilter = tempFilter.concat([
             showDeleted(),
             showUnDeleted(),
@@ -74,7 +74,7 @@ const filtersCasesGeo = (
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
-        villages(villagesList),
+        villages(villagesList, Boolean(props.params.as_id && areasList.length > 0)),
     ]
 );
 
@@ -164,7 +164,7 @@ const filtersPatientsGeo = (
         provinces(provincesList, props, urlKey),
         zones(zoneslist, props, urlKey),
         aires(areasList, props, urlKey),
-        villages(villagesList),
+        villages(villagesList, Boolean(props.params.as_id && areasList.length > 0)),
     ];
     if (coordinationsList) {
         geoFiltersArray.unshift(coordinations(coordinationsList));

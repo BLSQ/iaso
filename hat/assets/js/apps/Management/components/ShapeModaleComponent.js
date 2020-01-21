@@ -4,16 +4,12 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
 
-import { deepEqual } from '../../../utils';
 import { mapActions } from '../redux/mapReducer';
 
 import ShapeMap from './ShapeMap';
 
 import LayersComponent from '../../../components/LayersComponent';
 
-
-let timerSuccess;
-let timerError;
 
 class ShapeModale extends Component {
     constructor(props) {
@@ -22,7 +18,6 @@ class ShapeModale extends Component {
             showModale: props.showModale,
             isChanged: false,
             isUpdated: false,
-            error: false,
             item: props.item,
         };
     }
@@ -32,40 +27,11 @@ class ShapeModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        let newState = {};
-        newState.item = nextProps.item;
         if (nextProps.isUpdated) {
-            newState.isUpdated = nextProps.isUpdated;
-            newState.error = false;
-            timerSuccess = setTimeout(() => {
-                this.setState({
-                    isUpdated: false,
-                });
-            }, 10000);
-        }
-        if (!deepEqual(nextProps.item, this.props.item, true)) {
-            newState.item = nextProps.item;
-        } else if (nextProps.error) {
-            newState = {
-                error: nextProps.error,
+            this.setState({
                 isUpdated: false,
-                isChanged: true,
-            };
-            timerError = setTimeout(() => {
-                this.setState({
-                    error: false,
-                });
-            }, 10000);
-        }
-        this.setState(newState);
-    }
-
-    componentWillUnmount() {
-        if (timerSuccess) {
-            clearTimeout(timerSuccess);
-        }
-        if (timerError) {
-            clearTimeout(timerError);
+                isChanged: false,
+            });
         }
     }
 
@@ -84,6 +50,10 @@ class ShapeModale extends Component {
             map: {
                 baseLayer,
             },
+            load: {
+                loading,
+            },
+            isLoadingShape,
         } = this.props;
         const { item } = this.state;
         return (
@@ -114,23 +84,44 @@ class ShapeModale extends Component {
                                     zs: geoZones,
                                     as: geoAreas,
                                 }}
+                                isLoadingShape={isLoadingShape}
                                 updateShape={newItem => this.updateItem(newItem)}
                             />
                         </div>
                     </section>
                     {
-                        this.state.isUpdated &&
-                        <div className="align-right text--success">
-                            <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Shape saved" />
-                        </div>
+                        this.state.isUpdated
+                        && (
+                            <div className="align-right text--success">
+                                <FormattedMessage id="main.label.shapeUpdated" defaultMessage="Shape saved" />
+                            </div>
+                        )
                     }
                     {
-                        this.state.error &&
-                        <div className="align-right text--error">
-                            <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
-                        </div>
+                        this.state.error
+                        && (
+                            <div className="align-right text--error">
+                                <FormattedMessage id="main.label.error" defaultMessage="An error occured while saving" />
+                            </div>
+                        )
                     }
                     <div className="align-right">
+                        {
+                            item.geo_json
+                            && (
+                                <button
+                                    className="button--delete margin-right"
+                                    onClick={() => this.updateItem({
+                                        ...item,
+                                        geo_json: null,
+                                        has_shape: false,
+                                    })}
+                                >
+                                    <i className="fa fa-trash" />
+                                    <FormattedMessage id="main.label.deleteShape" defaultMessage="Delete shape" />
+                                </button>
+                            )
+                        }
                         <button
                             className="button"
                             onClick={() => this.props.closeModal()}
@@ -154,27 +145,29 @@ class ShapeModale extends Component {
 }
 ShapeModale.defaultProps = {
     item: null,
-    error: null,
 };
 ShapeModale.propTypes = {
     showModale: PropTypes.bool.isRequired,
     closeModal: PropTypes.func.isRequired,
     item: PropTypes.object,
     isUpdated: PropTypes.bool.isRequired,
-    error: PropTypes.any,
     saveShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     geoProvinces: PropTypes.object.isRequired,
     geoZones: PropTypes.object.isRequired,
     geoAreas: PropTypes.object.isRequired,
     changeLayer: PropTypes.func.isRequired,
+    load: PropTypes.object.isRequired,
+    isLoadingShape: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
-    map: state.map,
-    geoProvinces: state.map.geoProvinces,
-    geoZones: state.map.geoZones,
-    geoAreas: state.map.geoAreas,
+    map: state.smallMap,
+    geoProvinces: state.smallMap.geoProvinces,
+    geoZones: state.smallMap.geoZones,
+    geoAreas: state.smallMap.geoAreas,
+    isLoadingShape: state.smallMap.isLoadingShape,
+    load: state.load,
 });
 
 const MapDispatchToProps = dispatch => ({

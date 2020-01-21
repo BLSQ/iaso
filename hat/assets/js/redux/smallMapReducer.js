@@ -9,6 +9,7 @@ export const SET_GEO_PROVINCES = 'hat/smallMap/SET_GEO_PROVINCES';
 export const SET_GEO_ZONES = 'hat/smallMap/SET_GEO_ZONES';
 export const SET_GEO_AREAS = 'hat/smallMap/SET_GEO_AREAS';
 export const FETCH_ACTION = 'hat/smallMap/FETCH_ACTION';
+export const SET_IS_LOADING_SHAPES = 'hat/smallMap/SET_IS_LOADING_SHAPES';
 
 const req = require('superagent');
 
@@ -56,35 +57,64 @@ export const setGeoAreas = payload => ({
     payload,
 });
 
+export const setIsLoadingShapes = payload => ({
+    type: SET_IS_LOADING_SHAPES,
+    payload,
+});
 
-export const fetchGeoDatas = (dispatch) => {
-    req
-        .get('/api/provinces/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoProvinces(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading provinces shape', err);
-        });
-    req
-        .get('/api/zs/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoZones(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading zones shape', err);
-        });
-    req
-        .get('/api/as/?geojson=true')
-        .set('Content-Type', 'application/json')
-        .then((res) => {
-            dispatch(setGeoAreas(res.body));
-        })
-        .catch((err) => {
-            console.error('Error while loading areas shape', err);
-        });
+
+export const fetchGeoDatas = (
+    dispatch,
+    fetchProvinces = true,
+    fetchZone = true,
+    fetchAreas = true,
+) => {
+    const promisesList = [];
+    dispatch(setIsLoadingShapes(true));
+    if (fetchProvinces) {
+        promisesList.push(
+            req
+                .get('/api/provinces/?geojson=true')
+                .set('Content-Type', 'application/json')
+                .then((res) => {
+                    dispatch(setGeoProvinces(res.body));
+                })
+                .catch((err) => {
+                    console.error('Error while loading provinces shape', err);
+                }),
+        );
+    }
+    if (fetchZone) {
+        promisesList.push(
+            req
+                .get('/api/zs/?geojson=true')
+                .set('Content-Type', 'application/json')
+                .then((res) => {
+                    dispatch(setGeoZones(res.body));
+                })
+                .catch((err) => {
+                    console.error('Error while loading zones shape', err);
+                }),
+        );
+    }
+
+    if (fetchAreas) {
+        promisesList.push(
+            req
+                .get('/api/as/?geojson=true')
+                .set('Content-Type', 'application/json')
+                .then((res) => {
+                    dispatch(setGeoAreas(res.body));
+                })
+                .catch((err) => {
+                    console.error('Error while loading areas shape', err);
+                }),
+        );
+    }
+
+    Promise.all(promisesList).then(() => {
+        dispatch(setIsLoadingShapes(false));
+    });
     return ({
         type: FETCH_ACTION,
     });
@@ -101,6 +131,7 @@ export const smallMapInitialState = {
     geoProvinces: {},
     geoZones: {},
     geoAreas: {},
+    isLoadingShape: false,
 };
 
 export const smallMapReducer = (state = smallMapInitialState, action = {}) => {
@@ -135,6 +166,14 @@ export const smallMapReducer = (state = smallMapInitialState, action = {}) => {
             return {
                 ...state,
                 geoAreas,
+            };
+        }
+
+        case SET_IS_LOADING_SHAPES: {
+            const isLoadingShape = action.payload;
+            return {
+                ...state,
+                isLoadingShape,
             };
         }
 

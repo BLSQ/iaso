@@ -26,7 +26,7 @@ import { createUrl } from '../../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
-    fetchSources,
+    fetchAssociatedDataSources,
     fetchOrgUnitDetail,
     fetchForms,
     saveOrgUnit,
@@ -65,6 +65,9 @@ class OrgUnitDetail extends Component {
     componentDidMount() {
         const {
             dispatch,
+            params: {
+                orgUnitId,
+            },
         } = this.props;
         this.props.resetOrgUnitsLevels();
         this.fetchDetail();
@@ -76,23 +79,23 @@ class OrgUnitDetail extends Component {
             fetchSourceTypes(dispatch)
                 .then(sourceTypes => this.props.setSourceTypes(sourceTypes));
         }
-        if (!this.props.sources) {
-            fetchSources(dispatch)
-                .then((data) => {
-                    const sources = [];
-                    data.forEach((s, i) => {
-                        sources.push({
-                            ...s,
-                            color: chipColors[i],
-                        });
-                    });
-                    this.props.setSources(sources);
-                });
-        }
 
         if (this.props.groups.length === 0) {
             fetchGroups(dispatch).then(groups => this.props.setGroups(groups));
         }
+
+
+        fetchAssociatedDataSources(dispatch, orgUnitId)
+            .then((data) => {
+                const sources = [];
+                data.forEach((s, i) => {
+                    sources.push({
+                        ...s,
+                        color: chipColors[i],
+                    });
+                });
+                this.props.setSources(sources);
+            });
     }
 
     componentDidUpdate(prevProps) {
@@ -154,6 +157,8 @@ class OrgUnitDetail extends Component {
                             this.props.setCurrentForms(forms);
                         });
                 }
+
+
                 this.setState({
                     currentOrgUnit: orgUnit,
                 });

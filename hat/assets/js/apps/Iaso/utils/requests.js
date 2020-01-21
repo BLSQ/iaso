@@ -115,7 +115,7 @@ export const fetchInstancesAsLocationsByForm = (dispatch, form, orgUnit) => {
 };
 
 export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true&validated=both`;
+    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&withShapes=true&validated=both`;
     return getRequest(url)
         .then(data => ({
             ...source,
@@ -124,6 +124,17 @@ export const fetchAssociatedOrgUnits = (dispatch, source, orgUnit) => {
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitsError')));
             console.error('Error while fetching org unit list:', error);
+            throw error;
+        });
+};
+
+export const fetchAssociatedDataSources = (dispatch, orgUnitId) => {
+    const url = `/api/datasources/?linkedTo=${orgUnitId}`;
+    return getRequest(url)
+        .then(res => res.sources)
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('fetchAssociatedDataSources')));
+            console.error('Error while fetching associated data sources', error);
             throw error;
         });
 };

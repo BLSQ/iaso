@@ -74,11 +74,11 @@ class CaseInfectionLocationModalComponent extends Component {
         } = this.state;
         const {
             updateCase,
-            patientId,
+            currentPatient,
             toggleModal,
         } = this.props;
 
-        updateCase(currentCase, patientId, toggleModal);
+        updateCase(currentCase, currentPatient.id, toggleModal);
     }
 
     isSaveDisabled() {
@@ -99,6 +99,7 @@ class CaseInfectionLocationModalComponent extends Component {
         const {
             toggleModal,
             showModale,
+            currentPatient,
         } = this.props;
         const {
             currentCase,
@@ -169,6 +170,7 @@ class CaseInfectionLocationModalComponent extends Component {
                             <CaseInfectionLocationComponent
                                 onChange={value => this.onChange('infectionLocationVillageId', value)}
                                 currentCase={currentCase}
+                                currentPatient={currentPatient}
                             />
                         </Grid>
                     </Grid>
@@ -205,8 +207,8 @@ CaseInfectionLocationModalComponent.propTypes = {
     showModale: PropTypes.bool.isRequired,
     toggleModal: PropTypes.func.isRequired,
     currentCase: PropTypes.object.isRequired,
+    currentPatient: PropTypes.object.isRequired,
     updateCase: PropTypes.func.isRequired,
-    patientId: PropTypes.number.isRequired,
     intl: PropTypes.object.isRequired,
 };
 

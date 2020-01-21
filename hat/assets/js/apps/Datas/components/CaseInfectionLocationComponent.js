@@ -8,6 +8,7 @@ import LocationFilters from '../../../components/LocationFilters';
 
 
 class CaseInfectionLocationComponent extends Component {
+
     componentWillMount() {
         const {
             currentCase,
@@ -23,6 +24,53 @@ class CaseInfectionLocationComponent extends Component {
         }
     }
 
+    // shouldComponentUpdate(nextProps) {
+    //     const {
+    //         currentCase,
+    //     } = this.props;
+    //     return currentCase.infectionLocationVillageId !== nextProps.currentCase.infectionLocationVillageId;
+    // }
+
+    componentDidUpdate(prevProps) {
+        const {
+            currentCase,
+            selectProvince,
+            currentPatient,
+            onChange,
+        } = this.props;
+        if (prevProps.currentCase.infection_location_type !== currentCase.infection_location_type) {
+            if (currentCase.infection_location_type === 'residence') {
+                selectProvince(
+                    currentPatient.province_id,
+                    currentPatient.ZS_id,
+                    currentPatient.AS_id,
+                    currentPatient.village_id,
+                );
+                onChange(currentPatient.village_id);
+            }
+            if (currentCase.infection_location_type === 'test' && currentCase.location && currentCase.location.normalized) {
+                selectProvince(
+                    currentCase.location.normalized.as.province_id,
+                    currentCase.location.normalized.as.zs_id,
+                    currentCase.location.normalized.as.id,
+                    currentCase.location.normalized.village_id,
+                );
+
+                onChange(currentCase.location.normalized.village_id);
+            }
+            if (currentCase.infection_location && (currentCase.infection_location_type !== 'residence' && currentCase.infection_location_type !== 'test')) {
+                selectProvince(
+                    currentCase.infection_location.province_id,
+                    currentCase.infection_location.ZS_id,
+                    currentCase.infection_location.AS_id,
+                    currentCase.infection_location.id,
+                );
+                onChange(currentCase.infection_location.id);
+            }
+        }
+    }
+
+
     componentWillUnmount() {
         const {
             selectProvince,
@@ -30,12 +78,31 @@ class CaseInfectionLocationComponent extends Component {
         selectProvince(null);
     }
 
+    selectProvince(provinceId) {
+        this.props.selectProvince(provinceId);
+        this.props.selectZone(null);
+        this.props.selectArea(null);
+        this.props.selectVillage(null);
+        this.props.onChange(null);
+    }
+
+    selectZone(zoneId) {
+        this.props.selectZone(zoneId);
+        this.props.selectArea(null);
+        this.props.selectVillage(null);
+        this.props.onChange(null);
+    }
+
+    selectArea(areaId) {
+        this.props.selectArea(areaId);
+        this.props.selectVillage(null);
+        this.props.onChange(null);
+    }
+
+
     render() {
         const {
             testLocationFilters,
-            selectProvince,
-            selectZone,
-            selectArea,
             selectVillage,
             onChange,
         } = this.props;
@@ -45,22 +112,9 @@ class CaseInfectionLocationComponent extends Component {
                     isRequired
                     isClearable
                     filters={testLocationFilters}
-                    selectProvince={provinceId => selectProvince(
-                        provinceId,
-                        null,
-                        null,
-                        null,
-                    )}
-                    selectZone={zoneId => selectZone(
-                        zoneId,
-                        null,
-                        null,
-                    )}
-                    selectArea={areaId => selectArea(
-                        areaId,
-                        testLocationFilters.zoneId,
-                        null,
-                    )}
+                    selectProvince={provinceId => this.selectProvince(provinceId)}
+                    selectZone={zoneId => this.selectZone(zoneId)}
+                    selectArea={areaId => this.selectArea(areaId)}
                     selectVillage={(villageId) => {
                         onChange(villageId);
                         selectVillage(villageId);
@@ -79,6 +133,7 @@ CaseInfectionLocationComponent.propTypes = {
     selectArea: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     currentCase: PropTypes.object.isRequired,
+    currentPatient: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -88,8 +143,8 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
-    selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId)),
-    selectArea: (areaId, zoneId, villageId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId)),
+    selectZone: zoneId => dispatch(filterActions.selectZone(zoneId, dispatch, true, null, null)),
+    selectArea: areaId => dispatch(filterActions.selectArea(areaId, dispatch, true, null, null)),
     selectVillage: villageId => dispatch(filterActions.selectVillage(villageId)),
 });
 

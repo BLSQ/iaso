@@ -251,6 +251,8 @@ const TestInfoComponent = ({
                         />
                         {
                             currentTest.type === 'CATT'
+                            && Boolean(result)
+                            && result > -1
                             && (
                                 <ModalItem
                                     labelComponent={(

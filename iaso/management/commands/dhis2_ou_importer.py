@@ -43,23 +43,23 @@ class Command(BaseCommand):
             "--dhis2_url",
             type=str,
             help="Dhis2 url to import from (without user/password)",
-            required=True,
+            required=False,
         )
         parser.add_argument(
-            "--dhis2_user", type=str, help="dhis2 user name", required=True
+            "--dhis2_user", type=str, help="dhis2 user name", required=False
         )
         parser.add_argument(
             "--dhis2_password",
             type=str,
             help="dhis2 password of the dhis2_user",
-            required=True,
+            required=False,
         )
 
         parser.add_argument(
             "--org_unit_type_csv_file",
             type=str,
             help="Path to the org unit types csv file",
-            required=True,
+            required=False,
         )
         parser.add_argument(
             "--source_name",
@@ -135,7 +135,6 @@ class Command(BaseCommand):
         return api
 
     def fetch_orgunits(self, options):
-
         api = self.get_api(options)
         orgunits = []
 
@@ -317,15 +316,35 @@ class Command(BaseCommand):
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
-        orgunits = self.fetch_orgunits(options)
 
-        org_unit_type_file_name = options.get("org_unit_type_csv_file")
+        org_unit_type_file_name = options.get("org_unit_type_csv_file", None)
         source_name = options["source_name"]
         version_number = options.get("version_number")
         force = options.get("force")
         validate = options.get("validate")
 
         source, _created = DataSource.objects.get_or_create(name=source_name)
+
+        url = (options.get("dhis2_url"),)
+        user = (options.get("dhis2_user"),)
+        password = (options.get("dhis2_password"),)
+
+        if url[0] and user[0] and password[0]:
+            connection_config = options
+        else:
+            if source.credentials:
+                connection_config = {
+                    "dhis2_url": source.credentials.url,
+                    "dhis2_password": source.credentials.password,
+                    "dhis2_user": source.credentials.login,
+                }
+
+            else:
+                iaso_logger.info(
+                    "No credentials exist for this source, please provide them on the command line"
+                )
+
+        orgunits = self.fetch_orgunits(connection_config)
 
         version, _created = SourceVersion.objects.get_or_create(
             number=version_number, data_source=source
@@ -345,7 +364,9 @@ class Command(BaseCommand):
             OrgUnit.objects.filter(version=version).delete()
             iaso_logger.warn(("%d org units records deleted" % version_count).upper())
 
-        type_dict = self.parse_type_dict(org_unit_type_file_name)
+        type_dict = {}
+        if org_unit_type_file_name:
+            type_dict = self.parse_type_dict(org_unit_type_file_name)
 
         unknown_unit_type, _created = OrgUnitType.objects.get_or_create(
             name="%s-%s" % (source_name, "Unknown")
@@ -388,7 +409,7 @@ class Command(BaseCommand):
             index += 1
 
         iaso_logger.ok("created orgunits", index)
-        self.load_groupsets(options, version, group_dict)
+        self.load_groupsets(connection_config, version, group_dict)
 
         end = time.time()
         iaso_logger.ok("processed in %.2f seconds" % (end - start))

@@ -1,12 +1,11 @@
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
-
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
-from django.conf import settings
-from iaso.utils import flat_parse_xml_file
 from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.utils.translation import ugettext_lazy as _
+from iaso.utils import flat_parse_xml_file
 import random
 
 GEO_SOURCE_CHOICES = (
@@ -14,6 +13,18 @@ GEO_SOURCE_CHOICES = (
     ("ucla", "UCLA"),
     ("pnltha", "PNL THA"),
     ("derivated", "Derivated from actual data"),
+)
+
+YEAR = "YEAR"
+QUARTER = "QUARTER"
+MONTH = "MONTH"
+SIX_MONTH = "SIX_MONTH"
+
+PERIOD_TYPE_CHOICES = (
+    (YEAR, _("Year")),
+    (QUARTER, "Quarter"),
+    (MONTH, "Month"),
+    (SIX_MONTH, "Six-month"),
 )
 
 
@@ -526,6 +537,8 @@ class Form(models.Model):
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
     fields = JSONField(null=True, blank=True)
+    period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
+    single_per_period = models.BooleanField(blank=True)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -541,6 +554,8 @@ class Form(models.Model):
             "updated_at": self.updated_at.timestamp()
             if self.updated_at
             else self.created_at.timestamp(),
+            "period_type": self.period_type,
+            "single_per_period": self.single_per_period,
         }
 
         if show_version:
@@ -683,6 +698,7 @@ class Instance(models.Model):
     device = models.ForeignKey(
         "Device", null=True, blank=True, on_delete=models.DO_NOTHING
     )
+    period = models.TextField(null=True, blank=True, db_index=True)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -747,6 +763,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "period": self.period,
         }
 
     def as_dict_with_parents(self):
@@ -765,6 +782,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "period": self.period,
         }
 
     def as_full_model(self):
@@ -781,6 +799,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
+            "period": self.period,
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
@@ -790,6 +809,7 @@ class Instance(models.Model):
         return {
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,

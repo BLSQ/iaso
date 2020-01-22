@@ -58,6 +58,7 @@ def import_data(instances, api_import, app_id=None):
         else:
             return Response({"res": "Problem: multiple instances exist with that uuid"})
         instance_db.name = instance.get("name", None)
+        instance_db.period = instance.get("period", None)
         instance_db.accuracy = instance.get("accuracy", None)
         instance_db.parent_id = instance.get("parentId", None)
         tentative_org_unit_id = instance.get("orgUnitId", None)

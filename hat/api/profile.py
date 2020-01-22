@@ -97,7 +97,9 @@ class ProfilesViewSet(viewsets.ViewSet):
             queryset = queryset.filter(screening_type=screening_type)
 
         if team_type != "all":
-            queryset = queryset.filter(team__team_type=team_type)
+            queryset = queryset.filter(
+                Q(team__team_type=team_type) | Q(team_id__isnull=True)
+            )
 
         matchings = {
             "userName": "user__username",

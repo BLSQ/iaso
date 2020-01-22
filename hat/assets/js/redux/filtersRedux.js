@@ -341,7 +341,7 @@ export const loadDevices = devices => ({
 
 export const fetchDevices = (dispatch) => {
     req
-        .get('/api/devices?as_list=true')
+        .get('/api/devices?as_list=true&with_tests_devices=true')
         .then((result) => {
             dispatch(loadDevices(result.body));
         })

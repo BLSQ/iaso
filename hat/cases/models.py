@@ -737,6 +737,7 @@ class Case(CaseAbstract):
 
         if self.mark_for_deletion:
             d["mark_for_deletion"] = self.mark_for_deletion
+            d["has_jsondocument"] = self.jsondocument_set.exists()
 
         if full and self.test_set:
             # Test results

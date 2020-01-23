@@ -37,7 +37,7 @@ const setCaseDeleteError = deleteError => ({
 const deleteCase = (dispatch, caseId, getUrl, fullDelete = false) => {
     dispatch(loadActions.startLoading());
     let url = `/api/cases/${caseId}`;
-    if (fullDelete) url = `/api/cases/${caseId}?full_delete=true`;
+    if (fullDelete) url = `/api/cases/${caseId}?full_delete=true&override=true`;
     req
         .delete(url)
         .then((deleteResult) => {

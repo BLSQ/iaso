@@ -59,6 +59,7 @@ class DeleteCaseModalComponent extends Component {
                                     <FormattedMessage id="main.cases.permanentDeleteTitle" defaultMessage="Confirm deletion of case" />
                                 </h2>
                             </div>
+                            {this.props.caseItem.has_jsondocument && (
                             <div className="modal-content">
                                 <p>
                                     <FormattedMessage
@@ -72,7 +73,26 @@ class DeleteCaseModalComponent extends Component {
                                         defaultMessage="A back-up will be made before any deletion."
                                     />
                                 </p>
+
                             </div>
+                            )}
+                            {!this.props.caseItem.has_jsondocument && (
+                                <div className="modal-content">
+                                    <p className="error-container">
+                                        <Warning />
+                                        <FormattedMessage
+                                            id="main.cases.permanentDeleteNoBackup"
+                                            defaultMessage="This case doesn't have any source, deleting it will not be able to make a backup"
+                                        />
+                                    </p>
+                                    <p>
+                                        <FormattedMessage
+                                            id="main.cases.permanentDeleteNoBackup2"
+                                            defaultMessage="Are you REALLY sure that you want to delete it ?"
+                                        />
+                                    </p>
+                                </div>
+                            )}
                         </Fragment>
                     )
                 }

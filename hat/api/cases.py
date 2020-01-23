@@ -719,6 +719,9 @@ class CasesViewSet(viewsets.ViewSet):
         case = get_object_or_404(Case, pk=pk)
 
         full_delete = request.query_params.get("full_delete", None)
+        # This parameter allows to force deletion even if the jsondocument does not exist.
+        # It is intended for obvious tests for which we have no trail of import
+        override = request.query_params.get("override", "false").lower() == "true"
         if full_delete and full_delete.lower() == "true":
             if not request.user.has_perm(
                 "menupermissions.x_datas_patient_edition"
@@ -726,7 +729,7 @@ class CasesViewSet(viewsets.ViewSet):
                 return Response("Unauthorized", status=status.HTTP_401_UNAUTHORIZED)
 
             try:
-                result = full_delete_case(case)
+                result = full_delete_case(case, override)
             except Exception as exc:
                 return Response(str(exc), status=status.HTTP_424_FAILED_DEPENDENCY)
 
@@ -743,10 +746,10 @@ class CasesViewSet(viewsets.ViewSet):
 
 
 @transaction.atomic
-def full_delete_case(case):
+def full_delete_case(case, force=False):
     # First get the JSON Document (necessary to be able to recover from the delete)
     marked_documents = case.jsondocument_set.all().update(deleted=True)
-    if marked_documents == 0:
+    if marked_documents == 0 and not force:
         raise Exception("Cannot delete a record without a JSON Document for recovery")
     deleted_tests = case.test_set.all().delete()
     patient = case.normalized_patient

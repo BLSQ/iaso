@@ -79,6 +79,7 @@ class DynamicTabsComponent extends Component {
             paramKey,
             baseUrl,
             tabParamKey,
+            onTabsUpdated,
         } = this.props;
         const newState = {
             ...this.state,
@@ -89,9 +90,10 @@ class DynamicTabsComponent extends Component {
         const newParams = {
             ...params,
         };
-        newParams[tabParamKey] = newState.tabIndex;
+        newParams[tabParamKey] = newState.tabIndex.toString();
         newParams[paramKey] = JSON.stringify(newItems);
         redirectTo(baseUrl, newParams);
+        onTabsUpdated();
         this.setState(newState);
     }
 
@@ -103,6 +105,7 @@ class DynamicTabsComponent extends Component {
             paramKey,
             baseUrl,
             tabParamKey,
+            onTabsUpdated,
         } = this.props;
         const newItems = JSON.parse(params[paramKey]);
         newItems.splice(tabIndex, 1);
@@ -112,11 +115,12 @@ class DynamicTabsComponent extends Component {
 
         newParams[paramKey] = JSON.stringify(newItems);
         if (this.state.tabIndex > newItems.length - 1) {
-            newParams[tabParamKey] = newItems.length - 1;
+            newParams[tabParamKey] = (newItems.length - 1).toString();
             this.setState({
                 tabIndex: newItems.length - 1,
             });
         }
+        onTabsUpdated();
         redirectTo(baseUrl, newParams);
     }
 
@@ -136,7 +140,7 @@ class DynamicTabsComponent extends Component {
         const newParams = {
             ...params,
         };
-        newParams[tabParamKey] = newState.tabIndex;
+        newParams[tabParamKey] = newState.tabIndex.toString();
         newParams[paramKey] = JSON.stringify(newItems);
         redirectTo(baseUrl, newParams);
         this.setState(newState);
@@ -241,6 +245,7 @@ class DynamicTabsComponent extends Component {
 DynamicTabsComponent.defaultProps = {
     baseLabel: 'tab',
     maxItems: 5,
+    onTabsUpdated: () => ({}),
 };
 
 DynamicTabsComponent.propTypes = {
@@ -253,6 +258,7 @@ DynamicTabsComponent.propTypes = {
     baseUrl: PropTypes.string.isRequired,
     redirectTo: PropTypes.func.isRequired,
     maxItems: PropTypes.number,
+    onTabsUpdated: PropTypes.func,
 };
 
 export default withStyles(styles)(DynamicTabsComponent);

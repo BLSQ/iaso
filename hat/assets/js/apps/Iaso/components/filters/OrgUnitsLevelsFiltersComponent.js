@@ -57,8 +57,9 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             orgUnitsLevels,
             paramKey,
             onLatestIdChanged,
+            onLevelsChange,
+            searchIndex,
         } = this.props;
-        onLatestIdChanged(value);
         const {
             levels,
         } = this.state;
@@ -68,7 +69,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                 const l = levels[i];
                 newOrgUnitLevelsIds.push(l);
             } else if (parseInt(i, 10) > level) {
-                this.props.setOrgUnitsLevel(null, i);
+                this.props.setOrgUnitsLevel(null, i, searchIndex);
             }
         });
         if (value) {
@@ -77,11 +78,16 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         this.setState({
             levels: newOrgUnitLevelsIds,
         });
-        const newParams = {
-            ...params,
-            [paramKey]: newOrgUnitLevelsIds.toString(),
-        };
-        redirectTo(baseUrl, newParams);
+        if (searchIndex === undefined) {
+            onLatestIdChanged(value);
+            const newParams = {
+                ...params,
+                [paramKey]: newOrgUnitLevelsIds.toString(),
+            };
+            redirectTo(baseUrl, newParams);
+        } else {
+            onLevelsChange(newOrgUnitLevelsIds.toString());
+        }
     }
 
     buildUrl(base) {
@@ -109,10 +115,11 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             dispatch,
             showCurrentOrgUnit,
             currentOrgUnitId,
+            searchIndex,
         } = this.props;
 
         return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then((orgUnits) => {
-            this.props.setOrgUnitsLevel(orgUnits, 0);
+            this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
             if (levels[0]) {
                 if (showCurrentOrgUnit !== false
                     || (showCurrentOrgUnit === false && parseInt(levels[0], 10) !== currentOrgUnitId)) {
@@ -127,6 +134,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             dispatch,
             showCurrentOrgUnit,
             currentOrgUnitId,
+            searchIndex,
         } = this.props;
         const {
             levels,
@@ -136,7 +144,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             const base = `&parent_id=${parentId}`;
 
             return fetchOrgUnits(dispatch, this.buildUrl(base)).then((orgUnits) => {
-                this.props.setOrgUnitsLevel(orgUnits, level);
+                this.props.setOrgUnitsLevel(orgUnits, level, searchIndex);
                 if (levels[level]) {
                     if (showCurrentOrgUnit !== false
                         || (showCurrentOrgUnit === false && parseInt(levels[level], 10) !== currentOrgUnitId)) {
@@ -190,6 +198,10 @@ OrgUnitsLevelsFiltersComponent.defaultProps = {
     showCurrentOrgUnit: true,
     currentOrgUnitId: null,
     source: null,
+    searchIndex: null,
+    orgUnitsLevels: [],
+    onLevelsChange: () => ({}),
+    onLatestIdChanged: () => ({}),
 };
 
 OrgUnitsLevelsFiltersComponent.propTypes = {
@@ -197,24 +209,26 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsLevel: PropTypes.func.isRequired,
     baseUrl: PropTypes.string,
-    orgUnitsLevels: PropTypes.array.isRequired,
+    orgUnitsLevels: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
-    onLatestIdChanged: PropTypes.func.isRequired,
+    onLatestIdChanged: PropTypes.func,
     paramKey: PropTypes.string,
     showCurrentOrgUnit: PropTypes.bool,
     currentOrgUnitId: PropTypes.any,
     source: PropTypes.any,
+    searchIndex: PropTypes.any,
+    onLevelsChange: PropTypes.func,
 };
 
-const MapStateToProps = state => ({
+const MapStateToProps = (state, props) => ({
     fetching: state.orgUnitsLevels.fetching,
-    orgUnitsLevels: state.orgUnitsLevels.list,
+    orgUnitsLevels: props.searchIndex ? state.orgUnitsLevels.list[props.searchIndex] : state.orgUnitsLevels.list,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitsLevel: (orgUnitItem, level) => dispatch(setOrgUnitsLevel(orgUnitItem, level)),
+    setOrgUnitsLevel: (orgUnitItem, level, index) => dispatch(setOrgUnitsLevel(orgUnitItem, level, index)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(OrgUnitsLevelsFiltersComponent);

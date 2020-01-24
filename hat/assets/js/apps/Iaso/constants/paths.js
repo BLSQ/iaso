@@ -100,6 +100,10 @@ export const orgUnitsPath = getPath({
             isRequired: false,
             key: 'searches',
         },
+        {
+            isRequired: false,
+            key: 'levels',
+        },
         ...paginationPathParams,
     ],
 });

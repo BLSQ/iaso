@@ -10,7 +10,7 @@ import InputComponent from '../forms/InputComponent';
 class FiltersComponent extends React.Component {
     onChange(urlKey, value, callback) {
         if (callback) {
-            callback(value);
+            callback(value, urlKey);
         } else {
             const {
                 params,
@@ -26,11 +26,15 @@ class FiltersComponent extends React.Component {
         }
     }
 
-    onSearchChange(key, value, launchSearch = false) {
-        const newState = Object.assign({}, this.state, { [key]: value });
-        this.setState(newState);
-        if (launchSearch) {
-            this.onSearch(newState);
+    onSearchChange(urlKey, value, launchSearch = false, callback) {
+        if (callback) {
+            callback(value, urlKey);
+        } else {
+            const newState = Object.assign({}, this.state, { [urlKey]: value });
+            this.setState(newState);
+            if (launchSearch) {
+                this.onSearch(newState);
+            }
         }
     }
 
@@ -126,7 +130,7 @@ class FiltersComponent extends React.Component {
                                             <InputComponent
                                                 disabled={filter.isDisabled || false}
                                                 keyValue={filter.urlKey}
-                                                onChange={(key, value) => this.onSearchChange(key, value, true)}
+                                                onChange={(key, value) => this.onSearchChange(key, value, true, filter.callback)}
                                                 value={filterValue}
                                                 type="search"
                                                 label={filter.label}

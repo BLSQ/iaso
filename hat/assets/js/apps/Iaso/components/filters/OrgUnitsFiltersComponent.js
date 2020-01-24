@@ -40,11 +40,13 @@ const styles = theme => ({
     },
 });
 
-class OrgUnitsFiltersComponent extends Component {
-    onFilterChanged() {
-        this.props.setFiltersUpdated(true);
-    }
+const extendFilter = (searchParams, filter, onChange) => ({
+    ...filter,
+    value: searchParams[filter.urlKey],
+    callback: (value, urlKey) => onChange(value, urlKey),
+});
 
+class OrgUnitsFiltersComponent extends Component {
     onSearch() {
         if (this.props.filtersUpdated) {
             this.props.setFiltersUpdated(false);
@@ -54,6 +56,24 @@ class OrgUnitsFiltersComponent extends Component {
             this.props.redirectTo(this.props.baseUrl, tempParams);
         }
         this.props.onSearch();
+    }
+
+    onChange(value, urlKey) {
+        const {
+            searchIndex,
+            params,
+        } = this.props;
+        this.props.setFiltersUpdated(true);
+        const searches = [...JSON.parse(params.searches)];
+        searches[searchIndex] = {
+            ...searches[searchIndex],
+            [urlKey]: value,
+        };
+        const tempParams = {
+            ...params,
+            searches: JSON.stringify(searches),
+        };
+        this.props.redirectTo(this.props.baseUrl, tempParams);
     }
 
     render() {
@@ -69,14 +89,17 @@ class OrgUnitsFiltersComponent extends Component {
             currentTab,
             filtersUpdated,
             groups,
+            searchIndex,
         } = this.props;
+        const searches = [...JSON.parse(params.searches)];
+        const searchParams = searches[searchIndex];
         const filters = [
-            search(),
-            orgUnitType(orgUnitTypes),
-            group(groups),
+            extendFilter(searchParams, search(), (value, urlKey) => this.onChange(value, urlKey)),
+            extendFilter(searchParams, orgUnitType(orgUnitTypes), (value, urlKey) => this.onChange(value, urlKey)),
+            extendFilter(searchParams, group(groups), (value, urlKey) => this.onChange(value, urlKey)),
         ];
         if (currentTab === 'map') {
-            filters.push(locationsLimit());
+            filters.push(extendFilter(searchParams, locationsLimit(), (value, urlKey) => this.onChange(value, urlKey)));
         }
         return (
             <div className={classes.root}>
@@ -85,7 +108,6 @@ class OrgUnitsFiltersComponent extends Component {
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
                             filters={filters}
                             onEnterPressed={() => this.onSearch()}
                         />
@@ -94,11 +116,10 @@ class OrgUnitsFiltersComponent extends Component {
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                location(formatMessage),
-                                shape(formatMessage),
-                                hasInstances(formatMessage),
+                                extendFilter(searchParams, location(formatMessage), (value, urlKey) => this.onChange(value, urlKey)),
+                                extendFilter(searchParams, shape(formatMessage), (value, urlKey) => this.onChange(value, urlKey)),
+                                extendFilter(searchParams, hasInstances(formatMessage), (value, urlKey) => this.onChange(value, urlKey)),
                             ]}
                         />
                     </Grid>
@@ -106,16 +127,16 @@ class OrgUnitsFiltersComponent extends Component {
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                status(formatMessage),
-                                source(sources || [], true, true),
+                                extendFilter(searchParams, status(formatMessage), (value, urlKey) => this.onChange(value, urlKey)),
+                                extendFilter(searchParams, source(sources || [], true, true), (value, urlKey) => this.onChange(value, urlKey)),
                             ]}
                         />
                         <OrgUnitsLevelsFiltersComponent
-                            onLatestIdChanged={() => this.onFilterChanged()}
+                            onLevelsChange={levels => this.onChange(levels, 'levels')}
                             params={params}
                             baseUrl={baseUrl}
+                            searchIndex={searchIndex}
                         />
                     </Grid>
                 </Grid>
@@ -156,6 +177,7 @@ OrgUnitsFiltersComponent.propTypes = {
     setFiltersUpdated: PropTypes.func.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
     groups: PropTypes.array,
+    searchIndex: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({

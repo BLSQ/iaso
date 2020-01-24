@@ -24,13 +24,6 @@ class CaseInfectionLocationComponent extends Component {
         }
     }
 
-    // shouldComponentUpdate(nextProps) {
-    //     const {
-    //         currentCase,
-    //     } = this.props;
-    //     return currentCase.infectionLocationVillageId !== nextProps.currentCase.infectionLocationVillageId;
-    // }
-
     componentDidUpdate(prevProps) {
         const {
             currentCase,

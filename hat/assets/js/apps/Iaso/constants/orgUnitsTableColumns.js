@@ -6,8 +6,13 @@ import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 
-const orgUnitsTableColumns = (formatMessage, component, classes) => (
-    [
+const orgUnitsTableColumns = (
+    formatMessage,
+    component,
+    classes,
+    searchCount,
+) => {
+    const columns = [
         {
             Header: 'Id',
             accessor: 'id',
@@ -142,6 +147,24 @@ const orgUnitsTableColumns = (formatMessage, component, classes) => (
                 </section>
             ),
         },
-    ]
-);
+    ];
+    if (searchCount > 1) {
+        columns.unshift(
+            {
+                Header: formatMessage({
+                    defaultMessage: 'Search',
+                    id: 'iaso.label.search',
+                }),
+                accessor: 'search_index',
+                width: 100,
+                Cell: settings => (
+                    <section>
+                        {settings.original.search_index + 1}
+                    </section>
+                ),
+            },
+        );
+    }
+    return columns;
+};
 export default orgUnitsTableColumns;

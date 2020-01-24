@@ -49,7 +49,7 @@ import SidebarMenu from './components/nav/SidebarMenuComponent';
 import * as zoomBar from '../../components/leaflet/zoom-bar';
 
 
-export default function datasApp(element, baseUrl) {
+export default function iasoApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
 
@@ -111,7 +111,7 @@ export default function datasApp(element, baseUrl) {
         <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
-        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searches/[{"validated":"both"}]`} />,
+        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
 
     ];

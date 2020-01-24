@@ -88,7 +88,6 @@ class OrgUnits extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: orgUnitsTableColumns(props.intl.formatMessage, this, props.classes),
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
         };
@@ -288,9 +287,14 @@ class OrgUnits extends Component {
             redirectTo,
         } = this.props;
         const {
-            tableColumns,
             tab,
         } = this.state;
+        const tableColumns = orgUnitsTableColumns(
+            formatMessage,
+            this,
+            classes,
+            JSON.parse(params.searches).length,
+        );
         return (
             <Fragment>
                 {
@@ -313,17 +317,30 @@ class OrgUnits extends Component {
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}
                         redirectTo={redirectTo}
+                        onTabsUpdated={() => this.props.setFiltersUpdated(true)}
                     />
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
-                    <OrgUnitsFiltersComponent
-                        baseUrl={baseUrl}
-                        params={params}
-                        onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
-                        orgUnitTypes={orgUnitTypes}
-                        sources={sources}
-                        currentTab={tab}
-                    />
+                    {
+                        JSON.parse(params.searches).map((s, searchIndex) => {
+                            const currentSearchIndex = parseInt(params.searchTabIndex, 10);
+                            if (searchIndex !== currentSearchIndex) {
+                                return null;
+                            }
+                            return (
+                                <OrgUnitsFiltersComponent
+                                    key={currentSearchIndex}
+                                    baseUrl={baseUrl}
+                                    params={params}
+                                    onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
+                                    orgUnitTypes={orgUnitTypes}
+                                    sources={sources}
+                                    currentTab={tab}
+                                    searchIndex={currentSearchIndex}
+                                />
+                            );
+                        })
+                    }
                     {
                         params.searchActive
                         && (

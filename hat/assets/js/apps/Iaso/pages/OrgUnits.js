@@ -167,12 +167,17 @@ class OrgUnits extends Component {
             params,
         } = this.props;
 
+        const currentSearchIndex = parseInt(params.searchTabIndex, 10);
+        const searches = JSON.parse(params.searches);
+        if (currentSearchIndex || currentSearchIndex === 0) {
+            searches[currentSearchIndex].orgUnitParentId = searches[currentSearchIndex].levels ? fetchLatestOrgUnitLevelId(searches[currentSearchIndex].levels) : null;
+        }
         const urlParams = {
             ...params,
             limit: params.pageSize ? params.pageSize : 50,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
-            orgUnitParentId: params.levels ? fetchLatestOrgUnitLevelId(params.levels) : null,
+            searches: JSON.stringify(searches),
         };
         delete urlParams.tab;
         delete urlParams.searchActive;

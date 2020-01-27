@@ -25,23 +25,34 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const levels = this.props.params[this.props.paramKey];
-        const prevLevels = prevProps.params[prevProps.paramKey];
         const prevSource = prevProps.params.source;
         const newSource = this.props.params.source;
         const prevValidated = prevProps.params.validated;
         const newValidated = this.props.params.validated;
-
+        const {
+            searchIndex,
+        } = this.props;
+        let levels;
+        let prevLevels;
+        if (searchIndex || searchIndex === 0) {
+            const searches = JSON.parse(this.props.params.searches);
+            const prevSearches = JSON.parse(prevProps.params.searches);
+            levels = searches[searchIndex][this.props.paramKey];
+            prevLevels = prevSearches[searchIndex][prevProps.paramKey];
+        } else {
+            levels = this.props.params[this.props.paramKey];
+            prevLevels = prevProps.params[prevProps.paramKey];
+        }
         const importantParamsChanged = prevSource !== newSource || prevValidated !== newValidated;
         if (importantParamsChanged) {
-            this.state.levels = [];
+            this.resetLevels();
         }
 
         if ((levels && !prevLevels) || (importantParamsChanged)) {
             this.fetchAllTree();
         } else {
-            const lastLevel = fetchLatestOrgUnitLevelId(this.props.params[this.props.paramKey]);
-            const prevLastLevel = fetchLatestOrgUnitLevelId(prevProps.params[prevProps.paramKey]);
+            const lastLevel = fetchLatestOrgUnitLevelId(levels);
+            const prevLastLevel = fetchLatestOrgUnitLevelId(prevLevels);
             if (lastLevel !== prevLastLevel && levels) {
                 const levelIndex = levels.split(',').indexOf(lastLevel.toString()) + 1;
                 this.fetchTree(levelIndex);
@@ -78,17 +89,24 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         this.setState({
             levels: newOrgUnitLevelsIds,
         });
-        if (searchIndex === undefined) {
+        if (searchIndex || searchIndex === 0) {
+            onLevelsChange(newOrgUnitLevelsIds.toString());
+        } else {
             onLatestIdChanged(value);
             const newParams = {
                 ...params,
                 [paramKey]: newOrgUnitLevelsIds.toString(),
             };
             redirectTo(baseUrl, newParams);
-        } else {
-            onLevelsChange(newOrgUnitLevelsIds.toString());
         }
     }
+
+    resetLevels() {
+        this.setState({
+            levels: [],
+        });
+    }
+
 
     buildUrl(base) {
         const {
@@ -107,16 +125,22 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     fetchAllTree() {
-        const levels = this.props.params[this.props.paramKey] ? this.props.params[this.props.paramKey].split(',') : [];
-        this.setState({
-            levels,
-        });
         const {
             dispatch,
             showCurrentOrgUnit,
             currentOrgUnitId,
             searchIndex,
         } = this.props;
+        let levels;
+        if (searchIndex || searchIndex === 0) {
+            const searches = JSON.parse(this.props.params.searches);
+            levels = searches[searchIndex][this.props.paramKey] ? searches[searchIndex][this.props.paramKey].split(',') : [];
+        } else {
+            levels = this.props.params[this.props.paramKey] ? this.props.params[this.props.paramKey].split(',') : [];
+        }
+        this.setState({
+            levels,
+        });
 
         return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then((orgUnits) => {
             this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);

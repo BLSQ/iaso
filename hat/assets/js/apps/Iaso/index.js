@@ -26,6 +26,7 @@ import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUn
 import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
+import chipColors from './constants/chipColors';
 
 import App from '../App';
 
@@ -111,7 +112,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
-        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both"}]`} />,
+        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${chipColors[0].replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
 
     ];

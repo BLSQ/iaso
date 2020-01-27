@@ -291,7 +291,10 @@ class OrgUnitDetail extends Component {
                     displayBackButton
                     goBack={() => {
                         if (prevPathname) {
-                            router.goBack();
+                            this.props.resetOrgUnitsLevels();
+                            setTimeout(() => {
+                                router.goBack();
+                            }, 300);
                         } else {
                             redirectToPush('orgunits', {});
                         }

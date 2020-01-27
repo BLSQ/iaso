@@ -171,7 +171,7 @@
     "iaso.logs.seeChanges": "Voir uniquement les changements",
     "iaso.logs.seeAll": "Voir tous les champs",
     "iaso.matching.title": "Correspondances",
-    "iaso.map.locationLimit": "Limite des résultats de la carte",
+    "iaso.map.locationLimit": "Nombre max de résultats",
     "iaso.map.title.markerClustering": "Regroupement",
     "iaso.map.shape.edit": "Editer la forme",
     "iaso.map.shape.addShape": "Ajouter une forme",

@@ -83,27 +83,20 @@ class DuplicatesTestCase(TestCase):
         instance.save()
         return instance
 
+    def uuid(self, number):
+        return str(number) + "b7c3954-f69a-4b99-83b1-db73957b32b" + str(number)
+
     def test_duplications(self):
-        uuid1 = "1b7c3954-f69a-4b99-83b1-db73957b32b1"
-        uuid2 = "2b7c3954-f69a-4b99-83b1-db73957b32b2"
-        uuid3 = "3b7c3954-f69a-4b99-83b1-db73957b32b3"
-        name = "Quantity FORM"
 
-        instance1 = self.build_instance(self.village_1, uuid1, "201901")
-        instance2 = self.build_instance(self.village_1, uuid2, "201901")
+        self.build_instance(self.village_1, self.uuid(1), "201901")
+        self.build_instance(self.village_1, self.uuid(2), "201901")
+        self.build_instance(self.village_1, self.uuid(3), "201902")
+        self.build_instance(self.village_1, self.uuid(4), "201903")
 
-        instance3 = self.build_instance(self.village_2, uuid3, "201901")
-        print(instance1)
-        print(instance2)
-        print(instance3)
-        """ when to fetch the ids, easier to re-inject as subquery
-                dups = (
-            Instance.objects.values("period", "form", "org_unit")
-            .annotate(count=Count("id"))
-            .values("period", "form", "org_unit")
-            .order_by()
-            .filter(count__gt=1)
-        ) """
+        self.build_instance(self.village_2, self.uuid(5), "201901")
+        self.build_instance(self.village_2, self.uuid(6), "201902")
+        self.build_instance(self.village_2, self.uuid(7), "201903")
+
         settings.DEBUG = True
         duplicate_ids_query = (
             Instance.objects.values("period", "form", "org_unit")
@@ -121,15 +114,47 @@ class DuplicatesTestCase(TestCase):
                 default=Value(False),
                 output_field=BooleanField(),
             )
-        )
+        ).prefetch_related("form")
 
-        print(self.village_2)
-        print(self.village_1)
         for instance in instances:
             print(
                 instance.uuid,
                 instance.org_unit_id,
+                instance.form.name,
                 instance.period,
                 instance.duplicated,
             )
-        print("***************************** done")
+
+        self.assertEqual(
+            [instance.uuid for instance in instances if instance.duplicated],
+            [self.uuid(1), self.uuid(2)],
+        )
+
+        self.assertEqual(
+            [
+                instance.uuid
+                for instance in instances.order_by("uuid")
+                if not instance.duplicated
+            ],
+            [self.uuid(3), self.uuid(4), self.uuid(5), self.uuid(6), self.uuid(7)],
+        )
+
+        print()
+        print(
+            "duplicated",
+            Instance.objects.values("period", "form")
+            .annotate(duplicated_count=Count("id"))
+            .filter(id__in=duplicate_ids_query)
+            .values_list("duplicated_count", "period", "form"),
+        )
+
+        print()
+        print(
+            "ready",
+            Instance.objects.values("period", "form")
+            .annotate(ready_count=Count("id"))
+            .exclude(id__in=duplicate_ids_query)
+            .values_list("ready_count", "period", "form"),
+        )
+
+        {}

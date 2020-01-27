@@ -26,7 +26,18 @@ export const orgUnitsLevelsReducer = (state = orgUnitsLevelsInitialState, action
                 orgUnitlist, level, listIndex,
             } = action.payload;
             let list;
-            if (!listIndex) {
+            if (listIndex || listIndex === 0) {
+                list = [...state.list];
+                list[listIndex] = [];
+                if (state.list[listIndex]) {
+                    state.list[listIndex].forEach((l, i) => {
+                        if (i < level) {
+                            list[listIndex].push(state.list[listIndex][i]);
+                        }
+                    });
+                }
+                list[listIndex][level] = orgUnitlist;
+            } else {
                 list = [];
                 state.list.forEach((l, i) => {
                     if (i < level) {
@@ -34,17 +45,6 @@ export const orgUnitsLevelsReducer = (state = orgUnitsLevelsInitialState, action
                     }
                 });
                 list[level] = orgUnitlist;
-            } else {
-                list = [...state.list];
-                list[listIndex] = [];
-                if (state.list[listIndex]) {
-                    state.list[listIndex].forEach((l, i) => {
-                        if (i < level) {
-                            list[listIndex].push(state.list[i]);
-                        }
-                    });
-                }
-                list[listIndex][level] = orgUnitlist;
             }
             return {
                 ...state,

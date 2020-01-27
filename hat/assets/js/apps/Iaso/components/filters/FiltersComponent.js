@@ -92,7 +92,7 @@ class FiltersComponent extends React.Component {
                         }
                         if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
                             return (
-                                <Fragment key={filter.urlKey}>
+                                <Fragment key={filter.uid ? filter.uid : filter.urlKey}>
                                     {
                                         filter.type === 'number'
                                         && (
@@ -130,6 +130,7 @@ class FiltersComponent extends React.Component {
                                             <InputComponent
                                                 disabled={filter.isDisabled || false}
                                                 keyValue={filter.urlKey}
+                                                uid={filter.uid}
                                                 onChange={(key, value) => this.onSearchChange(key, value, true, filter.callback)}
                                                 value={filterValue}
                                                 type="search"

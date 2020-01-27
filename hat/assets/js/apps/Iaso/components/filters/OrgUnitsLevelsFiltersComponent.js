@@ -25,23 +25,31 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const prevSource = prevProps.params.source;
-        const newSource = this.props.params.source;
-        const prevValidated = prevProps.params.validated;
-        const newValidated = this.props.params.validated;
         const {
             searchIndex,
         } = this.props;
         let levels;
         let prevLevels;
+        let prevSource;
+        let newSource;
+        let prevValidated = prevProps.params.validated;
+        let newValidated = this.props.params.validated;
         if (searchIndex || searchIndex === 0) {
             const searches = JSON.parse(this.props.params.searches);
             const prevSearches = JSON.parse(prevProps.params.searches);
             levels = searches[searchIndex][this.props.paramKey];
             prevLevels = prevSearches[searchIndex][prevProps.paramKey];
+            prevSource = prevSearches[searchIndex].source;
+            newSource = searches[searchIndex].source;
+            prevValidated = prevSearches[searchIndex].validated;
+            newValidated = searches[searchIndex].validated;
         } else {
             levels = this.props.params[this.props.paramKey];
             prevLevels = prevProps.params[prevProps.paramKey];
+            prevSource = prevProps.params.source;
+            newSource = this.props.params.source;
+            prevValidated = prevProps.params.validated;
+            newValidated = this.props.params.validated;
         }
         const importantParamsChanged = prevSource !== newSource || prevValidated !== newValidated;
         if (importantParamsChanged) {
@@ -110,9 +118,18 @@ class OrgUnitsLevelsFiltersComponent extends Component {
 
     buildUrl(base) {
         const {
-            version,
-        } = this.props.params;
-        const source = this.props.params.source || this.props.source;
+            params: {
+                version,
+            },
+            searchIndex,
+        } = this.props;
+        let source;
+        if (searchIndex || searchIndex === 0) {
+            const searches = JSON.parse(this.props.params.searches);
+            source = searches[searchIndex].source || this.props.source;
+        } else {
+            source = this.props.params.source || this.props.source;
+        }
         let url = base;
         if (source) {
             url = `${url}&source=${source}`;
@@ -191,6 +208,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         const {
             levels,
         } = this.state;
+        // console.log('orgUnitsLevels', orgUnitsLevels);
         return (
             <div>
                 {
@@ -199,7 +217,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                             || (orgUnitsLevels[index] && orgUnitsLevels[index].length === 0)) return null;
                         return (
                             <OrgUnitLevelFilterComponent
-                                key={`level-${orgUnitsLevels[index][0].id}`}
+                                key={`level-${orgUnitsLevels[index][0] ? orgUnitsLevels[index][0].id : '0'}`}
                                 params={params}
                                 baseUrl={baseUrl}
                                 levelId={levels[index] ? parseInt(levels[index], 10) : undefined}
@@ -244,10 +262,14 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     onLevelsChange: PropTypes.func,
 };
 
-const MapStateToProps = (state, props) => ({
-    fetching: state.orgUnitsLevels.fetching,
-    orgUnitsLevels: props.searchIndex ? state.orgUnitsLevels.list[props.searchIndex] : state.orgUnitsLevels.list,
-});
+const MapStateToProps = (state, props) => {
+    // console.log('state.orgUnitsLevels.list', state.orgUnitsLevels.list);
+    return ({
+        fetching: state.orgUnitsLevels.fetching,
+        orgUnitsLevels: props.searchIndex || props.searchIndex === 0
+            ? state.orgUnitsLevels.list[props.searchIndex] : state.orgUnitsLevels.list,
+    });
+};
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

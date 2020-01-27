@@ -208,6 +208,7 @@ class InputComponent extends Component {
             withMarginTop,
             isSearchable,
             multi,
+            uid,
         } = this.props;
         const {
             selectInputValue,
@@ -312,7 +313,7 @@ class InputComponent extends Component {
                     </InputLabel>
                     <OutlinedInput
                         disabled={disabled}
-                        id={`search-${keyValue}`}
+                        id={uid ? `search-${uid}` : `search-${keyValue}`}
                         value={value || ''}
                         placeholder=""
                         onKeyPress={(event) => {
@@ -366,6 +367,7 @@ InputComponent.defaultProps = {
     withMarginTop: true,
     isSearchable: true,
     multi: false,
+    uid: null,
 };
 
 InputComponent.propTypes = {
@@ -385,6 +387,7 @@ InputComponent.propTypes = {
     withMarginTop: PropTypes.bool,
     isSearchable: PropTypes.bool,
     multi: PropTypes.bool,
+    uid: PropTypes.any,
 };
 
 

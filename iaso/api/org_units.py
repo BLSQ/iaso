@@ -127,7 +127,7 @@ def build_org_units_queryset(queryset, params):
         queryset = queryset.filter(groups__in=group.split(","))
 
     if source:
-        queryset = queryset.filter(version__data_source_id__in=source.split(","))
+        queryset = queryset.filter(version__data_source_id=source)
 
     if version:
         queryset = queryset.filter(version=version)

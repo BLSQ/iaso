@@ -59,6 +59,17 @@ export const locationLimitMax = 3000;
 
 const styles = theme => ({
     ...commonStyles(theme),
+    tabs: {
+        ...commonStyles(theme).tabs,
+        padding: 0,
+    },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        zIndex: '-100',
+        opacity: '0',
+    },
 });
 
 const mapOrgUnitByLocation = (orgUnits, selectedSources, currentSources) => {
@@ -167,11 +178,10 @@ class OrgUnits extends Component {
             params,
         } = this.props;
 
-        const currentSearchIndex = parseInt(params.searchTabIndex, 10);
         const searches = JSON.parse(params.searches);
-        if (currentSearchIndex || currentSearchIndex === 0) {
-            searches[currentSearchIndex].orgUnitParentId = searches[currentSearchIndex].levels ? fetchLatestOrgUnitLevelId(searches[currentSearchIndex].levels) : null;
-        }
+        searches.forEach((s, i) => {
+            searches[i].orgUnitParentId = searches[i].levels ? fetchLatestOrgUnitLevelId(searches[i].levels) : null;
+        });
         const urlParams = {
             ...params,
             limit: params.pageSize ? params.pageSize : 50,
@@ -317,32 +327,31 @@ class OrgUnits extends Component {
                             id: 'iaso.label.search',
                         })}
                         params={params}
-                        defaultItem={{ validated: 'both' }}
+                        defaultItem={{ validated: 'both', color: chipColors[0] }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}
                         redirectTo={redirectTo}
                         onTabsUpdated={() => this.props.setFiltersUpdated(true)}
+                        maxItems={9}
                     />
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
                     {
                         JSON.parse(params.searches).map((s, searchIndex) => {
                             const currentSearchIndex = parseInt(params.searchTabIndex, 10);
-                            if (searchIndex !== currentSearchIndex) {
-                                return null;
-                            }
                             return (
-                                <OrgUnitsFiltersComponent
-                                    key={currentSearchIndex}
-                                    baseUrl={baseUrl}
-                                    params={params}
-                                    onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
-                                    orgUnitTypes={orgUnitTypes}
-                                    sources={sources}
-                                    currentTab={tab}
-                                    searchIndex={currentSearchIndex}
-                                />
+                                <div key={searchIndex} className={searchIndex !== currentSearchIndex ? classes.hiddenOpacity : null}>
+                                    <OrgUnitsFiltersComponent
+                                        baseUrl={baseUrl}
+                                        params={params}
+                                        onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
+                                        orgUnitTypes={orgUnitTypes}
+                                        sources={sources}
+                                        currentTab={tab}
+                                        searchIndex={searchIndex}
+                                    />
+                                </div>
                             );
                         })
                     }
@@ -400,7 +409,10 @@ class OrgUnits extends Component {
                                     && !fetchingOrgUnitTypes
                                     && (
                                         <div className={classes.containerMarginNeg}>
-                                            <OrgunitsMap />
+                                            <OrgunitsMap
+                                                params={params}
+                                                baseUrl={baseUrl}
+                                            />
                                         </div>
                                     )
                                 }

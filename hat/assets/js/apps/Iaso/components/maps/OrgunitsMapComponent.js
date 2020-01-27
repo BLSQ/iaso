@@ -10,17 +10,20 @@ import camelCase from 'lodash/camelCase';
 import {
     Grid,
     Divider,
+    Box,
+    withStyles,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import {
+    locationsLimit,
+} from '../../constants/filters';
 
 import {
     getLatLngBounds,
     getShapesBounds,
-    clusterCustomMarker,
     colorClusterCustomMarker,
     customZoomBar,
-    getSourceColor,
     colorMarker,
 } from '../../utils/mapUtils';
 
@@ -33,12 +36,24 @@ import MarkersListComponent from './markers/MarkersListComponent';
 import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
 import InnerDrawer from '../nav/InnerDrawerComponent';
+import FiltersComponent from '../filters/FiltersComponent';
 
 import { fetchOrgUnitDetail } from '../../utils/requests';
+import chipColors from '../../constants/chipColors';
+import commonStyles from '../../styles/common';
 
 const boundsOptions = {
     padding: [50, 50],
 };
+const styles = theme => ({
+    ...commonStyles(theme),
+    innerDrawerToolbar: {
+        ...commonStyles(theme).innerDrawerToolbar,
+        '& section': {
+            width: '100%',
+        },
+    },
+});
 
 const getOrgUnitsBounds = (orgUnits) => {
     let orgUnitsLocations = [];
@@ -82,6 +97,20 @@ class OrgunitsMap extends Component {
         this.props.resetMapReducer();
     }
 
+    getSearchColor(currentSearchIndex) {
+        const {
+            params,
+        } = this.props;
+        const searches = JSON.parse(params.searches);
+        let currentColor = searches[currentSearchIndex].color;
+        if (!currentColor) {
+            [currentColor] = chipColors;
+        } else {
+            currentColor = `#${currentColor}`;
+        }
+        return currentColor;
+    }
+
     fetchDetail(orgUnit) {
         const {
             dispatch,
@@ -108,7 +137,9 @@ class OrgunitsMap extends Component {
             intl: {
                 formatMessage,
             },
-            currentSources,
+            params,
+            baseUrl,
+            classes,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         if (!bounds && orgUnits.locations.length > 0) {
@@ -138,6 +169,20 @@ class OrgunitsMap extends Component {
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
+                            <Divider />
+                            <Box
+                                px={2}
+                                className={classes.innerDrawerToolbar}
+                                component="div"
+                            >
+                                <FiltersComponent
+                                    params={params}
+                                    baseUrl={baseUrl}
+                                    filters={[
+                                        locationsLimit(),
+                                    ]}
+                                />
+                            </Box>
                         </Fragment>
                     )}
                 >
@@ -164,12 +209,12 @@ class OrgunitsMap extends Component {
                             && (
                                 Object.values(orgUnits.locations).map(location => (
                                     <MarkerClusterGroup
-                                        iconCreateFunction={cluster => colorClusterCustomMarker(cluster, getSourceColor(currentSources, location.source.id))}
+                                        iconCreateFunction={cluster => colorClusterCustomMarker(cluster, this.getSearchColor(location.orgUnits[0] ? location.orgUnits[0].search_index : 0))}
                                         key={location.source.id}
                                     >
                                         <MarkersListComponent
                                             markerProps={o => ({
-                                                icon: colorMarker(getSourceColor(currentSources, o.source_id)),
+                                                icon: colorMarker(this.getSearchColor(o.search_index)),
                                             })}
                                             items={location.orgUnits}
                                             onMarkerClick={o => this.fetchDetail(o)}
@@ -186,7 +231,7 @@ class OrgunitsMap extends Component {
                                     <MarkersListComponent
                                         key={location.source.id}
                                         markerProps={o => ({
-                                            icon: colorMarker(getSourceColor(currentSources, o.source_id)),
+                                            icon: colorMarker(this.getSearchColor(o.search_index)),
                                         })}
                                         items={location.orgUnits}
                                         onMarkerClick={o => this.fetchDetail(o)}
@@ -203,7 +248,7 @@ class OrgunitsMap extends Component {
                                         : 'custom-shape-pane'}
                                     key={o.id}
                                     style={() => ({
-                                        color: getSourceColor(currentSources, o.source_id),
+                                        color: this.getSearchColor(o.search_index),
                                     })}
                                     data={o.geo_json}
                                     onClick={() => this.fetchDetail(o)}
@@ -219,7 +264,7 @@ class OrgunitsMap extends Component {
     }
 }
 OrgunitsMap.defaultProps = {
-    currentSources: [],
+    baseUrl: '',
 };
 
 
@@ -232,7 +277,9 @@ OrgunitsMap.propTypes = {
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    currentSources: PropTypes.any,
+    params: PropTypes.object.isRequired,
+    baseUrl: PropTypes.string,
+    classes: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -240,7 +287,6 @@ const MapStateToProps = state => ({
     isClusterActive: state.map.isClusterActive,
     orgUnits: state.orgUnits.orgUnitsLocations,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
-    currentSources: state.orgUnits.sources,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -250,4 +296,4 @@ const MapDispatchToProps = dispatch => ({
 });
 
 
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgunitsMap));
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgunitsMap)));

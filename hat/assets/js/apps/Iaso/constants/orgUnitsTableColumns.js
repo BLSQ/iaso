@@ -10,7 +10,7 @@ const orgUnitsTableColumns = (
     formatMessage,
     component,
     classes,
-    searchCount,
+    searches,
 ) => {
     const columns = [
         {
@@ -47,11 +47,11 @@ const orgUnitsTableColumns = (
                 <section>
                     {
                         settings.original.groups.length > 0
-                         && settings.original.groups.map(g => g.name).join(', ')
+                        && settings.original.groups.map(g => g.name).join(', ')
                     }
                     {
                         settings.original.groups.length === 0
-                         && '--'
+                        && '--'
                     }
                 </section>
             ),
@@ -148,6 +148,7 @@ const orgUnitsTableColumns = (
             ),
         },
     ];
+    const searchCount = searches.length;
     if (searchCount > 1) {
         columns.unshift(
             {
@@ -159,7 +160,12 @@ const orgUnitsTableColumns = (
                 width: 100,
                 Cell: settings => (
                     <section>
-                        {settings.original.search_index + 1}
+                        <span
+                            style={{
+                                backgroundColor: `#${searches[settings.original.search_index].color}`,
+                            }}
+                            className={classes.roundColor}
+                        />
                     </section>
                 ),
             },

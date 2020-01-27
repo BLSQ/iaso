@@ -102,7 +102,11 @@ class OrgunitsMap extends Component {
             params,
         } = this.props;
         const searches = JSON.parse(params.searches);
-        let currentColor = searches[currentSearchIndex].color;
+        const currentSearch = searches[currentSearchIndex];
+        let currentColor;
+        if (currentSearch) {
+            currentColor = currentSearch.color;
+        }
         if (!currentColor) {
             [currentColor] = chipColors;
         } else {

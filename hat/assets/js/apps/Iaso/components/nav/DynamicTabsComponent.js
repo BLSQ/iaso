@@ -61,6 +61,14 @@ const styles = theme => ({
         minWidth: 160,
         fontSize: 5,
     },
+    roundColor: {
+        display: 'inline-block',
+        width: 15,
+        height: 15,
+        borderRadius: 15,
+        position: 'relative',
+        top: 4,
+    },
 });
 
 class DynamicTabsComponent extends Component {
@@ -208,8 +216,15 @@ class DynamicTabsComponent extends Component {
                                     value={currentTabIndex}
                                     label={(
                                         <span>
-                                            {`${baseLabel} - ${currentTabIndex + 1}`}
+                                            {`${baseLabel} - `}
+                                            <span
+                                                style={{
+                                                    backgroundColor: `#${item.color}`,
+                                                }}
+                                                className={classes.roundColor}
+                                            />
                                         </span>
+
                                     )}
                                 />
                             ))

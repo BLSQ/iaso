@@ -70,6 +70,12 @@ const styles = theme => ({
         zIndex: '-100',
         opacity: '0',
     },
+    roundColor: {
+        display: 'inline-block',
+        width: 15,
+        height: 15,
+        borderRadius: 15,
+    },
 });
 
 const mapOrgUnitByLocation = (orgUnits, selectedSources, currentSources) => {
@@ -308,7 +314,7 @@ class OrgUnits extends Component {
             formatMessage,
             this,
             classes,
-            JSON.parse(params.searches).length,
+            JSON.parse(params.searches),
         );
         return (
             <Fragment>
@@ -323,11 +329,11 @@ class OrgUnits extends Component {
                 >
                     <DynamicTabs
                         baseLabel={formatMessage({
-                            defaultMessage: 'Search',
-                            id: 'iaso.label.search',
+                            defaultMessage: 'Filters',
+                            id: 'iaso.label.filters',
                         })}
                         params={params}
-                        defaultItem={{ validated: 'both', color: chipColors[0] }}
+                        defaultItem={{ validated: 'both', color: chipColors[0].replace('#', '') }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}

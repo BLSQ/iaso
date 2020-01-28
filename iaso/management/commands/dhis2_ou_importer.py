@@ -343,7 +343,7 @@ class Command(BaseCommand):
                 iaso_logger.info(
                     "No credentials exist for this source, please provide them on the command line"
                 )
-
+                return
         orgunits = self.fetch_orgunits(connection_config)
 
         version, _created = SourceVersion.objects.get_or_create(

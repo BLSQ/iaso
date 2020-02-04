@@ -44,24 +44,17 @@ const MESSAGES = defineMessages({
     },
 });
 
-let timerSuccess;
-let timerError;
-
-const clearTimer = () => {
-    if (timerSuccess) {
-        clearTimeout(timerSuccess);
-    }
-    if (timerError) {
-        clearTimeout(timerError);
-    }
-};
-
 class PatientDetailsWrapper extends React.Component {
     constructor(props) {
         super(props);
+        const {
+            currentUser,
+            permissions,
+        } = props;
         this.state = {
             currentTab: 'infos',
-            canEditPatientInfos: false,
+            canEditPatientInfos:
+                userHasPermission(permissions, currentUser, 'x_datas_patient_edition'),
             baseUrl: props.params.case_id ? 'tests/detail' : 'register/detail',
             showTestModale: false,
             editedTest: undefined,
@@ -72,6 +65,16 @@ class PatientDetailsWrapper extends React.Component {
         };
     }
 
+    componentWillMount() {
+        const {
+            params,
+        } = this.props;
+
+        if (params.patient_id === '0') {
+            this.toggleEdit();
+        }
+    }
+
     componentDidMount() {
         const {
             dispatch,
@@ -79,13 +82,13 @@ class PatientDetailsWrapper extends React.Component {
             params,
             redirectTo,
         } = this.props;
-        if (patient.cases.length > 0) {
+        if (patient.cases && patient.cases.length > 0) {
             dispatch(mapActions.setMappedCaseslist(patient.cases));
         }
         if (this.props.params.case_id && this.props.params.tab === 'tests') {
             scrollTo('selected-case');
         }
-        if (patient) {
+        if (patient && patient.province_id) {
             const newParams = {
                 ...params,
                 prov_id: patient.province_id,
@@ -95,36 +98,27 @@ class PatientDetailsWrapper extends React.Component {
             };
             redirectTo(this.state.baseUrl, newParams);
         }
+
+        if (params.prov_id && patient.id === 0) {
+            dispatch(loadActions.startLoading());
+            this.props.selectProvince(params.prov_id, params.ZS_id, params.AS_id, params.vil_id);
+        }
     }
 
     componentWillReceiveProps(newProps) {
         const {
-            currentUser,
             dispatch,
-            permissions,
             params: {
                 prov_id,
                 ZS_id,
                 AS_id,
                 vil_id,
             },
+            params,
         } = newProps;
-
-        this.setState({
-            canEditPatientInfos:
-                userHasPermission(permissions, currentUser, 'x_datas_patient_edition'),
-        });
-
-        if (newProps.isUpdated) {
-            timerSuccess = setTimeout(() => {
-                newProps.setIsUpdated(false);
-            }, 10000);
-        }
-        if (newProps.hasError) {
-            timerSuccess = setTimeout(() => {
-                newProps.setHasError(false);
-            }, 10000);
-        }
+        const {
+            editEnabled,
+        } = this.state;
         if (prov_id !== this.props.params.prov_id) {
             if (prov_id) {
                 dispatch(loadActions.startLoading());
@@ -143,27 +137,38 @@ class PatientDetailsWrapper extends React.Component {
         } else if (vil_id !== this.props.params.vil_id) {
             this.props.selectVillage(vil_id);
         }
-    }
 
-    componentWillUnmount() {
-        clearTimer();
+        if (params.patient_id === '0') {
+            if (!editEnabled) {
+                this.toggleEdit();
+            }
+        }
     }
 
     savePatient(patient) {
-        clearTimer();
-        this.props.savePatient(patient);
+        const {
+            savePatient,
+            params,
+            redirectTo,
+        } = this.props;
+        const {
+            baseUrl,
+        } = this.state;
+        savePatient(patient, params, redirectTo, baseUrl);
     }
 
     toggleEdit() {
         const {
             patient,
         } = this.props;
-        this.props.selectProvince(
-            patient.province_id,
-            patient.ZS_id,
-            patient.AS_id,
-            patient.village_id,
-        );
+        if (patient.province_id) {
+            this.props.selectProvince(
+                patient.province_id,
+                patient.ZS_id,
+                patient.AS_id,
+                patient.village_id,
+            );
+        }
         this.setState({
             editEnabled: !this.state.editEnabled,
         });
@@ -222,8 +227,6 @@ class PatientDetailsWrapper extends React.Component {
                 cases,
                 baseLayer,
             },
-            hasError,
-            isUpdated,
             geoFilters,
             redirectTo,
             setCaseslist,
@@ -248,8 +251,8 @@ class PatientDetailsWrapper extends React.Component {
                     defaultPath={baseUrl}
                     tabs={[
                         { label: formatMessage(MESSAGES.infos), key: 'infos' },
-                        { label: formatMessage(MESSAGES.tests), key: 'tests' },
-                        { label: formatMessage(MESSAGES.map), key: 'map' },
+                        { label: formatMessage(MESSAGES.tests), key: 'tests', disabled: patient.id === 0 },
+                        { label: formatMessage(MESSAGES.map), key: 'map', disabled: patient.id === 0 },
                     ]}
                     defaultSelect={currentTab}
                 />
@@ -266,8 +269,6 @@ class PatientDetailsWrapper extends React.Component {
                                         <EditPatientInfos
                                             patient={patient}
                                             savePatient={newPatient => this.savePatient(newPatient)}
-                                            hasError={hasError}
-                                            isUpdated={isUpdated}
                                             geoFilters={geoFilters}
                                             params={params}
                                             redirectTo={redirectTo}
@@ -536,8 +537,6 @@ PatientDetailsWrapper.propTypes = {
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
     savePatient: PropTypes.func.isRequired,
-    isUpdated: PropTypes.bool.isRequired,
-    hasError: PropTypes.bool.isRequired,
     geoFilters: PropTypes.object.isRequired,
     selectProvince: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
@@ -551,8 +550,6 @@ const MapStateToProps = state => ({
     map: state.map,
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
-    isUpdated: state.patients.isUpdated,
-    hasError: state.patients.hasError,
     geoFilters: state.geoFilters,
 });
 
@@ -561,9 +558,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     getShape: url => getRequest(url, dispatch, null, false),
-    savePatient: patient => dispatch(patientsActions.savePatient(dispatch, patient)),
-    setIsUpdated: value => dispatch(patientsActions.setIsUpdated(value)),
-    setHasError: value => dispatch(patientsActions.setErrorOnUpdated(value)),
+    savePatient: (patient, params, redirectTo, baseUrl) => dispatch(patientsActions.savePatient(dispatch, patient, params, redirectTo, baseUrl)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, true, 'YES,NO,OTHER')),
     selectZone: (zoneId, areaId, villageId) => dispatch(filterActions.selectZone(zoneId, dispatch, true, areaId, villageId, true, 'YES,NO,OTHER')),
     selectArea: (areaId, villageId, zoneId) => dispatch(filterActions.selectArea(areaId, dispatch, true, zoneId, villageId, true, 'YES,NO,OTHER')),

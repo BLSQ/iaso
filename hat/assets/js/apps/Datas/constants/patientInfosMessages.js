@@ -4,6 +4,7 @@ const patientInfosMessages = formatMessage => ({
         defaultMessage: 'Name',
         id: 'main.label.name',
         type: 'text',
+        isRequired: true,
     },
     post_name: {
         defaultMessage: 'Post name',
@@ -19,11 +20,13 @@ const patientInfosMessages = formatMessage => ({
         defaultMessage: 'Mother surname',
         id: 'main.label.mothers_surname',
         type: 'text',
+        isRequired: true,
     },
     sex: {
         defaultMessage: 'Sex',
         id: 'main.label.sex',
         type: 'select',
+        isRequired: true,
         options: [
             {
                 label: formatMessage ? formatMessage({
@@ -57,11 +60,12 @@ const patientInfosMessages = formatMessage => ({
         id: 'main.label.year_of_birth',
         type: 'int',
         min: 1900,
+        isRequired: true,
     },
     origin_country: {
         defaultMessage: 'Country of origin',
         id: 'main.label.countryOrigin',
-        type: 'text'
+        type: 'text',
     },
     province: {
         defaultMessage: 'Province of origin',

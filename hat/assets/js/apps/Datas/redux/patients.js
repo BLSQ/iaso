@@ -1,6 +1,8 @@
 
 import { loadActions } from '../../../redux/load';
 import getMergedPatient from '../utils';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { succesfullSnackBar, errorSnackBar } from '../../../utils/constants/snackBars';
 
 const LOAD_CURRENT_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DETAIL';
 const LOAD_CURRENT_DUPLICATE_DETAIL = 'hat/patient/detail/LOAD_CURRENT_DUPLICATE_DETAIL';
@@ -13,12 +15,11 @@ const FETCH_ACTION = 'hat/patient/detail/FETCH_ACTION';
 const SAVE_ACTION = 'hat/patient/detail/SAVE_ACTION';
 const GET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/GET_MANUAL_MERGED_PATIENT';
 const SET_MANUAL_MERGED_PATIENT = 'hat/patient/detail/SET_MANUAL_MERGED_PATIENT';
-const SET_ERROR_ON_UPDATED = 'hat/patient/detail/SET_ERROR_ON_UPDATED';
-const SET_IS_UPDATED = 'hat/patient/detail/SET_IS_UPDATED';
 const LOAD_MANUAL_DUPLICATE = 'hat/patient/duplicate/LOAD_MANUAL_DUPLICATE';
 const SET_MANUAL_DUPLICATE_ID = 'hat/patient/duplicate/SET_MANUAL_DUPLICATE_ID';
 const SET_IS_FETCHING_DUPLICATE_PAIR = 'hat/patient/duplicate/SET_IS_FETCHING_DUPLICATE_PAIR';
 const EMPTY_MANUAL_DUPLICATE = 'hat/patient/duplicate/EMPTY_MANUAL_DUPLICATE';
+const RESET_CURRENT_PATIENT = 'hat/patient/detail/RESET_CURRENT_PATIENT';
 
 
 const req = require('superagent');
@@ -291,44 +292,61 @@ export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, el
     });
 };
 
-
-const setErrorOnUpdated = payload => ({
-    type: SET_ERROR_ON_UPDATED,
-    payload,
-});
-
-const setIsUpdated = payload => ({
-    type: SET_IS_UPDATED,
-    payload,
-});
-
-export const savePatient = (dispatch, patient) => {
+export const savePatient = (dispatch, patient, params, redirectTo, baseUrl) => {
     dispatch(loadActions.startLoading());
-    req
-        .put(`/api/patients/${patient.id}/`)
-        .set('Content-Type', 'application/json')
-        .send(patient)
-        .then((result) => {
-            dispatch(emptyPatientList());
-            dispatch(setErrorOnUpdated(false));
-            dispatch(setIsUpdated(true));
-            dispatch(loadCurrentDetail(result.body));
-            dispatch(loadActions.successLoadingNoData());
-        })
-        .catch((err) => {
-            dispatch(setErrorOnUpdated(true));
-            dispatch(setIsUpdated(false));
-            dispatch(loadActions.errorLoading(err));
-            return (console.error(`Error while saving patient ${err}`));
-        });
+    if (patient.id) {
+        req
+            .put(`/api/patients/${patient.id}/`)
+            .set('Content-Type', 'application/json')
+            .send(patient)
+            .then((result) => {
+                dispatch(emptyPatientList());
+                dispatch(enqueueSnackbar(succesfullSnackBar()));
+                dispatch(loadCurrentDetail(result.body));
+                dispatch(loadActions.successLoadingNoData());
+            })
+            .catch((err) => {
+                dispatch(enqueueSnackbar(errorSnackBar()));
+                dispatch(loadActions.errorLoading(err));
+                return (console.error(`Error while saving patient ${err}`));
+            });
+    } else {
+        req
+            .post('/api/patients/')
+            .set('Content-Type', 'application/json')
+            .send(patient)
+            .then((result) => {
+                dispatch(emptyPatientList());
+                dispatch(enqueueSnackbar(succesfullSnackBar()));
+                dispatch(loadCurrentDetail(result.body));
+                dispatch(loadActions.successLoadingNoData());
+                const newParams = {
+                    ...params,
+                };
+                newParams.patient_id = result.body.id;
+                redirectTo(baseUrl, newParams);
+            })
+            .catch((err) => {
+                dispatch(enqueueSnackbar(errorSnackBar()));
+                dispatch(loadActions.errorLoading(err));
+                return (console.error(`Error while creating patient ${err}`));
+            });
+    }
     return ({
         type: SAVE_ACTION,
     });
 };
 
+const resetCurrentPatient = () => (
+    {
+        type: RESET_CURRENT_PATIENT,
+    }
+);
+
 export const patientsActions = {
     loadCurrentDetail,
     fetchDetails,
+    resetCurrentPatient,
     setPatientList,
     setDuplicatePatientList,
     fetchDuplicatesDetails,
@@ -337,8 +355,6 @@ export const patientsActions = {
     setManualMergedPatient,
     saveAndMergePatient,
     savePatient,
-    setErrorOnUpdated,
-    setIsUpdated,
     loadManualDuplicate,
     saveManualDuplicate,
     fetchDuplicatePair,
@@ -347,7 +363,11 @@ export const patientsActions = {
 };
 
 export const patientsInitialState = {
-    current: {},
+    current: {
+        id: 0,
+        cases: [],
+        treatments: [],
+    },
     duplicateCurrent: {},
     testsMapping: {},
     manualDuplicate: {
@@ -372,8 +392,6 @@ export const patientsInitialState = {
     },
     manualMergedPatient: null,
     manualMergedConflicts: [],
-    isUpdated: false,
-    hasError: false,
 };
 
 export const patientsReducer = (state = patientsInitialState, action = {}) => {
@@ -502,18 +520,13 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
             };
         }
 
+        case RESET_CURRENT_PATIENT: {
+            const { current } = patientsInitialState;
+            return { ...state, current };
+        }
+
         case FETCH_ACTION: {
             return state;
-        }
-
-        case SET_ERROR_ON_UPDATED: {
-            const hasError = action.payload;
-            return { ...state, hasError };
-        }
-
-        case SET_IS_UPDATED: {
-            const isUpdated = action.payload;
-            return { ...state, isUpdated };
         }
 
         default:

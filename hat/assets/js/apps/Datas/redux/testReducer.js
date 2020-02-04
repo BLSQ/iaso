@@ -4,7 +4,7 @@ import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../../../utils/constants/snackBars';
 
 const PATCH_ACTION = 'hat/tests/PATCH_ACTION';
-const PUT_ACTION = 'hat/tests/PUT_ACTION';
+const POST_ACTION = 'hat/tests/POST_ACTION';
 
 const req = require('superagent');
 
@@ -42,7 +42,7 @@ const createTest = (dispatch, test, patientId, toggleModal) => {
             dispatch(loadActions.errorLoading(err));
         });
     return ({
-        type: PUT_ACTION,
+        type: POST_ACTION,
     });
 };
 
@@ -55,7 +55,7 @@ export const testInitialState = {};
 
 export const testReducer = (state = {}, action = {}) => {
     switch (action.type) {
-        case PUT_ACTION:
+        case POST_ACTION:
         case PATCH_ACTION: {
             return {};
         }

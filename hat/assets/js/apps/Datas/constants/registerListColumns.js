@@ -1,8 +1,17 @@
 import React from 'react';
 import moment from 'moment';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import EditIcon from '@material-ui/icons/Edit';
+import { IconButton, Tooltip } from '@material-ui/core';
+
 import { getAgeFromYear } from '../../../utils/index';
 
-const registerListColumns = (formatMessage, component, hasDuplicatePermission) => {
+const registerListColumns = (
+    formatMessage,
+    component,
+    hasDuplicatePermission,
+    hasEditPermision,
+) => {
     const columns = [
         {
             Header: formatMessage({
@@ -162,17 +171,32 @@ const registerListColumns = (formatMessage, component, hasDuplicatePermission) =
             width: 120,
             Cell: settings => (
                 <section>
-                    <button
-                        type="button"
-                        className="button--edit--tiny margin-right"
-                        onClick={() => component.selectPatient(settings.original)}
+                    <Tooltip
+                        title={
+                            hasEditPermision
+                                ? formatMessage({
+                                    defaultMessage: 'Editer',
+                                    id: 'main.label.edit',
+                                })
+                                : formatMessage({
+                                    defaultMessage: 'See',
+                                    id: 'main.label.see',
+                                })
+                        }
                     >
-                        <i className="fa fa-pencil-square-o" />
-                        {formatMessage({
-                            defaultMessage: 'Editer',
-                            id: 'main.label.edit',
-                        })}
-                    </button>
+                        <IconButton
+                            onClick={() => component.selectPatient(settings.original)}
+                        >
+                            {
+                                hasEditPermision
+                                && <EditIcon />
+                            }
+                            {
+                                !hasEditPermision
+                                && <VisibilityIcon />
+                            }
+                        </IconButton>
+                    </Tooltip>
                 </section>
             ),
         },

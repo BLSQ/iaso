@@ -84,6 +84,7 @@ export const customMarkerOptions = {
     iconAnchor: [12, 32],
 };
 
+
 export const customColorMarkerOptions = (color, iconName) => ({
     className: 'marker-custom color',
     html: `${L.Util.template(svgColoredString(color))}
@@ -92,10 +93,16 @@ export const customColorMarkerOptions = (color, iconName) => ({
     popupAnchor: [-1, -28],
     iconAnchor: [12, 32],
 });
-
 export const customMarker = L.divIcon(customMarkerOptions);
 export const colorMarker = (color, iconName) => L.divIcon(customColorMarkerOptions(color, iconName));
 
+export const CircularColorMarkerOptions = color => ({
+    className: 'marker-custom color circular-marker',
+    html: `<div style="background-color:${color};"></div><span style="background-color:${color};"></span>`,
+    iconSize: new L.Point(20, 20),
+});
+
+export const circularMarker = color => L.divIcon(CircularColorMarkerOptions(color));
 
 export const customZoomBar = (formatMessage, fitToBounds) => L.control.zoombar({
     zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),

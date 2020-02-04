@@ -24,7 +24,7 @@ import {
     getShapesBounds,
     colorClusterCustomMarker,
     customZoomBar,
-    colorMarker,
+    circularMarker,
 } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -218,7 +218,7 @@ class OrgunitsMap extends Component {
                                     >
                                         <MarkersListComponent
                                             markerProps={o => ({
-                                                icon: colorMarker(this.getSearchColor(o.search_index)),
+                                                icon: circularMarker(this.getSearchColor(o.search_index)),
                                             })}
                                             items={location.orgUnits}
                                             onMarkerClick={o => this.fetchDetail(o)}
@@ -235,7 +235,7 @@ class OrgunitsMap extends Component {
                                     <MarkersListComponent
                                         key={location.source.id}
                                         markerProps={o => ({
-                                            icon: colorMarker(this.getSearchColor(o.search_index)),
+                                            icon: circularMarker(this.getSearchColor(o.search_index)),
                                         })}
                                         items={location.orgUnits}
                                         onMarkerClick={o => this.fetchDetail(o)}

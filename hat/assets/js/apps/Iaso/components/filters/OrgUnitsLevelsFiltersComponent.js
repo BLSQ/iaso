@@ -262,14 +262,13 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     onLevelsChange: PropTypes.func,
 };
 
-const MapStateToProps = (state, props) => {
-    // console.log('state.orgUnitsLevels.list', state.orgUnitsLevels.list);
-    return ({
+const MapStateToProps = (state, props) => (
+    {
         fetching: state.orgUnitsLevels.fetching,
         orgUnitsLevels: props.searchIndex || props.searchIndex === 0
             ? state.orgUnitsLevels.list[props.searchIndex] : state.orgUnitsLevels.list,
-    });
-};
+    }
+);
 
 const MapDispatchToProps = dispatch => ({
     dispatch,

@@ -31,6 +31,7 @@ import {
     setFiltersUpdated,
     setGroups,
 } from '../redux/orgUnitsReducer';
+import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
 import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
 
@@ -115,6 +116,7 @@ class OrgUnits extends Component {
             dispatch,
             params,
         } = this.props;
+        this.props.resetOrgUnitsLevels();
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
         fetchOrgUnitsTypes(dispatch).then((orgUnitTypes) => {
@@ -468,6 +470,7 @@ OrgUnits.propTypes = {
     filtersUpdated: PropTypes.bool.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
     setGroups: PropTypes.func.isRequired,
+    resetOrgUnitsLevels: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -490,6 +493,7 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitsLocations: orgUnitsList => dispatch(setOrgUnitsLocations(orgUnitsList)),
     setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
     setGroups: groups => dispatch(setGroups(groups)),
+    resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
 });
 
 export default withStyles(styles)(

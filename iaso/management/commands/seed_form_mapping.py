@@ -5,7 +5,7 @@ from iaso.models import Instance, Form
 import datetime
 from dhis2 import Api
 
-from ...dhis2.form_mapping import seed_mapping
+from ...dhis2.form_mapping import seed_event_mapping
 
 """
 ./manage.py seed_form_mapping \
@@ -57,7 +57,7 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         api = self.get_api(options)
 
-        mapping, missing_data_elements = seed_mapping(
+        mapping, missing_data_elements = seed_event_mapping(
             api, options.get("dhis2_program_id")
         )
 

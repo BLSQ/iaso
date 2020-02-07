@@ -139,22 +139,39 @@ class DuplicatesTestCase(TestCase):
             [self.uuid(3), self.uuid(4), self.uuid(5), self.uuid(6), self.uuid(7)],
         )
 
-        print()
-        print(
-            "duplicated",
+        duplicated_counts = (
             Instance.objects.values("period", "form")
             .annotate(duplicated_count=Count("id"))
             .filter(id__in=duplicate_ids_query)
-            .values_list("duplicated_count", "period", "form"),
+            .values("duplicated_count", "period", "form")
         )
 
-        print()
-        print(
-            "ready",
+        ok_counts = (
             Instance.objects.values("period", "form")
             .annotate(ready_count=Count("id"))
             .exclude(id__in=duplicate_ids_query)
-            .values_list("ready_count", "period", "form"),
+            .values("ready_count", "period", "form")
         )
 
-        {}
+        print("duplicated_counts", duplicated_counts)
+        print("ok_counts", ok_counts)
+        counts = []
+
+        def merge_counts(field, counts, sub_counts):
+            for count in sub_counts:
+                count_to_merge = list(
+                    filter(
+                        lambda x: x["period"] == count["period"]
+                        and x["form"] == count["form"],
+                        counts,
+                    )
+                )
+                if len(count_to_merge) > 0:
+                    count_to_merge[0][field] = count[field]
+                else:
+                    counts.append(count)
+
+        merge_counts("ready_count", counts, ok_counts)
+        merge_counts("duplicated_count", counts, duplicated_counts)
+
+        print(counts)

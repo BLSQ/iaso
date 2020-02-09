@@ -1,0 +1,9 @@
+{
+  "status": "WARNING",
+  "conflicts": [
+    {
+      "value": "Data value is not a percentage, must match data element type: wTFkuSU2MsH",
+      "object": "85.71428571428571"
+    }
+  ]
+}

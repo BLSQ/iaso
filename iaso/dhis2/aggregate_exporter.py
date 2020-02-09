@@ -79,12 +79,13 @@ class AggregateExporter:
         self.api_cache = {}
 
     def get_api(self, instance):
-        credentials = instance.org_unit.version.data_source.credentials
-        if not credentials.id in self.api_cache:
-            self.api_cache[credentials.id] = Api(
+        version = instance.org_unit.version
+        if not version.id in self.api_cache:
+            credentials = instance.org_unit.version.data_source.credentials
+            self.api_cache[version.id] = Api(
                 credentials.url, credentials.login, credentials.password
             )
-        return self.api_cache[credentials.id]
+        return self.api_cache[version.id]
 
     def get_form_mappings(self, instance):
         # TODO use the ona_version to lookup the correct version
@@ -132,6 +133,7 @@ class AggregateExporter:
 
                                     print(json.dumps(aggreg, indent=4))
                             else:
+                                # use the event ?
                                 skipped.append((instance.id, "no aggregate mapping"))
             print(
                 "done processing page %d/%d : %d skipped"

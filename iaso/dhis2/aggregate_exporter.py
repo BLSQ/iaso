@@ -6,6 +6,16 @@ import json
 from iaso.models import Instance, OrgUnit, Form, FormVersion, Mapping
 
 
+class AggregateExportError(Exception):
+    def __init__(self, *args):
+        self.counts = args[0]
+        self.descriptions = args[1]
+        self.message = self.descriptions[0]
+
+    def __str__(self):
+        return "AggregateExportError, {0} ".format(self.message)
+
+
 def uniquify(seq, idfun=None):
     if idfun is None:
 
@@ -24,19 +34,22 @@ def uniquify(seq, idfun=None):
 
 
 def handle_exception(resp, message):
-    if resp["status"] == "ERROR":
-
+    response = resp["response"]
+    counts = {}
+    descriptions = []
+    if "importCount" in response:
         for count_type in ("imported", "updated", "deleted", "ignored"):
-            print(message, count_type, resp["response"][count_type])
-        import_summaries = resp["response"]["importSummaries"]
-        descriptions = [
-            m["description"] for m in import_summaries if "description" in m
-        ]
-        conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
-        descriptions = uniquify(descriptions)
-        print("---------------------------------------------------------")
-        print("----------------------- EXPORT ERROR --------------------")
-        print("Failed to create events got", descriptions, conflicts, resp)
+            counts[count_type] = response["importCount"][count_type]
+    if response["status"] == "ERROR":
+        descriptions.append(response["description"])
+    if "conflicts" in response:
+        descriptions = [m["value"] for m in response["conflicts"]]
+    descriptions = uniquify(descriptions)
+    print("---------------------------------------------------------")
+    print("----------------------- EXPORT ERROR --------------------")
+    print("Failed to create events got", message, counts, descriptions)
+
+    return AggregateExportError(counts, descriptions)
 
 
 def map_to_aggregate(instance, form_mapping):
@@ -62,6 +75,10 @@ def map_to_aggregate(instance, form_mapping):
                     "value": format_value(data_element, raw_value),
                     "debug": str(raw_value) + " " + question_key,
                 }
+                if "categoryOptionCombo" in data_element:
+                    data_value["categoryOptionCombo"] = data_element[
+                        "categoryOptionCombo"
+                    ]
                 data_set_entry["dataValues"].append(data_value)
             except Exception as error:
                 errored = True
@@ -104,7 +121,7 @@ class AggregateExporter:
         self.form_mappings_cache[key] = mappings
         return mappings if mappings else None
 
-    def export_aggregates(self, api_old, instances_qs, export):
+    def export_aggregates(self, instances_qs, export):
         paginator = Paginator(instances_qs, 100)
         skipped = []
         for page in range(1, paginator.num_pages + 1):
@@ -121,6 +138,7 @@ class AggregateExporter:
                                 api = self.get_api(instance)
                                 if export and not map_errors:
                                     try:
+                                        print("POSTING to dataValueSets", aggreg)
                                         resp = api.post("dataValueSets", aggreg).json()
                                         print(resp)
                                     except RequestException as dhis2_exception:
@@ -129,13 +147,23 @@ class AggregateExporter:
                                             % (page, paginator.num_pages),
                                         )
                                         resp = json.loads(dhis2_exception.description)
-                                        handle_exception(resp, message)
+
+                                        exception = handle_exception(
+                                            {"response": resp}, message
+                                        )
+                                        # persist messages first error message
+                                        raise exception
 
                                     print(json.dumps(aggreg, indent=4))
                             else:
                                 # use the event ?
                                 skipped.append((instance.id, "no aggregate mapping"))
+                    else:
+                        skipped.append((instance.id, "no mappings"))
+                else:
+                    skipped.append((instance.id, "no data json"))
             print(
                 "done processing page %d/%d : %d skipped"
                 % (page, paginator.num_pages, len(skipped))
             )
+            print(skipped)

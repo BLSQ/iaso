@@ -1,6 +1,6 @@
 import json
 import responses
-
+from collections import namedtuple
 from django.test import TestCase
 from iaso.models import (
     Instance,
@@ -21,6 +21,7 @@ from ..dhis2.aggregate_exporter import (
     handle_exception,
     map_to_aggregate,
     AggregateExporter,
+    AggregateExportError,
 )
 
 
@@ -105,14 +106,71 @@ class AggregateExporterTests(TestCase):
         self.org_unit = org_unit
 
     def test_error_handling_support_various_versions(self):
-        versions = ("229", "230", "231", "232", "233")
-        testcases = ["event-create-error-" + version + ".json" for version in versions]
+
+        ErrorTestCase = namedtuple(
+            "ErrorTestCase", "fixture expected_counts expected_messages"
+        )
+        testcases = [
+            ErrorTestCase(
+                "datavalues-error-assigned.json",
+                {},
+                [
+                    "Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR"
+                ],
+            ),
+            ErrorTestCase(
+                "datavalues-error-bad-coc.json",
+                {"imported": 0, "updated": 0, "deleted": 0, "ignored": 1},
+                ["Category option combo not found or not accessible"],
+            ),
+            ErrorTestCase(
+                "datavalues-error-coc.json",
+                {"imported": 1, "updated": 0, "deleted": 0, "ignored": 0},
+                [
+                    "Value is zero and not significant, must match data element: lXpDI2bRPCF",
+                    "Category option combo is required but is not specified",
+                ],
+            ),
+            ErrorTestCase(
+                "datavalues-error-element-type.json",
+                {"imported": 0, "updated": 0, "deleted": 0, "ignored": 1},
+                [
+                    "Data value is not numeric, must match data element type: M62VHgYT2n0"
+                ],
+            ),
+            ErrorTestCase(
+                "datavalues-error-element-type-percent.json",
+                {},
+                [
+                    "Data value is not a percentage, must match data element type: wTFkuSU2MsH"
+                ],
+            ),
+            ErrorTestCase(
+                "datavalues-error-open-periods.json",
+                {"imported": 0, "updated": 0, "deleted": 0, "ignored": 1},
+                [
+                    "Period: 203001 is after latest open future period: 202001 for data element: M62VHgYT2n0"
+                ],
+            ),
+            ErrorTestCase(
+                "datavalues-error-technical.json",
+                {},
+                ["The import process failed: Failed to flush BatchHandler"],
+            ),
+            ErrorTestCase(
+                "datavalues-error-unknown-dataelement.json",
+                {"imported": 0, "updated": 0, "deleted": 0, "ignored": 1},
+                ["Data element not found or not accessible"],
+            ),
+        ]
 
         for testcase in testcases:
+            print("************** ", testcase)
+            error = handle_exception(load_dhis2_fixture(testcase.fixture), "error")
+            self.assertEquals(testcase.expected_counts, error.counts)
+            self.assertEquals(testcase.expected_messages, error.descriptions)
 
-            handle_exception(load_dhis2_fixture(testcase), "error")
-
-    def test_event_mapping_works(self):
+    def test_aggregate_mapping_works(self):
 
         event, errors = map_to_aggregate(self.build_instance(), build_form_mapping())
 
@@ -129,8 +187,34 @@ class AggregateExporterTests(TestCase):
             },
         )
 
+    def test_aggregate_mapping_with_coc_works(self):
+        mapping = build_form_mapping()
+        mapping["question_mappings"]["question1"][
+            "categoryOptionCombo"
+        ] = "DHIS2_COC_ID"
+
+        event, errors = map_to_aggregate(self.build_instance(), mapping)
+
+        self.assertEquals(
+            event,
+            {
+                "completeDate": "2018-02-16",
+                "dataSet": "DATASET_DHIS2_ID",
+                "period": "2018Q1",
+                "orgUnit": "OU_DHIS2_ID",
+                "dataValues": [
+                    {
+                        "dataElement": "DE_DHIS2_ID",
+                        "categoryOptionCombo": "DHIS2_COC_ID",
+                        "debug": "1 question1",
+                        "value": 1,
+                    }
+                ],
+            },
+        )
+
     @responses.activate
-    def test_event_export_works(self):
+    def test_aggregate_export_works(self):
 
         mapping = Mapping(
             name="aggregate", json=build_form_mapping(), form_version=self.form_version
@@ -149,31 +233,47 @@ class AggregateExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        AggregateExporter().export_aggregates(build_api(), instances_qs, True)
+        AggregateExporter().export_aggregates(instances_qs, True)
 
     @responses.activate
-    def test_event_export_handle_dhis2_errors(self):
-        # setup
-        # persist an instance
-        instance = self.build_instance()
-        # mock expected calls
+    def test_aggregate_export_handle_dhis2_errors(self):
+        print("****************** test_aggregate_export_handle_dhis2_errors")
+        print("****************** test_aggregate_export_handle_dhis2_errors")
+        with self.assertRaises(AggregateExportError) as context:
+            mapping = Mapping(
+                name="aggregate",
+                json=build_form_mapping(),
+                form_version=self.form_version,
+            )
+            mapping.save()
+            # persist an instance
+            instance = self.build_instance()
+            # mock expected calls
 
-        responses.add(
-            responses.POST,
-            "https://dhis2.com/api/events",
-            json=load_dhis2_fixture("event-create-error-230.json"),
-            status=409,
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                json=load_dhis2_fixture("datavalues-error-assigned.json")["response"],
+                status=409,
+            )
+
+            # exercice
+            instances_qs = (
+                Instance.objects.prefetch_related("org_unit").order_by("id").all()
+            )
+
+            AggregateExporter().export_aggregates(instances_qs, True)
+
+        self.assertEquals(
+            "Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+            context.exception.message,
         )
 
-        # exercice
-        instances_qs = (
-            Instance.objects.prefetch_related("org_unit").order_by("id").all()
-        )
-
-        AggregateExporter().export_aggregates(build_api(), instances_qs, True)
+        print("****************** test_aggregate_export_handle_dhis2_errors")
+        print("****************** test_aggregate_export_handle_dhis2_errors")
 
     @responses.activate
-    def test_event_export_handle_mapping_errors(self):
+    def test_aggregate_export_handle_mapping_errors(self):
         # setup
         # persist an instance
         instance = self.build_instance()
@@ -184,4 +284,4 @@ class AggregateExporterTests(TestCase):
         instances_qs = (
             Instance.objects.prefetch_related("org_unit").order_by("id").all()
         )
-        AggregateExporter().export_aggregates(build_api(), instances_qs, True)
+        AggregateExporter().export_aggregates(instances_qs, True)

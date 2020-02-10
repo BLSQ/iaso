@@ -1,4 +1,7 @@
 {
+  "httpStatus": "Conflict",
+  "httpStatusCode": 409,
+  "response":{
     "responseType": "ImportSummary",
     "status": "WARNING",
     "importOptions": {
@@ -40,3 +43,4 @@
     ],
     "dataSetComplete": "2014-02-03"
   }
+}

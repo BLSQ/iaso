@@ -1,9 +1,13 @@
 {
-  "status": "WARNING",
-  "conflicts": [
-    {
-      "value": "Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
-      "object": "t3kZ5ksd8IR"
-    }
-  ]
+  "httpStatus": "Conflict",
+  "httpStatusCode": 409,
+  "response": {
+    "status": "WARNING",
+    "conflicts": [
+      {
+        "value": "Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+        "object": "t3kZ5ksd8IR"
+      }
+    ]
+  }
 }

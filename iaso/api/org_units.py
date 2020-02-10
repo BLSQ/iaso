@@ -234,7 +234,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if app_id:
             queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
         searches = request.GET.get("searches", None)
-
+        counts = []
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -246,6 +246,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = additional_queryset
                 else:
                     queryset = queryset.union(additional_queryset)
+                counts.append({
+                    "index": search_index,
+                    "count": additional_queryset.count(),
+                })
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET)
@@ -258,6 +262,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
+                res["counts"] = counts
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)

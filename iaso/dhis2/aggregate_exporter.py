@@ -8,9 +8,9 @@ from iaso.models import Instance, OrgUnit, Form, FormVersion, Mapping
 
 class AggregateExportError(Exception):
     def __init__(self, *args):
-        self.counts = args[0]
-        self.descriptions = args[1]
-        self.message = self.descriptions[0]
+        self.counts = args[1]
+        self.descriptions = args[2]
+        self.message = str(args[0]) + " : " + self.descriptions[0]
 
     def __str__(self):
         return "AggregateExportError, {0} ".format(self.message)
@@ -45,11 +45,10 @@ def handle_exception(resp, message):
     if "conflicts" in response:
         descriptions = [m["value"] for m in response["conflicts"]]
     descriptions = uniquify(descriptions)
-    print("---------------------------------------------------------")
     print("----------------------- EXPORT ERROR --------------------")
     print("Failed to create events got", message, counts, descriptions)
 
-    return AggregateExportError(counts, descriptions)
+    return AggregateExportError(message, counts, descriptions)
 
 
 def map_to_aggregate(instance, form_mapping):
@@ -143,9 +142,10 @@ class AggregateExporter:
                                         print(resp)
                                     except RequestException as dhis2_exception:
                                         message = (
-                                            "error while processing page %d/%d"
-                                            % (page, paginator.num_pages),
+                                            "ERROR while processing page %d/%d, instance_id %d"
+                                            % (page, paginator.num_pages, instance.id)
                                         )
+
                                         resp = json.loads(dhis2_exception.description)
 
                                         exception = handle_exception(
@@ -153,8 +153,8 @@ class AggregateExporter:
                                         )
                                         # persist messages first error message
                                         raise exception
-
-                                    print(json.dumps(aggreg, indent=4))
+                                elif map_errors:
+                                    skipped.append((instance.id), "mapping error")
                             else:
                                 # use the event ?
                                 skipped.append((instance.id, "no aggregate mapping"))

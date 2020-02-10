@@ -165,7 +165,6 @@ class AggregateExporterTests(TestCase):
         ]
 
         for testcase in testcases:
-            print("************** ", testcase)
             error = handle_exception(load_dhis2_fixture(testcase.fixture), "error")
             self.assertEquals(testcase.expected_counts, error.counts)
             self.assertEquals(testcase.expected_messages, error.descriptions)
@@ -237,8 +236,6 @@ class AggregateExporterTests(TestCase):
 
     @responses.activate
     def test_aggregate_export_handle_dhis2_errors(self):
-        print("****************** test_aggregate_export_handle_dhis2_errors")
-        print("****************** test_aggregate_export_handle_dhis2_errors")
         with self.assertRaises(AggregateExportError) as context:
             mapping = Mapping(
                 name="aggregate",
@@ -246,9 +243,7 @@ class AggregateExporterTests(TestCase):
                 form_version=self.form_version,
             )
             mapping.save()
-            # persist an instance
             instance = self.build_instance()
-            # mock expected calls
 
             responses.add(
                 responses.POST,
@@ -257,7 +252,6 @@ class AggregateExporterTests(TestCase):
                 status=409,
             )
 
-            # exercice
             instances_qs = (
                 Instance.objects.prefetch_related("org_unit").order_by("id").all()
             )
@@ -265,12 +259,11 @@ class AggregateExporterTests(TestCase):
             AggregateExporter().export_aggregates(instances_qs, True)
 
         self.assertEquals(
-            "Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+            "ERROR while processing page 1/1, instance_id "
+            + str(instance.id)
+            + " : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
             context.exception.message,
         )
-
-        print("****************** test_aggregate_export_handle_dhis2_errors")
-        print("****************** test_aggregate_export_handle_dhis2_errors")
 
     @responses.activate
     def test_aggregate_export_handle_mapping_errors(self):

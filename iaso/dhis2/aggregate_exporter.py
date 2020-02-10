@@ -3,7 +3,7 @@ from dhis2 import RequestException
 from dhis2 import Api
 from .value_formatter import format_value
 import json
-from iaso.models import Instance, OrgUnit, Form, FormVersion, Mapping
+from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion
 
 
 class AggregateExportError(Exception):

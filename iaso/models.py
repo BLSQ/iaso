@@ -646,7 +646,7 @@ class FormVersion(models.Model):
         }
 
 
-class Mapping(models.Model):
+class MappingVersion(models.Model):
     form_version = models.ForeignKey(
         FormVersion, on_delete=models.CASCADE, related_name="mappings"
     )

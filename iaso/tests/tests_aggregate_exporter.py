@@ -7,7 +7,7 @@ from iaso.models import (
     OrgUnit,
     Form,
     FormVersion,
-    Mapping,
+    MappingVersion,
     DataSource,
     SourceVersion,
     ExternalCredentials,
@@ -215,7 +215,7 @@ class AggregateExporterTests(TestCase):
     @responses.activate
     def test_aggregate_export_works(self):
 
-        mapping = Mapping(
+        mapping = MappingVersion(
             name="aggregate", json=build_form_mapping(), form_version=self.form_version
         )
         mapping.save()
@@ -237,7 +237,7 @@ class AggregateExporterTests(TestCase):
     @responses.activate
     def test_aggregate_export_handle_dhis2_errors(self):
         with self.assertRaises(AggregateExportError) as context:
-            mapping = Mapping(
+            mapping = MappingVersion(
                 name="aggregate",
                 json=build_form_mapping(),
                 form_version=self.form_version,

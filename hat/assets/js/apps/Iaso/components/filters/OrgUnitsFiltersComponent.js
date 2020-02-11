@@ -40,6 +40,10 @@ const styles = theme => ({
     root: {
         paddingBottom: theme.spacing(4),
     },
+    colorContainer: {
+        marginBottom: theme.spacing(2),
+        marginTop: theme.spacing(2),
+    },
     marginBottom: {
         marginBottom: theme.spacing(2),
         display: 'block',
@@ -115,17 +119,6 @@ class OrgUnitsFiltersComponent extends Component {
             <div className={classes.root}>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
-                        <FormLabel className={classes.marginBottom}>
-                            <FormattedMessage id="iaso.label.color" defaultMessage="Color" />
-                            :
-                        </FormLabel>
-                        <CirclePicker
-                            width="100%"
-                            colors={chipColors}
-                            color={currentColor}
-                            onChangeComplete={color => this.onChange(color.hex.replace('#', ''), 'color')
-                            }
-                        />
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -136,6 +129,19 @@ class OrgUnitsFiltersComponent extends Component {
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
+                        <div className={classes.colorContainer}>
+                            <FormLabel className={classes.marginBottom}>
+                                <FormattedMessage id="iaso.label.color" defaultMessage="Color" />
+                                :
+                            </FormLabel>
+                            <CirclePicker
+                                width="100%"
+                                colors={chipColors}
+                                color={currentColor}
+                                onChangeComplete={color => this.onChange(color.hex.replace('#', ''), 'color')
+                                }
+                            />
+                        </div>
                     </Grid>
                     <Grid item xs={4}>
                         <FiltersComponent

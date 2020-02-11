@@ -52,7 +52,7 @@ import chipColors from '../constants/chipColors';
 import { warningSnackBar } from '../components/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
 
-import DynamicTabs from '../components/nav/DynamicTabsComponent';
+import DynamicTabsComponent from '../components/nav/DynamicTabsComponent';
 
 const baseUrl = 'orgunits';
 let warningDisplayed = false;
@@ -177,7 +177,7 @@ class OrgUnits extends Component {
         const {
             dispatch,
         } = this.props;
-        this.props.setOrgUnits(null, this.props.params, 0, 1);
+        this.props.setOrgUnits(null, this.props.params, 0, 1, 0);
         dispatch(closeFixedSnackbar('locationLimitWarning'));
     }
 
@@ -282,7 +282,7 @@ class OrgUnits extends Component {
                 newParams.searchActive = true;
                 this.props.redirectTo(baseUrl, newParams);
             }
-            this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages);
+            this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages, data[0].counts);
             this.props.setFiltersUpdated(false);
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
@@ -308,6 +308,7 @@ class OrgUnits extends Component {
             fetchingList,
             fetchingOrgUnitTypes,
             redirectTo,
+            searchCounts,
         } = this.props;
         const {
             tab,
@@ -329,10 +330,10 @@ class OrgUnits extends Component {
                     id: 'iaso.orgUnits.title',
                 })}
                 >
-                    <DynamicTabs
+                    <DynamicTabsComponent
                         baseLabel={formatMessage({
-                            defaultMessage: 'Filters',
-                            id: 'iaso.label.filters',
+                            defaultMessage: 'Search',
+                            id: 'iaso.label.search',
                         })}
                         params={params}
                         defaultItem={{ validated: 'both', color: chipColors[0].replace('#', '') }}
@@ -342,6 +343,8 @@ class OrgUnits extends Component {
                         redirectTo={redirectTo}
                         onTabsUpdated={() => this.props.setFiltersUpdated(true)}
                         maxItems={9}
+                        counts={searchCounts}
+                        displayCounts
                     />
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
@@ -471,10 +474,12 @@ OrgUnits.propTypes = {
     setFiltersUpdated: PropTypes.func.isRequired,
     setGroups: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
+    searchCounts: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
+    searchCounts: state.orgUnits.orgUnitsPage.counts,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
@@ -484,7 +489,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setOrgUnits: (orgUnitsList, params, count, pages) => dispatch(setOrgUnits(orgUnitsList, true, params, count, pages)),
+    setOrgUnits: (orgUnitsList, params, count, pages, counts) => dispatch(setOrgUnits(orgUnitsList, true, params, count, pages, counts)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),

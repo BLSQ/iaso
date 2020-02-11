@@ -27,6 +27,23 @@ PERIOD_TYPE_CHOICES = (
     (SIX_MONTH, "Six-month"),
 )
 
+AGGREGATE = "AGGREGATE"
+EVENT = "EVENT"
+
+MAPPING_TYPE_CHOICES = (
+    (AGGREGATE, _("Aggregate")),
+    (EVENT, _("Event")),
+)
+
+QUEUED = "QUEUED"
+
+STATUS_TYPE_CHOICES = (
+    (QUEUED, _("Queued")),
+    ("RUNNING", _("Running")),
+    ("EXPORTED", _("Exported")),
+    ("ERRORED", _("Errored")),
+)
+
 
 def generate_id_for_dhis_2():
     letters = "abcdefghijklmnopqrstuvwxyz"
@@ -646,9 +663,27 @@ class FormVersion(models.Model):
         }
 
 
+class Mapping(models.Model):
+    name = models.TextField()
+    data_source = models.ForeignKey(
+        DataSource, on_delete=models.CASCADE, related_name="mappings"
+    )
+    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    mapping_type = models.TextField(choices=MAPPING_TYPE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
 class MappingVersion(models.Model):
     form_version = models.ForeignKey(
-        FormVersion, on_delete=models.CASCADE, related_name="mappings"
+        FormVersion, on_delete=models.CASCADE, related_name="mapping_versions"
+    )
+    mapping = models.ForeignKey(
+        Mapping,
+        on_delete=models.CASCADE,
+        related_name="versions",
+        null=True,
+        blank=True,
     )
     name = models.TextField()
     json = JSONField()
@@ -909,3 +944,54 @@ class Profile(models.Model):
 
     def as_short_dict(self):
         return self.as_dict()
+
+
+class ExportRequest(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+    params = JSONField(null=True, blank=True)
+    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    result = JSONField(null=True, blank=True)
+
+    finished = models.BooleanField(default=False)
+
+    status = models.TextField(choices=STATUS_TYPE_CHOICES, default=QUEUED)
+
+    instance_count = models.IntegerField()
+    exported_count = models.IntegerField()
+    errored_count = models.IntegerField()
+
+    last_error_message = models.TextField()
+
+    # user requested the export
+    queued_at = models.DateTimeField(auto_now_add=True)
+    # backend started processing the export
+    started_at = models.DateTimeField(null=True, blank=True)
+    # backend ended processing the export
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+
+class ExportLog(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+    sent = JSONField(null=True, blank=True)
+    received = JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
+class ExportStatus(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+
+    export_request = models.ForeignKey(ExportRequest, on_delete=models.CASCADE)
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
+    status = models.TextField(choices=STATUS_TYPE_CHOICES, default=QUEUED)
+    mapping_version = models.ForeignKey(MappingVersion, on_delete=models.CASCADE)
+
+    export_log = models.ForeignKey(
+        ExportLog, on_delete=models.CASCADE, null=True, blank=True
+    )
+    created_at = models.DateTimeField(auto_now_add=True)

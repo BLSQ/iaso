@@ -1,12 +1,13 @@
 from django.core.paginator import Paginator
+from django.utils import timezone
 from dhis2 import RequestException
 from dhis2 import Api
 from .value_formatter import format_value
 import json
-from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion
+from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog
 
 
-class AggregateExportError(Exception):
+class InstanceExportError(Exception):
     def __init__(self, *args):
         self.counts = args[1]
         self.descriptions = args[2]
@@ -46,9 +47,9 @@ def handle_exception(resp, message):
         descriptions = [m["value"] for m in response["conflicts"]]
     descriptions = uniquify(descriptions)
     print("----------------------- EXPORT ERROR --------------------")
-    print("Failed to create events got", message, counts, descriptions)
+    print("Failed to create dataValueSets got", message, counts, descriptions)
 
-    return AggregateExportError(message, counts, descriptions)
+    return InstanceExportError(message, counts, descriptions)
 
 
 def map_to_aggregate(instance, form_mapping):
@@ -103,67 +104,104 @@ class AggregateExporter:
             )
         return self.api_cache[version.id]
 
-    def get_form_mappings(self, instance):
-        # TODO use the ona_version to lookup the correct version
-        # ona_version = instance.json()["_version"]
-        ona_version = "latest"
+    def export_instances(self, export_request, export):
+        export_request.status = "running"
+        export_request.started_at = timezone.now()
+        export_request.save()
 
-        key = (instance.form_id, ona_version)
-        if key in self.form_mappings_cache:
-            mappings = self.form_mappings_cache[key]
-            return mappings if mappings else None
-
-        # TODO filter on ona_version id
-        form_version = instance.form.form_versions.last()
-
-        mappings = instance.form.form_versions.last().mappings.all()
-        self.form_mappings_cache[key] = mappings
-        return mappings if mappings else None
-
-    def export_aggregates(self, instances_qs, export):
-        paginator = Paginator(instances_qs, 100)
+        paginator = Paginator(export_request.exportstatus_set.order_by("id").all(), 100)
         skipped = []
+        exported_count = 0
+        errored_count = 0
         for page in range(1, paginator.num_pages + 1):
             errors = []
-            for instance in paginator.page(page).object_list:
-                if instance.json:
-                    form_mappings = self.get_form_mappings(instance)
-                    if form_mappings:
-                        for form_mapping in form_mappings:
-                            if form_mapping and form_mapping.name == "aggregate":
-                                aggreg, map_errors = map_to_aggregate(
-                                    instance, form_mapping.json
-                                )
-                                api = self.get_api(instance)
-                                if export and not map_errors:
-                                    try:
-                                        print("POSTING to dataValueSets", aggreg)
-                                        resp = api.post("dataValueSets", aggreg).json()
-                                        print(resp)
-                                    except RequestException as dhis2_exception:
-                                        message = (
-                                            "ERROR while processing page %d/%d, instance_id %d"
-                                            % (page, paginator.num_pages, instance.id)
-                                        )
+            for export_status in paginator.page(page).object_list:
+                try:
+                    instance = export_status.instance
+                    form_mapping = export_status.mapping_version
+                    if not instance.json:
+                        skipped.append((instance.id, "no data json"))
+                        continue
 
-                                        resp = json.loads(dhis2_exception.description)
+                    if not form_mapping or form_mapping.name != "aggregate":
+                        skipped.append((instance.id, "no aggregate mapping"))
+                        continue
 
-                                        exception = handle_exception(
-                                            {"response": resp}, message
-                                        )
-                                        # persist messages first error message
-                                        raise exception
-                                elif map_errors:
-                                    skipped.append((instance.id), "mapping error")
-                            else:
-                                # use the event ?
-                                skipped.append((instance.id, "no aggregate mapping"))
-                    else:
-                        skipped.append((instance.id, "no mappings"))
-                else:
-                    skipped.append((instance.id, "no data json"))
+                    (aggreg, map_errors) = map_to_aggregate(instance, form_mapping.json)
+                    api = self.get_api(instance)
+                    if map_errors:
+                        message = (
+                            "ERROR while processing page %d/%d, instance_id %d"
+                            % (page, paginator.num_pages, instance.id,)
+                        )
+                        exception = InstanceExportError(
+                            message,
+                            {},
+                            list(map(lambda x: x[0] + " " + str(x[1]), map_errors)),
+                        )
+
+                        raise exception
+
+                    if export and not map_errors:
+                        try:
+                            print("POSTING to dataValueSets", aggreg, map_errors)
+                            resp = api.post("dataValueSets", aggreg).json()
+                            print(resp)
+
+                            exported_count += 1
+
+                            export_log = ExportLog()
+                            export_log.sent = aggreg
+                            export_log.received = resp
+                            export_log.save()
+
+                            export_status.status = "exported"
+                            export_status.export_log = export_log
+                            export_status.save()
+                        except RequestException as dhis2_exception:
+                            message = (
+                                "ERROR while processing page %d/%d, instance_id %d"
+                                % (page, paginator.num_pages, instance.id)
+                            )
+                            resp = json.loads(dhis2_exception.description)
+                            exception = handle_exception({"response": resp}, message)
+
+                            export_log = ExportLog()
+                            export_log.sent = aggreg
+                            export_log.received = resp
+                            export_log.save()
+
+                            export_status.status = "errored"
+                            export_status.export_log = export_log
+                            export_status.save()
+                            raise exception
+
+                except InstanceExportError as exception:
+                    errored_count = errored_count + 1
+                    export_status.status = "errored"
+                    export_status.save()
+
+                    export_request.status = "errored"
+                    export_request.ended_at = timezone.now()
+                    export_request.finished = True
+                    export_request.errored_count = errored_count
+                    export_request.exported_count = exported_count
+                    export_request.last_error_message = exception.message
+                    export_request.save()
+
+                    # TODO should we mark other export_status as errored ?
+
+                    raise exception
+
             print(
                 "done processing page %d/%d : %d skipped"
                 % (page, paginator.num_pages, len(skipped))
             )
             print(skipped)
+
+        export_request.status = "exported"
+        export_request.finished = True
+        export_request.errored_count = errored_count
+        export_request.exported_count = exported_count
+        export_request.ended_at = timezone.now()
+        export_request.save()

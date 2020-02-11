@@ -3,15 +3,20 @@ import responses
 from collections import namedtuple
 from django.test import TestCase
 from iaso.models import (
+    User,
     Instance,
     OrgUnit,
     Form,
     FormVersion,
+    Mapping,
     MappingVersion,
     DataSource,
     SourceVersion,
     ExternalCredentials,
     Account,
+    ExportLog,
+    ExportRequest,
+    ExportStatus,
 )
 from django.contrib.gis.geos import Point
 from dhis2 import Api
@@ -21,8 +26,9 @@ from ..dhis2.aggregate_exporter import (
     handle_exception,
     map_to_aggregate,
     AggregateExporter,
-    AggregateExportError,
+    InstanceExportError,
 )
+from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
 def load_dhis2_fixture(mapping_file):
@@ -39,8 +45,10 @@ def build_form_mapping():
     }
 
 
-def build_api():
-    return Api("https://dhis2.com", "admin", "whocares")
+def dump_attributes(obj):
+    print("----- ", obj.__class__)
+    for k in obj.__dict__:
+        print("\t", k, obj.__dict__[k])
 
 
 class AggregateExporterTests(TestCase):
@@ -63,6 +71,23 @@ class AggregateExporterTests(TestCase):
         instance.save()
         return instance
 
+    def expect_logs(self, status):
+        print("-*-*-*-*-*", self._testMethodName)
+        for export_log in ExportLog.objects.all():
+            dump_attributes(export_log)
+        for export_status in ExportStatus.objects.all():
+            dump_attributes(export_status)
+        for export_request in ExportRequest.objects.all():
+            dump_attributes(export_request)
+
+        for export_status in ExportStatus.objects.all():
+            self.assertEquals(status, export_status.status)
+
+        for export_request in ExportRequest.objects.all():
+            self.assertIsNotNone(export_request.started_at)
+            self.assertIsNotNone(export_request.ended_at)
+            self.assertEquals(status, export_request.status)
+
     def setUp(self):
         form, created = Form.objects.get_or_create(
             form_id="quality_pca",
@@ -82,6 +107,11 @@ class AggregateExporterTests(TestCase):
         account, account_created = Account.objects.get_or_create(
             name="Organisation Name"
         )
+
+        user, user_created = User.objects.get_or_create(
+            username="Test User Name", email="testemail@bluesquarehub.com"
+        )
+        self.user = user
 
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
@@ -104,6 +134,10 @@ class AggregateExporterTests(TestCase):
         org_unit.save()
 
         self.org_unit = org_unit
+
+        mapping = Mapping(form=form, data_source=datasource)
+        mapping.save()
+        self.mapping = mapping
 
     def test_error_handling_support_various_versions(self):
 
@@ -215,34 +249,45 @@ class AggregateExporterTests(TestCase):
     @responses.activate
     def test_aggregate_export_works(self):
 
-        mapping = MappingVersion(
-            name="aggregate", json=build_form_mapping(), form_version=self.form_version
+        mapping_version = MappingVersion(
+            name="aggregate",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
         )
-        mapping.save()
+        mapping_version.save()
         # setup
         # persist an instance
         instance = self.build_instance()
 
+        export_request = ExportRequestBuilder().build_export_request(
+            ["2018Q1"], [self.form.id], [instance.org_unit.id], self.user
+        )
         # mock expected calls
 
         responses.add(
-            responses.POST, "https://dhis2.com/api/dataValueSets", json={}, status=200
+            responses.POST,
+            "https://dhis2.com/api/dataValueSets",
+            json={"message": "Good boy"},
+            status=200,
         )
 
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        AggregateExporter().export_aggregates(instances_qs, True)
+        AggregateExporter().export_instances(export_request, True)
+        self.expect_logs("exported")
 
     @responses.activate
     def test_aggregate_export_handle_dhis2_errors(self):
-        with self.assertRaises(AggregateExportError) as context:
-            mapping = MappingVersion(
+        with self.assertRaises(InstanceExportError) as context:
+            mapping_version = MappingVersion(
                 name="aggregate",
                 json=build_form_mapping(),
                 form_version=self.form_version,
+                mapping=self.mapping,
             )
-            mapping.save()
+            mapping_version.save()
             instance = self.build_instance()
 
             responses.add(
@@ -252,11 +297,12 @@ class AggregateExporterTests(TestCase):
                 status=409,
             )
 
-            instances_qs = (
-                Instance.objects.prefetch_related("org_unit").order_by("id").all()
+            export_request = ExportRequestBuilder().build_export_request(
+                ["2018Q1"], [self.form.id], [instance.org_unit.id], self.user
             )
+            AggregateExporter().export_instances(export_request, True)
 
-            AggregateExporter().export_aggregates(instances_qs, True)
+        self.expect_logs("errored")
 
         self.assertEquals(
             "ERROR while processing page 1/1, instance_id "
@@ -273,8 +319,28 @@ class AggregateExporterTests(TestCase):
         instance.json = {"question1": "badvalue"}
         instance.save()
 
-        # exercice
-        instances_qs = (
-            Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        mapping_version = MappingVersion(
+            name="aggregate",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
         )
-        AggregateExporter().export_aggregates(instances_qs, True)
+        mapping_version.save()
+
+        # exercice
+
+        with self.assertRaises(InstanceExportError) as context:
+            export_request = ExportRequestBuilder().build_export_request(
+                ["2018Q1"], [self.form.id], [instance.org_unit.id], self.user
+            )
+
+            AggregateExporter().export_instances(export_request, True)
+
+        self.expect_logs("errored")
+
+        self.assertEquals(
+            "ERROR while processing page 1/1, instance_id "
+            + str(instance.id)
+            + " : question1 (\"Bad value for int 'badvalue'\", {'id': 'DE_DHIS2_ID', 'valueType': 'INTEGER', 'question_key': 'question1'})",
+            context.exception.message,
+        )

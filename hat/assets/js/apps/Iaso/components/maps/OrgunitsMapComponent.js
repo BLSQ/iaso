@@ -24,7 +24,7 @@ import {
     getShapesBounds,
     colorClusterCustomMarker,
     customZoomBar,
-    circularMarker,
+    circleColorMarkerOptions,
 } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -215,14 +215,19 @@ class OrgunitsMap extends Component {
                                     <MarkerClusterGroup
                                         iconCreateFunction={cluster => colorClusterCustomMarker(cluster, this.getSearchColor(location.orgUnits[0] ? location.orgUnits[0].search_index : 0))}
                                         key={location.source.id}
+                                        polygonOptions={{
+                                            fillColor: this.getSearchColor(location.orgUnits[0] ? location.orgUnits[0].search_index : 'blue'),
+                                            color: this.getSearchColor(location.orgUnits[0] ? location.orgUnits[0].search_index : 'blue'),
+                                        }}
                                     >
                                         <MarkersListComponent
                                             markerProps={o => ({
-                                                icon: circularMarker(this.getSearchColor(o.search_index)),
+                                                ...circleColorMarkerOptions(this.getSearchColor(o.search_index)),
                                             })}
                                             items={location.orgUnits}
                                             onMarkerClick={o => this.fetchDetail(o)}
                                             PopupComponent={OrgUnitPopupComponent}
+                                            isCircle
                                         />
                                     </MarkerClusterGroup>
                                 ))
@@ -235,11 +240,12 @@ class OrgunitsMap extends Component {
                                     <MarkersListComponent
                                         key={location.source.id}
                                         markerProps={o => ({
-                                            icon: circularMarker(this.getSearchColor(o.search_index)),
+                                            ...circleColorMarkerOptions(this.getSearchColor(o.search_index)),
                                         })}
                                         items={location.orgUnits}
                                         onMarkerClick={o => this.fetchDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
+                                        isCircle
                                     />
                                 ))
                             )

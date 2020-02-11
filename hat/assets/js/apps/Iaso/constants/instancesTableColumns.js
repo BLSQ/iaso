@@ -3,8 +3,25 @@ import React from 'react';
 import moment from 'moment';
 import Link from '@material-ui/core/Link';
 
+import { getPrettyPeriod } from '../utils/periodsUtils';
+
 const instancesTableColumns = formatMessage => (
     [
+        {
+            Header: formatMessage({
+                defaultMessage: 'Period',
+                id: 'iaso.instance.period',
+            }),
+            accessor: 'period',
+            Cell: settings => (
+                <span>
+                    {settings.original.period
+                        ? `${getPrettyPeriod(settings.original.period)}`
+                        : '/'}
+                </span>
+            ),
+            width: 200,
+        },
         {
             Header: formatMessage({
                 defaultMessage: 'File',

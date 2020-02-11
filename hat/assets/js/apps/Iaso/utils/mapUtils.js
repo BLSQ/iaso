@@ -1,7 +1,6 @@
 /* globals STATIC_URL */
 import L from 'leaflet';
-import Color from "color";
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import Color from 'color';
 
 import { MESSAGES } from '../../../utils/map/mapUtils';
 import theme from './theme';

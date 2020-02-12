@@ -16,13 +16,15 @@ class PatientDetails extends React.Component {
     constructor(props) {
         super(props);
         this.state = {
-            patient: null,
+            patient: props.patient,
         };
     }
 
     componentWillMount() {
+        if (this.props.params.patient_id !== '0') {
+            this.props.fetchDetails(this.props.params.patient_id);
+        }
         this.props.fetchProvinces();
-        this.props.fetchDetails(this.props.params.patient_id);
         this.props.fetchCurrentUserInfos();
         this.props.fetchGeoDatas();
     }
@@ -47,7 +49,9 @@ class PatientDetails extends React.Component {
         delete tempParams.ZS_id;
         delete tempParams.AS_id;
         delete tempParams.vil_id;
-        tempParams.back = true;
+        if (params.patient_id !== '0') {
+            tempParams.back = true;
+        }
         this.setState({
             patient: null,
         });
@@ -78,12 +82,13 @@ class PatientDetails extends React.Component {
             },
             testsMapping,
             params,
+            currentUser,
         } = this.props;
         const { patient } = this.state;
         return (
             <section>
                 {
-                    loading && (
+                    (loading || !currentUser.id) && (
                         <LoadingSpinner message={formatMessage({
                             defaultMessage: 'Loading',
                             id: 'main.label.loading',
@@ -101,7 +106,18 @@ class PatientDetails extends React.Component {
                             {' '}
                         </button>
                         <h2 className="widget__heading with-button">
-                            <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Detailed informations" />
+                            {
+                                params.patient_id !== '0'
+                                && (
+                                    <FormattedMessage id="datas.patientDetailCases.header.title" defaultMessage="Detailed informations" />
+                                )
+                            }
+                            {
+                                params.patient_id === '0'
+                                && (
+                                    <FormattedMessage id="datas.patientDetailCases.header.add" defaultMessage="Add patient" />
+                                )
+                            }
                             :
                         </h2>
                         {
@@ -119,7 +135,7 @@ class PatientDetails extends React.Component {
                     </div>
                 </div>
                 {
-                    patient && patient.id
+                    currentUser.id
                     && (
                         <PatientDetailsWrapper
                             patient={patient}
@@ -148,6 +164,7 @@ PatientDetails.propTypes = {
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     fetchGeoDatas: PropTypes.func.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -156,6 +173,7 @@ const MapStateToProps = state => ({
     load: state.load,
     patient: state.patients.current,
     testsMapping: state.patients.testsMapping,
+    currentUser: state.currentUser.user,
 });
 
 const MapDispatchToProps = dispatch => ({

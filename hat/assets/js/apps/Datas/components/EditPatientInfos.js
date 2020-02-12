@@ -35,27 +35,27 @@ class EditPatientInfos extends React.Component {
 
     componentWillReceiveProps(newProps) {
         const patient = {
-            ...newProps.patient,
+            ...this.state.patient,
             province_id: newProps.params.prov_id,
             ZS_id: newProps.params.ZS_id,
             AS_id: newProps.params.AS_id,
             village_id: newProps.params.vil_id,
         };
 
-        const newState = {
+        const state = {
             ...this.state,
             patient,
         };
 
         if (newProps.isUpdated) {
-            newState.isModified = false;
+            state.isModified = false;
         } else if ((newProps.params.prov_id !== this.props.params.prov_id)
             || (newProps.params.ZS_id !== this.props.params.ZS_id)
             || (newProps.params.AS_id !== this.props.params.AS_id)
             || (newProps.params.vil_id !== this.props.params.vil_id)) {
-            newState.isModified = true;
+            state.isModified = true;
         }
-        this.setState(newState);
+        this.setState(state);
     }
 
     updatePatientGeoField(key, value) {
@@ -102,10 +102,22 @@ class EditPatientInfos extends React.Component {
         });
     }
 
-    render() {
+    isSavedDisabled() {
         const {
             patient,
             isModified,
+        } = this.state;
+        return !isModified
+            || !patient.last_name
+            || !patient.mothers_surname
+            || !patient.sex
+            || !patient.year_of_birth
+            || !patient.village_id;
+    }
+
+    render() {
+        const {
+            patient,
             baseUrl,
         } = this.state;
         const {
@@ -143,10 +155,11 @@ class EditPatientInfos extends React.Component {
                                                     currentField.type === 'text'
                                                     && (
                                                         <input
+                                                            className={currentField.isRequired && !patient[key] ? 'form-error' : null}
                                                             type="text"
                                                             name={key}
                                                             id={key}
-                                                            value={patient[key]}
+                                                            value={patient[key] || ''}
                                                             onChange={event => this.updatePatientField(key, event.currentTarget.value)}
                                                         />
                                                     )
@@ -155,11 +168,12 @@ class EditPatientInfos extends React.Component {
                                                     currentField.type === 'select'
                                                     && (
                                                         <Select
+                                                            className={currentField.isRequired && !patient[key] ? 'form-error' : null}
                                                             multi={false}
                                                             clearable={false}
                                                             simpleValue
                                                             name={key}
-                                                            value={patient[key]}
+                                                            value={patient[key] || ''}
                                                             placeholder="--"
                                                             options={currentField.options}
                                                             onChange={value => this.updatePatientField(key, value)}
@@ -170,6 +184,7 @@ class EditPatientInfos extends React.Component {
                                                     currentField.type === 'int'
                                                     && (
                                                         <input
+                                                            className={currentField.isRequired && !patient[key] ? 'form-error' : null}
                                                             type="number"
                                                             min={currentField.min}
                                                             max={moment().format('YYYY')}
@@ -255,38 +270,27 @@ class EditPatientInfos extends React.Component {
                 </table>
                 <div className="align-right margin-top">
                     {
-                        this.props.isUpdated
+                        patient.id !== 0
                         && (
-                            <div className="align-right text--success margin-bottom">
-                                <FormattedMessage id="main.label.patientUpdated" defaultMessage="Patient sauvegardé" />
-                            </div>
+                            <button
+                                className="button margin-right"
+                                onClick={() => closeEdit()}
+                            >
+                                <FormattedMessage
+                                    id="main.label.back"
+                                    defaultMessage="Back"
+                                />
+                            </button>
                         )
                     }
-                    {
-                        this.props.hasError
-                        && (
-                            <div className="align-right text--error margin-bottom">
-                                <FormattedMessage id="main.label.patientUpdateError" defaultMessage="Une erreur est survenue lors de la sauvegarde" />
-                            </div>
-                        )
-                    }
-                    <button
-                        className="button margin-right"
-                        onClick={() => closeEdit()}
-                    >
-                        <FormattedMessage
-                            id="patientInfos.back"
-                            defaultMessage="Retour"
-                        />
-                    </button>
                     <button
                         className="button"
-                        disabled={!isModified || !params.prov_id || !params.ZS_id || !params.AS_id}
+                        disabled={this.isSavedDisabled()}
                         onClick={() => savePatient(this.state.patient)}
                     >
                         <FormattedMessage
-                            id="patientInfos.save"
-                            defaultMessage="Sauvegarder"
+                            id="main.label.save"
+                            defaultMessage="Save"
                         />
                     </button>
                 </div>
@@ -299,8 +303,6 @@ EditPatientInfos.propTypes = {
     patient: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     savePatient: PropTypes.func.isRequired,
-    hasError: PropTypes.bool.isRequired,
-    isUpdated: PropTypes.bool.isRequired,
     geoFilters: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,

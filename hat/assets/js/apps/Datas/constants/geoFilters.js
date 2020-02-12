@@ -93,8 +93,8 @@ export const filtersVillage = (
             options: villages,
             className: !component.props.params.vil_id ? 'form-error' : '',
             placeholder: {
-                id: 'main.label.noneMasc',
-                defaultMessage: 'Aucun',
+                id: 'main.label.none',
+                defaultMessage: 'None',
             },
             label: {
                 id: 'main.label.village',

@@ -17,6 +17,17 @@ import { filterActions } from '../../../redux/filtersRedux';
 
 import TestInfosComponent from './TestInfosComponent';
 
+const getPlStage = (plResult, whiteCount) => {
+    let stage = 'unknown';
+    if (plResult === 2) {
+        stage = 'stage2';
+    } else if (whiteCount && plResult === 1) {
+        stage = whiteCount > 5 ? 'stage2' : 'stage1';
+    }
+    return stage;
+};
+
+
 const getStateTest = (currentTest, currentCase, currentUser) => {
     let tester = currentTest.tester ? currentTest.tester.id : null;
     if (!tester) {
@@ -107,6 +118,11 @@ class TestModalComponent extends Component {
                 ...this.props.currentCase,
             };
         }
+
+        if (key === 'test_pl_gb_mm3'
+            || (key === 'result' && newState.currentTest.type === 'PL')) {
+            newState.currentCase.test_pl_result = getPlStage(newState.currentTest.result, value);
+        }
         this.setState(newState);
     }
 
@@ -153,7 +169,6 @@ class TestModalComponent extends Component {
             && Boolean(currentTest.type === 'clinicalsigns' || (currentTest.type !== 'clinicalsigns' && currentTest.result !== undefined))
             && Boolean(currentTest.date)
             && Boolean(currentTest.villageId)
-            && Boolean(currentTest.tester)
         );
         return ((!isNewTest && isUnTouched) || !isValid);
     }

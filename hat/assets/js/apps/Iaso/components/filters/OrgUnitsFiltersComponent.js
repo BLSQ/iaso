@@ -28,6 +28,7 @@ import {
 } from '../../constants/filters';
 import {
     setFiltersUpdated,
+    setOrgUnitsLocations,
 } from '../../redux/orgUnitsReducer';
 
 import FiltersComponent from './FiltersComponent';
@@ -73,9 +74,22 @@ class OrgUnitsFiltersComponent extends Component {
         const {
             searchIndex,
             params,
+            orgUnitsLocations,
+            isClusterActive,
         } = this.props;
         if (urlKey !== 'color') {
             this.props.setFiltersUpdated(true);
+        } else if (isClusterActive) {
+            // Ugly patch to force rerender of clusters
+            const locations = [...orgUnitsLocations.locations];
+            locations[searchIndex] = [];
+            this.props.setOrgUnitsLocations({
+                ...orgUnitsLocations,
+                locations,
+            });
+            setTimeout(() => {
+                this.props.setOrgUnitsLocations(orgUnitsLocations);
+            }, 100);
         }
         const searches = [...JSON.parse(params.searches)];
         searches[searchIndex] = {
@@ -209,17 +223,23 @@ OrgUnitsFiltersComponent.propTypes = {
     filtersUpdated: PropTypes.bool.isRequired,
     groups: PropTypes.array,
     searchIndex: PropTypes.number.isRequired,
+    orgUnitsLocations: PropTypes.object.isRequired,
+    setOrgUnitsLocations: PropTypes.func.isRequired,
+    isClusterActive: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     filtersUpdated: state.orgUnits.filtersUpdated,
     groups: state.orgUnits.groups,
+    orgUnitsLocations: state.orgUnits.orgUnitsLocations,
+    isClusterActive: state.map.isClusterActive,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
+    setOrgUnitsLocations: orgUnitsLocations => dispatch(setOrgUnitsLocations(orgUnitsLocations)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));

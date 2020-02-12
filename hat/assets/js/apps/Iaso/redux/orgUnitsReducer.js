@@ -226,6 +226,7 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
 
         case SET_ORG_UNITS_LOCATIONS: {
             const orgUnitsLocations = action.payload;
+            console.log('SET_ORG_UNITS_LOCATIONS', orgUnitsLocations);
             return { ...state, orgUnitsLocations };
         }
 

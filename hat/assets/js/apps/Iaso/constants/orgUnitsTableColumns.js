@@ -5,6 +5,7 @@ import { IconButton, Tooltip } from '@material-ui/core';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
+import Color from 'color';
 
 const orgUnitsTableColumns = (
     formatMessage,
@@ -160,12 +161,18 @@ const orgUnitsTableColumns = (
                 width: 100,
                 Cell: settings => (
                     <section>
-                        <span
-                            style={{
-                                backgroundColor: `#${searches[settings.original.search_index].color}`,
-                            }}
-                            className={classes.roundColor}
-                        />
+                        {
+                            searches[settings.original.search_index]
+                            && (
+                                <span
+                                    style={{
+                                        backgroundColor: `#${searches[settings.original.search_index].color}`,
+                                        border: `2px solid ${Color(`#${searches[settings.original.search_index].color}`).darken(0.5)}`,
+                                    }}
+                                    className={classes.roundColor}
+                                />
+                            )
+                        }
                     </section>
                 ),
             },

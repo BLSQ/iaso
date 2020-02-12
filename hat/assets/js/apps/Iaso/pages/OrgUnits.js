@@ -12,7 +12,6 @@ import {
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import kebabCase from 'lodash/kebabCase';
 
 import {
     fetchOrgUnitsTypes,
@@ -30,6 +29,7 @@ import {
     setFetchingOrgUnitTypes,
     setFiltersUpdated,
     setGroups,
+    resetOrgUnits,
 } from '../redux/orgUnitsReducer';
 import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
 
@@ -79,26 +79,28 @@ const styles = theme => ({
     },
 });
 
-const mapOrgUnitByLocation = (orgUnits, selectedSources, currentSources) => {
-    const locations = {};
-    currentSources.forEach((source) => {
-        locations[kebabCase(source.name)] = {
-            source,
-            orgUnits: [],
-        };
+const mapOrgUnitBySearch = (orgUnits, searches) => {
+    const mappedOrgunits = [];
+    searches.forEach((search, i) => {
+        mappedOrgunits[i] = orgUnits.filter(o => o.search_index === i);
     });
+    return mappedOrgunits;
+};
+
+const mapOrgUnitByLocation = (orgUnits, searches) => {
     const mappedOrgunits = {
         shapes: [],
-        locations,
+        locations: [],
     };
     orgUnits.forEach((o) => {
         if (o.latitude && o.longitude) {
-            mappedOrgunits.locations[kebabCase(o.source_name)].orgUnits.push(o);
+            mappedOrgunits.locations.push(o);
         }
         if (o.geo_json) {
             mappedOrgunits.shapes.push(o);
         }
     });
+    mappedOrgunits.locations = mapOrgUnitBySearch(mappedOrgunits.locations, searches);
     return mappedOrgunits;
 };
 
@@ -177,8 +179,13 @@ class OrgUnits extends Component {
         const {
             dispatch,
         } = this.props;
-        this.props.setOrgUnits(null, this.props.params, 0, 1, 0);
+        this.props.setOrgUnits(null, this.props.params, 0, 1, []);
         dispatch(closeFixedSnackbar('locationLimitWarning'));
+    }
+
+    onTabsDeleted() {
+        this.props.setFiltersUpdated(true);
+        this.props.resetOrgUnits();
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
@@ -241,7 +248,6 @@ class OrgUnits extends Component {
         const {
             dispatch,
             params,
-            sources,
         } = this.props;
         dispatch(this.props.setOrgUnitsListFetching(true));
         const urlLocation = this.getEndpointUrl(false, '', true);
@@ -249,8 +255,7 @@ class OrgUnits extends Component {
             this.props.setOrgUnitsLocations(
                 mapOrgUnitByLocation(
                     orgUnits,
-                    params.source ? params.source.split(',') : [],
-                    sources || [],
+                    JSON.parse(params.searches),
                 ),
             );
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -261,7 +266,6 @@ class OrgUnits extends Component {
         const {
             params,
             dispatch,
-            sources,
         } = this.props;
 
         const url = this.getEndpointUrl();
@@ -274,6 +278,7 @@ class OrgUnits extends Component {
             const urlLocation = this.getEndpointUrl(false, '', true);
             promises.push(fetchOrgUnitsList(dispatch, urlLocation));
         }
+        this.props.setOrgUnits(null, params, 0, 1, []);
         Promise.all(promises).then((data) => {
             if (!params.searchActive) {
                 const newParams = {
@@ -287,8 +292,7 @@ class OrgUnits extends Component {
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
                     data[1],
-                    params.source ? params.source.split(',') : [],
-                    sources || [],
+                    JSON.parse(params.searches),
                 ));
             }
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -342,6 +346,7 @@ class OrgUnits extends Component {
                         baseUrl={baseUrl}
                         redirectTo={redirectTo}
                         onTabsUpdated={() => this.props.setFiltersUpdated(true)}
+                        onTabsDeleted={() => this.onTabsDeleted()}
                         maxItems={9}
                         counts={searchCounts}
                         displayCounts
@@ -423,6 +428,7 @@ class OrgUnits extends Component {
                                             <OrgunitsMap
                                                 params={params}
                                                 baseUrl={baseUrl}
+                                                setFiltersUpdated={() => this.props.setFiltersUpdated(true)}
                                             />
                                         </div>
                                     )
@@ -459,6 +465,7 @@ OrgUnits.propTypes = {
     reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
     setOrgUnits: PropTypes.func.isRequired,
+    resetOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
@@ -490,6 +497,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     setOrgUnits: (orgUnitsList, params, count, pages, counts) => dispatch(setOrgUnits(orgUnitsList, true, params, count, pages, counts)),
+    resetOrgUnits: () => dispatch(resetOrgUnits()),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setSources: sources => dispatch(setSources(sources)),

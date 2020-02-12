@@ -48,7 +48,7 @@ class MultiTenantTestCase(TestCase):
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
 
-        self.form = Form(name="Hydroponics study")
+        self.form = Form(name="Hydroponics study", single_per_period=False)
         self.form.save()
         self.project.forms.add(self.form)
 

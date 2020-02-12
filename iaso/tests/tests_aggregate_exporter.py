@@ -72,6 +72,7 @@ class AggregateExporterTests(TestCase):
         return instance
 
     def expect_logs(self, status):
+        # TODO understand what is happening on setting.DEBUG ?
         if os.environ.get("DEBUG", "").lower() == "true":
             print("-*-*-*-*-*", self._testMethodName)
             for export_log in ExportLog.objects.all():

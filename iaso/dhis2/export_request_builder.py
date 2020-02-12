@@ -21,8 +21,7 @@ class ExportRequestBuilder:
 
         key = (instance.form_id, ona_version)
         if key in self.form_mappings_cache:
-            mappings = self.form_mappings_cache[key]
-            return mappings if mappings else None
+            return self.form_mappings_cache[key]
 
         # TODO filter on ona_version id
 
@@ -30,7 +29,8 @@ class ExportRequestBuilder:
             mapping.versions.last() for mapping in instance.form.mapping_set.all()
         ]
         self.form_mappings_cache[key] = mappings
-        return mappings if mappings else None
+
+        return self.form_mappings_cache[key]
 
     @transaction.atomic
     def build_export_request(
@@ -39,10 +39,13 @@ class ExportRequestBuilder:
 
         # TODO ask martinD what filter need to be added for "accounts"
         # make all that filters optional (don't apply if empty) ?
-        instances = Instance.objects.filter(
-            period__in=periods, form_id__in=form_ids, org_unit__in=orgunit_ids
-        )
+        instances = Instance.objects
+        if orgunit_ids:
+            instances = instances.filter(org_unit__in=orgunit_ids)
 
+        instances = instances.filter(period__in=periods, form_id__in=form_ids)
+
+        # raise error if count = 0 ?
         export_request = ExportRequest()
         export_request.params = {
             "periods": periods,

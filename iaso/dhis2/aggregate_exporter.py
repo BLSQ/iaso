@@ -5,7 +5,7 @@ from dhis2 import Api
 from .value_formatter import format_value
 import json
 from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog
-
+from timeit import default_timer as timer
 
 import logging
 
@@ -133,10 +133,16 @@ class AggregateExporter:
         exported_count = 0
         errored_count = 0
         for page in range(1, paginator.num_pages + 1):
+            page_start = timer()
             errors = []
             for export_status in paginator.page(page).object_list:
                 try:
                     instance = export_status.instance
+                    prefix = "export page %d/%d, instance_id %d" % (
+                        page,
+                        paginator.num_pages,
+                        instance.id,
+                    )
                     form_mapping = export_status.mapping_version
                     if not instance.json:
                         skipped.append((instance.id, "no data json"))
@@ -163,9 +169,10 @@ class AggregateExporter:
 
                     if export and not map_errors:
                         try:
-                            logger.info("POSTING to dataValueSets {} ".format(aggreg))
+                            # print(prefix, "POSTING to dataValueSets {} ".format(aggreg))
+
                             resp = api.post("dataValueSets", aggreg).json()
-                            logger.info(resp)
+                            # print(prefix, resp)
 
                             exported_count += 1
 
@@ -198,10 +205,11 @@ class AggregateExporter:
                     # TODO should we mark other export_status as errored ?
 
                     raise exception
+            page_end = timer()
 
-            logger.info(
-                "done processing page %d/%d : %d skipped"
-                % (page, paginator.num_pages, len(skipped))
+            print(
+                "done processing page %d/%d in %d sec: %d skipped"
+                % (page, paginator.num_pages, (page_end - page_start), len(skipped))
             )
             logger.info(skipped)
 

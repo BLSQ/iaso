@@ -7,6 +7,11 @@ import json
 from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
+
 class InstanceExportError(Exception):
     def __init__(self, *args):
         self.counts = args[1]
@@ -46,8 +51,12 @@ def handle_exception(resp, message):
     if "conflicts" in response:
         descriptions = [m["value"] for m in response["conflicts"]]
     descriptions = uniquify(descriptions)
-    print("----------------------- EXPORT ERROR --------------------")
-    print("Failed to create dataValueSets got", message, counts, descriptions)
+    logger.warn(
+        "----------------------- aggregate EXPORT ERROR --------------------\n"
+        + "Failed to create dataValueSets got {} {} {}".format(
+            message, counts, descriptions
+        )
+    )
 
     return InstanceExportError(message, counts, descriptions)
 
@@ -83,7 +92,7 @@ def map_to_aggregate(instance, form_mapping):
             except Exception as error:
                 errored = True
                 mapping_errors.append([question_key, error])
-                print("ERROR Mapping", error, question_key)
+                logger.warn("ERROR Mapping {} {}".format(error, question_key))
     if errored:
         return (None, mapping_errors)
     else:
@@ -103,6 +112,16 @@ class AggregateExporter:
                 credentials.url, credentials.login, credentials.password
             )
         return self.api_cache[version.id]
+
+    def export_log_on(self, status, export_status, aggreg, resp):
+        export_log = ExportLog()
+        export_log.sent = aggreg
+        export_log.received = resp
+        export_log.save()
+
+        export_status.status = status
+        export_status.export_log = export_log
+        export_status.save()
 
     def export_instances(self, export_request, export):
         export_request.status = "running"
@@ -132,7 +151,7 @@ class AggregateExporter:
                     if map_errors:
                         message = (
                             "ERROR while processing page %d/%d, instance_id %d"
-                            % (page, paginator.num_pages, instance.id,)
+                            % (page, paginator.num_pages, instance.id)
                         )
                         exception = InstanceExportError(
                             message,
@@ -144,20 +163,13 @@ class AggregateExporter:
 
                     if export and not map_errors:
                         try:
-                            print("POSTING to dataValueSets", aggreg, map_errors)
+                            logger.info("POSTING to dataValueSets {} ".format(aggreg))
                             resp = api.post("dataValueSets", aggreg).json()
-                            print(resp)
+                            logger.info(resp)
 
                             exported_count += 1
 
-                            export_log = ExportLog()
-                            export_log.sent = aggreg
-                            export_log.received = resp
-                            export_log.save()
-
-                            export_status.status = "exported"
-                            export_status.export_log = export_log
-                            export_status.save()
+                            self.export_log_on("exported", export_status, aggreg, resp)
                         except RequestException as dhis2_exception:
                             message = (
                                 "ERROR while processing page %d/%d, instance_id %d"
@@ -166,14 +178,8 @@ class AggregateExporter:
                             resp = json.loads(dhis2_exception.description)
                             exception = handle_exception({"response": resp}, message)
 
-                            export_log = ExportLog()
-                            export_log.sent = aggreg
-                            export_log.received = resp
-                            export_log.save()
+                            self.export_log_on("errored", export_status, aggreg, resp)
 
-                            export_status.status = "errored"
-                            export_status.export_log = export_log
-                            export_status.save()
                             raise exception
 
                 except InstanceExportError as exception:
@@ -193,11 +199,11 @@ class AggregateExporter:
 
                     raise exception
 
-            print(
+            logger.info(
                 "done processing page %d/%d : %d skipped"
                 % (page, paginator.num_pages, len(skipped))
             )
-            print(skipped)
+            logger.info(skipped)
 
         export_request.status = "exported"
         export_request.finished = True

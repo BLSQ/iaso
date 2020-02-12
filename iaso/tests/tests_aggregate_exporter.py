@@ -20,8 +20,8 @@ from iaso.models import (
 )
 from django.contrib.gis.geos import Point
 from dhis2 import Api
+import os
 from datetime import datetime, date
-
 from ..dhis2.aggregate_exporter import (
     handle_exception,
     map_to_aggregate,
@@ -72,13 +72,14 @@ class AggregateExporterTests(TestCase):
         return instance
 
     def expect_logs(self, status):
-        print("-*-*-*-*-*", self._testMethodName)
-        for export_log in ExportLog.objects.all():
-            dump_attributes(export_log)
-        for export_status in ExportStatus.objects.all():
-            dump_attributes(export_status)
-        for export_request in ExportRequest.objects.all():
-            dump_attributes(export_request)
+        if os.environ.get("DEBUG", "").lower() == "true":
+            print("-*-*-*-*-*", self._testMethodName)
+            for export_log in ExportLog.objects.all():
+                dump_attributes(export_log)
+            for export_status in ExportStatus.objects.all():
+                dump_attributes(export_status)
+            for export_request in ExportRequest.objects.all():
+                dump_attributes(export_request)
 
         for export_status in ExportStatus.objects.all():
             self.assertEquals(status, export_status.status)

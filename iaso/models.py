@@ -556,7 +556,7 @@ class Form(models.Model):
     location_field = models.TextField(null=True, blank=True)
     fields = JSONField(null=True, blank=True)
     period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
-    single_per_period = models.BooleanField(blank=True)
+    single_per_period = models.BooleanField(blank=True, default=False)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)

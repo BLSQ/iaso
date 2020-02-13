@@ -31,16 +31,14 @@ from iaso.dhis2.export_request_builder import ExportRequestBuilder
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
-        parser.add_argument(
-            "--mode", type=str, help="seed or export", required=True,
-        )
+        parser.add_argument("--mode", type=str, help="seed or export", required=True)
 
     def handle(self, *args, **options):
-
+        dhis2_version = "2.29"
         mode = options.get("mode")
         form, created = Form.objects.get_or_create(
-            form_id="quality_pca",
-            name="Quality PCA form",
+            form_id="quality_pca_" + dhis2_version,
+            name="Quality PCA form " + dhis2_version,
             period_type="month",
             single_per_period=True,
         )
@@ -53,24 +51,25 @@ class Command(BaseCommand):
         self.form_version = form_version
 
         account, account_created = Account.objects.get_or_create(
-            name="Organisation Name"
+            name="Organisation Name" + dhis2_version
         )
 
         user, user_created = User.objects.get_or_create(
-            username="Test User Name", email="testemail@bluesquarehub.com"
+            username="Test User Name" + dhis2_version,
+            email="testemail" + dhis2_version + "@bluesquarehub.com",
         )
         self.user = user
 
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
-            url="https://play.dhis2.org/2.30",
+            url="https://play.dhis2.org/" + dhis2_version,
             login="admin",
             password="district",
             account=account,
         )
 
         datasource, _ds_created = DataSource.objects.get_or_create(
-            name="reference_play_test", credentials=credentials
+            name="reference_play_test" + dhis2_version, credentials=credentials
         )
         source_version, _created = SourceVersion.objects.get_or_create(
             number=1, data_source=datasource
@@ -183,8 +182,21 @@ class Command(BaseCommand):
             },
         }
 
+        if (
+            MappingVersion.objects.filter(
+                name="aggregate", form_version=self.form_version
+            ).count()
+            == 0
+        ):
+            MappingVersion.objects.get_or_create(
+                name="aggregate",
+                form_version=self.form_version,
+                mapping=self.mapping,
+                json=mapping_version_json,
+            )
+
         mapping_version, mapping_version_created = MappingVersion.objects.get_or_create(
-            name="aggregate", form_version=self.form_version, mapping=self.mapping,
+            name="aggregate", form_version=self.form_version, mapping=self.mapping
         )
         mapping_version.json = mapping_version_json
         mapping_version.save()

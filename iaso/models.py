@@ -736,6 +736,8 @@ class Instance(models.Model):
     )
     period = models.TextField(null=True, blank=True, db_index=True)
 
+    last_export_success_at = models.DateTimeField(null=True, blank=True)
+
     def convert_location_from_field(self, field_name=None):
         f = field_name
         if f is None:

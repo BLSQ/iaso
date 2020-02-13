@@ -374,8 +374,13 @@ class AggregateExporterTests(TestCase):
         AggregateExporter().export_instances(export_request, True)
         self.expect_logs("exported")
 
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
     @responses.activate
     def test_aggregate_export_handle_dhis2_errors(self):
+        instance = self.build_instance()
+
         with self.assertRaises(InstanceExportError) as context:
             mapping_version = MappingVersion(
                 name="aggregate",
@@ -384,7 +389,6 @@ class AggregateExporterTests(TestCase):
                 mapping=self.mapping,
             )
             mapping_version.save()
-            instance = self.build_instance()
 
             responses.add(
                 responses.POST,
@@ -404,6 +408,8 @@ class AggregateExporterTests(TestCase):
             "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
             context.exception.message,
         )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)
 
     @responses.activate
     def test_aggregate_export_handle_mapping_errors(self):

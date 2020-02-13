@@ -197,6 +197,11 @@ class AggregateExporter:
             for export_status in export_statuses:
                 self.export_log_on("exported", export_status, export_log)
 
+            for export_status in export_statuses:
+                instance = export_status.instance
+                instance.last_export_success_at = timezone.now()
+                instance.save()
+
             page_end = timer()
             page_time = page_end - page_start
             print(

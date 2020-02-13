@@ -42,6 +42,7 @@ STATUS_TYPE_CHOICES = (
     ("RUNNING", _("Running")),
     ("EXPORTED", _("Exported")),
     ("ERRORED", _("Errored")),
+    ("SKIPPED", _("Skipped")),
 )
 
 

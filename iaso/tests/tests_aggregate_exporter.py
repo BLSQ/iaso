@@ -205,9 +205,98 @@ class AggregateExporterTests(TestCase):
             self.assertEquals(testcase.expected_counts, error.counts)
             self.assertEquals(testcase.expected_messages, error.descriptions)
 
-    def test_aggregate_mapping_works(self):
+    def test_handle_exception_internal_server_error(self):
+        resp = {
+            "response": {
+                "httpStatus": "Internal Server Error",
+                "httpStatusCode": 500,
+                "status": "ERROR",
+                "message": "JDBC begin transaction failed: ",
+            }
+        }
+        error = handle_exception(resp, "error")
+        self.assertEquals(error.message, "error : JDBC begin transaction failed: ")
 
-        event, errors = map_to_aggregate(self.build_instance(), build_form_mapping())
+    def test_handle_exception_real_life_error(self):
+        resp = {
+            "response": {
+                "responseType": "ImportSummary",
+                "status": "WARNING",
+                "importOptions": {
+                    "idSchemes": {},
+                    "dryRun": False,
+                    "async": False,
+                    "importStrategy": "CREATE_AND_UPDATE",
+                    "mergeMode": "REPLACE",
+                    "reportMode": "FULL",
+                    "skipExistingCheck": False,
+                    "sharing": False,
+                    "skipNotifications": False,
+                    "skipAudit": False,
+                    "datasetAllowsPeriods": False,
+                    "strictPeriods": False,
+                    "strictDataElements": False,
+                    "strictCategoryOptionCombos": False,
+                    "strictAttributeOptionCombos": False,
+                    "strictOrganisationUnits": False,
+                    "requireCategoryOptionCombo": False,
+                    "requireAttributeOptionCombo": False,
+                    "skipPatternValidation": False,
+                    "ignoreEmptyCollection": False,
+                    "force": False,
+                    "skipLastUpdated": False,
+                },
+                "description": "Import process completed successfully",
+                "importCount": {
+                    "imported": 93,
+                    "updated": 0,
+                    "ignored": 191,
+                    "deleted": 0,
+                },
+                "conflicts": [
+                    {
+                        "object": "GuJESuyOCMW",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "uX9yDetTdOp",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "LbeIlyHEhKr",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "qNCMOhkoQju",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "rCMUTmcreqP",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "TkDhg29x18A",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "qa0VqgYlgtN",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                    {
+                        "object": "zPpvbvpmkxN",
+                        "value": "Category option combo not found or not accessible",
+                    },
+                ],
+            }
+        }
+        error = handle_exception(resp, "error")
+        self.assertEquals(
+            error.message, "error : Category option combo not found or not accessible"
+        )
+
+    def test_aggregate_mapping_works(self):
+        instance = self.build_instance()
+        event, errors = map_to_aggregate(instance, build_form_mapping())
 
         self.assertEquals(
             event,
@@ -217,7 +306,11 @@ class AggregateExporterTests(TestCase):
                 "period": "2018Q1",
                 "orgUnit": "OU_DHIS2_ID",
                 "dataValues": [
-                    {"dataElement": "DE_DHIS2_ID", "debug": "1 question1", "value": 1}
+                    {
+                        "dataElement": "DE_DHIS2_ID",
+                        "comment": str(instance.id) + " 1 question1",
+                        "value": 1,
+                    }
                 ],
             },
         )
@@ -227,8 +320,9 @@ class AggregateExporterTests(TestCase):
         mapping["question_mappings"]["question1"][
             "categoryOptionCombo"
         ] = "DHIS2_COC_ID"
+        instance = self.build_instance()
 
-        event, errors = map_to_aggregate(self.build_instance(), mapping)
+        event, errors = map_to_aggregate(instance, mapping)
 
         self.assertEquals(
             event,
@@ -241,7 +335,7 @@ class AggregateExporterTests(TestCase):
                     {
                         "dataElement": "DE_DHIS2_ID",
                         "categoryOptionCombo": "DHIS2_COC_ID",
-                        "debug": "1 question1",
+                        "comment": str(instance.id) + " 1 question1",
                         "value": 1,
                     }
                 ],
@@ -270,7 +364,7 @@ class AggregateExporterTests(TestCase):
         responses.add(
             responses.POST,
             "https://dhis2.com/api/dataValueSets",
-            json={"message": "Good boy"},
+            json=load_dhis2_fixture("datavalues-ok.json"),
             status=200,
         )
 
@@ -296,7 +390,7 @@ class AggregateExporterTests(TestCase):
                 responses.POST,
                 "https://dhis2.com/api/dataValueSets",
                 json=load_dhis2_fixture("datavalues-error-assigned.json")["response"],
-                status=409,
+                status=200,
             )
 
             export_request = ExportRequestBuilder().build_export_request(
@@ -307,9 +401,7 @@ class AggregateExporterTests(TestCase):
         self.expect_logs("errored")
 
         self.assertEquals(
-            "ERROR while processing page 1/1, instance_id "
-            + str(instance.id)
-            + " : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
+            "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
             context.exception.message,
         )
 

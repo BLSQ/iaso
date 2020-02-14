@@ -9,6 +9,8 @@ from iaso.models import (
     ExportStatus,
 )
 
+from iaso.dhis2.status_queries import duplicate_ids_query
+
 
 class ExportRequestBuilder:
     def __init__(self):
@@ -34,7 +36,12 @@ class ExportRequestBuilder:
 
     @transaction.atomic
     def build_export_request(
-        self, periods=None, form_ids=None, orgunit_ids=None, launcher=None
+        self,
+        periods=None,
+        form_ids=None,
+        orgunit_ids=None,
+        launcher=None,
+        force_export=False,
     ):
 
         # TODO ask martinD what filter need to be added for "accounts"
@@ -45,12 +52,20 @@ class ExportRequestBuilder:
 
         instances = instances.filter(period__in=periods, form_id__in=form_ids)
 
+        # don't export duplicate instances
+        instances = instances.exclude(id__in=duplicate_ids_query(instances))
+
+        # don't export already exported instances except if forced to
+        if not force_export:
+            instances = instances.filter(last_export_success_at__isnull=True)
+
         # raise error if count = 0 ?
         export_request = ExportRequest()
         export_request.params = {
             "periods": periods,
             "form_ids": form_ids,
             "orgunit_ids": orgunit_ids,
+            "force_export": force_export,
         }
         export_request.launcher = launcher
         export_request.instance_count = instances.count()
@@ -67,7 +82,5 @@ class ExportRequestBuilder:
                     mapping_version=mapping_version,
                 )
                 export_status.save()
-
-        # instance_count ? ExportStatus_count ?
 
         return export_request

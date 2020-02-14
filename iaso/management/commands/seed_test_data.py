@@ -27,6 +27,7 @@ from iaso.dhis2.aggregate_exporter import (
     InstanceExportError,
 )
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from iaso.dhis2.status_queries import counts_by_status
 
 
 class Command(BaseCommand):
@@ -228,36 +229,44 @@ class Command(BaseCommand):
             self.seed_instances(source_version, form, periods, mapping_version)
             print("generated", form.instance_set.count(), "instances")
 
-        print("********* exporting")
-        export_request = ExportRequestBuilder().build_export_request(
-            periods, [self.form.id], [], self.user
-        )
+        if mode == "export":
 
-        print("exporting")
-        AggregateExporter().export_instances(export_request, True)
+            print("********* exporting")
+            export_request = ExportRequestBuilder().build_export_request(
+                periods, [self.form.id], [], self.user
+            )
+
+            print("exporting")
+            AggregateExporter().export_instances(export_request, True)
+
+        if mode == "stats":
+            for c in counts_by_status():
+                print(c)
 
     @transaction.atomic
     def seed_instances(self, source_version, form, periods, mapping_version):
         for org_unit in source_version.orgunit_set.all():
             for period in periods:
-                instance = Instance()
-                instance.created_at = datetime.strptime(
-                    "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-                )
-                instance.org_unit = org_unit
-                instance.period = period
+                instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
+                for instance_count in range(0, instance_by_ou_periods):
+                    instance = Instance()
+                    instance.created_at = datetime.strptime(
+                        "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
+                    )
+                    instance.org_unit = org_unit
+                    instance.period = period
 
-                test_data = {}
+                    test_data = {}
 
-                for key in mapping_version.json["question_mappings"]:
-                    test_data[key] = randint(1, 10)
+                    for key in mapping_version.json["question_mappings"]:
+                        test_data[key] = randint(1, 10)
 
-                instance.json = test_data
-                instance.form = self.form
-                instance.save()
-                # force to past creation date
-                # looks the the first save don't take it
-                instance.created_at = datetime.strptime(
-                    "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-                )
-                instance.save()
+                    instance.json = test_data
+                    instance.form = self.form
+                    instance.save()
+                    # force to past creation date
+                    # looks the the first save don't take it
+                    instance.created_at = datetime.strptime(
+                        "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
+                    )
+                    instance.save()

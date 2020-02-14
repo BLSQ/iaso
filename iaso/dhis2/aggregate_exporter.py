@@ -168,9 +168,7 @@ class AggregateExporter:
                 flattened.append(dv)
         return flattened
 
-    def export_page(
-        self, prefix, request, export_statuses, page_start, stats, api, skipped
-    ):
+    def export_page(self, prefix, request, export_statuses, stats, api):
         try:
             # print(prefix, "POSTING to dataValueSets {} ".format(request))
             batched_start = timer()
@@ -269,10 +267,9 @@ class AggregateExporter:
                 api = self.get_api(export_statuses[0].mapping_version)
 
                 flattened = self.flatten(data)
-                request = {"dataValues": flattened}
 
                 export_log = self.export_page(
-                    prefix, request, export_statuses, page_start, stats, api, skipped
+                    prefix, {"dataValues": flattened}, export_statuses, stats, api,
                 )
 
                 self.flag_as_exported(

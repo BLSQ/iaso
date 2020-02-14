@@ -186,6 +186,8 @@ class AggregateExporter:
 
             batched_end = timer()
             batched_time = batched_end - batched_start
+            stats["batched_time"] = batched_time
+
             print(prefix, resp)
 
             export_log = ExportLog()
@@ -193,22 +195,7 @@ class AggregateExporter:
             export_log.received = resp
             export_log.save()
 
-            stats["exported_count"] += len(export_statuses)
-            for export_status in export_statuses:
-                self.export_log_on("exported", export_status, export_log)
-
-            for export_status in export_statuses:
-                instance = export_status.instance
-                instance.last_export_success_at = timezone.now()
-                instance.save()
-
-            page_end = timer()
-            page_time = page_end - page_start
-            print(
-                prefix
-                + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
-                % (page_time, batched_time, len(skipped))
-            )
+            return export_log
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
@@ -241,6 +228,20 @@ class AggregateExporter:
         export_request.last_error_message = message
         export_request.save()
 
+    def flag_as_exported(self, export_request, export_statuses, stats, export_log):
+        stats["exported_count"] += len(export_statuses)
+        for export_status in export_statuses:
+            self.export_log_on("exported", export_status, export_log)
+
+        for export_status in export_statuses:
+            instance = export_status.instance
+            instance.last_export_success_at = timezone.now()
+            instance.save()
+
+        export_request.errored_count = stats["errored_count"]
+        export_request.exported_count = stats["exported_count"]
+        export_request.save()
+
     def export_instances(self, export_request, export):
         export_request.status = "running"
         export_request.started_at = timezone.now()
@@ -270,13 +271,21 @@ class AggregateExporter:
                 flattened = self.flatten(data)
                 request = {"dataValues": flattened}
 
-                self.export_page(
+                export_log = self.export_page(
                     prefix, request, export_statuses, page_start, stats, api, skipped
                 )
 
-                export_request.errored_count = stats["errored_count"]
-                export_request.exported_count = stats["exported_count"]
-                export_request.save()
+                self.flag_as_exported(
+                    export_request, export_statuses, stats, export_log
+                )
+
+                page_end = timer()
+                page_time = page_end - page_start
+                print(
+                    prefix
+                    + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
+                    % (page_time, stats["batched_time"], len(skipped))
+                )
 
             except InstanceExportError as exception:
                 self.flag_as_errored(

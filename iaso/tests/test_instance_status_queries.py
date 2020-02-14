@@ -1,5 +1,6 @@
 from django.test import TestCase, tag
-from django.db.models import Count, Func, Value, Case, When, BooleanField
+from django.utils import timezone
+from django.db.models import Count, Func, Value, Case, When, BooleanField, Q
 from django.db.models.expressions import RawSQL
 from django.contrib.postgres.aggregates import ArrayAgg
 from ..models import (
@@ -19,15 +20,14 @@ from datetime import datetime, date
 from django.contrib.gis.geos import Point
 
 from django.conf import settings
-from iaso.dhis2.status_queries import (
-    duplicate_ids_query,
-    add_duplicated_field,
-    counts_by_status,
-)
+from iaso.dhis2.status_queries import annotate_with_duplicated_field, counts_by_status
+from functools import reduce
+from operator import and_
 
 
 class DuplicatesTestCase(TestCase):
     def setUp(self):
+        self.maxDiff = None
         account = Account(name="Zelda")
 
         source = DataSource.objects.create(name="Korogu")
@@ -100,11 +100,15 @@ class DuplicatesTestCase(TestCase):
 
         self.build_instance(self.village_2, self.uuid(5), "201901")
         self.build_instance(self.village_2, self.uuid(6), "201902")
-        self.build_instance(self.village_2, self.uuid(7), "201903")
+        exported_instance = self.build_instance(self.village_2, self.uuid(7), "201903")
+        exported_instance.last_export_success_at = timezone.now()
+        exported_instance.save()
 
         settings.DEBUG = True
 
-        instances = add_duplicated_field(Instance.objects).prefetch_related("form")
+        instances = annotate_with_duplicated_field(Instance.objects).prefetch_related(
+            "form"
+        )
 
         for instance in instances:
             print(
@@ -113,6 +117,7 @@ class DuplicatesTestCase(TestCase):
                 instance.form.name,
                 instance.period,
                 instance.duplicated,
+                instance.last_export_success_at,
             )
 
         self.assertEqual(
@@ -129,39 +134,52 @@ class DuplicatesTestCase(TestCase):
             [self.uuid(3), self.uuid(4), self.uuid(5), self.uuid(6), self.uuid(7)],
         )
 
-        duplicated_counts = (
-            Instance.objects.values("period", "form")
-            .annotate(duplicated_count=Count("id"))
-            .filter(id__in=duplicate_ids_query)
-            .values("duplicated_count", "period", "form")
+        expected_counts = [
+            {
+                "period": "201901",
+                "form_id": self.form.id,
+                "form__name": "Quantity FORM",
+                "total_count": 3,
+                "ready_count": 1,
+                "duplicated_count": 2,
+                "exported_count": 0,
+            },
+            {
+                "period": "201902",
+                "form_id": self.form.id,
+                "form__name": "Quantity FORM",
+                "total_count": 2,
+                "ready_count": 2,
+                "duplicated_count": 0,
+                "exported_count": 0,
+            },
+            {
+                "period": "201903",
+                "form_id": self.form.id,
+                "form__name": "Quantity FORM",
+                "total_count": 2,
+                "ready_count": 1,
+                "duplicated_count": 0,
+                "exported_count": 1,
+            },
+        ]
+        counts = sorted(counts_by_status(Instance.objects), key=lambda x: x["period"])
+        self.assertEquals(counts, expected_counts)
+
+        self.assertEquals(
+            sorted(
+                counts_by_status(Instance.objects.filter(period__in=["201903"])),
+                key=lambda x: x["period"],
+            ),
+            [
+                {
+                    "period": "201903",
+                    "form_id": self.form.id,
+                    "form__name": "Quantity FORM",
+                    "total_count": 2,
+                    "ready_count": 1,
+                    "duplicated_count": 0,
+                    "exported_count": 1,
+                }
+            ],
         )
-
-        ok_counts = (
-            Instance.objects.values("period", "form")
-            .annotate(ready_count=Count("id"))
-            .exclude(id__in=duplicate_ids_query)
-            .values("ready_count", "period", "form")
-        )
-
-        print("duplicated_counts", duplicated_counts)
-        print("ok_counts", ok_counts)
-        counts = []
-
-        def merge_counts(field, counts, sub_counts):
-            for count in sub_counts:
-                count_to_merge = list(
-                    filter(
-                        lambda x: x["period"] == count["period"]
-                        and x["form"] == count["form"],
-                        counts,
-                    )
-                )
-                if len(count_to_merge) > 0:
-                    count_to_merge[0][field] = count[field]
-                else:
-                    counts.append(count)
-
-        merge_counts("ready_count", counts, ok_counts)
-        merge_counts("duplicated_count", counts, duplicated_counts)
-
-        print(counts)

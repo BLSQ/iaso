@@ -97,6 +97,11 @@ def map_to_aggregate(instance, form_mapping):
                     data_value["categoryOptionCombo"] = data_element[
                         "categoryOptionCombo"
                     ]
+
+                if "attributeOptionCombo" in data_element:
+                    data_value["attributeOptionCombo"] = data_element[
+                        "attributeOptionCombo"
+                    ]
                 data_set_entry["dataValues"].append(data_value)
             except Exception as error:
                 errored = True
@@ -240,6 +245,25 @@ class AggregateExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
+    def mark_dataset_as_complete(self, data, api):
+        def to_complete_data_set_registration(data_value_set):
+            return {
+                "period": data_value_set["period"],
+                "dataSet": data_value_set["dataSet"],
+                "organisationUnit": data_value_set["orgUnit"],
+                "date": data_value_set["completeDate"],
+            }
+
+        complete_data_set_registrations = list(
+            map(to_complete_data_set_registration, data)
+        )
+        resp_complete = api.post(
+            "completeDataSetRegistrations",
+            {"completeDataSetRegistrations": complete_data_set_registrations},
+        )
+
+        print("completeDataSetRegistrations response", resp_complete.json())
+
     def export_instances(self, export_request, export):
         export_request.status = "running"
         export_request.started_at = timezone.now()
@@ -266,15 +290,20 @@ class AggregateExporter:
                 # ideally map_page_to_data_values should return a dictionary { server: mapped_values }
                 api = self.get_api(export_statuses[0].mapping_version)
 
-                flattened = self.flatten(data)
+                # TODO uncomplete if necessary ?
+                # data_set_ids = list(set(map(lambda x: x["dataSet"],data)))
+                # periods = list(set(map(lambda x: x["period"],data)))
+                # org_unit_ids = list(set(map(lambda x: x["orgUnit"],data)))
 
                 export_log = self.export_page(
-                    prefix, {"dataValues": flattened}, export_statuses, stats, api,
+                    prefix, {"dataValues": self.flatten(data)}, export_statuses, stats, api,
                 )
 
                 self.flag_as_exported(
                     export_request, export_statuses, stats, export_log
                 )
+
+                self.mark_dataset_as_complete(data, api)
 
                 page_end = timer()
                 page_time = page_end - page_start

@@ -264,7 +264,7 @@ class AggregateExporter:
 
         print("completeDataSetRegistrations response", resp_complete.json())
 
-    def export_instances(self, export_request, export):
+    def export_instances(self, export_request, export, page_size=50):
         export_request.status = "running"
         export_request.started_at = timezone.now()
         export_request.save()
@@ -276,7 +276,7 @@ class AggregateExporter:
             .prefetch_related("instance__org_unit__version")
             .order_by("id")
             .all(),
-            100,
+            page_size,
         )
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
@@ -296,7 +296,11 @@ class AggregateExporter:
                 # org_unit_ids = list(set(map(lambda x: x["orgUnit"],data)))
 
                 export_log = self.export_page(
-                    prefix, {"dataValues": self.flatten(data)}, export_statuses, stats, api,
+                    prefix,
+                    {"dataValues": self.flatten(data)},
+                    export_statuses,
+                    stats,
+                    api,
                 )
 
                 self.flag_as_exported(

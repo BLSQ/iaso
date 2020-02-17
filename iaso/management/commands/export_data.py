@@ -48,6 +48,8 @@ def as_list(comma_list):
 
 
 class Command(BaseCommand):
+    help = "Export instances to dhis2 based on periods, form ids"
+
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
 
@@ -85,6 +87,7 @@ class Command(BaseCommand):
             print("  periods", periods)
             print("  forms", form_ids, list(map(lambda x: x.name, forms)))
             print("  orgunit_ids", orgunit_ids)
+            print("  user", user)
 
             print("********* exporting")
             export_request = ExportRequestBuilder().build_export_request(
@@ -95,10 +98,16 @@ class Command(BaseCommand):
                 force_export=force,
             )
             print("will export", export_request.exportstatus_set.count(), "instances")
-
+            for c in counts_by_status(
+                Instance.objects.filter(
+                    id__in=export_request.exportstatus_set.values("instance_id")
+                )
+            ):
+                print(c)
             sure = boolean_input("Are you sure ? (y/n)")
             if sure:
                 print("exporting")
+
                 AggregateExporter().export_instances(export_request, True)
 
         elif mode == "stats":

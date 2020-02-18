@@ -122,6 +122,9 @@ case "$1" in
   "bash" )
     bash
   ;;
+  "python" )
+    python "${@:2}"
+  ;;
   * )
     show_help
   ;;

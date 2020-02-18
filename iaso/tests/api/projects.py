@@ -38,7 +38,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual('application/json', response['Content-Type'])
 
     @tag("iaso_only")
-    def test_projects_list_empy_for_user(self):
+    def test_projects_list_empty_for_user(self):
         """GET /projects/ with a user that has no access to any project"""
 
         self.client.force_authenticate(self.user_2)
@@ -46,24 +46,52 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectListResponse(response, 0)
+        self.assertValidProjectListData(response.data, 0)
 
     @tag("iaso_only")
     def test_projects_list_ok(self):
-        """GET /projects/ with proper authentication: we expect two results"""
+        """GET /projects/ happy path: we expect two results"""
 
         self.client.force_authenticate(self.user_1)
         response = self.client.get('/api/projects/', headers={'Content-Type': 'application/json'})
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectListResponse(response, 2)
+        self.assertValidProjectListData(response.data, 2)
 
-    def assertValidProjectListResponse(self, response: Response, expected_length: int):
-        self.assertIn("projects", response.data)
-        self.assertEqual(expected_length, len(response.data["projects"]))
+    @tag("iaso_only")
+    def test_projects_retrieve_without_auth(self):
+        """GET /projects/<project_id> without auth should result in a 403"""
 
-        for project_data in response.data["projects"]:
+        response = self.client.get(f'/api/projects/{self.project_1.id}/')
+        self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+    @tag("iaso_only")
+    def test_projects_retrieve_wrong_auth(self):
+        """GET /projects/<project_id> with auth of unrelated user should result in a 403"""
+
+        self.client.force_authenticate(self.user_2)
+        response = self.client.get(f'/api/projects/{self.project_1.id}/')
+        self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+    @tag("iaso_only")
+    def test_projects_retrieve_ok(self):
+        """GET /projects/<project_id> happy path"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.get(f'/api/projects/{self.project_1.id}/')
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+        self.assertValidProjectData(response.data)
+
+    def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int):
+        self.assertIn("projects", list_data)
+        self.assertEqual(expected_length, len(list_data["projects"]))
+
+        for project_data in list_data["projects"]:
             self.assertValidProjectData(project_data)
 
     def assertValidProjectData(self, project_data: typing.Mapping):

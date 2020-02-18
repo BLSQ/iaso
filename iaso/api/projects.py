@@ -1,5 +1,7 @@
 from django.core.paginator import Paginator
+from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
@@ -48,4 +50,15 @@ class ProjectsViewSet(viewsets.ViewSet):
             res["page"] = page_offset
             res["pages"] = paginator.num_pages
             res["limit"] = limit
+
         return Response(res)
+
+    def retrieve(self, request, pk=None):
+        queryset = Project.objects.all()
+        project = get_object_or_404(queryset, pk=pk)
+        if project.account != request.user.iaso_profile.account:
+            raise PermissionDenied()
+
+        serializer = ProjectSerializer(project)
+
+        return Response(serializer.data)

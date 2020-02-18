@@ -6,19 +6,22 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.models import Project
+from .fields import TimestampField
 from .auth.authentication import CsrfExemptSessionAuthentication
 
 
-# class ProjectSerializer(serializers.Serializer):
-#     name = serializers.CharField()
-#     app_id = serializers.CharField()
+class ProjectSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Project
+        fields = ['id', 'name', 'app_id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at']
+
+    created_at = TimestampField()
+    updated_at = TimestampField()
 
 
 class ProjectsViewSet(viewsets.ViewSet):
-    """
-    API to allow retrieval of forms.
-
-    """
+    """Projects API: /api/projects/"""
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [IsAuthenticated]
@@ -29,7 +32,7 @@ class ProjectsViewSet(viewsets.ViewSet):
         queryset = Project.objects.filter(account=request.user.iaso_profile.account)
 
         if not limit:
-            res = {"projects": [project.as_dict() for project in queryset]}
+            res = {"projects": [ProjectSerializer(project).data for project in queryset]}
         else:
             limit = int(limit)
             page_offset = int(page_offset)
@@ -39,7 +42,7 @@ class ProjectsViewSet(viewsets.ViewSet):
                 page_offset = paginator.num_pages
             page = paginator.page(page_offset)
 
-            res["projects"] = [project.as_dict() for project in page.object_list]
+            res["projects"] = [ProjectSerializer(project).data for project in page.object_list]
             res["has_next"] = page.has_next()
             res["has_previous"] = page.has_previous()
             res["page"] = page_offset

@@ -1,6 +1,8 @@
+import typing
 from django.test import tag
 from django.contrib.auth import get_user_model
 from iaso import models as m
+from rest_framework.response import Response
 from rest_framework.test import APITestCase, APIClient
 
 
@@ -33,6 +35,7 @@ class ProjectsAPITestCase(APITestCase):
 
         response = self.client.get('/api/projects/')
         self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
 
     @tag("iaso_only")
     def test_projects_list_empy_for_user(self):
@@ -43,8 +46,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        response_data = response.json()
-        self.assertEqual(0, len(response_data["projects"]))
+        self.assertValidProjectListResponse(response, 0)
 
     @tag("iaso_only")
     def test_projects_list_ok(self):
@@ -55,11 +57,21 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        response_data = response.json()
-        self.assertEqual(2, len(response_data["projects"]))
+        self.assertValidProjectListResponse(response, 2)
 
-        project_1_data = next(pd for pd in response_data["projects"] if pd["id"] == self.project_1.id)
-        self.assertEqual(project_1_data["name"], self.project_1.name)
-        self.assertEqual(project_1_data["app_id"], self.project_1.app_id)
-        self.assertIn("created_at", project_1_data)
-        self.assertIn("updated_at", project_1_data)
+    def assertValidProjectListResponse(self, response: Response, expected_length: int):
+        self.assertIn("projects", response.data)
+        self.assertEqual(expected_length, len(response.data["projects"]))
+
+        for project_data in response.data["projects"]:
+            self.assertValidProjectData(project_data)
+
+    def assertValidProjectData(self, project_data: typing.Mapping):
+        self.assertIn("id", project_data)
+        self.assertIsInstance(project_data["id"], int)
+        self.assertIn("name", project_data)
+        self.assertIsInstance(project_data["name"], str)
+        self.assertIn("created_at", project_data)
+        self.assertIsInstance(project_data["created_at"], float)
+        self.assertIn("updated_at", project_data)
+        self.assertIsInstance(project_data["updated_at"], float)

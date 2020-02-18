@@ -1,13 +1,10 @@
-from django.shortcuts import get_object_or_404
-from rest_framework import viewsets, serializers
-from rest_framework.exceptions import PermissionDenied
+from rest_framework import serializers
 from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
 
 from iaso.models import Project
-from .common import TimestampField, Paginator
+from .common import TimestampField, ModelViewSet
 from .auth.authentication import CsrfExemptSessionAuthentication
 
 
@@ -15,8 +12,15 @@ class HasProjectPermission(IsAuthenticated):
     """Rules:
 
     - The projects API is only accessible to authenticated users
-    - Read & write actions on specific projects can only be performed for users linked to the project account
+    - Write operations are not allowed for now
+    - Actions on specific projects can only be performed for users linked to the project account
     """
+
+    def has_permission(self, request, view):
+        if request.method not in SAFE_METHODS:  # write operations are not allowed for now
+            return False
+
+        return super().has_permission(request, view)
 
     def has_object_permission(self, request: Request, view, obj: Project):
         return request.user.iaso_profile.account == obj.account
@@ -32,34 +36,15 @@ class ProjectSerializer(serializers.ModelSerializer):
     updated_at = TimestampField()
 
 
-class ProjectPaginator(Paginator):
-    results_response_key = "projects"
-
-
-class ProjectsViewSet(viewsets.ViewSet):
+class ProjectsViewSet(ModelViewSet):
     """Projects API: /api/projects/"""
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (HasProjectPermission,)
+    serializer_class = ProjectSerializer
+    results_key = "projects"
 
-    def list(self, request: Request) -> Response:
-        queryset = Project.objects.filter(account=request.user.iaso_profile.account)
-        paginator = ProjectPaginator()
-        page = paginator.paginate_queryset(queryset, request, self)
+    def get_queryset(self):
+        """Always filter the base queryset by account"""
 
-        if page is not None:
-            serializer = ProjectSerializer(page, many=True)
-            return paginator.get_paginated_response(serializer.data)
-
-        serializer = ProjectSerializer(queryset, many=True)
-        return Response({"projects": serializer.data})
-
-    def retrieve(self, request, pk=None):
-        queryset = Project.objects.all()
-        project = get_object_or_404(queryset, pk=pk)
-        if project.account != request.user.iaso_profile.account:
-            raise PermissionDenied()
-
-        serializer = ProjectSerializer(project)
-
-        return Response(serializer.data)
+        return Project.objects.filter(account=self.request.user.iaso_profile.account)

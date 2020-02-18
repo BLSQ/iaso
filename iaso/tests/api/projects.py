@@ -79,11 +79,11 @@ class ProjectsAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_projects_retrieve_wrong_auth(self):
-        """GET /projects/<project_id> with auth of unrelated user should result in a 403"""
+        """GET /projects/<project_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.user_2)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
-        self.assertEqual(403, response.status_code)
+        self.assertEqual(404, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
     @tag("iaso_only")
@@ -105,6 +105,33 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual('application/json', response['Content-Type'])
 
         self.assertValidProjectData(response.data)
+
+    @tag("iaso_only")
+    def test_projects_create(self):
+        """POST /projects/: not authorized for now"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.post('/api/projects/', data={})
+        self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+    @tag("iaso_only")
+    def test_projects_update(self):
+        """PUT /projects/<project_id>: not authorized for now"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.put(f'/api/projects/{self.project_1.id}/', data={})
+        self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+    @tag("iaso_only")
+    def test_projects_delete(self):
+        """DELETE /projects/<project_id>: not authorized for now"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.delete(f'/api/projects/{self.project_1.id}/', data={})
+        self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertIn("projects", list_data)

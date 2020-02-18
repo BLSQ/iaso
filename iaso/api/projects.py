@@ -1,4 +1,3 @@
-from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets, serializers
 from rest_framework.exceptions import PermissionDenied
@@ -8,7 +7,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.models import Project
-from .fields import TimestampField
+from .common import TimestampField, Paginator
 from .auth.authentication import CsrfExemptSessionAuthentication
 
 
@@ -33,6 +32,10 @@ class ProjectSerializer(serializers.ModelSerializer):
     updated_at = TimestampField()
 
 
+class ProjectPaginator(Paginator):
+    results_response_key = "projects"
+
+
 class ProjectsViewSet(viewsets.ViewSet):
     """Projects API: /api/projects/"""
 
@@ -40,29 +43,16 @@ class ProjectsViewSet(viewsets.ViewSet):
     permission_classes = (HasProjectPermission,)
 
     def list(self, request: Request) -> Response:
-        limit = request.query_params.get("limit", None)
-        page_offset = request.query_params.get("page", 1)
         queryset = Project.objects.filter(account=request.user.iaso_profile.account)
+        paginator = ProjectPaginator()
+        page = paginator.paginate_queryset(queryset, request, self)
 
-        if not limit:
-            res = {"projects": [ProjectSerializer(project).data for project in queryset]}
-        else:
-            limit = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
+        if page is not None:
+            serializer = ProjectSerializer(page, many=True)
+            return paginator.get_paginated_response(serializer.data)
 
-            res["projects"] = [ProjectSerializer(project).data for project in page.object_list]
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-
-        return Response(res)
+        serializer = ProjectSerializer(queryset, many=True)
+        return Response({"projects": serializer.data})
 
     def retrieve(self, request, pk=None):
         queryset = Project.objects.all()

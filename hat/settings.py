@@ -300,7 +300,7 @@ WEBPACK_LOADER = {
 REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
-    "PAGE_SIZE": 50,
+    "PAGE_SIZE": None,
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
 }
 

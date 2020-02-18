@@ -59,6 +59,17 @@ class ProjectsAPITestCase(APITestCase):
         self.assertValidProjectListData(response.data, 2)
 
     @tag("iaso_only")
+    def test_projects_list_paginated(self):
+        """GET /projects/ paginated happy path"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.get('/api/projects/?limit=1&page=1', headers={'Content-Type': 'application/json'})
+        self.assertEqual(200, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+        self.assertValidProjectListData(response.data, 1, True)
+
+    @tag("iaso_only")
     def test_projects_retrieve_without_auth(self):
         """GET /projects/<project_id> without auth should result in a 403"""
 
@@ -95,9 +106,21 @@ class ProjectsAPITestCase(APITestCase):
 
         self.assertValidProjectData(response.data)
 
-    def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int):
+    def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertIn("projects", list_data)
         self.assertEqual(expected_length, len(list_data["projects"]))
+
+        if paginated:
+            self.assertIn("has_next", list_data)
+            self.assertIsInstance(list_data["has_next"], bool)
+            self.assertIn("has_previous", list_data)
+            self.assertIsInstance(list_data["has_previous"], bool)
+            self.assertIn("page", list_data)
+            self.assertIsInstance(list_data["page"], int)
+            self.assertIn("pages", list_data)
+            self.assertIsInstance(list_data["pages"], int)
+            self.assertIn("limit", list_data)
+            self.assertIsInstance(list_data["limit"], int)
 
         for project_data in list_data["projects"]:
             self.assertValidProjectData(project_data)

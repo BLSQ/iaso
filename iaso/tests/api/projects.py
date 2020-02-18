@@ -2,7 +2,6 @@ import typing
 from django.test import tag
 from django.contrib.auth import get_user_model
 from iaso import models as m
-from rest_framework.response import Response
 from rest_framework.test import APITestCase, APIClient
 
 
@@ -74,6 +73,15 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.user_2)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
         self.assertEqual(403, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
+
+    @tag("iaso_only")
+    def test_projects_retrieve_not_found(self):
+        """GET /projects/<project_id>: id does not exist"""
+
+        self.client.force_authenticate(self.user_1)
+        response = self.client.get(f'/api/projects/292003030/')
+        self.assertEqual(404, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
     @tag("iaso_only")

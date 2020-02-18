@@ -12,6 +12,17 @@ from .fields import TimestampField
 from .auth.authentication import CsrfExemptSessionAuthentication
 
 
+class HasProjectPermission(IsAuthenticated):
+    """Rules:
+
+    - The projects API is only accessible to authenticated users
+    - Read & write actions on specific projects can only be performed for users linked to the project account
+    """
+
+    def has_object_permission(self, request: Request, view, obj: Project):
+        return request.user.iaso_profile.account == obj.account
+
+
 class ProjectSerializer(serializers.ModelSerializer):
     class Meta:
         model = Project
@@ -26,7 +37,7 @@ class ProjectsViewSet(viewsets.ViewSet):
     """Projects API: /api/projects/"""
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_classes = [IsAuthenticated]
+    permission_classes = (HasProjectPermission,)
 
     def list(self, request: Request) -> Response:
         limit = request.query_params.get("limit", None)

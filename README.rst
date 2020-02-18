@@ -16,8 +16,8 @@ The dashboard presents data from historical data sets and the mobile application
           Chrome 40.0.0 and further versions.
 
 
-Setup
-=====
+Development environment
+=======================
 
 No local setup should be needed apart from:
 
@@ -27,9 +27,22 @@ No local setup should be needed apart from:
 The local dev setup uses **docker-compose** to spin up all necessary services.
 Make sure you have it installed and can connect to the **docker daemon**.
 
+1. Environment variables
+------------------------
 
-Build the app
--------------
+The `docker-compose.yml` file contains sensible defaults for the django application.
+
+Other environment variables can be provided by a `.env file <https://docs.docker.com/v17.12/compose/environment-variables/#the-env-file>`_.
+
+As a starting point, you can copy the sample `.env.dist` file and edit it to your needs.
+
+.. code:: bash
+
+    cp .env.dist .env
+
+
+2. Build the containers
+-----------------------
 
 Run in project directory:
 
@@ -37,12 +50,15 @@ Run in project directory:
 
     docker-compose build
 
+3. Run migrations
+-----------------
 
-Run
-===
+.. code:: bash
 
-Start the server
-----------------
+    docker-compose run hat manage migrate
+
+4. Start the server
+-------------------
 
 Run in project directory:
 
@@ -258,7 +274,7 @@ Restart the ``hat`` container to load the new SQL queries:
     docker-compose restart hat
 
 
-If everything fails… **be drastic!**
+If everything failsï¿½ **be drastic!**
 
 .. code:: shell
 

@@ -111,3 +111,6 @@ include/python3.6m
 
 pip-selfcheck.json
 data
+
+# dev environment
+.env

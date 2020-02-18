@@ -7,7 +7,7 @@ new WebpackDevServer(webpack(config), {
   hot: false,
   inline: false,
   historyApiFallback: true,
-  https: true,
+  https: false,
   // It suppress error shown in console, so it has to be set to false.
   quiet: false,
   // It suppress everything except error, so it has to be set to false as well

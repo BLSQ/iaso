@@ -59,6 +59,8 @@ class Account(models.Model):
 
 
 class Project(models.Model):
+    """A data collection project, associated with a single mobile application"""
+
     name = models.TextField(null=True, blank=True)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey(
@@ -67,6 +69,15 @@ class Project(models.Model):
     app_id = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "app_id": self.app_id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
 
     def __str__(self):
         return "%s " % (self.name,)
@@ -530,12 +541,14 @@ class Link(models.Model):
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    form_id = models.TextField(null=True, blank=True)
+    form_id = models.TextField(null=True, blank=True)  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    device_field = models.TextField(null=True, blank=True)
-    location_field = models.TextField(null=True, blank=True)
+    device_field = models.TextField(null=True, blank=True)   # extracted from xls
+    location_field = models.TextField(null=True, blank=True)   # extracted from xls
+    # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
+    # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
     period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
     single_per_period = models.BooleanField(blank=True)
@@ -677,6 +690,8 @@ class ExternalCredentials(models.Model):
 
 
 class Instance(models.Model):
+    """A series of answers by an individual for a specific form"""
+
     UPLOADED_TO = "instances/"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

@@ -127,9 +127,10 @@ class AggregateExporter:
             )
         return self.api_cache[mapping_version.id]
 
-    def export_log_on(self, status, export_status, export_log):
+    def export_log_on(self, status, export_status, export_logs):
         export_status.status = status
-        export_status.export_log = export_log
+        for export_log in export_logs:
+            export_status.export_logs.add(export_log)
         export_status.save()
 
     def map_page_to_data_values(self, prefix, export_statuses, skipped):
@@ -196,6 +197,8 @@ class AggregateExporter:
             export_log = ExportLog()
             export_log.sent = request
             export_log.received = resp
+            export_log.url = api.base_url + "/dataValueSets"
+            export_log.http_status = 200
             export_log.save()
 
             return export_log
@@ -208,10 +211,11 @@ class AggregateExporter:
             export_log = ExportLog()
             export_log.sent = request
             export_log.received = resp
+            export_log.http_code = dhis2_exception.code
             export_log.save()
 
             for export_status in export_statuses:
-                self.export_log_on("errored", export_status, export_log)
+                self.export_log_on("errored", export_status, [export_log])
 
             raise exception
 
@@ -231,10 +235,10 @@ class AggregateExporter:
         export_request.last_error_message = message
         export_request.save()
 
-    def flag_as_exported(self, export_request, export_statuses, stats, export_log):
+    def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
         stats["exported_count"] += len(export_statuses)
         for export_status in export_statuses:
-            self.export_log_on("exported", export_status, export_log)
+            self.export_log_on("exported", export_status, export_logs)
 
         for export_status in export_statuses:
             instance = export_status.instance
@@ -257,12 +261,16 @@ class AggregateExporter:
         complete_data_set_registrations = list(
             map(to_complete_data_set_registration, data)
         )
-        resp_complete = api.post(
-            "completeDataSetRegistrations",
-            {"completeDataSetRegistrations": complete_data_set_registrations},
-        )
+        request = {"completeDataSetRegistrations": complete_data_set_registrations}
+        resp_complete = api.post("completeDataSetRegistrations", request)
 
         print("completeDataSetRegistrations response", resp_complete.json())
+        export_log = ExportLog()
+        export_log.sent = request
+        export_log.received = resp_complete.json()
+        export_log.url = api.base_url + "/completeDataSetRegistrations"
+        export_log.save()
+        return export_log
 
     def export_instances(self, export_request, export, page_size=50):
         export_request.status = "running"
@@ -303,11 +311,14 @@ class AggregateExporter:
                     api,
                 )
 
-                self.flag_as_exported(
-                    export_request, export_statuses, stats, export_log
-                )
+                export_log_complete_ds = self.mark_dataset_as_complete(data, api)
 
-                self.mark_dataset_as_complete(data, api)
+                self.flag_as_exported(
+                    export_request,
+                    export_statuses,
+                    stats,
+                    [export_log, export_log_complete_ds],
+                )
 
                 page_end = timer()
                 page_time = page_end - page_start

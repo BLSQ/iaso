@@ -1,32 +1,21 @@
 import typing
 from django.test import tag
-from django.contrib.auth import get_user_model
+
+from iaso.test import APITestCase
 from iaso import models as m
-from rest_framework.test import APITestCase, APIClient
 
 
 class ProjectsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        User = get_user_model()
+        ghi = m.Account.objects.create(name="Global Health initial")
+        wha = m.Account.objects.create(name="Worldwide Health Aid")
 
-        user_1 = User.objects.create(first_name="Jane", last_name="Doe", username="johndoe",
-                                     email="johndoe@bluesquarehub.com")
-        user_2 = User.objects.create(first_name="John", last_name="Doe", username="janedoe",
-                                     email="janedoe@bluesquarehub.com")
-        account_1 = m.Account.objects.create(name="Global Health initial")
-        account_2 = m.Account.objects.create(name="Worldwide Health Aid")
-        m.Profile.objects.create(user=user_1, account=account_1)
-        m.Profile.objects.create(user=user_2, account=account_2)
-        project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=account_1)
-        m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=account_1)
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi)
+        cls.john = cls.create_user_with_profile(username="johndoe", account=wha)
 
-        cls.user_1 = user_1
-        cls.user_2 = user_2
-        cls.project_1 = project_1
-
-    def setUp(self) -> None:
-        self.client = APIClient()
+        cls.project_1 = m.Project.objects.create(name="Project 1", app_id="org.ghi.p1", account=ghi)
+        m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
 
     @tag("iaso_only")
     def test_projects_list_without_auth(self):
@@ -40,34 +29,39 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_list_empty_for_user(self):
         """GET /projects/ with a user that has no access to any project"""
 
-        self.client.force_authenticate(self.user_2)
+        self.client.force_authenticate(self.john)
         response = self.client.get('/api/projects/')
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectListData(response.data, 0)
+        self.assertValidProjectListData(response.json(), 0)
 
     @tag("iaso_only")
     def test_projects_list_ok(self):
         """GET /projects/ happy path: we expect two results"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.get('/api/projects/', headers={'Content-Type': 'application/json'})
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectListData(response.data, 2)
+        self.assertValidProjectListData(response.json(), 2)
 
     @tag("iaso_only")
     def test_projects_list_paginated(self):
         """GET /projects/ paginated happy path"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.get('/api/projects/?limit=1&page=1', headers={'Content-Type': 'application/json'})
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectListData(response.data, 1, True)
+        response_data = response.json()
+        self.assertValidProjectListData(response_data, 1, True)
+        self.assertEqual(response_data["page"], 1)
+        self.assertEqual(response_data["pages"], 2)
+        self.assertEqual(response_data["limit"], 1)
+        self.assertEqual(response_data["count"], 2)
 
     @tag("iaso_only")
     def test_projects_retrieve_without_auth(self):
@@ -81,7 +75,7 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_retrieve_wrong_auth(self):
         """GET /projects/<project_id> with auth of unrelated user should result in a 404"""
 
-        self.client.force_authenticate(self.user_2)
+        self.client.force_authenticate(self.john)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
         self.assertEqual(404, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
@@ -90,7 +84,7 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_retrieve_not_found(self):
         """GET /projects/<project_id>: id does not exist"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.get(f'/api/projects/292003030/')
         self.assertEqual(404, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
@@ -99,18 +93,18 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_retrieve_ok(self):
         """GET /projects/<project_id> happy path"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
         self.assertEqual(200, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
-        self.assertValidProjectData(response.data)
+        self.assertValidProjectData(response.json())
 
     @tag("iaso_only")
     def test_projects_create(self):
         """POST /projects/: not authorized for now"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.post('/api/projects/', data={})
         self.assertEqual(403, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
@@ -119,7 +113,7 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_update(self):
         """PUT /projects/<project_id>: not authorized for now"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.put(f'/api/projects/{self.project_1.id}/', data={})
         self.assertEqual(403, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
@@ -128,26 +122,14 @@ class ProjectsAPITestCase(APITestCase):
     def test_projects_delete(self):
         """DELETE /projects/<project_id>: not authorized for now"""
 
-        self.client.force_authenticate(self.user_1)
+        self.client.force_authenticate(self.jane)
         response = self.client.delete(f'/api/projects/{self.project_1.id}/', data={})
         self.assertEqual(403, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
-        self.assertIn("projects", list_data)
-        self.assertEqual(expected_length, len(list_data["projects"]))
-
-        if paginated:
-            self.assertIn("has_next", list_data)
-            self.assertIsInstance(list_data["has_next"], bool)
-            self.assertIn("has_previous", list_data)
-            self.assertIsInstance(list_data["has_previous"], bool)
-            self.assertIn("page", list_data)
-            self.assertIsInstance(list_data["page"], int)
-            self.assertIn("pages", list_data)
-            self.assertIsInstance(list_data["pages"], int)
-            self.assertIn("limit", list_data)
-            self.assertIsInstance(list_data["limit"], int)
+        self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="projects",
+                                 paginated=paginated)
 
         for project_data in list_data["projects"]:
             self.assertValidProjectData(project_data)

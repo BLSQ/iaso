@@ -13,7 +13,7 @@ class HasProjectPermission(IsAuthenticated):
 
     - The projects API is only accessible to authenticated users
     - Write operations are not allowed for now
-    - Actions on specific projects can only be performed for users linked to the project account
+    - Actions on specific projects can only be performed by users linked to the project account
     """
 
     def has_permission(self, request, view):

@@ -33,13 +33,13 @@ class APITestCase(BaseAPITestCase):
         self.assertEqual(expected_length, len(list_data[results_key]))
 
         if paginated:
-            self.assertIn("has_next", list_data)
-            self.assertIsInstance(list_data["has_next"], bool)
-            self.assertIn("has_previous", list_data)
-            self.assertIsInstance(list_data["has_previous"], bool)
-            self.assertIn("page", list_data)
-            self.assertIsInstance(list_data["page"], int)
-            self.assertIn("pages", list_data)
-            self.assertIsInstance(list_data["pages"], int)
-            self.assertIn("limit", list_data)
-            self.assertIsInstance(list_data["limit"], int)
+            self.assertHasField(list_data, "has_next", bool)
+            self.assertHasField(list_data, "has_previous", bool)
+            self.assertHasField(list_data, "page", int)
+            self.assertHasField(list_data, "pages", int)
+            self.assertHasField(list_data, "limit", int)
+
+    def assertHasField(self, data: typing.Mapping, field_name: str, cls: type, optional: bool = False):
+        self.assertIn(field_name, data)
+        if not optional:
+            self.assertIsInstance(data[field_name], cls)

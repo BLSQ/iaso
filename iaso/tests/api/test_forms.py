@@ -104,7 +104,7 @@ class FormsAPITestCase(APITestCase):
             self.assertValidFormData(form_data)
 
     def assertValidFormData(self, form_data: typing.Mapping):  # TODO: check for other fields
-        self.assertIn("id", form_data)
-        self.assertIsInstance(form_data["id"], int)
-        self.assertIn("name", form_data)
-        self.assertIsInstance(form_data["name"], str)
+        self.assertHasField(form_data, "id", int)
+        self.assertHasField(form_data, "name", str)
+        self.assertHasField(form_data, "created_at", float)
+        self.assertHasField(form_data, "updated_at", float)

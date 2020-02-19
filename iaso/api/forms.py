@@ -3,26 +3,61 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import serializers
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import AllowAny, SAFE_METHODS
 
 from iaso.models import Form
 from iaso.utils import timestamp_to_datetime
+from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .auth.authentication import CsrfExemptSessionAuthentication
 
 
-class FormsViewSet(viewsets.ViewSet):
-    """
-    API to allow retrieval of forms.
+class HasFormPermission(AllowAny):
+    """Rules:
 
+    - The forms API is partly accessible to anonymous users
+    - Write operations are not allowed for now
+    - Actions on specific forms can only be performed by users linked to an account associated with one of the form
+      projects
     """
+
+    def has_permission(self, request, view):
+        if request.method not in SAFE_METHODS:  # write operations are not allowed for now
+            return False
+
+        return super().has_permission(request, view)
+
+    def has_object_permission(self, request: Request, view, obj: Form):
+        if not request.user or not request.user.is_authenticated:
+            return False
+
+        accounts = [project.account for project in obj.projects.all()]
+
+        return request.user.iaso_profile.account in accounts
+
+
+class FormSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Form
+        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'created_at',
+                  'updated_at']
+        read_only_fields = ['id', 'org_unit_types', 'created_at', 'updated_at']
+
+    created_at = TimestampField()
+    updated_at = TimestampField()
+
+
+class FormsViewSet(ModelViewSet):
+    """Forms API: /api/forms/"""
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_classes = []
+    permission_classes = (HasFormPermission,)
 
-    def list(self, request):
+    def list(self, request, *args, **kwargs):
         # The way this endpoint has been structured is due to the fact that the first mobile application
         # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
         # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/

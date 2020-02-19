@@ -127,11 +127,7 @@ class ProjectsAPITestCase(APITestCase):
             self.assertValidProjectData(project_data)
 
     def assertValidProjectData(self, project_data: typing.Mapping):
-        self.assertIn("id", project_data)
-        self.assertIsInstance(project_data["id"], int)
-        self.assertIn("name", project_data)
-        self.assertIsInstance(project_data["name"], str)
-        self.assertIn("created_at", project_data)
-        self.assertIsInstance(project_data["created_at"], float)
-        self.assertIn("updated_at", project_data)
-        self.assertIsInstance(project_data["updated_at"], float)
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "name", str)
+        self.assertHasField(project_data, "created_at", float)
+        self.assertHasField(project_data, "updated_at", float)

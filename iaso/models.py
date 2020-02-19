@@ -542,7 +542,7 @@ class Form(models.Model):
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
     period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
-    single_per_period = models.BooleanField(blank=True)
+    single_per_period = models.BooleanField(null=True, blank=True)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -555,9 +555,7 @@ class Form(models.Model):
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
             "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp()
-            if self.updated_at
-            else self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period_type": self.period_type,
             "single_per_period": self.single_per_period,
         }

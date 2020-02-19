@@ -205,7 +205,15 @@ class AggregateExporter:
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
-            resp = json.loads(dhis2_exception.description)
+            resp = {}
+            try:
+                resp = json.loads(dhis2_exception.description)
+            except:
+                resp = {
+                    "status": "ERROR",
+                    "description": "non json response return by server",
+                }
+
             exception = handle_exception({"response": resp}, message)
 
             export_log = ExportLog()

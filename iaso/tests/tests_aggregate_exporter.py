@@ -18,10 +18,9 @@ from iaso.models import (
     ExportRequest,
     ExportStatus,
 )
-from django.contrib.gis.geos import Point
-from dhis2 import Api
+
 import os
-from datetime import datetime, date
+from datetime import datetime
 from ..dhis2.aggregate_exporter import (
     handle_exception,
     map_to_aggregate,
@@ -546,3 +545,37 @@ class AggregateExporterTests(TestCase):
             + " : question1 (\"Bad value for int 'badvalue'\", {'id': 'DE_DHIS2_ID', 'valueType': 'INTEGER', 'question_key': 'question1'})",
             context.exception.message,
         )
+
+    @responses.activate
+    def test_aggregate_export_handle_dhis2_nginx_errors(self):
+        instance = self.build_instance(self.form)
+
+        with self.assertRaises(InstanceExportError) as context:
+            mapping_version = MappingVersion(
+                name="aggregate",
+                json=build_form_mapping(),
+                form_version=self.form_version,
+                mapping=self.mapping,
+            )
+            mapping_version.save()
+
+            responses.add(
+                responses.POST,
+                "https://dhis2.com/api/dataValueSets",
+                body="<html><body>nginx timeout</body></html>",
+                status=509,
+            )
+
+            export_request = ExportRequestBuilder().build_export_request(
+                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+            )
+            AggregateExporter().export_instances(export_request, True)
+
+        self.expect_logs("errored")
+
+        self.assertEquals(
+            "ERROR while processing page 1/1 : non json response return by server",
+            context.exception.message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)

@@ -59,14 +59,18 @@ class ExportRequestBuilder:
         if not force_export:
             instances = instances.filter(last_export_success_at__isnull=True)
 
-        # raise error if count = 0 ?
-        export_request = ExportRequest()
-        export_request.params = {
+        params = {
             "periods": periods,
             "form_ids": form_ids,
             "orgunit_ids": orgunit_ids,
             "force_export": force_export,
         }
+
+        if instances.count() == 0:
+            raise Exception("no instance to export for " + str(params))
+
+        export_request = ExportRequest()
+        export_request.params = params
         export_request.launcher = launcher
         export_request.instance_count = instances.count()
         export_request.exported_count = 0

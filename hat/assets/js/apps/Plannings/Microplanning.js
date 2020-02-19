@@ -27,7 +27,7 @@ import geoUtils from '../../utils/geo';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { villageSelectionLegend } from './constants/microplanningLegends';
-import ClusterSwitchComponent from '../../components/ClusterSwitchComponent';
+import VillageSearchModal from '../../components/VillageSearchModal';
 
 import {
     Map,
@@ -66,6 +66,10 @@ const MESSAGES = defineMessages({
     cluster_title: {
         defaultMessage: 'Village clustering',
         id: 'microplanning.labels.cluster_title',
+    },
+    addVillage: {
+        defaultMessage: 'Add a village',
+        id: 'microplanning.labels.addVillage',
     },
 });
 
@@ -201,10 +205,10 @@ export class Microplanning extends Component {
         return (
             <div>
                 {
-                    typeof this.state.errorOnSave !== 'undefined' ?
-                        !this.state.errorOnSave ?
-                            <div className="success"><FormattedMessage id="microplanning.label.save.success" defaultMessage="Selection saved" /></div> :
-                            <div className="error"><FormattedMessage id="microplanning.label.save.error" defaultMessage="Error while saving" /></div>
+                    typeof this.state.errorOnSave !== 'undefined'
+                        ? !this.state.errorOnSave
+                            ? <div className="success"><FormattedMessage id="microplanning.label.save.success" defaultMessage="Selection saved" /></div>
+                            : <div className="error"><FormattedMessage id="microplanning.label.save.error" defaultMessage="Error while saving" /></div>
                         : null
                 }
                 <button
@@ -276,11 +280,9 @@ export class Microplanning extends Component {
             let assignationsTempList = assignations;
 
             if (this.props.params.team_id) {
-                assignationsTempList = assignationsTempList.filter(x =>
-                    x.team_id === parseInt(this.props.params.team_id, 10));
+                assignationsTempList = assignationsTempList.filter(x => x.team_id === parseInt(this.props.params.team_id, 10));
             }
-            selectedVillages = assignationsTempList.filter(assignation =>
-                (assignation.team_id !== -1 && assignation.village_id in villagesMap))
+            selectedVillages = assignationsTempList.filter(assignation => (assignation.team_id !== -1 && assignation.village_id in villagesMap))
                 .map(assignation => villagesMap[assignation.village_id]);
             assignationsTempList.map((assignation) => {
                 if (villagesMap[assignation.village_id]) {
@@ -325,6 +327,7 @@ export class Microplanning extends Component {
         } else if (this.props.params.workzone_id) {
             mapLegendItems = shortVillageSelectionLegend;
         }
+        console.log('selectedAndUnselectedVillages', selectedAndUnselectedVillages);
         return (
             <div
                 tabIndex={0}
@@ -337,17 +340,19 @@ export class Microplanning extends Component {
                 }
 
                 {
-                    error &&
-                    <div className="widget__container">
-                        <div className="widget__header">
-                            <h2 className="widget__heading text--error">
-                                <FormattedMessage id="microplanning.label.error" defaultMessage="Error:" />
-                            </h2>
+                    error
+                    && (
+                        <div className="widget__container">
+                            <div className="widget__header">
+                                <h2 className="widget__heading text--error">
+                                    <FormattedMessage id="microplanning.label.error" defaultMessage="Error:" />
+                                </h2>
+                            </div>
+                            <div className="widget__content">
+                                {error}
+                            </div>
                         </div>
-                        <div className="widget__content">
-                            {error}
-                        </div>
-                    </div>
+                    )
                 }
                 <TeamSelectionTool
                     params={this.props.params}
@@ -360,17 +365,19 @@ export class Microplanning extends Component {
                     closeTooltip={() => this.props.displayItem(null)}
                 />
                 {
-                    this.props.params.team_id &&
-                    <TabsComponent
-                        currentTab={this.state.currentTab}
-                        selectTab={key => (this.setState({ currentTab: key }))}
-                        tabs={[
-                            { label: formatMessage(MESSAGES.villageSelection), key: 'villageSelection' },
-                            { label: formatMessage(MESSAGES.geoScope), key: 'geoScope' },
-                        ]}
-                        isRedirecting={false}
-                        defaultSelect={this.state.currentTab}
-                    />
+                    this.props.params.team_id
+                    && (
+                        <TabsComponent
+                            currentTab={this.state.currentTab}
+                            selectTab={key => (this.setState({ currentTab: key }))}
+                            tabs={[
+                                { label: formatMessage(MESSAGES.villageSelection), key: 'villageSelection' },
+                                { label: formatMessage(MESSAGES.geoScope), key: 'geoScope' },
+                            ]}
+                            isRedirecting={false}
+                            defaultSelect={this.state.currentTab}
+                        />
+                    )
                 }
                 <div className={`widget__container ${this.state.currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
                     <div className="widget__header--tier">
@@ -400,13 +407,11 @@ export class Microplanning extends Component {
                                         name="years"
                                         value={years || ''}
                                         placeholder={formatMessage(MESSAGES['years-select'])}
-                                        options={possibleYears.map(value =>
-                                            ({ label: value, value }))}
-                                        onChange={yearsList =>
-                                            this.props.redirect({
-                                                ...this.props.params,
-                                                years: yearsList,
-                                            })}
+                                        options={possibleYears.map(value => ({ label: value, value }))}
+                                        onChange={yearsList => this.props.redirect({
+                                            ...this.props.params,
+                                            years: yearsList,
+                                        })}
                                     />
                                 </div>
                             </div>
@@ -420,107 +425,128 @@ export class Microplanning extends Component {
                         </div>
                     </div>
                     <div className="map__panel__container">
-                        {!fullscreen &&
-                            <div className="map__panel--left">
-                                <div className="map__selection">
-                                    <div className="map__selection__top">
-                                        <div className="map__selection__title">
-                                            <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                        {!fullscreen
+                            && (
+                                <div className="map__panel--left">
+                                    <div className="map__selection">
+                                        <div className="map__selection__top">
+                                            <div className="map__selection__title">
+                                                <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                                                {
+                                                    this.state.isSelectionModified && !this.state.isSavingTeam && !loading
+                                                    && (
+                                                        <div className="warning-box">
+                                                            <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
+                                                        </div>
+                                                    )
+                                                }
+                                            </div>
+                                            <div>
+                                                <VillageSearchModal
+                                                    onSelectVillage={(village) => {
+                                                        const villagesList = selectedAndUnselectedVillages;
+                                                        villagesList.push(village);
+                                                        this.props.selectItems(villagesList);
+                                                    }}
+                                                    btnMessage={formatMessage(MESSAGES.addVillage)}
+                                                />
+                                            </div>
+
+                                            {/* Selection actions */}
+                                            <MapSelectionControl
+                                                mode={selection.mode}
+                                                teamId={this.props.params.team_id}
+                                                workzoneId={this.props.params.workzone_id}
+                                                highlightBufferSize={selection.highlightBufferSize}
+                                                changeHighlightBufferSize={event => this.props
+                                                    .changeHighlightBufferSize(event.target.value)}
+                                                selectHighlightBuffer={selectHighlightBuffer}
+                                            />
+
+                                            {/* Selected summary */}
                                             {
-                                                this.state.isSelectionModified && !this.state.isSavingTeam && !loading &&
-                                                <div className="warning-box">
-                                                    <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
-                                                </div>
+                                                !this.props.isAssignationLoading
+                                                && (
+                                                    <MapSelectionSummary
+                                                        data={selectedAndUnselectedVillages}
+                                                        assignationsMap={assignationsMap}
+                                                        capacity={capacity}
+                                                    />
+                                                )
                                             }
                                         </div>
 
-                                        {/* Selection actions */}
-                                        <MapSelectionControl
-                                            mode={selection.mode}
-                                            teamId={this.props.params.team_id}
-                                            workzoneId={this.props.params.workzone_id}
-                                            highlightBufferSize={selection.highlightBufferSize}
-                                            changeHighlightBufferSize={event =>
-                                                this.props
-                                                    .changeHighlightBufferSize(event.target.value)}
-                                            selectHighlightBuffer={selectHighlightBuffer}
-                                        />
+                                        <div className="map__selection__middle">
 
-                                        {/* Selected summary */}
-                                        {
-                                            !this.props.isAssignationLoading &&
-                                            <MapSelectionSummary
-                                                data={selectedAndUnselectedVillages}
-                                                assignationsMap={assignationsMap}
-                                                capacity={capacity}
+                                            {/* Selected list */}
+                                            {
+                                                this.props.isAssignationLoading
+                                                && (
+                                                    <div className="loading-small">
+                                                        <i className="fa fa-spinner" />
+                                                    </div>
+                                                )
+                                            }
+                                            {
+                                                !this.props.isAssignationLoading
+                                                && (
+                                                    <MapSelectionList
+                                                        data={selectedAndUnselectedVillages}
+                                                        show={item => this.props.displayItem(item)}
+                                                        deselect={list => this.deSelectVillage(list)}
+                                                        assignationsMap={assignationsMap}
+                                                        teamsMap={teamsMap}
+                                                        coordinationId={this.props.params.coordination_id}
+                                                    />
+                                                )
+                                            }
+                                        </div>
+
+                                        <div className="map__selection__bottom">
+                                            {/* actions */}
+                                            {this.renderSaveTeamButton()}
+                                            <button className="button--tiny middle" onClick={() => this.activateFullscreenHandler()}>
+                                                <i className="fa fa-print" />
+                                                <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
+                                            </button>
+                                            <DownloadButtonsComponent
+                                                csvUrl={this.getDownloadUrl('csv')}
+                                                xlsxUrl={this.getDownloadUrl('xlsx')}
+                                                smallButtons
                                             />
-                                        }
+                                        </div>
+
                                     </div>
-
-                                    <div className="map__selection__middle">
-
-                                        {/* Selected list */}
-                                        {
-                                            this.props.isAssignationLoading &&
-                                            <div className="loading-small">
-                                                <i className="fa fa-spinner" />
-                                            </div>
-                                        }
-                                        {
-                                            !this.props.isAssignationLoading &&
-                                            <MapSelectionList
-                                                data={selectedAndUnselectedVillages}
-                                                show={item => this.props.displayItem(item)}
-                                                deselect={list => this.deSelectVillage(list)}
-                                                assignationsMap={assignationsMap}
-                                                teamsMap={teamsMap}
-                                                coordinationId={this.props.params.coordination_id}
-                                            />
-                                        }
-                                    </div>
-
-                                    <div className="map__selection__bottom">
-                                        {/* actions */}
-                                        {this.renderSaveTeamButton()}
-                                        <button className="button--tiny middle" onClick={() => this.activateFullscreenHandler()}>
-                                            <i className="fa fa-print" />
-                                            <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
-                                        </button>
-                                        <DownloadButtonsComponent
-                                            csvUrl={this.getDownloadUrl('csv')}
-                                            xlsxUrl={this.getDownloadUrl('xlsx')}
-                                            smallButtons
-                                        />
-                                    </div>
-
                                 </div>
-                            </div>
+                            )
                         }
                         {/* Map */}
                         <div className={mapClass} id="planning-map">
                             {
-                                !this.props.isTest &&
-                                <Map
-                                    teams={teams}
-                                    teamId={this.props.params.team_id}
-                                    planningId={this.props.params.planning_id}
-                                    baseLayer={baseLayer}
-                                    legend={legend}
-                                    fullscreen={fullscreen}
-                                    items={villages}
-                                    assignationsMap={assignationsMap}
-                                    assignations={assignations}
-                                    selectedItems={selectedVillages}
-                                    highlightBufferSize={highlightBufferSize}
-                                    deselectItems
-                                    chosenItem={selection.displayedItem}
-                                    showItem={item => this.props.displayItem(item)}
-                                    leafletMap={map => this.props.setLeafletMap(map)}
-                                    getShape={type => this.props.getShape(type)}
-                                    selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
-                                    workzoneId={this.props.params.workzone_id}
-                                    withCluster={withCluster}
-                                />
+                                !this.props.isTest
+                                && (
+                                    <Map
+                                        teams={teams}
+                                        teamId={this.props.params.team_id}
+                                        planningId={this.props.params.planning_id}
+                                        baseLayer={baseLayer}
+                                        legend={legend}
+                                        fullscreen={fullscreen}
+                                        items={villages}
+                                        assignationsMap={assignationsMap}
+                                        assignations={assignations}
+                                        selectedItems={selectedVillages}
+                                        highlightBufferSize={highlightBufferSize}
+                                        deselectItems
+                                        chosenItem={selection.displayedItem}
+                                        showItem={item => this.props.displayItem(item)}
+                                        leafletMap={map => this.props.setLeafletMap(map)}
+                                        getShape={type => this.props.getShape(type)}
+                                        selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
+                                        workzoneId={this.props.params.workzone_id}
+                                        withCluster={withCluster}
+                                    />
+                                )
                             }
                         </div>
                     </div>
@@ -528,15 +554,17 @@ export class Microplanning extends Component {
 
                 <div className={`widget__container ${this.state.currentTab !== 'geoScope' ? 'hidden-opacity' : ''}`}>
                     {
-                        currentTeam &&
-                        <GeoScope
-                            coordinationId={this.props.params.coordination_id}
-                            workzoneId={this.props.params.workzone_id}
-                            workzones={workzones}
-                            teamGeoScope={this.props.selection.geoScope}
-                            team={currentTeam}
-                            planningId={this.props.params.planning_id}
-                        />
+                        currentTeam
+                        && (
+                            <GeoScope
+                                coordinationId={this.props.params.coordination_id}
+                                workzoneId={this.props.params.workzone_id}
+                                workzones={workzones}
+                                teamGeoScope={this.props.selection.geoScope}
+                                team={currentTeam}
+                                planningId={this.props.params.planning_id}
+                            />
+                        )
                     }
                 </div>
             </div>
@@ -576,8 +604,7 @@ const MapDispatchToProps = dispatch => ({
     changeBufferSize: event => dispatch(selectionActions.changeBufferSize(event.target.value)),
     changeHighlightBufferSize: value => dispatch(selectionActions.changeHighlightBufferSize(value)),
     executeSelectionAction: list => dispatch(selectionActions.executeSelection(list)),
-    deselectItems: (list, activateSaveButton) =>
-        dispatch(selectionActions.deselectItems(list, activateSaveButton)),
+    deselectItems: (list, activateSaveButton) => dispatch(selectionActions.deselectItems(list, activateSaveButton)),
     displayItem: item => dispatch(selectionActions.displayItem(item)),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),
@@ -598,4 +625,3 @@ const MapStateToProps = state => ({
 
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);
-

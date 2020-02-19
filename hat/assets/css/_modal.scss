@@ -3,7 +3,7 @@
     inset: 0px;
     z-index: 1001;
     display: flex;
-    align-items: start;
+    align-items: center;
     justify-content: center;
     align-content: center;
     background: rgba(0, 0, 0, 0.5) !important;
@@ -13,20 +13,8 @@
     height: 100vh;
     overflow: auto;
 
-    >div {
-        top: 15vh !important;
-    }
-
     &.transparent-overlay {
         background: transparent !important;
-    }
-}
-
-@media (max-height: 800px) {
-    .ReactModal__Overlay {
-        >div {
-            top: 5vh !important;
-        }
     }
 }
 
@@ -41,6 +29,7 @@
     min-height: 100px;
     overflow: visible !important;
     max-height: 900%;
+    inset: 0 !important;
 
     &.hidden-modal {
         opacity: 0 !important;
@@ -298,6 +287,11 @@
     width: 900px;
 }
 
+.extra-large-modal-content {
+    width: 90vw;
+}
+
+.extra-large-modal-content,
 .large-modal-content,
 .modal-content,
 .medium-modal-content {
@@ -307,6 +301,7 @@
         margin-left: 10px;
         top: 8px;
     }
+
     .Select {
         width: 100%;
     }
@@ -744,4 +739,14 @@
 
 .village-map-layers-container {
     text-align: left;
+}
+
+.village-search-modal {
+    .search-container {
+        width: 100%;
+    }
+
+    .ReactTable {
+        width: 100%;
+    }
 }

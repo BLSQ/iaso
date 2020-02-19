@@ -26,8 +26,7 @@ class MapSelectionList extends Component {
                     <a
                         tabIndex={0}
                         role="button"
-                        onClick={() => this.props.deselect(data.map(village =>
-                            ({ village_id: village.id })))}
+                        onClick={() => this.props.deselect(data.map(village => ({ village_id: village.id })))}
                         className="button--tiny button--danger"
                     >
                         <FormattedMessage id="microplanning.selected.reset" defaultMessage="Deselect all" />
@@ -51,19 +50,23 @@ class MapSelectionList extends Component {
                         {data.map(item => (
                             <tr className="map__selection__list__item" key={item.id}>
                                 {
-                                    coordinationId !== '' &&
-                                    <td className="tools">
-                                        {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
-                                            <span
-                                                tabIndex={0}
-                                                role="button"
-                                                className="remove"
-                                                onClick={() => this.props.deselect([{ village_id: item.id }])}
-                                            >
-                                                <i className="fa fa-close" />
-                                            </span>
-                                        }
-                                    </td>
+                                    coordinationId !== ''
+                                    && (
+                                        <td className="tools">
+                                            {(this.props.teamsMap[this.props.assignationsMap[item.id]])
+                                            && (
+                                                <span
+                                                    tabIndex={0}
+                                                    role="button"
+                                                    className="remove"
+                                                    onClick={() => this.props.deselect([{ village_id: item.id }])}
+                                                >
+                                                    <i className="fa fa-close" />
+                                                </span>
+                                            )
+                                            }
+                                        </td>
+                                    )
                                 }
                                 <td className="tools">
                                     <span
@@ -82,10 +85,12 @@ class MapSelectionList extends Component {
                                     {item.AS__name}
                                 </td>
                                 <td className="limited-width">
-                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]]) &&
-                                        <span>
-                                            {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
-                                        </span>
+                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]])
+                                        && (
+                                            <span>
+                                                {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
+                                            </span>
+                                        )
                                     }
                                 </td>
                             </tr>

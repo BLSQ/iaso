@@ -77,40 +77,31 @@ class FormsViewSet(ModelViewSet):
 
     def get_queryset(self):
         queryset = Form.objects.all()
+        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
+        queryset = queryset.annotate(
+            instances_count=Count("instances", filter=(~Q(instances__file="")))
+        )
 
         # The way this endpoint has been structured is due to the fact that the first mobile application
         # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
         # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
         # would send back the forms for the app_id org.bluesquarehub.iaso
         # Once the org.bluesquarehub.iaso, we should switch to an API that will not assume it's the default
-        app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
-
         if self.request.user and not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
             queryset = queryset.filter(projects__account=profile.account)
         else:
-            queryset = Form.objects.filter(projects__app_id=app_id)
+            app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
+            queryset = queryset.filter(projects__app_id=app_id)
 
-        # TODO: allow this only from a predefined list for security purposes
-        order = self.request.query_params.get("order", "instance_updated_at").split(",")
         from_date = self.request.query_params.get("date_from", None)
-        to_date = self.request.query_params.get("date_to", None)
-        org_unit_type_id = self.request.query_params.get("orgUnitTypeId", None)
-
-        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
-        queryset = queryset.annotate(
-            instances_count=Count("instances", filter=(~Q(instances__file="")))
-        )
-
-        queryset = queryset.order_by(*order)
-
         if from_date:
             queryset = queryset.filter(
                 Q(instance_updated_at__gte=from_date)
                 | Q(created_at__gte=from_date)
                 | Q(updated_at__gte=from_date)
             )
-
+        to_date = self.request.query_params.get("date_to", None)
         if to_date:
             queryset = queryset.filter(
                 Q(instance_updated_at__lte=to_date)
@@ -118,8 +109,13 @@ class FormsViewSet(ModelViewSet):
                 | Q(updated_at__lte=to_date)
             )
 
+        org_unit_type_id = self.request.query_params.get("orgUnitTypeId", None)
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
+
+        # TODO: allow this only from a predefined list for security purposes
+        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+        queryset = queryset.order_by(*order)
 
         return queryset
 
@@ -152,12 +148,11 @@ class FormsViewSet(ModelViewSet):
 
         return response
 
-    @classmethod
-    def get_table_row(cls, form: Form, **kwargs):  # TODO: use serializer
-        form_data = form.as_dict(cls.EXPORT_ADDITIONAL_SERIALIZER_FIELDS)
+    def get_table_row(self, form: Form, **kwargs):  # TODO: use serializer
+        form_data = self.get_serializer(form).data
         created_at = timestamp_to_datetime(form_data.get("created_at"))
         updated_at = (
-            form_data.get("instance_updated_at").strftime("%Y-%m-%d %H:%M:%S")
+            timestamp_to_datetime(form_data.get("instance_updated_at"))
             if form_data.get("instance_updated_at")
             else "2019-01-01 00:00:00"
         )

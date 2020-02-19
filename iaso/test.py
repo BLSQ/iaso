@@ -29,7 +29,12 @@ class APITestCase(BaseAPITestCase):
 
     def assertFileResponse(self, response: typing.Any, expected_status_code: int, expected_content_type: str, *,
                            expected_attachment_filename: str = None, streaming: bool = False):
-        self.assertIsInstance(response, HttpResponse if streaming is False else StreamingHttpResponse)
+        if streaming:
+            self.assertIsInstance(response, StreamingHttpResponse)
+            # we need to force the reading of the whole content stream - some errors might be hidden in the generator
+            self.assertIsInstance(list(response.streaming_content), list)
+        else:
+            self.assertIsInstance(response, HttpResponse)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual(expected_content_type, response['Content-Type'])
 

@@ -693,7 +693,7 @@ class Instance(models.Model):
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
-    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True, related_name='instances')
     project = models.ForeignKey(
         Project, blank=True, null=True, on_delete=models.DO_NOTHING
     )

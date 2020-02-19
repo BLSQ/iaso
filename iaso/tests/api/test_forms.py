@@ -26,6 +26,7 @@ class FormsAPITestCase(APITestCase):
                                        single_per_period=True)
         form_2.org_unit_types.add(jedi_council)
         form_2.org_unit_types.add(jedi_academy)
+        form_2.instances.create()
         form_2.save()
 
         project.unit_types.add(jedi_council)
@@ -108,18 +109,18 @@ class FormsAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_forms_retrieve_without_auth(self):
-        """GET /forms/<form_id> without auth should result in a 403"""
+        """GET /forms/<form_id> without auth should result in a 404"""
 
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_forms_retrieve_wrong_auth(self):
-        """GET /forms/<form_id> with auth of unrelated user should result in a 403"""
+        """GET /forms/<form_id> with auth of unrelated user should result in a 404"""
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_forms_retrieve_not_found(self):
@@ -152,6 +153,8 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "form_id", str)
         self.assertHasField(form_data, "single_per_period", bool)
         self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "instances_count", int)
+        self.assertHasField(form_data, "instance_updated_at", float)
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
             self.assertHasField(org_unit_type_data, "id", int)

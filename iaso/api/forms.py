@@ -1,9 +1,7 @@
-from django.core.paginator import Paginator
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework import serializers
 from rest_framework.request import Request
-from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import AllowAny, SAFE_METHODS
 
@@ -41,11 +39,14 @@ class HasFormPermission(AllowAny):
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'created_at',
-                  'updated_at']
-        read_only_fields = ['id', 'org_unit_types', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'instances_count',
+                  'instance_updated_at', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'org_unit_types', 'instances_count', 'instance_updated_at', 'created_at',
+                            'updated_at']
 
     org_unit_types = serializers.SerializerMethodField()
+    instances_count = serializers.IntegerField()
+    instance_updated_at = TimestampField()
     created_at = TimestampField()
     updated_at = TimestampField()
 
@@ -74,39 +75,35 @@ class FormsViewSet(ModelViewSet):
     EXPORT_FILE_NAME = "forms"
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ["instance_updated_at", "instances_count"]
 
-    def list(self, request: Request, *args, **kwargs):
+    def get_queryset(self):
+        queryset = Form.objects.all()
+
         # The way this endpoint has been structured is due to the fact that the first mobile application
         # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
         # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
         # would send back the forms for the app_id org.bluesquarehub.iaso
         # Once the org.bluesquarehub.iaso, we should switch to an API that will not assume it's the default
+        app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
 
-        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        queryset = Form.objects.all()
-
-        if request.user and not request.user.is_anonymous:
-            profile = request.user.iaso_profile
+        if self.request.user and not self.request.user.is_anonymous:
+            profile = self.request.user.iaso_profile
             queryset = queryset.filter(projects__account=profile.account)
         else:
             queryset = Form.objects.filter(projects__app_id=app_id)
 
-        limit = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        order = request.GET.get("order", "instance_updated_at").split(
-            ","
-        )  # TODO: allow this only from a predefined list for security purpose
-        from_date = request.GET.get("date_from", None)
-        to_date = request.GET.get("date_to", None)
-        csv_format = bool(request.query_params.get("csv", None))
-        xlsx_format = bool(request.query_params.get("xlsx", None))
-        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
+        # TODO: allow this only from a predefined list for security purposes
+        order = self.request.query_params.get("order", "instance_updated_at").split(",")
+        from_date = self.request.query_params.get("date_from", None)
+        to_date = self.request.query_params.get("date_to", None)
+        org_unit_type_id = self.request.query_params.get("orgUnitTypeId", None)
 
-        queryset = queryset.annotate(instance_updated_at=Max("instance__updated_at"))
+        queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
-            instances_count=Count("instance", filter=(~Q(instance__file="")))
+            instances_count=Count("instances", filter=(~Q(instances__file="")))
         )
 
         queryset = queryset.order_by(*order)
+
         if from_date:
             queryset = queryset.filter(
                 Q(instance_updated_at__gte=from_date)
@@ -124,47 +121,31 @@ class FormsViewSet(ModelViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
 
+        return queryset
+
+    def list(self, request: Request, *args, **kwargs):
+        csv_format = bool(request.query_params.get("csv", None))
+        xlsx_format = bool(request.query_params.get("xlsx", None))
+
         if csv_format:
-            return self.list_to_csv(queryset)
+            return self.list_to_csv()
         elif xlsx_format:
-            return self.list_to_xlsx(queryset)
-        else:
-            if limit:
-                limit = int(limit)
-                page_offset = int(page_offset)
+            return self.list_to_xlsx()
 
-                paginator = Paginator(queryset, limit)
-                res = {"count": paginator.count}
-                if page_offset > paginator.num_pages:
-                    page_offset = paginator.num_pages
-                page = paginator.page(page_offset)
+        return super().list(request, *args, **kwargs)
 
-                res["forms"] = map(
-                    lambda x: x.as_dict(self.EXPORT_ADDITIONAL_SERIALIZER_FIELDS), page.object_list
-                )
-                res["has_next"] = page.has_next()
-                res["has_previous"] = page.has_previous()
-                res["page"] = page_offset
-                res["pages"] = paginator.num_pages
-                res["limit"] = limit
-                return Response(res)
-            else:
-                return Response(
-                    {"forms": [form.as_dict(self.EXPORT_ADDITIONAL_SERIALIZER_FIELDS) for form in queryset]}
-                )
-
-    def list_to_csv(self, queryset):
+    def list_to_csv(self):
         response = StreamingHttpResponse(
-            streaming_content=(iter_items(queryset, Echo(), self.EXPORT_TABLE_COLUMNS, self.get_table_row)),
+            streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self.get_table_row)),
             content_type="text/csv",
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
         return response
 
-    def list_to_xlsx(self, queryset):
+    def list_to_xlsx(self):
         response = HttpResponse(
-            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, queryset, self.get_table_row),
+            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self.get_table_row),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
         response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"

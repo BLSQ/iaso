@@ -97,6 +97,11 @@ def map_to_aggregate(instance, form_mapping):
                     data_value["categoryOptionCombo"] = data_element[
                         "categoryOptionCombo"
                     ]
+
+                if "attributeOptionCombo" in data_element:
+                    data_value["attributeOptionCombo"] = data_element[
+                        "attributeOptionCombo"
+                    ]
                 data_set_entry["dataValues"].append(data_value)
             except Exception as error:
                 errored = True
@@ -122,9 +127,10 @@ class AggregateExporter:
             )
         return self.api_cache[mapping_version.id]
 
-    def export_log_on(self, status, export_status, export_log):
+    def export_log_on(self, status, export_status, export_logs):
         export_status.status = status
-        export_status.export_log = export_log
+        for export_log in export_logs:
+            export_status.export_logs.add(export_log)
         export_status.save()
 
     def map_page_to_data_values(self, prefix, export_statuses, skipped):
@@ -168,9 +174,7 @@ class AggregateExporter:
                 flattened.append(dv)
         return flattened
 
-    def export_page(
-        self, prefix, request, export_statuses, page_start, stats, api, skipped
-    ):
+    def export_page(self, prefix, request, export_statuses, stats, api):
         try:
             # print(prefix, "POSTING to dataValueSets {} ".format(request))
             batched_start = timer()
@@ -186,29 +190,18 @@ class AggregateExporter:
 
             batched_end = timer()
             batched_time = batched_end - batched_start
+            stats["batched_time"] = batched_time
+
             print(prefix, resp)
 
             export_log = ExportLog()
             export_log.sent = request
             export_log.received = resp
+            export_log.url = api.base_url + "/dataValueSets"
+            export_log.http_status = 200
             export_log.save()
 
-            stats["exported_count"] += len(export_statuses)
-            for export_status in export_statuses:
-                self.export_log_on("exported", export_status, export_log)
-
-            for export_status in export_statuses:
-                instance = export_status.instance
-                instance.last_export_success_at = timezone.now()
-                instance.save()
-
-            page_end = timer()
-            page_time = page_end - page_start
-            print(
-                prefix
-                + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
-                % (page_time, batched_time, len(skipped))
-            )
+            return export_log
 
         except RequestException as dhis2_exception:
             message = "ERROR while processing " + prefix
@@ -218,10 +211,11 @@ class AggregateExporter:
             export_log = ExportLog()
             export_log.sent = request
             export_log.received = resp
+            export_log.http_code = dhis2_exception.code
             export_log.save()
 
             for export_status in export_statuses:
-                self.export_log_on("errored", export_status, export_log)
+                self.export_log_on("errored", export_status, [export_log])
 
             raise exception
 
@@ -241,7 +235,44 @@ class AggregateExporter:
         export_request.last_error_message = message
         export_request.save()
 
-    def export_instances(self, export_request, export):
+    def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
+        stats["exported_count"] += len(export_statuses)
+        for export_status in export_statuses:
+            self.export_log_on("exported", export_status, export_logs)
+
+        for export_status in export_statuses:
+            instance = export_status.instance
+            instance.last_export_success_at = timezone.now()
+            instance.save()
+
+        export_request.errored_count = stats["errored_count"]
+        export_request.exported_count = stats["exported_count"]
+        export_request.save()
+
+    def mark_dataset_as_complete(self, data, api):
+        def to_complete_data_set_registration(data_value_set):
+            return {
+                "period": data_value_set["period"],
+                "dataSet": data_value_set["dataSet"],
+                "organisationUnit": data_value_set["orgUnit"],
+                "date": data_value_set["completeDate"],
+            }
+
+        complete_data_set_registrations = list(
+            map(to_complete_data_set_registration, data)
+        )
+        request = {"completeDataSetRegistrations": complete_data_set_registrations}
+        resp_complete = api.post("completeDataSetRegistrations", request)
+
+        print("completeDataSetRegistrations response", resp_complete.json())
+        export_log = ExportLog()
+        export_log.sent = request
+        export_log.received = resp_complete.json()
+        export_log.url = api.base_url + "/completeDataSetRegistrations"
+        export_log.save()
+        return export_log
+
+    def export_instances(self, export_request, export, page_size=50):
         export_request.status = "running"
         export_request.started_at = timezone.now()
         export_request.save()
@@ -253,7 +284,7 @@ class AggregateExporter:
             .prefetch_related("instance__org_unit__version")
             .order_by("id")
             .all(),
-            100,
+            page_size,
         )
         skipped = []
         stats = {"exported_count": 0, "errored_count": 0}
@@ -267,16 +298,35 @@ class AggregateExporter:
                 # ideally map_page_to_data_values should return a dictionary { server: mapped_values }
                 api = self.get_api(export_statuses[0].mapping_version)
 
-                flattened = self.flatten(data)
-                request = {"dataValues": flattened}
+                # TODO uncomplete if necessary ?
+                # data_set_ids = list(set(map(lambda x: x["dataSet"],data)))
+                # periods = list(set(map(lambda x: x["period"],data)))
+                # org_unit_ids = list(set(map(lambda x: x["orgUnit"],data)))
 
-                self.export_page(
-                    prefix, request, export_statuses, page_start, stats, api, skipped
+                export_log = self.export_page(
+                    prefix,
+                    {"dataValues": self.flatten(data)},
+                    export_statuses,
+                    stats,
+                    api,
                 )
 
-                export_request.errored_count = stats["errored_count"]
-                export_request.exported_count = stats["exported_count"]
-                export_request.save()
+                export_log_complete_ds = self.mark_dataset_as_complete(data, api)
+
+                self.flag_as_exported(
+                    export_request,
+                    export_statuses,
+                    stats,
+                    [export_log, export_log_complete_ds],
+                )
+
+                page_end = timer()
+                page_time = page_end - page_start
+                print(
+                    prefix
+                    + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
+                    % (page_time, stats["batched_time"], len(skipped))
+                )
 
             except InstanceExportError as exception:
                 self.flag_as_errored(

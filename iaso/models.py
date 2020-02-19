@@ -983,6 +983,9 @@ class ExportLog(models.Model):
     received = JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
+    http_status = models.IntegerField(null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+
 
 class ExportStatus(models.Model):
     id = models.BigAutoField(
@@ -994,7 +997,5 @@ class ExportStatus(models.Model):
     status = models.TextField(choices=STATUS_TYPE_CHOICES, default=QUEUED)
     mapping_version = models.ForeignKey(MappingVersion, on_delete=models.CASCADE)
 
-    export_log = models.ForeignKey(
-        ExportLog, on_delete=models.CASCADE, null=True, blank=True
-    )
+    export_logs = models.ManyToManyField(ExportLog, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

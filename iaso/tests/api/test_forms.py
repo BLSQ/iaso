@@ -1,8 +1,9 @@
 import typing
+
 from django.test import tag
 
-from iaso.test import APITestCase
 from iaso import models as m
+from iaso.test import APITestCase
 
 
 class FormsAPITestCase(APITestCase):
@@ -23,8 +24,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ without auth: 0 result"""
 
         response = self.client.get('/api/forms/')
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -34,8 +34,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get('/api/forms/')
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -45,8 +44,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get('/api/forms/', headers={'Content-Type': 'application/json'})
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 2)
 
@@ -56,8 +54,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get('/api/forms/?limit=1&page=1', headers={'Content-Type': 'application/json'})
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 200)
 
         response_data = response.json()
         self.assertValidFormListData(response_data, 1, True)
@@ -71,8 +68,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/<form_id> without auth should result in a 403"""
 
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertEqual(403, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 403)
 
     @tag("iaso_only")
     def test_forms_retrieve_wrong_auth(self):
@@ -80,8 +76,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertEqual(403, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 403)
 
     @tag("iaso_only")
     def test_forms_retrieve_not_found(self):
@@ -89,8 +84,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/292003030/')
-        self.assertEqual(404, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 404)
 
     @tag("iaso_only")
     def test_forms_retrieve_ok(self):
@@ -98,8 +92,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertEqual(200, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+        self.assertApiResponse(response, 200)
 
         self.assertValidFormData(response.json())
 
@@ -110,6 +103,8 @@ class FormsAPITestCase(APITestCase):
         for form_data in list_data["forms"]:
             self.assertValidFormData(form_data)
 
-    def assertValidFormData(self, form_data: typing.Mapping):  # TODO: other fields
+    def assertValidFormData(self, form_data: typing.Mapping):  # TODO: check for other fields
         self.assertIn("id", form_data)
         self.assertIsInstance(form_data["id"], int)
+        self.assertIn("name", form_data)
+        self.assertIsInstance(form_data["name"], str)

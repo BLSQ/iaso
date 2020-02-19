@@ -1,5 +1,6 @@
 import typing
 from django.contrib.auth import get_user_model
+from rest_framework.response import Response
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from iaso import models as m
@@ -19,6 +20,11 @@ class APITestCase(BaseAPITestCase):
         m.Profile.objects.create(user=user, account=account)
 
         return user
+
+    def assertApiResponse(self, response: typing.Any, expected_status_code: int):
+        self.assertIsInstance(response, Response)
+        self.assertEqual(expected_status_code, response.status_code)
+        self.assertEqual('application/json', response['Content-Type'])
 
     def assertValidListData(self, *, list_data: typing.Mapping, results_key: str, expected_length: int,
                             paginated: bool = False):

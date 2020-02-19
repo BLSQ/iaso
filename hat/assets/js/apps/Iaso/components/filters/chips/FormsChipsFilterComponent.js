@@ -10,8 +10,6 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import formIconUrl from '../../../../../../../dashboard/static/images/white-form.svg';
-
 import { setFormsSelected } from '../../../redux/orgUnitsReducer';
 
 import ChipsFilterComponent from './ChipsFilterComponent';
@@ -23,6 +21,9 @@ import commonStyles from '../../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    content: {
+        padding: theme.spacing(0, 3, 2, 3),
+    },
 });
 
 
@@ -35,7 +36,6 @@ function FormsChipsFilterComponent(props) {
         currentOrgUnit,
         fitToBounds,
     } = props;
-    if (!currentForms || (currentForms && currentForms.length === 0)) return null;
     return (
         <Fragment>
             <Box
@@ -47,12 +47,19 @@ function FormsChipsFilterComponent(props) {
                     <FormattedMessage id="iaso.forms.title" defaultMessage="Forms" />
                 </Typography>
             </Box>
+            {
+                (!currentForms || (currentForms && currentForms.length === 0))
+                && (
+                    <Typography variant="body2" align="center" color="textSecondary">
+                        <FormattedMessage id="iaso.orgUnits.forms.noData" defaultMessage="No form" />
+                    </Typography>
+                )
+            }
             <ChipsFilterComponent
                 selectLabelMessage={{
                     id: 'iaso.orgUnits.addForm',
                     defaultMessage: 'Add form',
                 }}
-                chipIconUrl={formIconUrl}
                 locationsKey="instances"
                 fetchDetails={form => fetchInstancesAsLocationsByForm(
                     dispatch,

@@ -64,6 +64,9 @@ const renderValue = (linkKey, value, classes) => {
                     />
                 );
         }
+        case 'groups': {
+            return value.map(g => g.name).join(', ');
+        }
         case 'created_at':
         case 'updated_at': {
             return moment.unix(value).format('DD/MM/YYYY HH:mm');

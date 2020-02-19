@@ -90,9 +90,12 @@ export const setFormsSelected = currentFormsSelected => ({
     payload: currentFormsSelected,
 });
 
-export const setCurrentSubOrgUnitTypesSelected = currentSubOrgUnitsTypesSelected => ({
+export const setCurrentSubOrgUnitTypesSelected = (currentSubOrgUnitsTypesSelected, currentSubOrgUnitsTypesList) => ({
     type: SET_SUB_ORG_UNITS_TYPES_SELECTED,
-    payload: currentSubOrgUnitsTypesSelected,
+    payload: {
+        currentSubOrgUnitsTypesSelected,
+        currentSubOrgUnitsTypesList,
+    },
 });
 
 export const setFetching = fetching => ({
@@ -114,6 +117,7 @@ export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
     currentSubOrgUnitsTypesSelected: [],
+    currentSubOrgUnitsTypesList: [],
     currentForms: null,
     currentFormsSelected: [],
     currentSourcesSelected: [],
@@ -210,8 +214,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         }
 
         case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
-            const currentSubOrgUnitsTypesSelected = action.payload;
-            return { ...state, currentSubOrgUnitsTypesSelected };
+            const {
+                currentSubOrgUnitsTypesSelected,
+                currentSubOrgUnitsTypesList,
+            } = action.payload;
+            return { ...state, currentSubOrgUnitsTypesSelected, currentSubOrgUnitsTypesList };
         }
 
         case SET_FORMS_SELECTED: {

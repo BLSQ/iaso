@@ -1,6 +1,6 @@
 /* globals STATIC_URL */
 import L from 'leaflet';
-import { fade } from '@material-ui/core/styles/colorManipulator';
+import Color from 'color';
 
 import { MESSAGES } from '../../../utils/map/mapUtils';
 import theme from './theme';
@@ -56,12 +56,12 @@ export const clusterCustomMarker = cluster => (L.divIcon({
 
 export const colorClusterCustomMarker = (cluster, backgroundColor) => (L.divIcon({
     html: `<div style="background-color: ${backgroundColor};" >`
-            + `<div class="border" style="background-color: ${fade(backgroundColor, 0.5)};"></div>`
+            + `<div class="border" style="background-color: ${Color(backgroundColor).darken(0.5)};"></div>`
             + `<span>${cluster.getChildCount()}</span>`
         + '</div>',
     className: 'marker-cluster color',
-    iconSize: L.point(40, 40, true),
-    iconAnchor: [20, 30],
+    iconSize: L.point(34, 34, true),
+    iconAnchor: [17, 17],
     style: () => ({
         backgroundColor,
     }),
@@ -88,7 +88,9 @@ export const customMarkerOptions = {
 export const customColorMarkerOptions = (color, iconName) => ({
     className: 'marker-custom color',
     html: `${L.Util.template(svgColoredString(color))}
-    ${iconName ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />` : '<span class="marker_bg"></span>'}<img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
+    ${iconName
+        ? `<img class="svg-icon" style="background-color:${color}" src="${STATIC_URL}images/${iconName}" />`
+        : '<span class="marker_bg"></span>'}<img class="marker_shadow" src="${STATIC_URL}images/marker-shadow.png"/>`,
     iconSize: new L.Point(24, 34),
     popupAnchor: [-1, -28],
     iconAnchor: [12, 32],
@@ -96,13 +98,14 @@ export const customColorMarkerOptions = (color, iconName) => ({
 export const customMarker = L.divIcon(customMarkerOptions);
 export const colorMarker = (color, iconName) => L.divIcon(customColorMarkerOptions(color, iconName));
 
-export const CircularColorMarkerOptions = color => ({
-    className: 'marker-custom color circular-marker',
-    html: `<div style="background-color:${color};"></div><span style="background-color:${color};"></span>`,
-    iconSize: new L.Point(20, 20),
+export const circleColorMarkerOptions = color => ({
+    className: 'marker-custom color circle-marker',
+    fillColor: color,
+    fillOpacity: 1,
+    weight: 2,
+    color: Color(color).darken(0.5),
+    radius: 5,
 });
-
-export const circularMarker = color => L.divIcon(CircularColorMarkerOptions(color));
 
 export const customZoomBar = (formatMessage, fitToBounds) => L.control.zoombar({
     zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),

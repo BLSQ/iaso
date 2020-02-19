@@ -32,6 +32,7 @@ import {
     fetchForms,
     saveOrgUnit,
     fetchGroups,
+    fetchSources,
 } from '../utils/requests';
 import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtils';
 
@@ -60,6 +61,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit: undefined,
             orgUnitModified: false,
             orgUnitLocationModified: false,
+            fetchingFilters: true,
         };
     }
 
@@ -114,13 +116,15 @@ class OrgUnitDetail extends Component {
             });
 
         Promise.all(promisesArray).then(() => {
+            this.setState({
+                fetchingFilters: false,
+            });
             this.fetchDetail().then(() => {
                 if (this.state.tab !== 'map') {
                     dispatch(setFetching(false));
                 }
             });
         });
-
     }
 
     componentDidUpdate(prevProps) {
@@ -305,6 +309,7 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
             orgUnitLocationModified,
+            fetchingFilters,
         } = this.state;
         let title = currentOrgUnit ? currentOrgUnit.name : '';
         if (currentOrgUnit) {
@@ -403,7 +408,7 @@ class OrgUnitDetail extends Component {
                                 )
                             }
                             {
-                                tab === 'map' && (
+                                tab === 'map' && !fetchingFilters && (
                                     <Box className={classes.containerFullHeight}>
                                         <OrgUnitMap
                                             setOrgUnitLocationModified={() => this.setOrgUnitLocationModified()}

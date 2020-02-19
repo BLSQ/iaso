@@ -1,6 +1,8 @@
 import typing
 
 from django.test import tag
+from django.core.files import File
+from unittest import mock
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -22,8 +24,11 @@ class FormsAPITestCase(APITestCase):
                                            account=star_wars)
 
         form_1 = m.Form.objects.create(name="Hydroponics study")
+        form_2_file_mock = mock.MagicMock(spec=File)
+        form_2_file_mock.name = 'test.xml'
         form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
-                                       single_per_period=True)
+                                       period_type="QUARTER", single_per_period=True)
+        form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
         form_2.org_unit_types.add(jedi_council)
         form_2.org_unit_types.add(jedi_academy)
         form_2.instances.create()
@@ -151,13 +156,24 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertValidFormData(form_data)
         self.assertHasField(form_data, "form_id", str)
+        self.assertHasField(form_data, "period_type", str)
         self.assertHasField(form_data, "single_per_period", bool)
         self.assertHasField(form_data, "org_unit_types", list)
         self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
+
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
             self.assertHasField(org_unit_type_data, "id", int)
+
+        self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "instances_count", int)
+        self.assertHasField(form_data, "latest_form_version", dict)
+        self.assertHasField(form_data["latest_form_version"], "id", int)
+        self.assertHasField(form_data["latest_form_version"], "version_id", str)
+        self.assertHasField(form_data["latest_form_version"], "file", str)
+        self.assertHasField(form_data["latest_form_version"], "created_at", float)
+        self.assertHasField(form_data["latest_form_version"], "updated_at", float)
 
     def test_form_create_ok(self):
         self.client.force_authenticate(self.yoda)

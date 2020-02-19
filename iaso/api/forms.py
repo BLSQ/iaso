@@ -39,16 +39,21 @@ class HasFormPermission(AllowAny):
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'instances_count',
-                  'instance_updated_at', 'created_at', 'updated_at']
+        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'latest_form_version',
+                  'instances_count', 'instance_updated_at', 'created_at', 'updated_at']
         read_only_fields = ['id', 'org_unit_types', 'instances_count', 'instance_updated_at', 'created_at',
                             'updated_at']
 
     org_unit_types = serializers.SerializerMethodField()
+    latest_form_version = serializers.SerializerMethodField()
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
+
+    @staticmethod
+    def get_latest_form_version(obj: Form):
+        return obj.latest_version.as_dict() if obj.latest_version is not None else None
 
     @staticmethod
     def get_org_unit_types(obj: Form):

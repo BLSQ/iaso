@@ -544,11 +544,14 @@ class Form(models.Model):
     period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
     single_per_period = models.NullBooleanField(blank=True)
 
+    @property
+    def latest_version(self):
+        return self.form_versions.order_by("-created_at").first()
+
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
 
     def as_dict(self, additional_fields=None, show_version=True):
-        latest_form_version = self.form_versions.order_by("-created_at").first()
         res = {
             "form_id": self.form_id,
             "name": self.name,
@@ -562,7 +565,7 @@ class Form(models.Model):
 
         if show_version:
             res["latest_form_version"] = (
-                latest_form_version.as_dict() if latest_form_version else None
+                self.latest_version.as_dict() if self.latest_version is not None else None
             )
         if additional_fields:
             for field in additional_fields:

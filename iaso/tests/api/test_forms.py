@@ -69,7 +69,11 @@ class FormsAPITestCase(APITestCase):
 
         response = self.client.get(f'/api/forms/?app_id={self.project.app_id}')
         self.assertJSONResponse(response, 200)
-        self.assertValidFormListData(response.json(), 2)
+        response_data = response.json()
+        self.assertValidFormListData(response_data, 2)
+
+        form_2_data = next(form_data for form_data in response_data["forms"] if form_data["id"] == self.form_2.id)
+        self.assertValidFullFormData(form_2_data)
 
     @tag("iaso_only")
     def test_forms_list_ok(self):
@@ -154,26 +158,7 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         form_data = response.json()
-        self.assertValidFormData(form_data)
-        self.assertHasField(form_data, "form_id", str)
-        self.assertHasField(form_data, "period_type", str)
-        self.assertHasField(form_data, "single_per_period", bool)
-        self.assertHasField(form_data, "org_unit_types", list)
-        self.assertHasField(form_data, "instances_count", int)
-        self.assertHasField(form_data, "instance_updated_at", float)
-
-        for org_unit_type_data in form_data["org_unit_types"]:
-            self.assertIsInstance(org_unit_type_data, dict)
-            self.assertHasField(org_unit_type_data, "id", int)
-
-        self.assertHasField(form_data, "instance_updated_at", float)
-        self.assertHasField(form_data, "instances_count", int)
-        self.assertHasField(form_data, "latest_form_version", dict)
-        self.assertHasField(form_data["latest_form_version"], "id", int)
-        self.assertHasField(form_data["latest_form_version"], "version_id", str)
-        self.assertHasField(form_data["latest_form_version"], "file", str)
-        self.assertHasField(form_data["latest_form_version"], "created_at", float)
-        self.assertHasField(form_data["latest_form_version"], "updated_at", float)
+        self.assertValidFullFormData(form_data)
 
     def test_form_create_ok(self):
         self.client.force_authenticate(self.yoda)
@@ -197,3 +182,26 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "name", str)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
+
+    def assertValidFullFormData(self, form_data: typing.Mapping):  # TODO: check for other fields
+        self.assertValidFormData(form_data)
+
+        self.assertHasField(form_data, "form_id", str)
+        self.assertHasField(form_data, "period_type", str)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "instances_count", int)
+        self.assertHasField(form_data, "instance_updated_at", float)
+
+        for org_unit_type_data in form_data["org_unit_types"]:
+            self.assertIsInstance(org_unit_type_data, dict)
+            self.assertHasField(org_unit_type_data, "id", int)
+
+        self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "instances_count", int)
+        self.assertHasField(form_data, "latest_form_version", dict)
+        self.assertHasField(form_data["latest_form_version"], "id", int)
+        self.assertHasField(form_data["latest_form_version"], "version_id", str)
+        self.assertHasField(form_data["latest_form_version"], "file", str)
+        self.assertHasField(form_data["latest_form_version"], "created_at", float)
+        self.assertHasField(form_data["latest_form_version"], "updated_at", float)

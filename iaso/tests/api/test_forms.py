@@ -159,6 +159,16 @@ class FormsAPITestCase(APITestCase):
             self.assertIsInstance(org_unit_type_data, dict)
             self.assertHasField(org_unit_type_data, "id", int)
 
+    def test_form_create_ok(self):
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', {
+            "name": "test form",
+            "form_id": "test_001",
+            "period_type": "MONTH",
+            "single_per_period": False
+        })
+        self.assertJSONResponse(response, 201)
+
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",
                                  paginated=paginated)

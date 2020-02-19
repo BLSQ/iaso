@@ -22,7 +22,7 @@ class HasFormPermission(AllowAny):
     """
 
     def has_permission(self, request, view):
-        if request.method not in SAFE_METHODS:  # write operations are not allowed for now
+        if request.method not in ('GET', 'HEAD', 'OPTIONS', 'POST'):  # TODO: handle other methods
             return False
 
         return super().has_permission(request, view)
@@ -45,10 +45,10 @@ class FormSerializer(serializers.ModelSerializer):
                             'updated_at']
 
     org_unit_types = serializers.SerializerMethodField()
-    instances_count = serializers.IntegerField()
-    instance_updated_at = TimestampField()
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    instances_count = serializers.IntegerField(read_only=True)
+    instance_updated_at = TimestampField(read_only=True)
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
     @staticmethod
     def get_org_unit_types(obj: Form):

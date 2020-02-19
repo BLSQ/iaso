@@ -32,8 +32,8 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'app_id', 'created_at', 'updated_at']
         read_only_fields = ['id', 'created_at', 'updated_at']
 
-    created_at = TimestampField()
-    updated_at = TimestampField()
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
 
 class ProjectsViewSet(ModelViewSet):

@@ -1,5 +1,6 @@
 import typing
 from django.contrib.auth import get_user_model
+from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework.response import Response
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
@@ -21,10 +22,22 @@ class APITestCase(BaseAPITestCase):
 
         return user
 
-    def assertApiResponse(self, response: typing.Any, expected_status_code: int):
+    def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, Response)
         self.assertEqual(expected_status_code, response.status_code)
         self.assertEqual('application/json', response['Content-Type'])
+
+    def assertFileResponse(self, response: typing.Any, expected_status_code: int, expected_content_type: str, *,
+                           expected_attachment_filename: str = None, streaming: bool = False):
+        self.assertIsInstance(response, HttpResponse if streaming is False else StreamingHttpResponse)
+        self.assertEqual(expected_status_code, response.status_code)
+        self.assertEqual(expected_content_type, response['Content-Type'])
+
+        if expected_attachment_filename is not None:
+            self.assertEquals(
+                response.get("Content-Disposition"),
+                f"attachment; filename={expected_attachment_filename}"
+            )
 
     def assertValidListData(self, *, list_data: typing.Mapping, results_key: str, expected_length: int,
                             paginated: bool = False):

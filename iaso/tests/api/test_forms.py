@@ -34,6 +34,7 @@ class FormsAPITestCase(APITestCase):
         project.forms.add(form_2)
         project.save()
 
+        cls.project = project
         cls.form_1 = form_1
         cls.form_2 = form_2
 
@@ -42,7 +43,7 @@ class FormsAPITestCase(APITestCase):
         """GET /forms/ without auth: 0 result"""
 
         response = self.client.get('/api/forms/')
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
 
@@ -52,18 +53,25 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get('/api/forms/')
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
 
     @tag("iaso_only")
+    def test_forms_list_with_app_id(self):
+        """GET /forms/ mobile app happy path (no auth but with app id): 2 result"""
+
+        response = self.client.get(f'/api/forms/?app_id={self.project.app_id}')
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+    @tag("iaso_only")
     def test_forms_list_ok(self):
-        """GET /forms/ happy path: we expect two results"""
+        """GET /forms/ web app happy path: we expect two results"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get('/api/forms/', headers={'Content-Type': 'application/json'})
-        self.assertApiResponse(response, 200)
-
+        self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 
     @tag("iaso_only")
@@ -72,7 +80,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get('/api/forms/?limit=1&page=1', headers={'Content-Type': 'application/json'})
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         response_data = response.json()
         self.assertValidFormListData(response_data, 1, True)
@@ -82,11 +90,28 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(response_data["count"], 2)
 
     @tag("iaso_only")
+    def test_forms_list_csv(self):
+        """GET /forms/ csv happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get('/api/forms/?csv=1', headers={'Content-Type': 'application/json'})
+        self.assertFileResponse(response, 200, 'text/csv', expected_attachment_filename="forms.csv", streaming=True)
+
+    @tag("iaso_only")
+    def test_forms_list_xslx(self):
+        """GET /forms/ xslx happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get('/api/forms/?xlsx=1', headers={'Content-Type': 'application/json'})
+        self.assertFileResponse(response, 200, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+                                expected_attachment_filename="forms.xlsx")
+
+    @tag("iaso_only")
     def test_forms_retrieve_without_auth(self):
         """GET /forms/<form_id> without auth should result in a 403"""
 
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_forms_retrieve_wrong_auth(self):
@@ -94,7 +119,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_forms_retrieve_not_found(self):
@@ -102,7 +127,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/292003030/')
-        self.assertApiResponse(response, 404)
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_forms_retrieve_ok_1(self):
@@ -110,7 +135,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         self.assertValidFormData(response.json())
 
@@ -120,7 +145,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/{self.form_2.id}/')
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
 
         form_data = response.json()
         self.assertValidFormData(form_data)

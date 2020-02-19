@@ -68,7 +68,7 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/<project_id> without auth should result in a 403"""
 
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_projects_retrieve_wrong_auth(self):
@@ -76,7 +76,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
-        self.assertApiResponse(response, 404)
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_projects_retrieve_not_found(self):
@@ -84,7 +84,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(f'/api/projects/292003030/')
-        self.assertApiResponse(response, 404)
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_projects_retrieve_ok(self):
@@ -92,7 +92,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(f'/api/projects/{self.project_1.id}/')
-        self.assertApiResponse(response, 200)
+        self.assertJSONResponse(response, 200)
         self.assertValidProjectData(response.json())
 
     @tag("iaso_only")
@@ -101,7 +101,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post('/api/projects/', data={})
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_projects_update(self):
@@ -109,7 +109,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.put(f'/api/projects/{self.project_1.id}/', data={})
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_projects_delete(self):
@@ -117,7 +117,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.delete(f'/api/projects/{self.project_1.id}/', data={})
-        self.assertApiResponse(response, 403)
+        self.assertJSONResponse(response, 403)
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="projects",

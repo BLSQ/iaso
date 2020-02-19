@@ -1,8 +1,6 @@
 from django.core.paginator import Paginator
-from django.core.exceptions import PermissionDenied
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -47,8 +45,13 @@ class FormSerializer(serializers.ModelSerializer):
                   'updated_at']
         read_only_fields = ['id', 'org_unit_types', 'created_at', 'updated_at']
 
+    org_unit_types = serializers.SerializerMethodField()
     created_at = TimestampField()
     updated_at = TimestampField()
+
+    @staticmethod
+    def get_org_unit_types(obj: Form):
+        return [t.as_dict() for t in obj.org_unit_types.all()]
 
 
 class FormsViewSet(ModelViewSet):
@@ -56,6 +59,9 @@ class FormsViewSet(ModelViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (HasFormPermission,)
+    serializer_class = FormSerializer
+    results_key = "forms"
+    queryset = Form.objects.all()
 
     def list(self, request, *args, **kwargs):
         # The way this endpoint has been structured is due to the fact that the first mobile application
@@ -177,16 +183,3 @@ class FormsViewSet(ModelViewSet):
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
-
-    def retrieve(self, request, pk=None):
-        form = get_object_or_404(Form, pk=pk)
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            accounts = [project.account for project in form.projects.all()]
-            if profile.account not in accounts:
-                raise PermissionDenied("Your account does not have access to this form")
-
-        return Response(form.as_dict())

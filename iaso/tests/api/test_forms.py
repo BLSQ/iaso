@@ -14,10 +14,28 @@ class FormsAPITestCase(APITestCase):
 
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel)
+
+        jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
+
         project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
                                            account=star_wars)
-        cls.form_1 = project.forms.create(name="Hydroponics study")
-        cls.form_2 = project.forms.create(name="New Land Speeder concept")
+
+        form_1 = m.Form.objects.create(name="Hydroponics study")
+        form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
+                                       single_per_period=True)
+        form_2.org_unit_types.add(jedi_council)
+        form_2.org_unit_types.add(jedi_academy)
+        form_2.save()
+
+        project.unit_types.add(jedi_council)
+        project.unit_types.add(jedi_academy)
+        project.forms.add(form_1)
+        project.forms.add(form_2)
+        project.save()
+
+        cls.form_1 = form_1
+        cls.form_2 = form_2
 
     @tag("iaso_only")
     def test_forms_list_without_auth(self):
@@ -87,14 +105,31 @@ class FormsAPITestCase(APITestCase):
         self.assertApiResponse(response, 404)
 
     @tag("iaso_only")
-    def test_forms_retrieve_ok(self):
-        """GET /forms/<form_id> happy path"""
+    def test_forms_retrieve_ok_1(self):
+        """GET /forms/<form_id> happy path (simple form)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f'/api/forms/{self.form_1.id}/')
         self.assertApiResponse(response, 200)
 
         self.assertValidFormData(response.json())
+
+    @tag("iaso_only")
+    def test_forms_retrieve_ok_2(self):
+        """GET /forms/<form_id> happy path (more complex form, additional fields)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f'/api/forms/{self.form_2.id}/')
+        self.assertApiResponse(response, 200)
+
+        form_data = response.json()
+        self.assertValidFormData(form_data)
+        self.assertHasField(form_data, "form_id", str)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data, "org_unit_types", list)
+        for org_unit_type_data in form_data["org_unit_types"]:
+            self.assertIsInstance(org_unit_type_data, dict)
+            self.assertHasField(org_unit_type_data, "id", int)
 
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",

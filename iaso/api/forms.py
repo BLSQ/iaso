@@ -63,7 +63,18 @@ class FormsViewSet(ModelViewSet):
     results_key = "forms"
     queryset = Form.objects.all()
 
-    def list(self, request, *args, **kwargs):
+    EXPORT_TABLE_COLUMNS = [
+        {"title": "ID du formulaire", "width": 20},
+        {"title": "Nom", "width": 40},
+        {"title": "Enregistrement(s)", "width": 20},
+        {"title": "Type", "width": 20},
+        {"title": "Date de création", "width": 20},
+        {"title": "Date de modification", "width": 20},
+    ]
+    EXPORT_FILE_NAME = "forms"
+    EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ["instance_updated_at", "instances_count"]
+
+    def list(self, request: Request, *args, **kwargs):
         # The way this endpoint has been structured is due to the fact that the first mobile application
         # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
         # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
@@ -86,8 +97,8 @@ class FormsViewSet(ModelViewSet):
         )  # TODO: allow this only from a predefined list for security purpose
         from_date = request.GET.get("date_from", None)
         to_date = request.GET.get("date_to", None)
-        csv_format = request.GET.get("csv", None)
-        xlsx_format = request.GET.get("xlsx", None)
+        csv_format = bool(request.query_params.get("csv", None))
+        xlsx_format = bool(request.query_params.get("xlsx", None))
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
 
         queryset = queryset.annotate(instance_updated_at=Max("instance__updated_at"))
@@ -95,7 +106,6 @@ class FormsViewSet(ModelViewSet):
             instances_count=Count("instance", filter=(~Q(instance__file="")))
         )
 
-        additional_fields = ["instance_updated_at", "instances_count"]
         queryset = queryset.order_by(*order)
         if from_date:
             queryset = queryset.filter(
@@ -114,7 +124,11 @@ class FormsViewSet(ModelViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
 
-        if csv_format is None and xlsx_format is None:
+        if csv_format:
+            return self.list_to_csv(queryset)
+        elif xlsx_format:
+            return self.list_to_xlsx(queryset)
+        else:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -126,7 +140,7 @@ class FormsViewSet(ModelViewSet):
                 page = paginator.page(page_offset)
 
                 res["forms"] = map(
-                    lambda x: x.as_dict(additional_fields), page.object_list
+                    lambda x: x.as_dict(self.EXPORT_ADDITIONAL_SERIALIZER_FIELDS), page.object_list
                 )
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
@@ -136,50 +150,44 @@ class FormsViewSet(ModelViewSet):
                 return Response(res)
             else:
                 return Response(
-                    {"forms": [form.as_dict(additional_fields) for form in queryset]}
+                    {"forms": [form.as_dict(self.EXPORT_ADDITIONAL_SERIALIZER_FIELDS) for form in queryset]}
                 )
-        else:
-            columns = [
-                {"title": "ID du formulaire", "width": 20},
-                {"title": "Nom", "width": 40},
-                {"title": "Enregistrement(s)", "width": 20},
-                {"title": "Type", "width": 20},
-                {"title": "Date de création", "width": 20},
-                {"title": "Date de modification", "width": 20},
-            ]
-            filename = "forms"
 
-            def get_row(qsform, **kwargs):
-                fdict = qsform.as_dict(additional_fields)
-                created_at = timestamp_to_datetime(fdict.get("created_at"))
-                updated_at = (
-                    fdict.get("instance_updated_at").strftime("%Y-%m-%d %H:%M:%S")
-                    if fdict.get("instance_updated_at")
-                    else "2019-01-01 00:00:00"
-                )
-                org_unit_types = ", ".join(
-                    [o["name"] for o in fdict.get("org_unit_types") if o is not None]
-                )
-                return [
-                    fdict.get("form_id"),
-                    fdict.get("name"),
-                    fdict.get("instances_count"),
-                    org_unit_types,
-                    created_at,
-                    updated_at,
-                ]
+    def list_to_csv(self, queryset):
+        response = StreamingHttpResponse(
+            streaming_content=(iter_items(queryset, Echo(), self.EXPORT_TABLE_COLUMNS, self.get_table_row)),
+            content_type="text/csv",
+        )
+        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
-            if xlsx_format:
-                filename = filename + ".xlsx"
-                response = HttpResponse(
-                    generate_xlsx("Forms", columns, queryset, get_row),
-                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                )
-            if csv_format:
-                response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                    content_type="text/csv",
-                )
-                filename = filename + ".csv"
-            response["Content-Disposition"] = "attachment; filename=%s" % filename
-            return response
+        return response
+
+    def list_to_xlsx(self, queryset):
+        response = HttpResponse(
+            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, queryset, self.get_table_row),
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
+
+        return response
+
+    @classmethod
+    def get_table_row(cls, form: Form, **kwargs):  # TODO: use serializer
+        form_data = form.as_dict(cls.EXPORT_ADDITIONAL_SERIALIZER_FIELDS)
+        created_at = timestamp_to_datetime(form_data.get("created_at"))
+        updated_at = (
+            form_data.get("instance_updated_at").strftime("%Y-%m-%d %H:%M:%S")
+            if form_data.get("instance_updated_at")
+            else "2019-01-01 00:00:00"
+        )
+        org_unit_types = ", ".join(
+            [o["name"] for o in form_data.get("org_unit_types") if o is not None]
+        )
+        return [
+            form_data.get("form_id"),
+            form_data.get("name"),
+            form_data.get("instances_count"),
+            org_unit_types,
+            created_at,
+            updated_at,
+        ]

@@ -2,6 +2,7 @@ from datetime import datetime
 
 from django.utils.timezone import make_aware
 from rest_framework import serializers, pagination
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
 
@@ -58,7 +59,7 @@ class ModelViewSet(BaseModelViewSet):
 
         return self.results_key
 
-    def list(self, request, *args, **kwargs):
+    def list(self, request: Request, *args, **kwargs):
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)

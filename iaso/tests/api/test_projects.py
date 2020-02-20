@@ -100,7 +100,7 @@ class ProjectsAPITestCase(APITestCase):
         """POST /projects/: not authorized for now"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.post('/api/projects/', data={})
+        response = self.client.post('/api/projects/', data={}, format='json')
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
@@ -108,7 +108,7 @@ class ProjectsAPITestCase(APITestCase):
         """PUT /projects/<project_id>: not authorized for now"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.put(f'/api/projects/{self.project_1.id}/', data={})
+        response = self.client.put(f'/api/projects/{self.project_1.id}/', data={}, format='json')
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
@@ -116,7 +116,7 @@ class ProjectsAPITestCase(APITestCase):
         """DELETE /projects/<project_id>: not authorized for now"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.delete(f'/api/projects/{self.project_1.id}/', data={})
+        response = self.client.delete(f'/api/projects/{self.project_1.id}/', format='json')
         self.assertJSONResponse(response, 403)
 
     def assertValidProjectListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):

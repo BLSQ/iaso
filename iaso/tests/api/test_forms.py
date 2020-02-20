@@ -22,13 +22,13 @@ class FormsAPITestCase(APITestCase):
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
 
         cls.project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
-                                           account=star_wars)
+                                               account=star_wars)
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study")
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
         cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
-                                       period_type="QUARTER", single_per_period=True)
+                                           period_type="QUARTER", single_per_period=True)
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
@@ -161,14 +161,14 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f'/api/forms/', {
+        response = self.client.post(f'/api/forms/', data={
             "name": "test form",
             "form_id": "test_001",
             "period_type": "MONTH",
             "single_per_period": False,
             "project_ids": [self.project.id],
             "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
-        })
+        }, format='json')
         self.assertJSONResponse(response, 201)
         response_data = response.json()
 
@@ -181,13 +181,14 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ - user has no access to the project"""
 
         self.client.force_authenticate(self.raccoon)
-        response = self.client.post(f'/api/forms/', {
+        response = self.client.post(f'/api/forms/', data={
             "name": "test form",
             "form_id": "test_001",
             "period_type": "MONTH",
             "single_per_period": False,
             "project_ids": [self.project.id],
-        })
+            "org_unit_type_ids": [self.jedi_council.id]
+        }, format='json')
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
@@ -195,16 +196,32 @@ class FormsAPITestCase(APITestCase):
         """POST /forms/ - mismatch between project and org unit types"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f'/api/forms/', {
+        response = self.client.post(f'/api/forms/', data={
             "name": "another test form",
             "form_id": "test_002",
             "period_type": "MONTH",
             "single_per_period": False,
             "project_ids": [self.project.id],
             "org_unit_type_ids": [self.sith_guild.id]
-        })
+        }, format='json')
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
+
+    @tag("iaso_only")
+    def test_forms_update(self):
+        """PUT /forms/<form_id>: not authorized for now"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.put(f'/api/forms/{self.form_1.id}/', data={}, format='json')
+        self.assertJSONResponse(response, 403)
+
+    @tag("iaso_only")
+    def test_forms_delete(self):
+        """DELETE /forms/<form_id>: not authorized for now"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.delete(f'/api/forms/{self.form_1.id}/', format='json')
+        self.assertJSONResponse(response, 403)
 
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",

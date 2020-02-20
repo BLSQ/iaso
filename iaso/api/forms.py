@@ -1,7 +1,7 @@
 import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
-from rest_framework import serializers, permissions
+from rest_framework import serializers, permissions, renderers
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
 
@@ -17,7 +17,6 @@ class HasFormPermission(permissions.BasePermission):
     """Rules:
 
     - The forms API is partly accessible to anonymous users
-    - Write operations are not allowed for now
     - Actions on specific forms can only be performed by users linked to an account associated with one of the form
       projects
     """
@@ -25,10 +24,8 @@ class HasFormPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
-        elif request.method == 'POST':
-            return request.user.is_authenticated
 
-        return False
+        return request.user.is_authenticated
 
     def has_object_permission(self, request: Request, view, obj: Form):
         if not request.user.is_authenticated:
@@ -91,17 +88,19 @@ class FormsViewSet(ModelViewSet):
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()
+    renderer_classes = (renderers.JSONRenderer,)
+    http_method_names = ('get', 'post', 'options')
 
-    EXPORT_TABLE_COLUMNS = [
+    EXPORT_TABLE_COLUMNS = (
         {"title": "ID du formulaire", "width": 20},
         {"title": "Nom", "width": 40},
         {"title": "Enregistrement(s)", "width": 20},
         {"title": "Type", "width": 20},
         {"title": "Date de création", "width": 20},
         {"title": "Date de modification", "width": 20},
-    ]
+    )
     EXPORT_FILE_NAME = "forms"
-    EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ["instance_updated_at", "instances_count"]
+    EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
         queryset = Form.objects.all()
@@ -148,6 +147,9 @@ class FormsViewSet(ModelViewSet):
         return queryset
 
     def list(self, request: Request, *args, **kwargs):
+        # TODO: use accept header to determine format - or at least the standard "format" parameter
+        # DRF also provides a mechanic for custom renderer
+        # see https://www.django-rest-framework.org/api-guide/renderers/
         csv_format = bool(request.query_params.get("csv", None))
         xlsx_format = bool(request.query_params.get("xlsx", None))
 

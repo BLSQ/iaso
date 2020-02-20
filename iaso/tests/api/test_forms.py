@@ -221,15 +221,15 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f'/api/forms/{self.form_1.id}/', data={}, format='json')
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")
-    def test_forms_delete(self):
+    def test_forms_destroy(self):
         """DELETE /forms/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f'/api/forms/{self.form_1.id}/', format='json')
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",

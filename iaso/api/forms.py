@@ -1,15 +1,17 @@
+import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import AllowAny, SAFE_METHODS
+from rest_framework.permissions import AllowAny
 
-from iaso.models import Form
+from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .auth.authentication import CsrfExemptSessionAuthentication
+from .projects import ProjectSerializer, HasProjectPermission
 
 
 class HasFormPermission(AllowAny):
@@ -39,12 +41,18 @@ class HasFormPermission(AllowAny):
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'name', 'form_id', 'org_unit_types', 'period_type', 'single_per_period', 'latest_form_version',
-                  'instances_count', 'instance_updated_at', 'created_at', 'updated_at']
-        read_only_fields = ['id', 'org_unit_types', 'instances_count', 'instance_updated_at', 'created_at',
+        fields = ['id', 'name', 'form_id', 'org_unit_types', 'org_unit_type_ids', 'projects', 'project_ids',
+                  'period_type', 'single_per_period', 'latest_form_version', 'instances_count', 'instance_updated_at',
+                  'created_at', 'updated_at']
+        read_only_fields = ['id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at', 'created_at',
                             'updated_at']
 
     org_unit_types = serializers.SerializerMethodField()
+    org_unit_type_ids = serializers.PrimaryKeyRelatedField(source="org_unit_types", write_only=True, many=True,
+                                                           queryset=OrgUnitType.objects.all())
+    projects = ProjectSerializer(read_only=True, many=True)
+    project_ids = serializers.PrimaryKeyRelatedField(source="projects", write_only=True, many=True,
+                                                     queryset=Project.objects.all())
     latest_form_version = serializers.SerializerMethodField()
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
@@ -58,6 +66,20 @@ class FormSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_org_unit_types(obj: Form):
         return [t.as_dict() for t in obj.org_unit_types.all()]
+
+    def validate(self, data: typing.Mapping):
+        # validate projects (access check)
+        permission_checker = HasProjectPermission()
+        for project in data["projects"]:
+            if not permission_checker.has_object_permission(self.context["request"], self.context["view"], project):
+                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
+
+        # validate org_unit_types against projects
+        allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
+        if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
+            raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+
+        return data
 
 
 class FormsViewSet(ModelViewSet):

@@ -61,3 +61,8 @@ class APITestCase(BaseAPITestCase):
         self.assertIn(field_name, data)
         if not optional:
             self.assertIsInstance(data[field_name], cls)
+
+    def assertHasError(self, data: typing.Mapping, field_name: str, error_message: str = None):
+        self.assertIn(field_name, data)
+        if error_message is not None:
+            self.assertIn(error_message, data[field_name])

@@ -17,32 +17,29 @@ class FormsAPITestCase(APITestCase):
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
         cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel)
 
-        jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-        jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
+        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
+        cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
+        cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
 
-        project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
+        cls.project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
                                            account=star_wars)
 
-        form_1 = m.Form.objects.create(name="Hydroponics study")
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study")
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
-        form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
+        cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
                                        period_type="QUARTER", single_per_period=True)
-        form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
-        form_2.org_unit_types.add(jedi_council)
-        form_2.org_unit_types.add(jedi_academy)
-        form_2.instances.create()
-        form_2.save()
+        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
+        cls.form_2.org_unit_types.add(cls.jedi_council)
+        cls.form_2.org_unit_types.add(cls.jedi_academy)
+        cls.form_2.instances.create()
+        cls.form_2.save()
 
-        project.unit_types.add(jedi_council)
-        project.unit_types.add(jedi_academy)
-        project.forms.add(form_1)
-        project.forms.add(form_2)
-        project.save()
-
-        cls.project = project
-        cls.form_1 = form_1
-        cls.form_2 = form_2
+        cls.project.unit_types.add(cls.jedi_council)
+        cls.project.unit_types.add(cls.jedi_academy)
+        cls.project.forms.add(cls.form_1)
+        cls.project.forms.add(cls.form_2)
+        cls.project.save()
 
     @tag("iaso_only")
     def test_forms_list_without_auth(self):
@@ -160,15 +157,54 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertValidFullFormData(form_data)
 
-    def test_form_create_ok(self):
+    def test_forms_create_ok(self):
+        """POST /forms/ happy path"""
+
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f'/api/forms/', {
             "name": "test form",
             "form_id": "test_001",
             "period_type": "MONTH",
-            "single_per_period": False
+            "single_per_period": False,
+            "project_ids": [self.project.id],
+            "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
         })
         self.assertJSONResponse(response, 201)
+        response_data = response.json()
+
+        self.assertValidFormData(response_data)
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(1, form.projects.count())
+        self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_wrong_project(self):
+        """POST /forms/ - user has no access to the project"""
+
+        self.client.force_authenticate(self.raccoon)
+        response = self.client.post(f'/api/forms/', {
+            "name": "test form",
+            "form_id": "test_001",
+            "period_type": "MONTH",
+            "single_per_period": False,
+            "project_ids": [self.project.id],
+        })
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "project_ids", "Invalid project ids")
+
+    def test_forms_create_wrong_org_unit_types(self):
+        """POST /forms/ - mismatch between project and org unit types"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', {
+            "name": "another test form",
+            "form_id": "test_002",
+            "period_type": "MONTH",
+            "single_per_period": False,
+            "project_ids": [self.project.id],
+            "org_unit_type_ids": [self.sith_guild.id]
+        })
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
 
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",

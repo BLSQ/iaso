@@ -625,19 +625,6 @@ class FormVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def convert_xml_to_fields(self):
-        if self.file:
-            if "amazonaws" in self.file.url:
-                file = urlopen(self.file.url)
-            else:
-                file = self.file
-            file_content = flat_parse_xml_file(file)
-            self.form.fields = file_content
-            self.form.save()
-        else:
-            file_content = {}
-        return file_content
-
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
 

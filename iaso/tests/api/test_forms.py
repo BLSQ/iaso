@@ -157,6 +157,14 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertValidFullFormData(form_data)
 
+    def test_forms_create_without_auth(self):
+        """POST /forms/ without auth: 403"""
+
+        response = self.client.post(f'/api/forms/', data={
+            "name": "test form",
+        }, format='json')
+        self.assertJSONResponse(response, 403)
+
     def test_forms_create_ok(self):
         """POST /forms/ happy path"""
 

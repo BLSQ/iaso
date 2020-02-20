@@ -1,10 +1,9 @@
 import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
-from rest_framework import serializers
+from rest_framework import serializers, permissions
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
-from rest_framework.permissions import AllowAny
 
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
@@ -14,7 +13,7 @@ from .auth.authentication import CsrfExemptSessionAuthentication
 from .projects import ProjectSerializer, HasProjectPermission
 
 
-class HasFormPermission(AllowAny):
+class HasFormPermission(permissions.BasePermission):
     """Rules:
 
     - The forms API is partly accessible to anonymous users
@@ -24,13 +23,15 @@ class HasFormPermission(AllowAny):
     """
 
     def has_permission(self, request, view):
-        if request.method not in ('GET', 'HEAD', 'OPTIONS', 'POST'):  # TODO: handle other methods
-            return False
+        if request.method in permissions.SAFE_METHODS:
+            return True
+        elif request.method == 'POST':
+            return request.user.is_authenticated
 
-        return super().has_permission(request, view)
+        return False
 
     def has_object_permission(self, request: Request, view, obj: Form):
-        if not request.user or not request.user.is_authenticated:
+        if not request.user.is_authenticated:
             return False
 
         accounts = [project.account for project in obj.projects.all()]

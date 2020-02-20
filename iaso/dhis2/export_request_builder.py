@@ -17,19 +17,28 @@ class ExportRequestBuilder:
         self.form_mappings_cache = {}
 
     def get_form_mapping_versions(self, instance):
-        # TODO use the ona_version to lookup the correct version
-        # ona_version = instance.json()["_version"]
-        ona_version = "latest"
+        ona_version = instance.json.get("_version") or instance.json.get("version")
+        if ona_version is None:
+            raise Exception("No version specified in instance json : " + str(instance))
 
         key = (instance.form_id, ona_version)
         if key in self.form_mappings_cache:
             return self.form_mappings_cache[key]
 
-        # TODO filter on ona_version id
+        mappings = []
+        for form_mapping in instance.form.mapping_set.all():
+            for form_mapping_version in form_mapping.versions.all():
+                if form_mapping_version.form_version.version_id == ona_version:
+                    mappings.append(form_mapping_version)
 
-        mappings = [
-            mapping.versions.last() for mapping in instance.form.mapping_set.all()
-        ]
+        if len(mappings) == 0:
+            raise Exception(
+                "No form mapping version for the form version '"
+                + instance.form.name
+                + "' for version '"
+                + str(ona_version)
+                + "'"
+            )
         self.form_mappings_cache[key] = mappings
 
         return self.form_mappings_cache[key]

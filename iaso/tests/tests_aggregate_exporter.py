@@ -69,10 +69,13 @@ class AggregateExporterTests(TestCase):
         instance.org_unit = self.org_unit
         if form == self.form:
             instance.period = "201801"
-            instance.json = {"question1": "1"}
+            instance.json = {"question1": "1", "version": self.form_version.version_id}
         else:
             instance.period = "2018Q1"
-            instance.json = {"question1_quality": "1"}
+            instance.json = {
+                "question1_quality": "1",
+                "version": self.form_quality_version.version_id,
+            }
 
         instance.form = form
         instance.save()
@@ -113,7 +116,7 @@ class AggregateExporterTests(TestCase):
         self.form = form
 
         form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id=1
+            form=form, version_id="1"
         )
 
         self.form = form
@@ -167,7 +170,7 @@ class AggregateExporterTests(TestCase):
         self.form_quality = form_quality
 
         form_quality_version, created = FormVersion.objects.get_or_create(
-            form=form_quality, version_id=1
+            form=form_quality, version_id="1"
         )
 
         self.form_quality_version = form_quality_version
@@ -517,7 +520,7 @@ class AggregateExporterTests(TestCase):
         # setup
         # persist an instance
         instance = self.build_instance(self.form)
-        instance.json = {"question1": "badvalue"}
+        instance.json = {"question1": "badvalue", "version": "1"}
         instance.save()
 
         mapping_version = MappingVersion(

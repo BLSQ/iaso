@@ -238,13 +238,13 @@ class FormsAPITestCase(APITestCase):
         for form_data in list_data["forms"]:
             self.assertValidFormData(form_data)
 
-    def assertValidFormData(self, form_data: typing.Mapping):  # TODO: check for other fields
+    def assertValidFormData(self, form_data: typing.Mapping):
         self.assertHasField(form_data, "id", int)
         self.assertHasField(form_data, "name", str)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
 
-    def assertValidFullFormData(self, form_data: typing.Mapping):  # TODO: check for other fields
+    def assertValidFullFormData(self, form_data: typing.Mapping):
         self.assertValidFormData(form_data)
 
         self.assertHasField(form_data, "form_id", str)

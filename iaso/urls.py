@@ -10,6 +10,7 @@ from .api.iaso_devices_ownership import IasoDevicesOwnershipViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
+from .api.form_versions import FormVersionsViewSet
 from .api.links import LinkViewSet
 from .api.profiles import ProfilesViewSet
 from .api.algorithms import AlgorithmsViewSet
@@ -26,6 +27,7 @@ router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
 router.register(r"projects", ProjectsViewSet, base_name="projects")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
+router.register(r"formversions", FormVersionsViewSet, base_name="formversions")
 router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
 router.register(
     r"iasodevicesownership",

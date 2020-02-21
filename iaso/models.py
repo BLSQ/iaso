@@ -620,8 +620,9 @@ class FormVersion(models.Model):
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )
-    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
-    version_id = models.TextField(null=True, blank=True)
+    file = models.FileField(upload_to=UPLOADED_TO)
+    xls_file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    version_id = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

@@ -1,5 +1,4 @@
 import typing
-
 from django.test import tag
 from django.core.files import File
 from unittest import mock
@@ -67,15 +66,19 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        form_file_mock = mock.MagicMock(spec=File)
-        form_file_mock.name = 'test_yoda.xml'
-        response = self.client.post(f'/api/formversions/', data={
-            "form_id": self.form.id,
-            "version_id": "february_2020",
-            "file": form_file_mock,
-        }, format='multipart')
+        with open("iaso/tests/api/fixtures/odk_form.xls", "rb") as xls_file:
+            response = self.client.post(f'/api/formversions/', data={
+                "form_id": self.form.id,
+                "version_id": "february_2020",
+                "xls_file": xls_file,
+            }, format='multipart', HTTP_ACCEPT='application/json')
         self.assertJSONResponse(response, 201)
-        self.assertValidFormVersionData(response.json())
+        response_data = response.json()
+        self.assertValidFormVersionData(response_data)
+
+        created_version = m.FormVersion.objects.get(pk=response_data['id'])
+        self.assertIsInstance(created_version.xls_file, File)
+        self.assertIsInstance(created_version.file, File)
 
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""
@@ -93,6 +96,7 @@ class FormsVersionAPITestCase(APITestCase):
     def assertValidFormVersionData(self, form_version_data: typing.Mapping):  # TODO: check for other fields
         self.assertHasField(form_version_data, "id", int)
         self.assertHasField(form_version_data, "file", str)
+        self.assertHasField(form_version_data, "xls_file", str)
         self.assertHasField(form_version_data, "version_id", str)
         self.assertHasField(form_version_data, "created_at", float)
         self.assertHasField(form_version_data, "updated_at", float)

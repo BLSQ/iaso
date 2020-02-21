@@ -246,16 +246,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = additional_queryset
                 else:
                     queryset = queryset.union(additional_queryset)
-                counts.append({
-                    "index": search_index,
-                    "count": additional_queryset.count(),
-                })
+                counts.append(
+                    {"index": search_index, "count": additional_queryset.count(),}
+                )
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET)
         queryset = queryset.order_by(*order)
 
-        if csv_format is None:
+        if csv_format is None and xlsx_format is None:
             if limit and not as_location:
                 queryset.prefetch_related("group_set")
                 limit = int(limit)

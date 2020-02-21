@@ -59,8 +59,10 @@ class VillageSearchModal extends Component {
         return {
             onClick: (e) => {
                 e.preventDefault();
-                onSelectVillage(rowInfo.original);
-                this.toggleModal();
+                if (onSelectVillage) {
+                    onSelectVillage(rowInfo.original);
+                    this.toggleModal();
+                }
             },
             style: {
                 cursor: 'pointer',
@@ -171,7 +173,7 @@ class VillageSearchModal extends Component {
             intl: {
                 formatMessage,
             },
-            onSelectVillage,
+            extraButtons,
             btnMessage,
             showButton,
             columns,
@@ -275,6 +277,22 @@ class VillageSearchModal extends Component {
                                     showResetSearch
                                 />
                             </Grid>
+                            <Grid
+                                xs={6}
+                                md={9}
+                                item
+                                container
+                                justify="flex-end"
+                                alignItems="baseline"
+                            >
+                                <button
+                                    className="button"
+                                    onClick={() => this.searchVillages()}
+                                >
+                                    <i className="fa fa-search" />
+                                    <FormattedMessage id="main.label.search" defaultMessage="Rechercher" />
+                                </button>
+                            </Grid>
                         </Grid>
 
                         <Grid container spacing={2}>
@@ -301,7 +319,6 @@ class VillageSearchModal extends Component {
                                     className="-striped -highlight"
                                     defaultSorted={[{ id: 'name', desc: false }]}
                                     pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
-                                    onSelect={village => onSelectVillage(village.id)}
                                     getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
                                     style={{
                                         height: '60vh',
@@ -309,29 +326,40 @@ class VillageSearchModal extends Component {
                                 />
                             </Grid>
                         </Grid>
-                        <Grid container spacing={2}>
-                            <Grid
-                                xs={12}
-                                item
-                                container
-                                justify="flex-end"
-                            >
+                        <section className="margin-top">
 
-                                <button
-                                    className="button margin-top"
-                                    onClick={() => this.toggleModal()}
+                            <Grid container spacing={2}>
+                                <Grid
+                                    xs={extraButtons.length > 0 ? 6 : 12}
+                                    item
+                                    container
+                                    justify={extraButtons.length > 0 ? 'flex-start' : 'flex-end'}
                                 >
-                                    <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
-                                </button>
 
-                                <button
-                                    className="button margin-top margin-left"
-                                    onClick={() => this.searchVillages()}
-                                >
-                                    <FormattedMessage id="main.label.search" defaultMessage="Rechercher" />
-                                </button>
+                                    <button
+                                        className="button"
+                                        onClick={() => this.toggleModal()}
+                                    >
+                                        <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
+                                    </button>
+                                </Grid>
+                                {
+                                    extraButtons.length > 0
+                                    && (
+                                        <Grid
+                                            xs={6}
+                                            item
+                                            container
+                                            justify="flex-end"
+                                        >
+                                            {
+                                                extraButtons.map((b, i) => <span key={i}>{b}</span>)
+                                            }
+                                        </Grid>
+                                    )
+                                }
                             </Grid>
-                        </Grid>
+                        </section>
                     </section>
                 </ReactModal>
             </Fragment>
@@ -347,10 +375,12 @@ VillageSearchModal.defaultProps = {
     filters: {},
     autoLoad: false,
     getResutText: null,
+    onSelectVillage: null,
+    extraButtons: [],
 };
 
 VillageSearchModal.propTypes = {
-    onSelectVillage: PropTypes.func.isRequired,
+    onSelectVillage: PropTypes.any,
     intl: PropTypes.object.isRequired,
     btnMessage: PropTypes.string,
     showButton: PropTypes.bool,
@@ -360,6 +390,7 @@ VillageSearchModal.propTypes = {
     filters: PropTypes.object,
     autoLoad: PropTypes.bool,
     getResutText: PropTypes.any,
+    extraButtons: PropTypes.array,
 };
 
 

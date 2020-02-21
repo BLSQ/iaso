@@ -36,6 +36,7 @@ article {
     -webkit-transition: top 0.5s ease-in-out;
     transition: top 0.5s ease-in-out;
     z-index: 1002;
+
     a {
         color: white;
     }
@@ -302,6 +303,10 @@ $directions: left right top bottom;
     width: auto !important;
 }
 
+.width-full {
+    width: 100% !important;
+}
+
 
 .text-padding-left {
     display: inline-block;
@@ -391,6 +396,7 @@ $directions: left right top bottom;
 
 .bordered {
     border: 1px solid $gray;
+
     &.round {
         border-radius: 5px;
     }

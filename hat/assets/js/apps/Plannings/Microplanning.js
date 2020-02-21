@@ -207,7 +207,7 @@ export class Microplanning extends Component {
             return null;
         }
         return (
-            <div>
+            <div className="save-assignations">
                 {
                     typeof this.state.errorOnSave !== 'undefined'
                         ? !this.state.errorOnSave
@@ -348,8 +348,11 @@ export class Microplanning extends Component {
                         years: this.props.params.years,
                         teamId: this.props.params.team_id,
                     }}
-                    selectedVillages={assignations}
+                    assignations={assignations}
+                    teams={teams}
                     toggleSearchModal={() => this.toggleSearchModal()}
+                    selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
+                    saveButton={this.renderSaveTeamButton()}
                 />
                 {
                     loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />

@@ -303,6 +303,9 @@ class VillageSearchModal extends Component {
                                     pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
                                     onSelect={village => onSelectVillage(village.id)}
                                     getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
+                                    style={{
+                                        height: '60vh',
+                                    }}
                                 />
                             </Grid>
                         </Grid>

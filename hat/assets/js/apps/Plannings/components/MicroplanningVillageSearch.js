@@ -8,6 +8,7 @@ import { injectIntl } from 'react-intl';
 
 import VillageSearchModal from '../../../components/VillageSearchModal';
 import columns from '../utils/constants/MicroplanningVillageSearchColumns';
+import CheckBox from '../../../components/CheckBoxComponent';
 
 const getModalTitle = (count, selectedCount, formatMessage) => (
     `${selectedCount} ${formatMessage({
@@ -19,8 +20,53 @@ const getModalTitle = (count, selectedCount, formatMessage) => (
     }))} ${count}`
 );
 
-const getColumns = (formatMessage) => {
-    const originalColumns = columns(formatMessage);
+const getColumns = (formatMessage, selectedVillages) => {
+    const selectedColumns = [{
+        Header: formatMessage({
+            defaultMessage: 'Selected',
+            id: 'main.label.selected',
+        }),
+        className: 'small',
+        accessor: 'selected',
+        Cell: (settings) => {
+            const isChecked = Boolean(selectedVillages.find(sv => sv.village_id === settings.original.id));
+            return (
+                <section>
+                    <CheckBox
+                        isChecked={isChecked}
+                        keyValue="selected"
+                        toggleCheckbox={() => console.log(!isChecked)}
+                    />
+                </section>
+            );
+        },
+    },
+    {
+        Header: formatMessage({
+            defaultMessage: 'Selected Id',
+            id: 'main.label.selected.id',
+        }),
+        className: 'small',
+        accessor: 'selected_id',
+        Cell: (settings) => {
+            const villageSelected = selectedVillages.find(sv => sv.village_id === settings.original.id);
+            return (
+                <section>
+                    {
+                        villageSelected
+                        && `${villageSelected.index}`
+                    }
+                    {
+                        !villageSelected
+                        && '-'
+                    }
+                </section>
+            );
+        },
+    },
+    ];
+
+    const originalColumns = selectedColumns.concat(columns(formatMessage));
     return originalColumns;
 };
 
@@ -56,7 +102,7 @@ class MicroplanningVillageSearch extends Component {
                 showModal={showSearchModal}
                 showButton={false}
                 toggleModal={() => toggleSearchModal()}
-                columns={getColumns(formatMessage)}
+                columns={getColumns(formatMessage, selectedVillages)}
                 filters={filters}
                 autoLoad
                 getResutText={count => getModalTitle(count, selectedVillages.length, formatMessage)}

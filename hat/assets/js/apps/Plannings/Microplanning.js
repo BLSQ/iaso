@@ -331,7 +331,6 @@ export class Microplanning extends Component {
         } else if (this.props.params.workzone_id) {
             mapLegendItems = shortVillageSelectionLegend;
         }
-
         const { showSearchModal } = this.state;
         return (
             <div
@@ -349,7 +348,7 @@ export class Microplanning extends Component {
                         years: this.props.params.years,
                         teamId: this.props.params.team_id,
                     }}
-                    selectedVillages={selectedAndUnselectedVillages}
+                    selectedVillages={assignations}
                     toggleSearchModal={() => this.toggleSearchModal()}
                 />
                 {

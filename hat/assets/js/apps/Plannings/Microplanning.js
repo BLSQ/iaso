@@ -27,7 +27,7 @@ import geoUtils from '../../utils/geo';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { villageSelectionLegend } from './constants/microplanningLegends';
-import VillageSearchModal from '../../components/VillageSearchModal';
+import MicroplanningVillageSearch from './components/MicroplanningVillageSearch';
 
 import {
     Map,
@@ -67,10 +67,6 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Village clustering',
         id: 'microplanning.labels.cluster_title',
     },
-    addVillage: {
-        defaultMessage: 'Add a village',
-        id: 'microplanning.labels.addVillage',
-    },
 });
 
 export class Microplanning extends Component {
@@ -80,6 +76,7 @@ export class Microplanning extends Component {
             isSelectionModified: false,
             errorOnSave: undefined,
             currentTab: 'villageSelection',
+            showSearchModal: false,
         };
         if (props.params.workzone_id) {
             this.props.changeCluster(false);
@@ -197,6 +194,13 @@ export class Microplanning extends Component {
         }
         this.props.activateFullscreen();
     }
+
+    toggleSearchModal() {
+        this.setState({
+            showSearchModal: !this.state.showSearchModal,
+        });
+    }
+
 
     renderSaveTeamButton() {
         if (!this.props.params.coordination_id && !this.props.params.team_id) {
@@ -327,7 +331,8 @@ export class Microplanning extends Component {
         } else if (this.props.params.workzone_id) {
             mapLegendItems = shortVillageSelectionLegend;
         }
-        console.log('selectedAndUnselectedVillages', selectedAndUnselectedVillages);
+
+        const { showSearchModal } = this.state;
         return (
             <div
                 tabIndex={0}
@@ -335,6 +340,18 @@ export class Microplanning extends Component {
                 className="no-button"
                 onKeyDown={event => this.onKeyDownHandler(event)}
             >
+
+                <MicroplanningVillageSearch
+                    showSearchModal={showSearchModal}
+                    filters={{
+                        planningId: this.props.params.planning_id,
+                        workZoneId: this.props.params.workzone_id,
+                        years: this.props.params.years,
+                        teamId: this.props.params.team_id,
+                    }}
+                    selectedVillages={selectedAndUnselectedVillages}
+                    toggleSearchModal={() => this.toggleSearchModal()}
+                />
                 {
                     loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }
@@ -441,16 +458,6 @@ export class Microplanning extends Component {
                                                     )
                                                 }
                                             </div>
-                                            <div>
-                                                <VillageSearchModal
-                                                    onSelectVillage={(village) => {
-                                                        const villagesList = selectedAndUnselectedVillages;
-                                                        villagesList.push(village);
-                                                        this.props.selectItems(villagesList);
-                                                    }}
-                                                    btnMessage={formatMessage(MESSAGES.addVillage)}
-                                                />
-                                            </div>
 
                                             {/* Selection actions */}
                                             <MapSelectionControl
@@ -545,6 +552,7 @@ export class Microplanning extends Component {
                                         selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
                                         workzoneId={this.props.params.workzone_id}
                                         withCluster={withCluster}
+                                        toggleSearchModal={() => this.toggleSearchModal()}
                                     />
                                 )
                             }

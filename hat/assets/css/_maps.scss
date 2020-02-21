@@ -150,6 +150,15 @@ $color in $types {
     font-size: $font-size-standard;
 }
 
+.leaflet-control-zoom-search:after {
+    color: $dark-gray;
+    content: "";
+    /* empty square icon */
+    font-family: $icon-font;
+    font-size: $font-size-standard;
+}
+
+
 .leaflet-control-zoom-box.active {
     color: $active;
     background: lighten($active, 35%);

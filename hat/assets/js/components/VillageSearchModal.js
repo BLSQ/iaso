@@ -9,6 +9,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 
 import {
+    Typography,
     Grid,
 } from '@material-ui/core';
 
@@ -32,6 +33,7 @@ class VillageSearchModal extends Component {
             pages: 0,
             loading: false,
             results: [],
+            currentCount: 0,
             orders: 'name',
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
@@ -39,6 +41,15 @@ class VillageSearchModal extends Component {
 
     componentWillMount() {
         ReactModal.setAppElement('.container--main');
+    }
+
+    componentDidMount() {
+        const {
+            autoLoad,
+        } = this.props;
+        if (autoLoad) {
+            this.searchVillages();
+        }
     }
 
     onRowClicked(state, rowInfo) {
@@ -98,9 +109,13 @@ class VillageSearchModal extends Component {
 
 
     toggleModal() {
-        this.setState({
-            showModal: !this.state.showModal,
-        });
+        if (this.props.toggleModal === null) {
+            this.setState({
+                showModal: !this.state.showModal,
+            });
+        } else {
+            this.props.toggleModal();
+        }
     }
 
     searchVillages(
@@ -109,11 +124,20 @@ class VillageSearchModal extends Component {
         currentPage = this.state.currentPage,
         orders = this.state.orders,
     ) {
+        const {
+            filters,
+        } = this.props;
         this.setState({
             loading: true,
             searchString,
         });
-        const url = `/api/villages/?as_list=true&limit=${currentPageSize}&include_unlocated=true&page=${currentPage}&search=${searchString}&order=${orders}`;
+        let url = `/api/villages/?as_list=true&limit=${currentPageSize}&page=${currentPage}&order=${orders}`;
+        if (searchString !== '') {
+            filters.search = searchString;
+        }
+        Object.keys(filters).forEach((filterKey) => {
+            url += `&${filterKey}=${filters[filterKey]}`;
+        });
         req
             .get(url)
             .then((res) => {
@@ -123,6 +147,7 @@ class VillageSearchModal extends Component {
                     currentPage: data.page,
                     currentPageSize: parseInt(data.limit, 10),
                     pages: data.pages,
+                    currentCount: data.count,
                     loading: false,
                 });
             })
@@ -148,32 +173,40 @@ class VillageSearchModal extends Component {
             },
             onSelectVillage,
             btnMessage,
+            showButton,
+            columns,
+            getResutText,
         } = this.props;
+        const showModal = this.props.showModal === null ? this.state.showModal : this.props.showModal;
         const {
-            showModal,
             loading,
             pages,
             currentPageSize,
             currentPage,
             results,
             searchString,
+            currentCount,
         } = this.state;
         return (
             <Fragment>
-
-                <button
-                    className="button--tiny margin-right"
-                    onClick={() => this.toggleModal()}
-                >
-                    {
-                        btnMessage === ''
-                        && <FormattedMessage id="main.label.searchVillage" defaultMessage="Search a village" />
-                    }
-                    {
-                        btnMessage !== ''
-                        && btnMessage
-                    }
-                </button>
+                {
+                    showButton
+                    && (
+                        <button
+                            className="button--tiny margin-right"
+                            onClick={() => this.toggleModal()}
+                        >
+                            {
+                                btnMessage === ''
+                                && <FormattedMessage id="main.label.searchVillage" defaultMessage="Search a village" />
+                            }
+                            {
+                                btnMessage !== ''
+                                && btnMessage
+                            }
+                        </button>
+                    )
+                }
                 <ReactModal
                     isOpen={showModal}
                     shouldCloseOnOverlayClick
@@ -181,7 +214,43 @@ class VillageSearchModal extends Component {
                 >
                     <section className="extra-large-modal-content village-search-modal">
                         <div className="widget__header">
-                            <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Text search (by village)" />
+
+                            <Grid container spacing={2}>
+                                <Grid
+                                    xs={6}
+                                    item
+                                    container
+                                >
+                                    <FormattedMessage id="locator.label.searchAllByVillage" defaultMessage="Text search (by village)" />
+                                </Grid>
+                                <Grid
+                                    xs={6}
+                                    item
+                                    container
+                                    justify="flex-end"
+                                >
+                                    {
+                                        currentCount > 0
+                                        && (
+                                            <Typography
+                                                type="body2"
+                                                color="primary"
+                                            >
+                                                {
+                                                    getResutText(currentCount)
+                                                    || (
+                                                        <Fragment>
+                                                            {currentCount}
+                                                            {' '}
+                                                            <FormattedMessage id="main.label.villages" defaultMessage="main.label.villages" />
+                                                        </Fragment>
+                                                    )
+                                                }
+                                            </Typography>
+                                        )
+                                    }
+                                </Grid>
+                            </Grid>
                         </div>
 
                         <Grid container spacing={2}>
@@ -202,6 +271,7 @@ class VillageSearchModal extends Component {
                                     isLoading={loading}
                                     disableBlurSearch
                                     displayResults={false}
+                                    resetOnUnmount={false}
                                     showResetSearch
                                 />
                             </Grid>
@@ -217,7 +287,7 @@ class VillageSearchModal extends Component {
                                     showPagination
                                     manual
                                     multiSort
-                                    columns={villageSearchColumns(formatMessage)}
+                                    columns={columns || villageSearchColumns(formatMessage)}
                                     data={results}
                                     pages={pages}
                                     loading={loading}
@@ -250,6 +320,13 @@ class VillageSearchModal extends Component {
                                 >
                                     <FormattedMessage id="main.label.close" defaultMessage="Fermer" />
                                 </button>
+
+                                <button
+                                    className="button margin-top margin-left"
+                                    onClick={() => this.searchVillages()}
+                                >
+                                    <FormattedMessage id="main.label.search" defaultMessage="Rechercher" />
+                                </button>
                             </Grid>
                         </Grid>
                     </section>
@@ -260,12 +337,26 @@ class VillageSearchModal extends Component {
 }
 VillageSearchModal.defaultProps = {
     btnMessage: '',
+    showButton: true,
+    toggleModal: null,
+    showModal: null,
+    columns: null,
+    filters: {},
+    autoLoad: false,
+    getResutText: null,
 };
 
 VillageSearchModal.propTypes = {
     onSelectVillage: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
     btnMessage: PropTypes.string,
+    showButton: PropTypes.bool,
+    showModal: PropTypes.any,
+    toggleModal: PropTypes.any,
+    columns: PropTypes.any,
+    filters: PropTypes.object,
+    autoLoad: PropTypes.bool,
+    getResutText: PropTypes.any,
 };
 
 

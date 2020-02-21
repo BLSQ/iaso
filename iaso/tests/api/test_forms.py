@@ -25,10 +25,10 @@ class FormsAPITestCase(APITestCase):
                                                account=star_wars)
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study")
-        form_2_file_mock = mock.MagicMock(spec=File)
-        form_2_file_mock.name = 'test.xml'
         cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
                                            period_type="QUARTER", single_per_period=True)
+        form_2_file_mock = mock.MagicMock(spec=File)
+        form_2_file_mock.name = 'test.xml'
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)

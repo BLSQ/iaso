@@ -1,7 +1,7 @@
 import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
-from rest_framework import serializers, permissions, renderers
+from rest_framework import serializers, permissions
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
 
@@ -88,7 +88,6 @@ class FormsViewSet(ModelViewSet):
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()
-    renderer_classes = (renderers.JSONRenderer,)
     http_method_names = ('get', 'post', 'options')
 
     EXPORT_TABLE_COLUMNS = (

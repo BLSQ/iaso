@@ -19,7 +19,7 @@ class FormsVersionAPITestCase(APITestCase):
         cls.project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
                                                account=star_wars)
 
-        cls.form = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
+        cls.form = m.Form.objects.create(name="New Land Speeder concept",
                                          period_type="QUARTER", single_per_period=True)
         cls.form.org_unit_types.add(cls.jedi_council)
         cls.form.save()
@@ -84,7 +84,6 @@ class FormsVersionAPITestCase(APITestCase):
 
         version_form = created_version.form
         self.assertEqual("sample_form_id", version_form.form_id)
-        self.assertEqual("Sample form title", version_form.name)
 
     def test_form_versions_create_no_settings(self):
         """POST /form-versions/, excel file has not setting sheet"""

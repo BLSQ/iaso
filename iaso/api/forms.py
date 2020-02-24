@@ -42,8 +42,8 @@ class FormSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'form_id', 'org_unit_types', 'org_unit_type_ids', 'projects', 'project_ids',
                   'period_type', 'single_per_period', 'latest_form_version', 'instances_count', 'instance_updated_at',
                   'created_at', 'updated_at']
-        read_only_fields = ['id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at', 'created_at',
-                            'updated_at']
+        read_only_fields = ['id', 'form_id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at',
+                            'created_at', 'updated_at']
 
     org_unit_types = serializers.SerializerMethodField()
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(source="org_unit_types", write_only=True, many=True,

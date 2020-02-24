@@ -29,8 +29,9 @@ def parse_xls_form(xls_file: typing.BinaryIO) -> XMLForm:
     survey = create_survey_from_xls(xls_file)
     # TODO: validation requires Java - disabling it for now, to discuss
     xml_file_content = survey.to_xml(validate=False)
+    # TODO: generate versions if not exist, else validate > previous + validate uniqueness for same form
     xls_path = pathlib.Path(xls_file.name)
-    xml_file_name = f'{xls_path.stem}.xml'
+    xml_file_name = f'{xls_path.stem}.xml'  # TODO: add version in filename
 
     return XMLForm(xml_file_content.encode('utf-8'), xml_file_name, settings={
         'form_id': survey.id_string,

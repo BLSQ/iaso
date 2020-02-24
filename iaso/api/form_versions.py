@@ -52,8 +52,8 @@ class FormVersionSerializer(serializers.ModelSerializer):
             # update form instance with survey settings
             # TODO: discuss
             form = version.form
-            form.name = xml_form['form_title']
-            form.form_id = xml_form['form_id']  # TODO: validate same as previous ?
+            # form.name = xml_form['form_title']  # TODO: check if relevant to always overwrite form name that way
+            form.form_id = xml_form['form_id']  # TODO: validate same as previous ? + validate uniqueness across account
             form.save()
 
         return version
@@ -65,7 +65,7 @@ class FormVersionsViewSet(ModelViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FormVersionSerializer
-    results_key = "formversions"
+    results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)
     http_method_names = ('post',)

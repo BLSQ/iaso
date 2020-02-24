@@ -33,11 +33,11 @@ class FormVersionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # handle xls to xml conversion
         uploaded_xls_file = validated_data['xls_file']
-        xml_form = parse_xls_form(uploaded_xls_file.file, uploaded_xls_file.name)
+        xml_form = parse_xls_form(uploaded_xls_file)
 
         # custom validation
         errors = []
-        if xml_form['version'] is None:
+        if xml_form['version'] == "":
             errors.append('The form requires as "settings" sheet with a valid version field')
         if len(errors) > 0:
             raise serializers.ValidationError({'xls_file': errors})

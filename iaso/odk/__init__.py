@@ -1,1 +1,1 @@
-from .converters import parse_xls_form
+from .parsing import parse_xls_form, XMLForm

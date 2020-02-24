@@ -66,7 +66,7 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/api/fixtures/odk_form.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form.xls", "rb") as xls_file:
             response = self.client.post(f'/api/formversions/', data={
                 "form_id": self.form.id,
                 "xls_file": xls_file,
@@ -90,14 +90,15 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/, excel file has not setting sheet"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/api/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
             response = self.client.post(f'/api/formversions/', data={
                 "form_id": self.form.id,
                 "xls_file": xls_file,
             }, format='multipart', HTTP_ACCEPT='application/json')
         self.assertJSONResponse(response, 400)
         response_data = response.json()
-        self.assertHasError(response_data, 'xls_file', 'The form requires as setting sheet with a valid version field')
+        self.assertHasError(response_data, 'xls_file',
+                            'The form requires as "settings" sheet with a valid version field')
 
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
@@ -112,7 +113,7 @@ class FormsVersionAPITestCase(APITestCase):
     def test_form_versions_create_no_auth(self):
         """POST /form-versions/ , without auth -> we expect a 403 error"""
 
-        with open("iaso/tests/api/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
+        with open("iaso/tests/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
             response = self.client.post(f'/api/formversions/', data={
                 "form_id": self.form.id,
                 "xls_file": xls_file,

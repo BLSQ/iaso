@@ -85,6 +85,19 @@ class FormsVersionAPITestCase(APITestCase):
         version_form = created_version.form
         self.assertEqual("sample_form_id", version_form.form_id)
 
+    def test_form_versions_create_invalid_xls_file(self):
+        """POST /form-versions/ with invalid XLS file"""
+
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb") as xls_file:
+            response = self.client.post(f'/api/formversions/', data={
+                "form_id": self.form.id,
+                "xls_file": xls_file,
+            }, format='multipart', HTTP_ACCEPT='application/json')
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), 'xls_file',
+                            "Invalid XLS file: The survey sheet is either empty or missing important column headers.")
+
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
 

@@ -1,7 +1,8 @@
-from iaso.odk import parse_xls_form, XMLForm
 from django.test import SimpleTestCase
 from django.utils.dateparse import parse_datetime
 from unittest.mock import patch
+
+from iaso.odk import parse_xls_form, XMLForm, ParsingError
 
 
 class ParsingTestCase(SimpleTestCase):
@@ -27,6 +28,25 @@ class ParsingTestCase(SimpleTestCase):
         self.assertEqual(xml_form['form_id'], 'odk_form_no_settings')
         self.assertEqual(xml_form['form_title'], 'odk_form_no_settings')
         self.assertIsInstance(xml_form['version'], str)
+
+    def test_parse_xls_form_invalid_version(self):
+        with open("iaso/tests/fixtures/odk_form_invalid_version.xls", "rb") as xls_file:
+            with self.assertRaises(ParsingError) as cm:
+                parse_xls_form(xls_file)
+            self.assertEqual(str(cm.exception), 'Invalid version (must be a string of 1-10 numbers).')
+
+    def test_parse_xls_form_invalid_version_compared_to_previous(self):
+        with open("iaso/tests/fixtures/odk_form.xls", "rb") as xls_file:
+            with self.assertRaises(ParsingError) as cm:
+                parse_xls_form(xls_file, previous_version='2017021503')
+            self.assertEqual(str(cm.exception), 'Parsed version should be greater than previous version.')
+
+    def test_parse_xls_form_blatantly_invalid(self):
+        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb") as xls_file:
+            with self.assertRaises(ParsingError) as cm:
+                parse_xls_form(xls_file)
+            self.assertEqual(str(cm.exception),
+                             'Invalid XLS file: The survey sheet is either empty or missing important column headers.')
 
     @patch("django.utils.timezone.now")
     def test_parse_xls_form_autogenerate_first_version(self, now_mock):
@@ -69,6 +89,6 @@ class ParsingTestCase(SimpleTestCase):
         now_mock.return_value = parse_datetime("2020-02-24T10:00:00Z")
 
         with open("iaso/tests/fixtures/odk_form_no_version.xls", "rb") as xls_file:
-            with self.assertRaises(ValueError) as cm:
+            with self.assertRaises(ParsingError) as cm:
                 parse_xls_form(xls_file, previous_version="2020022499")
-            self.assertEqual(str(cm.exception), 'Too many versions')
+            self.assertEqual(str(cm.exception), 'Too many versions.')

@@ -5,7 +5,7 @@ from rest_framework import serializers, permissions, parsers
 from rest_framework.authentication import BasicAuthentication
 
 from iaso.models import Form, FormVersion
-from iaso.odk import parse_xls_form
+from iaso.odk import parse_xls_form, ParsingError
 from .common import ModelViewSet, TimestampField
 from .auth.authentication import CsrfExemptSessionAuthentication
 from .forms import HasFormPermission
@@ -33,12 +33,13 @@ class FormVersionSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         # handle xls to xml conversion
         uploaded_xls_file = validated_data['xls_file']
-        xml_form = parse_xls_form(uploaded_xls_file)
 
-        # custom validation
         errors = []
-        if xml_form['version'] == "":
-            errors.append('The form requires as "settings" sheet with a valid version field')
+        try:
+            xml_form = parse_xls_form(uploaded_xls_file)
+        except ParsingError as e:
+            errors.append(str(e))
+        # TODO: validate version uniqueness across form
         if len(errors) > 0:
             raise serializers.ValidationError({'xls_file': errors})
 

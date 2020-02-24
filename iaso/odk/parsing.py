@@ -1,6 +1,6 @@
 import pathlib
 import typing
-from pyxform import create_survey_from_xls
+from pyxform import create_survey_from_xls, errors
 from django.utils import timezone, dateparse
 
 
@@ -32,15 +32,21 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     :param previous_version: used to validate the version present in the excel file or to auto-generate it
     """
 
-    survey = create_survey_from_xls(xls_file)
+    try:
+        survey = create_survey_from_xls(xls_file)
+    except errors.PyXFormError as e:
+        raise ParsingError(f"Invalid XLS file: {e}")
 
     if survey.version == '':
         survey.version = _generate_form_version(previous_version)
-    elif not survey.version.isnumeric() or len(survey.version) > 10:
-        raise ParsingError('Invalid version (must be a string of 1-10 numbers')
+
+    if not survey.version.isnumeric() or len(survey.version) > 10:
+        raise ParsingError('Invalid version (must be a string of 1-10 numbers).')
+
+    if previous_version is not None and previous_version.isnumeric() and int(previous_version) >= int(survey.version):
+        raise ParsingError('Parsed version should be greater than previous version.')
 
     xml_file_content = survey.to_xml(validate=False)
-    # TODO: generate versions if not exist, else validate > previous + validate uniqueness for same form
     xls_path = pathlib.Path(xls_file.name)
     xml_file_name = f'{xls_path.stem}.xml'  # TODO: add version in filename
 
@@ -62,7 +68,7 @@ def _generate_form_version(previous_version: typing.Optional[str]) -> str:
         previous_version_date_string = f"{previous_version[:4]}-{previous_version[4:6]}-{previous_version[6:8]}"
         if dateparse.parse_date(previous_version_date_string) == today:  # previous version was created today
             if previous_version[8:] == '99':
-                raise ValueError('Too many versions')
+                raise ParsingError('Too many versions.')
 
             return str(int(previous_version) + 1)
 

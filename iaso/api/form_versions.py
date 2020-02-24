@@ -18,6 +18,7 @@ class FormVersionSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'version_id', 'file', 'created_at', 'updated_at']
 
     form_id = serializers.PrimaryKeyRelatedField(source="form", write_only=True, queryset=Form.objects.all())
+    xls_file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -33,6 +34,14 @@ class FormVersionSerializer(serializers.ModelSerializer):
         # handle xls to xml conversion
         uploaded_xls_file = validated_data['xls_file']
         xml_form = parse_xls_form(uploaded_xls_file.file, uploaded_xls_file.name)
+
+        # custom validation
+        errors = []
+        if xml_form['version'] is None:
+            errors.append('The form requires as "settings" sheet with a valid version field')
+        if len(errors) > 0:
+            raise serializers.ValidationError({'xls_file': errors})
+
         validated_data['file'] = SimpleUploadedFile(xml_form.file_name, xml_form.file_content, content_type='text/xml')
         validated_data['version_id'] = xml_form['version']
 

@@ -76,13 +76,48 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertValidFormVersionData(response_data)
 
         created_version = m.FormVersion.objects.get(pk=response_data['id'])
-        self.assertEqual("2017021501", created_version.version_id)
+        self.assertEqual(created_version.version_id, "2017021501")
         self.assertIsInstance(created_version.file, File)
+        self.assertGreater(created_version.file.size, 100)
         self.assertIsInstance(created_version.xls_file, File)
+        self.assertGreater(created_version.xls_file.size, 100)
 
         version_form = created_version.form
         self.assertEqual("sample_form_id", version_form.form_id)
         self.assertEqual("Sample form title", version_form.name)
+
+    def test_form_versions_create_no_settings(self):
+        """POST /form-versions/, excel file has not setting sheet"""
+
+        self.client.force_authenticate(self.yoda)
+        with open("iaso/tests/api/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
+            response = self.client.post(f'/api/formversions/', data={
+                "form_id": self.form.id,
+                "xls_file": xls_file,
+            }, format='multipart', HTTP_ACCEPT='application/json')
+        self.assertJSONResponse(response, 400)
+        response_data = response.json()
+        self.assertHasError(response_data, 'xls_file', 'The form requires as setting sheet with a valid version field')
+
+    def test_form_versions_create_no_xls_file(self):
+        """POST /form-versions/, missing params"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/formversions/', data={}, format='multipart', HTTP_ACCEPT='application/json')
+        self.assertJSONResponse(response, 400)
+        response_data = response.json()
+        self.assertHasError(response_data, 'form_id')
+        self.assertHasError(response_data, 'xls_file')
+
+    def test_form_versions_create_no_auth(self):
+        """POST /form-versions/ , without auth -> we expect a 403 error"""
+
+        with open("iaso/tests/api/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
+            response = self.client.post(f'/api/formversions/', data={
+                "form_id": self.form.id,
+                "xls_file": xls_file,
+            }, format='multipart', HTTP_ACCEPT='application/json')
+        self.assertJSONResponse(response, 403)
 
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""

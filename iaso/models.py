@@ -532,12 +532,12 @@ class Link(models.Model):
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    form_id = models.TextField(null=True, blank=True)  # extracted from xls
+    form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    device_field = models.TextField(null=True, blank=True)  # extracted from xls
-    location_field = models.TextField(null=True, blank=True)  # extracted from xls
+    device_field = models.TextField(null=True, blank=True)  # extracted from version xls file
+    location_field = models.TextField(null=True, blank=True)  # extracted from version xls file
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)

@@ -49,5 +49,5 @@ def parse_xls_form(xls_file: typing.BinaryIO, xls_filename: str) -> XMLForm:
     return XMLForm(xml_file_content, xml_file_name, settings={
         'form_id': survey.id_string,
         'form_title': survey.title,
-        'version': survey.version
+        'version': survey.version if survey.version is not '' else None
     })

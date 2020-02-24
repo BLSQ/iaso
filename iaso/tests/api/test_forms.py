@@ -25,8 +25,9 @@ class FormsAPITestCase(APITestCase):
                                                account=star_wars)
 
         cls.form_1 = m.Form.objects.create(name="Hydroponics study")
-        cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", form_id="land_speeder_1",
-                                           period_type="QUARTER", single_per_period=True)
+        cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", device_field="deviceid",
+                                           location_field="geoloc", form_id="land_speeder_1", period_type="QUARTER",
+                                           single_per_period=True)
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
@@ -170,7 +171,7 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f'/api/forms/', data={
-            "name": "test form",
+            "name": "test form 1",
             "period_type": "MONTH",
             "single_per_period": False,
             "project_ids": [self.project.id],
@@ -183,6 +184,26 @@ class FormsAPITestCase(APITestCase):
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
+
+    def test_forms_create_ok_extended(self):
+        """POST /forms/ happy path (more fields)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', data={
+            "name": "test form 2",
+            "period_type": "QUARTER",
+            "device_field": "deviceid",
+            "location_field": "position",
+            "single_per_period": True,
+            "project_ids": [self.project.id],
+            "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
+        }, format='json')
+        self.assertJSONResponse(response, 201)
+        response_data = response.json()
+
+        self.assertValidFormData(response_data)
+        self.assertHasField(response_data, "location_field", str)
+        self.assertHasField(response_data, "device_field", str)
 
     def test_forms_create_wrong_project(self):
         """POST /forms/ - user has no access to the project"""
@@ -246,6 +267,8 @@ class FormsAPITestCase(APITestCase):
     def assertValidFullFormData(self, form_data: typing.Mapping):
         self.assertValidFormData(form_data)
 
+        self.assertHasField(form_data, "device_field", str)
+        self.assertHasField(form_data, "location_field", str)
         self.assertHasField(form_data, "form_id", str)
         self.assertHasField(form_data, "period_type", str)
         self.assertHasField(form_data, "single_per_period", bool)

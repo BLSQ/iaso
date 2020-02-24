@@ -536,8 +536,8 @@ class Form(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
-    device_field = models.TextField(null=True, blank=True)  # extracted from version xls file
-    location_field = models.TextField(null=True, blank=True)  # extracted from version xls file
+    device_field = models.TextField(null=True, blank=True)
+    location_field = models.TextField(null=True, blank=True)
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)

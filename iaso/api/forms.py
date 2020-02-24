@@ -39,9 +39,9 @@ class HasFormPermission(permissions.BasePermission):
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'name', 'form_id', 'org_unit_types', 'org_unit_type_ids', 'projects', 'project_ids',
-                  'period_type', 'single_per_period', 'latest_form_version', 'instances_count', 'instance_updated_at',
-                  'created_at', 'updated_at']
+        fields = ['id', 'name', 'form_id', 'device_field', 'location_field', 'org_unit_types', 'org_unit_type_ids',
+                  'projects', 'project_ids', 'period_type', 'single_per_period', 'latest_form_version',
+                  'instances_count', 'instance_updated_at', 'created_at', 'updated_at']
         read_only_fields = ['id', 'form_id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at',
                             'created_at', 'updated_at']
 

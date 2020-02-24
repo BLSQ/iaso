@@ -171,7 +171,6 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f'/api/forms/', data={
             "name": "test form",
-            "form_id": "test_001",
             "period_type": "MONTH",
             "single_per_period": False,
             "project_ids": [self.project.id],

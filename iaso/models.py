@@ -622,7 +622,7 @@ class FormVersion(models.Model):
     )
     file = models.FileField(upload_to=UPLOADED_TO)
     xls_file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
-    version_id = models.TextField()
+    version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

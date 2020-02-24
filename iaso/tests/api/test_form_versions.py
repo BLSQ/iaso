@@ -69,7 +69,6 @@ class FormsVersionAPITestCase(APITestCase):
         with open("iaso/tests/api/fixtures/odk_form.xls", "rb") as xls_file:
             response = self.client.post(f'/api/formversions/', data={
                 "form_id": self.form.id,
-                "version_id": "february_2020",
                 "xls_file": xls_file,
             }, format='multipart', HTTP_ACCEPT='application/json')
         self.assertJSONResponse(response, 201)
@@ -77,8 +76,13 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertValidFormVersionData(response_data)
 
         created_version = m.FormVersion.objects.get(pk=response_data['id'])
-        self.assertIsInstance(created_version.xls_file, File)
+        self.assertEqual("2017021501", created_version.version_id)
         self.assertIsInstance(created_version.file, File)
+        self.assertIsInstance(created_version.xls_file, File)
+
+        version_form = created_version.form
+        self.assertEqual("sample_form_id", version_form.form_id)
+        self.assertEqual("Sample form title", version_form.name)
 
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""

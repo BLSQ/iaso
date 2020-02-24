@@ -57,7 +57,7 @@ class APITestCase(BaseAPITestCase):
             self.assertHasField(list_data, "pages", int)
             self.assertHasField(list_data, "limit", int)
 
-    def assertHasField(self, data: typing.Mapping, field_name: str, cls: type, optional: bool = False):
+    def assertHasField(self, data: typing.Mapping, field_name: str, cls: type, *, optional: bool = False):
         self.assertIn(field_name, data)
         if not optional:
             self.assertIsInstance(data[field_name], cls)

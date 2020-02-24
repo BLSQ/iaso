@@ -21,12 +21,18 @@ class FormsAPITestCase(APITestCase):
         cls.jedi_academy = m.OrgUnitType.objects.create(name="Jedi Academy", short_name="Aca")
         cls.sith_guild = m.OrgUnitType.objects.create(name="Sith guild", short_name="Sith")
 
-        cls.project = m.Project.objects.create(name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics",
-                                               account=star_wars)
+        cls.project_1 = m.Project.objects.create(name="Hydroponic gardens",
+                                                 app_id="stars.empire.agriculture.hydroponics",
+                                                 account=star_wars)
 
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study")
-        cls.form_2 = m.Form.objects.create(name="New Land Speeder concept", device_field="deviceid",
-                                           location_field="geoloc", form_id="land_speeder_1", period_type="QUARTER",
+        cls.project_2 = m.Project.objects.create(name="New Land Speeder concept",
+                                                 app_id="stars.empire.agriculture.land_speeder",
+                                                 account=star_wars)
+
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study", form_id="hydrop_study")
+
+        cls.form_2 = m.Form.objects.create(name="Hydroponic public survey", device_field="deviceid",
+                                           location_field="geoloc", form_id="hydrop_survey", period_type="QUARTER",
                                            single_per_period=True)
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
@@ -36,11 +42,11 @@ class FormsAPITestCase(APITestCase):
         cls.form_2.instances.create()
         cls.form_2.save()
 
-        cls.project.unit_types.add(cls.jedi_council)
-        cls.project.unit_types.add(cls.jedi_academy)
-        cls.project.forms.add(cls.form_1)
-        cls.project.forms.add(cls.form_2)
-        cls.project.save()
+        cls.project_1.unit_types.add(cls.jedi_council)
+        cls.project_1.unit_types.add(cls.jedi_academy)
+        cls.project_1.forms.add(cls.form_1)
+        cls.project_1.forms.add(cls.form_2)
+        cls.project_1.save()
 
     @tag("iaso_only")
     def test_forms_list_without_auth(self):
@@ -65,8 +71,9 @@ class FormsAPITestCase(APITestCase):
     def test_forms_list_with_app_id(self):
         """GET /forms/ mobile app happy path (no auth but with app id): 2 result"""
 
-        response = self.client.get(f'/api/forms/?app_id={self.project.app_id}')
+        response = self.client.get(f'/api/forms/?app_id={self.project_1.app_id}')
         self.assertJSONResponse(response, 200)
+
         response_data = response.json()
         self.assertValidFormListData(response_data, 2)
 
@@ -158,14 +165,6 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertValidFullFormData(form_data)
 
-    def test_forms_create_without_auth(self):
-        """POST /forms/ without auth: 403"""
-
-        response = self.client.post(f'/api/forms/', data={
-            "name": "test form",
-        }, format='json')
-        self.assertJSONResponse(response, 403)
-
     def test_forms_create_ok(self):
         """POST /forms/ happy path"""
 
@@ -173,13 +172,12 @@ class FormsAPITestCase(APITestCase):
         response = self.client.post(f'/api/forms/', data={
             "name": "test form 1",
             "period_type": "MONTH",
-            "single_per_period": False,
-            "project_ids": [self.project.id],
+            "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
         }, format='json')
         self.assertJSONResponse(response, 201)
-        response_data = response.json()
 
+        response_data = response.json()
         self.assertValidFormData(response_data)
         form = m.Form.objects.get(pk=response_data["id"])
         self.assertEqual(1, form.projects.count())
@@ -195,15 +193,40 @@ class FormsAPITestCase(APITestCase):
             "device_field": "deviceid",
             "location_field": "position",
             "single_per_period": True,
-            "project_ids": [self.project.id],
+            "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
         }, format='json')
         self.assertJSONResponse(response, 201)
-        response_data = response.json()
 
+        response_data = response.json()
         self.assertValidFormData(response_data)
         self.assertHasField(response_data, "location_field", str)
         self.assertHasField(response_data, "device_field", str)
+
+    def test_forms_create_without_auth(self):
+        """POST /forms/ without auth: 403"""
+
+        response = self.client.post(f'/api/forms/', data={
+            "name": "test form",
+        }, format='json')
+        self.assertJSONResponse(response, 403)
+
+    def test_forms_create_invalid(self):
+        """POST /forms/ happy path with a lot of missing/invalid data"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', data={
+            "period_type": "LOL",
+            "single_per_period": "Oui",
+        }, format='json')
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
+        # self.assertHasError(response.json(), "name", "Invalid project ids")  # TODO: uncomment when form name is mandatory
+        self.assertHasError(response_data, "period_type")
+        self.assertHasError(response_data, "single_per_period")
+        self.assertHasError(response_data, "project_ids")
+        self.assertHasError(response_data, "org_unit_type_ids")
 
     def test_forms_create_wrong_project(self):
         """POST /forms/ - user has no access to the project"""
@@ -214,7 +237,7 @@ class FormsAPITestCase(APITestCase):
             "form_id": "test_001",
             "period_type": "MONTH",
             "single_per_period": False,
-            "project_ids": [self.project.id],
+            "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.jedi_council.id]
         }, format='json')
         self.assertJSONResponse(response, 400)
@@ -229,19 +252,41 @@ class FormsAPITestCase(APITestCase):
             "form_id": "test_002",
             "period_type": "MONTH",
             "single_per_period": False,
-            "project_ids": [self.project.id],
+            "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.sith_guild.id]
         }, format='json')
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "org_unit_type_ids", "Invalid org unit type ids")
 
     @tag("iaso_only")
-    def test_forms_update(self):
-        """PUT /forms/<form_id>: not authorized for now"""
+    def test_forms_update_ok(self):
+        """PUT /forms/<form_id>: happy path (validation is already covered by create tests)"""
+
+        """POST /forms/ happy path"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(f'/api/forms/{self.form_1.id}/', data={}, format='json')
-        self.assertJSONResponse(response, 405)
+        response = self.client.put(f'/api/forms/{self.form_1.id}/', data={
+            "name": "test form 1 (updated)",
+            "period_type": "QUARTER",
+            "single_per_period": True,
+            "device_field": "deviceid",
+            "location_field": "location",
+            "project_ids": [self.project_1.id, self.project_2.id],
+            "org_unit_type_ids": [self.jedi_council.id]
+        }, format='json')
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidFormData(response_data)
+        self.assertEqual(response_data["name"], "test form 1 (updated)")
+        self.assertEqual(response_data["period_type"], "QUARTER")
+        self.assertTrue(response_data["single_per_period"])
+        self.assertEqual(response_data["device_field"], "deviceid")
+        self.assertEqual(response_data["location_field"], "location")
+
+        form = m.Form.objects.get(pk=response_data["id"])
+        self.assertEqual(2, form.projects.count())
+        self.assertEqual(1, form.org_unit_types.count())
 
     @tag("iaso_only")
     def test_forms_destroy(self):
@@ -273,12 +318,17 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "period_type", str)
         self.assertHasField(form_data, "single_per_period", bool)
         self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "projects", list)
         self.assertHasField(form_data, "instances_count", int)
         self.assertHasField(form_data, "instance_updated_at", float)
 
         for org_unit_type_data in form_data["org_unit_types"]:
             self.assertIsInstance(org_unit_type_data, dict)
             self.assertHasField(org_unit_type_data, "id", int)
+
+        for project_data in form_data["projects"]:
+            self.assertIsInstance(project_data, dict)
+            self.assertHasField(project_data, "id", int)
 
         self.assertHasField(form_data, "instance_updated_at", float)
         self.assertHasField(form_data, "instances_count", int)

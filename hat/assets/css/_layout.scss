@@ -394,6 +394,14 @@ $directions: left right top bottom;
     color: green;
 }
 
+.error-icon {
+    fill: $red !important;
+}
+
+.success-icon {
+    fill: $green !important;
+}
+
 .bordered {
     border: 1px solid $gray;
 

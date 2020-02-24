@@ -206,6 +206,7 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
         }
 
         case DISPLAY_ITEM: {
+            console.log(action.payload);
             return {
                 ...state,
                 displayedItem: action.payload,

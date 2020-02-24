@@ -349,10 +349,8 @@ export class Microplanning extends Component {
                         teamId: this.props.params.team_id,
                     }}
                     assignations={assignations}
-                    teams={teams}
                     toggleSearchModal={() => this.toggleSearchModal()}
-                    selectItems={(items, activateSaveButton) => this.props.selectItems(items, activateSaveButton)}
-                    saveButton={this.renderSaveTeamButton()}
+                    displayItem={item => this.props.displayItem(item)}
                 />
                 {
                     loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />

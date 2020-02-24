@@ -82,8 +82,6 @@ export const MESSAGES = defineMessages({
 });
 
 
-let zoomBar;
-
 export const onResizeMap = (width, height, exportControl, currentMap, filename, position = 'topleft') => {
     const customSize = {
         width,
@@ -125,14 +123,14 @@ export const updateBaseLayer = (currentMap, baseLayer) => {
     });
 };
 
-export const includeZoombar = (currentMap, component, withVillageSearch, onSearch) => {
+export const includeZoombar = (currentMap, component, withVillageSearch, onSearch, zoomBar = undefined) => {
     const { formatMessage } = component.props.intl;
     if (zoomBar) {
         currentMap.removeControl(zoomBar);
     }
     // The order in which the controls are added matters
     // zoom bar control
-    zoomBar = L.control.zoombar({
+    const newZoomBar = L.control.zoombar({
         zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
         zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
         fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
@@ -141,11 +139,14 @@ export const includeZoombar = (currentMap, component, withVillageSearch, onSearc
         withVillageSearch,
         onSearch,
     });
-    zoomBar.addTo(currentMap);
+    newZoomBar.addTo(currentMap);
+    return newZoomBar;
 };
 
-export const includeControlsInMap = (component, currentMap, hasLargeTooltip = false, withVillageSearch = false, onSearch = () => null) => {
-    includeZoombar(currentMap, component, withVillageSearch, onSearch);
+export const includeControlsInMap = (component, currentMap, hasLargeTooltip = false, withVillageSearch = false, onSearch = () => null, withZoomBar = true) => {
+    if (withZoomBar) {
+        includeZoombar(currentMap, component, withVillageSearch, onSearch);
+    }
     const tempContainer = component.state.containers;
 
     // control to visualize warnings

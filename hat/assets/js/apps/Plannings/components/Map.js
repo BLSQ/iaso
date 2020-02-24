@@ -28,6 +28,8 @@ import {
     includeZoombar,
     zooms,
 } from '../../../utils/map/mapUtils';
+
+let theZoomBar;
 const radius = 600;
 
 const renderDivIcon = (content, key, size) => L.divIcon({
@@ -80,7 +82,9 @@ class Map extends Component {
     componentDidMount() {
         const { workzoneId, toggleSearchModal } = this.props;
         this.createMap();
-        includeControlsInMap(this, this.state.map, true, Boolean(workzoneId), () => toggleSearchModal());
+
+        includeControlsInMap(this, this.state.map, true, false, () => null, false);
+        theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal());
         this.includeDefaultLayersInMap();
         updateBaseLayer(this.state.map, this.props.baseLayer);
         this.fitToBounds();
@@ -94,7 +98,9 @@ class Map extends Component {
         const { workzoneId, toggleSearchModal } = this.props;
         const { map } = this.state;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
-        includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal());
+        if (prevProps.workzoneId !== workzoneId) {
+            theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal(), theZoomBar);
+        }
         const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'nr_positive_cases']);
         const containSameItems = (prev, curr, key) => {
             if (!hasChanged(prev, curr, key)) return true;

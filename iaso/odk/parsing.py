@@ -1,6 +1,11 @@
 import pathlib
 import typing
 from pyxform import create_survey_from_xls
+from django.utils import timezone, dateparse
+
+
+class ParsingError(Exception):
+    pass
 
 
 class XMLForm:
@@ -16,7 +21,7 @@ class XMLForm:
         return item in self._settings
 
 
-def parse_xls_form(xls_file: typing.BinaryIO) -> XMLForm:
+def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -> XMLForm:
     """Converts an ODK xls form file to an ODK xml form file.
 
     Note: the pyxform conversion function works with file paths, and does not handle file-like objects.
@@ -24,10 +29,16 @@ def parse_xls_form(xls_file: typing.BinaryIO) -> XMLForm:
     the conversion functions as is.
 
     :param xls_file: a named file-like object (a persistent file or a django uploaded file will do)
+    :param previous_version: used to validate the version present in the excel file or to auto-generate it
     """
 
     survey = create_survey_from_xls(xls_file)
-    # TODO: validation requires Java - disabling it for now, to discuss
+
+    if survey.version == '':
+        survey.version = _generate_form_version(previous_version)
+    elif not survey.version.isnumeric() or len(survey.version) > 10:
+        raise ParsingError('Invalid version (must be a string of 1-10 numbers')
+
     xml_file_content = survey.to_xml(validate=False)
     # TODO: generate versions if not exist, else validate > previous + validate uniqueness for same form
     xls_path = pathlib.Path(xls_file.name)
@@ -38,3 +49,21 @@ def parse_xls_form(xls_file: typing.BinaryIO) -> XMLForm:
         'form_title': survey.title,
         'version': survey.version
     })
+
+
+def _generate_form_version(previous_version: typing.Optional[str]) -> str:
+    """Generate a form version in the yyyymmddrr format.
+    If a previous version is provided, and is also in the yyyymmddrr
+    :param previous_version:
+    :return:
+    """
+    today = timezone.now().date()
+    if previous_version is not None and len(previous_version) == 10:  # previous version in yyyymmddrr format
+        previous_version_date_string = f"{previous_version[:4]}-{previous_version[4:6]}-{previous_version[6:8]}"
+        if dateparse.parse_date(previous_version_date_string) == today:  # previous version was created today
+            if previous_version[8:] == '99':
+                raise ValueError('Too many versions')
+
+            return str(int(previous_version) + 1)
+
+    return f"{today.strftime('%Y%m%d')}01"

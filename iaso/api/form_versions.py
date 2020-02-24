@@ -50,7 +50,6 @@ class FormVersionSerializer(serializers.ModelSerializer):
             version: FormVersion = super().create(validated_data)
 
             # update form instance with survey settings
-            # TODO: discuss
             form = version.form
             # form.name = xml_form['form_title']  # TODO: check if relevant to always overwrite form name that way
             form.form_id = xml_form['form_id']  # TODO: validate same as previous ? + validate uniqueness across account

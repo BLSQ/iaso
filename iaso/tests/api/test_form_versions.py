@@ -85,20 +85,6 @@ class FormsVersionAPITestCase(APITestCase):
         version_form = created_version.form
         self.assertEqual("sample_form_id", version_form.form_id)
 
-    def test_form_versions_create_no_settings(self):
-        """POST /form-versions/, excel file has not setting sheet"""
-
-        self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_no_settings.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
-        self.assertJSONResponse(response, 400)
-        response_data = response.json()
-        self.assertHasError(response_data, 'xls_file',
-                            'The form requires as "settings" sheet with a valid version field')
-
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
 

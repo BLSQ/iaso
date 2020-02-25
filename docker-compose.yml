@@ -4,8 +4,7 @@ services:
     build:
       context: .
       args:
-        git_commit: "${TRAVIS_COMMIT}"
-        NODE_ENV: "${NODE_ENV}"
+        NODE_ENV: ""
     image: sense-hat
     # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
     ports:
@@ -31,25 +30,27 @@ services:
       - redis
     environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
-      FLAVOR: "${FLAVOR}"
-      RDS_DB_NAME: "${RDS_DB_NAME}"
+      FLAVOR:  # set to "iaso" or "trypelim" using your .env file
+      RDS_HOSTNAME: db
+      RDS_DB_NAME: hat
+      RDS_USERNAME: postgres
       DEBUG: 'true'
-      TEST_PROD: "${TEST_PROD}"
+      TEST_PROD:
       SECRET_KEY: secret
-      GOOGLE_CLIENT_ID: "${GOOGLE_CLIENT_ID}"
+      GOOGLE_CLIENT_ID:
       COUCHDB_URL: "http://couchdb:5984"
       COUCHDB_USER: admin
       COUCHDB_PASSWORD: secret
-      HAT_MOBILE_KEY: "${HAT_MOBILE_KEY}"
-      SAUCE_USERNAME: "${SAUCE_USERNAME}"
-      SAUCE_ACCESS_KEY: "${SAUCE_ACCESS_KEY}"
+      HAT_MOBILE_KEY:
+      SAUCE_USERNAME:
+      SAUCE_ACCESS_KEY:
       # This is needed to connect to the tunnel on Saucelabs
-      TRAVIS_JOB_NUMBER: "${TRAVIS_JOB_NUMBER}"
+      TRAVIS_JOB_NUMBER:
       # This is needed to group our build on Saucelabs
-      TRAVIS_BUILD_NUMBER: "${TRAVIS_BUILD_NUMBER}"
-      AWS_STORAGE_BUCKET_NAME: "${AWS_STORAGE_BUCKET_NAME}"
-      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
-      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      TRAVIS_BUILD_NUMBER:
+      AWS_STORAGE_BUCKET_NAME:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
     # Limit logging in dev to not overflow terminal
     logging: &hat_logging
       driver: "json-file"
@@ -65,6 +66,9 @@ services:
       - "5433:5432"
     volumes:
       - ../pgdata-iaso:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: hat
+      POSTGRES_USER: postgres
 
   couchdb:
     image: couchdb:1.7

@@ -67,7 +67,7 @@ services:
     volumes:
       - ../pgdata-iaso:/var/lib/postgresql/data
     environment:
-      POSTGRES_DB: hat
+      POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
 
   couchdb:

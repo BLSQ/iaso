@@ -31,6 +31,7 @@ const styles = theme => ({
         '&:focused label': {
             color: `${theme.palette.primary.main}  !important`,
         },
+        zIndex: 'auto',
     },
     formControlNoMarginTop: {
         width: '100%',
@@ -42,6 +43,7 @@ const styles = theme => ({
         '&:hover fieldset': {
             borderColor: `${theme.palette.primary.main}  !important`,
         },
+        zIndex: 'auto',
     },
     inputLabel: {
         color: 'rgba(0, 0, 0, 0.4)',

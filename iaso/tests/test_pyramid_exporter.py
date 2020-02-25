@@ -201,9 +201,7 @@ class CommandTests(TestCase):
                             [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
                         ],
                     },
-                    "coordinates": [
-                        [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
-                    ],
+                    "coordinates": "[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]",
                     "featureType": "POLYGON",
                 },
                 {
@@ -213,7 +211,7 @@ class CommandTests(TestCase):
                     "openingDate": "1960-08-03T00:00:00.000",
                     "parent": {"id": new_chief_dom.source_ref},
                     "geometry": {"type": "Point", "coordinates": [-1.3596, 2.5317]},
-                    "coordinates": [-1.3596, 2.5317],
+                    "coordinates": "[-1.3596, 2.5317]",
                     "featureType": "POINT",
                 },
             ],

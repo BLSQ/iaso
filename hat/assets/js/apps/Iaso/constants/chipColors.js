@@ -10,4 +10,16 @@ const chipColors = [
     '#009688',
 ];
 
+export const otChipColors = [
+    '#e91e63',
+    '#795548',
+    '#0277BD',
+    '#4CAF50',
+    '#607d8b',
+    '#ff7043',
+    '#01579b',
+    '#9E9D24',
+    '#9c27b0',
+];
+
 export default chipColors;

@@ -24,6 +24,9 @@ import {
 
 const styles = theme => ({
     ...commonStyles(theme),
+    content: {
+        padding: theme.spacing(0, 3, 2, 3),
+    },
 });
 
 function SourcesChipsFilterComponent(props) {
@@ -47,6 +50,14 @@ function SourcesChipsFilterComponent(props) {
                     <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
                 </Typography>
             </Box>
+            {
+                sources.length === 0
+                && (
+                    <Typography variant="body2" align="center" color="textSecondary">
+                        <FormattedMessage id="iaso.orgUnits.sources.noData" defaultMessage="No source" />
+                    </Typography>
+                )
+            }
             <ChipsFilterComponent
                 selectLabelMessage={{
                     id: 'iaso.orgUnits.addSource',

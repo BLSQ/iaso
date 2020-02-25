@@ -26,6 +26,7 @@ import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUn
 import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
+import { periodsInitialState, periodsReducer } from './redux/periodsReducer';
 import chipColors from './constants/chipColors';
 
 import App from '../App';
@@ -134,6 +135,7 @@ export default function iasoApp(element, baseUrl) {
         routerCustom: routerInitialState,
         links: linksInitialState,
         profiles: profilesInitialState,
+        periods: periodsInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -148,6 +150,7 @@ export default function iasoApp(element, baseUrl) {
         routerCustom: routerReducer,
         links: linksReducer,
         profiles: profilesReducer,
+        periods: periodsReducer,
     }, [
         routerMiddleware(history),
     ]);

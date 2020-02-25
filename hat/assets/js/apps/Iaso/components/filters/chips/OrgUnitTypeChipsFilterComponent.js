@@ -20,7 +20,7 @@ import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
 import InputComponent from '../../forms/InputComponent';
 
-import chipColors from '../../../constants/chipColors';
+import { otChipColors } from '../../../constants/chipColors';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -76,7 +76,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             }
         });
         orgUnitTypesSelected.forEach((ot, index) => {
-            orgUnitTypesSelected[index].color = chipColors[index];
+            orgUnitTypesSelected[index].color = otChipColors[index];
             orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
         });
         this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
@@ -86,7 +86,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 
     componentWillUnmount() {
-        this.props.setCurrentSubOrgUnitTypesSelected([]);
+        this.props.setCurrentSubOrgUnitTypesSelected([], []);
     }
 
     onOrgUnitSelect(orgUnitId) {
@@ -106,6 +106,10 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         });
         const newOrgUnit = orgUnitTypes.find(o => o.id === orgUnitId);
         newOrgUnitTypesSelected.push(newOrgUnit);
+
+        newOrgUnitTypesSelected.forEach((ot, index) => {
+            newOrgUnitTypesSelected[index].color = otChipColors[index];
+        });
         this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({
             orgUnitTypesList: newOrgUnitTypesList,
@@ -129,6 +133,10 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         });
         const deletedOrgUnit = orgUnitTypes.find(o => o.id === orgUnitId);
         newOrgUnitTypesList.push(deletedOrgUnit);
+
+        newOrgUnitTypesSelected.forEach((ot, index) => {
+            newOrgUnitTypesSelected[index].color = otChipColors[index];
+        });
         this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({
             orgUnitTypesList: newOrgUnitTypesList,
@@ -140,6 +148,9 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             dispatch,
             currentOrgUnit,
         } = this.props;
+        const {
+            orgUnitTypesList,
+        } = this.state;
         const promisesArray = [];
         const oldOrgUnitsTypes = [];
         orgUnitTypesSelected.forEach((ot) => {
@@ -158,7 +169,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         this.props.setFetching(true);
         Promise.all(promisesArray).then((orgUnits) => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
-            this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData);
+            this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData, orgUnitTypesList);
             this.props.setFetching(false);
             this.props.fitToBounds();
         });
@@ -168,39 +179,41 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         const {
             classes,
             orgUnitTypesSelected,
-            orgUnitTypes,
         } = this.props;
         const {
             orgUnitTypesList,
         } = this.state;
-        if (!orgUnitTypes || (orgUnitTypes && orgUnitTypes.length === 0)) return null;
 
         return (
             <Fragment>
                 {
-                    (orgUnitTypesSelected.length > 0
-                    || orgUnitTypesList.length > 0)
-                    && (
-                        <Box
-                            className={classes.innerDrawerToolbar}
-                            component="div"
-                        >
-                            <Typography variant="subtitle1">
-                                <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
-                            </Typography>
-                        </Box>
-                    )
+                    <Box
+                        className={classes.innerDrawerToolbar}
+                        component="div"
+                    >
+                        <Typography variant="subtitle1">
+                            <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
+                        </Typography>
+                    </Box>
                 }
                 <Box
                     className={classes.content}
                     component="div"
                 >
                     {
+                        orgUnitTypesList.length === 0
+                        && orgUnitTypesSelected.length === 0
+                        && (
+                            <Typography variant="body2" align="center" color="textSecondary">
+                                <FormattedMessage id="iaso.orgUnits.subOrgUnitsType.noData" defaultMessage="No sub org unit types" />
+                            </Typography>
+                        )
+                    }
+                    {
                         orgUnitTypesSelected.length > 0 && (
                             orgUnitTypesSelected.map(o => (
                                 <Chip
                                     key={o.id}
-                                    icon={<img src={orgUnitIconUrl} className={classes.svgChipIcon} alt="org unit" />}
                                     label={o.short_name}
                                     clickable
                                     className={classes.chip}
@@ -259,7 +272,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setCurrentSubOrgUnitTypesSelected: orgUnitTypesSelected => dispatch(setCurrentSubOrgUnitTypesSelected(orgUnitTypesSelected)),
+    setCurrentSubOrgUnitTypesSelected: (orgUnitTypesSelected, orgUnitTypesList) => dispatch(setCurrentSubOrgUnitTypesSelected(orgUnitTypesSelected, orgUnitTypesList)),
     setFetching: fetching => dispatch(setFetching(fetching)),
 });
 

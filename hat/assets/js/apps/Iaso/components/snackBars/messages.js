@@ -99,6 +99,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.deleteRun',
         defaultMessage: 'An error occured while deleting algorithms run',
     },
+    fetchPeriodsError: {
+        id: 'iaso.snackBar.fetchPeriodsError',
+        defaultMessage: 'An error occured while fetching periods list',
+    },
 };
 
 export default MESSAGES;

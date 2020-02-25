@@ -16,6 +16,7 @@ from .api.profiles import ProfilesViewSet
 from .api.algorithms import AlgorithmsViewSet
 from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.groups import GroupsViewSet
+from .api.periods import PeriodsViewSet
 from iaso.models import MatchingAlgorithm
 from iaso import matching
 import pkgutil
@@ -28,6 +29,7 @@ router.register(r"projects", ProjectsViewSet, base_name="projects")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
 router.register(r"formversions", FormVersionsViewSet, base_name="formversions")
+router.register(r"periods", PeriodsViewSet, base_name="periods")
 router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
 router.register(
     r"iasodevicesownership",

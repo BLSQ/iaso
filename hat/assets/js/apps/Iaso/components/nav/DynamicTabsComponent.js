@@ -9,6 +9,7 @@ import {
 import { FormattedMessage } from 'react-intl';
 import Add from '@material-ui/icons/Add';
 import Remove from '@material-ui/icons/Clear';
+import Color from 'color';
 
 import PropTypes from 'prop-types';
 
@@ -38,7 +39,7 @@ const styles = theme => ({
     removeIconButton: {
         color: 'white',
         position: 'relative',
-        top: 18,
+        top: 19,
         right: 15,
         height: 20,
         '& svg': {
@@ -87,7 +88,22 @@ class DynamicTabsComponent extends Component {
         super(props);
         this.state = {
             tabIndex: parseInt(props.params[props.tabParamKey], 10) || 0,
+            tabsWidth: [],
         };
+    }
+
+    setTabsElement(element, index) {
+        const {
+            tabsWidth,
+        } = this.state;
+        const newWidth = element.getBoundingClientRect().width;
+        if (newWidth !== tabsWidth[index]) {
+            const newArray = [...tabsWidth];
+            newArray[index] = newWidth;
+            this.setState({
+                tabsWidth: newArray,
+            });
+        }
     }
 
     handleAddTab() {
@@ -124,12 +140,13 @@ class DynamicTabsComponent extends Component {
             paramKey,
             baseUrl,
             tabParamKey,
-            onTabsUpdated,
+            onTabsDeleted,
         } = this.props;
         const newItems = JSON.parse(params[paramKey]);
         newItems.splice(tabIndex, 1);
         const newParams = {
             ...params,
+            searchActive: false,
         };
 
         newParams[paramKey] = JSON.stringify(newItems);
@@ -139,7 +156,7 @@ class DynamicTabsComponent extends Component {
                 tabIndex: newItems.length - 1,
             });
         }
-        onTabsUpdated();
+        onTabsDeleted();
         redirectTo(baseUrl, newParams);
     }
 
@@ -177,6 +194,7 @@ class DynamicTabsComponent extends Component {
         } = this.props;
         const {
             tabIndex,
+            tabsWidth,
         } = this.state;
         const itemsList = JSON.parse(params[paramKey]);
         return (
@@ -193,7 +211,7 @@ class DynamicTabsComponent extends Component {
                                             className={classes.removeContainerItem}
                                             key={currentTabIndex}
                                             style={{
-                                                flexBasis: `${100 / itemsList.length}%`,
+                                                width: `${tabsWidth[currentTabIndex]}px`,
                                             }}
                                         >
                                             <Tooltip
@@ -231,6 +249,7 @@ class DynamicTabsComponent extends Component {
                         {
                             itemsList.map((item, currentTabIndex) => (
                                 <Tab
+                                    ref={(ref) => { if (ref) this.setTabsElement(ref, currentTabIndex); }}
                                     key={currentTabIndex}
                                     value={currentTabIndex}
                                     label={(
@@ -238,6 +257,7 @@ class DynamicTabsComponent extends Component {
                                             <span
                                                 style={{
                                                     backgroundColor: `#${item.color}`,
+                                                    border: `2px solid ${Color(`#${item.color}`).darken(0.5)}`,
                                                 }}
                                                 className={classes.roundColor}
                                             />
@@ -287,6 +307,7 @@ DynamicTabsComponent.defaultProps = {
     baseLabel: 'tab',
     maxItems: 5,
     onTabsUpdated: () => ({}),
+    onTabsDeleted: () => ({}),
     displayCounts: false,
     counts: [],
 };
@@ -302,6 +323,7 @@ DynamicTabsComponent.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     maxItems: PropTypes.number,
     onTabsUpdated: PropTypes.func,
+    onTabsDeleted: PropTypes.func,
     displayCounts: PropTypes.bool,
     counts: PropTypes.array,
 };

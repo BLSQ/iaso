@@ -13,6 +13,7 @@ from .planning import PlanningViewSet
 from .province import ProvinceViewSet
 from .qcstats import QCStatsViewSet
 from .qctests import QCTestsViewSet
+from .screening_types import ScreeningTypeViewSet
 from .team import TeamViewSet
 from .village import VillageViewSet
 from .qc_check_stats import QCCheckStatsViewSet
@@ -100,6 +101,7 @@ router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems"
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
 router.register(r"tests", TestsViewSet, base_name="tests")
+router.register(r"screeningtypes", ScreeningTypeViewSet, base_name="screeningtypes")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")

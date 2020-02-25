@@ -13,6 +13,7 @@ import { setInstances, setInstancesSmallDict, setInstancesFetching } from '../re
 import { setCurrentForm } from '../redux/formsReducer';
 import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
 import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
+import { setPeriods } from '../redux/periodsReducer';
 
 import {
     fetchInstancesAsDict,
@@ -21,6 +22,7 @@ import {
     fetchOrgUnitsTypes,
     fetchDevices,
     fetchDevicesOwnerships,
+    fetchPeriods,
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -61,12 +63,20 @@ class Instances extends Component {
     }
 
     componentWillMount() {
-        fetchOrgUnitsTypes(this.props.dispatch)
+        const {
+            dispatch,
+            params: {
+                formId,
+            },
+        } = this.props;
+        fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchDevices(this.props.dispatch)
+        fetchDevices(dispatch)
             .then(devices => this.props.setDevicesList(devices));
-        fetchDevicesOwnerships(this.props.dispatch)
+        fetchDevicesOwnerships(dispatch)
             .then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
+        fetchPeriods(dispatch, formId)
+            .then(periods => this.props.setPeriods(periods));
     }
 
 
@@ -113,6 +123,7 @@ class Instances extends Component {
             withLocation: params.withLocation,
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
+            periods: params.periods,
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
@@ -325,6 +336,7 @@ Instances.propTypes = {
     router: PropTypes.object.isRequired,
     redirectToPush: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
+    setPeriods: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -346,6 +358,7 @@ const MapDispatchToProps = dispatch => ({
     redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
+    setPeriods: periods => dispatch(setPeriods(periods)),
 });
 
 

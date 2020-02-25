@@ -32,7 +32,7 @@ services:
       SENSE_HAT_ENVIRONMENT: 'development'
       FLAVOR:  # set to "iaso" or "trypelim" using your .env file
       RDS_HOSTNAME: db
-      RDS_DB_NAME: hat
+      RDS_DB_NAME: # set to "iaso" or "postgres" or "hat" using your .env file
       RDS_USERNAME: postgres
       DEBUG: 'true'
       TEST_PROD:

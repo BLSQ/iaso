@@ -22,6 +22,7 @@ import {
     mapOrgUnitByLocation,
     shapeOptions,
     polygonDrawOpiton,
+    circleColorMarkerOptions,
 } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
@@ -335,7 +336,6 @@ class OrgUnitMapComponent extends Component {
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
         const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
-        const currentOrgUnitHasLocation = orgUnit.has_geo_json || (orgUnit.latitude && orgUnit.longitude);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -407,10 +407,14 @@ class OrgUnitMapComponent extends Component {
                                         onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
                                         popupProps={{
-                                            displayUseLocation: (Boolean(orgUnit.latitude && orgUnit.longitude)) || !currentOrgUnitHasLocation,
+                                            displayUseLocation: true,
                                             useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                         }}
-                                        customMarker={colorMarker(ot.color, 'white-pentagon.svg')}
+                                        isCircle
+
+                                        markerProps={() => ({
+                                            ...circleColorMarkerOptions(ot.color),
+                                        })}
                                     />
                                     {
                                         ot.orgUnits.shapes.map(o => (
@@ -423,7 +427,7 @@ class OrgUnitMapComponent extends Component {
                                                 )}
                                             >
                                                 <OrgUnitPopupComponent
-                                                    displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
+                                                    displayUseLocation
                                                     useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                                 />
                                             </GeoJSON>
@@ -435,15 +439,18 @@ class OrgUnitMapComponent extends Component {
                         {!editLocationEnabled
                             && formsSelected.map(f => (
                                 <MarkersListComponent
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(f.color),
+                                    })}
                                     key={f.id}
                                     items={f.instances}
                                     onMarkerClick={i => this.fetchInstanceDetail(i)}
                                     PopupComponent={InstancePopupComponent}
                                     popupProps={{
-                                        displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
+                                        displayUseLocation: true,
                                         useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                     }}
-                                    customMarker={colorMarker(f.color, 'white-form.svg')}
+                                    isCircle
                                 />
                             ))
                         }
@@ -453,7 +460,15 @@ class OrgUnitMapComponent extends Component {
                                     items={s.orgUnits.locations}
                                     onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                     PopupComponent={OrgUnitPopupComponent}
-                                    customMarker={colorMarker(s.color)}
+                                    popupProps={{
+                                        displayUseLocation: true,
+                                        useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
+                                    }}
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(s.color),
+                                    })}
+                                    // customMarker={colorMarker(s.color)}
+                                    isCircle
                                 />
                                 {
                                     s.orgUnits.shapes.map(o => (
@@ -466,7 +481,7 @@ class OrgUnitMapComponent extends Component {
                                             )}
                                         >
                                             <OrgUnitPopupComponent
-                                                displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
+                                                displayUseLocation
                                                 useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                             />
                                         </GeoJSON>

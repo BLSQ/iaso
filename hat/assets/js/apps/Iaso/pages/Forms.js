@@ -19,6 +19,7 @@ import TopBar from '../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
+import AddFormDialogComponent from '../components/dialogs/AddFormDialogComponent';
 
 import commonStyles from '../styles/common';
 
@@ -115,6 +116,7 @@ class Forms extends Component {
                         />
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        <AddFormDialogComponent />
                         {reduxPage.list
                             && (
                                 <DownloadButtonsComponent

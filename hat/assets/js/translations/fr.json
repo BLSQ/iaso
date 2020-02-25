@@ -85,6 +85,8 @@
     "iaso.forms.updated_at": "Modification",
     "iaso.forms.validated": "Validé",
     "iaso.forms.view": "Voir",
+    "iaso.forms.create": "Créer",
+    "iaso.forms.input_name": "Nom",
     "iaso.instance.created_at": "Création",
     "iaso.instance.coordinate": "Coordonées",
     "iaso.instance.device": "IMEI appareil",

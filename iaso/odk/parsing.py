@@ -59,9 +59,10 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
 
 def _generate_form_version(previous_version: typing.Optional[str]) -> str:
     """Generate a form version in the yyyymmddrr format.
-    If a previous version is provided, and is also in the yyyymmddrr
-    :param previous_version:
-    :return:
+    If a previous version is provided, and is also in the yyyymmddrr, it will be used to check if we should increment
+    the revision part(rr) or create a new revision for the day
+
+    :param previous_version: last saved version number in our system
     """
     today = timezone.now().date()
     if previous_version is not None and len(previous_version) == 10:  # previous version in yyyymmddrr format

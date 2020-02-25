@@ -22,16 +22,13 @@ class FormVersionSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
-    def validate(self, data: typing.Mapping):
+    def validate(self, data: typing.MutableMapping):
+        form = data['form']
+
         # validate form (access check)
         permission_checker = HasFormPermission()
-        if not permission_checker.has_object_permission(self.context["request"], self.context["view"], data["form"]):
+        if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
-
-        return data
-
-    def create(self, validated_data):
-        form = validated_data['form']
 
         # fetch previous version
         try:
@@ -41,7 +38,7 @@ class FormVersionSerializer(serializers.ModelSerializer):
             previous_version_id = None
 
         # handle xls to xml conversion
-        uploaded_xls_file = validated_data['xls_file']
+        uploaded_xls_file = data['xls_file']
         try:
             xml_form = parse_xls_form(uploaded_xls_file, previous_version=previous_version_id)
         except ParsingError as e:
@@ -60,16 +57,22 @@ class FormVersionSerializer(serializers.ModelSerializer):
             if queryset.exists():
                 raise serializers.ValidationError({"xls_file": "The form_id is already used in another form."})
 
-        validated_data['file'] = SimpleUploadedFile(xml_form.file_name, xml_form.file_content, content_type='text/xml')
-        validated_data['version_id'] = xml_form['version']
+        data['file'] = SimpleUploadedFile(xml_form.file_name, xml_form.file_content,
+                                          content_type='text/xml')
+        data['version_id'] = xml_form['version']
+        data['form_form_id'] = xml_form['form_id']
 
+        return data
+
+    def create(self, validated_data: typing.MutableMapping):
+        form_form_id = validated_data.pop('form_form_id')
         with transaction.atomic():
             # save version
             version: FormVersion = super().create(validated_data)
 
             # update form instance with survey settings
             form = version.form
-            form.form_id = xml_form['form_id']
+            form.form_id = form_form_id
             form.save()
 
         return version

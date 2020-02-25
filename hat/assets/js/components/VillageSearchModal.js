@@ -7,6 +7,7 @@ import PropTypes from 'prop-types';
 import ReactModal from 'react-modal';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
+import isEqual from 'lodash/isEqual';
 
 import {
     Typography,
@@ -29,12 +30,13 @@ class VillageSearchModal extends Component {
             searchString: '',
             showModal: false,
             currentPage: 1,
-            currentPageSize: 10,
+            currentPageSize: props.defaultPageSize,
             pages: 0,
             loading: false,
             results: [],
             currentCount: 0,
             orders: 'name',
+            sortList: [],
         };
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
@@ -49,6 +51,16 @@ class VillageSearchModal extends Component {
         } = this.props;
         if (autoLoad) {
             this.searchVillages();
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {
+            onSearch,
+            results,
+        } = this.props;
+        if (onSearch && !isEqual(prevProps.results, results)) {
+            this.setResults(results);
         }
     }
 
@@ -78,7 +90,12 @@ class VillageSearchModal extends Component {
         const {
             searchString,
         } = this.state;
-        this.searchVillages(searchString, currentPageSize, 1);
+        const {
+            onSearch,
+        } = this.props;
+        if (!onSearch) {
+            this.searchVillages(searchString, currentPageSize, 1);
+        }
     }
 
     onChangeSort(sortList) {
@@ -89,13 +106,20 @@ class VillageSearchModal extends Component {
 
         this.setState({
             orders,
+            sortList,
         });
+
         const {
-            searchString,
-            currentPageSize,
-            currentPage,
-        } = this.state;
-        this.searchVillages(searchString, currentPageSize, currentPage, orders);
+            onSearch,
+        } = this.props;
+        if (!onSearch) {
+            const {
+                searchString,
+                currentPageSize,
+                currentPage,
+            } = this.state;
+            this.searchVillages(searchString, currentPageSize, currentPage, orders);
+        }
     }
 
     onPageChange(currentPage) {
@@ -106,9 +130,21 @@ class VillageSearchModal extends Component {
             searchString,
             currentPageSize,
         } = this.state;
-        this.searchVillages(searchString, currentPageSize, currentPage);
+        const {
+            onSearch,
+        } = this.props;
+        if (!onSearch) {
+            this.searchVillages(searchString, currentPageSize, 1);
+        }
     }
 
+    setResults(results) {
+        this.setState({
+            results,
+            loading: false,
+            currentCount: results.length,
+        });
+    }
 
     toggleModal() {
         if (this.props.toggleModal === null) {
@@ -128,37 +164,49 @@ class VillageSearchModal extends Component {
     ) {
         const {
             filters,
+            onSearch,
         } = this.props;
         this.setState({
             loading: true,
             searchString,
         });
-        let url = `/api/villages/?as_list=true&limit=${currentPageSize}&page=${currentPage}&order=${orders}`;
-        if (searchString !== '') {
-            filters.search = searchString;
-        }
-        Object.keys(filters).forEach((filterKey) => {
-            url += `&${filterKey}=${filters[filterKey]}`;
-        });
-        req
-            .get(url)
-            .then((res) => {
-                const data = res.body;
-                this.setState({
-                    results: data.villages,
-                    currentPage: data.page,
-                    currentPageSize: parseInt(data.limit, 10),
-                    pages: data.pages,
-                    currentCount: data.count,
-                    loading: false,
-                });
-            })
-            .catch((err) => {
-                this.setState({
-                    loading: false,
-                });
-                console.error(`Error while fetching Villages: ${err}`);
+        if (onSearch) {
+            onSearch(searchString, currentPageSize, currentPage, orders);
+        } else {
+            let url = `/api/villages/?as_list=true&limit=${currentPageSize}&page=${currentPage}&order=${orders}`;
+            if (searchString !== '') {
+                filters.search = searchString;
+            }
+            Object.keys(filters).forEach((filterKey) => {
+                url += `&${filterKey}=${filters[filterKey]}`;
             });
+
+            req
+                .get(url)
+                .then((res) => {
+                    const data = res.body;
+                    this.setState({
+                        results: data.villages,
+                        currentPage: data.page,
+                        currentPageSize: parseInt(data.limit, 10),
+                        pages: data.pages,
+                        currentCount: data.count,
+                        loading: false,
+                    });
+                })
+                .catch((err) => {
+                    this.setState({
+                        loading: false,
+                    });
+                    console.error(`Error while fetching Villages: ${err}`);
+                });
+        }
+    }
+
+    changeSearch(searchString) {
+        this.setState({
+            searchString,
+        });
     }
 
     resetSearch() {
@@ -178,6 +226,9 @@ class VillageSearchModal extends Component {
             showButton,
             columns,
             getResutText,
+            onSearch,
+            defaultSortKey,
+            defaultPageSize,
         } = this.props;
         const showModal = this.props.showModal === null ? this.state.showModal : this.props.showModal;
         const {
@@ -188,7 +239,22 @@ class VillageSearchModal extends Component {
             results,
             searchString,
             currentCount,
+            sortList,
         } = this.state;
+        let extraProps = {
+            page: currentPage - 1,
+            onPageChange: page => this.onPageChange(page + 1),
+            onPageSizeChange: pageSize => this.onPageSizeChange(pageSize),
+            onSortedChange: sort => this.onChangeSort(sort),
+        };
+        if (!onSearch) {
+            extraProps = {
+                ...extraProps,
+                pageSize: currentPageSize,
+                pages,
+                loading,
+            };
+        }
         return (
             <Fragment>
                 {
@@ -266,15 +332,16 @@ class VillageSearchModal extends Component {
                                     searchString={searchString}
                                     placeholderText={formatMessage(MESSAGES.searchPlaceholder)}
                                     noEnoughText={formatMessage(MESSAGES.searchMinChar)}
-                                    minCharCount={1}
+                                    minCharCount={-1}
+                                    onChange={value => this.changeSearch(value)}
                                     onSearch={value => this.searchVillages(value)}
                                     resetSearch={() => this.resetSearch()}
-                                    onSortedChange={sort => this.onChangeSort(sort)}
                                     isLoading={loading}
                                     disableBlurSearch
                                     displayResults={false}
                                     resetOnUnmount={false}
                                     showResetSearch
+                                    allowEmptySearch
                                 />
                             </Grid>
                             <Grid
@@ -303,26 +370,20 @@ class VillageSearchModal extends Component {
                             >
                                 <ReactTable
                                     showPagination
-                                    manual
                                     multiSort
                                     columns={columns || villageSearchColumns(formatMessage)}
                                     data={results}
-                                    pages={pages}
-                                    loading={loading}
-                                    onPageChange={page => this.onPageChange(page + 1)}
-                                    onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
-                                    onSortedChange={sort => this.onChangeSort(sort)}
                                     filterable={false}
                                     sortable
-                                    pageSize={currentPageSize}
-                                    page={currentPage - 1}
                                     className="-striped -highlight"
-                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    defaultSorted={sortList.length > 0 ? sortList : [{ id: defaultSortKey || 'name', desc: false }]}
                                     pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
                                     getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
                                     style={{
                                         height: '60vh',
                                     }}
+                                    defaultPageSize={Boolean(onSearch) && defaultPageSize !== currentPageSize ? currentPageSize : defaultPageSize}
+                                    {...extraProps}
                                 />
                             </Grid>
                         </Grid>
@@ -377,6 +438,10 @@ VillageSearchModal.defaultProps = {
     getResutText: null,
     onSelectVillage: null,
     extraButtons: [],
+    onSearch: null,
+    results: [],
+    defaultSortKey: null,
+    defaultPageSize: 10,
 };
 
 VillageSearchModal.propTypes = {
@@ -391,6 +456,10 @@ VillageSearchModal.propTypes = {
     autoLoad: PropTypes.bool,
     getResutText: PropTypes.any,
     extraButtons: PropTypes.array,
+    onSearch: PropTypes.func,
+    results: PropTypes.array,
+    defaultSortKey: PropTypes.any,
+    defaultPageSize: PropTypes.number,
 };
 
 

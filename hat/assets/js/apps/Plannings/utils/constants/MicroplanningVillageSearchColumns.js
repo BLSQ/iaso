@@ -1,14 +1,13 @@
 import React from 'react';
-import { IconButton, Tooltip } from '@material-ui/core';
+import { IconButton, Tooltip, Typography } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import Eye from '@material-ui/icons/RemoveRedEye';
-import Check from '@material-ui/icons/Check';
 import Close from '@material-ui/icons/Close';
 
 
 import { formatThousand } from '../../../../utils';
 
-const villageSearchColumns = (formatMessage, assignations, component) => (
+const villageSearchColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
@@ -16,23 +15,23 @@ const villageSearchColumns = (formatMessage, assignations, component) => (
                 id: 'vector.modale.assignation.title',
             }),
             className: 'small',
-            accessor: 'selected',
-            sortable: false,
-            Cell: (settings) => {
-                const villageSelected = assignations.find(sv => sv.village_id === settings.original.id);
-                return (
-                    <section>
-                        {
-                            villageSelected
-                            && <Check className="success-icon" />
-                        }
-                        {
-                            !villageSelected
+            accessor: 'assignationTeamName',
+            Cell: settings => (
+                <section>
+                    {
+                        settings.original.assignationTeamId
+                            && (
+                                <Typography variant="body2" className="success-text">
+                                    {settings.original.assignationTeamName}
+                                </Typography>
+                            )
+                    }
+                    {
+                        !settings.original.assignationTeamId
                             && <Close className="error-icon" />
-                        }
-                    </section>
-                );
-            },
+                    }
+                </section>
+            ),
         },
         {
             Header: formatMessage({
@@ -64,28 +63,13 @@ const villageSearchColumns = (formatMessage, assignations, component) => (
             className: 'small',
             accessor: 'nr_positive_cases',
             Cell: settings => (
-                <section>
+                <section className={
+                    settings.original.nr_positive_cases > 0 ? 'error-text' : 'success-text'
+                }
+                >
                     {formatThousand(settings.original.nr_positive_cases)}
                 </section>
             ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Province',
-                id: 'main.label.province',
-            }),
-            className: 'small',
-            sortable: true,
-            accessor: 'AS__ZS__province__name',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Zone',
-                id: 'main.label.zone_short',
-            }),
-            className: 'small',
-            sortable: true,
-            accessor: 'AS__ZS__name',
         },
         {
             Header: formatMessage({

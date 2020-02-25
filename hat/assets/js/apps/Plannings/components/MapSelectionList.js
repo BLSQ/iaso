@@ -7,6 +7,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import orderBy from 'lodash/orderBy';
 
 class MapSelectionList extends Component {
     render() {
@@ -16,7 +17,7 @@ class MapSelectionList extends Component {
             return <div />;
         }
 
-
+        const ordererdData = orderBy(data, [v => v.name.toLowerCase()], ['asc']);
         return (
             <div>
                 <div className="map__selection__list__header">
@@ -47,57 +48,54 @@ class MapSelectionList extends Component {
                     </thead>
 
                     <tbody>
-                        {data.map(item => {
-                            // console.log(item);
-                            return (
-                                <tr className="map__selection__list__item" key={item.id}>
-                                    {
-                                        coordinationId !== ''
+                        {ordererdData.map(item => (
+                            <tr className="map__selection__list__item" key={item.id}>
+                                {
+                                    coordinationId !== ''
+                                    && (
+                                        <td className="tools">
+                                            {(this.props.teamsMap[this.props.assignationsMap[item.id]])
+                                                && (
+                                                    <span
+                                                        tabIndex={0}
+                                                        role="button"
+                                                        className="remove"
+                                                        onClick={() => this.props.deselect([{ village_id: item.id }])}
+                                                    >
+                                                        <i className="fa fa-close" />
+                                                    </span>
+                                                )
+                                            }
+                                        </td>
+                                    )
+                                }
+                                <td className="tools">
+                                    <span
+                                        tabIndex={0}
+                                        role="button"
+                                        className={`view text--${item._isHighlight ? 'highlight' : item.type}`}
+                                        onClick={() => show(item)}
+                                    >
+                                        <i className="fa fa-map-marker" />
+                                    </span>
+                                </td>
+                                <td>
+                                    {item.name}
+                                </td>
+                                <td className="limited-width">
+                                    {item.AS__name}
+                                </td>
+                                <td className="limited-width">
+                                    {(this.props.teamsMap[this.props.assignationsMap[item.id]])
                                         && (
-                                            <td className="tools">
-                                                {(this.props.teamsMap[this.props.assignationsMap[item.id]])
-                                                    && (
-                                                        <span
-                                                            tabIndex={0}
-                                                            role="button"
-                                                            className="remove"
-                                                            onClick={() => this.props.deselect([{ village_id: item.id }])}
-                                                        >
-                                                            <i className="fa fa-close" />
-                                                        </span>
-                                                    )
-                                                }
-                                            </td>
+                                            <span>
+                                                {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
+                                            </span>
                                         )
                                     }
-                                    <td className="tools">
-                                        <span
-                                            tabIndex={0}
-                                            role="button"
-                                            className={`view text--${item._isHighlight ? 'highlight' : item.type}`}
-                                            onClick={() => show(item)}
-                                        >
-                                            <i className="fa fa-map-marker" />
-                                        </span>
-                                    </td>
-                                    <td>
-                                        {item.name}
-                                    </td>
-                                    <td className="limited-width">
-                                        {item.AS__name}
-                                    </td>
-                                    <td className="limited-width">
-                                        {(this.props.teamsMap[this.props.assignationsMap[item.id]])
-                                            && (
-                                                <span>
-                                                    {this.props.teamsMap[this.props.assignationsMap[item.id]].name}
-                                                </span>
-                                            )
-                                        }
-                                    </td>
-                                </tr>
-                            );
-                        })}
+                                </td>
+                            </tr>
+                        ))}
                     </tbody>
                 </table>
             </div>

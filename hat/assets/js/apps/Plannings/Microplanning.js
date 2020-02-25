@@ -339,19 +339,27 @@ export class Microplanning extends Component {
                 className="no-button"
                 onKeyDown={event => this.onKeyDownHandler(event)}
             >
+                {
+                    !loading
+                    && !this.props.isAssignationLoading
+                    && (
+                        <MicroplanningVillageSearch
+                            showSearchModal={showSearchModal}
+                            filters={{
+                                planningId: this.props.params.planning_id,
+                                workZoneId: this.props.params.workzone_id,
+                                years: this.props.params.years,
+                                teamId: this.props.params.team_id,
+                            }}
+                            assignations={assignations}
+                            toggleSearchModal={() => this.toggleSearchModal()}
+                            displayItem={item => this.props.displayItem(item)}
+                            villages={villages}
+                            teams={teams}
+                        />
+                    )
+                }
 
-                <MicroplanningVillageSearch
-                    showSearchModal={showSearchModal}
-                    filters={{
-                        planningId: this.props.params.planning_id,
-                        workZoneId: this.props.params.workzone_id,
-                        years: this.props.params.years,
-                        teamId: this.props.params.team_id,
-                    }}
-                    assignations={assignations}
-                    toggleSearchModal={() => this.toggleSearchModal()}
-                    displayItem={item => this.props.displayItem(item)}
-                />
                 {
                     loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }

@@ -7,6 +7,7 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file
 import random
+import pathlib
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -615,13 +616,19 @@ class GroupSet(models.Model):
         return "%s | %s " % (self.name, self.source_version)
 
 
+def _form_version_upload_to(instance: 'FormVersion', filename: str) -> str:
+    path = pathlib.Path(filename)
+
+    return f"forms/{path.stem}_{instance.version_id}{path.suffix}"
+
+
 class FormVersion(models.Model):
     UPLOADED_TO = "forms/"
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )
-    file = models.FileField(upload_to=UPLOADED_TO)
-    xls_file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    file = models.FileField(upload_to=_form_version_upload_to)
+    xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

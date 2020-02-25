@@ -48,7 +48,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
 
     xml_file_content = survey.to_xml(validate=False)
     xls_path = pathlib.Path(xls_file.name)
-    xml_file_name = f'{xls_path.stem}.xml'  # TODO: add version in filename
+    xml_file_name = f'{xls_path.stem}.xml'
 
     return XMLForm(xml_file_content.encode('utf-8'), xml_file_name, settings={
         'form_id': survey.id_string,
@@ -64,6 +64,7 @@ def _generate_form_version(previous_version: typing.Optional[str]) -> str:
 
     :param previous_version: last saved version number in our system
     """
+
     today = timezone.now().date()
     if previous_version is not None and len(previous_version) == 10:  # previous version in yyyymmddrr format
         previous_version_date_string = f"{previous_version[:4]}-{previous_version[4:6]}-{previous_version[6:8]}"

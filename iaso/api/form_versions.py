@@ -31,17 +31,34 @@ class FormVersionSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
+        form = validated_data['form']
+
+        # fetch previous version
+        try:
+            previous_version = FormVersion.objects.filter(form=form).latest('created_at')
+            previous_version_id = previous_version.version_id
+        except FormVersion.DoesNotExist:
+            previous_version_id = None
+
         # handle xls to xml conversion
         uploaded_xls_file = validated_data['xls_file']
-
-        errors = []
         try:
-            xml_form = parse_xls_form(uploaded_xls_file)
+            xml_form = parse_xls_form(uploaded_xls_file, previous_version=previous_version_id)
         except ParsingError as e:
-            errors.append(str(e))
-        # TODO: validate version uniqueness across form
-        if len(errors) > 0:
-            raise serializers.ValidationError({'xls_file': errors})
+            raise serializers.ValidationError({'xls_file': str(e)})
+
+        # validate that form_id stays constant across versions
+        if form.form_id is not None and xml_form['form_id'] != form.form_id:
+            raise serializers.ValidationError({'xls_file': 'Form_id should stay constant across form versions.'})
+
+        # validate form_id (from XLS file) uniqueness across account
+        all_accounts = set(project.account for project in form.projects.all())  # TODO: discuss - smells weird
+        for account in all_accounts:
+            queryset = (Form.objects
+                        .filter(projects__account=account, form_id=xml_form['form_id'])
+                        .exclude(pk=form.id))
+            if queryset.exists():
+                raise serializers.ValidationError({"xls_file": "The form_id is already used in another form."})
 
         validated_data['file'] = SimpleUploadedFile(xml_form.file_name, xml_form.file_content, content_type='text/xml')
         validated_data['version_id'] = xml_form['version']
@@ -52,8 +69,7 @@ class FormVersionSerializer(serializers.ModelSerializer):
 
             # update form instance with survey settings
             form = version.form
-            # form.name = xml_form['form_title']  # TODO: check if relevant to always overwrite form name that way
-            form.form_id = xml_form['form_id']  # TODO: validate same as previous ? + validate uniqueness across account
+            form.form_id = xml_form['form_id']
             form.save()
 
         return version

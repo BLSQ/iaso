@@ -29,14 +29,14 @@ class FormsAPITestCase(APITestCase):
                                                  app_id="stars.empire.agriculture.land_speeder",
                                                  account=star_wars)
 
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study", form_id="hydrop_study")
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study")
 
-        cls.form_2 = m.Form.objects.create(name="Hydroponic public survey", device_field="deviceid",
-                                           location_field="geoloc", form_id="hydrop_survey", period_type="QUARTER",
+        cls.form_2 = m.Form.objects.create(name="Hydroponic public survey", form_id="sample2",
+                                           device_field="deviceid", location_field="geoloc", period_type="QUARTER",
                                            single_per_period=True)
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
-        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="v3")
+        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
         cls.form_2.instances.create()

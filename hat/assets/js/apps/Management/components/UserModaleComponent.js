@@ -282,6 +282,7 @@ UserModale.propTypes = {
     updateCurrentUser: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
     error: PropTypes.any,
+    screeningTypes: PropTypes.array.isRequired,
 };
 
 export default injectIntl(UserModale);

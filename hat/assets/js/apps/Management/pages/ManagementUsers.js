@@ -358,6 +358,7 @@ ManagementUsers.propTypes = {
     selectedUser: PropTypes.object,
     updateCurrentUser: PropTypes.func.isRequired,
     teamTypes: PropTypes.array.isRequired,
+    screeningTypes: PropTypes.array.isRequired,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);

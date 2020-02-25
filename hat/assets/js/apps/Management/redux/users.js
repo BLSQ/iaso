@@ -406,6 +406,7 @@ export const usersInitialState = {
     areas: [],
     teams: [],
     current: null,
+    coordinations: [],
 };
 
 export const userActions = {

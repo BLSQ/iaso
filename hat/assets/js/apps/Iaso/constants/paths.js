@@ -52,6 +52,10 @@ export const instancesPath = getPath({
         ...paginationPathParams,
         {
             isRequired: false,
+            key: 'periods',
+        },
+        {
+            isRequired: false,
             key: 'levels',
         },
         {

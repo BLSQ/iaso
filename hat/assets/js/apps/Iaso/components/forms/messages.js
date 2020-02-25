@@ -195,6 +195,10 @@ const MESSAGES = {
         id: 'iaso.label.groups',
         defaultMessage: 'Groups',
     },
+    periods: {
+        id: 'iaso.label.periods',
+        defaultMessage: 'Periods',
+    },
 };
 
 export default MESSAGES;

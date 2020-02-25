@@ -1,7 +1,6 @@
 import React from 'react';
 import instancesTableColumns from '../constants/instancesTableColumns';
 
-
 export const getInstancesColumns = (formatMessage, instances) => {
     let tableColumns = [...instancesTableColumns(formatMessage)];
     if (instances[0]) {

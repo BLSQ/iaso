@@ -265,3 +265,11 @@ export const runAlgorithm = (dispatch, runItem) => putRequest('/api/algorithmsru
         console.error('Error while deleting algorithms run:', error);
         throw error;
     });
+
+export const fetchPeriods = (dispatch, formId) => getRequest(`/api/periods/?form_id=${formId}`)
+    .then(res => res.periods)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchPeriodsError')));
+        console.error('Error while fetching periods list:', error);
+        throw error;
+    });

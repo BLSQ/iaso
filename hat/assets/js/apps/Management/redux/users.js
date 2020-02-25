@@ -7,6 +7,7 @@ export const USER_UPDATED = 'hat/management/users/USER_UPDATED';
 export const SET_INSTITUTIONS = 'hat/management/users/SET_INSTITUTIONS';
 export const SET_USER_TYPES = 'hat/management/users/SET_USER_TYPES';
 export const SET_TESTER_TYPES = 'hat/management/users/SET_TESTER_TYPES';
+export const SET_SCREENING_TYPES = 'hat/management/users/SET_SCREENING_TYPES';
 export const SET_USER_LEVELS = 'hat/management/users/SET_USER_LEVELS';
 export const SET_PERMISSIONS = 'hat/management/users/SET_PERMISSIONS';
 export const SET_COORDINATIONS = 'hat/management/users/SET_COORDINATIONS';
@@ -38,6 +39,11 @@ export const setUserTypes = payload => ({
 
 export const setTesterTypes = payload => ({
     type: SET_TESTER_TYPES,
+    payload,
+});
+
+export const setScreeningTypes = payload => ({
+    type: SET_SCREENING_TYPES,
     payload,
 });
 
@@ -246,6 +252,21 @@ export const fetchTesterTypes = (dispatch) => {
     });
 };
 
+export const fetchScreeningTypes = (dispatch) => {
+    req
+        .get('/api/screeningtypes/')
+        .then((result) => {
+            dispatch(setScreeningTypes(result.body));
+        })
+        .catch((err) => {
+            dispatch(loadActions.errorLoading(err));
+            console.error('Error when fetching screening types', err);
+        });
+    return ({
+        type: FETCH_ACTION_NO_UPDATE,
+    });
+};
+
 export const fetchUserLevels = (dispatch) => {
     req
         .get('/api/userlevels/')
@@ -377,6 +398,7 @@ export const usersInitialState = {
     institutions: [],
     userTypes: [],
     testerTypes: [],
+    screeningTypes: [],
     userLevels: [],
     permissions: [],
     provinces: [],
@@ -384,6 +406,7 @@ export const usersInitialState = {
     areas: [],
     teams: [],
     current: null,
+    coordinations: [],
 };
 
 export const userActions = {
@@ -402,6 +425,7 @@ export const userActions = {
     fetchUserTypes,
     fetchTeams,
     fetchTesterTypes,
+    fetchScreeningTypes,
     fetchUserLevels,
     createUserType,
     deleteUserType,
@@ -475,6 +499,14 @@ export const userReducer = (state = usersInitialState, action = {}) => {
             return {
                 ...state,
                 testerTypes,
+            };
+        }
+
+        case SET_SCREENING_TYPES: {
+            const screeningTypes = action.payload;
+            return {
+                ...state,
+                screeningTypes,
             };
         }
 

@@ -11,58 +11,44 @@ module.exports = {
   context: __dirname,
   mode: 'development',
   entry: {
-    // use same settings as in Prod
-    'home': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Home/index'
-    ],
-    'common': ['react', 'react-dom', 'react-intl'],
-    'styles': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/css/index.scss'
-    ],
-    'plannings': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Plannings/index'
-    ],
-    'management': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Management/index'
-    ],
-    'locator': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Locator/index'
-    ],
-    'vector': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Vector/index'
-    ],
-    'quality_control': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/QualityControl/index'
-    ],
-    'stats': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Stats/index'
-    ],
-    'datas': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Datas/index'
-    ],
-    'iaso': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
-      './assets/js/apps/Iaso/index'
-    ]
+    common: ['react', 'react-dom', 'react-intl'],
+    styles: './assets/css/index.scss',
+    home: {
+      import: './assets/js/apps/Home/index',
+      dependOn: 'common',
+    },
+    plannings: {
+      import: './assets/js/apps/Plannings/index',
+      dependOn: 'common',
+    },
+    management: {
+      import: './assets/js/apps/Management/index',
+      dependOn: 'common'
+    },
+    locator: {
+      import: './assets/js/apps/Locator/index',
+      dependOn: 'common'
+    },
+    vector: {
+      import: './assets/js/apps/Vector/index',
+      dependOn: 'common'
+    },
+    quality_control: {
+      import: './assets/js/apps/QualityControl/index',
+      dependOn: 'common'
+    },
+    stats: {
+      import: './assets/js/apps/Stats/index',
+      dependOn: 'common'
+    },
+    datas: {
+      import: './assets/js/apps/Datas/index',
+      dependOn: 'common'
+    },
+    iaso: {
+      import: './assets/js/apps/Iaso/index',
+      dependOn: 'common'
+    },
   },
 
   output: {

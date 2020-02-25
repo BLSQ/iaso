@@ -104,9 +104,9 @@
     "vega": "^5.4.0",
     "vega-lite": "^2.7.0",
     "video.js": "^7.5.5",
-    "webpack": "^4.35.2",
-    "webpack-bundle-tracker": "^0.4.2-beta",
-    "webpack-dev-server": "^3.7.2",
+    "webpack": "^4.41.6",
+    "webpack-bundle-tracker": "^0.4.3",
+    "webpack-dev-server": "^3.10.3",
     "xlsx": "^0.14.3"
   }
 }

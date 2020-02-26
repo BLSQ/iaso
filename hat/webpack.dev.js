@@ -81,7 +81,6 @@ module.exports = {
       /^__intl\/messages\/fr$/,
       '../translations/fr.json'
     ),
-    // new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
     new BundleTracker({
       path: __dirname,

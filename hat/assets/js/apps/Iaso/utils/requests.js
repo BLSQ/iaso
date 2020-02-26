@@ -273,3 +273,11 @@ export const fetchPeriods = (dispatch, formId) => getRequest(`/api/periods/?form
         console.error('Error while fetching periods list:', error);
         throw error;
     });
+
+export const fetchProjects = dispatch => getRequest('/api/projects/')
+    .then(res => res.projects)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchProjectsError')));
+        console.error('Error while fetching projects list:', error);
+        throw error;
+    });

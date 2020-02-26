@@ -273,3 +273,12 @@ export const fetchPeriods = (dispatch, formId) => getRequest(`/api/periods/?form
         console.error('Error while fetching periods list:', error);
         throw error;
     });
+
+
+export const fetchCompleteness = (dispatch, periodType) => getRequest(`/api/completeness/?period_type=${periodType}`)
+    .then(res => res.completeness)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError')));
+        console.error('Error while fetching  while fetching completness:', error);
+        throw error;
+    });

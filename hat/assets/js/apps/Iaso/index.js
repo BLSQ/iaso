@@ -27,6 +27,7 @@ import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
 import { periodsInitialState, periodsReducer } from './redux/periodsReducer';
+import { completenessInitialState, completenessReducer } from './redux/completenessReducer';
 import chipColors from './constants/chipColors';
 
 import App from '../App';
@@ -37,6 +38,7 @@ import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
 import Links from './pages/Links';
 import Runs from './pages/Runs';
 import OrgUnitDetail from './pages/OrgUnitDetail';
+import Completeness from './pages/Completeness';
 
 import {
     formsPath,
@@ -45,6 +47,7 @@ import {
     orgUnitsDetailsPath,
     linksPath,
     algosPath,
+    completenessPath,
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
@@ -110,6 +113,15 @@ export default function iasoApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
+        <Route
+            path={completenessPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <Completeness {...props} />
+                </Fragment>
+            )}
+        />,
         <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
@@ -136,6 +148,7 @@ export default function iasoApp(element, baseUrl) {
         links: linksInitialState,
         profiles: profilesInitialState,
         periods: periodsInitialState,
+        completeness: completenessInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -151,6 +164,7 @@ export default function iasoApp(element, baseUrl) {
         links: linksReducer,
         profiles: profilesReducer,
         periods: periodsReducer,
+        completeness: completenessReducer,
     }, [
         routerMiddleware(history),
     ]);

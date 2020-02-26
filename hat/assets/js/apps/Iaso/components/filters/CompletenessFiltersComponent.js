@@ -10,8 +10,12 @@ import Grid from '@material-ui/core/Grid';
 import {
     periodTypes,
 } from '../../constants/filters';
+import {
+    setFieldKeys,
+} from '../../redux/completenessReducer';
 
 import FiltersComponent from './FiltersComponent';
+import ChipsListComponent from '../chips/ChipsListComponent';
 
 import { createUrl } from '../../../../utils/fetchData';
 
@@ -51,6 +55,7 @@ class CompletenessFiltersComponent extends Component {
                 formatMessage,
             },
             periodTypesList,
+            fieldsKeys,
         } = this.props;
         return (
             <Fragment>
@@ -64,6 +69,13 @@ class CompletenessFiltersComponent extends Component {
                                 periodTypes(formatMessage, periodTypesList),
                             ]}
                             onEnterPressed={() => this.onSearch()}
+                        />
+                    </Grid>
+                    <Grid item xs={3} />
+                    <Grid item container xs={6} justify="flex-end">
+                        <ChipsListComponent
+                            chipsList={fieldsKeys}
+                            handleListChange={chipsList => this.props.setFieldKeys(chipsList)}
                         />
                     </Grid>
                 </Grid>
@@ -82,16 +94,20 @@ CompletenessFiltersComponent.propTypes = {
     onSearch: PropTypes.func.isRequired,
     periodTypesList: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    fieldsKeys: PropTypes.array.isRequired,
+    setFieldKeys: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     periodTypesList: state.completeness.periodTypes,
+    fieldsKeys: state.completeness.data.fieldsKeys,
 });
 
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setFieldKeys: fieldKeys => dispatch(setFieldKeys(fieldKeys)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(CompletenessFiltersComponent));

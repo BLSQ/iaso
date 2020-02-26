@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
 import {
-    withStyles, Box, Grid,
+    withStyles, Box,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -60,12 +60,24 @@ class Completeness extends Component {
     }
 
     getData() {
-        const { dispatch } = this.props;
+        const {
+            intl: {
+                formatMessage,
+            },
+            dispatch,
+        } = this.props;
         this.props.setIsFetching(true);
         fetchCompleteness(dispatch, this.getendPointUrl())
             .then((res) => {
                 this.props.setCompletenessData({
-                    ...res,
+                    fieldsKeys: res.fieldsKeys.map(fk => ({
+                        key: fk,
+                        isVisible: true,
+                        label: formatMessage({
+                            defaultMessage: fk,
+                            id: `iaso.completeness.${fk}Multi`,
+                        }),
+                    })),
                     data: sortPeriods(res.data),
                 });
                 this.props.setIsFetching(false);
@@ -89,10 +101,6 @@ class Completeness extends Component {
             completenessData,
         } = this.props;
         if (!completenessData) return null;
-        const keys = completenessData.fieldsKeys.map(fk => formatMessage({
-            defaultMessage: fk,
-            id: `iaso.completeness.${fk}Multi`,
-        }));
         return (
             <Fragment>
                 {
@@ -113,26 +121,13 @@ class Completeness extends Component {
                         params={params}
                         onSearch={() => this.onSearch()}
                     />
-
-                    <Grid container spacing={0}>
-                        <Grid
-                            xs={12}
-                            item
-                            container
-                            justify="flex-end"
-                            alignItems="center"
-                            className={classes.marginBottom}
-                        >
-                            {keys.join(', ')}
-                        </Grid>
-                    </Grid>
                     {
                         completenessData.data.map(d => (
                             <CompletenessPeriodComponent
                                 key={d.period}
                                 period={d.period}
                                 forms={d.forms}
-                                fieldKeys={completenessData.fieldsKeys}
+                                fieldsKeys={completenessData.fieldsKeys}
                             />
                         ))
                     }

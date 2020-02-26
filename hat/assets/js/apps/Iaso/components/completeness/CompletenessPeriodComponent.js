@@ -24,7 +24,7 @@ const getBaseColumns = formatMessage => ([
     },
 ]);
 
-const getColumns = (formatMessage, months, classes, fieldKeys) => {
+const getColumns = (formatMessage, months, classes, fieldsKeys) => {
     const columns = getBaseColumns(formatMessage);
     months.forEach((month, index) => {
         const monthColumn = {
@@ -37,21 +37,21 @@ const getColumns = (formatMessage, months, classes, fieldKeys) => {
                 </span>
             ),
             accessor: month.label,
-            columns: fieldKeys.map(fk => ({
+            columns: fieldsKeys.filter(fk => fk.isVisible).map(fk => ({
                 Header: (
                     <span className={classes.capitalize}>
                         {formatMessage({
-                            defaultMessage: fk,
-                            id: `iaso.completeness.${fk}`,
+                            defaultMessage: fk.key,
+                            id: `iaso.completeness.${fk.key}`,
                         })}
                     </span>
                 ),
-                key: fk,
-                accessor: `months[${index}].fields.${fk}`,
+                key: fk.key,
+                accessor: `months[${index}].fields.${fk.key}`,
                 Cell: (settings) => {
-                    const value = settings.original.months[index].fields[fk];
+                    const value = settings.original.months[index].fields[fk.key];
                     return (
-                        <span className={value ? classes[fk] : ''}>
+                        <span className={value ? classes[fk.key] : ''}>
                             {value || placeholder }
                         </span>
                     );
@@ -90,7 +90,7 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            period, forms, fieldKeys, classes, intl: {
+            period, forms, fieldsKeys, classes, intl: {
                 formatMessage,
             },
         } = this.props;
@@ -116,7 +116,7 @@ class CompletenessPeriodComponent extends Component {
                     <ReactTable
                         showPagination={false}
                         multiSort
-                        columns={getColumns(formatMessage, forms[0].months, classes, fieldKeys)}
+                        columns={getColumns(formatMessage, forms[0].months, classes, fieldsKeys)}
                         data={forms}
                         filterable={false}
                         sortable
@@ -134,7 +134,7 @@ class CompletenessPeriodComponent extends Component {
 CompletenessPeriodComponent.propTypes = {
     period: PropTypes.string.isRequired,
     forms: PropTypes.array.isRequired,
-    fieldKeys: PropTypes.array.isRequired,
+    fieldsKeys: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
 };

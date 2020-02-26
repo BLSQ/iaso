@@ -1,4 +1,6 @@
 import React, { Component } from 'react';
+import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 
 import {
     Paper, withStyles, Typography, Grid,
@@ -10,6 +12,7 @@ import { injectIntl } from 'react-intl';
 import { getPrettyPeriod } from '../../utils/periodsUtils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
+import { createUrl } from '../../../../utils/fetchData';
 
 const placeholder = '-';
 
@@ -24,7 +27,7 @@ const getBaseColumns = formatMessage => ([
     },
 ]);
 
-const getColumns = (formatMessage, months, classes, fieldsKeys) => {
+const getColumns = (formatMessage, months, classes, fieldsKeys, onSelect) => {
     const columns = getBaseColumns(formatMessage);
     months.forEach((month, index) => {
         const monthColumn = {
@@ -51,8 +54,14 @@ const getColumns = (formatMessage, months, classes, fieldsKeys) => {
                 Cell: (settings) => {
                     const value = settings.original.months[index].fields[fk.key];
                     return (
-                        <span className={value ? classes[fk.key] : ''}>
-                            {value || placeholder }
+                        <span
+                            role="button"
+                            tabIndex="0"
+                            className={`${classes.cell} ${value ? classes[fk.key] : ''}`}
+                            onClick={() => onSelect(settings.original.id, fk.key)}
+                            // need to check if selected cell has the same period type as the displayed period type, if not it's a monthly period type with selected month
+                        >
+                            {value || placeholder}
                         </span>
                     );
                 },
@@ -80,12 +89,34 @@ const styles = theme => ({
     exported: {
         color: theme.palette.success.main,
     },
+    cell: {
+        outline: 'none',
+        boxShadow: 'none',
+        cursor: 'pointer',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        width: '100%',
+        height: '100%',
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
 });
 
 class CompletenessPeriodComponent extends Component {
     componentWillMount() {
         const { formatMessage } = this.props.intl;
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+    }
+
+    onSelectCell(formId, status, periods) {
+        const { redirectTo } = this.props;
+        redirectTo('instances', {
+            formId,
+            periods,
+            status,
+        });
     }
 
     render() {
@@ -116,7 +147,12 @@ class CompletenessPeriodComponent extends Component {
                     <ReactTable
                         showPagination={false}
                         multiSort
-                        columns={getColumns(formatMessage, forms[0].months, classes, fieldsKeys)}
+                        columns={getColumns(
+                            formatMessage,
+                            forms[0].months,
+                            classes, fieldsKeys,
+                            (formId, status) => this.onSelectCell(formId, status, period),
+                        )}
                         data={forms}
                         filterable={false}
                         sortable
@@ -137,6 +173,15 @@ CompletenessPeriodComponent.propTypes = {
     fieldsKeys: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
-export default withStyles(styles)(injectIntl(CompletenessPeriodComponent));
+const MapStateToProps = () => ({});
+
+
+const MapDispatchToProps = dispatch => ({
+    dispatch,
+    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+});
+
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(CompletenessPeriodComponent)));

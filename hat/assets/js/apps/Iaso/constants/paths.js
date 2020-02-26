@@ -56,6 +56,10 @@ export const instancesPath = getPath({
         },
         {
             isRequired: false,
+            key: 'status',
+        },
+        {
+            isRequired: false,
             key: 'levels',
         },
         {

@@ -121,16 +121,18 @@ class Completeness extends Component {
                         params={params}
                         onSearch={() => this.onSearch()}
                     />
-                    {
-                        completenessData.data.map(d => (
-                            <CompletenessPeriodComponent
-                                key={d.period}
-                                period={d.period}
-                                forms={d.forms}
-                                fieldsKeys={completenessData.fieldsKeys}
-                            />
-                        ))
-                    }
+                    <div className={classes.marginTop}>
+                        {
+                            completenessData.data.map(d => (
+                                <CompletenessPeriodComponent
+                                    key={d.period}
+                                    period={d.period}
+                                    forms={d.forms}
+                                    fieldsKeys={completenessData.fieldsKeys}
+                                />
+                            ))
+                        }
+                    </div>
                 </Box>
             </Fragment>
         );

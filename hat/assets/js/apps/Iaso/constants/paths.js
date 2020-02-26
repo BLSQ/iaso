@@ -226,7 +226,7 @@ export const completenessPath = getPath({
     baseUrl: 'completeness',
     params: [
         {
-            isRequired: false,
+            isRequired: true,
             key: 'periodType',
         },
     ],

@@ -11,6 +11,8 @@ import { getPrettyPeriod } from '../../utils/periodsUtils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 
+const placeholder = '-';
+
 const getBaseColumns = formatMessage => ([
     {
         Header: formatMessage({
@@ -46,11 +48,14 @@ const getColumns = (formatMessage, months, classes, fieldKeys) => {
                 ),
                 key: fk,
                 accessor: `months[${index}].fields.${fk}`,
-                Cell: settings => (
-                    <span className={classes[fk]}>
-                        {settings.original.months[index].fields[fk]}
-                    </span>
-                ),
+                Cell: (settings) => {
+                    const value = settings.original.months[index].fields[fk];
+                    return (
+                        <span className={value ? classes[fk] : ''}>
+                            {value || placeholder }
+                        </span>
+                    );
+                },
             })),
         };
         columns.push(monthColumn);
@@ -116,7 +121,7 @@ class CompletenessPeriodComponent extends Component {
                         filterable={false}
                         sortable
                         className="-striped -highlight"
-                        defaultSorted={[{ id: 'label', desc: true }]}
+                        defaultSorted={[{ id: 'label', desc: false }]}
                         defaultPageSize={forms.length}
                     />
                 </section>

@@ -77,6 +77,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
         value,
     }
 );
+
 export const orgUnitType = (
     orgunitTypesList,
     urlKey = 'orgUnitTypeId',
@@ -362,6 +363,27 @@ export const periods = periodsList => (
             value: p,
         })),
         label: MESSAGES.periods,
+        type: 'select',
+    }
+);
+
+export const periodTypes = (
+    formatMessage,
+    periodTypesList,
+    urlKey = 'periodType',
+) => (
+    {
+        urlKey,
+        isMultiSelect: false,
+        isClearable: false,
+        options: periodTypesList.map(pt => ({
+            label: formatMessage({
+                id: `iaso.label.periodType.${pt[0]}`,
+                defaultMessage: pt[0],
+            }),
+            value: pt[0],
+        })),
+        label: MESSAGES.period_types,
         type: 'select',
     }
 );

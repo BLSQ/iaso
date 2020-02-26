@@ -1,5 +1,5 @@
 const SET_COMPLETENESS = 'SET_COMPLETENESS';
-const SET_PERIOD_TYPE = 'SET_PERIOD_TYPE';
+const SET_PERIOD_TYPES = 'SET_PERIOD_TYPES';
 const SET_IS_FETCHING = 'SET_IS_FETCHING';
 
 export const setCompletenessData = data => ({
@@ -9,10 +9,10 @@ export const setCompletenessData = data => ({
     },
 });
 
-export const setPeriodType = periodType => ({
-    type: SET_PERIOD_TYPE,
+export const setPeriodTypes = periodTypes => ({
+    type: SET_PERIOD_TYPES,
     payload: {
-        periodType,
+        periodTypes,
     },
 });
 
@@ -25,7 +25,7 @@ export const setIsFetching = isFetching => ({
 export const completenessInitialState = {
     fetching: false,
     data: null,
-    periodType: 'quarterly',
+    periodTypes: [],
 };
 
 export const completenessReducer = (state = completenessInitialState, action = {}) => {
@@ -39,13 +39,13 @@ export const completenessReducer = (state = completenessInitialState, action = {
                 data,
             };
         }
-        case SET_PERIOD_TYPE: {
+        case SET_PERIOD_TYPES: {
             const {
-                periodType,
+                periodTypes,
             } = action.payload;
             return {
                 ...state,
-                periodType,
+                periodTypes,
             };
         }
 

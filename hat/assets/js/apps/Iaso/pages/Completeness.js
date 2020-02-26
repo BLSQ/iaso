@@ -10,19 +10,25 @@ import PropTypes from 'prop-types';
 
 import {
     fetchCompleteness,
+    fetchPeriodTypes,
 } from '../utils/requests';
 
 import {
-    setPeriodType,
+    setPeriodTypes,
     setCompletenessData,
+    setIsFetching,
 } from '../redux/completenessReducer';
+
+import { sortPeriods, sortPeriodTypes } from '../utils/periodsUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import CompletenessPeriodComponent from '../components/completeness/CompletenessPeriodComponent';
-
+import CompletenessFiltersComponent from '../components/filters/CompletenessFiltersComponent';
 
 import commonStyles from '../styles/common';
+
+const baseUrl = 'completeness';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -40,9 +46,36 @@ class Completeness extends Component {
     }
 
     componentWillMount() {
-        const { dispatch, periodType } = this.props;
-        fetchCompleteness(dispatch, periodType)
-            .then(data => this.props.setCompletenessData(data));
+        const { dispatch } = this.props;
+        fetchPeriodTypes(dispatch)
+            .then(periodTypes => this.props.setPeriodTypes(sortPeriodTypes(periodTypes)));
+        this.getData();
+    }
+
+    componentDidUpdate(prevProps) {
+        const { params: { periodType } } = this.props;
+        if (periodType && periodType !== prevProps.params.periodType) {
+            this.getData();
+        }
+    }
+
+    getData() {
+        const { dispatch } = this.props;
+        this.props.setIsFetching(true);
+        fetchCompleteness(dispatch, this.getendPointUrl())
+            .then((res) => {
+                this.props.setCompletenessData({
+                    ...res,
+                    data: sortPeriods(res.data),
+                });
+                this.props.setIsFetching(false);
+            });
+    }
+
+    getendPointUrl() {
+        const { periodType } = this.props.params;
+        const url = `/api/completeness/?period_type=${periodType}`;
+        return url;
     }
 
     render() {
@@ -75,6 +108,11 @@ class Completeness extends Component {
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
 
+                    <CompletenessFiltersComponent
+                        baseUrl={baseUrl}
+                        params={params}
+                        onSearch={() => this.onSearch()}
+                    />
 
                     <Grid container spacing={0}>
                         <Grid
@@ -115,20 +153,21 @@ Completeness.propTypes = {
     setCompletenessData: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
-    periodType: PropTypes.string.isRequired,
     completenessData: PropTypes.object,
+    setPeriodTypes: PropTypes.func.isRequired,
+    setIsFetching: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     completenessData: state.completeness.data,
-    periodType: state.completeness.periodType,
     fetching: state.completeness.fetching,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setPeriodType: periodType => dispatch(setPeriodType(periodType)),
+    setPeriodTypes: periodTypes => dispatch(setPeriodTypes(periodTypes)),
     setCompletenessData: data => dispatch(setCompletenessData(data)),
+    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
 });
 
 export default withStyles(styles)(

@@ -127,6 +127,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${chipColors[0].replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
+        <Redirect path="/completeness" to="/completeness/periodType/QUARTER" />,
 
     ];
 

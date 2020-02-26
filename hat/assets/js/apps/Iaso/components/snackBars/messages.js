@@ -107,6 +107,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchCompletenessError',
         defaultMessage: 'An error occured while fetching completness',
     },
+    fetchPeriodTypesError: {
+        id: 'iaso.snackBar.fetchPeriodTypesError',
+        defaultMessage: 'An error occured while fetching period types',
+    },
 };
 
 export default MESSAGES;

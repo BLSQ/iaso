@@ -4,191 +4,14 @@ from rest_framework.response import Response
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 
-response = {
-    "fieldsKeys": [
-        "ready",
-        "errors",
-        "exported"
-    ],
-    "data": [
-        {
-            "period": "2019Q1",
-            "forms": [
-                {
-                    "id": "1234",
-                    "label": "Formulaire test",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        },
-                        {
-                            "label": "february",
-                            "id": 2,
-                            "fields": {
-                                "ready": 15,
-                                "errors": 3,
-                                "exported": 11
-                            }
-                        },
-                        {
-                            "label": "march",
-                            "id": 3,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "12345",
-                    "label": "Formulaire 2",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 56,
-                                "errors": 10,
-                                "exported": 48
-                            }
-                        },
-                        {
-                            "label": "february",
-                            "id": 2,
-                            "fields": {
-                                "ready": 19,
-                                "errors": 5,
-                                "exported": 11
-                            }
-                        },
-                        {
-                            "label": "march",
-                            "id": 3,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "123455",
-                    "label": "Formulaire 3",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 12,
-                                "errors": 5,
-                                "exported": 1
-                            }
-                        },
-                        {
-                            "label": "february",
-                            "id": 2,
-                            "fields": {
-                                "ready": 125,
-                                "errors": 20,
-                                "exported": 100
-                            }
-                        },
-                        {
-                            "label": "march",
-                            "id": 3,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        }
-                    ]
-                }
-            ]
-        },
-        {
-            "period": "2019Q2",
-            "forms": [
-                {
-                    "id": "1234",
-                    "label": "Formulaire test",
-                    "months": [
-                        {
-                            "label": "april",
-                            "id": 1,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        },
-                        {
-                            "label": "may",
-                            "id": 2,
-                            "fields": {
-                                "ready": 15,
-                                "errors": 3,
-                                "exported": 11
-                            }
-                        },
-                        {
-                            "label": "june",
-                            "id": 3,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        }
-                    ]
-                },
-                {
-                    "id": "12345",
-                    "label": "Formulaire 2",
-                    "months": [
-                        {
-                            "label": "april",
-                            "id": 1,
-                            "fields": {
-                                "ready": 56,
-                                "errors": 10,
-                                "exported": 48
-                            }
-                        },
-                        {
-                            "label": "may",
-                            "id": 2,
-                            "fields": {
-                                "ready": 19,
-                                "errors": 5,
-                                "exported": 11
-                            }
-                        },
-                        {
-                            "label": "june",
-                            "id": 3,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
-                        }
-                    ]
-                }
-            ]
-        }
-    ]
-}
+import os
+import json
 
+def load_canned_response(filename):
+    with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
+        document = json.load(f)
+        #document['_id'] = str(uuid.uuid4())
+        return document
 
 class CompletenessViewSet(viewsets.ViewSet):
     """
@@ -199,8 +22,10 @@ class CompletenessViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
+
+        period_type = request.GET.get("period_type", "QUARTER")
         return Response(
             {
-                "completeness": response
+                "completeness": load_canned_response('fixtures/completeness_'+ period_type + '.json')
             }
         )

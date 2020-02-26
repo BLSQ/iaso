@@ -1,10 +1,9 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import Select from 'react-select';
-
 import { withStyles } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import SearchIcon from '@material-ui/icons/Search';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -12,10 +11,10 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
-import PropTypes from 'prop-types';
-
 import MESSAGES from './messages';
 import ArrayFieldInput from './ArrayFieldInput';
+import InputLabelComponent from './InputLabelComponent';
+
 
 const styles = theme => ({
     formControl: {
@@ -44,26 +43,6 @@ const styles = theme => ({
             borderColor: `${theme.palette.primary.main}  !important`,
         },
         zIndex: 'auto',
-    },
-    inputLabel: {
-        color: 'rgba(0, 0, 0, 0.4)',
-        paddingLeft: 3,
-        paddingRight: 3,
-        transition: theme.transitions.create(['all'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    shrink: {
-        fontSize: 20,
-        marginTop: -2,
-        backgroundColor: 'white',
-    },
-    shrinkFocused: {
-        fontSize: 20,
-        marginTop: -2,
-        backgroundColor: 'white',
-        color: theme.palette.primary.main,
     },
     select: {
         '& .is-disabled  .Select-control': {
@@ -217,21 +196,18 @@ class InputComponent extends Component {
             isFocused,
         } = this.state;
         const formClass = withMarginTop ? classes.formControl : classes.formControlNoMarginTop;
+
+        const labelText = labelString !== ''
+            ? labelString
+            : formatMessage(label || MESSAGES[keyValue]);
+
         if (type === 'text' || type === 'number') {
             return (
                 <FormControl className={formClass} variant="outlined">
-                    <InputLabel
-                        name={keyValue}
+                    <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
-                        classes={{
-                            shrink: classes.shrink,
-                        }}
-                        className={classes.inputLabel}
-                    >
-                        {
-                            label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])
-                        }
-                    </InputLabel>
+                        label={labelText}
+                    />
                     <OutlinedInput
                         size="small"
                         disabled={disabled}
@@ -249,21 +225,12 @@ class InputComponent extends Component {
                     variant="outlined"
                     className={formClass}
                 >
-                    <InputLabel
-                        classes={{
-                            shrink: isFocused ? classes.shrinkFocused : classes.shrink,
-                        }}
-                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
-                        className={classes.inputLabel}
+                    <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
-                    >
-                        {
-                            label && labelString === '' ? formatMessage(label) : null
-                        }
-                        {
-                            labelString !== '' ? labelString : null
-                        }
-                    </InputLabel>
+                        label={labelText}
+                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
+                        isFocused={isFocused}
+                    />
                     <div className={classes.select}>
                         <Select
                             disabled={disabled}
@@ -291,7 +258,7 @@ class InputComponent extends Component {
         if (type === 'arrayInput') {
             return (
                 <ArrayFieldInput
-                    label={formatMessage(MESSAGES[keyValue])}
+                    label={labelText}
                     fieldList={value}
                     name={keyValue}
                     baseId={keyValue}
@@ -302,17 +269,10 @@ class InputComponent extends Component {
         if (type === 'search') {
             return (
                 <FormControl className={formClass} variant="outlined">
-                    <InputLabel
-                        classes={{
-                            shrink: classes.shrink,
-                        }}
-                        className={classes.inputLabel}
+                    <InputLabelComponent
                         htmlFor={`search-${keyValue}`}
-                    >
-                        {
-                            label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])
-                        }
-                    </InputLabel>
+                        label={labelText}
+                    />
                     <OutlinedInput
                         disabled={disabled}
                         id={uid ? `search-${uid}` : `search-${keyValue}`}
@@ -347,14 +307,13 @@ class InputComponent extends Component {
                             value="checked"
                         />
                     )}
-                    label={label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])}
+                    label={labelText}
                 />
             );
         }
         return null;
     }
 }
-
 InputComponent.defaultProps = {
     type: 'text',
     value: undefined,
@@ -371,7 +330,6 @@ InputComponent.defaultProps = {
     multi: false,
     uid: null,
 };
-
 InputComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     type: PropTypes.string,
@@ -391,6 +349,5 @@ InputComponent.propTypes = {
     multi: PropTypes.bool,
     uid: PropTypes.any,
 };
-
 
 export default withStyles(styles)(injectIntl(InputComponent));

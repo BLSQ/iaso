@@ -1,4 +1,5 @@
 import React, { Fragment, Component } from 'react';
+import _ from 'lodash';
 
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -19,6 +20,8 @@ import commonStyles from '../../styles/common';
 import {
     fetchOrgUnitsTypes,
     fetchProjects,
+    createForm,
+    createFormVersion,
 } from '../../utils/requests';
 
 import InputComponent from '../forms/InputComponent';
@@ -68,16 +71,20 @@ class AddFormDialogComponent extends Component {
             open: false,
             orgUnitsTypes: [],
             projects: [],
-            form: {
-                name: null,
-                xls_file: null,
-                projects: [],
-                org_unit_types: [],
-                period_type: null,
-                single_per_period: null,
-                device_field: null,
-                location_field: null,
-            },
+            form: AddFormDialogComponent.blankFormState(),
+        };
+    }
+
+    static blankFormState() {
+        return {
+            name: null,
+            xls_file: null,
+            project_ids: null,
+            org_unit_type_ids: null,
+            period_type: null,
+            single_per_period: null,
+            device_field: null,
+            location_field: null,
         };
     }
 
@@ -112,7 +119,19 @@ class AddFormDialogComponent extends Component {
     handleClose(isAccepted) {
         this.toggleDialog();
         if (isAccepted) {
-            console.log(this.state.form);
+            // TODO: move in async action
+            const formData = _.omit(this.state.form, 'xls_file');
+            createForm(this.props.dispatch, formData)
+                .then((createdFormData) => {
+                    createFormVersion(this.props.dispatch, {
+                        form_id: createdFormData.id,
+                        xls_file: this.state.form.xls_file,
+                    })
+                        .then(() => {
+                            this.setState({ form: AddFormDialogComponent.blankFormState() });
+                            // TODO: trigger list reload
+                        });
+                });
         }
     }
 
@@ -167,12 +186,15 @@ class AddFormDialogComponent extends Component {
                                         defaultMessage: 'Name',
                                     }}
                                 />
+                                {
+                                    // TODO: select input component should return a list of values of the same type as the provided values
+                                }
                                 <InputComponent
                                     multi
                                     clearable
-                                    keyValue="projects"
-                                    onChange={(key, value) => this.onChange(key, value)}
-                                    value={form.projects}
+                                    keyValue="project_ids"
+                                    onChange={(key, value) => this.onChange(key, value.split(', ').map(parseInt))}
+                                    value={form.project_ids}
                                     type="select"
                                     options={projects.map(p => ({
                                         label: p.name,
@@ -183,12 +205,15 @@ class AddFormDialogComponent extends Component {
                                         defaultMessage: 'Projects',
                                     }}
                                 />
+                                {
+                                    // TODO: select input component should return a list of values of the same type as the provided values
+                                }
                                 <InputComponent
                                     multi
                                     clearable
-                                    keyValue="org_unit_types"
-                                    onChange={(key, value) => this.onChange(key, value)}
-                                    value={form.org_unit_types}
+                                    keyValue="org_unit_type_ids"
+                                    onChange={(key, value) => this.onChange(key, value.split(', ').map(parseInt))}
+                                    value={form.org_unit_type_ids}
                                     type="select"
                                     options={orgUnitsTypes.map(o => ({
                                         label: o.name,
@@ -224,11 +249,7 @@ class AddFormDialogComponent extends Component {
                             <Grid xs={6} item>
                                 <FileInputComponent
                                     keyValue="xls_file"
-                                    onChange={(key, value) => {
-                                        console.log(key)
-                                        console.log(value)
-                                    }}
-                                    value={form.xls_file}
+                                    onChange={(key, value) => this.onChange(key, value)}
                                     label={{
                                         id: 'iaso.label.xls_form_file',
                                         defaultMessage: 'XLSForm file',

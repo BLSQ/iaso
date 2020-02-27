@@ -1,6 +1,7 @@
 import {
     getRequest,
     patchRequest,
+    postRequest,
     putRequest,
     deleteRequest,
 } from '../libs/Api';
@@ -281,3 +282,32 @@ export const fetchProjects = dispatch => getRequest('/api/projects/')
         console.error('Error while fetching projects list:', error);
         throw error;
     });
+
+export const createForm = (dispatch, formData) => postRequest('/api/forms/', formData)
+    .then((res) => {
+        console.log('createForm', res);
+
+        return res;
+    })
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
+        console.error('Error while creating form:', error);
+        throw error;
+    });
+
+export const createFormVersion = (dispatch, formVersionData) => {
+    const data = { form_id: formVersionData.form_id };
+    const fileData = { xls_file: formVersionData.xls_file };
+
+    return postRequest('/api/formversions/', data, fileData)
+        .then((res) => {
+            console.log('createFormVersion', res);
+
+            return res;
+        })
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
+            console.error('Error while creating form:', error);
+            throw error;
+        });
+};

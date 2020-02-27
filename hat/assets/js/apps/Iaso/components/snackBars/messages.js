@@ -107,6 +107,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchProjectsError',
         defaultMessage: 'An error occurred while fetching projects list',
     },
+    createFormError: {
+        id: 'iaso.snackBar.createFormError',
+        defaultMessage: 'An error occurred while creating a form',
+    },
 };
 
 export default MESSAGES;

@@ -9,15 +9,28 @@ export const getRequest = url => req
     });
 
 
-export const postRequest = (url, data) => req
-    .post(url)
-    .set('Content-Type', 'application/json')
-    .send(data)
-    .then(result => result.body)
-    .catch((error) => {
-        console.error(`Error when posting ${url}: ${error}`);
-        throw error;
-    });
+export const postRequest = (url, data, fileData = {}) => {
+    let request = req.post(url);
+    if (Object.keys(fileData).length > 0) { // multipart mode
+        Object.entries(data).forEach(([key, value]) => {
+            request = request.field(key, value);
+        });
+        Object.entries(fileData).forEach(([key, value]) => {
+            request = request.attach(key, value);
+        });
+    } else { // standard json mode
+        request = request
+            .set('Content-Type', 'application/json')
+            .send(data);
+    }
+
+    return request
+        .then(result => result.body)
+        .catch((error) => {
+            console.error(`Error when posting ${url}: ${error}`);
+            throw error;
+        });
+};
 
 
 export const patchRequest = (url, data) => req

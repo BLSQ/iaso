@@ -8,7 +8,7 @@ import InputLabelComponent from './InputLabelComponent';
 import MESSAGES from './messages';
 
 function FileInputComponent({
-    intl, keyValue, value, label, labelString, disabled, onChange,
+    intl, keyValue, label, labelString, disabled, onChange,
 }) {
     const labelText = labelString !== ''
         ? labelString
@@ -24,15 +24,13 @@ function FileInputComponent({
                 size="small"
                 disabled={disabled}
                 id={`input-text-${keyValue}`}
-                value={value || ''}
                 type="file"
-                onChange={event => onChange(keyValue, event.target.value)}
+                onChange={event => onChange(keyValue, event.target.files[0])}
             />
         </FormControlComponent>
     );
 }
 FileInputComponent.defaultProps = {
-    value: '',
     label: undefined,
     labelString: '',
     disabled: false,
@@ -40,7 +38,6 @@ FileInputComponent.defaultProps = {
 FileInputComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     keyValue: PropTypes.string.isRequired,
-    value: PropTypes.string,
     label: PropTypes.object,
     labelString: PropTypes.string,
     disabled: PropTypes.bool,

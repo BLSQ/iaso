@@ -1,94 +1,87 @@
-{
-    "fieldsKeys": [
-        "ready",
-        "errors",
-        "exported"
-    ],
-    "data": [
-        {
-            "period": "201901",
-            "forms": [
-                {
-                    "id": "5",
-                    "label": "Enregistrement(s) pour le formulaire: Questionnaire DPS",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
+[
+    {
+        "period": "201901",
+        "forms": [
+            {
+                "id": "5",
+                "label": "Enregistrement(s) pour le formulaire: Questionnaire DPS",
+                "months": [
+                    {
+                        "label": "january",
+                        "id": 1,
+                        "fields": {
+                            "ready": 10,
+                            "error": 1,
+                            "exported": 8
                         }
-                    ]
-                },
-                {
-                    "id": "12345",
-                    "label": "Formulaire 2",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 56,
-                                "errors": 10,
-                                "exported": 48
-                            }
+                    }
+                ]
+            },
+            {
+                "id": "12345",
+                "label": "Formulaire 2",
+                "months": [
+                    {
+                        "label": "january",
+                        "id": 1,
+                        "fields": {
+                            "ready": 56,
+                            "error": 10,
+                            "exported": 48
                         }
-                    ]
-                },
-                {
-                    "id": "123455",
-                    "label": "Formulaire 3",
-                    "months": [
-                        {
-                            "label": "january",
-                            "id": 1,
-                            "fields": {
-                                "ready": 12,
-                                "errors": 5,
-                                "exported": 1
-                            }
+                    }
+                ]
+            },
+            {
+                "id": "123455",
+                "label": "Formulaire 3",
+                "months": [
+                    {
+                        "label": "january",
+                        "id": 1,
+                        "fields": {
+                            "ready": 12,
+                            "error": 5,
+                            "exported": 1
                         }
-                    ]
-                }
-            ]
-        },
-        {
-            "period": "201902",
-            "forms": [
-                {
-                    "id": "1234",
-                    "label": "Formulaire test",
-                    "months": [
-                        {
-                            "label": "february",
-                            "id": 1,
-                            "fields": {
-                                "ready": 10,
-                                "errors": 1,
-                                "exported": 8
-                            }
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "period": "201902",
+        "forms": [
+            {
+                "id": "1234",
+                "label": "Formulaire test",
+                "months": [
+                    {
+                        "label": "february",
+                        "id": 1,
+                        "fields": {
+                            "ready": 10,
+                            "error": 1,
+                            "exported": 8
                         }
-                    ]
-                },
-                {
-                    "id": "12345",
-                    "label": "Formulaire 2",
-                    "months": [
-                        {
-                            "label": "february",
-                            "id": 1,
-                            "fields": {
-                                "ready": 56,
-                                "errors": 10,
-                                "exported": 48
-                            }
+                    }
+                ]
+            },
+            {
+                "id": "12345",
+                "label": "Formulaire 2",
+                "months": [
+                    {
+                        "label": "february",
+                        "id": 1,
+                        "fields": {
+                            "ready": 56,
+                            "error": 10,
+                            "exported": 48
                         }
-                    ]
-                }
-            ]
-        }
-    ]
-}
+                    }
+                ]
+            }
+        ]
+    }
+]

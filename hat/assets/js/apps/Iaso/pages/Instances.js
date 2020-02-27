@@ -124,6 +124,7 @@ class Instances extends Component {
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
             periods: params.periods,
+            status: params.status,
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };

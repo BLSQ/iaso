@@ -11,7 +11,7 @@ import {
     periodTypes,
 } from '../../constants/filters';
 import {
-    setFieldKeys,
+    setInstanceStatus,
 } from '../../redux/completenessReducer';
 
 import FiltersComponent from './FiltersComponent';
@@ -55,7 +55,7 @@ class CompletenessFiltersComponent extends Component {
                 formatMessage,
             },
             periodTypesList,
-            fieldsKeys,
+            instanceStatus,
         } = this.props;
         return (
             <Fragment>
@@ -74,8 +74,8 @@ class CompletenessFiltersComponent extends Component {
                     <Grid item xs={3} />
                     <Grid item container xs={6} justify="flex-end">
                         <ChipsListComponent
-                            chipsList={fieldsKeys}
-                            handleListChange={chipsList => this.props.setFieldKeys(chipsList)}
+                            chipsList={instanceStatus}
+                            handleListChange={chipsList => this.props.setInstanceStatus(chipsList)}
                         />
                     </Grid>
                 </Grid>
@@ -94,20 +94,20 @@ CompletenessFiltersComponent.propTypes = {
     onSearch: PropTypes.func.isRequired,
     periodTypesList: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    fieldsKeys: PropTypes.array.isRequired,
-    setFieldKeys: PropTypes.func.isRequired,
+    instanceStatus: PropTypes.array.isRequired,
+    setInstanceStatus: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
-    periodTypesList: state.completeness.periodTypes,
-    fieldsKeys: state.completeness.data.fieldsKeys,
+    periodTypesList: state.periods.periodTypes,
+    instanceStatus: state.completeness.instanceStatus,
 });
 
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setFieldKeys: fieldKeys => dispatch(setFieldKeys(fieldKeys)),
+    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(CompletenessFiltersComponent));

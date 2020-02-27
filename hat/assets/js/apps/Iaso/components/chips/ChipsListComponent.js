@@ -11,6 +11,9 @@ import commonStyles from '../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    marginLeft: {
+        marginLeft: theme.spacing(1),
+    },
 });
 
 class ChipsListComponent extends Component {

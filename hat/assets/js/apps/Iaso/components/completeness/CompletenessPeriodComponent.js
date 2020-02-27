@@ -27,7 +27,7 @@ const getBaseColumns = formatMessage => ([
     },
 ]);
 
-const getColumns = (formatMessage, months, classes, fieldsKeys, onSelect) => {
+const getColumns = (formatMessage, months, classes, instanceStatus, onSelect) => {
     const columns = getBaseColumns(formatMessage);
     months.forEach((month, index) => {
         const monthColumn = {
@@ -40,7 +40,7 @@ const getColumns = (formatMessage, months, classes, fieldsKeys, onSelect) => {
                 </span>
             ),
             accessor: month.label,
-            columns: fieldsKeys.filter(fk => fk.isVisible).map(fk => ({
+            columns: instanceStatus.filter(fk => fk.isVisible).map(fk => ({
                 Header: (
                     <span className={classes.capitalize}>
                         {formatMessage({
@@ -121,7 +121,7 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            period, forms, fieldsKeys, classes, intl: {
+            period, forms, instanceStatus, classes, intl: {
                 formatMessage,
             },
         } = this.props;
@@ -150,7 +150,8 @@ class CompletenessPeriodComponent extends Component {
                         columns={getColumns(
                             formatMessage,
                             forms[0].months,
-                            classes, fieldsKeys,
+                            classes,
+                            instanceStatus,
                             (formId, status) => this.onSelectCell(formId, status, period),
                         )}
                         data={forms}
@@ -170,7 +171,7 @@ class CompletenessPeriodComponent extends Component {
 CompletenessPeriodComponent.propTypes = {
     period: PropTypes.string.isRequired,
     forms: PropTypes.array.isRequired,
-    fieldsKeys: PropTypes.array.isRequired,
+    instanceStatus: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,

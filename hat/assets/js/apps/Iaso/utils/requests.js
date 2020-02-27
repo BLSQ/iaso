@@ -290,3 +290,12 @@ export const fetchPeriodTypes = dispatch => getRequest('/api/period_types/')
         console.error('Error while fetching  while fetching period types:', error);
         throw error;
     });
+
+export const fetchIsntanceStatus = dispatch => getRequest('/api/instance_status/')
+    .then()
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceStatusError')));
+        console.error('Error while fetching  while fetching instance status:', error);
+        throw error;
+    });
+

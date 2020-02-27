@@ -11,13 +11,17 @@ import PropTypes from 'prop-types';
 import {
     fetchCompleteness,
     fetchPeriodTypes,
+    fetchIsntanceStatus,
 } from '../utils/requests';
 
 import {
-    setPeriodTypes,
     setCompletenessData,
     setIsFetching,
+    setInstanceStatus,
 } from '../redux/completenessReducer';
+import {
+    setPeriodTypes,
+} from '../redux/periodsReducer';
 
 import { sortPeriods, sortPeriodTypes } from '../utils/periodsUtils';
 
@@ -39,16 +43,24 @@ const styles = theme => ({
 });
 
 class Completeness extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-        };
-    }
-
     componentWillMount() {
-        const { dispatch } = this.props;
+        const {
+            dispatch,
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         fetchPeriodTypes(dispatch)
-            .then(periodTypes => this.props.setPeriodTypes(sortPeriodTypes(periodTypes)));
+            .then(res => this.props.setPeriodTypes(sortPeriodTypes(res.period_types)));
+        fetchIsntanceStatus(dispatch)
+            .then(res => this.props.setInstanceStatus(res.instance_status.map(s => ({
+                key: s[0],
+                isVisible: true,
+                label: formatMessage({
+                    defaultMessage: s[0],
+                    id: `iaso.completeness.${s[0]}Multi`,
+                }),
+            }))));
         this.getData();
     }
 
@@ -61,25 +73,12 @@ class Completeness extends Component {
 
     getData() {
         const {
-            intl: {
-                formatMessage,
-            },
             dispatch,
         } = this.props;
         this.props.setIsFetching(true);
         fetchCompleteness(dispatch, this.getendPointUrl())
             .then((res) => {
-                this.props.setCompletenessData({
-                    fieldsKeys: res.fieldsKeys.map(fk => ({
-                        key: fk,
-                        isVisible: true,
-                        label: formatMessage({
-                            defaultMessage: fk,
-                            id: `iaso.completeness.${fk}Multi`,
-                        }),
-                    })),
-                    data: sortPeriods(res.data),
-                });
+                this.props.setCompletenessData(sortPeriods(res));
                 this.props.setIsFetching(false);
             });
     }
@@ -99,6 +98,7 @@ class Completeness extends Component {
             },
             fetching,
             completenessData,
+            instanceStatus,
         } = this.props;
         if (!completenessData) return null;
         return (
@@ -123,12 +123,12 @@ class Completeness extends Component {
                     />
                     <div className={classes.marginTop}>
                         {
-                            completenessData.data.map(d => (
+                            completenessData.map(d => (
                                 <CompletenessPeriodComponent
                                     key={d.period}
                                     period={d.period}
                                     forms={d.forms}
-                                    fieldsKeys={completenessData.fieldsKeys}
+                                    instanceStatus={instanceStatus}
                                 />
                             ))
                         }
@@ -153,11 +153,14 @@ Completeness.propTypes = {
     completenessData: PropTypes.object,
     setPeriodTypes: PropTypes.func.isRequired,
     setIsFetching: PropTypes.func.isRequired,
+    setInstanceStatus: PropTypes.func.isRequired,
+    instanceStatus: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     completenessData: state.completeness.data,
     fetching: state.completeness.fetching,
+    instanceStatus: state.completeness.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -165,6 +168,7 @@ const MapDispatchToProps = dispatch => ({
     setPeriodTypes: periodTypes => dispatch(setPeriodTypes(periodTypes)),
     setCompletenessData: data => dispatch(setCompletenessData(data)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
+    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
 });
 
 export default withStyles(styles)(

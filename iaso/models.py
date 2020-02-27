@@ -27,6 +27,16 @@ PERIOD_TYPE_CHOICES = (
     (SIX_MONTH, "Six-month"),
 )
 
+instance_ready = "ready"
+instance_error = "error"
+instance_exported = "exported"
+
+INSTANCE_STATUS_CHOICES = (
+    (instance_ready, "Ready"),
+    (instance_error, "Error"),
+    (instance_exported, "Exported"),
+)
+
 
 def generate_id_for_dhis_2():
     letters = "abcdefghijklmnopqrstuvwxyz"
@@ -538,7 +548,7 @@ class Form(models.Model):
     location_field = models.TextField(null=True, blank=True)
     fields = JSONField(null=True, blank=True)
     period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
-    single_per_period = models.BooleanField(blank=True)
+    single_per_period = models.BooleanField(blank=True, default=False)
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
@@ -699,6 +709,7 @@ class Instance(models.Model):
         "Device", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     period = models.TextField(null=True, blank=True, db_index=True)
+    status = models.TextField(choices=INSTANCE_STATUS_CHOICES, null=True, blank=True)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name

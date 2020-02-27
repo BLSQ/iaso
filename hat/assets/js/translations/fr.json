@@ -118,6 +118,7 @@
     "iaso.label.singlePerPeriod": "Une seul réponse par période",
     "iaso.label.deviceField": "Nom du champ \"device\"",
     "iaso.label.locationField": "Nom du champ \"location\"",
+    "iaso.label.xls_form_file": "Fichier XLSForm",
     "iaso.label.algorithmsRuns": "Exécution d'algorithmes",
     "iaso.label.execute": "Exécuter",
     "iaso.label.cancel": "Annuler",

@@ -32,6 +32,7 @@ function InputLabelComponent({
 }) {
     return (
         <InputLabel
+            name={htmlFor.replace('input-text-', '')}
             htmlFor={htmlFor}
             classes={{
                 shrink: isFocused ? classes.shrinkFocused : classes.shrink,
@@ -45,7 +46,7 @@ function InputLabelComponent({
 }
 InputLabelComponent.defaultProps = {
     isFocused: false,
-    shrink: false,
+    shrink: true,
 };
 InputLabelComponent.propTypes = {
     classes: PropTypes.object.isRequired,

@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import Select from 'react-select';
 import { withStyles } from '@material-ui/core';
-import FormControl from '@material-ui/core/FormControl';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import SearchIcon from '@material-ui/icons/Search';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -14,36 +13,10 @@ import grey from '@material-ui/core/colors/grey';
 import MESSAGES from './messages';
 import ArrayFieldInput from './ArrayFieldInput';
 import InputLabelComponent from './InputLabelComponent';
+import FormControlComponent from './FormControlComponent';
 
 
 const styles = theme => ({
-    formControl: {
-        width: '100%',
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(2),
-        '& fieldset': {
-            borderWidth: '1px !important',
-        },
-        '&:hover fieldset': {
-            borderColor: `${theme.palette.primary.main}  !important`,
-        },
-        '&:focused label': {
-            color: `${theme.palette.primary.main}  !important`,
-        },
-        zIndex: 'auto',
-    },
-    formControlNoMarginTop: {
-        width: '100%',
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        '& .fieldset': {
-            borderWidth: '1px !important',
-        },
-        '&:hover fieldset': {
-            borderColor: `${theme.palette.primary.main}  !important`,
-        },
-        zIndex: 'auto',
-    },
     select: {
         '& .is-disabled  .Select-control': {
             borderColor: `${grey['300']} !important`,
@@ -195,15 +168,14 @@ class InputComponent extends Component {
             selectInputValue,
             isFocused,
         } = this.state;
-        const formClass = withMarginTop ? classes.formControl : classes.formControlNoMarginTop;
 
         const labelText = labelString !== ''
             ? labelString
-            : formatMessage(label || MESSAGES[keyValue]);
+            : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
         if (type === 'text' || type === 'number') {
             return (
-                <FormControl className={formClass} variant="outlined">
+                <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
@@ -216,15 +188,12 @@ class InputComponent extends Component {
                         type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
                     />
-                </FormControl>
+                </FormControlComponent>
             );
         }
         if (type === 'select') {
             return (
-                <FormControl
-                    variant="outlined"
-                    className={formClass}
-                >
+                <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
                         label={labelText}
@@ -252,7 +221,7 @@ class InputComponent extends Component {
                             onChange={newValue => onChange(keyValue, newValue)}
                         />
                     </div>
-                </FormControl>
+                </FormControlComponent>
             );
         }
         if (type === 'arrayInput') {
@@ -268,7 +237,7 @@ class InputComponent extends Component {
         }
         if (type === 'search') {
             return (
-                <FormControl className={formClass} variant="outlined">
+                <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
                         htmlFor={`search-${keyValue}`}
                         label={labelText}
@@ -293,7 +262,7 @@ class InputComponent extends Component {
                     <div className={classes.searchIcon}>
                         <SearchIcon />
                     </div>
-                </FormControl>
+                </FormControlComponent>
             );
         }
         if (type === 'checkbox') {

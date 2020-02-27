@@ -22,6 +22,7 @@ import {
 } from '../../utils/requests';
 
 import InputComponent from '../forms/InputComponent';
+import FileInputComponent from '../forms/FileInputComponent';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -69,6 +70,7 @@ class AddFormDialogComponent extends Component {
             projects: [],
             form: {
                 name: null,
+                xls_file: null,
                 projects: [],
                 org_unit_types: [],
                 period_type: null,
@@ -110,17 +112,12 @@ class AddFormDialogComponent extends Component {
     handleClose(isAccepted) {
         this.toggleDialog();
         if (isAccepted) {
-            this.props.createForm(this.state.form);
+            console.log(this.state.form);
         }
     }
 
     render() {
-        const {
-            classes,
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
+        const { classes } = this.props;
         const {
             open,
             projects,
@@ -159,7 +156,7 @@ class AddFormDialogComponent extends Component {
                     </DialogTitle>
                     <DialogContent className={classes.content}>
                         <Grid container spacing={2} justify="flex-start">
-                            <Grid xs={12} item>
+                            <Grid xs={6} item>
                                 <InputComponent
                                     keyValue="name"
                                     onChange={(key, value) => this.onChange(key, value)}
@@ -170,8 +167,6 @@ class AddFormDialogComponent extends Component {
                                         defaultMessage: 'Name',
                                     }}
                                 />
-                            </Grid>
-                            <Grid xs={6} item>
                                 <InputComponent
                                     multi
                                     clearable
@@ -227,6 +222,18 @@ class AddFormDialogComponent extends Component {
                                 />
                             </Grid>
                             <Grid xs={6} item>
+                                <FileInputComponent
+                                    keyValue="xls_file"
+                                    onChange={(key, value) => {
+                                        console.log(key)
+                                        console.log(value)
+                                    }}
+                                    value={form.xls_file}
+                                    label={{
+                                        id: 'iaso.label.xls_form_file',
+                                        defaultMessage: 'XLSForm file',
+                                    }}
+                                />
                                 <InputComponent
                                     keyValue="device_field"
                                     onChange={(key, value) => this.onChange(key, value)}
@@ -278,7 +285,6 @@ class AddFormDialogComponent extends Component {
 AddFormDialogComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
-    createForm: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
 };
 

@@ -9,6 +9,7 @@ import { Grid } from '@material-ui/core';
 import {
     createForm,
     createFormVersion,
+    deleteForm,
 } from '../../utils/requests';
 
 import FormDialogComponent from './FormDialogComponent';
@@ -36,16 +37,16 @@ const PERIOD_TYPE_CHOICES = [
 ];
 
 class AddFormDialogComponent extends Component {
-    static blankFormState() {
+    static blankFormState() { // TODO: useFormState hook or something, this is going to happen often
         return {
-            name: null,
-            xls_file: null,
-            project_ids: null,
-            org_unit_type_ids: null,
-            period_type: 'TRACKER',
-            single_per_period: false,
-            device_field: 'deviceid',
-            location_field: null,
+            name: { value: null, errors: [] },
+            xls_file: { value: null, errors: [] },
+            project_ids: { value: null, errors: [] },
+            org_unit_type_ids: { value: null, errors: [] },
+            period_type: { value: 'TRACKER', errors: [] },
+            single_per_period: { value: false, errors: [] },
+            device_field: { value: 'deviceid', errors: [] },
+            location_field: { value: null, errors: [] },
         };
     }
 
@@ -56,26 +57,49 @@ class AddFormDialogComponent extends Component {
 
     onSave(closeDialog) {
         // TODO: move in async action
-        const formData = _.omit(this.state, 'xls_file');
+        // TODO: async await
+        const formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
         createForm(this.props.dispatch, formData)
-            .then((createdFormData) => {
-                createFormVersion(this.props.dispatch, {
-                    form_id: createdFormData.id,
-                    xls_file: this.state.xls_file,
-                })
-                    .then(() => {
-                        this.setState(AddFormDialogComponent.blankFormState());
-                        closeDialog();
-                        // TODO: trigger list reload
-                    });
+            .then(createdFormData => createFormVersion(this.props.dispatch, {
+                form_id: createdFormData.id,
+                xls_file: this.state.xls_file.value,
             })
+                .then(() => {
+                    this.setState(AddFormDialogComponent.blankFormState());
+                    closeDialog();
+                    // TODO: trigger list reload
+                })
+                .catch(createVersionError => deleteForm(this.props.dispatch, createdFormData.id)
+                    .then(() => {
+                        console.log('Form deleted');
+                    })
+                    .catch((deleteError) => {
+                        console.warn('Form could not be deleted');
+                    })
+                    .then(() => {
+                        throw createVersionError;
+                    })))
             .catch((error) => {
-                console.error(error);
+                if (error.status === 400) {
+                    console.log(error.details)
+                    Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
+                        this.setFieldErrors(errorKey, errorMessages);
+                    });
+                }
             });
     }
 
+    onCancel(closeDialog) {
+        this.setState(AddFormDialogComponent.blankFormState());
+        closeDialog();
+    }
+
     setFieldValue(fieldName, fieldValue) {
-        this.setState({ [fieldName]: fieldValue });
+        this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
+    }
+
+    setFieldErrors(fieldName, fieldErrors) {
+        this.setState(state => ({ [fieldName]: { value: state[fieldName].value, errors: fieldErrors } }));
     }
 
     setPeriodType(value) {
@@ -92,13 +116,15 @@ class AddFormDialogComponent extends Component {
             <FormDialogComponent
                 dialogTitleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
                 onSave={closeDialog => this.onSave(closeDialog)}
+                onCancel={closeDialog => this.onCancel(closeDialog)}
             >
                 <Grid container spacing={2} justify="flex-start">
                     <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.name}
+                            value={this.state.name.value}
+                            errors={this.state.name.errors}
                             type="text"
                             label={{
                                 id: 'iaso.label.name',
@@ -114,7 +140,8 @@ class AddFormDialogComponent extends Component {
                             clearable
                             keyValue="project_ids"
                             onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={this.state.project_ids}
+                            value={this.state.project_ids.value}
+                            errors={this.state.project_ids.errors}
                             type="select"
                             options={projects.map(p => ({
                                 label: p.name,
@@ -134,7 +161,8 @@ class AddFormDialogComponent extends Component {
                             clearable
                             keyValue="org_unit_type_ids"
                             onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={this.state.org_unit_type_ids}
+                            value={this.state.org_unit_type_ids.value}
+                            errors={this.state.org_unit_type_ids.errors}
                             type="select"
                             options={orgUnitTypes.map(o => ({
                                 label: o.name,
@@ -150,7 +178,8 @@ class AddFormDialogComponent extends Component {
                             keyValue="period_type"
                             clearable={false}
                             onChange={(key, value) => this.setPeriodType(value)}
-                            value={this.state.period_type}
+                            value={this.state.period_type.value}
+                            errors={this.state.period_type.errors}
                             type="select"
                             options={PERIOD_TYPE_CHOICES}
                             label={{
@@ -160,12 +189,13 @@ class AddFormDialogComponent extends Component {
                             required
                         />
                         {
-                            this.state.period_type !== 'TRACKER'
+                            this.state.period_type.value !== 'TRACKER'
                                       && (
                                           <InputComponent
                                               keyValue="single_per_period"
                                               onChange={(key, value) => this.setFieldValue(key, value)}
-                                              value={this.state.single_per_period}
+                                              value={this.state.single_per_period.value}
+                                              errors={this.state.single_per_period.errors}
                                               type="checkbox"
                                               label={{
                                                   id: 'iaso.label.singlePerPeriod',
@@ -183,12 +213,14 @@ class AddFormDialogComponent extends Component {
                                 id: 'iaso.label.xls_form_file',
                                 defaultMessage: 'XLSForm file',
                             }}
+                            errors={this.state.xls_file.errors}
                             required
                         />
                         <InputComponent
                             keyValue="device_field"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.device_field}
+                            value={this.state.device_field.value}
+                            errors={this.state.device_field.errors}
                             type="text"
                             label={{
                                 id: 'iaso.label.deviceField',
@@ -198,7 +230,8 @@ class AddFormDialogComponent extends Component {
                         <InputComponent
                             keyValue="location_field"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.location_field}
+                            value={this.state.location_field.value}
+                            errors={this.state.location_field.errors}
                             type="text"
                             label={{
                                 id: 'iaso.label.locationField',

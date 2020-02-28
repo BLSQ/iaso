@@ -279,19 +279,18 @@ export const fetchProjects = dispatch => getRequest('/api/projects/')
     .then(res => res.projects)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchProjectsError')));
-        console.error('Error while fetching projects list:', error);
         throw error;
     });
 
 export const createForm = (dispatch, formData) => postRequest('/api/forms/', formData)
-    .then((res) => {
-        console.log('createForm', res);
-
-        return res;
-    })
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
-        console.error('Error while creating form:', error);
+        throw error;
+    });
+
+export const deleteForm = (dispatch, formId) => deleteRequest(`/api/forms/${formId}`)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('deleteFormError')));
         throw error;
     });
 
@@ -300,14 +299,8 @@ export const createFormVersion = (dispatch, formVersionData) => {
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData)
-        .then((res) => {
-            console.log('createFormVersion', res);
-
-            return res;
-        })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
-            console.error('Error while creating form:', error);
             throw error;
         });
 };

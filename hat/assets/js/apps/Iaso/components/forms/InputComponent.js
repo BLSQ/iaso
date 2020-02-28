@@ -89,6 +89,11 @@ const styles = theme => ({
             maxWidth: '20vw',
         },
     },
+    selectError: {
+        '& .Select-control': {
+            borderColor: `${theme.palette.error.main} !important`,
+        },
+    },
     icon: {
         right: theme.spacing(2),
     },
@@ -148,6 +153,7 @@ class InputComponent extends Component {
             type,
             keyValue,
             value,
+            errors,
             onChange,
             options,
             intl: {
@@ -169,6 +175,8 @@ class InputComponent extends Component {
             isFocused,
         } = this.state;
 
+        const hasErrors = errors.length > 0;
+
         const labelText = labelString !== ''
             ? labelString
             : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
@@ -188,11 +196,16 @@ class InputComponent extends Component {
                         value={value || ''}
                         type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
+                        error={hasErrors}
                     />
                 </FormControlComponent>
             );
         }
         if (type === 'select') {
+            const selectClassNames = [classes.select];
+            if (hasErrors) {
+                selectClassNames.push(classes.selectError);
+            }
             return (
                 <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
@@ -202,7 +215,7 @@ class InputComponent extends Component {
                         isFocused={isFocused}
                         required={required}
                     />
-                    <div className={classes.select}>
+                    <div className={selectClassNames.join(' ')}>
                         <Select
                             disabled={disabled}
                             searchable={isSearchable}
@@ -289,6 +302,7 @@ class InputComponent extends Component {
 InputComponent.defaultProps = {
     type: 'text',
     value: undefined,
+    errors: [],
     options: [],
     onChange: () => null,
     disabled: false,
@@ -307,6 +321,7 @@ InputComponent.propTypes = {
     type: PropTypes.string,
     keyValue: PropTypes.string.isRequired,
     value: PropTypes.any,
+    errors: PropTypes.arrayOf(PropTypes.string),
     onChange: PropTypes.func,
     intl: PropTypes.object.isRequired,
     options: PropTypes.array,
@@ -322,4 +337,4 @@ InputComponent.propTypes = {
     uid: PropTypes.any,
 };
 
-export default withStyles(styles)(injectIntl(InputComponent));
+export default injectIntl(withStyles(styles)(InputComponent));

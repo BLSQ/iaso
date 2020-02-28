@@ -252,6 +252,8 @@
     "iaso.snackBar.fetchProfilesError": "Une erreur est survenue en récupérant la liste des profiles",
     "iaso.snackBar.fetchProjectsError": "Une erreur est survenue en récupérant la liste des projects",
     "iaso.snackBar.createFormError": "Une erreur est survenue en créant un formulaire",
+    "iaso.snackBar.updateFormError": "Une erreur est survenue en mettant un formulaire à jour",
+    "iaso.snackBar.deleteFormError": "Une erreur est survenue en effaçant un formulaire",
     "iaso.snackBar.locationLimitWarning": "Afficher trop de résultats sur la carte peut affecter les performances de la page",
     "iaso.snackBar.saveLinkError": "Une erreur est survenuelors de la sauvegarde de la correspondance",
     "iaso.snackBar.error": "Impossible de sauvegarder",

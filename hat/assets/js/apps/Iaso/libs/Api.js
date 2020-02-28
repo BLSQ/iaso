@@ -1,5 +1,21 @@
 const req = require('superagent');
 
+class ApiError extends Error {
+    constructor(message, response) {
+        super(message);
+
+        // Maintains proper stack trace for where our error was thrown (only available on V8)
+        if (Error.captureStackTrace) {
+            Error.captureStackTrace(this, ApiError);
+        }
+
+        this.name = 'ApiError';
+        // Custom debugging information
+        this.status = response.status;
+        this.details = response.body;
+    }
+}
+
 export const getRequest = url => req
     .get(url)
     .then(result => result.body)
@@ -27,8 +43,7 @@ export const postRequest = (url, data, fileData = {}) => {
     return request
         .then(result => result.body)
         .catch((error) => {
-            console.error(`Error when posting ${url}: ${error}`);
-            throw error;
+            throw new ApiError(error.message, error.response);
         });
 };
 

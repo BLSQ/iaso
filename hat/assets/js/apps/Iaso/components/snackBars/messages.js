@@ -111,6 +111,14 @@ const MESSAGES = {
         id: 'iaso.snackBar.createFormError',
         defaultMessage: 'An error occurred while creating a form',
     },
+    updateFormError: {
+        id: 'iaso.snackBar.updateFormError',
+        defaultMessage: 'An error occurred while updating a form',
+    },
+    deleteFormError: {
+        id: 'iaso.snackBar.deleteFormError',
+        defaultMessage: 'An error occurred while deleting a form',
+    },
 };
 
 export default MESSAGES;

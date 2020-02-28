@@ -13,11 +13,11 @@ const styles = theme => ({
 });
 
 function FormActions({
-    classes, closeDialog, allowSave, onSave,
+    classes, closeDialog, allowSave, onSave, onCancel,
 }) {
     return (
         <DialogActions className={classes.action}>
-            <Button onClick={closeDialog} color="primary">
+            <Button onClick={() => onCancel(closeDialog)} color="primary">
                 <FormattedMessage
                     id="iaso.label.cancel"
                     defaultMessage="Cancel"
@@ -42,16 +42,20 @@ FormActions.propTypes = {
     closeDialog: PropTypes.func.isRequired,
     allowSave: PropTypes.bool.isRequired,
     onSave: PropTypes.func.isRequired,
+    onCancel: PropTypes.func.isRequired,
 };
 const StyledFormActions = withStyles(styles)(FormActions);
 
-export default function FormDialogComponent({ allowSave, onSave, ...dialogProps }) {
+export default function FormDialogComponent({
+    allowSave, onSave, onCancel, ...dialogProps
+}) {
     return (
         <DialogComponent
             renderActions={({ closeDialog }) => (
                 <StyledFormActions
                     allowSave={allowSave}
                     onSave={onSave}
+                    onCancel={onCancel}
                     closeDialog={closeDialog}
                 />
             )}
@@ -61,9 +65,11 @@ export default function FormDialogComponent({ allowSave, onSave, ...dialogProps 
 }
 FormDialogComponent.defaultProps = {
     allowSave: true,
+    onCancel: closeDialog => closeDialog(),
 };
 FormDialogComponent.propTypes = {
     allowSave: PropTypes.bool,
     onSave: PropTypes.func.isRequired,
+    onCancel: PropTypes.func,
     ...DialogComponent.commonPropTypes,
 };

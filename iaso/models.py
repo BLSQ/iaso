@@ -20,12 +20,14 @@ YEAR = "YEAR"
 QUARTER = "QUARTER"
 MONTH = "MONTH"
 SIX_MONTH = "SIX_MONTH"
+TRACKER = "TRACKER"
 
 PERIOD_TYPE_CHOICES = (
     (YEAR, _("Year")),
     (QUARTER, "Quarter"),
     (MONTH, "Month"),
     (SIX_MONTH, "Six-month"),
+    (TRACKER, "Tracker"),
 )
 
 

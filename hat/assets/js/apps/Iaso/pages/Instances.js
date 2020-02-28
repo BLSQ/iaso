@@ -9,7 +9,9 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { setInstances, setInstancesSmallDict, setInstancesFetching } from '../redux/instancesReducer';
+import {
+    setInstances, setInstancesSmallDict, setInstancesFetching, setInstanceStatus,
+} from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
 import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
@@ -23,6 +25,7 @@ import {
     fetchDevices,
     fetchDevicesOwnerships,
     fetchPeriods,
+    fetchIsntanceStatus,
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -68,7 +71,22 @@ class Instances extends Component {
             params: {
                 formId,
             },
+            instanceStatus,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
+        if (instanceStatus.length === 0) {
+            fetchIsntanceStatus(dispatch)
+                .then(res => this.props.setInstanceStatus(res.instance_status.map(s => ({
+                    key: s[0],
+                    isVisible: true,
+                    label: formatMessage({
+                        defaultMessage: s[0],
+                        id: `iaso.completeness.${s[0]}Multi`,
+                    }),
+                }))));
+        }
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchDevices(dispatch)
@@ -338,6 +356,8 @@ Instances.propTypes = {
     redirectToPush: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
     setPeriods: PropTypes.func.isRequired,
+    instanceStatus: PropTypes.array.isRequired,
+    setInstanceStatus: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -346,6 +366,7 @@ const MapStateToProps = state => ({
     fetching: state.instances.fetching,
     currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
+    instanceStatus: state.instances.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -360,6 +381,7 @@ const MapDispatchToProps = dispatch => ({
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
+    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
 });
 
 

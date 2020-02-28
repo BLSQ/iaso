@@ -1,7 +1,7 @@
 import orderBy from 'lodash/orderBy';
 import DatePeriods from '../libs/DatePeriods';
 
-const PeriodTypes = [
+const PeriodTypesOrder = [
     'MONTH',
     'QUARTER',
     'SIX_MONTH',
@@ -32,8 +32,25 @@ export const sortPeriods = (data) => {
 
 export const sortPeriodTypes = periodTypes => orderBy(
     periodTypes,
-    [periodType => PeriodTypes.indexOf(periodType[0])],
+    [periodType => PeriodTypesOrder.indexOf(periodType[0])],
     ['asc'],
 );
+
+
+export const getPeriodType = (period) => {
+    if (period.length === 4) {
+        return 'YEAR';
+    }
+    const prefixFirstLetter = period.substring(4, 6).substring(0, 1);
+    switch (prefixFirstLetter) {
+        case 'Q':
+            return 'QUARTER';
+        case 'S':
+            return 'SIX_MONTH';
+
+        default:
+            return 'MONTH';
+    }
+};
 
 export default getPrettyPeriod;

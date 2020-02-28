@@ -17,8 +17,11 @@ import {
 import {
     setCompletenessData,
     setIsFetching,
-    setInstanceStatus,
 } from '../redux/completenessReducer';
+
+import {
+    setInstanceStatus,
+} from '../redux/instancesReducer';
 import {
     setPeriodTypes,
 } from '../redux/periodsReducer';
@@ -150,7 +153,7 @@ Completeness.propTypes = {
     setCompletenessData: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
-    completenessData: PropTypes.object,
+    completenessData: PropTypes.any,
     setPeriodTypes: PropTypes.func.isRequired,
     setIsFetching: PropTypes.func.isRequired,
     setInstanceStatus: PropTypes.func.isRequired,
@@ -160,7 +163,7 @@ Completeness.propTypes = {
 const MapStateToProps = state => ({
     completenessData: state.completeness.data,
     fetching: state.completeness.fetching,
-    instanceStatus: state.completeness.instanceStatus,
+    instanceStatus: state.instances.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({

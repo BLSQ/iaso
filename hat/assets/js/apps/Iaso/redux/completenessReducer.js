@@ -1,18 +1,10 @@
 const SET_COMPLETENESS = 'SET_COMPLETENESS';
-const SET_INSTANCE_STATUS = 'SET_INSTANCE_STATUS';
 const SET_IS_FETCHING = 'SET_IS_FETCHING';
 
 export const setCompletenessData = data => ({
     type: SET_COMPLETENESS,
     payload: {
         data,
-    },
-});
-
-export const setInstanceStatus = instanceStatus => ({
-    type: SET_INSTANCE_STATUS,
-    payload: {
-        instanceStatus,
     },
 });
 
@@ -25,7 +17,6 @@ export const setIsFetching = isFetching => ({
 export const completenessInitialState = {
     fetching: false,
     data: null,
-    instanceStatus: [],
 };
 
 export const completenessReducer = (state = completenessInitialState, action = {}) => {
@@ -37,16 +28,6 @@ export const completenessReducer = (state = completenessInitialState, action = {
             return {
                 ...state,
                 data,
-            };
-        }
-
-        case SET_INSTANCE_STATUS: {
-            const {
-                instanceStatus,
-            } = action.payload;
-            return {
-                ...state,
-                instanceStatus,
             };
         }
 

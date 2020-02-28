@@ -12,7 +12,7 @@ import {
 } from '../../constants/filters';
 import {
     setInstanceStatus,
-} from '../../redux/completenessReducer';
+} from '../../redux/instancesReducer';
 
 import FiltersComponent from './FiltersComponent';
 import ChipsListComponent from '../chips/ChipsListComponent';
@@ -100,7 +100,7 @@ CompletenessFiltersComponent.propTypes = {
 
 const MapStateToProps = state => ({
     periodTypesList: state.periods.periodTypes,
-    instanceStatus: state.completeness.instanceStatus,
+    instanceStatus: state.instances.instanceStatus,
 });
 
 

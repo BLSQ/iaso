@@ -387,3 +387,18 @@ export const periodTypes = (
         type: 'select',
     }
 );
+
+
+export const instanceStatus = statusList => (
+    {
+        urlKey: 'status',
+        isMultiSelect: true,
+        isClearable: true,
+        options: statusList.map(s => ({
+            label: s.label,
+            value: s.key,
+        })),
+        label: MESSAGES.status,
+        type: 'select',
+    }
+);

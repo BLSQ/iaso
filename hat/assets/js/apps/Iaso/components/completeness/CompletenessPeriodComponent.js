@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
+import moment from 'moment';
 
 import {
     Paper, withStyles, Typography, Grid,
@@ -9,10 +10,11 @@ import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { injectIntl } from 'react-intl';
 
-import { getPrettyPeriod } from '../../utils/periodsUtils';
+import { getPrettyPeriod, getPeriodType } from '../../utils/periodsUtils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 import { createUrl } from '../../../../utils/fetchData';
+import DatePeriods from '../../libs/DatePeriods';
 
 const placeholder = '-';
 
@@ -58,8 +60,7 @@ const getColumns = (formatMessage, months, classes, instanceStatus, onSelect) =>
                             role="button"
                             tabIndex="0"
                             className={`${classes.cell} ${value ? classes[fk.key] : ''}`}
-                            onClick={() => onSelect(settings.original.id, fk.key)}
-                            // need to check if selected cell has the same period type as the displayed period type, if not it's a monthly period type with selected month
+                            onClick={() => onSelect(settings.original, fk.key, settings.original.months[index])}
                         >
                             {value || placeholder}
                         </span>
@@ -110,11 +111,32 @@ class CompletenessPeriodComponent extends Component {
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
-    onSelectCell(formId, status, periods) {
+    onSelectCell(form, status, month, period) {
+        // need to check if selected cell has the same period type as the displayed period type, if not it's a monthly period type with selected month
         const { redirectTo } = this.props;
+        let currentPeriod = period;
+        const currentPeriodType = getPeriodType(period);
+        if (currentPeriodType !== form.period_type) {
+            const year = period.substring(0, 4);
+            const currentDate = `${year}-${month.id}`;
+            switch (form.period_type) {
+                case 'MONTH':
+                    currentPeriod = `${year}${month.id < 10 ? `0${month.id}` : month.id}`;
+                    break;
+                case 'QUARTER':
+                    currentPeriod = DatePeriods.currentQuarter(moment(currentDate).toDate());
+                    break;
+                case 'SIX_MONTH':
+                    currentPeriod = DatePeriods.currentSemester(moment(currentDate).toDate());
+                    break;
+
+                default:
+                    currentPeriod = year;
+            }
+        }
         redirectTo('instances', {
-            formId,
-            periods,
+            formId: form.id,
+            periods: currentPeriod,
             status,
         });
     }
@@ -152,7 +174,7 @@ class CompletenessPeriodComponent extends Component {
                             forms[0].months,
                             classes,
                             instanceStatus,
-                            (formId, status) => this.onSelectCell(formId, status, period),
+                            (form, status, month) => this.onSelectCell(form, status, month, period),
                         )}
                         data={forms}
                         filterable={false}

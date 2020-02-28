@@ -19,6 +19,7 @@ import {
     device,
     deviceOwnership,
     periods,
+    instanceStatus,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -69,6 +70,7 @@ class InstancesFiltersComponent extends Component {
             devices,
             devicesOwnerships,
             periodsList,
+            instanceStatusList,
         } = this.props;
         const { filtersUpdated } = this.state;
         return (
@@ -92,6 +94,7 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
+                                instanceStatus(instanceStatusList),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}
@@ -138,6 +141,7 @@ InstancesFiltersComponent.propTypes = {
     devicesOwnerships: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
     periodsList: PropTypes.array.isRequired,
+    instanceStatusList: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -145,6 +149,7 @@ const MapStateToProps = state => ({
     devices: state.devices.list,
     devicesOwnerships: state.devices.ownershipList,
     periodsList: state.periods.list,
+    instanceStatusList: state.instances.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({

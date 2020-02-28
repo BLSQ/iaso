@@ -5,6 +5,7 @@
             {
                 "id": "5",
                 "label": "Questionnaire DPS",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -38,6 +39,7 @@
             {
                 "id": "2",
                 "label": "Questionnaire Centre de santé",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -71,6 +73,7 @@
             {
                 "id": "14",
                 "label": "Relevé mensuel SSC",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -104,6 +107,7 @@
             {
                 "id": "1234559",
                 "label": "Formulaire 4",
+                "period_type": "QUARTER",
                 "months": [
                     {
                         "label": "january",
@@ -142,6 +146,7 @@
             {
                 "id": "2",
                 "label": "Questionnaire Centre de santé",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "april",
@@ -175,6 +180,7 @@
             {
                 "id": "5",
                 "label": "Questionnaire DPS",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "april",

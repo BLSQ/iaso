@@ -169,10 +169,14 @@ class DatePeriods {
         return months;
     }
 
-    static currentQuarter() {
-        const currentDate = new Date();
-        currentDate.setMonth(currentDate.getMonth() - 2);
+    static currentQuarter(currentDate = new Date()) {
         return `${currentDate.getFullYear()}Q${this.quarterByMonth(
+            currentDate.getMonth() + 1,
+        )}`;
+    }
+
+    static currentSemester(currentDate = new Date()) {
+        return `${currentDate.getFullYear()}S${this.semesterByMonth(
             currentDate.getMonth() + 1,
         )}`;
     }
@@ -498,6 +502,17 @@ class DatePeriods {
             quarter = 4;
         }
         return quarter;
+    }
+
+    static semesterByMonth(month) {
+        let semester = 0;
+        if (month >= 1 && month <= 3) {
+            semester = 1;
+        }
+        if (month >= 6 && month <= 12) {
+            semester = 2;
+        }
+        return semester;
     }
 
     static split(period, splitType) {

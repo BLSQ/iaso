@@ -5,6 +5,7 @@
             {
                 "id": "5",
                 "label": "Enregistrement(s) pour le formulaire: Questionnaire DPS",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -20,6 +21,7 @@
             {
                 "id": "12345",
                 "label": "Formulaire 2",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -35,6 +37,7 @@
             {
                 "id": "123455",
                 "label": "Formulaire 3",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "january",
@@ -55,6 +58,7 @@
             {
                 "id": "1234",
                 "label": "Formulaire test",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "february",
@@ -70,6 +74,7 @@
             {
                 "id": "12345",
                 "label": "Formulaire 2",
+                "period_type": "MONTH",
                 "months": [
                     {
                         "label": "february",

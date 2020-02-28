@@ -289,12 +289,27 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(1, form.org_unit_types.count())
 
     @tag("iaso_only")
-    def test_forms_destroy(self):
-        """DELETE /forms/<form_id>: not authorized for now"""
+    def test_forms_destroy_ok(self):
+        """DELETE /forms/<form_id> happy path"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.delete(f'/api/forms/{self.form_1.id}/', format='json')
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, 204)
+
+    @tag("iaso_only")
+    def test_forms_destroy_wrong_auth(self):
+        """DELETE /forms/<form_id> with user that cannot access form -> 404"""
+
+        self.client.force_authenticate(self.raccoon)
+        response = self.client.delete(f'/api/forms/{self.form_1.id}/', format='json')
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_forms_destroy_no_auth(self):
+        """DELETE /forms/<form_id> without auth -> 403"""
+
+        response = self.client.delete(f'/api/forms/{self.form_1.id}/', format='json')
+        self.assertJSONResponse(response, 403)
 
     def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(list_data=list_data, expected_length=expected_length, results_key="forms",

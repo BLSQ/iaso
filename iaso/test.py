@@ -25,7 +25,9 @@ class APITestCase(BaseAPITestCase):
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, Response)
         self.assertEqual(expected_status_code, response.status_code)
-        self.assertEqual('application/json', response['Content-Type'])
+
+        if expected_status_code != 204:
+            self.assertEqual('application/json', response['Content-Type'])
 
     def assertFileResponse(self, response: typing.Any, expected_status_code: int, expected_content_type: str, *,
                            expected_attachment_filename: str = None, streaming: bool = False):

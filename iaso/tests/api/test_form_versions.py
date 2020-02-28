@@ -1,12 +1,15 @@
 import typing
+import tempfile
 from django.test import tag
 from django.core.files import File
+from django.test import override_settings
 from unittest import mock
 
 from iaso import models as m
 from iaso.test import APITestCase
 
 
+@override_settings(MEDIA_ROOT=tempfile.mkdtemp())
 class FormsVersionAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
@@ -19,7 +22,7 @@ class FormsVersionAPITestCase(APITestCase):
         cls.sith_council = m.OrgUnitType.objects.create(name="Sith Council", short_name="Cnc")
 
         cls.project = m.Project.objects.create(name="Hydroponic gardens",
-                                                 app_id="stars.empire.agriculture.hydroponics", account=star_wars)
+                                               app_id="stars.empire.agriculture.hydroponics", account=star_wars)
         cls.project.unit_types.add(cls.sith_council)
 
         cls.form_1 = m.Form.objects.create(name="New Land Speeder concept",  # no form_id yet (no version)

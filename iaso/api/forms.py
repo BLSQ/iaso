@@ -88,7 +88,6 @@ class FormsViewSet(ModelViewSet):
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()
-    http_method_names = ('get', 'post', 'put', 'options')
 
     EXPORT_TABLE_COLUMNS = (
         {"title": "ID du formulaire", "width": 20},

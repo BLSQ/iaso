@@ -2,8 +2,10 @@ import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import Link from '@material-ui/core/Link';
+import { IconButton, Tooltip } from '@material-ui/core';
+import Delete from '@material-ui/icons/Delete';
 
-const formsTableColumns = (formatMessage, component) => (
+const formsTableColumns = (formatMessage, component, classes) => (
     [
         {
             Header: formatMessage({
@@ -84,6 +86,18 @@ const formsTableColumns = (formatMessage, component) => (
             sortable: false,
             Cell: settings => (
                 <section>
+                    <Tooltip
+                        classes={{
+                            popper: classes.popperFixed,
+                        }}
+                        title={<FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />}
+                    >
+                        <IconButton
+                            onClick={() => component.deleteForm(settings.original)}
+                        >
+                            <Delete />
+                        </IconButton>
+                    </Tooltip>
                     {
                         settings.original.instances_count > 0
                         && (

@@ -24,7 +24,7 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import AddFormDialogComponent from '../components/dialogs/AddFormDialogComponent';
 
 import commonStyles from '../styles/common';
-import { fetchOrgUnitsTypes, fetchProjects } from '../utils/requests';
+import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../utils/requests';
 
 const baseUrl = 'forms';
 
@@ -40,13 +40,14 @@ class Forms extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: formsTableColumns(props.intl.formatMessage, this),
+            tableColumns: formsTableColumns(props.intl.formatMessage, this, this.props.classes),
+            isUpdated: false,
         };
     }
 
     /**
-     * TODO: replace by async actions or saga
-     */
+   * TODO: replace by async actions or saga
+   */
     componentDidMount() {
         Promise.all([
             fetchOrgUnitsTypes(this.props.dispatch),
@@ -86,6 +87,10 @@ class Forms extends Component {
         redirectTo('instances', newParams);
     }
 
+    deleteForm(form) {
+        deleteForm(this.props.dispatch, form.id)
+            .then(() => this.setState({ isUpdated: true }));
+    }
 
     render() {
         const {
@@ -127,25 +132,30 @@ class Forms extends Component {
                             dataKey="forms"
                             canSelect={false}
                             multiSort
-                            onDataLoaded={(newFormsList, count, pages) => this.props.setForms(newFormsList, true, params, count, pages)}
+                            onDataLoaded={(newFormsList, count, pages) => {
+                                this.props.setForms(newFormsList, true, params, count, pages);
+                                this.setState({ isUpdated: false });
+                            }}
                             reduxPage={reduxPage}
+                            isUpdated={this.state.isUpdated}
                         />
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <AddFormDialogComponent />
                         {reduxPage.list
-                            && (
-                                <DownloadButtonsComponent
-                                    csvUrl={this.getExportUrl('csv')}
-                                    xlsxUrl={this.getExportUrl('xlsx')}
-                                />
-                            )}
+            && (
+                <DownloadButtonsComponent
+                    csvUrl={this.getExportUrl('csv')}
+                    xlsxUrl={this.getExportUrl('xlsx')}
+                />
+            )}
                     </Grid>
                 </Box>
             </section>
         );
     }
 }
+
 Forms.defaultProps = {
     reduxPage: undefined,
 };

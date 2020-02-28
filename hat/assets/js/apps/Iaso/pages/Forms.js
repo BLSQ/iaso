@@ -10,6 +10,8 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 
 import { setForms, setCurrentForm } from '../redux/formsReducer';
+import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
+import { setProjects } from '../redux/projectsReducer';
 
 import formsTableColumns from '../constants/formsTableColumns';
 
@@ -22,6 +24,7 @@ import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent
 import AddFormDialogComponent from '../components/dialogs/AddFormDialogComponent';
 
 import commonStyles from '../styles/common';
+import { fetchOrgUnitsTypes, fetchProjects } from '../utils/requests';
 
 const baseUrl = 'forms';
 
@@ -39,6 +42,19 @@ class Forms extends Component {
         this.state = {
             tableColumns: formsTableColumns(props.intl.formatMessage, this),
         };
+    }
+
+    /**
+     * TODO: replace by async actions or saga
+     */
+    componentDidMount() {
+        Promise.all([
+            fetchOrgUnitsTypes(this.props.dispatch),
+            fetchProjects(this.props.dispatch),
+        ]).then(([orgUnitsTypes, projects]) => {
+            this.props.setOrgUnitTypes(orgUnitsTypes);
+            this.props.setProjects(projects);
+        });
     }
 
     getExportUrl(exportType = 'csv') {
@@ -141,7 +157,10 @@ Forms.propTypes = {
     params: PropTypes.object.isRequired,
     setForms: PropTypes.func.isRequired,
     setCurrentForm: PropTypes.func.isRequired,
+    setOrgUnitTypes: PropTypes.func.isRequired,
+    setProjects: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -151,7 +170,10 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setForms: (forms, showPagination, params, count, pages) => dispatch(setForms(forms, showPagination, params, count, pages)),
+    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
+    setProjects: projects => dispatch(setProjects(projects)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    dispatch,
 });
 
 export default withStyles(styles)(

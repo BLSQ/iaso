@@ -17,6 +17,7 @@ import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './redux/formsReducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
+import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
@@ -48,7 +49,6 @@ import {
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
-import * as zoomBar from '../../components/leaflet/zoom-bar';
 
 
 export default function iasoApp(element, baseUrl) {
@@ -136,6 +136,7 @@ export default function iasoApp(element, baseUrl) {
         links: linksInitialState,
         profiles: profilesInitialState,
         periods: periodsInitialState,
+        projects: projectsInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -151,6 +152,7 @@ export default function iasoApp(element, baseUrl) {
         links: linksReducer,
         profiles: profilesReducer,
         periods: periodsReducer,
+        projects: projectsReducer,
     }, [
         routerMiddleware(history),
     ]);

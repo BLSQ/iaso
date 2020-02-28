@@ -7,8 +7,6 @@ import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
 import {
-    fetchOrgUnitsTypes,
-    fetchProjects,
     createForm,
     createFormVersion,
 } from '../../utils/requests';
@@ -53,37 +51,20 @@ class AddFormDialogComponent extends Component {
 
     constructor(props) {
         super(props);
-        this.state = {
-            orgUnitsTypes: [],
-            projects: [],
-            form: AddFormDialogComponent.blankFormState(),
-        };
-    }
-
-    componentDidMount() {
-        Promise.all([
-            fetchOrgUnitsTypes(this.props.dispatch),
-            fetchProjects(this.props.dispatch),
-        ]).then(([orgUnitsTypes, projects]) => {
-            this.setState(state => ({
-                ...state,
-                orgUnitsTypes,
-                projects,
-            }));
-        });
+        this.state = AddFormDialogComponent.blankFormState();
     }
 
     onSave(closeDialog) {
         // TODO: move in async action
-        const formData = _.omit(this.state.form, 'xls_file');
+        const formData = _.omit(this.state, 'xls_file');
         createForm(this.props.dispatch, formData)
             .then((createdFormData) => {
                 createFormVersion(this.props.dispatch, {
                     form_id: createdFormData.id,
-                    xls_file: this.state.form.xls_file,
+                    xls_file: this.state.xls_file,
                 })
                     .then(() => {
-                        this.setState({ form: AddFormDialogComponent.blankFormState() });
+                        this.setState(AddFormDialogComponent.blankFormState());
                         closeDialog();
                         // TODO: trigger list reload
                     });
@@ -94,12 +75,7 @@ class AddFormDialogComponent extends Component {
     }
 
     setFieldValue(fieldName, fieldValue) {
-        this.setState(state => ({
-            form: {
-                ...state.form,
-                [fieldName]: fieldValue,
-            },
-        }));
+        this.setState({ [fieldName]: fieldValue });
     }
 
     setPeriodType(value) {
@@ -110,11 +86,7 @@ class AddFormDialogComponent extends Component {
     }
 
     render() {
-        const {
-            projects,
-            orgUnitsTypes,
-            form,
-        } = this.state;
+        const { projects, orgUnitTypes } = this.props;
 
         return (
             <FormDialogComponent
@@ -126,7 +98,7 @@ class AddFormDialogComponent extends Component {
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={form.name}
+                            value={this.state.name}
                             type="text"
                             label={{
                                 id: 'iaso.label.name',
@@ -142,7 +114,7 @@ class AddFormDialogComponent extends Component {
                             clearable
                             keyValue="project_ids"
                             onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={form.project_ids}
+                            value={this.state.project_ids}
                             type="select"
                             options={projects.map(p => ({
                                 label: p.name,
@@ -162,9 +134,9 @@ class AddFormDialogComponent extends Component {
                             clearable
                             keyValue="org_unit_type_ids"
                             onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={form.org_unit_type_ids}
+                            value={this.state.org_unit_type_ids}
                             type="select"
-                            options={orgUnitsTypes.map(o => ({
+                            options={orgUnitTypes.map(o => ({
                                 label: o.name,
                                 value: o.id,
                             }))}
@@ -178,7 +150,7 @@ class AddFormDialogComponent extends Component {
                             keyValue="period_type"
                             clearable={false}
                             onChange={(key, value) => this.setPeriodType(value)}
-                            value={form.period_type}
+                            value={this.state.period_type}
                             type="select"
                             options={PERIOD_TYPE_CHOICES}
                             label={{
@@ -188,12 +160,12 @@ class AddFormDialogComponent extends Component {
                             required
                         />
                         {
-                            this.state.form.period_type !== 'TRACKER'
+                            this.state.period_type !== 'TRACKER'
                                       && (
                                           <InputComponent
                                               keyValue="single_per_period"
                                               onChange={(key, value) => this.setFieldValue(key, value)}
-                                              value={form.single_per_period}
+                                              value={this.state.single_per_period}
                                               type="checkbox"
                                               label={{
                                                   id: 'iaso.label.singlePerPeriod',
@@ -216,7 +188,7 @@ class AddFormDialogComponent extends Component {
                         <InputComponent
                             keyValue="device_field"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={form.device_field}
+                            value={this.state.device_field}
                             type="text"
                             label={{
                                 id: 'iaso.label.deviceField',
@@ -226,7 +198,7 @@ class AddFormDialogComponent extends Component {
                         <InputComponent
                             keyValue="location_field"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={form.location_field}
+                            value={this.state.location_field}
                             type="text"
                             label={{
                                 id: 'iaso.label.locationField',
@@ -241,6 +213,12 @@ class AddFormDialogComponent extends Component {
 }
 AddFormDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
+    orgUnitTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
+    projects: PropTypes.arrayOf(PropTypes.object).isRequired,
 };
+const mapStateToProps = state => ({
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
+    projects: state.projects.projects,
+});
 const mapDispatchToProps = dispatch => ({ dispatch });
-export default connect(null, mapDispatchToProps)(AddFormDialogComponent);
+export default connect(mapStateToProps, mapDispatchToProps)(AddFormDialogComponent);

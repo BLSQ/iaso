@@ -45,10 +45,11 @@ const styles = theme => ({
     },
 });
 
+// TODO: use API to fetch those
 const PERIOD_TYPE_CHOICES = [
     {
         label: 'Tracker',
-        value: null,
+        value: 'TRACKER',
     },
     {
         label: 'Monthly',
@@ -65,6 +66,19 @@ const PERIOD_TYPE_CHOICES = [
 ];
 
 class AddFormDialogComponent extends Component {
+    static blankFormState() {
+        return {
+            name: null,
+            xls_file: null,
+            project_ids: null,
+            org_unit_type_ids: null,
+            period_type: 'TRACKER',
+            single_per_period: false,
+            device_field: 'deviceid',
+            location_field: null,
+        };
+    }
+
     constructor(props) {
         super(props);
         this.state = {
@@ -72,19 +86,6 @@ class AddFormDialogComponent extends Component {
             orgUnitsTypes: [],
             projects: [],
             form: AddFormDialogComponent.blankFormState(),
-        };
-    }
-
-    static blankFormState() {
-        return {
-            name: null,
-            xls_file: null,
-            project_ids: null,
-            org_unit_type_ids: null,
-            period_type: null,
-            single_per_period: null,
-            device_field: null,
-            location_field: null,
         };
     }
 
@@ -101,13 +102,20 @@ class AddFormDialogComponent extends Component {
         });
     }
 
-    onChange(key, value) {
+    setFieldValue(fieldName, fieldValue) {
         this.setState(state => ({
             form: {
                 ...state.form,
-                [key]: value,
+                [fieldName]: fieldValue,
             },
         }));
+    }
+
+    setPeriodType(value) {
+        this.setFieldValue('period_type', value);
+        if (value === 'TRACKER') {
+            this.setFieldValue('single_per_period', false);
+        }
     }
 
     toggleDialog() {
@@ -178,7 +186,7 @@ class AddFormDialogComponent extends Component {
                             <Grid xs={6} item>
                                 <InputComponent
                                     keyValue="name"
-                                    onChange={(key, value) => this.onChange(key, value)}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
                                     value={form.name}
                                     type="text"
                                     label={{
@@ -193,7 +201,7 @@ class AddFormDialogComponent extends Component {
                                     multi
                                     clearable
                                     keyValue="project_ids"
-                                    onChange={(key, value) => this.onChange(key, value.split(', ').map(parseInt))}
+                                    onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
                                     value={form.project_ids}
                                     type="select"
                                     options={projects.map(p => ({
@@ -212,7 +220,7 @@ class AddFormDialogComponent extends Component {
                                     multi
                                     clearable
                                     keyValue="org_unit_type_ids"
-                                    onChange={(key, value) => this.onChange(key, value.split(', ').map(parseInt))}
+                                    onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
                                     value={form.org_unit_type_ids}
                                     type="select"
                                     options={orgUnitsTypes.map(o => ({
@@ -226,7 +234,8 @@ class AddFormDialogComponent extends Component {
                                 />
                                 <InputComponent
                                     keyValue="period_type"
-                                    onChange={(key, value) => this.onChange(key, value)}
+                                    clearable={false}
+                                    onChange={(key, value) => this.setPeriodType(value)}
                                     value={form.period_type}
                                     type="select"
                                     options={PERIOD_TYPE_CHOICES}
@@ -235,21 +244,26 @@ class AddFormDialogComponent extends Component {
                                         defaultMessage: 'Period type',
                                     }}
                                 />
-                                <InputComponent
-                                    keyValue="single_per_period"
-                                    onChange={(key, value) => this.onChange(key, value)}
-                                    value={form.single_per_period}
-                                    type="checkbox"
-                                    label={{
-                                        id: 'iaso.label.singlePerPeriod',
-                                        defaultMessage: 'Single per period',
-                                    }}
-                                />
+                                {
+                                    this.state.form.period_type !== 'TRACKER'
+                                      && (
+                                          <InputComponent
+                                              keyValue="single_per_period"
+                                              onChange={(key, value) => this.setFieldValue(key, value)}
+                                              value={form.single_per_period}
+                                              type="checkbox"
+                                              label={{
+                                                  id: 'iaso.label.singlePerPeriod',
+                                                  defaultMessage: 'Single per period',
+                                              }}
+                                          />
+                                      )
+                                }
                             </Grid>
                             <Grid xs={6} item>
                                 <FileInputComponent
                                     keyValue="xls_file"
-                                    onChange={(key, value) => this.onChange(key, value)}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
                                     label={{
                                         id: 'iaso.label.xls_form_file',
                                         defaultMessage: 'XLSForm file',
@@ -257,7 +271,7 @@ class AddFormDialogComponent extends Component {
                                 />
                                 <InputComponent
                                     keyValue="device_field"
-                                    onChange={(key, value) => this.onChange(key, value)}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
                                     value={form.device_field}
                                     type="text"
                                     label={{
@@ -267,7 +281,7 @@ class AddFormDialogComponent extends Component {
                                 />
                                 <InputComponent
                                     keyValue="location_field"
-                                    onChange={(key, value) => this.onChange(key, value)}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
                                     value={form.location_field}
                                     type="text"
                                     label={{

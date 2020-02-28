@@ -158,7 +158,6 @@ class InputComponent extends Component {
             label,
             labelString,
             onEnterPressed,
-            checked,
             withMarginTop,
             isSearchable,
             multi,
@@ -271,7 +270,7 @@ class InputComponent extends Component {
                     control={(
                         <Checkbox
                             color="primary"
-                            checked={checked}
+                            checked={value === true}
                             onChange={event => onChange(keyValue, event.target.checked)}
                             value="checked"
                         />
@@ -292,7 +291,6 @@ InputComponent.defaultProps = {
     clearable: true,
     label: undefined,
     labelString: '',
-    checked: false,
     onEnterPressed: () => null,
     withMarginTop: true,
     isSearchable: true,
@@ -311,7 +309,6 @@ InputComponent.propTypes = {
     clearable: PropTypes.bool,
     label: PropTypes.object,
     labelString: PropTypes.string,
-    checked: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
     isSearchable: PropTypes.bool,

@@ -1,21 +1,10 @@
-import React, { Fragment, Component } from 'react';
+import React, { Component } from 'react';
 import _ from 'lodash';
 
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
 import { connect } from 'react-redux';
 
-import Add from '@material-ui/icons/Add';
-import {
-    withStyles,
-    Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    Grid,
-} from '@material-ui/core';
-import commonStyles from '../../styles/common';
+import { Grid } from '@material-ui/core';
 
 import {
     fetchOrgUnitsTypes,
@@ -24,26 +13,9 @@ import {
     createFormVersion,
 } from '../../utils/requests';
 
+import FormDialogComponent from './FormDialogComponent';
 import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
-
-const styles = theme => ({
-    ...commonStyles(theme),
-    paper: {
-        overflow: 'visible',
-    },
-    title: {
-        paddingBottom: 0,
-    },
-    content: {
-        overflow: 'visible',
-        paddingBottom: theme.spacing(2),
-    },
-    action: {
-        paddingBottom: theme.spacing(2),
-        paddingRight: theme.spacing(2),
-    },
-});
 
 // TODO: use API to fetch those
 const PERIOD_TYPE_CHOICES = [
@@ -82,7 +54,6 @@ class AddFormDialogComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            open: false,
             orgUnitsTypes: [],
             projects: [],
             form: AddFormDialogComponent.blankFormState(),
@@ -102,6 +73,26 @@ class AddFormDialogComponent extends Component {
         });
     }
 
+    onSave(closeDialog) {
+        // TODO: move in async action
+        const formData = _.omit(this.state.form, 'xls_file');
+        createForm(this.props.dispatch, formData)
+            .then((createdFormData) => {
+                createFormVersion(this.props.dispatch, {
+                    form_id: createdFormData.id,
+                    xls_file: this.state.form.xls_file,
+                })
+                    .then(() => {
+                        this.setState({ form: AddFormDialogComponent.blankFormState() });
+                        closeDialog();
+                        // TODO: trigger list reload
+                    });
+            })
+            .catch((error) => {
+                console.error(error);
+            });
+    }
+
     setFieldValue(fieldName, fieldValue) {
         this.setState(state => ({
             form: {
@@ -118,134 +109,86 @@ class AddFormDialogComponent extends Component {
         }
     }
 
-    toggleDialog() {
-        this.setState({
-            open: !this.state.open,
-        });
-    }
-
-    handleClose(isAccepted) {
-        this.toggleDialog();
-        if (isAccepted) {
-            // TODO: move in async action
-            const formData = _.omit(this.state.form, 'xls_file');
-            createForm(this.props.dispatch, formData)
-                .then((createdFormData) => {
-                    createFormVersion(this.props.dispatch, {
-                        form_id: createdFormData.id,
-                        xls_file: this.state.form.xls_file,
-                    })
-                        .then(() => {
-                            this.setState({ form: AddFormDialogComponent.blankFormState() });
-                            // TODO: trigger list reload
-                        });
-                });
-        }
-    }
-
     render() {
-        const { classes } = this.props;
         const {
-            open,
             projects,
             orgUnitsTypes,
             form,
         } = this.state;
 
-
         return (
-            <Fragment>
-                <Button
-                    variant="contained"
-                    className={classes.button}
-                    color="primary"
-                    onClick={() => this.toggleDialog()}
-                >
-                    <Add className={classes.buttonIcon} />
-                    <FormattedMessage
-                        id="iaso.forms.create"
-                        defaultMessage="Create form"
-                    />
-                </Button>
-                <Dialog
-                    fullWidth
-                    maxWidth="md"
-                    open={open}
-                    classes={{
-                        paper: classes.paper, // TODO: ???
-                    }}
-                >
-                    <DialogTitle className={classes.title}>
-                        <FormattedMessage
-                            id="iaso.forms.create"
-                            defaultMessage="Create form"
+            <FormDialogComponent
+                dialogTitleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                onSave={closeDialog => this.onSave(closeDialog)}
+            >
+                <Grid container spacing={2} justify="flex-start">
+                    <Grid xs={6} item>
+                        <InputComponent
+                            keyValue="name"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={form.name}
+                            type="text"
+                            label={{
+                                id: 'iaso.label.name',
+                                defaultMessage: 'Name',
+                            }}
+                            required
                         />
-                    </DialogTitle>
-                    <DialogContent className={classes.content}>
-                        <Grid container spacing={2} justify="flex-start">
-                            <Grid xs={6} item>
-                                <InputComponent
-                                    keyValue="name"
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    value={form.name}
-                                    type="text"
-                                    label={{
-                                        id: 'iaso.label.name',
-                                        defaultMessage: 'Name',
-                                    }}
-                                />
-                                {
-                                    // TODO: select input component should return a list of values of the same type as the provided values
-                                }
-                                <InputComponent
-                                    multi
-                                    clearable
-                                    keyValue="project_ids"
-                                    onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                                    value={form.project_ids}
-                                    type="select"
-                                    options={projects.map(p => ({
-                                        label: p.name,
-                                        value: p.id,
-                                    }))}
-                                    label={{
-                                        id: 'iaso.label.projects',
-                                        defaultMessage: 'Projects',
-                                    }}
-                                />
-                                {
-                                    // TODO: select input component should return a list of values of the same type as the provided values
-                                }
-                                <InputComponent
-                                    multi
-                                    clearable
-                                    keyValue="org_unit_type_ids"
-                                    onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                                    value={form.org_unit_type_ids}
-                                    type="select"
-                                    options={orgUnitsTypes.map(o => ({
-                                        label: o.name,
-                                        value: o.id,
-                                    }))}
-                                    label={{
-                                        id: 'iaso.label.orgUnitsTypes',
-                                        defaultMessage: 'Organisation unit types',
-                                    }}
-                                />
-                                <InputComponent
-                                    keyValue="period_type"
-                                    clearable={false}
-                                    onChange={(key, value) => this.setPeriodType(value)}
-                                    value={form.period_type}
-                                    type="select"
-                                    options={PERIOD_TYPE_CHOICES}
-                                    label={{
-                                        id: 'iaso.label.periodType',
-                                        defaultMessage: 'Period type',
-                                    }}
-                                />
-                                {
-                                    this.state.form.period_type !== 'TRACKER'
+                        {
+                            // TODO: select input component should return a list of values of the same type as the provided values
+                        }
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="project_ids"
+                            onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
+                            value={form.project_ids}
+                            type="select"
+                            options={projects.map(p => ({
+                                label: p.name,
+                                value: p.id,
+                            }))}
+                            label={{
+                                id: 'iaso.label.projects',
+                                defaultMessage: 'Projects',
+                            }}
+                            required
+                        />
+                        {
+                            // TODO: select input component should return a list of values of the same type as the provided values
+                        }
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="org_unit_type_ids"
+                            onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
+                            value={form.org_unit_type_ids}
+                            type="select"
+                            options={orgUnitsTypes.map(o => ({
+                                label: o.name,
+                                value: o.id,
+                            }))}
+                            label={{
+                                id: 'iaso.label.orgUnitsTypes',
+                                defaultMessage: 'Organisation unit types',
+                            }}
+                            required
+                        />
+                        <InputComponent
+                            keyValue="period_type"
+                            clearable={false}
+                            onChange={(key, value) => this.setPeriodType(value)}
+                            value={form.period_type}
+                            type="select"
+                            options={PERIOD_TYPE_CHOICES}
+                            label={{
+                                id: 'iaso.label.periodType',
+                                defaultMessage: 'Period type',
+                            }}
+                            required
+                        />
+                        {
+                            this.state.form.period_type !== 'TRACKER'
                                       && (
                                           <InputComponent
                                               keyValue="single_per_period"
@@ -258,73 +201,46 @@ class AddFormDialogComponent extends Component {
                                               }}
                                           />
                                       )
-                                }
-                            </Grid>
-                            <Grid xs={6} item>
-                                <FileInputComponent
-                                    keyValue="xls_file"
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    label={{
-                                        id: 'iaso.label.xls_form_file',
-                                        defaultMessage: 'XLSForm file',
-                                    }}
-                                />
-                                <InputComponent
-                                    keyValue="device_field"
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    value={form.device_field}
-                                    type="text"
-                                    label={{
-                                        id: 'iaso.label.deviceField',
-                                        defaultMessage: 'Device field',
-                                    }}
-                                />
-                                <InputComponent
-                                    keyValue="location_field"
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    value={form.location_field}
-                                    type="text"
-                                    label={{
-                                        id: 'iaso.label.locationField',
-                                        defaultMessage: 'Location field',
-                                    }}
-                                />
-                            </Grid>
-                        </Grid>
-                    </DialogContent>
-                    <DialogActions className={classes.action}>
-                        <Button onClick={() => this.handleClose(false)} color="primary">
-                            <FormattedMessage
-                                id="iaso.label.cancel"
-                                defaultMessage="Cancel"
-                            />
-                        </Button>
-                        <Button
-                            onClick={() => this.handleClose(true)}
-                            disabled={false} // todo: basic validation
-                            color="primary"
-                            autoFocus
-                        >
-                            <FormattedMessage
-                                id="iaso.label.save"
-                                defaultMessage="Save"
-                            />
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </Fragment>
+                        }
+                    </Grid>
+                    <Grid xs={6} item>
+                        <FileInputComponent
+                            keyValue="xls_file"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            label={{
+                                id: 'iaso.label.xls_form_file',
+                                defaultMessage: 'XLSForm file',
+                            }}
+                            required
+                        />
+                        <InputComponent
+                            keyValue="device_field"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={form.device_field}
+                            type="text"
+                            label={{
+                                id: 'iaso.label.deviceField',
+                                defaultMessage: 'Device field',
+                            }}
+                        />
+                        <InputComponent
+                            keyValue="location_field"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={form.location_field}
+                            type="text"
+                            label={{
+                                id: 'iaso.label.locationField',
+                                defaultMessage: 'Location field',
+                            }}
+                        />
+                    </Grid>
+                </Grid>
+            </FormDialogComponent>
         );
     }
 }
-
 AddFormDialogComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
-    classes: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
 };
-
 const mapDispatchToProps = dispatch => ({ dispatch });
-
-export default connect(null, mapDispatchToProps)(
-    withStyles(styles)(injectIntl(AddFormDialogComponent)),
-);
+export default connect(null, mapDispatchToProps)(AddFormDialogComponent);

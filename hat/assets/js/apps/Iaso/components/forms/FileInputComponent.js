@@ -8,7 +8,7 @@ import InputLabelComponent from './InputLabelComponent';
 import MESSAGES from './messages';
 
 function FileInputComponent({
-    intl, keyValue, label, labelString, disabled, onChange,
+    intl, keyValue, label, labelString, disabled, onChange, required,
 }) {
     const labelText = labelString !== ''
         ? labelString
@@ -19,6 +19,7 @@ function FileInputComponent({
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}
+                required={required}
             />
             <OutlinedInput
                 size="small"
@@ -34,6 +35,7 @@ FileInputComponent.defaultProps = {
     label: undefined,
     labelString: '',
     disabled: false,
+    required: false,
 };
 FileInputComponent.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -42,5 +44,6 @@ FileInputComponent.propTypes = {
     labelString: PropTypes.string,
     disabled: PropTypes.bool,
     onChange: PropTypes.func.isRequired,
+    required: PropTypes.bool,
 };
 export default injectIntl(FileInputComponent);

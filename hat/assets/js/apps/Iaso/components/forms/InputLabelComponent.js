@@ -28,7 +28,7 @@ const styles = theme => ({
 });
 
 function InputLabelComponent({
-    classes, htmlFor, label, isFocused, shrink,
+    classes, htmlFor, label, required, isFocused, shrink,
 }) {
     return (
         <InputLabel
@@ -41,6 +41,7 @@ function InputLabelComponent({
             shrink={shrink}
         >
             { label }
+            { required && <sup> *</sup> }
         </InputLabel>
     );
 }
@@ -52,6 +53,7 @@ InputLabelComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     htmlFor: PropTypes.string.isRequired,
     label: PropTypes.string.isRequired,
+    required: PropTypes.bool.isRequired,
     isFocused: PropTypes.bool,
     shrink: PropTypes.bool,
 };

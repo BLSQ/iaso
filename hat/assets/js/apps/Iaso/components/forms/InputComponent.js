@@ -157,6 +157,7 @@ class InputComponent extends Component {
             clearable,
             label,
             labelString,
+            required,
             onEnterPressed,
             withMarginTop,
             isSearchable,
@@ -178,6 +179,7 @@ class InputComponent extends Component {
                     <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
+                        required={required}
                     />
                     <OutlinedInput
                         size="small"
@@ -198,6 +200,7 @@ class InputComponent extends Component {
                         label={labelText}
                         shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
                         isFocused={isFocused}
+                        required={required}
                     />
                     <div className={classes.select}>
                         <Select
@@ -223,7 +226,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'arrayInput') {
+        if (type === 'arrayInput') { // TODO: implement required
             return (
                 <ArrayFieldInput
                     label={labelText}
@@ -240,6 +243,7 @@ class InputComponent extends Component {
                     <InputLabelComponent
                         htmlFor={`search-${keyValue}`}
                         label={labelText}
+                        required={required}
                     />
                     <OutlinedInput
                         disabled={disabled}
@@ -264,7 +268,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'checkbox') {
+        if (type === 'checkbox') { // TODO: implement required
             return (
                 <FormControlLabel
                     control={(
@@ -291,6 +295,7 @@ InputComponent.defaultProps = {
     clearable: true,
     label: undefined,
     labelString: '',
+    required: false,
     onEnterPressed: () => null,
     withMarginTop: true,
     isSearchable: true,
@@ -309,6 +314,7 @@ InputComponent.propTypes = {
     clearable: PropTypes.bool,
     label: PropTypes.object,
     labelString: PropTypes.string,
+    required: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
     isSearchable: PropTypes.bool,

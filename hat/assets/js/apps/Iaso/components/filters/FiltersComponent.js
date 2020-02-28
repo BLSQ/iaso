@@ -149,7 +149,6 @@ class FiltersComponent extends React.Component {
                                                 onChange={(key, checked) => this.toggleCheckbox(checked, filter.urlKey)}
                                                 checked={
                                                     this.props.params[filter.urlKey] === 'true'
-                                                        ? 'checked' : ''
                                                 }
                                                 value={filterValue}
                                                 type="checkbox"

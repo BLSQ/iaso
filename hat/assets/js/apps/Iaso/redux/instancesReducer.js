@@ -52,6 +52,7 @@ export const instancesInitialState = {
     },
     current: null,
     instanceStatus: [],
+    onlyMetas: true,
 };
 
 export const instancesReducer = (state = instancesInitialState, action = {}) => {

@@ -124,9 +124,26 @@ class Instances extends Component {
             || params.page !== prevProps.params.page) {
             this.fetchInstances();
         }
+
+        if (params.onlyMetas !== prevProps.params.onlyMetas) {
+            this.setTableColumns();
+        }
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
+    }
+
+    setTableColumns() {
+        const {
+            params,
+            intl: {
+                formatMessage,
+            },
+            reduxPage,
+        } = this.props;
+        this.setState({
+            tableColumns: getInstancesColumns(formatMessage, reduxPage.list, params.onlyMetas === 'true'),
+        });
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
@@ -191,7 +208,7 @@ class Instances extends Component {
                 };
                 this.props.setInstances(data.instances, params, data.count, data.pages);
                 this.setState({
-                    tableColumns: getInstancesColumns(formatMessage, instances),
+                    tableColumns: getInstancesColumns(formatMessage, instances, params.onlyMetas === 'true'),
                 });
             }),
             fetchInstancesAsSmallDict(dispatch, urlSmall)
@@ -218,6 +235,7 @@ class Instances extends Component {
         } = this.props;
         const {
             tab,
+            tableColumns,
         } = this.state;
         return (
             <section className={classes.relativeContainer}>
@@ -284,7 +302,7 @@ class Instances extends Component {
                                     isSortable
                                     pageSize={20}
                                     showPagination
-                                    columns={this.state.tableColumns}
+                                    columns={tableColumns}
                                     defaultSorted={[{ id: 'updated_at', desc: false }]}
                                     params={params}
                                     defaultPath={baseUrl}

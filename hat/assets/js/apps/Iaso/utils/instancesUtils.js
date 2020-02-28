@@ -1,8 +1,11 @@
 import React from 'react';
 import instancesTableColumns from '../constants/instancesTableColumns';
 
-export const getInstancesColumns = (formatMessage, instances) => {
-    let tableColumns = [...instancesTableColumns(formatMessage)];
+export const getInstancesColumns = (formatMessage, instances, onlyMetas) => {
+    if (onlyMetas) {
+        return instancesTableColumns(formatMessage, onlyMetas);
+    }
+    let tableColumns = [...instancesTableColumns(formatMessage, onlyMetas)];
     if (instances[0]) {
         const childrenArray = [];
 
@@ -22,7 +25,10 @@ export const getInstancesColumns = (formatMessage, instances) => {
                 });
             }
         });
-
+        tableColumns = tableColumns.map(c => ({
+            ...c,
+            width: c.accessor === 'uuid' ? 300 : 200,
+        }));
         tableColumns = tableColumns.concat(childrenArray);
     }
     return tableColumns;

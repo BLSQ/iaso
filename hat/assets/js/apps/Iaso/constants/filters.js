@@ -402,3 +402,16 @@ export const instanceStatus = statusList => (
         type: 'select',
     }
 );
+
+
+export const onlyMetas = () => (
+    {
+        name: 'onlyMetas',
+        urlKey: 'onlyMetas',
+        label: {
+            id: 'iaso.label.onlyMetas',
+            defaultMessage: 'Only metadata',
+        },
+        type: 'checkbox',
+    }
+);

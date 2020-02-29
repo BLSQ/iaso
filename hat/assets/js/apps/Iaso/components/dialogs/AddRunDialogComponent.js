@@ -42,7 +42,7 @@ const getVersions = (sources, sourceId) => {
     return versions;
 };
 
-class AddRunDialogComponent extends Component {
+class AddRunDialogComponent extends Component { // TODO: could use the new base FormDialogComponent
     constructor(props) {
         super(props);
         this.state = {

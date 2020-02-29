@@ -3,10 +3,8 @@ import React, { useState } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 
-import Add from '@material-ui/icons/Add';
 import {
     withStyles,
-    Button,
     Dialog,
     DialogContent,
     DialogTitle,
@@ -29,26 +27,15 @@ const styles = theme => ({
 });
 
 function DialogComponent({
-    classes, children, openButtonColor, openButtonMessage, dialogTitleMessage, renderActions,
+    classes, children, dialogTitleMessage, renderActions, renderTrigger,
 }) {
     const [open, setOpen] = useState(false);
+    const openDialog = () => setOpen(true);
     const closeDialog = () => setOpen(false);
-    const computedOpenButtonMessage = openButtonMessage !== null ? openButtonMessage : dialogTitleMessage;
 
     return (
         <>
-            <Button
-                variant="contained"
-                className={classes.button}
-                color={openButtonColor}
-                onClick={() => setOpen(true)}
-            >
-                <Add className={classes.buttonIcon} />
-                <FormattedMessage
-                    id={computedOpenButtonMessage.id}
-                    defaultMessage={computedOpenButtonMessage.defaultMessage}
-                />
-            </Button>
+            {renderTrigger({ openDialog })}
             <Dialog
                 fullWidth
                 maxWidth="md"
@@ -60,7 +47,7 @@ function DialogComponent({
                 <DialogTitle className={classes.title}>
                     <FormattedMessage
                         id={dialogTitleMessage.id}
-                        defaultMessage={dialogTitleMessage.message}
+                        defaultMessage={dialogTitleMessage.defaultMessage}
                     />
                 </DialogTitle>
                 <DialogContent className={classes.content}>
@@ -73,17 +60,13 @@ function DialogComponent({
 }
 const commonPropTypes = {
     dialogTitleMessage: PropTypes.object.isRequired, // TODO: make a message prop type
-};
-DialogComponent.defaultProps = {
-    openButtonColor: 'primary',
-    openButtonMessage: null,
+    renderTrigger: PropTypes.func.isRequired,
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
-    openButtonColor: PropTypes.string,
-    openButtonMessage: PropTypes.object, // TODO: make a message prop type
     renderActions: PropTypes.func.isRequired,
+    renderTrigger: PropTypes.func.isRequired,
     ...commonPropTypes,
 };
 DialogComponent.commonPropTypes = commonPropTypes;

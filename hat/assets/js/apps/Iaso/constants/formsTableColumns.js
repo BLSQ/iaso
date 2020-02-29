@@ -2,10 +2,9 @@ import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import Link from '@material-ui/core/Link';
-import { IconButton, Tooltip } from '@material-ui/core';
-import Delete from '@material-ui/icons/Delete';
+import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
 
-const formsTableColumns = (formatMessage, component, classes) => (
+const formsTableColumns = (formatMessage, component) => (
     [
         {
             Header: formatMessage({
@@ -86,19 +85,22 @@ const formsTableColumns = (formatMessage, component, classes) => (
             sortable: false,
             Cell: settings => (
                 <section>
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={<FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />}
-                    >
-                        <IconButton
-                            disabled={settings.original.instances_count > 0}
-                            onClick={() => component.deleteForm(settings.original)}
-                        >
-                            <Delete />
-                        </IconButton>
-                    </Tooltip>
+                    <DeleteDialog
+                        disabled={settings.original.instances_count > 0}
+                        question={(
+                            <FormattedMessage
+                                id="iaso.forms.dialog.deleteFormTitle"
+                                defaultMessage="Are you sure you want to delete this form?"
+                            />
+                        )}
+                        message={(
+                            <FormattedMessage
+                                id="iaso.forms.dialog.deleteFormText"
+                                defaultMessage="This operation cannot be undone."
+                            />
+                        )}
+                        confirm={() => component.deleteForm(settings.original)}
+                    />
                     {
                         settings.original.instances_count > 0
                         && (

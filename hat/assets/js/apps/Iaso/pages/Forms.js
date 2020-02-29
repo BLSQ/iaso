@@ -40,7 +40,7 @@ class Forms extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: formsTableColumns(props.intl.formatMessage, this, this.props.classes),
+            tableColumns: formsTableColumns(props.intl.formatMessage, this),
             isUpdated: false,
         };
     }

@@ -12,6 +12,7 @@ import {
     deleteForm,
 } from '../../utils/requests';
 
+import AddButtonComponent from '../buttons/AddButtonComponent';
 import FormDialogComponent from './FormDialogComponent';
 import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
@@ -81,7 +82,6 @@ class AddFormDialogComponent extends Component {
                     })))
             .catch((error) => {
                 if (error.status === 400) {
-                    console.log(error.details)
                     Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
                         this.setFieldErrors(errorKey, errorMessages);
                     });
@@ -115,6 +115,7 @@ class AddFormDialogComponent extends Component {
         return (
             <FormDialogComponent
                 dialogTitleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                 onSave={closeDialog => this.onSave(closeDialog)}
                 onCancel={closeDialog => this.onCancel(closeDialog)}
             >

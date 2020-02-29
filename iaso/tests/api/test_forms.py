@@ -2,6 +2,7 @@ import typing
 
 from django.test import tag
 from django.core.files import File
+from django.utils.timezone import now
 from unittest import mock
 
 from iaso import models as m
@@ -11,6 +12,8 @@ from iaso.test import APITestCase
 class FormsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
+        cls.now = now()
+
         star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="Marvel")
 
@@ -29,11 +32,11 @@ class FormsAPITestCase(APITestCase):
                                                  app_id="stars.empire.agriculture.land_speeder",
                                                  account=star_wars)
 
-        cls.form_1 = m.Form.objects.create(name="Hydroponics study")
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study", created_at=cls.now)
 
         cls.form_2 = m.Form.objects.create(name="Hydroponic public survey", form_id="sample2",
                                            device_field="deviceid", location_field="geoloc", period_type="QUARTER",
-                                           single_per_period=True)
+                                           single_per_period=True, created_at=cls.now)
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = 'test.xml'
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
@@ -86,6 +89,16 @@ class FormsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get('/api/forms/', headers={'Content-Type': 'application/json'})
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+    @tag("iaso_only")
+    def test_forms_list_date_to_inclusive(self):
+        """GET /forms/ web app happy path: to_date should be inclusive"""
+
+        date_to = self.now.strftime('%Y-%m-%d')
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f'/api/forms/?date_to={date_to}', headers={'Content-Type': 'application/json'})
         self.assertJSONResponse(response, 200)
         self.assertValidFormListData(response.json(), 2)
 

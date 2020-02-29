@@ -1,6 +1,8 @@
+from datetime import timedelta
 import typing
 from django.db.models import Max, Q, Count
 from django.http import StreamingHttpResponse, HttpResponse
+from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
@@ -128,10 +130,11 @@ class FormsViewSet(ModelViewSet):
             )
         to_date = self.request.query_params.get("date_to", None)
         if to_date:
+            parsed_to_date = parse_date(to_date) + timedelta(days=1)
             queryset = queryset.filter(
-                Q(instance_updated_at__lte=to_date)
-                | Q(created_at__lte=to_date)
-                | Q(updated_at__lte=to_date)
+                Q(instance_updated_at__lt=parsed_to_date)
+                | Q(created_at__lt=parsed_to_date)
+                | Q(updated_at__lt=parsed_to_date)
             )
 
         org_unit_type_id = self.request.query_params.get("orgUnitTypeId", None)

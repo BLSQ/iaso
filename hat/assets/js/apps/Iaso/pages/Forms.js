@@ -142,7 +142,7 @@ class Forms extends Component {
                         />
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
-                        <AddFormDialogComponent />
+                        <AddFormDialogComponent onSuccess={() => this.setState({ isUpdated: true })} />
                         {reduxPage.list
             && (
                 <DownloadButtonsComponent

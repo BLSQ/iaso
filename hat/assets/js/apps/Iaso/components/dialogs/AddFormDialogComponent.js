@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import _ from 'lodash';
-
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-
 import { Grid } from '@material-ui/core';
 
 import {
@@ -11,7 +9,6 @@ import {
     createFormVersion,
     deleteForm,
 } from '../../utils/requests';
-
 import AddButtonComponent from '../buttons/AddButtonComponent';
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import InputComponent from '../forms/InputComponent';
@@ -56,7 +53,7 @@ class AddFormDialogComponent extends Component {
         this.state = AddFormDialogComponent.blankFormState();
     }
 
-    onSave(closeDialog) {
+    onConfirm(closeDialog) {
         // TODO: move in async action
         // TODO: async await
         const formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
@@ -68,13 +65,13 @@ class AddFormDialogComponent extends Component {
                 .then(() => {
                     this.setState(AddFormDialogComponent.blankFormState());
                     closeDialog();
-                    // TODO: trigger list reload
+                    this.props.onSuccess();
                 })
                 .catch(createVersionError => deleteForm(this.props.dispatch, createdFormData.id)
                     .then(() => {
                         console.log('Form deleted');
                     })
-                    .catch((deleteError) => {
+                    .catch(() => {
                         console.warn('Form could not be deleted');
                     })
                     .then(() => {
@@ -116,7 +113,7 @@ class AddFormDialogComponent extends Component {
             <ConfirmCancelDialogComponent
                 titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
                 renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
-                onConfirm={closeDialog => this.onSave(closeDialog)}
+                onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
                 onCancel={closeDialog => this.onCancel(closeDialog)}
                 cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
@@ -252,6 +249,7 @@ AddFormDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
     projects: PropTypes.arrayOf(PropTypes.object).isRequired,
+    onSuccess: PropTypes.func.isRequired,
 };
 const mapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,

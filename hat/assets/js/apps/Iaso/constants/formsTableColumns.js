@@ -24,7 +24,7 @@ const formsTableColumns = (formatMessage, component, classes) => (
             Cell: settings => (
                 <section>
                     {settings.original.instance_updated_at
-                        && moment(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')}
+                        && moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')}
                     {!settings.original.instance_updated_at
                         && '/'}
                 </section>
@@ -93,6 +93,7 @@ const formsTableColumns = (formatMessage, component, classes) => (
                         title={<FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />}
                     >
                         <IconButton
+                            disabled={settings.original.instances_count > 0}
                             onClick={() => component.deleteForm(settings.original)}
                         >
                             <Delete />

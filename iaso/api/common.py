@@ -1,7 +1,7 @@
 from datetime import datetime
-
 from django.utils.timezone import make_aware
-from rest_framework import serializers, pagination
+from django.db.models import ProtectedError
+from rest_framework import serializers, pagination, exceptions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
@@ -60,6 +60,8 @@ class ModelViewSet(BaseModelViewSet):
         return self.results_key
 
     def list(self, request: Request, *args, **kwargs):
+        """Override to return responses with {"result_key": data} structure"""
+
         queryset = self.filter_queryset(self.get_queryset())
 
         page = self.paginate_queryset(queryset)
@@ -69,3 +71,17 @@ class ModelViewSet(BaseModelViewSet):
 
         serializer = self.get_serializer(queryset, many=True)
         return Response({self.get_results_key(): serializer.data})
+
+    def perform_destroy(self, instance):
+        """Handle ProtectedError (prevent deletion of instances when linked to protected models)"""
+
+        try:
+            super().perform_destroy(instance)
+        except ProtectedError as e:
+            instance_model_name = instance.__class__.__name__
+            linked_model_name = e.protected_objects.model.__name__
+
+            raise exceptions.MethodNotAllowed(
+                self.request.method,
+                f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s"
+            )

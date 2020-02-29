@@ -13,7 +13,7 @@ const actionStyles = theme => ({
 });
 
 function RawConfirmCancelActions({
-    classes, closeDialog, allowSave, onConfirm, confirmMessage, onCancel, cancelMessage,
+    classes, closeDialog, allowConfirm, onConfirm, confirmMessage, onCancel, cancelMessage,
 }) {
     return (
         <DialogActions className={classes.action}>
@@ -22,7 +22,7 @@ function RawConfirmCancelActions({
             </Button>
             <Button
                 onClick={() => onConfirm(closeDialog)}
-                disabled={!allowSave}
+                disabled={!allowConfirm}
                 color="primary"
                 autoFocus
             >
@@ -34,7 +34,7 @@ function RawConfirmCancelActions({
 RawConfirmCancelActions.propTypes = {
     classes: PropTypes.object.isRequired,
     closeDialog: PropTypes.func.isRequired,
-    allowSave: PropTypes.bool.isRequired,
+    allowConfirm: PropTypes.bool.isRequired,
     onConfirm: PropTypes.func.isRequired,
     confirmMessage: PropTypes.object.isRequired, // TODO: make a message prop type
     onCancel: PropTypes.func.isRequired,
@@ -43,13 +43,13 @@ RawConfirmCancelActions.propTypes = {
 const ConfirmCancelActions = withStyles(actionStyles)(RawConfirmCancelActions);
 
 export default function ConfirmCancelDialogComponent({
-    allowSave, onConfirm, confirmMessage, onCancel, cancelMessage, ...dialogProps
+    allowConfirm, onConfirm, confirmMessage, onCancel, cancelMessage, ...dialogProps
 }) {
     return (
         <DialogComponent
             renderActions={({ closeDialog }) => (
                 <ConfirmCancelActions
-                    allowSave={allowSave}
+                    allowConfirm={allowConfirm}
                     onConfirm={onConfirm}
                     confirmMessage={confirmMessage}
                     onCancel={onCancel}
@@ -62,16 +62,17 @@ export default function ConfirmCancelDialogComponent({
     );
 }
 ConfirmCancelDialogComponent.defaultProps = {
-    allowSave: true,
+    allowConfirm: true,
     onCancel: closeDialog => closeDialog(),
     confirmMessage: { id: 'iaso.label.yes', defaultMessage: 'Yes' },
     cancelMessage: { id: 'iaso.label.no', defaultMessage: 'No' },
+    maxWidth: 'sm',
 };
 ConfirmCancelDialogComponent.propTypes = {
-    allowSave: PropTypes.bool,
+    allowConfirm: PropTypes.bool,
     onConfirm: PropTypes.func.isRequired,
     confirmMessage: PropTypes.object, // TODO: make a message prop type
     onCancel: PropTypes.func,
     cancelMessage: PropTypes.object, // TODO: make a message prop type
-    ...DialogComponent.commonPropTypes,
+    maxWidth: PropTypes.string,
 };

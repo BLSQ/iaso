@@ -87,19 +87,15 @@ const formsTableColumns = (formatMessage, component) => (
                 <section>
                     <DeleteDialog
                         disabled={settings.original.instances_count > 0}
-                        question={(
-                            <FormattedMessage
-                                id="iaso.forms.dialog.deleteFormTitle"
-                                defaultMessage="Are you sure you want to delete this form?"
-                            />
-                        )}
-                        message={(
-                            <FormattedMessage
-                                id="iaso.forms.dialog.deleteFormText"
-                                defaultMessage="This operation cannot be undone."
-                            />
-                        )}
-                        confirm={() => component.deleteForm(settings.original)}
+                        titleMessage={{
+                            id: 'iaso.forms.dialog.deleteFormTitle',
+                            defaultMessage: 'Are you sure you want to delete this form?',
+                        }}
+                        message={{
+                            id: 'iaso.forms.dialog.deleteFormText',
+                            defaultMessage: 'This operation cannot be undone.',
+                        }}
+                        onConfirm={closeDialog => component.deleteForm(settings.original).then(closeDialog)}
                     />
                     {
                         settings.original.instances_count > 0

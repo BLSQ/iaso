@@ -88,8 +88,9 @@ class Forms extends Component {
     }
 
     deleteForm(form) {
-        deleteForm(this.props.dispatch, form.id)
-            .then(() => this.setState({ isUpdated: true }));
+        return deleteForm(this.props.dispatch, form.id)
+            .then(() => this.setState({ isUpdated: true }))
+            .catch(() => {});
     }
 
     render() {

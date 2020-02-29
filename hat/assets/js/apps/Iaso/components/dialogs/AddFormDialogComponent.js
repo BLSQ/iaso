@@ -114,12 +114,13 @@ class AddFormDialogComponent extends Component {
 
         return (
             <ConfirmCancelDialogComponent
-                dialogTitleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
                 renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                 onConfirm={closeDialog => this.onSave(closeDialog)}
                 confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
                 onCancel={closeDialog => this.onCancel(closeDialog)}
                 cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
+                maxWidth="md"
             >
                 <Grid container spacing={2} justify="flex-start">
                     <Grid xs={6} item>

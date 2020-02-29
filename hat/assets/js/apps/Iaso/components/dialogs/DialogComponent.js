@@ -27,7 +27,7 @@ const styles = theme => ({
 });
 
 function DialogComponent({
-    classes, children, dialogTitleMessage, renderActions, renderTrigger,
+    classes, children, titleMessage, renderActions, renderTrigger, maxWidth,
 }) {
     const [open, setOpen] = useState(false);
     const openDialog = () => setOpen(true);
@@ -38,17 +38,15 @@ function DialogComponent({
             {renderTrigger({ openDialog })}
             <Dialog
                 fullWidth
-                maxWidth="md"
+                maxWidth={maxWidth}
                 open={open}
                 classes={{
                     paper: classes.paper,
                 }}
+                onBackdropClick={closeDialog}
             >
                 <DialogTitle className={classes.title}>
-                    <FormattedMessage
-                        id={dialogTitleMessage.id}
-                        defaultMessage={dialogTitleMessage.defaultMessage}
-                    />
+                    <FormattedMessage {...titleMessage} />
                 </DialogTitle>
                 <DialogContent className={classes.content}>
                     {children}
@@ -58,16 +56,15 @@ function DialogComponent({
         </>
     );
 }
-const commonPropTypes = {
-    dialogTitleMessage: PropTypes.object.isRequired, // TODO: make a message prop type
-    renderTrigger: PropTypes.func.isRequired,
+DialogComponent.defaultProps = {
+    maxWidth: 'sm',
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
+    titleMessage: PropTypes.object.isRequired, // TODO: make a message prop type
+    maxWidth: PropTypes.string,
     renderActions: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
-    ...commonPropTypes,
 };
-DialogComponent.commonPropTypes = commonPropTypes;
 export default withStyles(styles)(DialogComponent);

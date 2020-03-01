@@ -14,6 +14,8 @@ class ParsingTestCase(SimpleTestCase):
         self.assertEqual(xml_form.file_name, 'odk_form_valid_sample1_2020022401.xml')
         self.assertIsInstance(xml_form.file_content, bytes)
         self.assertGreater(len(xml_form.file_content), 100)
+        # check correctness of root data key
+        self.assertIn(f'<data id="sample1" version="2020022401">', xml_form.file_content.decode('utf-8'))
         self.assertEqual(xml_form['form_id'], 'sample1')
         self.assertEqual(xml_form['form_title'], 'Sample form title')
         self.assertEqual(xml_form['version'], '2020022401')

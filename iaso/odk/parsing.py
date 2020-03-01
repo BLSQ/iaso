@@ -33,7 +33,7 @@ def parse_xls_form(xls_file: typing.BinaryIO, *, previous_version: str = None) -
     """
 
     try:
-        survey = create_survey_from_xls(xls_file)
+        survey = create_survey_from_xls(xls_file, default_name="data")
     except errors.PyXFormError as e:
         raise ParsingError(f"Invalid XLS file: {e}")
 

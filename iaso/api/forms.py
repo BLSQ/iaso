@@ -53,7 +53,7 @@ class FormSerializer(serializers.ModelSerializer):
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(source="projects", write_only=True, many=True,
                                                      allow_empty=False, queryset=Project.objects.all())
-    latest_form_version = serializers.SerializerMethodField()
+    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)

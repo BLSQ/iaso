@@ -1,6 +1,7 @@
 import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
+import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
 
 import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
@@ -67,15 +68,27 @@ const formsTableColumns = (formatMessage, component) => (
             accessor: 'instances_count',
             Cell: settings => (
                 <section>
-                    {
-                        settings.original.instances_count > 0
-                        && settings.original.instances_count}
-                    {
-                        !settings.original.instances_count
-                        && (
-                            <FormattedMessage id="iaso.forms.noInstance" defaultMessage="No record" />
-                        )}
+                    {settings.original.instances_count}
                 </section>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Latest versions',
+                id: 'iaso.forms.latest_verision_files',
+            }),
+            sortable: false,
+            Cell: settings => console.log(settings.original) || (
+                settings.original.latest_form_version !== null
+                  && (
+                      <Grid container spacing={1} justify="center">
+                          {
+                              settings.original.latest_form_version.xls_file
+                            && <Grid item><Link download href={settings.original.latest_form_version.xls_file}>CSV</Link></Grid>
+                          }
+                          <Grid item><Link download href={settings.original.latest_form_version.file}>XML</Link></Grid>
+                      </Grid>
+                  )
             ),
         },
         {

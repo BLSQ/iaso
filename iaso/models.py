@@ -538,14 +538,18 @@ class Form(models.Model):
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField()
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
-    period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
-    single_per_period = models.NullBooleanField(blank=True)
+    period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, default=TRACKER)
+    single_per_period = models.BooleanField(default=False)
+    # The following two fields control the allowed period span (instances can be provided for the period corresponding
+    # to [current_period - periods_before_allowed, current_period + periods_after_allowed]
+    periods_before_allowed = models.IntegerField(default=0)
+    periods_after_allowed = models.IntegerField(default=0)
 
     @property
     def latest_version(self):

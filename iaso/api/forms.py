@@ -7,7 +7,7 @@ from rest_framework import serializers, permissions
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
 
-from iaso.models import Form, Project, OrgUnitType
+from iaso.models import Form, Project, OrgUnitType, TRACKER
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -42,8 +42,9 @@ class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
         fields = ['id', 'name', 'form_id', 'device_field', 'location_field', 'org_unit_types', 'org_unit_type_ids',
-                  'projects', 'project_ids', 'period_type', 'single_per_period', 'latest_form_version',
-                  'instances_count', 'instance_updated_at', 'created_at', 'updated_at']
+                  'projects', 'project_ids', 'period_type', 'single_per_period', 'periods_before_allowed',
+                  'periods_after_allowed', 'latest_form_version', 'instances_count', 'instance_updated_at',
+                  'created_at', 'updated_at']
         read_only_fields = ['id', 'form_id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at',
                             'created_at', 'updated_at']
 
@@ -78,6 +79,18 @@ class FormSerializer(serializers.ModelSerializer):
         allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
         if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
             raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+
+        # If the period type is "TRACKER", some period-specific fields must have specific values
+        if data['period_type'] == TRACKER:
+            tracker_errors = {}
+            if data['single_per_period'] is not False:
+                tracker_errors['single_per_period'] = "Should be false"
+            if data['periods_before_allowed'] != 0:
+                tracker_errors['periods_before_allowed'] = "Should be false"
+            if data['periods_after_allowed'] != 0:
+                tracker_errors['periods_after_allowed'] = "Should be false"
+            if tracker_errors:
+                raise serializers.ValidationError(tracker_errors)
 
         return data
 

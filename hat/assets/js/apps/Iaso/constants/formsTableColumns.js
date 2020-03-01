@@ -78,7 +78,7 @@ const formsTableColumns = (formatMessage, component) => (
                 id: 'iaso.forms.latest_verision_files',
             }),
             sortable: false,
-            Cell: settings => console.log(settings.original) || (
+            Cell: settings => (
                 settings.original.latest_form_version !== null
                   && (
                       <Grid container spacing={1} justify="center">
@@ -105,7 +105,7 @@ const formsTableColumns = (formatMessage, component) => (
             resizable: false,
             width: 250,
             sortable: false,
-            Cell: settings => console.log(settings.original) || (
+            Cell: settings => (
                 <section>
                     <FormDialogComponent
                         renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}

@@ -109,6 +109,11 @@ class FormDialogComponent extends Component {
         this.setFieldValue('period_type', value);
         if (value === 'TRACKER') {
             this.setFieldValue('single_per_period', false);
+            this.setFieldValue('periods_before_allowed', 0);
+            this.setFieldValue('periods_after_allowed', 0);
+        } else {
+            this.setFieldValue('periods_before_allowed', 3);
+            this.setFieldValue('periods_after_allowed', 3);
         }
     }
 
@@ -127,6 +132,8 @@ class FormDialogComponent extends Component {
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
             period_type: { value: _.get(initialData, 'period_type', 'TRACKER'), errors: [] },
             single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
+            periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
+            periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
             device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
             location_field: { value: _.get(initialData, 'location_field', null), errors: [] },
         };
@@ -161,6 +168,78 @@ class FormDialogComponent extends Component {
                             }}
                             required
                         />
+
+                        <FileInputComponent
+                            keyValue="xls_file"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            label={{
+                                id: 'iaso.label.xls_form_file',
+                                defaultMessage: 'XLSForm file',
+                            }}
+                            errors={this.state.xls_file.errors}
+                            required
+                        />
+                        <InputComponent
+                            keyValue="period_type"
+                            clearable={false}
+                            onChange={(key, value) => this.setPeriodType(value)}
+                            value={this.state.period_type.value}
+                            errors={this.state.period_type.errors}
+                            type="select"
+                            options={PERIOD_TYPE_CHOICES}
+                            label={{
+                                id: 'iaso.label.periodType',
+                                defaultMessage: 'Period type',
+                            }}
+                            required
+                        />
+                        <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <InputComponent
+                                    keyValue="periods_before_allowed"
+                                    disabled={this.state.period_type.value === 'TRACKER'}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
+                                    value={this.state.periods_before_allowed.value}
+                                    errors={this.state.periods_before_allowed.errors}
+                                    type="number"
+                                    label={{
+                                        id: 'iaso.label.periodsBeforeAllowed',
+                                        defaultMessage: 'Allowed periods before',
+                                    }}
+                                    required
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <InputComponent
+                                    keyValue="periods_after_allowed"
+                                    disabled={this.state.period_type.value === 'TRACKER'}
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
+                                    value={this.state.periods_after_allowed.value}
+                                    errors={this.state.periods_after_allowed.errors}
+                                    type="number"
+                                    label={{
+                                        id: 'iaso.label.periodsAfterAllowed',
+                                        defaultMessage: 'Allowed periods after',
+                                    }}
+                                    required
+                                />
+                            </Grid>
+                        </Grid>
+                        <InputComponent
+                            keyValue="single_per_period"
+                            disabled={this.state.period_type.value === 'TRACKER'}
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={this.state.single_per_period.value}
+                            errors={this.state.single_per_period.errors}
+                            type="checkbox"
+                            label={{
+                                id: 'iaso.label.singlePerPeriod',
+                                defaultMessage: 'Single per period',
+                            }}
+                        />
+                    </Grid>
+                    <Grid xs={6} item>
+
                         {
                             // TODO: select input component should return a list of values of the same type as the provided values
                         }
@@ -168,8 +247,8 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={this.state.project_ids.value}
+                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            value={this.state.project_ids.value.join(',')}
                             errors={this.state.project_ids.errors}
                             type="select"
                             options={projects.map(p => ({
@@ -189,8 +268,8 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="org_unit_type_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(', ').map(parseInt))}
-                            value={this.state.org_unit_type_ids.value}
+                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            value={this.state.org_unit_type_ids.value.join(',')}
                             errors={this.state.org_unit_type_ids.errors}
                             type="select"
                             options={orgUnitTypes.map(o => ({
@@ -201,48 +280,6 @@ class FormDialogComponent extends Component {
                                 id: 'iaso.label.orgUnitsTypes',
                                 defaultMessage: 'Organisation unit types',
                             }}
-                            required
-                        />
-                        <InputComponent
-                            keyValue="period_type"
-                            clearable={false}
-                            onChange={(key, value) => this.setPeriodType(value)}
-                            value={this.state.period_type.value}
-                            errors={this.state.period_type.errors}
-                            type="select"
-                            options={PERIOD_TYPE_CHOICES}
-                            label={{
-                                id: 'iaso.label.periodType',
-                                defaultMessage: 'Period type',
-                            }}
-                            required
-                        />
-                        {
-                            this.state.period_type.value !== 'TRACKER'
-                                      && (
-                                          <InputComponent
-                                              keyValue="single_per_period"
-                                              onChange={(key, value) => this.setFieldValue(key, value)}
-                                              value={this.state.single_per_period.value}
-                                              errors={this.state.single_per_period.errors}
-                                              type="checkbox"
-                                              label={{
-                                                  id: 'iaso.label.singlePerPeriod',
-                                                  defaultMessage: 'Single per period',
-                                              }}
-                                          />
-                                      )
-                        }
-                    </Grid>
-                    <Grid xs={6} item>
-                        <FileInputComponent
-                            keyValue="xls_file"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            label={{
-                                id: 'iaso.label.xls_form_file',
-                                defaultMessage: 'XLSForm file',
-                            }}
-                            errors={this.state.xls_file.errors}
                             required
                         />
                         <InputComponent

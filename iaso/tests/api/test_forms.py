@@ -206,6 +206,8 @@ class FormsAPITestCase(APITestCase):
             "device_field": "deviceid",
             "location_field": "position",
             "single_per_period": True,
+            "periods_before_allowed": 2,
+            "periods_after_allowed": 10,
             "project_ids": [self.project_1.id],
             "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
         }, format='json')
@@ -215,6 +217,8 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormData(response_data)
         self.assertHasField(response_data, "location_field", str)
         self.assertHasField(response_data, "device_field", str)
+        self.assertEqual(response_data['periods_before_allowed'], 2)
+        self.assertEqual(response_data['periods_after_allowed'], 10)
 
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 403"""
@@ -235,8 +239,7 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
-        # TODO: uncomment next line when form name is mandatory
-        # self.assertHasError(response.json(), "name", "Invalid project ids")
+        self.assertHasError(response.json(), "name")
         self.assertHasError(response_data, "period_type")
         self.assertHasError(response_data, "single_per_period")
         self.assertHasError(response_data, "project_ids")
@@ -255,6 +258,26 @@ class FormsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertHasError(response_data, "project_ids")
         self.assertHasError(response_data, "org_unit_type_ids")
+
+    def test_forms_create_invalid_3(self):
+        """POST /forms/ with wrong values for TRACKER period type"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', data={
+            "name": "test form 2",
+            "period_type": "TRACKER",
+            "single_per_period": True,
+            "periods_before_allowed": 3,
+            "periods_after_allowed": 3,
+            "project_ids": [self.project_1.id],
+            "org_unit_type_ids": [self.jedi_council.id, self.jedi_academy.id]
+        }, format='json')
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
+        self.assertHasError(response_data, "single_per_period")
+        self.assertHasError(response_data, "periods_before_allowed")
+        self.assertHasError(response_data, "periods_after_allowed")
 
     def test_forms_create_wrong_project(self):
         """POST /forms/ - user has no access to the project"""
@@ -357,6 +380,8 @@ class FormsAPITestCase(APITestCase):
     def assertValidFormData(self, form_data: typing.Mapping):
         self.assertHasField(form_data, "id", int)
         self.assertHasField(form_data, "name", str)
+        self.assertHasField(form_data, "periods_before_allowed", int)
+        self.assertHasField(form_data, "periods_after_allowed", int)
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
 

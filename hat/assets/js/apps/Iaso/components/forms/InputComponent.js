@@ -182,6 +182,10 @@ class InputComponent extends Component {
             : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
         if (type === 'text' || type === 'number') {
+            const inputValue = (value === null || typeof value === 'undefined')
+                ? ''
+                : value;
+
             return (
                 <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
@@ -193,7 +197,7 @@ class InputComponent extends Component {
                         size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
-                        value={value || ''}
+                        value={inputValue}
                         type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
                         error={hasErrors}
@@ -284,12 +288,14 @@ class InputComponent extends Component {
         if (type === 'checkbox') { // TODO: implement required
             return (
                 <FormControlLabel
+                    disabled={disabled}
                     control={(
                         <Checkbox
                             color="primary"
                             checked={value === true}
                             onChange={event => onChange(keyValue, event.target.checked)}
                             value="checked"
+                            disabled={disabled}
                         />
                     )}
                     label={labelText}

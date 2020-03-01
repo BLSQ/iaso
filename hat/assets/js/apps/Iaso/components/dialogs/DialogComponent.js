@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
@@ -29,30 +29,48 @@ const styles = theme => ({
 function DialogComponent({
     classes, children, titleMessage, renderActions, renderTrigger, maxWidth,
 }) {
+    // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
+    // content, or only the trigger (to avoid rendering multiple heavy contents in list)
     const [open, setOpen] = useState(false);
-    const openDialog = () => setOpen(true);
-    const closeDialog = () => setOpen(false);
+    const [renderDialog, setRenderDialog] = useState(false);
+    const openDialog = useCallback(() => {
+        setOpen(true);
+        setRenderDialog(true);
+    }, [setOpen, setRenderDialog]);
+    const closeDialog = useCallback(() => {
+        setOpen(false);
+        setTimeout(() => {
+            if (!open) {
+                setRenderDialog(false);
+            }
+        }, 1000);
+    }, [setOpen, setRenderDialog, open]);
 
     return (
         <>
             {renderTrigger({ openDialog })}
-            <Dialog
-                fullWidth
-                maxWidth={maxWidth}
-                open={open}
-                classes={{
-                    paper: classes.paper,
-                }}
-                onBackdropClick={closeDialog}
-            >
-                <DialogTitle className={classes.title}>
-                    <FormattedMessage {...titleMessage} />
-                </DialogTitle>
-                <DialogContent className={classes.content}>
-                    {children}
-                </DialogContent>
-                {renderActions({ closeDialog })}
-            </Dialog>
+            {
+                renderDialog
+                  && (
+                      <Dialog
+                          fullWidth
+                          maxWidth={maxWidth}
+                          open={open}
+                          classes={{
+                              paper: classes.paper,
+                          }}
+                          onBackdropClick={closeDialog}
+                      >
+                          <DialogTitle className={classes.title}>
+                              <FormattedMessage {...titleMessage} />
+                          </DialogTitle>
+                          <DialogContent className={classes.content}>
+                              {children}
+                          </DialogContent>
+                          {renderActions({ closeDialog })}
+                      </Dialog>
+                  )
+            }
         </>
     );
 }

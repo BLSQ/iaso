@@ -2,7 +2,10 @@ import React from 'react';
 import moment from 'moment';
 import { FormattedMessage } from 'react-intl';
 import Link from '@material-ui/core/Link';
+
 import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
+import FormDialogComponent from '../components/dialogs/FormDialogComponent';
+import EditRowButtonComponent from '../components/buttons/EditRowButtonComponent';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -83,8 +86,15 @@ const formsTableColumns = (formatMessage, component) => (
             resizable: false,
             width: 250,
             sortable: false,
-            Cell: settings => (
+            Cell: settings => console.log(settings.original) || (
                 <section>
+                    <FormDialogComponent
+                        renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
+                        onSuccess={() => component.setState({ isUpdated: true })}
+                        initialData={settings.original}
+                        titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
+                        key={settings.original.updated_at}
+                    />
                     <DeleteDialog
                         disabled={settings.original.instances_count > 0}
                         titleMessage={{

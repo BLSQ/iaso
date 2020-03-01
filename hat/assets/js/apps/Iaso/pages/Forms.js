@@ -17,13 +17,14 @@ import formsTableColumns from '../constants/formsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
+import commonStyles from '../styles/common';
 import TopBar from '../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
 import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
-import AddFormDialogComponent from '../components/dialogs/AddFormDialogComponent';
+import FormDialogComponent from '../components/dialogs/FormDialogComponent';
+import AddButtonComponent from '../components/buttons/AddButtonComponent';
 
-import commonStyles from '../styles/common';
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../utils/requests';
 
 const baseUrl = 'forms';
@@ -142,7 +143,11 @@ class Forms extends Component {
                         />
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
-                        <AddFormDialogComponent onSuccess={() => this.setState({ isUpdated: true })} />
+                        <FormDialogComponent
+                            titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            onSuccess={() => this.setState({ isUpdated: true })}
+                        />
                         {reduxPage.list
             && (
                 <DownloadButtonsComponent

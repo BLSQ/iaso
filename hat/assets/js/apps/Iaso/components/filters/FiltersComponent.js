@@ -141,17 +141,13 @@ class FiltersComponent extends React.Component {
                                     }
 
                                     {
-                                        filter.type === 'checkbox'
+                                        filter.type === 'checkbox' // TODO: check with team
                                         && (
                                             <InputComponent
                                                 disabled={filter.isDisabled || false}
                                                 keyValue={filter.urlKey}
                                                 onChange={(key, checked) => this.toggleCheckbox(checked, filter.urlKey)}
-                                                checked={
-                                                    this.props.params[filter.urlKey] === 'true'
-                                                        ? 'checked' : ''
-                                                }
-                                                value={filterValue}
+                                                value={this.props.params[filter.urlKey] === 'true'}
                                                 type="checkbox"
                                                 label={filter.label}
                                             />

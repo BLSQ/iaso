@@ -6,10 +6,10 @@ import { Grid } from '@material-ui/core';
 
 import {
     createForm,
+    updateForm,
     createFormVersion,
     deleteForm,
 } from '../../utils/requests';
-import AddButtonComponent from '../buttons/AddButtonComponent';
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
@@ -34,49 +34,55 @@ const PERIOD_TYPE_CHOICES = [
     },
 ];
 
-class AddFormDialogComponent extends Component {
-    static blankFormState() { // TODO: useFormState hook or something, this is going to happen often
-        return {
-            name: { value: null, errors: [] },
-            xls_file: { value: null, errors: [] },
-            project_ids: { value: null, errors: [] },
-            org_unit_type_ids: { value: null, errors: [] },
-            period_type: { value: 'TRACKER', errors: [] },
-            single_per_period: { value: false, errors: [] },
-            device_field: { value: 'deviceid', errors: [] },
-            location_field: { value: null, errors: [] },
-        };
-    }
-
+class FormDialogComponent extends Component {
     constructor(props) {
         super(props);
-        this.state = AddFormDialogComponent.blankFormState();
+
+        this.state = this.initialState(); // TODO: defer - this will be called for each item in the list
     }
 
     onConfirm(closeDialog) {
-        // TODO: move in async action
-        // TODO: async await
-        const formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
-        createForm(this.props.dispatch, formData)
-            .then(createdFormData => createFormVersion(this.props.dispatch, {
-                form_id: createdFormData.id,
-                xls_file: this.state.xls_file.value,
-            })
-                .then(() => {
-                    this.setState(AddFormDialogComponent.blankFormState());
-                    closeDialog();
-                    this.props.onSuccess();
-                })
-                .catch(createVersionError => deleteForm(this.props.dispatch, createdFormData.id)
-                    .then(() => {
-                        console.log('Form deleted');
-                    })
-                    .catch(() => {
-                        console.warn('Form could not be deleted');
-                    })
-                    .then(() => {
+        // TODO: messy & hard to follow... move in async action & use async/await to avoid callback hell
+        let isUpdate;
+        let saveForm;
+        let formData;
+        if (this.props.initialData === null) {
+            isUpdate = false;
+            formData = _.mapValues(_.omit(this.state, ['xls_file', 'form_id']), v => v.value);
+            saveForm = createForm(this.props.dispatch, formData);
+        } else {
+            isUpdate = true;
+            formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
+            saveForm = updateForm(this.props.dispatch, this.state.id.value, formData);
+        }
+
+        saveForm
+            .then((createdFormData) => {
+                if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
+                    return Promise.resolve();
+                }
+                return createFormVersion(this.props.dispatch, {
+                    form_id: createdFormData.id,
+                    xls_file: this.state.xls_file.value,
+                }, isUpdate)
+                    .catch((createVersionError) => {
+                        // when creating form, if version creation fails, delete freshly created, version-less form
+                        if (!isUpdate) {
+                            return deleteForm(this.props.dispatch, createdFormData.id)
+                                .then(() => console.log('Form deleted'))
+                                .catch(() => console.warn('Form could not be deleted'))
+                                .then(() => {
+                                    throw createVersionError;
+                                });
+                        }
                         throw createVersionError;
-                    })))
+                    });
+            })
+            .then(() => {
+                this.setState(this.initialState());
+                closeDialog();
+                this.props.onSuccess();
+            })
             .catch((error) => {
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
@@ -87,7 +93,7 @@ class AddFormDialogComponent extends Component {
     }
 
     onCancel(closeDialog) {
-        this.setState(AddFormDialogComponent.blankFormState());
+        this.setState(this.initialState());
         closeDialog();
     }
 
@@ -106,13 +112,35 @@ class AddFormDialogComponent extends Component {
         }
     }
 
+    initialState() {
+        // TODO: useFormState hook or something, this is going to happen often
+        const initialData = this.props.initialData ? this.props.initialData : {};
+
+        const projectIds = _.get(initialData, 'projects', []).map(p => p.id);
+        const orgUnitTypeIds = _.get(initialData, 'org_unit_types', []).map(out => out.id);
+
+        return {
+            id: { value: _.get(initialData, 'id', null), errors: [] },
+            name: { value: _.get(initialData, 'name', null), errors: [] },
+            xls_file: { value: null, errors: [] },
+            project_ids: { value: projectIds, errors: [] },
+            org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
+            period_type: { value: _.get(initialData, 'period_type', 'TRACKER'), errors: [] },
+            single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
+            device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
+            location_field: { value: _.get(initialData, 'location_field', null), errors: [] },
+        };
+    }
+
     render() {
-        const { projects, orgUnitTypes } = this.props;
+        const {
+            renderTrigger, projects, orgUnitTypes, titleMessage,
+        } = this.props;
 
         return (
             <ConfirmCancelDialogComponent
-                titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
-                renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                renderTrigger={renderTrigger}
+                titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
                 onCancel={closeDialog => this.onCancel(closeDialog)}
@@ -245,15 +273,21 @@ class AddFormDialogComponent extends Component {
         );
     }
 }
-AddFormDialogComponent.propTypes = {
+FormDialogComponent.defaultProps = {
+    initialData: null,
+};
+FormDialogComponent.propTypes = {
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.arrayOf(PropTypes.object).isRequired,
     projects: PropTypes.arrayOf(PropTypes.object).isRequired,
     onSuccess: PropTypes.func.isRequired,
+    initialData: PropTypes.object,
+    renderTrigger: PropTypes.func.isRequired,
+    titleMessage: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     projects: state.projects.projects,
 });
 const mapDispatchToProps = dispatch => ({ dispatch });
-export default connect(mapStateToProps, mapDispatchToProps)(AddFormDialogComponent);
+export default connect(mapStateToProps, mapDispatchToProps)(FormDialogComponent);

@@ -288,19 +288,25 @@ export const createForm = (dispatch, formData) => postRequest('/api/forms/', for
         throw error;
     });
 
-export const deleteForm = (dispatch, formId) => deleteRequest(`/api/forms/${formId}`)
+export const updateForm = (dispatch, formId, formData) => putRequest(`/api/forms/${formId}/`, formData)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('updateFormError')));
+        throw error;
+    });
+
+export const deleteForm = (dispatch, formId) => deleteRequest(`/api/forms/${formId}/`)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('deleteFormError')));
         throw error;
     });
 
-export const createFormVersion = (dispatch, formVersionData) => {
+export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
     const data = { form_id: formVersionData.form_id };
     const fileData = { xls_file: formVersionData.xls_file };
 
     return postRequest('/api/formversions/', data, fileData)
         .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
+            dispatch(enqueueSnackbar(errorSnackBar(isUpdate ? 'updateFormError' : 'createFormError')));
             throw error;
         });
 };

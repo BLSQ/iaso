@@ -224,8 +224,8 @@ class FormsAPITestCase(APITestCase):
         }, format='json')
         self.assertJSONResponse(response, 403)
 
-    def test_forms_create_invalid(self):
-        """POST /forms/ happy path with a lot of missing/invalid data"""
+    def test_forms_create_invalid_1(self):
+        """POST /forms/ with a lot of missing/invalid data"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f'/api/forms/', data={
@@ -235,9 +235,24 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
-        # self.assertHasError(response.json(), "name", "Invalid project ids")  # TODO: uncomment when form name is mandatory
+        # TODO: uncomment next line when form name is mandatory
+        # self.assertHasError(response.json(), "name", "Invalid project ids")
         self.assertHasError(response_data, "period_type")
         self.assertHasError(response_data, "single_per_period")
+        self.assertHasError(response_data, "project_ids")
+        self.assertHasError(response_data, "org_unit_type_ids")
+
+    def test_forms_create_invalid_2(self):
+        """POST /forms/ specific check for allow_empty"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f'/api/forms/', data={
+            "project_ids": [],
+            "org_unit_type_ids": [],
+        }, format='json')
+        self.assertJSONResponse(response, 400)
+
+        response_data = response.json()
         self.assertHasError(response_data, "project_ids")
         self.assertHasError(response_data, "org_unit_type_ids")
 

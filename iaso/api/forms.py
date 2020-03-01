@@ -49,10 +49,10 @@ class FormSerializer(serializers.ModelSerializer):
 
     org_unit_types = serializers.SerializerMethodField()
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(source="org_unit_types", write_only=True, many=True,
-                                                           queryset=OrgUnitType.objects.all())
+                                                           allow_empty=False, queryset=OrgUnitType.objects.all())
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(source="projects", write_only=True, many=True,
-                                                     queryset=Project.objects.all())
+                                                     allow_empty=False, queryset=Project.objects.all())
     latest_form_version = serializers.SerializerMethodField()
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)

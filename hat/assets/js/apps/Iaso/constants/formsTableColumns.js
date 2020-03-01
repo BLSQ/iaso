@@ -84,9 +84,15 @@ const formsTableColumns = (formatMessage, component) => (
                       <Grid container spacing={1} justify="center">
                           {
                               settings.original.latest_form_version.xls_file
-                            && <Grid item><Link download href={settings.original.latest_form_version.xls_file}>CSV</Link></Grid>
+                            && (
+                                <Grid item>
+                                    <Link download href={settings.original.latest_form_version.xls_file}>XLS</Link>
+                                </Grid>
+                            )
                           }
-                          <Grid item><Link download href={settings.original.latest_form_version.file}>XML</Link></Grid>
+                          <Grid item>
+                              <Link download href={settings.original.latest_form_version.file}>XML</Link>
+                          </Grid>
                       </Grid>
                   )
             ),

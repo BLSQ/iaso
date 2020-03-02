@@ -74,7 +74,7 @@ const formsTableColumns = (formatMessage, component) => (
         },
         {
             Header: formatMessage({
-                defaultMessage: 'Latest versions',
+                defaultMessage: 'Latest version',
                 id: 'iaso.forms.latest_verision_files',
             }),
             sortable: false,
@@ -82,6 +82,7 @@ const formsTableColumns = (formatMessage, component) => (
                 settings.original.latest_form_version !== null
                   && (
                       <Grid container spacing={1} justify="center">
+                          <Grid item>{settings.original.latest_form_version.version_id}</Grid>
                           {
                               settings.original.latest_form_version.xls_file
                             && (

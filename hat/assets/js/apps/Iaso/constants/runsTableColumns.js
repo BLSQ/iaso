@@ -136,19 +136,15 @@ const runsTableColumns = (formatMessage, component) => (
                 <section>
                     <DeleteDialog
                         disabled={Boolean(!settings.original.ended_at)}
-                        question={(
-                            <FormattedMessage
-                                id="iaso.runs.dialog.deleteRunTitle"
-                                defaultMessage="Are you sure you want to delete this run?"
-                            />
-                        )}
-                        message={(
-                            <FormattedMessage
-                                id="iaso.runs.dialog.deleteRunText"
-                                defaultMessage="All links created will be deleted"
-                            />
-                        )}
-                        confirm={() => component.deleteRuns(settings.original)}
+                        titleMessage={{
+                            id: 'iaso.runs.dialog.deleteRunTitle',
+                            defaultMessage: 'Are you sure you want to delete this run?',
+                        }}
+                        message={{
+                            id: 'iaso.runs.dialog.deleteRunText',
+                            defaultMessage: 'All created links will be deleted.',
+                        }}
+                        onConfirm={closeDialog => component.deleteRuns(settings.original).then(closeDialog)}
                     />
                 </section>
             ),

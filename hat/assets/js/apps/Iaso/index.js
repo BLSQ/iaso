@@ -49,6 +49,7 @@ import {
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
+import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 
 export default function iasoApp(element, baseUrl) {

@@ -74,5 +74,5 @@ export const putRequest = (url, data) => req
     .then(result => result.body)
     .catch((error) => {
         console.error(`Error when put ${url}: ${error}`);
-        throw error;
+        throw new ApiError(error.message, error.response);
     });

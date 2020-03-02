@@ -134,7 +134,7 @@ class Runs extends Component {
     deleteRuns(run) {
         const { dispatch } = this.props;
         dispatch(this.props.setIsFetching(true));
-        deleteAlgorithmRun(dispatch, run.id).then(() => {
+        return deleteAlgorithmRun(dispatch, run.id).then(() => {
             this.onRefresh();
         });
     }

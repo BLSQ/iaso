@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
+import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import Select from 'react-select';
-
 import { withStyles } from '@material-ui/core';
-import FormControl from '@material-ui/core/FormControl';
-import InputLabel from '@material-ui/core/InputLabel';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 import SearchIcon from '@material-ui/icons/Search';
 import FormControlLabel from '@material-ui/core/FormControlLabel';
@@ -12,59 +10,13 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
-import PropTypes from 'prop-types';
-
 import MESSAGES from './messages';
 import ArrayFieldInput from './ArrayFieldInput';
+import InputLabelComponent from './InputLabelComponent';
+import FormControlComponent from './FormControlComponent';
+
 
 const styles = theme => ({
-    formControl: {
-        width: '100%',
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(2),
-        '& fieldset': {
-            borderWidth: '1px !important',
-        },
-        '&:hover fieldset': {
-            borderColor: `${theme.palette.primary.main}  !important`,
-        },
-        '&:focused label': {
-            color: `${theme.palette.primary.main}  !important`,
-        },
-        zIndex: 'auto',
-    },
-    formControlNoMarginTop: {
-        width: '100%',
-        marginBottom: theme.spacing(1),
-        marginTop: theme.spacing(1),
-        '& .fieldset': {
-            borderWidth: '1px !important',
-        },
-        '&:hover fieldset': {
-            borderColor: `${theme.palette.primary.main}  !important`,
-        },
-        zIndex: 'auto',
-    },
-    inputLabel: {
-        color: 'rgba(0, 0, 0, 0.4)',
-        paddingLeft: 3,
-        paddingRight: 3,
-        transition: theme.transitions.create(['all'], {
-            easing: theme.transitions.easing.sharp,
-            duration: theme.transitions.duration.leavingScreen,
-        }),
-    },
-    shrink: {
-        fontSize: 20,
-        marginTop: -2,
-        backgroundColor: 'white',
-    },
-    shrinkFocused: {
-        fontSize: 20,
-        marginTop: -2,
-        backgroundColor: 'white',
-        color: theme.palette.primary.main,
-    },
     select: {
         '& .is-disabled  .Select-control': {
             borderColor: `${grey['300']} !important`,
@@ -137,6 +89,11 @@ const styles = theme => ({
             maxWidth: '20vw',
         },
     },
+    selectError: {
+        '& .Select-control': {
+            borderColor: `${theme.palette.error.main} !important`,
+        },
+    },
     icon: {
         right: theme.spacing(2),
     },
@@ -196,6 +153,7 @@ class InputComponent extends Component {
             type,
             keyValue,
             value,
+            errors,
             onChange,
             options,
             intl: {
@@ -205,8 +163,8 @@ class InputComponent extends Component {
             clearable,
             label,
             labelString,
+            required,
             onEnterPressed,
-            checked,
             withMarginTop,
             isSearchable,
             multi,
@@ -216,55 +174,52 @@ class InputComponent extends Component {
             selectInputValue,
             isFocused,
         } = this.state;
-        const formClass = withMarginTop ? classes.formControl : classes.formControlNoMarginTop;
+
+        const hasErrors = errors.length > 0;
+
+        const labelText = labelString !== ''
+            ? labelString
+            : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+
         if (type === 'text' || type === 'number') {
+            const inputValue = (value === null || typeof value === 'undefined')
+                ? ''
+                : value;
+
             return (
-                <FormControl className={formClass} variant="outlined">
-                    <InputLabel
-                        name={keyValue}
+                <FormControlComponent withMarginTop={withMarginTop}>
+                    <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
-                        classes={{
-                            shrink: classes.shrink,
-                        }}
-                        className={classes.inputLabel}
-                    >
-                        {
-                            label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])
-                        }
-                    </InputLabel>
+                        label={labelText}
+                        required={required}
+                    />
                     <OutlinedInput
                         size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
-                        value={value || ''}
+                        value={inputValue}
                         type={type}
                         onChange={event => onChange(keyValue, event.target.value)}
+                        error={hasErrors}
                     />
-                </FormControl>
+                </FormControlComponent>
             );
         }
         if (type === 'select') {
+            const selectClassNames = [classes.select];
+            if (hasErrors) {
+                selectClassNames.push(classes.selectError);
+            }
             return (
-                <FormControl
-                    variant="outlined"
-                    className={formClass}
-                >
-                    <InputLabel
-                        classes={{
-                            shrink: isFocused ? classes.shrinkFocused : classes.shrink,
-                        }}
-                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
-                        className={classes.inputLabel}
+                <FormControlComponent withMarginTop={withMarginTop}>
+                    <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
-                    >
-                        {
-                            label && labelString === '' ? formatMessage(label) : null
-                        }
-                        {
-                            labelString !== '' ? labelString : null
-                        }
-                    </InputLabel>
-                    <div className={classes.select}>
+                        label={labelText}
+                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
+                        isFocused={isFocused}
+                        required={required}
+                    />
+                    <div className={selectClassNames.join(' ')}>
                         <Select
                             disabled={disabled}
                             searchable={isSearchable}
@@ -285,13 +240,13 @@ class InputComponent extends Component {
                             onChange={newValue => onChange(keyValue, newValue)}
                         />
                     </div>
-                </FormControl>
+                </FormControlComponent>
             );
         }
-        if (type === 'arrayInput') {
+        if (type === 'arrayInput') { // TODO: implement required
             return (
                 <ArrayFieldInput
-                    label={formatMessage(MESSAGES[keyValue])}
+                    label={labelText}
                     fieldList={value}
                     name={keyValue}
                     baseId={keyValue}
@@ -301,18 +256,12 @@ class InputComponent extends Component {
         }
         if (type === 'search') {
             return (
-                <FormControl className={formClass} variant="outlined">
-                    <InputLabel
-                        classes={{
-                            shrink: classes.shrink,
-                        }}
-                        className={classes.inputLabel}
+                <FormControlComponent withMarginTop={withMarginTop}>
+                    <InputLabelComponent
                         htmlFor={`search-${keyValue}`}
-                    >
-                        {
-                            label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])
-                        }
-                    </InputLabel>
+                        label={labelText}
+                        required={required}
+                    />
                     <OutlinedInput
                         disabled={disabled}
                         id={uid ? `search-${uid}` : `search-${keyValue}`}
@@ -333,50 +282,52 @@ class InputComponent extends Component {
                     <div className={classes.searchIcon}>
                         <SearchIcon />
                     </div>
-                </FormControl>
+                </FormControlComponent>
             );
         }
-        if (type === 'checkbox') {
+        if (type === 'checkbox') { // TODO: implement required
             return (
                 <FormControlLabel
+                    disabled={disabled}
                     control={(
                         <Checkbox
                             color="primary"
-                            checked={checked}
+                            checked={value === true}
                             onChange={event => onChange(keyValue, event.target.checked)}
                             value="checked"
+                            disabled={disabled}
                         />
                     )}
-                    label={label ? formatMessage(label) : formatMessage(MESSAGES[keyValue])}
+                    label={labelText}
                 />
             );
         }
         return null;
     }
 }
-
 InputComponent.defaultProps = {
     type: 'text',
     value: undefined,
+    errors: [],
     options: [],
     onChange: () => null,
     disabled: false,
     clearable: true,
     label: undefined,
     labelString: '',
-    checked: false,
+    required: false,
     onEnterPressed: () => null,
     withMarginTop: true,
     isSearchable: true,
     multi: false,
     uid: null,
 };
-
 InputComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     type: PropTypes.string,
     keyValue: PropTypes.string.isRequired,
     value: PropTypes.any,
+    errors: PropTypes.arrayOf(PropTypes.string),
     onChange: PropTypes.func,
     intl: PropTypes.object.isRequired,
     options: PropTypes.array,
@@ -384,7 +335,7 @@ InputComponent.propTypes = {
     clearable: PropTypes.bool,
     label: PropTypes.object,
     labelString: PropTypes.string,
-    checked: PropTypes.bool,
+    required: PropTypes.bool,
     onEnterPressed: PropTypes.func,
     withMarginTop: PropTypes.bool,
     isSearchable: PropTypes.bool,
@@ -392,5 +343,4 @@ InputComponent.propTypes = {
     uid: PropTypes.any,
 };
 
-
-export default withStyles(styles)(injectIntl(InputComponent));
+export default injectIntl(withStyles(styles)(InputComponent));

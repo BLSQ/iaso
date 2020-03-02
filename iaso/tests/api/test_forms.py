@@ -260,12 +260,12 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "org_unit_type_ids")
 
     def test_forms_create_invalid_3(self):
-        """POST /forms/ with wrong values for TRACKER period type"""
+        """POST /forms/ with wrong values for None period type"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f'/api/forms/', data={
             "name": "test form 2",
-            "period_type": "TRACKER",
+            "period_type": None,
             "single_per_period": True,
             "periods_before_allowed": 3,
             "periods_after_allowed": 3,

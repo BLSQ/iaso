@@ -7,7 +7,7 @@ from rest_framework import serializers, permissions
 from rest_framework.request import Request
 from rest_framework.authentication import BasicAuthentication
 
-from iaso.models import Form, Project, OrgUnitType, TRACKER
+from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -80,15 +80,15 @@ class FormSerializer(serializers.ModelSerializer):
         if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
             raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
-        # If the period type is "TRACKER", some period-specific fields must have specific values
-        if data['period_type'] == TRACKER:
+        # If the period type is None, some period-specific fields must have specific values
+        if data['period_type'] is None:
             tracker_errors = {}
             if data['single_per_period'] is not False:
                 tracker_errors['single_per_period'] = "Should be false"
             if data['periods_before_allowed'] != 0:
-                tracker_errors['periods_before_allowed'] = "Should be false"
+                tracker_errors['periods_before_allowed'] = "Should be 0"
             if data['periods_after_allowed'] != 0:
-                tracker_errors['periods_after_allowed'] = "Should be false"
+                tracker_errors['periods_after_allowed'] = "Should be 0"
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
 

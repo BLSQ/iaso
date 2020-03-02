@@ -20,14 +20,12 @@ YEAR = "YEAR"
 QUARTER = "QUARTER"
 MONTH = "MONTH"
 SIX_MONTH = "SIX_MONTH"
-TRACKER = "TRACKER"
 
 PERIOD_TYPE_CHOICES = (
     (YEAR, _("Year")),
     (QUARTER, "Quarter"),
     (MONTH, "Month"),
     (SIX_MONTH, "Six-month"),
-    (TRACKER, "Tracker"),
 )
 
 
@@ -544,12 +542,12 @@ class Form(models.Model):
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
-    period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, default=TRACKER)
+    period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
     single_per_period = models.BooleanField(default=False)
     # The following two fields control the allowed period span (instances can be provided for the period corresponding
     # to [current_period - periods_before_allowed, current_period + periods_after_allowed]
-    periods_before_allowed = models.IntegerField(default=0)
-    periods_after_allowed = models.IntegerField(default=0)
+    periods_before_allowed = models.IntegerField(default=3)
+    periods_after_allowed = models.IntegerField(default=3)
 
     @property
     def latest_version(self):
@@ -629,7 +627,6 @@ def _form_version_upload_to(instance: 'FormVersion', filename: str) -> str:
 
 
 class FormVersion(models.Model):
-    UPLOADED_TO = "forms/"
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )

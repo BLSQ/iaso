@@ -17,10 +17,6 @@ import FileInputComponent from '../forms/FileInputComponent';
 // TODO: use API to fetch those
 const PERIOD_TYPE_CHOICES = [
     {
-        label: 'Tracker',
-        value: 'TRACKER',
-    },
-    {
         label: 'Monthly',
         value: 'MONTH',
     },
@@ -107,7 +103,7 @@ class FormDialogComponent extends Component {
 
     setPeriodType(value) {
         this.setFieldValue('period_type', value);
-        if (value === 'TRACKER') {
+        if (value === null) {
             this.setFieldValue('single_per_period', false);
             this.setFieldValue('periods_before_allowed', 0);
             this.setFieldValue('periods_after_allowed', 0);
@@ -130,7 +126,7 @@ class FormDialogComponent extends Component {
             xls_file: { value: null, errors: [] },
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
-            period_type: { value: _.get(initialData, 'period_type', 'TRACKER'), errors: [] },
+            period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
             single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
@@ -181,7 +177,7 @@ class FormDialogComponent extends Component {
                         />
                         <InputComponent
                             keyValue="period_type"
-                            clearable={false}
+                            clearable
                             onChange={(key, value) => this.setPeriodType(value)}
                             value={this.state.period_type.value}
                             errors={this.state.period_type.errors}
@@ -191,13 +187,12 @@ class FormDialogComponent extends Component {
                                 id: 'iaso.label.periodType',
                                 defaultMessage: 'Period type',
                             }}
-                            required
                         />
                         <Grid container spacing={2}>
                             <Grid item xs={6}>
                                 <InputComponent
                                     keyValue="periods_before_allowed"
-                                    disabled={this.state.period_type.value === 'TRACKER'}
+                                    disabled={this.state.period_type.value === null}
                                     onChange={(key, value) => this.setFieldValue(key, value)}
                                     value={this.state.periods_before_allowed.value}
                                     errors={this.state.periods_before_allowed.errors}
@@ -212,7 +207,7 @@ class FormDialogComponent extends Component {
                             <Grid item xs={6}>
                                 <InputComponent
                                     keyValue="periods_after_allowed"
-                                    disabled={this.state.period_type.value === 'TRACKER'}
+                                    disabled={this.state.period_type.value === null}
                                     onChange={(key, value) => this.setFieldValue(key, value)}
                                     value={this.state.periods_after_allowed.value}
                                     errors={this.state.periods_after_allowed.errors}
@@ -227,7 +222,7 @@ class FormDialogComponent extends Component {
                         </Grid>
                         <InputComponent
                             keyValue="single_per_period"
-                            disabled={this.state.period_type.value === 'TRACKER'}
+                            disabled={this.state.period_type.value === null}
                             onChange={(key, value) => this.setFieldValue(key, value)}
                             value={this.state.single_per_period.value}
                             errors={this.state.single_per_period.errors}

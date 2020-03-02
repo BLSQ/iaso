@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import Add from '@material-ui/icons/Add';
 import { withStyles, Button } from '@material-ui/core';
 
@@ -10,7 +10,9 @@ const styles = theme => ({
     ...commonStyles(theme),
 });
 
-function AddButtonComponent({ classes, onClick, message }) {
+function AddButtonComponent({
+    classes, intl, onClick, message,
+}) {
     return (
         <Button
             variant="contained"
@@ -19,10 +21,7 @@ function AddButtonComponent({ classes, onClick, message }) {
             onClick={onClick}
         >
             <Add className={classes.buttonIcon} />
-            <FormattedMessage
-                id={message.id}
-                defaultMessage={message.defaultMessage}
-            />
+            {intl.formatMessage(message)}
         </Button>
     );
 }
@@ -30,8 +29,9 @@ AddButtonComponent.defaultProps = {
     message: { id: 'iaso.label.create', defaultMessage: 'Create' },
 };
 AddButtonComponent.propTypes = {
+    intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     onClick: PropTypes.func.isRequired,
     message: PropTypes.object, // TODO: make a message prop type
 };
-export default withStyles(styles)(AddButtonComponent);
+export default withStyles(styles)(injectIntl(AddButtonComponent));

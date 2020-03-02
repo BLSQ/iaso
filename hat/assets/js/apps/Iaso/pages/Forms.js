@@ -21,7 +21,6 @@ import commonStyles from '../styles/common';
 import TopBar from '../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
 import FormDialogComponent from '../components/dialogs/FormDialogComponent';
 import AddButtonComponent from '../components/buttons/AddButtonComponent';
 
@@ -99,7 +98,6 @@ class Forms extends Component {
             classes,
             params,
             reduxPage,
-            redirectTo,
             intl: {
                 formatMessage,
             },
@@ -112,15 +110,6 @@ class Forms extends Component {
                 })}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <PeriodSelectorComponent
-                        dateFrom={params.date_from}
-                        dateTo={params.date_to}
-                        onChangeDate={(dateFrom, dateTo) => redirectTo(baseUrl, {
-                            ...this.props.params,
-                            date_from: dateFrom,
-                            date_to: dateTo,
-                        })}
-                    />
                     <div className={classes.reactTable}>
                         <CustomTableComponent
                             isSortable

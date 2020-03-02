@@ -13,6 +13,8 @@ import {
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
+import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { succesfullSnackBar } from '../snackBars';
 
 // TODO: use API to fetch those
 const PERIOD_TYPE_CHOICES = [
@@ -77,6 +79,7 @@ class FormDialogComponent extends Component {
             .then(() => {
                 this.setState(this.initialState());
                 closeDialog();
+                this.props.dispatch(enqueueSnackbar(succesfullSnackBar()));
                 this.props.onSuccess();
             })
             .catch((error) => {

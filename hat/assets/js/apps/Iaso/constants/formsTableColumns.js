@@ -1,12 +1,12 @@
 import React from 'react';
 import moment from 'moment';
-import { FormattedMessage } from 'react-intl';
 import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
 
 import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../components/dialogs/FormDialogComponent';
 import EditRowButtonComponent from '../components/buttons/EditRowButtonComponent';
+import ViewRowButtonComponent from '../components/buttons/ViewRowButtonComponent';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -107,6 +107,12 @@ const formsTableColumns = (formatMessage, component) => (
             sortable: false,
             Cell: settings => (
                 <section>
+                    {
+                        settings.original.instances_count > 0
+                        && (
+                            <ViewRowButtonComponent onClick={() => component.selectForm(settings.original)} />
+                        )
+                    }
                     <FormDialogComponent
                         renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
                         onSuccess={() => component.setState({ isUpdated: true })}
@@ -126,17 +132,6 @@ const formsTableColumns = (formatMessage, component) => (
                         }}
                         onConfirm={closeDialog => component.deleteForm(settings.original).then(closeDialog)}
                     />
-                    {
-                        settings.original.instances_count > 0
-                        && (
-                            <Link
-                                size="small"
-                                onClick={() => component.selectForm(settings.original)}
-                            >
-                                <FormattedMessage id="iaso.forms.view" defaultMessage="View" />
-                            </Link>
-                        )
-                    }
                 </section>
             ),
         },

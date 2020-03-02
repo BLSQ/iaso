@@ -20,7 +20,6 @@ import {
     deviceOwnership,
     periods,
     instanceStatus,
-    onlyMetas,
 } from '../../constants/filters';
 
 import FiltersComponent from './FiltersComponent';
@@ -86,14 +85,6 @@ class InstancesFiltersComponent extends Component {
                                 periods(periodsList),
                                 location(formatMessage),
                                 orgUnitType(orgUnitTypes),
-                            ]}
-                        />
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => null}
-                            filters={[
-                                onlyMetas(),
                             ]}
                         />
                     </Grid>

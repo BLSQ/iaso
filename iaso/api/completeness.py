@@ -10,7 +10,6 @@ import json
 def load_canned_response(filename):
     with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
         document = json.load(f)
-        #document['_id'] = str(uuid.uuid4())
         return document
 
 class CompletenessViewSet(viewsets.ViewSet):

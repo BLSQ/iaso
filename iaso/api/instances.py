@@ -172,8 +172,8 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
 
-        if status:
-            queryset = queryset.filter(status=status)
+        # if status:
+        #     queryset = queryset.filter(status=status)
 
         if csv_format is None and xlsx_format is None:
 

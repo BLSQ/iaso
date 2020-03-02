@@ -80,10 +80,6 @@ export const instancesPath = getPath({
         },
         {
             isRequired: false,
-            key: 'onlyMetas',
-        },
-        {
-            isRequired: false,
             key: 'tab',
         },
     ],

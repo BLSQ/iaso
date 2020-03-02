@@ -29,7 +29,8 @@ import {
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
-import { getInstancesColumns, getInstancesFilesList } from '../utils/instancesUtils';
+import { getInstancesFilesList } from '../utils/instancesUtils';
+import instancesTableColumns from '../constants/instancesTableColumns';
 import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
@@ -59,8 +60,13 @@ const styles = theme => ({
 class Instances extends Component {
     constructor(props) {
         super(props);
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         this.state = {
-            tableColumns: [],
+            tableColumns: instancesTableColumns(formatMessage),
             tab: props.params.tab ? props.params.tab : 'list',
         };
     }
@@ -125,26 +131,11 @@ class Instances extends Component {
             this.fetchInstances();
         }
 
-        if (params.onlyMetas !== prevProps.params.onlyMetas) {
-            this.setTableColumns();
-        }
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
     }
 
-    setTableColumns() {
-        const {
-            params,
-            intl: {
-                formatMessage,
-            },
-            reduxPage,
-        } = this.props;
-        this.setState({
-            tableColumns: getInstancesColumns(formatMessage, reduxPage.list, params.onlyMetas === 'true'),
-        });
-    }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
         const {
@@ -162,6 +153,7 @@ class Instances extends Component {
             status: params.status,
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+            asSmallDict: true,
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }
@@ -191,9 +183,6 @@ class Instances extends Component {
     fetchInstances() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
             dispatch,
         } = this.props;
 
@@ -203,13 +192,7 @@ class Instances extends Component {
         dispatch(this.props.setInstancesFetching(true));
         Promise.all([
             fetchInstancesAsDict(dispatch, url).then((data) => {
-                const instances = {
-                    ...data.instances,
-                };
                 this.props.setInstances(data.instances, params, data.count, data.pages);
-                this.setState({
-                    tableColumns: getInstancesColumns(formatMessage, instances, params.onlyMetas === 'true'),
-                });
             }),
             fetchInstancesAsSmallDict(dispatch, urlSmall)
                 .then(data => this.props.setInstancesSmallDict(data)),

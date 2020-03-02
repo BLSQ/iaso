@@ -11,68 +11,11 @@ import ReactTable, { ReactTableDefaults } from 'react-table';
 import { injectIntl } from 'react-intl';
 
 import { getPrettyPeriod, getPeriodType } from '../../utils/periodsUtils';
+import { getColumns, getFormsTotal } from '../../utils/completenessUtils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 import { createUrl } from '../../../../utils/fetchData';
 import DatePeriods from '../../libs/DatePeriods';
-
-const placeholder = '-';
-
-const getBaseColumns = formatMessage => ([
-    {
-        Header: formatMessage({
-            defaultMessage: 'Forms',
-            id: 'iaso.forms.title',
-        }),
-        accessor: 'label',
-        width: 300,
-    },
-]);
-
-const getColumns = (formatMessage, months, classes, instanceStatus, onSelect) => {
-    const columns = getBaseColumns(formatMessage);
-    months.forEach((month, index) => {
-        const monthColumn = {
-            Header: (
-                <span className={classes.capitalize}>
-                    {formatMessage({
-                        defaultMessage: month.label,
-                        id: `main.label.months.${month.label}`,
-                    })}
-                </span>
-            ),
-            accessor: month.label,
-            columns: instanceStatus.filter(fk => fk.isVisible).map(fk => ({
-                Header: (
-                    <span className={classes.capitalize}>
-                        {formatMessage({
-                            defaultMessage: fk.key,
-                            id: `iaso.completeness.${fk.key}`,
-                        })}
-                    </span>
-                ),
-                key: fk.key,
-                accessor: `months[${index}].fields.${fk.key}`,
-                Cell: (settings) => {
-                    const value = settings.original.months[index].fields[fk.key];
-                    return (
-                        <span
-                            role="button"
-                            tabIndex="0"
-                            className={`${classes.cell} ${value ? classes[fk.key] : ''}`}
-                            onClick={() => onSelect(settings.original, fk.key, settings.original.months[index])}
-                        >
-                            {value || placeholder}
-                        </span>
-                    );
-                },
-            })),
-        };
-        columns.push(monthColumn);
-    });
-    return columns;
-};
-
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -84,10 +27,10 @@ const styles = theme => ({
         ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
     },
-    errors: {
+    error: {
         color: theme.palette.error.main,
     },
-    exported: {
+    ready: {
         color: theme.palette.success.main,
     },
     cell: {
@@ -111,34 +54,36 @@ class CompletenessPeriodComponent extends Component {
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
-    onSelectCell(form, status, month, period) {
+    onSelectCell(form, status, monthId, period) {
         // need to check if selected cell has the same period type as the displayed period type, if not it's a monthly period type with selected month
         const { redirectTo } = this.props;
-        let currentPeriod = period;
-        const currentPeriodType = getPeriodType(period);
-        if (currentPeriodType !== form.period_type) {
-            const year = period.substring(0, 4);
-            const currentDate = `${year}-${month.id}`;
-            switch (form.period_type) {
-                case 'MONTH':
-                    currentPeriod = `${year}${month.id < 10 ? `0${month.id}` : month.id}`;
-                    break;
-                case 'QUARTER':
-                    currentPeriod = DatePeriods.currentQuarter(moment(currentDate).toDate());
-                    break;
-                case 'SIX_MONTH':
-                    currentPeriod = DatePeriods.currentSemester(moment(currentDate).toDate());
-                    break;
-
-                default:
-                    currentPeriod = year;
-            }
-        }
-        redirectTo('instances', {
-            formId: form.id,
-            periods: currentPeriod,
+        const params = {
             status,
-        });
+            periods: period,
+        };
+        const currentPeriodType = getPeriodType(period);
+        const year = period.substring(0, 4);
+        if (form) {
+            if (currentPeriodType !== form.period_type) {
+                const currentDate = `${year}-${monthId}`;
+                switch (form.period_type) {
+                    case 'MONTH':
+                        params.periods = `${year}${monthId < 10 ? `0${monthId}` : monthId}`;
+                        break;
+                    case 'QUARTER':
+                        params.periods = DatePeriods.currentQuarter(moment(currentDate).toDate());
+                        break;
+                    case 'SIX_MONTH':
+                        params.periods = DatePeriods.currentSemester(moment(currentDate).toDate());
+                        break;
+
+                    default:
+                        params.periods = year;
+                }
+            }
+            params.formId = form.id;
+            redirectTo('instances', params);
+        }
     }
 
     render() {
@@ -147,6 +92,7 @@ class CompletenessPeriodComponent extends Component {
                 formatMessage,
             },
         } = this.props;
+        const formsTotals = getFormsTotal(forms, instanceStatus);
         return (
             <Paper className={classes.root}>
 
@@ -175,6 +121,7 @@ class CompletenessPeriodComponent extends Component {
                             classes,
                             instanceStatus,
                             (form, status, month) => this.onSelectCell(form, status, month, period),
+                            formsTotals,
                         )}
                         data={forms}
                         filterable={false}

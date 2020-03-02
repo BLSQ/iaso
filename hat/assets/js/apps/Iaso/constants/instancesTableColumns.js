@@ -5,7 +5,7 @@ import Link from '@material-ui/core/Link';
 
 import { getPrettyPeriod } from '../utils/periodsUtils';
 
-const instancesTableColumns = (formatMessage, onlyMetas) => (
+const instancesTableColumns = formatMessage => (
     [
         {
             Header: formatMessage({
@@ -41,24 +41,6 @@ const instancesTableColumns = (formatMessage, onlyMetas) => (
                 <span>
                     {settings.original.period
                         ? `${getPrettyPeriod(settings.original.period)}`
-                        : '/'}
-                </span>
-            ),
-        },
-        {
-            Header: 'Uid',
-            accessor: 'uuid',
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Org unit',
-                id: 'iaso.instance.org_unit',
-            }),
-            accessor: 'org_unit__id',
-            Cell: settings => (
-                <span>
-                    {settings.original.org_unit
-                        ? `${settings.original.org_unit.name} (${settings.original.org_unit.org_unit_type_name})`
                         : '/'}
                 </span>
             ),

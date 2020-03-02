@@ -65,7 +65,6 @@ class Forms extends Component {
         this.props.setCurrentForm(form);
         const newParams = {
             formId: form.id,
-            onlyMetas: true,
         };
         redirectTo('instances', newParams);
     }

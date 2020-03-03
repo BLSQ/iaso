@@ -39,10 +39,14 @@ const getWorZonesTotalCapacity = (workZones, formatMessage) => {
         return (
             <ul>
                 <li className="workzones-item">
-                    {formatMessage(MESSAGES.capacity)}: <strong>{formatThousand(totalCapacity)}</strong>
+                    {formatMessage(MESSAGES.capacity)}
+                    :
+                    <strong>{formatThousand(totalCapacity)}</strong>
                 </li>
                 <li className="workzones-item">
-                    {formatMessage(MESSAGES.endemic_population)}: <strong>{formatThousand(populationEndemicVillages)}</strong>
+                    {formatMessage(MESSAGES.endemic_population)}
+                    :
+                    <strong>{formatThousand(populationEndemicVillages)}</strong>
                 </li>
             </ul>
         );
@@ -56,6 +60,7 @@ class Macroplanning extends React.Component {
         this.state = {
             workzoneId: undefined,
             showModale: false,
+            selectedShape: undefined,
         };
     }
 
@@ -108,6 +113,12 @@ class Macroplanning extends React.Component {
         });
     }
 
+    selectShape(shape) {
+        this.setState({
+            selectedShape: shape,
+        });
+    }
+
 
     assignToWorkZone(add, zs = null, as = this.props.currentArea.pk, workzoneId = null) {
         let currentWorkzoneId = workzoneId;
@@ -144,7 +155,11 @@ class Macroplanning extends React.Component {
             currentCoordination,
             currentArea,
         } = this.props;
+        const {
+            selectedShape,
+        } = this.state;
         const coordinationId = this.props.params.coordination_id ? this.props.params.coordination_id : undefined;
+        console.log('selectedShape', selectedShape);
         return (
             <section className="macro-container">
                 <div className="widget__container">
@@ -170,77 +185,95 @@ class Macroplanning extends React.Component {
 
                 </div>
                 {
-                    coordinationId &&
-                    <div className="widget__container">
-                        <section>
-                            <div className="widget__content--tier">
-                                {
-                                    loading &&
-                                    <LoadingSpinner message={formatMessage({
-                                        defaultMessage: 'Loading',
-                                        id: 'main.label.loading',
-                                    })}
-                                    />
-                                }
-                                <div>
+                    coordinationId
+                    && (
+                        <div className="widget__container">
+                            <section>
+                                <div className="widget__content--tier">
                                     {
-                                        currentWorkZones && currentWorkZones.length === 0 && !loading &&
-                                        <div className="bold-subtitle">
-                                            <FormattedMessage id="microplanning.macro.nows" defaultMessage="No workzone for this coordination" />
-                                        </div>
+                                        loading
+                                        && (
+                                            <LoadingSpinner message={formatMessage({
+                                                defaultMessage: 'Loading',
+                                                id: 'main.label.loading',
+                                            })}
+                                            />
+                                        )
                                     }
+                                    <div>
+                                        {
+                                            currentWorkZones && currentWorkZones.length === 0 && !loading
+                                            && (
+                                                <div className="bold-subtitle">
+                                                    <FormattedMessage id="microplanning.macro.nows" defaultMessage="No workzone for this coordination" />
+                                                </div>
+                                            )
+                                        }
+                                        {
+                                            currentWorkZones && currentWorkZones.length > 0
+                                            && (
+                                                <div className="ws-select">
+                                                    <div className="bold-subtitle">
+                                                        1)
+                                                        {' '}
+                                                        <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Welect a work zone" />
+                                                    </div>
+                                                    <div className="type-filters-containers">
+                                                        <WorkZonesSelect
+                                                            currentCoordination={currentCoordination}
+                                                            currentArea={currentArea}
+                                                            workZones={currentWorkZones}
+                                                            saveWorkZoneColor={(color, workZoneId) => this.props.saveWorkZoneColor(color, workZoneId, currentWorkZones, currentCoordination)}
+                                                            selectedWorkZoneId={this.state.workzoneId}
+                                                            selectWorkZone={workzoneId => this.selectWorkZone(workzoneId)}
+                                                            selectShape={shape => this.selectShape(shape)}
+                                                            assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
+                                                        />
+                                                    </div>
+                                                    <div className="type-filters-containers">
+                                                        <div>
+                                                            <ul className="workzones-list legend">
+                                                                {getWorZonesTotalCapacity(currentWorkZones, formatMessage)}
+                                                            </ul>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
                                     {
-                                        currentWorkZones && currentWorkZones.length > 0 &&
-                                        <div className="ws-select">
-                                            <div className="bold-subtitle">
-                                                1) <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Welect a work zone" />
-                                            </div>
-                                            <div className="type-filters-containers">
-                                                <WorkZonesSelect
-                                                    currentCoordination={currentCoordination}
-                                                    currentArea={currentArea}
-                                                    workZones={currentWorkZones}
-                                                    saveWorkZoneColor={(color, workZoneId) => this.props.saveWorkZoneColor(color, workZoneId, currentWorkZones, currentCoordination)}
-                                                    selectedWorkZoneId={this.state.workzoneId}
-                                                    selectWorkZone={workzoneId => this.selectWorkZone(workzoneId)}
-                                                    assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
+                                        currentCoordination
+                                        && coordinationId
+                                        && (
+                                            <div className="map macro-map">
+                                                <div className="as-select">
+                                                    {
+                                                        this.state.workzoneId
+                                                        && (
+                                                            <div className="bold-subtitle">
+                                                                2)
+                                                                {' '}
+                                                                <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Select one area on the map" />
+                                                            </div>
+                                                        )
+                                                    }
+                                                </div>
+                                                <MacroMap
+                                                    coordinationId={coordinationId}
+                                                    baseLayer={baseLayer}
+                                                    overlays={{ labels: false }}
+                                                    coordination={currentCoordination}
+                                                    workzones={currentWorkZones}
+                                                    selectAs={currentAs => this.selectAs(currentAs)}
+                                                    selectedShape={selectedShape}
                                                 />
                                             </div>
-                                            <div className="type-filters-containers">
-                                                <div>
-                                                    <ul className="workzones-list legend">
-                                                        {getWorZonesTotalCapacity(currentWorkZones, formatMessage)}
-                                                    </ul>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        )
                                     }
                                 </div>
-                                {
-                                    currentCoordination &&
-                                    coordinationId &&
-                                    <div className="map macro-map">
-                                        <div className="as-select">
-                                            {
-                                                this.state.workzoneId &&
-                                                <div className="bold-subtitle">
-                                                    2) <FormattedMessage id="microplanning.macro.selectAs" defaultMessage="Select one area on the map" />
-                                                </div>
-                                            }
-                                        </div>
-                                        <MacroMap
-                                            coordinationId={coordinationId}
-                                            baseLayer={baseLayer}
-                                            overlays={{ labels: false }}
-                                            coordination={currentCoordination}
-                                            workzones={currentWorkZones}
-                                            selectAs={currentAs => this.selectAs(currentAs)}
-                                        />
-                                    </div>
-                                }
-                            </div>
-                        </section>
-                    </div>
+                            </section>
+                        </div>
+                    )
                 }
                 <AssingAsModale
                     showModale={this.state.showModale}
@@ -248,8 +281,8 @@ class Macroplanning extends React.Component {
                     area={currentArea || {}}
                     zoneName={currentArea && currentCoordination && currentCoordination.zones ? getZsName(currentArea ? currentArea.ZS : null, currentCoordination.zones.features) : ''}
                     workZone={
-                        currentWorkZones && this.state.workzoneId ?
-                            {
+                        currentWorkZones && this.state.workzoneId
+                            ? {
                                 id: this.state.workzoneId,
                                 name: getWorkZoneName(this.state.workzoneId, currentWorkZones),
                             } : {}
@@ -309,10 +342,8 @@ const MapDispatchToProps = dispatch => ({
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),
-    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination) =>
-        dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination)),
-    saveWorkZoneColor: (color, workzoneId, currentWorkZones) =>
-        dispatch(coordinationActions.saveWorkZoneColor(dispatch, color, workzoneId, currentWorkZones)),
+    selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination) => dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination)),
+    saveWorkZoneColor: (color, workzoneId, currentWorkZones) => dispatch(coordinationActions.saveWorkZoneColor(dispatch, color, workzoneId, currentWorkZones)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MacroplanningIntl);

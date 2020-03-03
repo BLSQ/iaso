@@ -19,7 +19,7 @@ import {
     includeControlsInMap,
     genericMap,
     zooms,
-} from '../../../utils//map/mapUtils';
+} from '../../../utils/map/mapUtils';
 
 let exportControl;
 
@@ -32,11 +32,7 @@ const MapDatas = (coordination, workzones) => {
         delete tempArea.properties.workzone;
         delete tempArea.properties.workzoneColor;
         tempArea.properties.zsName = getZsName(tempArea.properties.ZS, coordination.zones.features);
-        let pop = coordination.endemic_as_populations[tempArea.properties.pk];
-        if (!pop) {
-            pop = 0;
-        }
-        tempArea.properties.population = pop;
+        tempArea.properties.population = coordination.endemic_as_populations[tempArea.properties.pk] || 0;
         workzones.map((workzone) => {
             workzone.as_list.map((workingArea) => {
                 if (parseInt(tempArea.properties.pk, 10) === workingArea.id) {
@@ -108,8 +104,7 @@ class MacroMap extends Component {
 
     onEachAsFeature(feature, layer) {
         const { formatMessage } = this.props.intl;
-        const toolTipContent =
-            `<dl>
+        const toolTipContent = `<dl>
             <dt><strong>AS:</strong> ${feature.properties.name}</dt>
             <dt><strong>ZS:</strong> ${feature.properties.zsName}</dt>
             ${feature.properties.workzone ? `<dt><strong>RA:</strong> ${feature.properties.workzone}</dt>` : ''}

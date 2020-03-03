@@ -5,17 +5,17 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
-import LoadingSpinner from '../../../components/loading-spinner';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
-import PlanningModaleComponent from '../components/PlanningModaleComponent';
-import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
-import { saveFull, deleteFull, saveDuplicatePlanning } from '../../../utils/saveData';
+import LoadingSpinner from '../../components/loading-spinner';
+import CustomTableComponent from '../../components/CustomTableComponent';
+import { createUrl } from '../../utils/fetchData';
+import PlanningModaleComponent from '../Management/components/PlanningModaleComponent';
+import DeleteModaleComponent from '../../components/DeleteModaleComponent';
+import { saveFull, deleteFull, saveDuplicatePlanning } from '../../utils/saveData';
 
 const baseApiUrl = '/api/plannings/?with_template=True';
 
 
-class ManagementPlannings extends React.Component {
+class Plannings extends React.Component {
     constructor(props) {
         super(props);
         const { formatMessage } = props.intl;
@@ -35,7 +35,8 @@ class ManagementPlannings extends React.Component {
                                 {`${settings.original.is_template ? `${formatMessage({
                                     defaultMessage: 'Template',
                                     id: 'main.label.template',
-                                })}: ` : ''}`}{settings.original.name}
+                                })}: ` : ''}`}
+                                {settings.original.name}
                             </span>
                         </span>
                     ),
@@ -78,30 +79,34 @@ class ManagementPlannings extends React.Component {
                                     <FormattedMessage id="main.label.duplicate" defaultMessage="Copy" />
                                 </button>
                                 {
-                                    (!settings.original.is_template ||
-                                    (settings.original.is_template && this.state.canMakeTemplate)) &&
-                                    <span>
-                                        <button
-                                            className="button--edit--tiny margin-right"
-                                            onClick={() => this.editPlanning(settings.original)}
-                                        >
-                                            <i className="fa fa-pencil-square-o" />
-                                            <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
-                                        </button>
-                                    </span>
+                                    (!settings.original.is_template
+                                    || (settings.original.is_template && this.state.canMakeTemplate))
+                                    && (
+                                        <span>
+                                            <button
+                                                className="button--edit--tiny margin-right"
+                                                onClick={() => this.editPlanning(settings.original)}
+                                            >
+                                                <i className="fa fa-pencil-square-o" />
+                                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
+                                            </button>
+                                        </span>
+                                    )
                                 }
                                 {
-                                    (!settings.original.is_template ||
-                                    (settings.original.is_template && this.state.canMakeTemplate)) &&
-                                    <span>
-                                        <button
-                                            className="button--delete--tiny"
-                                            onClick={() => this.showDelete(settings.original)}
-                                        >
-                                            <i className="fa fa-trash" />
-                                            <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
-                                        </button>
-                                    </span>
+                                    (!settings.original.is_template
+                                    || (settings.original.is_template && this.state.canMakeTemplate))
+                                    && (
+                                        <span>
+                                            <button
+                                                className="button--delete--tiny"
+                                                onClick={() => this.showDelete(settings.original)}
+                                            >
+                                                <i className="fa fa-trash" />
+                                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
+                                            </button>
+                                        </span>
+                                    )
                                 }
                             </span>
                         </section>
@@ -126,7 +131,7 @@ class ManagementPlannings extends React.Component {
     }
 
     onChangeFilters(key, value) {
-        this.props.redirectTo('plannings', {
+        this.props.redirectTo('list', {
             ...this.props.params,
             [key]: value,
         });
@@ -244,20 +249,22 @@ class ManagementPlannings extends React.Component {
                     canMakeTemplate={this.state.canMakeTemplate}
                 />
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.planningDeleted}
-                        deleteElement={planning => this.deletePlanning(planning)}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.planningDeleted}
+                            deleteElement={planning => this.deletePlanning(planning)}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
                     <div className="widget__header">
                         <h2 className="widget__heading">
                             <FormattedMessage
                                 id="management.planning.title"
-                                defaultMessage="Planning"
+                                defaultMessage="Plannings"
                             />
                         </h2>
 
@@ -265,30 +272,34 @@ class ManagementPlannings extends React.Component {
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     <section>
                         {
-                            !this.state.isUpdating &&
-                            <CustomTableComponent
-                                withBorder={false}
-                                isSortable
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'name', desc: false }]}
-                                params={this.props.params}
-                                defaultPath="plannings"
-                                dataKey="datas"
-                                onDataLoaded={datas => this.setTemplatePermission(datas)}
-                                callBackWithDataKey={false}
-                                canSelect={false}
-                            />
+                            !this.state.isUpdating
+                            && (
+                                <CustomTableComponent
+                                    withBorder={false}
+                                    isSortable
+                                    showPagination
+                                    endPointUrl={this.state.tableUrl}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    params={this.props.params}
+                                    defaultPath="list"
+                                    dataKey="datas"
+                                    onDataLoaded={datas => this.setTemplatePermission(datas)}
+                                    callBackWithDataKey={false}
+                                    canSelect={false}
+                                />
+                            )
                         }
                         <div className="widget__content align-right border-top">
                             <button
@@ -301,14 +312,15 @@ class ManagementPlannings extends React.Component {
                         </div>
                     </section>
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 
-ManagementPlannings.defaultProps = {
+Plannings.defaultProps = {
 };
 
-ManagementPlannings.propTypes = {
+Plannings.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
@@ -316,7 +328,7 @@ ManagementPlannings.propTypes = {
     dispatch: PropTypes.func.isRequired,
 };
 
-const ManagementPlanningsIntl = injectIntl(ManagementPlannings);
+const PlanningsIntl = injectIntl(Plannings);
 
 const MapStateToProps = state => ({
     load: state.load,
@@ -327,4 +339,4 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(ManagementPlanningsIntl);
+export default connect(MapStateToProps, MapDispatchToProps)(PlanningsIntl);

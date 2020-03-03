@@ -49,7 +49,7 @@ const styles = theme => ({
 });
 
 class CompletenessPeriodComponent extends Component {
-    componentWillMount() {
+    componentDidMount() {
         const { formatMessage } = this.props.intl;
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
@@ -88,11 +88,12 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            period, forms, instanceStatus, classes, intl: {
+            data, instanceStatus, classes, intl: {
                 formatMessage,
             },
         } = this.props;
-        const formsTotals = getFormsTotal(forms, instanceStatus);
+        // TODO: totals
+        // const formsTotals = getFormsTotal(forms, instanceStatus);
         return (
             <Paper className={classes.root}>
 
@@ -106,7 +107,7 @@ class CompletenessPeriodComponent extends Component {
                     >
 
                         <Typography variant="h5" gutterBottom>
-                            {getPrettyPeriod(period)}
+                            {getPrettyPeriod(data.period.periodString)}
                         </Typography>
                     </Grid>
                 </Grid>
@@ -117,18 +118,18 @@ class CompletenessPeriodComponent extends Component {
                         multiSort
                         columns={getColumns(
                             formatMessage,
-                            forms[0].months,
+                            data.period.monthRange,
                             classes,
                             instanceStatus,
                             (form, status, month) => this.onSelectCell(form, status, month, period),
-                            formsTotals,
+                            // TODO: formsTotals,
                         )}
-                        data={forms}
+                        data={Object.values(data.forms)}
                         filterable={false}
                         sortable
                         className="-striped -highlight"
                         defaultSorted={[{ id: 'label', desc: false }]}
-                        defaultPageSize={forms.length}
+                        defaultPageSize={Object.keys(data.forms).length}
                     />
                 </section>
             </Paper>
@@ -138,8 +139,7 @@ class CompletenessPeriodComponent extends Component {
 
 
 CompletenessPeriodComponent.propTypes = {
-    period: PropTypes.string.isRequired,
-    forms: PropTypes.array.isRequired,
+    data: PropTypes.object.isRequired,
     instanceStatus: PropTypes.array.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,

@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
@@ -9,24 +10,16 @@ import {
 import PropTypes from 'prop-types';
 
 import {
-    fetchCompleteness,
     fetchPeriodTypes,
     fetchIsntanceStatus,
 } from '../utils/requests';
 
-import {
-    setCompletenessData,
-    setIsFetching,
-} from '../redux/completenessReducer';
+import { fetchCompleteness } from '../domains/completeness/actions';
 
-import {
-    setInstanceStatus,
-} from '../redux/instancesReducer';
-import {
-    setPeriodTypes,
-} from '../redux/periodsReducer';
+import { setInstanceStatus } from '../redux/instancesReducer';
+import { setPeriodTypes } from '../redux/periodsReducer';
 
-import { sortPeriods, sortPeriodTypes } from '../utils/periodsUtils';
+import { sortPeriodTypes } from '../utils/periodsUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
@@ -46,7 +39,7 @@ const styles = theme => ({
 });
 
 class Completeness extends Component {
-    componentWillMount() {
+    componentDidMount() {
         const {
             dispatch,
             intl: {
@@ -64,32 +57,8 @@ class Completeness extends Component {
                     id: `iaso.completeness.${s[0]}Multi`,
                 }),
             }))));
-        this.getData();
-    }
 
-    componentDidUpdate(prevProps) {
-        const { params: { periodType } } = this.props;
-        if (periodType && periodType !== prevProps.params.periodType) {
-            this.getData();
-        }
-    }
-
-    getData() {
-        const {
-            dispatch,
-        } = this.props;
-        this.props.setIsFetching(true);
-        fetchCompleteness(dispatch, this.getendPointUrl())
-            .then((res) => {
-                this.props.setCompletenessData(sortPeriods(res));
-                this.props.setIsFetching(false);
-            });
-    }
-
-    getendPointUrl() {
-        const { periodType } = this.props.params;
-        const url = `/api/completeness/?period_type=${periodType}`;
-        return url;
+        this.props.fetchCompleteness();
     }
 
     render() {
@@ -99,15 +68,14 @@ class Completeness extends Component {
             intl: {
                 formatMessage,
             },
-            fetching,
-            completenessData,
+            completeness,
             instanceStatus,
         } = this.props;
-        if (!completenessData) return null;
+
         return (
             <Fragment>
                 {
-                    fetching
+                    completeness.fetching
                     && <LoadingSpinner />
                 }
                 <TopBar
@@ -126,11 +94,10 @@ class Completeness extends Component {
                     />
                     <div className={classes.marginTop}>
                         {
-                            completenessData.map(d => (
+                            Object.entries(completeness.data).map(([periodKey, periodData]) => (
                                 <CompletenessPeriodComponent
-                                    key={d.period}
-                                    period={d.period}
-                                    forms={d.forms}
+                                    key={periodKey}
+                                    data={periodData}
                                     instanceStatus={instanceStatus}
                                 />
                             ))
@@ -142,38 +109,34 @@ class Completeness extends Component {
     }
 }
 
-Completeness.defaultProps = {
-    completenessData: null,
-};
-
 Completeness.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    setCompletenessData: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    fetching: PropTypes.bool.isRequired,
-    completenessData: PropTypes.any,
+    params: PropTypes.object.isRequired,
+    completeness: PropTypes.object.isRequired,
+    fetchCompleteness: PropTypes.func.isRequired,
     setPeriodTypes: PropTypes.func.isRequired,
-    setIsFetching: PropTypes.func.isRequired,
     setInstanceStatus: PropTypes.func.isRequired,
     instanceStatus: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
-    completenessData: state.completeness.data,
-    fetching: state.completeness.fetching,
+    completeness: state.completeness,
     instanceStatus: state.instances.instanceStatus,
 });
 
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    setPeriodTypes: periodTypes => dispatch(setPeriodTypes(periodTypes)),
-    setCompletenessData: data => dispatch(setCompletenessData(data)),
-    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
-    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
-});
+const mapDispatchToProps = dispatch => (
+    {
+        dispatch,
+        ...bindActionCreators({
+            fetchCompleteness,
+            setInstanceStatus,
+            setPeriodTypes,
+        }, dispatch),
+    }
+);
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Completeness)),
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Completeness)),
 );

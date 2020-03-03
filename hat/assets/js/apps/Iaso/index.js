@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
+import thunk from 'redux-thunk';
 import { createHistory } from 'history';
 import moment from 'moment';
 
@@ -28,7 +29,7 @@ import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
 import { periodsInitialState, periodsReducer } from './redux/periodsReducer';
-import { completenessInitialState, completenessReducer } from './redux/completenessReducer';
+import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import chipColors from './constants/chipColors';
 
 import App from '../App';
@@ -171,6 +172,7 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsReducer,
     }, [
         routerMiddleware(history),
+        thunk,
     ]);
 
     history = syncHistoryWithStore(

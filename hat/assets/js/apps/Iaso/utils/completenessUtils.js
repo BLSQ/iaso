@@ -9,7 +9,7 @@ const getBaseColumns = formatMessage => ([
             defaultMessage: 'Forms',
             id: 'iaso.forms.title',
         }),
-        accessor: 'label',
+        accessor: 'name',
         width: 300,
     },
 ]);
@@ -23,17 +23,16 @@ export const getColumns = (
     formsTotals,
 ) => {
     const columns = getBaseColumns(formatMessage);
-    months.forEach((month, monthIndex) => {
+    months.forEach((month) => {
         const monthColumn = {
             Header: (
                 <span className={classes.capitalize}>
                     {formatMessage({
-                        defaultMessage: month.label,
-                        id: `main.label.months.${month.label}`,
+                        defaultMessage: `Month ${month}`,
+                        id: `main.label.months.${month}`,
                     })}
                 </span>
             ),
-            accessor: month.label,
             columns: instanceStatus.filter(status => status.isVisible).map(status => ({
                 Header: (
                     <span className={classes.capitalize}>
@@ -44,23 +43,23 @@ export const getColumns = (
                     </span>
                 ),
                 key: status.key,
-                accessor: `months[${monthIndex}].fields.${status.key}`,
                 Cell: (settings) => {
-                    const value = settings.original.months[monthIndex].fields[status.key];
+                    const value = settings.original.months[month][status.key];
                     return (
                         <span
                             role="button"
                             tabIndex="0"
                             className={`${classes.cell} ${value ? classes[status.key] : ''}`}
-                            onClick={() => onSelect(settings.original, status.key, settings.original.months[monthIndex].id)}
+                            onClick={() => onSelect(settings.original, status.key, settings.original.months[month])}
                         >
                             {value || placeholder}
                         </span>
                     );
                 },
-                Footer: () => (
+                Footer: () => null,
+                __Footer: () => ( // TODO: totals
                     <span>
-                        {formatThousand(formsTotals[monthIndex][status.key])}
+                        {formatThousand(formsTotals[month][status.key])}
                     </span>
                 ),
             })),

@@ -203,6 +203,7 @@
 
 .macro-map {
     border-left: 1px solid $gray;
+    overflow: hidden;
 }
 
 .macro-map .leaflet-pane>svg path,

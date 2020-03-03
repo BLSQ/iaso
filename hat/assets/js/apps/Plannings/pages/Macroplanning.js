@@ -155,6 +155,7 @@ class Macroplanning extends React.Component {
             currentWorkZones,
             currentCoordination,
             currentArea,
+            params,
         } = this.props;
         const {
             selectedShape,
@@ -174,15 +175,14 @@ class Macroplanning extends React.Component {
                         </a>
                     </div>
                 </div>
-                <div className="widget__container route-legend">
+                <div className="widget__container">
                     <PlanningTeamSelection
                         plannings={this.props.plannings}
                         coordinations={this.props.coordinations}
                         params={this.props.params}
-                        redirect={params => this.props.redirect(params)}
+                        redirect={newParams => this.props.redirect(newParams)}
                         displayYearsSelect
                     />
-
                 </div>
                 {
                     coordinationId
@@ -216,7 +216,7 @@ class Macroplanning extends React.Component {
                                                     <div className="bold-subtitle">
                                                         1)
                                                         {' '}
-                                                        <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Welect a work zone" />
+                                                        <FormattedMessage id="microplanning.macro.selectWs" defaultMessage="Select a work zone" />
                                                     </div>
                                                     <div className="type-filters-containers">
                                                         <WorkZonesSelect
@@ -228,6 +228,10 @@ class Macroplanning extends React.Component {
                                                             selectWorkZone={workzoneId => this.selectWorkZone(workzoneId)}
                                                             selectShape={shape => this.selectShape(shape)}
                                                             assignToWorkZone={(action, zs, as, workZoneId) => this.assignToWorkZone(action, zs, as, workZoneId)}
+                                                            redirect={workzone_id => this.props.redirect({
+                                                                ...params,
+                                                                workzone_id,
+                                                            }, 'micro')}
                                                         />
                                                     </div>
                                                     <div className="type-filters-containers">
@@ -270,6 +274,15 @@ class Macroplanning extends React.Component {
                                             </div>
                                         )
                                     }
+                                </div>
+
+                                <div className="widget__content align-right">
+                                    <button
+                                        className="button"
+                                        onClick={() => this.props.redirect(params, 'micro')}
+                                    >
+                                        <FormattedMessage id="macroplanning.label.seeMicroPlanning" defaultMessage="See microplanning" />
+                                    </button>
                                 </div>
                             </section>
                         </div>
@@ -337,7 +350,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    redirect: params => dispatch(push(createUrl(params, 'macro'))),
+    redirect: (params, baseUrl = 'macro') => dispatch(push(createUrl(params, baseUrl))),
     fetchCoordinationsDetails: (planningId, coordinationId, areaId, years) => dispatch(coordinationActions.fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId, years)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),

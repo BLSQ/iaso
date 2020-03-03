@@ -66,6 +66,7 @@ class WorkZoneElement extends Component {
             compareZs,
             compareAs,
             endemicAsPopulations,
+            redirect,
         } = this.props;
         const isUnderCapicity = parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10);
         return (
@@ -195,7 +196,7 @@ class WorkZoneElement extends Component {
                                             <span className={`${endemicAsPopulations[area.properties.pk] ? 'endemic' : ''}`}>
                                                 {area.properties.name}
                                                 {endemicAsPopulations[area.properties.pk]
-                                                && ` (${endemicAsPopulations[area.properties.pk]})`}
+                                                    && ` (${endemicAsPopulations[area.properties.pk]})`}
                                             </span>
                                         ),
                                         value: area.properties.pk,
@@ -203,6 +204,14 @@ class WorkZoneElement extends Component {
                                     onChange={value => compareAs(value, index)}
                                 />
                             </div>
+                        </div>
+                        <div className="padding-right padding-bottom align-right">
+                            <button
+                                className="button--tiny"
+                                onClick={() => redirect(workZone.id)}
+                            >
+                                <FormattedMessage id="macroplanning.label.seeMicroPlanning" defaultMessage="See microplanning" />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -230,6 +239,7 @@ WorkZoneElement.propTypes = {
     compareZs: PropTypes.func.isRequired,
     compareAs: PropTypes.func.isRequired,
     endemicAsPopulations: PropTypes.object,
+    redirect: PropTypes.func.isRequired,
 };
 
 export default injectIntl(WorkZoneElement);

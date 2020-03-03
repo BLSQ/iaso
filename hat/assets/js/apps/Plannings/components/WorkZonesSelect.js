@@ -106,6 +106,7 @@ class WorkZonesSelect extends Component {
                 areas,
             },
             selectShape,
+            redirect,
         } = this.props;
         const endemicAsPopulations = this.props.currentCoordination.endemic_as_populations;
         const { workZones, unUsedAreas } = this.state;
@@ -127,6 +128,7 @@ class WorkZonesSelect extends Component {
                                 compareZs={(zslist, workZoneIndex) => this.compareZs(zslist, workZoneIndex)}
                                 compareAs={(asList, workZoneIndex) => this.compareAs(asList, workZoneIndex)}
                                 endemicAsPopulations={endemicAsPopulations}
+                                redirect={workzoneId => redirect(workzoneId)}
                             />
                         ))
                     }
@@ -176,6 +178,7 @@ WorkZonesSelect.propTypes = {
     currentCoordination: PropTypes.object,
     assignToWorkZone: PropTypes.func.isRequired,
     selectShape: PropTypes.func.isRequired,
+    redirect: PropTypes.func.isRequired,
 };
 
 export default injectIntl(WorkZonesSelect);

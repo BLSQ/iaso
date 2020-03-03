@@ -5,6 +5,7 @@ import Chip from '@material-ui/core/Chip';
 import VisibilityIcon from '@material-ui/icons/Visibility';
 
 import { sortGeoItems } from '../utils/workzonesUtils';
+import { formatThousand } from '../../../utils';
 
 function UnSelectedAreas({ areasList, isEndemic, handleSelect }) {
     const [isOpen, setIsOpen] = useState(false);
@@ -53,8 +54,6 @@ function UnSelectedAreas({ areasList, isEndemic, handleSelect }) {
                                         <FormattedMessage id="macroplanning.label.allAreasAssgined" defaultMessage="All non endemic health areas are assigned" />
                                     )
                                 }
-                                :
-                                <span className="area-count">{areasList.length}</span>
                             </Fragment>
                         )
                     }
@@ -64,6 +63,7 @@ function UnSelectedAreas({ areasList, isEndemic, handleSelect }) {
                     }
                     {
                         !isOpen
+                        && areasList.length > 0
                         && <i className="fa fa-chevron-right" />
                     }
                 </div>
@@ -84,7 +84,7 @@ function UnSelectedAreas({ areasList, isEndemic, handleSelect }) {
                                     <Chip
                                         size="small"
                                         icon={<VisibilityIcon />}
-                                        label={area.name}
+                                        label={`${area.name}${area.endemicPopulation ? ` (${formatThousand(area.endemicPopulation)})` : ''}`}
                                         onClick={() => handleSelect(area)}
                                         key={area.pk}
                                     />

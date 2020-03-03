@@ -127,6 +127,7 @@ class Macroplanning extends React.Component {
         }
         this.setState({
             showModale: false,
+            selectedShape: null,
         });
         this.props.selectWorkzone(
             this.props.params.planning_id,
@@ -159,7 +160,6 @@ class Macroplanning extends React.Component {
             selectedShape,
         } = this.state;
         const coordinationId = this.props.params.coordination_id ? this.props.params.coordination_id : undefined;
-        console.log('selectedShape', selectedShape);
         return (
             <section className="macro-container">
                 <div className="widget__container">
@@ -200,7 +200,7 @@ class Macroplanning extends React.Component {
                                             />
                                         )
                                     }
-                                    <div>
+                                    <div className="wz-select-container">
                                         {
                                             currentWorkZones && currentWorkZones.length === 0 && !loading
                                             && (

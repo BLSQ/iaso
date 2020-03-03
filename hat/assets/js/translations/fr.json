@@ -296,7 +296,7 @@
     "macroplanning.label.unUsedAreas": "Aire(s) de santé non endémiques non assignée(s)",
     "macroplanning.label.unUsedEndemicAreas": "Aire(s) de santé endémique(s) non assignée(s)",
     "macroplanning.label.allAreasAssgined": "Toutes les aires de santé sont assignées",
-    "macroplanning.label.alallEndemicAreasAssginedlAreasAssgined": "Toutes les aires de santé endémiques sont assignées",
+    "macroplanning.label.allEndemicAreasAssgined": "Toutes les aires de santé endémiques sont assignées",
     "macroplanning.labels.years.select": "Toutes les années",
     "macroplanning.legend.notAssigned": "Aucun rayon d'action",
     "macroplanning.total_capacity": "Capacité totale de la coordination",

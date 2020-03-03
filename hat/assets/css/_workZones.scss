@@ -244,4 +244,14 @@
             }
         }
     }
+    .Select span {
+        font-weight: normal;
+        &.endemic {
+            font-weight: bold;
+        }
+    }
+}
+.wz-select-container {
+    height: 796px;
+    overflow: auto;
 }

@@ -107,6 +107,7 @@ class WorkZonesSelect extends Component {
             },
             selectShape,
         } = this.props;
+        const endemicAsPopulations = this.props.currentCoordination.endemic_as_populations;
         const { workZones, unUsedAreas } = this.state;
         return (
             <div>
@@ -125,6 +126,7 @@ class WorkZonesSelect extends Component {
                                 toggleColors={(workZoneId, show) => this.toggleColors(workZoneId, show)}
                                 compareZs={(zslist, workZoneIndex) => this.compareZs(zslist, workZoneIndex)}
                                 compareAs={(asList, workZoneIndex) => this.compareAs(asList, workZoneIndex)}
+                                endemicAsPopulations={endemicAsPopulations}
                             />
                         ))
                     }

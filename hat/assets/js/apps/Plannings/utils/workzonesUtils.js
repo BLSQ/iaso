@@ -42,7 +42,10 @@ export const mapWorkzoneData = (workzones, allAreas, endemicAs) => {
         const areaId = parseInt(a.properties.pk, 10);
         if (usedAreas.filter(u => u.id === areaId).length === 0) {
             if (endemicAs[areaId]) {
-                datas.unUsedAreas.endemic.push(a.properties);
+                datas.unUsedAreas.endemic.push({
+                    ...a.properties,
+                    endemicPopulation: endemicAs[areaId],
+                });
             } else {
                 datas.unUsedAreas.nonEndemic.push(a.properties);
             }

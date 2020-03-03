@@ -65,6 +65,7 @@ class WorkZoneElement extends Component {
             index,
             compareZs,
             compareAs,
+            endemicAsPopulations,
         } = this.props;
         const isUnderCapicity = parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10);
         return (
@@ -189,7 +190,16 @@ class WorkZoneElement extends Component {
                                     name="areaId"
                                     value={workZone.currentAreas}
                                     placeholder="--"
-                                    options={areas.features.map(area => ({ label: area.properties.name, value: area.properties.pk }))}
+                                    options={areas.features.map(area => ({
+                                        label: (
+                                            <span className={`${endemicAsPopulations[area.properties.pk] ? 'endemic' : ''}`}>
+                                                {area.properties.name}
+                                                {endemicAsPopulations[area.properties.pk]
+                                                && ` (${endemicAsPopulations[area.properties.pk]})`}
+                                            </span>
+                                        ),
+                                        value: area.properties.pk,
+                                    }))}
                                     onChange={value => compareAs(value, index)}
                                 />
                             </div>
@@ -201,9 +211,10 @@ class WorkZoneElement extends Component {
     }
 }
 WorkZoneElement.defaultProps = {
-    selectedWorkZoneId: undefined,
-    zones: undefined,
-    areas: undefined,
+    selectedWorkZoneId: null,
+    zones: null,
+    areas: null,
+    endemicAsPopulations: null,
 };
 
 WorkZoneElement.propTypes = {
@@ -218,6 +229,7 @@ WorkZoneElement.propTypes = {
     index: PropTypes.number.isRequired,
     compareZs: PropTypes.func.isRequired,
     compareAs: PropTypes.func.isRequired,
+    endemicAsPopulations: PropTypes.object,
 };
 
 export default injectIntl(WorkZoneElement);

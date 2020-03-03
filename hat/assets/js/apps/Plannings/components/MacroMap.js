@@ -87,6 +87,23 @@ class MacroMap extends Component {
             if (hasChanged(nextProps, this.props, 'currentArea')) {
                 this.updateCoordination(nextProps.coordination, nextProps.workzones);
             }
+            if (hasChanged(nextProps, this.props, 'selectedShape')) {
+                this.coordinationGroup.eachLayer((layer) => {
+                    layer.eachLayer((areaLayer) => {
+                        if (nextProps.selectedShape && areaLayer.id === `area-${nextProps.selectedShape.pk}`) {
+                            defaultFitToBound(map, areaLayer.getBounds(), 15, [100, 100]);
+
+                            areaLayer.setStyle({
+                                fillOpacity: 0.7,
+                            });
+                        } else if (areaLayer.options.fillOpacity === 0.7) {
+                            areaLayer.setStyle({
+                                fillOpacity: 0.5,
+                            });
+                        }
+                    });
+                });
+            }
         });
     }
 
@@ -110,6 +127,8 @@ class MacroMap extends Component {
             ${feature.properties.workzone ? `<dt><strong>RA:</strong> ${feature.properties.workzone}</dt>` : ''}
             <dt><strong>${formatMessage(MESSAGES['endemic-population'])}:</strong> ${feature.properties.population}</dt>
         </dl>`;
+        // eslint-disable-next-line no-param-reassign
+        layer.id = `area-${feature.properties.pk}`;
         layer.bindTooltip(toolTipContent);
         layer.setStyle({
             fillOpacity: 0.5,
@@ -118,14 +137,26 @@ class MacroMap extends Component {
             this.props.selectAs(feature.properties);
         });
         layer.on('mouseover', () => {
-            layer.setStyle({
-                fillOpacity: 0.8,
-            });
+            if (layer.options.fillOpacity === 0.5) {
+                layer.setStyle({
+                    fillOpacity: 0.7,
+                });
+            } else if (layer.options.fillOpacity === 0.7) {
+                layer.setStyle({
+                    fillOpacity: 0.9,
+                });
+            }
         });
         layer.on('mouseout', () => {
-            layer.setStyle({
-                fillOpacity: 0.5,
-            });
+            if (layer.options.fillOpacity === 0.7) {
+                layer.setStyle({
+                    fillOpacity: 0.5,
+                });
+            } else if (layer.options.fillOpacity === 0.9) {
+                layer.setStyle({
+                    fillOpacity: 0.7,
+                });
+            }
         });
     }
 
@@ -264,6 +295,7 @@ class MacroMap extends Component {
 MacroMap.defaultProps = {
     coordination: {},
     workzones: [],
+    selectedShape: null,
 };
 
 MacroMap.propTypes = {
@@ -273,6 +305,7 @@ MacroMap.propTypes = {
     intl: intlShape.isRequired,
     selectAs: PropTypes.func.isRequired,
     coordinationId: PropTypes.string.isRequired,
+    selectedShape: PropTypes.object,
 };
 
 export default injectIntl(MacroMap);

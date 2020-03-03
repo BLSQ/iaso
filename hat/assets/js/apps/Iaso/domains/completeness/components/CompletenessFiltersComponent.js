@@ -3,21 +3,15 @@ import { injectIntl } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 
 import Grid from '@material-ui/core/Grid';
 
-import {
-    periodTypes,
-} from '../../constants/filters';
-import {
-    setInstanceStatus,
-} from '../../redux/instancesReducer';
+import { periodTypes } from '../../../constants/filters';
+import { setInstanceStatus } from '../../../redux/instancesReducer';
 
-import FiltersComponent from './FiltersComponent';
-import ChipsListComponent from '../chips/ChipsListComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
+import ChipsListComponent from '../../../components/chips/ChipsListComponent';
 
-import { createUrl } from '../../../../utils/fetchData';
 
 class CompletenessFiltersComponent extends Component {
     constructor(props) {
@@ -42,7 +36,6 @@ class CompletenessFiltersComponent extends Component {
                 ...this.props.params,
             };
             tempParams.page = 1;
-            this.props.redirectTo(this.props.baseUrl, tempParams);
         }
         this.props.onSearch();
     }
@@ -93,7 +86,6 @@ CompletenessFiltersComponent.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     periodTypesList: PropTypes.array.isRequired,
-    redirectTo: PropTypes.func.isRequired,
     instanceStatus: PropTypes.array.isRequired,
     setInstanceStatus: PropTypes.func.isRequired,
 };
@@ -106,7 +98,6 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
 });
 

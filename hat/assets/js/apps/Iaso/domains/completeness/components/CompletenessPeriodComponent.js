@@ -10,12 +10,11 @@ import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { injectIntl } from 'react-intl';
 
-import { getPrettyPeriod, getPeriodType } from '../../utils/periodsUtils';
-import { getColumns, getFormsTotal } from '../../utils/completenessUtils';
-import commonStyles from '../../styles/common';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
-import { createUrl } from '../../../../utils/fetchData';
-import DatePeriods from '../../libs/DatePeriods';
+import { getPrettyPeriod, getPeriodType } from '../../../utils/periodsUtils';
+import { getColumns } from '../../../utils/completenessUtils';
+import commonStyles from '../../../styles/common';
+import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
+import DatePeriods from '../../../libs/DatePeriods';
 
 const styles = theme => ({
     ...commonStyles(theme),

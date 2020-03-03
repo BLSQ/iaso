@@ -23,8 +23,8 @@ import { sortPeriodTypes } from '../utils/periodsUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import CompletenessPeriodComponent from '../components/completeness/CompletenessPeriodComponent';
-import CompletenessFiltersComponent from '../components/filters/CompletenessFiltersComponent';
+import CompletenessPeriodComponent from '../domains/completeness/components/CompletenessPeriodComponent';
+import CompletenessFiltersComponent from '../domains/completeness/components/CompletenessFiltersComponent';
 
 import commonStyles from '../styles/common';
 

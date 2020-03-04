@@ -20,6 +20,20 @@ import {
     zooms,
 } from '../utils/map/mapUtils';
 
+const docClick = ({ x, y }) => {
+    const ev = document.createEvent('MouseEvent');
+    const el = document.elementFromPoint(x, y);
+    ev.initMouseEvent(
+        'click',
+        true /* bubble */, true /* cancelable */,
+        window, null,
+        x, y, 0, 0, /* coordinates */
+        false, false, false, false, /* modifier keys */
+        0 /* left */, null,
+    );
+    el.dispatchEvent(ev);
+};
+
 const tileOptions = { keepBuffer: 4 };
 export const BASE_LAYERS = {
     blank: L.tileLayer(''),
@@ -242,36 +256,47 @@ class LocationMap extends Component {
 
 
     updateMap(location) {
+        console.log('updateMap');
         const { locationMap } = this;
-        this.locationGroup.clearLayers();
-        const color = 'blue';
-        if (location && location.latitude !== 0 && location.longitude !== 0) {
-            const newLocation = L.circle([
-                location.latitude ? location.latitude : 0,
-                location.longitude ? location.longitude : 0,
-            ], {
-                color,
-                fillColor: color,
-                fillOpacity: 0.5,
-                radius: 500,
-                pane: 'custom-pane-markers',
-            }).on('mousedown', () => {
-                locationMap.dragging.disable();
-                locationMap.getPane('custom-pane-as-shapes').style.zIndex = 650;
-                locationMap.on('mousemove', (event) => {
-                    if (!locationMap.dragging._enabled) {
-                        newLocation.setLatLng([event.latlng.lat, event.latlng.lng]);
-                    }
-                });
-            });
-            newLocation.addTo(this.locationGroup);
-        }
 
-        if (this.state.isFirstLoad) {
-            this.fitToBounds();
-            this.setState({
-                isFirstLoad: false,
-            });
+        const color = 'blue';
+
+        if (location && location.latitude !== 0 && location.longitude !== 0) {
+            if (this.state.isFirstLoad) {
+                this.villageMarker = L.circle([
+                    location.latitude ? location.latitude : 0,
+                    location.longitude ? location.longitude : 0,
+                ], {
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.5,
+                    radius: 500,
+                    pane: 'custom-pane-markers',
+                }).on('mousedown', () => {
+                    locationMap.dragging.disable();
+                    locationMap.getPane('custom-pane-as-shapes').style.zIndex = 650;
+                    locationMap.on('mousemove', (event) => {
+                        if (!locationMap.dragging._enabled) {
+                            this.villageMarker.setLatLng([event.latlng.lat, event.latlng.lng]);
+                        }
+                    });
+                });
+                this.villageMarker.addTo(this.locationGroup);
+                this.fitToBounds();
+                this.setState({
+                    isFirstLoad: false,
+                });
+            } else {
+                const latlng = new L.LatLng(location.latitude, location.longitude);
+                // this.villageMarker.setLatLng(latlng);
+                console.log(this.villageMarker.getElement());
+                const domElement = this.villageMarker.getElement();
+                if (domElement) {
+                    const rect = domElement.getBoundingClientRect();
+                    docClick(rect);
+                    console.log(rect);
+                }
+            }
         }
     }
 

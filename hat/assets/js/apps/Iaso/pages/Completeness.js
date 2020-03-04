@@ -4,8 +4,8 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
-import { fetchCompleteness } from '../domains/completeness/actions';
-import { redirectTo } from '../routing/actions';
+import { fetchCompleteness as fetchCompletenessAction } from '../domains/completeness/actions';
+import { redirectTo as redirectToAction } from '../routing/actions';
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import CompletenessListComponent from '../domains/completeness/components/CompletenessListComponent';
@@ -23,6 +23,7 @@ class Completeness extends Component {
                 formatMessage,
             },
             completeness,
+            redirectTo,
         } = this.props;
 
         return (
@@ -63,8 +64,8 @@ const MapStateToProps = state => ({
 const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
-            fetchCompleteness,
-            redirectTo,
+            fetchCompleteness: fetchCompletenessAction,
+            redirectTo: redirectToAction,
         }, dispatch),
     }
 );

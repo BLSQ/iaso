@@ -6,31 +6,30 @@ import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
 import commonStyles from '../../../styles/common';
 import { PERIOD_TYPE_QUARTERLY } from '../periods';
+import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';
 
 
-const styles = theme => ({
-    ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
-});
+const styles = theme => commonStyles(theme);
 
 function CompletenessListComponent({
-    classes, completenessList, instanceStatusList, params,
+    classes, completenessList,
 }) {
-    const [groupByPeriodType, setGroupByPeriodType] = useState(PERIOD_TYPE_QUARTERLY);
+    const [activePeriodType, setActivePeriodType] = useState(PERIOD_TYPE_QUARTERLY);
+    const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(INSTANCE_STATUSES);
+
     const groupedCompletenessData = useMemo(
-        () => groupCompletenessData(completenessList, groupByPeriodType),
-        [completenessList, groupByPeriodType],
+        () => groupCompletenessData(completenessList, activePeriodType),
+        [completenessList, activePeriodType],
     );
 
     return (
         <Box className={classes.containerFullHeightNoTabPadded}>
             <CompletenessFiltersComponent
-                baseUrl="completeness"
-                params={params}
+                activePeriodType={activePeriodType}
+                setActivePeriodType={setActivePeriodType}
+                activeInstanceStatuses={activeInstanceStatuses}
+                setActiveInstanceStatuses={setActiveInstanceStatuses}
             />
             <div className={classes.marginTop}>
                 {
@@ -38,7 +37,7 @@ function CompletenessListComponent({
                         <CompletenessPeriodComponent
                             key={periodKey}
                             data={periodData}
-                            instanceStatus={instanceStatusList}
+                            activeInstanceStatuses={activeInstanceStatuses}
                         />
                     ))
                 }
@@ -49,7 +48,5 @@ function CompletenessListComponent({
 CompletenessListComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     completenessList: PropTypes.arrayOf(PropTypes.object).isRequired,
-    instanceStatusList: PropTypes.arrayOf(PropTypes.object).isRequired,
-    params: PropTypes.object.isRequired,
 };
 export default withStyles(styles)(CompletenessListComponent);

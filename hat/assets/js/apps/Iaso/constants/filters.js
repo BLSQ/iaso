@@ -367,27 +367,6 @@ export const periods = periodsList => (
     }
 );
 
-export const periodTypes = (
-    formatMessage,
-    periodTypesList,
-    urlKey = 'periodType',
-) => (
-    {
-        urlKey,
-        isMultiSelect: false,
-        isClearable: false,
-        options: periodTypesList.map(pt => ({
-            label: formatMessage({
-                id: `iaso.label.periodType.${pt[0]}`,
-                defaultMessage: pt[0],
-            }),
-            value: pt[0],
-        })),
-        label: MESSAGES.period_types,
-        type: 'select',
-    }
-);
-
 
 export const instanceStatus = statusList => (
     {

@@ -1,5 +1,5 @@
-import React from 'react';
 import _ from 'lodash';
+import React from 'react';
 
 import Period, { PERIOD_TYPE_QUARTERLY } from './periods';
 import { formatThousand } from '../../../../utils';
@@ -22,7 +22,7 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
 
         // create form group if not exist
         const formPath = `${periodPath}.forms.${dataEntry.form.id}`;
-        if (!_.has(groupCompletenessData, formPath)) {
+        if (!_.has(groupedCompletenessData, formPath)) {
             _.set(groupedCompletenessData, formPath, {
                 id: dataEntry.form.id,
                 name: dataEntry.form.name,
@@ -34,9 +34,10 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
             });
         }
 
-        _.update(groupedCompletenessData, `${formPath}.months.${period.month}.ready`, ready => ready + dataEntry.counts.ready);
-        _.update(groupedCompletenessData, `${formPath}.months.${period.month}.error`, error => error + dataEntry.counts.duplicated);
-        _.update(groupedCompletenessData, `${formPath}.months.${period.month}.exported`, exported => exported + dataEntry.counts.exported);
+        const monthPath = `${formPath}.months.${period.month}`;
+        _.update(groupedCompletenessData, `${monthPath}.ready`, ready => ready + dataEntry.counts.ready);
+        _.update(groupedCompletenessData, `${monthPath}.error`, error => error + dataEntry.counts.error);
+        _.update(groupedCompletenessData, `${monthPath}.exported`, exported => exported + dataEntry.counts.exported);
     });
 
     return groupedCompletenessData;
@@ -57,7 +58,7 @@ export const getColumns = (
     formatMessage,
     months,
     classes,
-    instanceStatus,
+    activeInstanceStatuses,
     onSelect,
 ) => {
     const columns = getBaseColumns(formatMessage);
@@ -71,31 +72,31 @@ export const getColumns = (
                     })}
                 </span>
             ),
-            columns: instanceStatus.filter(status => status.isVisible).map(status => ({
+            columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({
                 Header: (
                     <span className={classes.capitalize}>
                         {formatMessage({
-                            defaultMessage: status.key,
-                            id: `iaso.completeness.${status.key}`,
+                            defaultMessage: status,
+                            id: `iaso.completeness.${status}`,
                         })}
                     </span>
                 ),
                 key: status.key,
                 Cell: (settings) => {
-                    const value = settings.original.months[month][status.key];
+                    const value = settings.original.months[month][status];
                     return (
                         <span
                             role="button"
                             tabIndex="0"
-                            className={`${classes.cell} ${value ? classes[status.key] : ''}`}
-                            onClick={() => onSelect(settings.original, status.key, settings.original.months[month])}
+                            className={`${classes.cell} ${value ? classes[status] : ''}`}
+                            onClick={() => onSelect(settings.original, status, settings.original.months[month])}
                         >
                             {value || '-'}
                         </span>
                     );
                 },
                 Footer: (info) => {
-                    const counts = info.data.map(row => row._original.months[month][status.key]);
+                    const counts = info.data.map(row => row._original.months[month][status]);
                     const total = counts.reduce((sum, count) => count + sum, 0);
 
                     return <span>{formatThousand(total)}</span>;

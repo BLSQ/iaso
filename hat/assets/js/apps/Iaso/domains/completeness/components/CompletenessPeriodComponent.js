@@ -87,7 +87,7 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            data, instanceStatus, classes, intl: {
+            data, activeInstanceStatuses, classes, intl: {
                 formatMessage,
             },
         } = this.props;
@@ -118,7 +118,7 @@ class CompletenessPeriodComponent extends Component {
                             formatMessage,
                             data.period.monthRange,
                             classes,
-                            instanceStatus,
+                            activeInstanceStatuses,
                             (form, status, month) => this.onSelectCell(form, status, month, data.period.periodString),
                         )}
                         data={Object.values(data.forms)}
@@ -137,7 +137,7 @@ class CompletenessPeriodComponent extends Component {
 
 CompletenessPeriodComponent.propTypes = {
     data: PropTypes.object.isRequired,
-    instanceStatus: PropTypes.array.isRequired,
+    activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,

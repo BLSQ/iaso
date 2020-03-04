@@ -1,103 +1,63 @@
-import React, { Component, Fragment } from 'react';
+import React from 'react';
 import { injectIntl } from 'react-intl';
-
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-
 import Grid from '@material-ui/core/Grid';
 
-import { periodTypes } from '../../../constants/filters';
-import { setInstanceStatus } from '../../../redux/instancesReducer';
+import InputComponent from '../../../components/forms/InputComponent';
+import ChipListComponent from '../../../components/chips/ChipListComponent';
+import { periodTypeOptions, instanceStatusesOptions } from '../config';
 
-import FiltersComponent from '../../../components/filters/FiltersComponent';
-import ChipsListComponent from '../../../components/chips/ChipsListComponent';
+function CompletenessFiltersComponent({
+    activePeriodType,
+    setActivePeriodType,
+    activeInstanceStatuses,
+    setActiveInstanceStatuses,
+    intl,
+}) {
+    // TODO: select and chiplist should accept translatable messages options
+    const translatedPeriodTypeOptions = periodTypeOptions.map(option => ({
+        value: option.value,
+        label: intl.formatMessage(option.label),
+    }));
+    const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
+        value: option.value,
+        label: intl.formatMessage(option.label),
+    }));
 
-
-class CompletenessFiltersComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            filtersUpdated: true,
-        };
-    }
-
-    onFilterChanged() {
-        this.setState({
-            filtersUpdated: true,
-        });
-    }
-
-    onSearch() {
-        if (this.state.filtersUpdated) {
-            this.setState({
-                filtersUpdated: false,
-            });
-            const tempParams = {
-                ...this.props.params,
-            };
-            tempParams.page = 1;
-        }
-        this.props.onSearch();
-    }
-
-    render() {
-        const {
-            params,
-            baseUrl,
-            intl: {
-                formatMessage,
-            },
-            periodTypesList,
-            instanceStatus,
-        } = this.props;
-        return (
-            <Fragment>
-                <Grid container spacing={4}>
-                    <Grid item xs={3}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                periodTypes(formatMessage, periodTypesList),
-                            ]}
-                            onEnterPressed={() => this.onSearch()}
-                        />
-                    </Grid>
-                    <Grid item xs={3} />
-                    <Grid item container xs={6} justify="flex-end">
-                        <ChipsListComponent
-                            chipsList={instanceStatus}
-                            handleListChange={chipsList => this.props.setInstanceStatus(chipsList)}
-                        />
-                    </Grid>
+    return (
+        <>
+            <Grid container spacing={4}>
+                <Grid item xs={3}>
+                    <InputComponent
+                        type="select"
+                        clearable={false}
+                        onChange={(_, value) => setActivePeriodType(value)}
+                        label={{
+                            id: 'iaso.label.periodType',
+                            defaultMessage: 'Period type',
+                        }}
+                        options={translatedPeriodTypeOptions}
+                        value={activePeriodType}
+                        keyValue="periodType"
+                    />
                 </Grid>
-            </Fragment>
-        );
-    }
+                <Grid item xs={3} />
+                <Grid item container xs={6} justify="flex-end">
+                    <ChipListComponent
+                        options={translatedInstanceStatusesOptions}
+                        value={activeInstanceStatuses}
+                        onChange={setActiveInstanceStatuses}
+                    />
+                </Grid>
+            </Grid>
+        </>
+    );
 }
-CompletenessFiltersComponent.defaultProps = {
-    baseUrl: '',
-};
-
 CompletenessFiltersComponent.propTypes = {
+    activePeriodType: PropTypes.string.isRequired,
+    setActivePeriodType: PropTypes.func.isRequired,
+    activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
+    setActiveInstanceStatuses: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    baseUrl: PropTypes.string,
-    periodTypesList: PropTypes.array.isRequired,
-    instanceStatus: PropTypes.array.isRequired,
-    setInstanceStatus: PropTypes.func.isRequired,
 };
-
-const MapStateToProps = state => ({
-    periodTypesList: state.periods.periodTypes,
-    instanceStatus: state.instances.instanceStatus,
-});
-
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
-});
-
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(CompletenessFiltersComponent));
+export default injectIntl(CompletenessFiltersComponent);

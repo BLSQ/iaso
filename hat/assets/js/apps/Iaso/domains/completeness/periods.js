@@ -5,6 +5,13 @@ export const PERIOD_TYPE_SIX_MONTHLY = 'SIX_MONTHLY';
 export const PERIOD_TYPE_QUARTERLY = 'QUARTERLY';
 export const PERIOD_TYPE_MONTHLY = 'MONTHLY';
 
+export const PERIOD_TYPES = [
+    PERIOD_TYPE_MONTHLY,
+    PERIOD_TYPE_QUARTERLY,
+    PERIOD_TYPE_SIX_MONTHLY,
+    PERIOD_TYPE_YEARLY,
+];
+
 export default class Period {
     constructor(periodString) {
         const [periodType, periodParts] = Period.parse(periodString);
@@ -24,7 +31,7 @@ export default class Period {
     asPeriodTypeString(periodType) {
         switch (periodType) {
             case PERIOD_TYPE_MONTHLY:
-                return `${this.year}${this.month}`;
+                return `${this.year}${String(this.month).padStart(2)}`;
             case PERIOD_TYPE_QUARTERLY:
                 return `${this.year}Q${this.quarter}`;
             case PERIOD_TYPE_SIX_MONTHLY:
@@ -45,7 +52,7 @@ export default class Period {
             case PERIOD_TYPE_SIX_MONTHLY:
                 return _.range(this.month - 5, this.month + 1);
             case PERIOD_TYPE_YEARLY:
-                return _.range(this.month - 12, this.month + 1);
+                return _.range(this.month - 11, this.month + 1);
             default:
                 throw new Error(`Invalid period type ${this.periodType}`);
         }
@@ -97,7 +104,7 @@ export default class Period {
         return {
             month,
             quarter: Math.ceil(month / 3),
-            semester: Math.ceil(month / 2),
+            semester: Math.ceil(month / 6),
             year,
         };
     }

@@ -28,14 +28,14 @@ PERIOD_TYPE_CHOICES = (
     (SIX_MONTH, "Six-month"),
 )
 
-instance_ready = "ready"
-instance_error = "error"
-instance_exported = "exported"
+INSTANCE_STATUS_READY = "READY"
+INSTANCE_STATUS_ERROR = "ERROR"
+INSTANCE_STATUS_EXPORTED = "EXPORTED"
 
 INSTANCE_STATUS_CHOICES = (
-    (instance_ready, "Ready"),
-    (instance_error, "Error"),
-    (instance_exported, "Exported"),
+    (INSTANCE_STATUS_READY, "Ready"),
+    (INSTANCE_STATUS_ERROR, "Error"),
+    (INSTANCE_STATUS_EXPORTED, "Exported"),
 )
 
 

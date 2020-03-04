@@ -7,7 +7,7 @@
     },
     "counts": {
       "total": 1,
-      "duplicated": 3,
+      "error": 3,
       "exported": 5,
       "ready": 12
     }
@@ -20,7 +20,7 @@
     },
     "counts": {
       "total": 1,
-      "duplicated": 0,
+      "error": 0,
       "exported": 0,
       "ready": 1
     }
@@ -33,7 +33,7 @@
     },
     "counts": {
       "total": 3,
-      "duplicated": 0,
+      "error": 0,
       "exported": 0,
       "ready": 3
     }
@@ -46,7 +46,7 @@
     },
     "counts": {
       "total": 3,
-      "duplicated": 0,
+      "error": 0,
       "exported": 0,
       "ready": 3
     }
@@ -59,7 +59,7 @@
     },
     "counts": {
       "total": 1,
-      "duplicated": 0,
+      "error": 0,
       "exported": 0,
       "ready": 1
     }
@@ -72,7 +72,7 @@
     },
     "counts": {
       "total": 1,
-      "duplicated": 0,
+      "error": 0,
       "exported": 0,
       "ready": 1
     }

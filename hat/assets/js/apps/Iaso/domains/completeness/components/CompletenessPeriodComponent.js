@@ -1,6 +1,4 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 import moment from 'moment';
 
 import {
@@ -81,6 +79,7 @@ class CompletenessPeriodComponent extends Component {
                 }
             }
             params.formId = form.id;
+
             redirectTo('instances', params);
         }
     }
@@ -133,8 +132,6 @@ class CompletenessPeriodComponent extends Component {
         );
     }
 }
-
-
 CompletenessPeriodComponent.propTypes = {
     data: PropTypes.object.isRequired,
     activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
@@ -142,13 +139,4 @@ CompletenessPeriodComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
-
-const MapStateToProps = () => ({});
-
-
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-});
-
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(CompletenessPeriodComponent)));
+export default withStyles(styles)(injectIntl(CompletenessPeriodComponent));

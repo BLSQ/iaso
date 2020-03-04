@@ -5,8 +5,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
 import { fetchCompleteness } from '../domains/completeness/actions';
-import { setInstanceStatus } from '../redux/instancesReducer';
-import { setPeriodTypes } from '../redux/periodsReducer';
+import { redirectTo } from '../routing/actions';
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
 import CompletenessListComponent from '../domains/completeness/components/CompletenessListComponent';
@@ -42,6 +41,7 @@ class Completeness extends Component {
                 <CompletenessListComponent
                     completenessList={completeness.list}
                     params={params}
+                    redirectTo={redirectTo}
                 />
             </>
         );
@@ -53,6 +53,7 @@ Completeness.propTypes = {
     params: PropTypes.object.isRequired,
     completeness: PropTypes.object.isRequired,
     fetchCompleteness: PropTypes.func.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -61,11 +62,9 @@ const MapStateToProps = state => ({
 
 const mapDispatchToProps = dispatch => (
     {
-        dispatch,
         ...bindActionCreators({
             fetchCompleteness,
-            setInstanceStatus,
-            setPeriodTypes,
+            redirectTo,
         }, dispatch),
     }
 );

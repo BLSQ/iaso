@@ -10,7 +10,7 @@ import {
 import PropTypes from 'prop-types';
 
 import {
-    setInstances, setInstancesSmallDict, setInstancesFetching, setInstanceStatus,
+    setInstances, setInstancesSmallDict, setInstancesFetching,
 } from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
@@ -25,7 +25,6 @@ import {
     fetchDevices,
     fetchDevicesOwnerships,
     fetchPeriods,
-    fetchIsntanceStatus,
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
@@ -82,17 +81,6 @@ class Instances extends Component {
                 formatMessage,
             },
         } = this.props;
-        if (instanceStatus.length === 0) {
-            fetchIsntanceStatus(dispatch)
-                .then(res => this.props.setInstanceStatus(res.instance_status.map(s => ({
-                    key: s[0],
-                    isVisible: true,
-                    label: formatMessage({
-                        defaultMessage: s[0],
-                        id: `iaso.completeness.${s[0]}Multi`,
-                    }),
-                }))));
-        }
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchDevices(dispatch)
@@ -358,7 +346,6 @@ Instances.propTypes = {
     prevPathname: PropTypes.any,
     setPeriods: PropTypes.func.isRequired,
     instanceStatus: PropTypes.array.isRequired,
-    setInstanceStatus: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -382,7 +369,6 @@ const MapDispatchToProps = dispatch => ({
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
-    setInstanceStatus: instanceStatus => dispatch(setInstanceStatus(instanceStatus)),
 });
 
 

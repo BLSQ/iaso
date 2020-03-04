@@ -13,7 +13,7 @@ import { groupCompletenessData } from '../utils';
 const styles = theme => commonStyles(theme);
 
 function CompletenessListComponent({
-    classes, completenessList,
+    classes, completenessList, redirectTo,
 }) {
     const [activePeriodType, setActivePeriodType] = useState(PERIOD_TYPE_QUARTERLY);
     const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(INSTANCE_STATUSES);
@@ -38,6 +38,7 @@ function CompletenessListComponent({
                             key={periodKey}
                             data={periodData}
                             activeInstanceStatuses={activeInstanceStatuses}
+                            redirectTo={redirectTo}
                         />
                     ))
                 }
@@ -48,5 +49,6 @@ function CompletenessListComponent({
 CompletenessListComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     completenessList: PropTypes.arrayOf(PropTypes.object).isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 export default withStyles(styles)(CompletenessListComponent);

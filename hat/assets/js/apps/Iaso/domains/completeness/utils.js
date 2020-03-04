@@ -4,7 +4,7 @@ import React from 'react';
 import Period, { PERIOD_TYPE_QUARTERLY } from './periods';
 import { formatThousand } from '../../../../utils';
 
-// eslint-disable-next-line import/prefer-default-export
+
 export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE_QUARTERLY) {
     const groupedCompletenessData = {};
     completenessData.forEach((dataEntry) => {
@@ -105,5 +105,6 @@ export const getColumns = (
         };
         columns.push(monthColumn);
     });
+
     return columns;
 };

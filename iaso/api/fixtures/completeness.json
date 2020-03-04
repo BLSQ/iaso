@@ -3,7 +3,8 @@
     "period": "201905",
     "form": {
       "id": 21,
-      "name": "CMR Quantité PCA"
+      "name": "CMR Quantité PCA",
+      "period_type": "MONTH"
     },
     "counts": {
       "total": 1,
@@ -16,7 +17,8 @@
     "period": "201910",
     "form": {
       "id": 21,
-      "name": "CMR Quantité PCA"
+      "name": "CMR Quantité PCA",
+      "period_type": "MONTH"
     },
     "counts": {
       "total": 1,
@@ -29,7 +31,8 @@
     "period": "201911",
     "form": {
       "id": 21,
-      "name": "CMR Quantité PCA"
+      "name": "CMR Quantité PCA",
+      "period_type": "MONTH"
     },
     "counts": {
       "total": 3,
@@ -42,7 +45,8 @@
     "period": "201911",
     "form": {
       "id": 22,
-      "name": "CMR Quantité PMA"
+      "name": "CMR Quantité PMA",
+      "period_type": "MONTH"
     },
     "counts": {
       "total": 3,
@@ -55,7 +59,8 @@
     "period": "201912",
     "form": {
       "id": 21,
-      "name": "CMR Quantité PCA"
+      "name": "CMR Quantité PCA",
+      "period_type": "MONTH"
     },
     "counts": {
       "total": 1,
@@ -68,7 +73,8 @@
     "period": "2019Q4",
     "form": {
       "id": 20,
-      "name": "Qualité Technique PCA FOSA"
+      "name": "Qualité Technique PCA FOSA",
+      "period_type": "QUARTER"
     },
     "counts": {
       "total": 1,

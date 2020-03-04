@@ -2,7 +2,6 @@ const SET_INSTANCES = 'SET_INSTANCES';
 const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
 const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
-const SET_INSTANCE_STATUS = 'SET_INSTANCE_STATUS';
 
 
 export const setInstances = (list, showPagination, params, count, pages) => ({
@@ -32,13 +31,6 @@ export const setCurrentInstance = instance => ({
     payload: instance,
 });
 
-export const setInstanceStatus = instanceStatus => ({
-    type: SET_INSTANCE_STATUS,
-    payload: {
-        instanceStatus,
-    },
-});
-
 
 export const instancesInitialState = {
     fetching: false,
@@ -51,7 +43,6 @@ export const instancesInitialState = {
         pages: 0,
     },
     current: null,
-    instanceStatus: [],
 };
 
 export const instancesReducer = (state = instancesInitialState, action = {}) => {
@@ -85,16 +76,6 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
         case SET_CURRENT_INSTANCE: {
             const current = action.payload;
             return { ...state, current };
-        }
-
-        case SET_INSTANCE_STATUS: {
-            const {
-                instanceStatus,
-            } = action.payload;
-            return {
-                ...state,
-                instanceStatus,
-            };
         }
 
         default:

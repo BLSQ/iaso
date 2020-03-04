@@ -311,7 +311,6 @@ export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
         });
 };
 
-
 export const fetchCompleteness = (dispatch, url) => getRequest(url)
     .then(res => res.completeness)
     .catch((error) => {
@@ -319,20 +318,3 @@ export const fetchCompleteness = (dispatch, url) => getRequest(url)
         console.error('Error while fetching  while fetching completness:', error);
         throw error;
     });
-
-export const fetchPeriodTypes = dispatch => getRequest('/api/period_types/')
-    .then()
-    .catch((error) => {
-        dispatch(enqueueSnackbar(errorSnackBar('fetchPeriodTypesError')));
-        console.error('Error while fetching  while fetching period types:', error);
-        throw error;
-    });
-
-export const fetchIsntanceStatus = dispatch => getRequest('/api/instance_status/')
-    .then()
-    .catch((error) => {
-        dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceStatusError')));
-        console.error('Error while fetching  while fetching instance status:', error);
-        throw error;
-    });
-

@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
 import {
-    withStyles, Box,
+    withStyles,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -23,20 +23,8 @@ import { sortPeriodTypes } from '../utils/periodsUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
 import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import CompletenessPeriodComponent from '../domains/completeness/components/CompletenessPeriodComponent';
-import CompletenessFiltersComponent from '../domains/completeness/components/CompletenessFiltersComponent';
+import CompletenessListComponent from '../domains/completeness/components/CompletenessListComponent';
 
-import commonStyles from '../styles/common';
-
-const baseUrl = 'completeness';
-
-const styles = theme => ({
-    ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
-});
 
 class Completeness extends Component {
     componentDidMount() {
@@ -63,7 +51,6 @@ class Completeness extends Component {
 
     render() {
         const {
-            classes,
             params,
             intl: {
                 formatMessage,
@@ -85,32 +72,17 @@ class Completeness extends Component {
                     })}
                     displayBackButton={false}
                 />
-                <Box className={classes.containerFullHeightNoTabPadded}>
-
-                    <CompletenessFiltersComponent
-                        baseUrl={baseUrl}
-                        params={params}
-                        onSearch={() => this.onSearch()}
-                    />
-                    <div className={classes.marginTop}>
-                        {
-                            Object.entries(completeness.data).map(([periodKey, periodData]) => (
-                                <CompletenessPeriodComponent
-                                    key={periodKey}
-                                    data={periodData}
-                                    instanceStatus={instanceStatus}
-                                />
-                            ))
-                        }
-                    </div>
-                </Box>
+                <CompletenessListComponent
+                    completenessList={completeness.data}
+                    instanceStatusList={instanceStatus}
+                    params={params}
+                />
             </Fragment>
         );
     }
 }
 
 Completeness.propTypes = {
-    classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
@@ -137,6 +109,4 @@ const mapDispatchToProps = dispatch => (
     }
 );
 
-export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Completeness)),
-);
+export default connect(MapStateToProps, mapDispatchToProps)(injectIntl(Completeness));

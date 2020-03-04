@@ -368,15 +368,12 @@ export const periods = periodsList => (
 );
 
 
-export const instanceStatus = statusList => (
+export const instanceStatus = options => (
     {
         urlKey: 'status',
         isMultiSelect: true,
         isClearable: true,
-        options: statusList.map(s => ({
-            label: s.label,
-            value: s.key,
-        })),
+        options,
         label: MESSAGES.status,
         type: 'select',
     }

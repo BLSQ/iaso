@@ -76,10 +76,6 @@ class Instances extends Component {
             params: {
                 formId,
             },
-            instanceStatus,
-            intl: {
-                formatMessage,
-            },
         } = this.props;
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -90,7 +86,6 @@ class Instances extends Component {
         fetchPeriods(dispatch, formId)
             .then(periods => this.props.setPeriods(periods));
     }
-
 
     componentDidMount() {
         const {
@@ -123,7 +118,6 @@ class Instances extends Component {
             this.handleChangeTab(params.tab, false);
         }
     }
-
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
         const {
@@ -345,7 +339,6 @@ Instances.propTypes = {
     redirectToPush: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
     setPeriods: PropTypes.func.isRequired,
-    instanceStatus: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -354,7 +347,6 @@ const MapStateToProps = state => ({
     fetching: state.instances.fetching,
     currentForm: state.forms.current,
     prevPathname: state.routerCustom.prevPathname,
-    instanceStatus: state.instances.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({

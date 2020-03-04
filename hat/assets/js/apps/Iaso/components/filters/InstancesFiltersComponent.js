@@ -21,10 +21,10 @@ import {
     periods,
     instanceStatus,
 } from '../../constants/filters';
-
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+import { instanceStatusesOptions } from '../../domains/completeness/config'; // TODO: move
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -70,9 +70,14 @@ class InstancesFiltersComponent extends Component {
             devices,
             devicesOwnerships,
             periodsList,
-            instanceStatusList,
         } = this.props;
         const { filtersUpdated } = this.state;
+        // TODO: filter should accept translatable messages options
+        const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
+            value: option.value,
+            label: formatMessage(option.label),
+        }));
+
         return (
             <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
@@ -94,7 +99,7 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                instanceStatus(instanceStatusList),
+                                instanceStatus(translatedInstanceStatusesOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}
@@ -141,7 +146,6 @@ InstancesFiltersComponent.propTypes = {
     devicesOwnerships: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
     periodsList: PropTypes.array.isRequired,
-    instanceStatusList: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -149,7 +153,6 @@ const MapStateToProps = state => ({
     devices: state.devices.list,
     devicesOwnerships: state.devices.ownershipList,
     periodsList: state.periods.list,
-    instanceStatusList: state.instances.instanceStatus,
 });
 
 const MapDispatchToProps = dispatch => ({

@@ -1,11 +1,7 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-
-import {
-    withStyles,
-} from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -60,7 +56,7 @@ class Completeness extends Component {
         } = this.props;
 
         return (
-            <Fragment>
+            <>
                 {
                     completeness.fetching
                     && <LoadingSpinner />
@@ -73,11 +69,11 @@ class Completeness extends Component {
                     displayBackButton={false}
                 />
                 <CompletenessListComponent
-                    completenessList={completeness.data}
+                    completenessList={completeness.list}
                     instanceStatusList={instanceStatus}
                     params={params}
                 />
-            </Fragment>
+            </>
         );
     }
 }

@@ -84,7 +84,6 @@ CompletenessFiltersComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
-    onSearch: PropTypes.func.isRequired,
     periodTypesList: PropTypes.array.isRequired,
     instanceStatus: PropTypes.array.isRequired,
     setInstanceStatus: PropTypes.func.isRequired,

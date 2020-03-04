@@ -1,10 +1,12 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import { Box, withStyles } from '@material-ui/core';
 
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
 import commonStyles from '../../../styles/common';
+import { PERIOD_TYPE_QUARTERLY } from '../periods';
+import { groupCompletenessData } from '../utils';
 
 
 const styles = theme => ({
@@ -18,6 +20,12 @@ const styles = theme => ({
 function CompletenessListComponent({
     classes, completenessList, instanceStatusList, params,
 }) {
+    const [groupByPeriodType, setGroupByPeriodType] = useState(PERIOD_TYPE_QUARTERLY);
+    const groupedCompletenessData = useMemo(
+        () => groupCompletenessData(completenessList, groupByPeriodType),
+        [completenessList, groupByPeriodType],
+    );
+
     return (
         <Box className={classes.containerFullHeightNoTabPadded}>
             <CompletenessFiltersComponent
@@ -26,7 +34,7 @@ function CompletenessListComponent({
             />
             <div className={classes.marginTop}>
                 {
-                    Object.entries(completenessList).map(([periodKey, periodData]) => (
+                    Object.entries(groupedCompletenessData).map(([periodKey, periodData]) => (
                         <CompletenessPeriodComponent
                             key={periodKey}
                             data={periodData}

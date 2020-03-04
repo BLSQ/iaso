@@ -269,8 +269,6 @@
     "iaso.snackBar.fetchOrgUnitTypesError": "Une erreur est survenue en récupérant la liste des type d'unités d’organisation",
     "iaso.snackBar.fetchOrgUnitsError": "Une erreur est survenue en récupérant la liste des unités d’organisation",
     "iaso.snackBar.fetchPeriodsError": "Une erreur est survenue en récupérant la liste des périodes",
-    "iaso.snackBar.fetchPeriodTypesError": "Une erreur est survenue en récupérant la liste des types de période",
-    "iaso.snackBar.fetchInstanceStatusError": "Une erreur est survenue en récupérant la liste de status des instances",
     "iaso.snackBar.fetchProfilesError": "Une erreur est survenue en récupérant la liste des profiles",
     "iaso.snackBar.fetchProjectsError": "Une erreur est survenue en récupérant la liste des projects",
     "iaso.snackBar.createFormError": "Une erreur est survenue en créant un formulaire",

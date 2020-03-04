@@ -123,14 +123,6 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchCompletenessError',
         defaultMessage: 'An error occured while fetching completness',
     },
-    fetchPeriodTypesError: {
-        id: 'iaso.snackBar.fetchPeriodTypesError',
-        defaultMessage: 'An error occured while fetching period types',
-    },
-    fetchInstanceStatusError: {
-        id: 'iaso.snackBar.fetchInstanceStatusError',
-        defaultMessage: 'An error occured while fetching instance status',
-    },
 };
 
 export default MESSAGES;

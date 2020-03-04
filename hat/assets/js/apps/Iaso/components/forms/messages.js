@@ -199,10 +199,6 @@ const MESSAGES = {
         id: 'iaso.label.periods',
         defaultMessage: 'Periods',
     },
-    period_types: {
-        id: 'iaso.label.periodType',
-        defaultMessage: 'Period type',
-    },
 };
 
 export default MESSAGES;

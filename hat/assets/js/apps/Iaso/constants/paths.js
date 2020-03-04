@@ -225,13 +225,3 @@ export const algosPath = getPath({
         },
     ],
 });
-
-export const completenessPath = getPath({
-    baseUrl: 'completeness',
-    params: [
-        {
-            isRequired: true,
-            key: 'periodType',
-        },
-    ],
-});

@@ -1,6 +1,8 @@
 import React, { useCallback } from 'react';
 import PropTypes from 'prop-types';
 import { Chip, withStyles } from '@material-ui/core';
+import Add from '@material-ui/icons/Add';
+import Cancel from '@material-ui/icons/Cancel';
 
 import commonStyles from '../../styles/common';
 
@@ -37,6 +39,9 @@ function ChipListComponent({
                             className={classes.marginLeft}
                             color={isActive ? 'primary' : 'default'}
                             onClick={() => toggleChip(option.value)}
+                            icon={(
+                                isActive ? <Cancel /> : <Add />
+                            )}
                         />
                     );
                 })

@@ -101,6 +101,7 @@ class VillageModale extends Component {
     }
 
     updateVillageLocation(location) {
+        console.log('updateVillageLocation');
         const newVillage = Object.assign({}, this.state.village, {
             AS__ZS__province_id: location.AS__ZS__province_id,
             AS__ZS_id: location.AS__ZS_id,
@@ -128,6 +129,7 @@ class VillageModale extends Component {
     }
 
     updateVillagePosition(latitude, longitude) {
+        console.log('updateVillagePosition');
         const newVillage = Object.assign({}, this.state.village, { latitude, longitude });
         this.props.updateCurrentVillage(newVillage);
         this.setState({

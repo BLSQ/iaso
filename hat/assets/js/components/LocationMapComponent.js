@@ -44,11 +44,11 @@ class LocationMapComponent extends Component {
             <section className="third-container">
                 <div>
                     <div className="filters-container">
-                        <FiltersComponent
+                        {/* <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
                             filters={filters}
-                        />
+                        /> */}
                     </div>
                     <div>
                         <label

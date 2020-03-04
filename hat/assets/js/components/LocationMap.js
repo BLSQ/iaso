@@ -18,21 +18,8 @@ import {
     defaultFitToBound,
     genericMap,
     zooms,
+    isMarkerInsidePolygon,
 } from '../utils/map/mapUtils';
-
-const docClick = ({ x, y }) => {
-    const ev = document.createEvent('MouseEvent');
-    const el = document.elementFromPoint(x, y);
-    ev.initMouseEvent(
-        'click',
-        true /* bubble */, true /* cancelable */,
-        window, null,
-        x, y, 0, 0, /* coordinates */
-        false, false, false, false, /* modifier keys */
-        0 /* left */, null,
-    );
-    el.dispatchEvent(ev);
-};
 
 const tileOptions = { keepBuffer: 4 };
 export const BASE_LAYERS = {
@@ -185,6 +172,21 @@ class LocationMap extends Component {
         this.locationMap = locationMap;
     }
 
+    updateLocation(featureItem) {
+        const {
+            geoJson,
+        } = this.props;
+        const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === featureItem.properties.ZS)[0];
+        const zsId = parseInt(zone.id, 10);
+        const provinceId = parseInt(zone.properties.province, 10);
+        const asId = parseInt(featureItem.id, 10);
+        this.props.updateLocation({
+            AS__ZS_id: zsId,
+            AS__ZS__province_id: provinceId,
+            AS_id: asId,
+        });
+    }
+
     includeDefaultLayersInMap() {
         const { locationMap } = this;
         this.provinceGroup = new L.FeatureGroup();
@@ -203,12 +205,7 @@ class LocationMap extends Component {
         this.asGroup.on('click', (event) => {
             const { location } = this.state;
             if (event.sourceTarget.feature.properties.ZS && location.latitude === 0 && location.longitude === 0) {
-                const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
-                this.props.updateLocation({
-                    AS__ZS_id: zone.id,
-                    AS__ZS__province_id: `${zone.properties.province}`,
-                    AS_id: event.sourceTarget.feature.id,
-                });
+                this.updateLocation(event.sourceTarget.feature);
             }
             if (location.latitude === 0 && location.longitude === 0) {
                 this.props.updatePosition(
@@ -225,16 +222,21 @@ class LocationMap extends Component {
                 );
                 const { location } = this.state;
                 if (event.sourceTarget.feature.properties.ZS && location && !locationMap.dragging._enabled) {
-                    const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
-                    const zsId = parseInt(zone.id, 10);
-                    const provinceId = parseInt(zone.properties.province, 10);
-                    const asId = parseInt(event.sourceTarget.feature.id, 10);
-                    this.props.updateLocation({
-                        AS__ZS_id: zsId,
-                        AS__ZS__province_id: provinceId,
-                        AS_id: asId,
-                    });
+                    this.updateLocation(event.sourceTarget.feature);
                 }
+            }
+        }).on('dblclick', (event) => {
+            if (!event.originalEvent) {
+                this.asGroup.eachLayer((layer) => {
+                    layer.eachLayer((areaLayer) => {
+                        if (isMarkerInsidePolygon(this.villageMarker, areaLayer)) {
+                            const { location } = this.state;
+                            if (areaLayer.feature.properties.ZS && location) {
+                                this.updateLocation(areaLayer.feature);
+                            }
+                        }
+                    });
+                });
             }
         });
 
@@ -288,14 +290,10 @@ class LocationMap extends Component {
                 });
             } else {
                 const latlng = new L.LatLng(location.latitude, location.longitude);
-                // this.villageMarker.setLatLng(latlng);
-                console.log(this.villageMarker.getElement());
-                const domElement = this.villageMarker.getElement();
-                if (domElement) {
-                    const rect = domElement.getBoundingClientRect();
-                    docClick(rect);
-                    console.log(rect);
-                }
+                this.villageMarker.setLatLng(latlng);
+                this.asGroup.fire('dblclick', {
+                    latlng,
+                });
             }
         }
     }

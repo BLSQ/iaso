@@ -11,7 +11,7 @@ import ReactTable, { ReactTableDefaults } from 'react-table';
 import { injectIntl } from 'react-intl';
 
 import { getPrettyPeriod, getPeriodType } from '../../../utils/periodsUtils';
-import { getColumns } from '../../../utils/completenessUtils';
+import { getColumns } from '../utils';
 import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
 import DatePeriods from '../../../libs/DatePeriods';
@@ -91,8 +91,7 @@ class CompletenessPeriodComponent extends Component {
                 formatMessage,
             },
         } = this.props;
-        // TODO: totals
-        // const formsTotals = getFormsTotal(forms, instanceStatus);
+
         return (
             <Paper className={classes.root}>
 
@@ -120,8 +119,7 @@ class CompletenessPeriodComponent extends Component {
                             data.period.monthRange,
                             classes,
                             instanceStatus,
-                            (form, status, month) => this.onSelectCell(form, status, month, period),
-                            // TODO: formsTotals,
+                            (form, status, month) => this.onSelectCell(form, status, month, data.period.periodString),
                         )}
                         data={Object.values(data.forms)}
                         filterable={false}

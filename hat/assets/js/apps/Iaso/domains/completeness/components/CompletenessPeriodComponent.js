@@ -1,14 +1,12 @@
 import React, { Component } from 'react';
-
+import PropTypes from 'prop-types';
+import { injectIntl } from 'react-intl';
 import {
     Paper, withStyles, Typography, Grid,
 } from '@material-ui/core';
-import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
-import { injectIntl } from 'react-intl';
 
-import { getPrettyPeriod } from '../../../utils/periodsUtils';
-import { getColumns } from '../utils';
+import { getColumns } from '../config';
 import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
 

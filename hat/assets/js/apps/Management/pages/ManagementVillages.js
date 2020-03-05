@@ -254,7 +254,7 @@ class ManagementVillages extends React.Component {
                             />
                         </div>
                     </div>
-                    <SearchButton onSearch={() => this.onSearch()}/>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container management-control">
                     {

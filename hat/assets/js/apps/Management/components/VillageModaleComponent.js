@@ -31,7 +31,6 @@ class VillageModale extends Component {
         super(props);
         this.state = {
             showModale: props.showModale,
-            village: props.village,
             isChanged: false,
             isUpdated: false,
             error: false,
@@ -57,11 +56,11 @@ class VillageModale extends Component {
 
     componentWillReceiveProps(nextProps) {
         let newState = {};
-        newState.village = nextProps.village;
         if (!deepEqual(nextProps.village, this.props.village, true) && !nextProps.isUpdated) {
             newState.isChanged = true;
         }
         if (nextProps.isUpdated) {
+            newState.isChanged = false;
             newState.isUpdated = nextProps.isUpdated;
             newState.error = false;
             timerSuccess = setTimeout(() => {
@@ -109,32 +108,22 @@ class VillageModale extends Component {
     }
 
 
-    updateVillageField(key, value) {
-        console.log('updateVillageField');
-        const newVillage = Object.assign({}, this.state.village, { [key]: value });
-        if (key === 'AS__ZS__province_id') {
-            newVillage.AS__ZS_id = null;
-            newVillage.AS_id = null;
-        }
-        if (key === 'AS__ZS_id') {
-            newVillage.AS_id = null;
-        }
-        this.props.updateCurrentVillage(newVillage);
-        this.setState({
-            isChanged: true,
-        });
-    }
-
     isSavedDisabled() {
-        return (this.state.village.name === ''
-            || !this.state.village.name
-            || !this.state.village.AS__ZS__province_id
-            || !this.state.village.AS__ZS_id
-            || !this.state.village.AS_id
-            || !this.state.village.village_official
-            || this.state.village.latitude === 0
-            || this.state.village.longitude === 0
-            || (!this.state.isChanged && this.state.village.id !== 0));
+        const {
+            village,
+        } = this.props;
+        const {
+            isChanged,
+        } = this.state;
+        return (village.name === ''
+            || !village.name
+            || !village.AS__ZS__province_id
+            || !village.AS__ZS_id
+            || !village.AS_id
+            || !village.village_official
+            || village.latitude === 0
+            || village.longitude === 0
+            || (!isChanged && village.id !== 0));
     }
 
     render() {
@@ -147,6 +136,7 @@ class VillageModale extends Component {
             },
             villageSources,
             params,
+            village,
         } = this.props;
         const geo = filtersGeo(
             provinces,
@@ -176,8 +166,11 @@ class VillageModale extends Component {
                         this.state.currentTab === 'infos'
                         && (
                             <VillageInfosComponent
-                                village={this.state.village}
-                                updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                                village={village}
+                                updateVillageField={(key, value) => this.props.updateCurrentVillage({
+                                    ...village,
+                                    [key]: value,
+                                })}
                                 villageSources={villageSources}
                             />
                         )
@@ -194,7 +187,7 @@ class VillageModale extends Component {
                         this.state.isUpdated
                         && (
                             <div className="align-right text--success">
-                                <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village sauvegardé" />
+                                <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village saved" />
                             </div>
                         )
                     }
@@ -217,7 +210,7 @@ class VillageModale extends Component {
                         <button
                             disabled={this.isSavedDisabled()}
                             className="button--save"
-                            onClick={() => this.props.saveVillage(this.state.village)}
+                            onClick={() => this.props.saveVillage(village)}
                         >
                             <i className="fa fa-save" />
                             <FormattedMessage id="management.label.saveVillage" defaultMessage="Save village" />

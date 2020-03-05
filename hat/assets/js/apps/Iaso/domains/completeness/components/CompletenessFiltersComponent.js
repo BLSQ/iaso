@@ -5,7 +5,7 @@ import Grid from '@material-ui/core/Grid';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ChipListComponent from '../../../components/chips/ChipListComponent';
-import { instanceStatusOptions } from '../../instances/config';
+import { instanceStatusPluralOptions } from '../../instances/config';
 import { periodTypeOptions } from '../../periods/config';
 
 function CompletenessFiltersComponent({
@@ -20,7 +20,7 @@ function CompletenessFiltersComponent({
         value: option.value,
         label: intl.formatMessage(option.label),
     }));
-    const translatedInstanceStatusOptions = instanceStatusOptions.map(option => ({
+    const translatedInstanceStatusOptions = instanceStatusPluralOptions.map(option => ({
         value: option.value,
         label: intl.formatMessage(option.label),
     }));

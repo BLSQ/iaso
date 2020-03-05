@@ -33,10 +33,11 @@ function CompletenessListComponent({
             />
             <div className={classes.marginTop}>
                 {
-                    Object.entries(groupedCompletenessData).map(([periodKey, periodData]) => (
+                    groupedCompletenessData.map(({ period, forms }) => (
                         <CompletenessPeriodComponent
-                            key={periodKey}
-                            data={periodData}
+                            key={period.periodString}
+                            period={period}
+                            forms={forms}
                             activeInstanceStatuses={activeInstanceStatuses}
                             activePeriodType={activePeriodType}
                             redirectTo={redirectTo}

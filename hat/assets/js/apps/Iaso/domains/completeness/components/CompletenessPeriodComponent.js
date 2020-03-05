@@ -86,7 +86,8 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            data,
+            period,
+            forms,
             activeInstanceStatuses,
             activePeriodType,
             classes,
@@ -108,7 +109,7 @@ class CompletenessPeriodComponent extends Component {
                     >
 
                         <Typography variant="h5" gutterBottom>
-                            {getPrettyPeriod(data.period.periodString)}
+                            {getPrettyPeriod(period.periodString)}
                         </Typography>
                     </Grid>
                 </Grid>
@@ -119,18 +120,18 @@ class CompletenessPeriodComponent extends Component {
                         multiSort
                         columns={getColumns(
                             formatMessage,
-                            data.period.monthRange,
+                            period.monthRange,
                             classes,
                             activeInstanceStatuses,
-                            (form, status, month) => this.onSelectCell(form, status, month, data.period.periodString),
+                            (form, status, month) => this.onSelectCell(form, status, month, period.periodString),
                             activePeriodType,
                         )}
-                        data={Object.values(data.forms)}
+                        data={forms}
                         filterable={false}
                         sortable={false}
                         className="-striped -highlight"
                         defaultSorted={[{ id: 'label', desc: false }]}
-                        defaultPageSize={Object.keys(data.forms).length}
+                        defaultPageSize={forms.length}
                         resizable={false}
                     />
                 </section>
@@ -139,7 +140,8 @@ class CompletenessPeriodComponent extends Component {
     }
 }
 CompletenessPeriodComponent.propTypes = {
-    data: PropTypes.object.isRequired,
+    period: PropTypes.object.isRequired,
+    forms: PropTypes.arrayOf(PropTypes.object).isRequired,
     activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
     activePeriodType: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,

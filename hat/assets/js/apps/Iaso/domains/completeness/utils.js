@@ -14,7 +14,7 @@ import { formatThousand } from '../../../../utils';
 
 /**
  * This function takes a flat list of completeness data, as returned by the API, and transforms it into
- * a structured object, grouped by period first, form second
+ * a list of period groups containing form groups
  *
  * @param completenessData
  * @param periodType
@@ -55,7 +55,16 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
         _.update(groupedCompletenessData, `${monthPath}.exported`, exported => exported + dataEntry.counts.exported);
     });
 
-    return groupedCompletenessData;
+    return Object
+        .values(groupedCompletenessData)
+        .map(periodData => ({
+            period: periodData.period,
+            forms: Object.values(periodData.forms),
+        }))
+        .sort((group1, group2) => (
+            group1.period.periodString < group2.period.periodString
+        ))
+        .reverse();
 }
 
 const getBaseColumns = formatMessage => ([

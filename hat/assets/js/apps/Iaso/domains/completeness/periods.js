@@ -31,7 +31,7 @@ export default class Period {
     asPeriodTypeString(periodType) {
         switch (periodType) {
             case PERIOD_TYPE_MONTHLY:
-                return `${this.year}${String(this.month).padStart(2)}`;
+                return `${this.year}${String(this.month).padStart(2, '0')}`;
             case PERIOD_TYPE_QUARTERLY:
                 return `${this.year}Q${this.quarter}`;
             case PERIOD_TYPE_SIX_MONTHLY:

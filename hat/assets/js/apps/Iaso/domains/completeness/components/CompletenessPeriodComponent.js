@@ -81,7 +81,7 @@ class CompletenessPeriodComponent extends Component {
                         alignItems="center"
                     >
                         <Typography variant="h5" gutterBottom>
-                            {getPrettyPeriod(period.periodString)}
+                            {period.toCode()}
                         </Typography>
                     </Grid>
                 </Grid>

@@ -25,22 +25,25 @@ export default class Period {
     }
 
     asPeriodType(periodType) {
-        return new Period(this.asPeriodTypeString(periodType));
-    }
-
-    asPeriodTypeString(periodType) {
+        let periodTypeString;
         switch (periodType) {
             case PERIOD_TYPE_MONTH:
-                return `${this.year}${String(this.month).padStart(2, '0')}`;
+                periodTypeString = `${this.year}${String(this.month).padStart(2, '0')}`;
+                break;
             case PERIOD_TYPE_QUARTER:
-                return `${this.year}Q${this.quarter}`;
+                periodTypeString = `${this.year}Q${this.quarter}`;
+                break;
             case PERIOD_TYPE_SIX_MONTH:
-                return `${this.year}S${this.semester}`;
+                periodTypeString = `${this.year}S${this.semester}`;
+                break;
             case PERIOD_TYPE_YEAR:
-                return `${this.year}`;
+                periodTypeString = `${this.year}`;
+                break;
             default:
                 throw new Error(`Invalid period type ${periodType}`);
         }
+
+        return new Period(periodTypeString);
     }
 
     get monthRange() {
@@ -53,6 +56,21 @@ export default class Period {
                 return _.range(this.month - 5, this.month + 1);
             case PERIOD_TYPE_YEAR:
                 return _.range(this.month - 11, this.month + 1);
+            default:
+                throw new Error(`Invalid period type ${this.periodType}`);
+        }
+    }
+
+    toCode() {
+        switch (this.periodType) {
+            case PERIOD_TYPE_MONTH:
+                return `${String(this.month).padStart(2, '0')}/${this.year}`;
+            case PERIOD_TYPE_QUARTER:
+                return `Q${this.quarter}/${this.year}`;
+            case PERIOD_TYPE_SIX_MONTH:
+                return `S${this.semester}/${this.year}`;
+            case PERIOD_TYPE_YEAR:
+                return `${this.year}`;
             default:
                 throw new Error(`Invalid period type ${this.periodType}`);
         }

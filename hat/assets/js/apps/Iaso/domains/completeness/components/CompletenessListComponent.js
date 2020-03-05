@@ -38,6 +38,7 @@ function CompletenessListComponent({
                             key={periodKey}
                             data={periodData}
                             activeInstanceStatuses={activeInstanceStatuses}
+                            activePeriodType={activePeriodType}
                             redirectTo={redirectTo}
                         />
                     ))

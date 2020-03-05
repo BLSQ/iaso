@@ -1,10 +1,25 @@
 import _ from 'lodash';
 import React from 'react';
+import PropTypes from 'prop-types';
+import { Tooltip } from '@material-ui/core';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
+import ErrorOutline from '@material-ui/icons/ErrorOutline';
 
-import Period, { PERIOD_TYPE_QUARTERLY } from './periods';
+import Period, {
+    PERIOD_TYPE_QUARTERLY, PERIOD_TYPE_MONTHLY, PERIOD_TYPE_YEARLY, PERIOD_TYPE_SIX_MONTHLY,
+} from './periods';
 import { formatThousand } from '../../../../utils';
 
 
+/**
+ * This function takes a flat list of completeness data, as returned by the API, and transforms it into
+ * a structured object, grouped by period first, form second
+ *
+ * @param completenessData
+ * @param periodType
+ * @return {{}}
+ */
 export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE_QUARTERLY) {
     const groupedCompletenessData = {};
     completenessData.forEach((dataEntry) => {
@@ -54,12 +69,40 @@ const getBaseColumns = formatMessage => ([
     },
 ]);
 
+const STATUS_COLUMN_ICONS = {
+    ready: HourglassEmpty,
+    error: ErrorOutline,
+    exported: CheckCircleOutline,
+};
+
+function StatusIcon({ status, title }) {
+    const IconComponent = STATUS_COLUMN_ICONS[status];
+
+    return (
+        <Tooltip title={title}>
+            <IconComponent />
+        </Tooltip>
+    );
+}
+StatusIcon.propTypes = {
+    status: PropTypes.oneOf(Object.keys(STATUS_COLUMN_ICONS)).isRequired,
+    title: PropTypes.string.isRequired,
+};
+
+const STATUS_COLUMN_SIZES = {
+    [PERIOD_TYPE_MONTHLY]: undefined,
+    [PERIOD_TYPE_QUARTERLY]: undefined,
+    [PERIOD_TYPE_SIX_MONTHLY]: 75,
+    [PERIOD_TYPE_YEARLY]: 50,
+};
+
 export const getColumns = (
     formatMessage,
     months,
     classes,
     activeInstanceStatuses,
     onSelect,
+    activePeriodType,
 ) => {
     const columns = getBaseColumns(formatMessage);
     months.forEach((month) => {
@@ -73,14 +116,13 @@ export const getColumns = (
                 </span>
             ),
             columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({
-                Header: (
-                    <span className={classes.capitalize}>
-                        {formatMessage({
-                            defaultMessage: status,
-                            id: `iaso.completeness.${status}`,
-                        })}
-                    </span>
-                ),
+                Header: <StatusIcon
+                    status={status}
+                    title={formatMessage({
+                        defaultMessage: status,
+                        id: `iaso.completeness.${status}`,
+                    })}
+                />,
                 key: status.key,
                 Cell: (settings) => {
                     const value = settings.original.months[month][status];
@@ -101,6 +143,7 @@ export const getColumns = (
 
                     return <span>{formatThousand(total)}</span>;
                 },
+                width: STATUS_COLUMN_SIZES[activePeriodType],
             })),
         };
         columns.push(monthColumn);

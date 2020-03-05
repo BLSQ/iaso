@@ -86,7 +86,11 @@ class CompletenessPeriodComponent extends Component {
 
     render() {
         const {
-            data, activeInstanceStatuses, classes, intl: {
+            data,
+            activeInstanceStatuses,
+            activePeriodType,
+            classes,
+            intl: {
                 formatMessage,
             },
         } = this.props;
@@ -119,13 +123,15 @@ class CompletenessPeriodComponent extends Component {
                             classes,
                             activeInstanceStatuses,
                             (form, status, month) => this.onSelectCell(form, status, month, data.period.periodString),
+                            activePeriodType,
                         )}
                         data={Object.values(data.forms)}
                         filterable={false}
-                        sortable
+                        sortable={false}
                         className="-striped -highlight"
                         defaultSorted={[{ id: 'label', desc: false }]}
                         defaultPageSize={Object.keys(data.forms).length}
+                        resizable={false}
                     />
                 </section>
             </Paper>
@@ -135,8 +141,9 @@ class CompletenessPeriodComponent extends Component {
 CompletenessPeriodComponent.propTypes = {
     data: PropTypes.object.isRequired,
     activeInstanceStatuses: PropTypes.arrayOf(PropTypes.string).isRequired,
+    activePeriodType: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
-export default withStyles(styles)(injectIntl(CompletenessPeriodComponent));
+export default injectIntl(withStyles(styles)(CompletenessPeriodComponent));

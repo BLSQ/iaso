@@ -5,7 +5,7 @@ import { Box, withStyles } from '@material-ui/core';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
 import commonStyles from '../../../styles/common';
-import { PERIOD_TYPE_QUARTERLY } from '../periods';
+import { PERIOD_TYPE_QUARTER } from '../periods';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';
 
@@ -15,7 +15,7 @@ const styles = theme => commonStyles(theme);
 function CompletenessListComponent({
     classes, completenessList, redirectTo,
 }) {
-    const [activePeriodType, setActivePeriodType] = useState(PERIOD_TYPE_QUARTERLY);
+    const [activePeriodType, setActivePeriodType] = useState(PERIOD_TYPE_QUARTER);
     const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(INSTANCE_STATUSES);
 
     const groupedCompletenessData = useMemo(

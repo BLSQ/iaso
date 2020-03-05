@@ -1,15 +1,15 @@
 import _ from 'lodash/fp';
 
-export const PERIOD_TYPE_YEARLY = 'YEARLY';
-export const PERIOD_TYPE_SIX_MONTHLY = 'SIX_MONTHLY';
-export const PERIOD_TYPE_QUARTERLY = 'QUARTERLY';
-export const PERIOD_TYPE_MONTHLY = 'MONTHLY';
+export const PERIOD_TYPE_YEAR = 'YEAR';
+export const PERIOD_TYPE_SIX_MONTH = 'SIX_MONTH';
+export const PERIOD_TYPE_QUARTER = 'QUARTER';
+export const PERIOD_TYPE_MONTH = 'MONTH';
 
 export const PERIOD_TYPES = [
-    PERIOD_TYPE_MONTHLY,
-    PERIOD_TYPE_QUARTERLY,
-    PERIOD_TYPE_SIX_MONTHLY,
-    PERIOD_TYPE_YEARLY,
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_YEAR,
 ];
 
 export default class Period {
@@ -30,13 +30,13 @@ export default class Period {
 
     asPeriodTypeString(periodType) {
         switch (periodType) {
-            case PERIOD_TYPE_MONTHLY:
+            case PERIOD_TYPE_MONTH:
                 return `${this.year}${String(this.month).padStart(2, '0')}`;
-            case PERIOD_TYPE_QUARTERLY:
+            case PERIOD_TYPE_QUARTER:
                 return `${this.year}Q${this.quarter}`;
-            case PERIOD_TYPE_SIX_MONTHLY:
+            case PERIOD_TYPE_SIX_MONTH:
                 return `${this.year}S${this.semester}`;
-            case PERIOD_TYPE_YEARLY:
+            case PERIOD_TYPE_YEAR:
                 return `${this.year}`;
             default:
                 throw new Error(`Invalid period type ${periodType}`);
@@ -45,13 +45,13 @@ export default class Period {
 
     get monthRange() {
         switch (this.periodType) {
-            case PERIOD_TYPE_MONTHLY:
+            case PERIOD_TYPE_MONTH:
                 return [this.month];
-            case PERIOD_TYPE_QUARTERLY:
+            case PERIOD_TYPE_QUARTER:
                 return _.range(this.month - 2, this.month + 1);
-            case PERIOD_TYPE_SIX_MONTHLY:
+            case PERIOD_TYPE_SIX_MONTH:
                 return _.range(this.month - 5, this.month + 1);
-            case PERIOD_TYPE_YEARLY:
+            case PERIOD_TYPE_YEAR:
                 return _.range(this.month - 11, this.month + 1);
             default:
                 throw new Error(`Invalid period type ${this.periodType}`);
@@ -60,16 +60,16 @@ export default class Period {
 
     static parse(periodString) {
         if (periodString.includes('Q')) {
-            return [PERIOD_TYPE_QUARTERLY, Period.parseQuarterString(periodString)];
+            return [PERIOD_TYPE_QUARTER, Period.parseQuarterString(periodString)];
         }
         if (periodString.includes('S')) {
-            return [PERIOD_TYPE_SIX_MONTHLY, Period.parseSemesterString(periodString)];
+            return [PERIOD_TYPE_SIX_MONTH, Period.parseSemesterString(periodString)];
         }
         if (periodString.length === 6) {
-            return [PERIOD_TYPE_MONTHLY, Period.parseMonthString(periodString)];
+            return [PERIOD_TYPE_MONTH, Period.parseMonthString(periodString)];
         }
         if (periodString.length === 4) {
-            return [PERIOD_TYPE_YEARLY, Period.parseYearString(periodString)];
+            return [PERIOD_TYPE_YEAR, Period.parseYearString(periodString)];
         }
 
         throw new Error(`Invalid period string ${periodString}`);

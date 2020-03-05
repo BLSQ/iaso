@@ -7,7 +7,7 @@ import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 
 import Period, {
-    PERIOD_TYPE_QUARTERLY, PERIOD_TYPE_MONTHLY, PERIOD_TYPE_YEARLY, PERIOD_TYPE_SIX_MONTHLY,
+    PERIOD_TYPE_QUARTER, PERIOD_TYPE_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPE_SIX_MONTH,
 } from './periods';
 import { formatThousand } from '../../../../utils';
 
@@ -20,7 +20,7 @@ import { formatThousand } from '../../../../utils';
  * @param periodType
  * @return {{}}
  */
-export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE_QUARTERLY) {
+export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE_QUARTER) {
     const groupedCompletenessData = {};
     completenessData.forEach((dataEntry) => {
         const period = new Period(dataEntry.period);
@@ -39,8 +39,7 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
         const formPath = `${periodPath}.forms.${dataEntry.form.id}`;
         if (!_.has(groupedCompletenessData, formPath)) {
             _.set(groupedCompletenessData, formPath, {
-                id: dataEntry.form.id,
-                name: dataEntry.form.name,
+                ...dataEntry.form,
                 months: Object.fromEntries(groupPeriod.monthRange.map(month => [month, {
                     ready: 0,
                     error: 0,
@@ -58,11 +57,11 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
     return Object
         .values(groupedCompletenessData)
         .map(periodData => ({
-            period: periodData.period,
+            ...periodData,
             forms: Object.values(periodData.forms),
         }))
         .sort((group1, group2) => (
-            group1.period.periodString < group2.period.periodString
+            group1.period.periodString < group2.period.periodString ? -1 : 1
         ))
         .reverse();
 }
@@ -99,10 +98,10 @@ StatusIcon.propTypes = {
 };
 
 const STATUS_COLUMN_SIZES = {
-    [PERIOD_TYPE_MONTHLY]: undefined,
-    [PERIOD_TYPE_QUARTERLY]: undefined,
-    [PERIOD_TYPE_SIX_MONTHLY]: 75,
-    [PERIOD_TYPE_YEARLY]: 50,
+    [PERIOD_TYPE_MONTH]: undefined,
+    [PERIOD_TYPE_QUARTER]: undefined,
+    [PERIOD_TYPE_SIX_MONTH]: 75,
+    [PERIOD_TYPE_YEAR]: 50,
 };
 
 export const getColumns = (
@@ -140,7 +139,7 @@ export const getColumns = (
                             role="button"
                             tabIndex="0"
                             className={`${classes.cell} ${value ? classes[status] : ''}`}
-                            onClick={() => onSelect(settings.original, status, settings.original.months[month])}
+                            onClick={() => onSelect(settings.original, status)}
                         >
                             {value || '-'}
                         </span>

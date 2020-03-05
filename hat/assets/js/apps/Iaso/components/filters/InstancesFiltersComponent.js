@@ -19,12 +19,12 @@ import {
     device,
     deviceOwnership,
     periods,
-    instanceStatus,
+    // instanceStatus,
 } from '../../constants/filters';
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
-import { instanceStatusesOptions } from '../../domains/completeness/config'; // TODO: move
+// import { instanceStatusesOptions } from '../../domains/completeness/config'; // TODO: move
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -73,10 +73,11 @@ class InstancesFiltersComponent extends Component {
         } = this.props;
         const { filtersUpdated } = this.state;
         // TODO: filter should accept translatable messages options
-        const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
+        // TODO: activate when API is ready
+        /* const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
             value: option.value,
             label: formatMessage(option.label),
-        }));
+        })); */
 
         return (
             <div className={classes.marginBottomBig}>
@@ -99,7 +100,7 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                instanceStatus(translatedInstanceStatusesOptions),
+                                // instanceStatus(translatedInstanceStatusesOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}

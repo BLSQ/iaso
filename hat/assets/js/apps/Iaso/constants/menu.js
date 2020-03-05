@@ -50,14 +50,18 @@ const menuItems = [
             },
         ],
     },
-    {
-        label: {
-            defaultMessage: 'Completeness',
-            id: 'iaso.completeness.title',
-        },
-        key: 'completeness',
-        icon: props => <DoneAll {...props} />,
-    },
 ];
+if (window.location.href.indexOf('/completeness') !== -1) {
+    menuItems.push(
+        {
+            label: {
+                defaultMessage: 'Completeness',
+                id: 'iaso.completeness.title',
+            },
+            key: 'completeness',
+            icon: props => <DoneAll {...props} />,
+        },
+    );
+}
 
 export default menuItems;

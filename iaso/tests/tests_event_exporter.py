@@ -38,7 +38,15 @@ def build_form_mapping():
     return {
         "program_id": "PROGRAM_DHIS2_ID",
         "question_mappings": {
-            "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"}
+            "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"},
+            "question2": {
+                "type": "multiple",
+                "values": {
+                    "1": {"id": "DE_DHIS2_ID_BOOL1", "valueType": "BOOLEAN"},
+                    "2": {"id": "DE_DHIS2_ID_BOOL2", "valueType": "BOOLEAN"},
+                    "3": {"id": "DE_DHIS2_ID_BOOL3", "valueType": "BOOLEAN"},
+                },
+            },
         },
     }
 
@@ -63,9 +71,7 @@ class EventExporterTests(TestCase):
         self.assertEquals(
             event,
             {
-                "dataValues": [
-                    {"dataElement": "DE_DHIS2_ID", "debug": "1 question1", "value": 1}
-                ],
+                "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": 1}],
                 "event": "EVENT_DHIS2_UID",
                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
                 "eventDate": "2018-02-16",
@@ -79,7 +85,7 @@ class EventExporterTests(TestCase):
     def test_event_export_works(self):
         # setup
         # persist an instance
-        instance = build_instance()    
+        instance = build_instance()
 
         # mock expected calls
 
@@ -109,7 +115,9 @@ class EventExporterTests(TestCase):
         )
 
         # exercice
-        instances_qs = Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        instances_qs = (
+            Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        )
 
         EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True
@@ -122,11 +130,52 @@ class EventExporterTests(TestCase):
         instance = build_instance()
         instance.json = {"question1": "badvalue"}
         instance.save()
-       
 
         # exercice
-        instances_qs = Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        instances_qs = (
+            Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        )
 
         EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True
+        )
+
+    @responses.activate
+    def test_event_export_multi_select(self):
+        # setup
+        # persist an instance
+        instance = build_instance()
+        instance.json = {"question2": "1 2"}
+        instance.save()
+
+        responses.add(
+            responses.POST, "https://dhis2.com/api/events", json={}, status=200
+        )
+
+        # exercice
+        instances_qs = (
+            Instance.objects.prefetch_related("org_unit").order_by("id").all()
+        )
+
+        EventExporter().export_events(
+            build_api(), instances_qs, build_form_mapping(), True
+        )
+
+        event, errors = map_to_event(instance, build_form_mapping())
+
+        self.assertEquals(
+            event,
+            {
+                "program": "PROGRAM_DHIS2_ID",
+                "event": "EVENT_DHIS2_UID",
+                "orgUnit": "OU_DHIS2_ID",
+                "eventDate": "2018-02-16",
+                "status": "COMPLETED",
+                "dataValues": [
+                    {"dataElement": "DE_DHIS2_ID_BOOL1", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_BOOL2", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_BOOL3", "value": False},
+                ],
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+            },
         )

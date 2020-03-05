@@ -95,5 +95,7 @@ def format_value(data_element, raw_value):
             raise Exception(
                 "Bad value for boolean '" + str(raw_value) + "'", data_element
             )
+    if data_element_type == "TIME":
+        return translated_value
 
     raise Exception("unsupported data element type : " + str(data_element), raw_value)

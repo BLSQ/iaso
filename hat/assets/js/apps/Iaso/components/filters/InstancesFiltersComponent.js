@@ -24,7 +24,19 @@ import {
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
-// import { instanceStatusOptions } from '../../domains/instances/config'; // TODO: move
+// import { INSTANCE_STATUSES } from '../../domains/instances/constants';
+
+// TODO: use config file
+// TODO: activate when API is ready
+/* export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
+    {
+        value: instanceStatus,
+        label: {
+            id: `iaso.label.instanceStatus.${instanceStatus.toLowerCase()}`,
+            defaultMessage: instanceStatus,
+        },
+    }
+)); */
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -72,12 +84,6 @@ class InstancesFiltersComponent extends Component {
             periodsList,
         } = this.props;
         const { filtersUpdated } = this.state;
-        // TODO: filter should accept translatable messages options
-        // TODO: activate when API is ready
-        /* const translatedInstanceStatusOptions = instanceStatusOptions.map(option => ({
-            value: option.value,
-            label: formatMessage(option.label),
-        })); */
 
         return (
             <div className={classes.marginBottomBig}>
@@ -100,7 +106,8 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                // instanceStatus(translatedInstanceStatusOptions),
+                                // TODO: activate when API is ready
+                                // instanceStatus(instanceStatusOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}

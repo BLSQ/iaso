@@ -15,22 +15,20 @@ import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../snackBars';
+import {
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_YEAR,
+} from '../../domains/periods/constants';
 
-// TODO: use API to fetch those
-const PERIOD_TYPE_CHOICES = [
-    {
-        label: 'Monthly',
-        value: 'MONTH',
+// TODO: use config file
+const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
+    value: periodType,
+    label: {
+        id: `iaso.label.periodType.${periodType.toLowerCase()}`,
+        defaultMessage: periodType,
     },
-    {
-        label: 'Quarterly',
-        value: 'QUARTER',
-    },
-    {
-        label: 'Yearly',
-        value: 'YEAR',
-    },
-];
+}));
 
 class FormDialogComponent extends Component {
     constructor(props) {
@@ -185,7 +183,7 @@ class FormDialogComponent extends Component {
                             value={this.state.period_type.value}
                             errors={this.state.period_type.errors}
                             type="select"
-                            options={PERIOD_TYPE_CHOICES}
+                            options={periodTypeOptions}
                             label={{
                                 id: 'iaso.label.periodType',
                                 defaultMessage: 'Period type',

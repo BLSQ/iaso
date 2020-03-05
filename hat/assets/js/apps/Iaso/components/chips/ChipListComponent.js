@@ -1,9 +1,11 @@
 import React, { useCallback } from 'react';
+import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Chip, withStyles } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
 import Cancel from '@material-ui/icons/Cancel';
 
+import { translateOptions } from '../../utils/intlUtil';
 import commonStyles from '../../styles/common';
 
 const styles = theme => ({
@@ -18,6 +20,9 @@ function ChipListComponent({
     value,
     classes,
     onChange,
+    intl: {
+        formatMessage,
+    },
 }) {
     const toggleChip = useCallback((chipValue) => {
         const newValue = value.includes(chipValue)
@@ -29,7 +34,7 @@ function ChipListComponent({
     return (
         <div>
             {
-                options.map((option) => {
+                translateOptions(options, formatMessage).map((option) => {
                     const isActive = value.includes(option.value);
                     return (
                         <Chip
@@ -54,5 +59,6 @@ ChipListComponent.propTypes = {
     options: PropTypes.array.isRequired,
     value: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.bool, PropTypes.number])).isRequired,
     onChange: PropTypes.func.isRequired,
+    intl: PropTypes.object.isRequired,
 };
-export default withStyles(styles)(ChipListComponent);
+export default injectIntl(withStyles(styles)(ChipListComponent));

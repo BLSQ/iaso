@@ -2,9 +2,10 @@ import React from 'react';
 
 import StatusIcon from './components/CompletenessStatusComponent';
 import {
-    PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR,
+    PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPES,
 } from '../periods/constants';
 import { formatThousand } from '../../../../utils';
+import { INSTANCE_STATUSES } from '../instances/constants';
 
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
@@ -80,3 +81,21 @@ export const getColumns = (
 
     return columns;
 };
+
+export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
+    {
+        value: instanceStatus,
+        label: {
+            id: `iaso.label.instanceStatus.${instanceStatus.toLowerCase()}Multi`,
+            defaultMessage: instanceStatus,
+        },
+    }
+));
+
+export const periodTypeOptions = PERIOD_TYPES.map(periodType => ({
+    value: periodType,
+    label: {
+        id: `iaso.label.periodType.${periodType.toLowerCase()}`,
+        defaultMessage: periodType,
+    },
+}));

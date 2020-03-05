@@ -14,7 +14,7 @@ import MESSAGES from './messages';
 import ArrayFieldInput from './ArrayFieldInput';
 import InputLabelComponent from './InputLabelComponent';
 import FormControlComponent from './FormControlComponent';
-
+import { translateOptions } from '../../utils/intlUtil';
 
 const styles = theme => ({
     select: {
@@ -210,6 +210,7 @@ class InputComponent extends Component {
             if (hasErrors) {
                 selectClassNames.push(classes.selectError);
             }
+
             return (
                 <FormControlComponent withMarginTop={withMarginTop}>
                     <InputLabelComponent
@@ -232,7 +233,7 @@ class InputComponent extends Component {
                             placeholder=""
                             onBlur={() => this.toggleFocused(false)}
                             onFocus={() => this.toggleFocused(true)}
-                            options={options}
+                            options={translateOptions(options, formatMessage)}
                             noResultsText={formatMessage({
                                 id: 'iaso.label.noOptions',
                                 defaultMessage: 'No results found',

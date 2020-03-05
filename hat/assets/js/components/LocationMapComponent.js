@@ -5,50 +5,98 @@ import { connect } from 'react-redux';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import LayersComponent from './LayersComponent';
 import LocationMap from './LocationMap';
-import { deepEqual } from '../utils';
 import FiltersComponent from './FiltersComponent';
 import { smallMapActions } from '../redux/smallMapReducer';
+
+import {
+    isCoordInsidePolygon,
+} from '../utils/map/mapUtils';
 
 class LocationMapComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            location: props.location,
+            asGroup: null,
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if (!deepEqual(nextProps.location, this.props.location, true)) {
-            this.setState({
-                location: nextProps.location,
+    setAsGroup(asGroup) {
+        this.setState({
+            asGroup,
+        });
+    }
+
+
+    getLocation(featureItem) {
+        const {
+            geoZones,
+        } = this.props;
+        const zone = geoZones.features.filter(z => parseInt(z.id, 10) === featureItem.properties.ZS)[0];
+        const zsId = parseInt(zone.id, 10);
+        const provinceId = parseInt(zone.properties.province, 10);
+        const asId = parseInt(featureItem.id, 10);
+        return {
+            AS__ZS_id: zsId,
+            AS__ZS__province_id: provinceId,
+            AS_id: asId,
+        };
+    }
+
+    updateVillage(newVillage) {
+        const {
+            updateCurrentVillage,
+        } = this.props;
+        const {
+            asGroup,
+        } = this.state;
+        let tempVillage = {
+            ...newVillage,
+            latitude: parseFloat(newVillage.latitude),
+            longitude: parseFloat(newVillage.longitude),
+        };
+        if (asGroup) {
+            asGroup.eachLayer((layer) => {
+                layer.eachLayer((areaLayer) => {
+                    if (isCoordInsidePolygon(
+                        [
+                            tempVillage.latitude,
+                            tempVillage.longitude,
+                        ],
+                        areaLayer,
+                    )) {
+                        if (areaLayer.feature.properties.ZS) {
+                            tempVillage = {
+                                ...tempVillage,
+                                ...this.getLocation(areaLayer.feature),
+                            };
+                        }
+                    }
+                });
             });
         }
+        updateCurrentVillage(tempVillage);
     }
 
     render() {
         const { baseLayer } = this.props.map;
         const {
-            updateField,
             geoProvinces,
             geoZones,
             geoAreas,
             params,
             filters,
-            updateLocation,
             baseUrl,
-        } = this.props;
-        const {
             location,
-        } = this.state;
+        } = this.props;
         return (
             <section className="third-container">
                 <div>
                     <div className="filters-container">
-                        {/* <FiltersComponent
+                        <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
                             filters={filters}
-                        /> */}
+                        />
                     </div>
                     <div>
                         <label
@@ -69,7 +117,10 @@ class LocationMapComponent extends Component {
                             id={`latitude-${location.id}`}
                             className={!location.latitude ? 'form-error' : ''}
                             value={location.latitude ? location.latitude : 0}
-                            onChange={event => updateField('latitude', event.currentTarget.value)}
+                            onChange={event => this.updateVillage({
+                                ...location,
+                                latitude: parseFloat(event.currentTarget.value),
+                            })}
                         />
                     </div>
                     <div>
@@ -91,7 +142,10 @@ class LocationMapComponent extends Component {
                             id={`longitude-${location.id}`}
                             value={location.longitude ? location.longitude : 0}
                             className={!location.longitude ? 'form-error' : ''}
-                            onChange={event => updateField('longitude', event.currentTarget.value)}
+                            onChange={event => this.updateVillage({
+                                ...location,
+                                longitude: parseFloat(event.currentTarget.value),
+                            })}
                         />
                     </div>
                     <div className="location-map-layers-container">
@@ -113,9 +167,9 @@ class LocationMapComponent extends Component {
                                     as: geoAreas,
                                 }}
                                 location={location}
-                                updatePosition={(lat, lng) => this.props.updatePosition(lat, lng)}
+                                updateCurrentVillage={newVillage => this.updateVillage(newVillage)}
                                 filters={filters}
-                                updateLocation={newLocation => updateLocation(newLocation)}
+                                setAsGroup={asGroup => this.setAsGroup(asGroup)}
                             />
                         )
                     }
@@ -132,8 +186,7 @@ class LocationMapComponent extends Component {
 
 LocationMapComponent.propTypes = {
     location: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-    updateField: PropTypes.func.isRequired,
+    updateCurrentVillage: PropTypes.func.isRequired,
     geoProvinces: PropTypes.object.isRequired,
     geoZones: PropTypes.object.isRequired,
     geoAreas: PropTypes.object.isRequired,
@@ -141,8 +194,6 @@ LocationMapComponent.propTypes = {
     filters: PropTypes.array.isRequired,
     map: PropTypes.object.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    updatePosition: PropTypes.func.isRequired,
-    updateLocation: PropTypes.func.isRequired,
     baseUrl: PropTypes.string.isRequired,
 };
 
@@ -152,6 +203,7 @@ const MapStateToProps = state => ({
     geoProvinces: state.smallMap.geoProvinces,
     geoZones: state.smallMap.geoZones,
     geoAreas: state.smallMap.geoAreas,
+    location: state.villages.current,
 });
 
 const MapDispatchToProps = dispatch => ({

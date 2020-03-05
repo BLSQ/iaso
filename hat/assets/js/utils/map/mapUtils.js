@@ -318,19 +318,18 @@ export const renderVillageIcon = (village, formatMessage) => {
 };
 
 
-export const isMarkerInsidePolygon = (marker, poly) => {
+export const isCoordInsidePolygon = ([x, y], poly) => {
     let inside = false;
-    const x = marker.getLatLng().lat;
-    const y = marker.getLatLng().lng;
     for (let ii = 0; ii < poly.getLatLngs().length; ii += 1) {
         const polyPoints = poly.getLatLngs()[ii];
+        // console.log('polyPoints', polyPoints);
         for (let i = 0, j = polyPoints.length - 1; i < polyPoints.length; j = i++) {
-            const xi = polyPoints[i].lat; const
-                yi = polyPoints[i].lng;
-            const xj = polyPoints[j].lat; const
-                yj = polyPoints[j].lng;
+            const xi = polyPoints[i].lat;
+            const yi = polyPoints[i].lng;
+            const xj = polyPoints[j].lat;
+            const yj = polyPoints[j].lng;
 
-            const intersect = ((yi > y) != (yj > y))
+            const intersect = ((yi > y) !== (yj > y))
                 && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
             if (intersect) inside = !inside;
         }

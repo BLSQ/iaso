@@ -18,7 +18,6 @@ import {
     defaultFitToBound,
     genericMap,
     zooms,
-    isMarkerInsidePolygon,
 } from '../utils/map/mapUtils';
 
 const tileOptions = { keepBuffer: 4 };
@@ -134,6 +133,21 @@ class LocationMap extends Component {
         exportControl = onResizeMap(width, height, exportControl, locationMap, 'Location');
     }
 
+    getLocation(featureItem) {
+        const {
+            geoJson,
+        } = this.props;
+        const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === featureItem.properties.ZS)[0];
+        const zsId = parseInt(zone.id, 10);
+        const provinceId = parseInt(zone.properties.province, 10);
+        const asId = parseInt(featureItem.id, 10);
+        return {
+            AS__ZS_id: zsId,
+            AS__ZS__province_id: provinceId,
+            AS_id: asId,
+        };
+    }
+
     updateBaseLayer(baseLayer) {
         const { locationMap } = this;
         Object.keys(BASE_LAYERS).forEach((key) => {
@@ -163,28 +177,15 @@ class LocationMap extends Component {
         }).on('click', (event) => {
             reinitShapesColor();
             if (!this.props.location.latitude || !this.props.location.longitude) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
+                const { location } = this.state;
+                this.props.updateCurrentVillage({
+                    location,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                });
             }
         });
         this.locationMap = locationMap;
-    }
-
-    updateLocation(featureItem) {
-        const {
-            geoJson,
-        } = this.props;
-        const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === featureItem.properties.ZS)[0];
-        const zsId = parseInt(zone.id, 10);
-        const provinceId = parseInt(zone.properties.province, 10);
-        const asId = parseInt(featureItem.id, 10);
-        this.props.updateLocation({
-            AS__ZS_id: zsId,
-            AS__ZS__province_id: provinceId,
-            AS_id: asId,
-        });
     }
 
     includeDefaultLayersInMap() {
@@ -197,6 +198,7 @@ class LocationMap extends Component {
         locationMap.addLayer(this.locationGroup);
         const {
             geoJson,
+            setAsGroup,
         } = this.props;
 
         this.provinceGroup.addLayer(L.geoJson(geoJson.provinces, shapeOptions('provinces', this)));
@@ -204,39 +206,27 @@ class LocationMap extends Component {
         this.asGroup.addLayer(L.geoJson(geoJson.as, shapeAsOptions('as', this)));
         this.asGroup.on('click', (event) => {
             const { location } = this.state;
-            if (event.sourceTarget.feature.properties.ZS && location.latitude === 0 && location.longitude === 0) {
-                this.updateLocation(event.sourceTarget.feature);
-            }
+            let newVillage = {
+                ...location,
+            };
             if (location.latitude === 0 && location.longitude === 0) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
+                newVillage = {
+                    ...newVillage,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                };
             }
+            this.props.updateCurrentVillage(newVillage);
         }).on('mouseup', (event) => {
             locationMap.getPane('custom-pane-as-shapes').style.zIndex = 400;
             if (!locationMap.dragging._enabled && !locationMap.boxZoom._box) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
                 const { location } = this.state;
-                if (event.sourceTarget.feature.properties.ZS && location && !locationMap.dragging._enabled) {
-                    this.updateLocation(event.sourceTarget.feature);
-                }
-            }
-        }).on('dblclick', (event) => {
-            if (!event.originalEvent) {
-                this.asGroup.eachLayer((layer) => {
-                    layer.eachLayer((areaLayer) => {
-                        if (isMarkerInsidePolygon(this.villageMarker, areaLayer)) {
-                            const { location } = this.state;
-                            if (areaLayer.feature.properties.ZS && location) {
-                                this.updateLocation(areaLayer.feature);
-                            }
-                        }
-                    });
-                });
+                const newVillage = {
+                    ...location,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                };
+                this.props.updateCurrentVillage(newVillage);
             }
         });
 
@@ -249,6 +239,7 @@ class LocationMap extends Component {
             plotOrHideLayer(locationMap, zooms.zs, 'zs');
             plotOrHideLayer(locationMap, zooms.as, 'as');
         });
+        setAsGroup(this.asGroup);
     }
 
     /*
@@ -258,7 +249,6 @@ class LocationMap extends Component {
 
 
     updateMap(location) {
-        console.log('updateMap');
         const { locationMap } = this;
 
         const color = 'blue';
@@ -291,9 +281,6 @@ class LocationMap extends Component {
             } else {
                 const latlng = new L.LatLng(location.latitude, location.longitude);
                 this.villageMarker.setLatLng(latlng);
-                this.asGroup.fire('dblclick', {
-                    latlng,
-                });
             }
         }
     }
@@ -321,7 +308,7 @@ class LocationMap extends Component {
 
     fitToBounds() {
         const { locationMap } = this;
-        defaultFitToBound(locationMap, this.locationGroup.getBounds(), 10);
+        defaultFitToBound(locationMap, this.locationGroup.getBounds(), 12);
     }
 
     /*
@@ -371,9 +358,9 @@ LocationMap.propTypes = {
     geoJson: PropTypes.object,
     intl: intlShape.isRequired,
     location: PropTypes.object,
-    updatePosition: PropTypes.func.isRequired,
-    updateLocation: PropTypes.func.isRequired,
+    updateCurrentVillage: PropTypes.func.isRequired,
     filters: PropTypes.array.isRequired,
+    setAsGroup: PropTypes.func.isRequired,
 };
 
 export default injectIntl(LocationMap);

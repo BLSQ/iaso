@@ -24,7 +24,7 @@ import {
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
-// import { instanceStatusesOptions } from '../../domains/completeness/config'; // TODO: move
+// import { instanceStatusOptions } from '../../domains/instances/config'; // TODO: move
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -74,7 +74,7 @@ class InstancesFiltersComponent extends Component {
         const { filtersUpdated } = this.state;
         // TODO: filter should accept translatable messages options
         // TODO: activate when API is ready
-        /* const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
+        /* const translatedInstanceStatusOptions = instanceStatusOptions.map(option => ({
             value: option.value,
             label: formatMessage(option.label),
         })); */
@@ -100,7 +100,7 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                // instanceStatus(translatedInstanceStatusesOptions),
+                                // instanceStatus(translatedInstanceStatusOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}

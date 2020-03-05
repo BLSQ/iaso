@@ -5,7 +5,8 @@ import Grid from '@material-ui/core/Grid';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import ChipListComponent from '../../../components/chips/ChipListComponent';
-import { periodTypeOptions, instanceStatusesOptions } from '../config';
+import { instanceStatusOptions } from '../../instances/config';
+import { periodTypeOptions } from '../../periods/config';
 
 function CompletenessFiltersComponent({
     activePeriodType,
@@ -19,7 +20,7 @@ function CompletenessFiltersComponent({
         value: option.value,
         label: intl.formatMessage(option.label),
     }));
-    const translatedInstanceStatusesOptions = instanceStatusesOptions.map(option => ({
+    const translatedInstanceStatusOptions = instanceStatusOptions.map(option => ({
         value: option.value,
         label: intl.formatMessage(option.label),
     }));
@@ -44,7 +45,7 @@ function CompletenessFiltersComponent({
                 <Grid item xs={3} />
                 <Grid item container xs={6} justify="flex-end">
                     <ChipListComponent
-                        options={translatedInstanceStatusesOptions}
+                        options={translatedInstanceStatusOptions}
                         value={activeInstanceStatuses}
                         onChange={setActiveInstanceStatuses}
                     />

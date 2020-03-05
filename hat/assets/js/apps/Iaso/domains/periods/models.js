@@ -1,18 +1,10 @@
 import _ from 'lodash/fp';
+import {
+    PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR,
+} from './constants';
 
-export const PERIOD_TYPE_YEAR = 'YEAR';
-export const PERIOD_TYPE_SIX_MONTH = 'SIX_MONTH';
-export const PERIOD_TYPE_QUARTER = 'QUARTER';
-export const PERIOD_TYPE_MONTH = 'MONTH';
-
-export const PERIOD_TYPES = [
-    PERIOD_TYPE_MONTH,
-    PERIOD_TYPE_QUARTER,
-    PERIOD_TYPE_SIX_MONTH,
-    PERIOD_TYPE_YEAR,
-];
-
-export default class Period {
+// eslint-disable-next-line import/prefer-default-export
+export class Period {
     constructor(periodString) {
         const [periodType, periodParts] = Period.parse(periodString);
 

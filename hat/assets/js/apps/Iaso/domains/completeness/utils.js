@@ -6,9 +6,11 @@ import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 
-import Period, {
+
+import { Period } from '../periods/models';
+import {
     PERIOD_TYPE_QUARTER, PERIOD_TYPE_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPE_SIX_MONTH,
-} from './periods';
+} from '../periods/constants';
 import { formatThousand } from '../../../../utils';
 
 
@@ -128,7 +130,7 @@ export const getColumns = (
                     status={status}
                     title={formatMessage({
                         defaultMessage: status,
-                        id: `iaso.completeness.${status}`,
+                        id: `iaso.label.instanceStatus.${status}`,
                     })}
                 />,
                 key: status.key,

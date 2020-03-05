@@ -5,7 +5,7 @@ import { Box, withStyles } from '@material-ui/core';
 import CompletenessFiltersComponent from './CompletenessFiltersComponent';
 import CompletenessPeriodComponent from './CompletenessPeriodComponent';
 import commonStyles from '../../../styles/common';
-import { PERIOD_TYPE_QUARTER } from '../periods';
+import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';
 

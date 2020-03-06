@@ -115,6 +115,12 @@ const commonStyles = theme => ({
     popperFixed: {
         position: 'fixed !important',
     },
+    capitalize: {
+        display: 'inline-block',
+        '&:first-letter': {
+            textTransform: 'uppercase',
+        },
+    },
 });
 
 export default commonStyles;

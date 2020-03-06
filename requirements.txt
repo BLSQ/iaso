@@ -47,6 +47,9 @@ Sphinx==1.5.4
 # dhis2 api wrapper
 dhis2.py==2.0.2
 
+# odk-specific libraries
+pyxform==1.1.0
+
 # test and linting
 mypy==0.510
 typed-ast==1.1.0

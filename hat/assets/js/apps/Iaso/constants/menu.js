@@ -3,6 +3,7 @@ import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import CompareArrows from '@material-ui/icons/CompareArrows';
+import DoneAll from '@material-ui/icons/DoneAll';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 
@@ -50,5 +51,17 @@ const menuItems = [
         ],
     },
 ];
+if (window.location.href.indexOf('/completeness') !== -1) {
+    menuItems.push(
+        {
+            label: {
+                defaultMessage: 'Completeness',
+                id: 'iaso.completeness.title',
+            },
+            key: 'completeness',
+            icon: props => <DoneAll {...props} />,
+        },
+    );
+}
 
 export default menuItems;

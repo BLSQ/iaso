@@ -1,6 +1,7 @@
 import {
     getRequest,
     patchRequest,
+    postRequest,
     putRequest,
     deleteRequest,
 } from '../libs/Api';
@@ -271,5 +272,49 @@ export const fetchPeriods = (dispatch, formId) => getRequest(`/api/periods/?form
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchPeriodsError')));
         console.error('Error while fetching periods list:', error);
+        throw error;
+    });
+
+export const fetchProjects = dispatch => getRequest('/api/projects/')
+    .then(res => res.projects)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchProjectsError')));
+        throw error;
+    });
+
+export const createForm = (dispatch, formData) => postRequest('/api/forms/', formData)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('createFormError')));
+        throw error;
+    });
+
+export const updateForm = (dispatch, formId, formData) => putRequest(`/api/forms/${formId}/`, formData)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('updateFormError')));
+        throw error;
+    });
+
+export const deleteForm = (dispatch, formId) => deleteRequest(`/api/forms/${formId}/`)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('deleteFormError')));
+        throw error;
+    });
+
+export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
+    const data = { form_id: formVersionData.form_id };
+    const fileData = { xls_file: formVersionData.xls_file };
+
+    return postRequest('/api/formversions/', data, fileData)
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar(isUpdate ? 'updateFormError' : 'createFormError')));
+            throw error;
+        });
+};
+
+export const fetchCompleteness = (dispatch, url) => getRequest(url)
+    .then(res => res.completeness)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError')));
+        console.error('Error while fetching  while fetching completness:', error);
         throw error;
     });

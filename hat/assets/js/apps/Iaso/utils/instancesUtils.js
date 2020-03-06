@@ -22,7 +22,10 @@ export const getInstancesColumns = (formatMessage, instances) => {
                 });
             }
         });
-
+        tableColumns = tableColumns.map(c => ({
+            ...c,
+            width: c.accessor === 'uuid' ? 300 : 200,
+        }));
         tableColumns = tableColumns.concat(childrenArray);
     }
     return tableColumns;

@@ -19,11 +19,24 @@ import {
     device,
     deviceOwnership,
     periods,
+    // instanceStatus,
 } from '../../constants/filters';
-
 import FiltersComponent from './FiltersComponent';
 import { createUrl } from '../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+// import { INSTANCE_STATUSES } from '../../domains/instances/constants';
+
+// TODO: use config file
+// TODO: activate when API is ready
+/* export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
+    {
+        value: instanceStatus,
+        label: {
+            id: `iaso.label.instanceStatus.${instanceStatus.toLowerCase()}`,
+            defaultMessage: instanceStatus,
+        },
+    }
+)); */
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -71,6 +84,7 @@ class InstancesFiltersComponent extends Component {
             periodsList,
         } = this.props;
         const { filtersUpdated } = this.state;
+
         return (
             <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
@@ -92,6 +106,8 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
+                                // TODO: activate when API is ready
+                                // instanceStatus(instanceStatusOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}

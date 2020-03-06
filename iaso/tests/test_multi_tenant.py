@@ -242,25 +242,6 @@ class MultiTenantTestCase(TestCase):
         self.assertEqual(len(content), 0)
 
     @tag("iaso_only")
-    def test_form_access(self):
-        response = self.raccoon_client.get("/api/forms/", accept="application/json")
-        content = json.loads(response.content)
-        self.assertEqual(content["forms"], [])
-        response = self.yoda_client.get("/api/forms/", accept="application/json")
-        content = json.loads(response.content)
-        self.assertEqual(len(content["forms"]), 1)
-
-        response = self.yoda_client.get(
-            "/api/forms/%s/" % self.form.id, accept="application/json"
-        )
-        self.assertEqual(response.status_code, 200)
-
-        response = self.raccoon_client.get(
-            "/api/forms/%s/" % self.form.id, accept="application/json"
-        )
-        self.assertEqual(response.status_code, 403)
-
-    @tag("iaso_only")
     def test_source_access(self):
         response = self.raccoon_client.get(
             "/api/datasources/", accept="application/json"

@@ -1,4 +1,3 @@
-// eslint-disable-next-line import/prefer-default-export
 export function getPrettyPeriod(period) {
     if (period.length === 4) {
         return period;

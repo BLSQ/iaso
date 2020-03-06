@@ -25,7 +25,6 @@ const getBaseColumns = formatMessage => ([
     },
 ]);
 
-// eslint-disable-next-line import/prefer-default-export
 export const getColumns = (
     formatMessage,
     months,

@@ -1,17 +1,9 @@
 import _ from 'lodash';
-import React from 'react';
-import PropTypes from 'prop-types';
-import { Tooltip } from '@material-ui/core';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
-import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
-import ErrorOutline from '@material-ui/icons/ErrorOutline';
-
 
 import { Period } from '../periods/models';
 import {
-    PERIOD_TYPE_QUARTER, PERIOD_TYPE_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_QUARTER,
 } from '../periods/constants';
-import { formatThousand } from '../../../../utils';
 
 
 /**

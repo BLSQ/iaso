@@ -18,7 +18,6 @@ function setCompleteness(data) {
     return { type: 'SET_COMPLETENESS', payload: data };
 }
 
-// eslint-disable-next-line import/prefer-default-export
 export function fetchCompleteness() {
     return (dispatch) => {
         dispatch(startFetchingCompleteness());

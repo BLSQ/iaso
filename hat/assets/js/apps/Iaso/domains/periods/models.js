@@ -3,7 +3,6 @@ import {
     PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR,
 } from './constants';
 
-// eslint-disable-next-line import/prefer-default-export
 export class Period {
     constructor(periodString) {
         const [periodType, periodParts] = Period.parse(periodString);

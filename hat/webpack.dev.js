@@ -5,7 +5,7 @@ var BundleTracker = require('webpack-bundle-tracker')
 // remember to switch in webpack.prod.js and
 // django settings as well
 var LOCALE = 'fr'
-var WEBPACK_URL = 'https://localhost:3000'
+var WEBPACK_URL = 'http://localhost:3000'
 
 module.exports = {
   context: __dirname,

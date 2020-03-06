@@ -138,6 +138,7 @@ class UserModale extends Component {
             areas,
             permissions,
             testerTypes,
+            screeningTypes,
         } = this.props;
 
         const {
@@ -180,6 +181,7 @@ class UserModale extends Component {
                                 updatePassword={newPassword => this.updatePassword(newPassword)}
                                 updateUserField={(key, value) => this.updateUserField(key, value)}
                                 testerTypes={testerTypes}
+                                screeningTypes={screeningTypes}
                                 userLevels={userLevels}
                             />
                         )
@@ -280,6 +282,7 @@ UserModale.propTypes = {
     updateCurrentUser: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
     error: PropTypes.any,
+    screeningTypes: PropTypes.array.isRequired,
 };
 
 export default injectIntl(UserModale);

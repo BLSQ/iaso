@@ -10,13 +10,17 @@ const mapStyles = theme => ({
         '& .marker-cluster.color': {
             color: 'white',
         },
+        '& .marker-cluster.color div': {
+            marginLeft: 2,
+            marginTop: 2,
+        },
         '& .marker-cluster.color div .border': {
             position: 'absolute',
             display: 'block',
-            height: 40,
-            width: 40,
-            top: -5,
-            left: -5,
+            height: 34,
+            width: 34,
+            top: -2,
+            left: -2,
             borderRadius: '100%',
             zIndex: -1,
         },

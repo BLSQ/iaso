@@ -6,7 +6,7 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { customMarker } from '../../../utils/mapUtils';
+import { customMarker, isValidCoordinate } from '../../../utils/mapUtils';
 
 const MarkerComponent = (props) => {
     const {
@@ -19,6 +19,7 @@ const MarkerComponent = (props) => {
         markerProps,
         popupProps,
     } = props;
+    if (!item || !item.latitude || !item.longitude || !isValidCoordinate(item.latitude, item.longitude)) return null;
     return (
         <Marker
             draggable={draggable}

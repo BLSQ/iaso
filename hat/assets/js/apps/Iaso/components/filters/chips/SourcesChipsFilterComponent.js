@@ -24,6 +24,9 @@ import {
 
 const styles = theme => ({
     ...commonStyles(theme),
+    content: {
+        padding: theme.spacing(0, 3, 2, 3),
+    },
 });
 
 function SourcesChipsFilterComponent(props) {
@@ -33,6 +36,7 @@ function SourcesChipsFilterComponent(props) {
         currentSources,
         dispatch,
         currentOrgUnit,
+        fitToBounds,
     } = props;
     const sources = getSourcesWithoutCurrentSource(currentSources, currentOrgUnit.source_id);
     return (
@@ -46,6 +50,14 @@ function SourcesChipsFilterComponent(props) {
                     <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
                 </Typography>
             </Box>
+            {
+                sources.length === 0
+                && (
+                    <Typography variant="body2" align="center" color="textSecondary">
+                        <FormattedMessage id="iaso.orgUnits.sources.noData" defaultMessage="No source" />
+                    </Typography>
+                )
+            }
             <ChipsFilterComponent
                 selectLabelMessage={{
                     id: 'iaso.orgUnits.addSource',
@@ -56,6 +68,7 @@ function SourcesChipsFilterComponent(props) {
                     dispatch,
                     source,
                     currentOrgUnit,
+                    fitToBounds,
                 )}
                 setSelectedItems={props.setFormsSelected}
                 selectedItems={sourcesSelected}
@@ -76,6 +89,7 @@ SourcesChipsFilterComponent.propTypes = {
     sourcesSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fitToBounds: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

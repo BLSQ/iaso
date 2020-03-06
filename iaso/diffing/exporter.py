@@ -103,7 +103,7 @@ class Exporter:
             # if dhis2 >= 2.32
             payload["geometry"] = geometry
             # if dhis2 < 2.32
-            payload["coordinates"] = geometry["coordinates"]
+            payload["coordinates"] = json.dumps(geometry["coordinates"])
             payload["featureType"] = to_dhis2_feature_type(geometry["type"])
 
     def update_orgunits(self, api, diffs):

@@ -543,3 +543,64 @@ class PatientsViewSet(viewsets.ViewSet):
             return Response(new_patient.as_full_dict())
         else:
             return Response("Unauthorized", status=401)
+
+
+    def create(self, request):
+        new_patient = Patient()
+        is_authorized = (
+            request.user.has_perm("menupermissions.x_datas_patient_edition")
+        ) and (
+            request.user.is_superuser
+            or not request.user.has_perm("menupermissions.x_anonymous")
+        )
+        if is_authorized:
+            new_patient.post_name = request.data.get("post_name", "")
+            new_patient.last_name = request.data.get("last_name", "")
+            new_patient.first_name = request.data.get("first_name", "")
+            new_patient.sex = request.data.get("sex", "")
+            phone_number = request.data.get("phone_number")
+            if phone_number or (
+                phone_number is None and new_patient.phone_number is not None
+            ):
+                new_patient.phone_number = phone_number
+                new_patient.phone_number_date = datetime.today()
+            year_of_birth = request.data.get("year_of_birth", None)
+            new_patient.mothers_surname = request.data.get("mothers_surname", "")
+            if year_of_birth:
+                new_patient.year_of_birth = year_of_birth
+            else:
+                new_patient.year_of_birth = None
+
+            AS_id = request.data.get("AS_id", None)
+            if AS_id:
+                new_AS = get_object_or_404(AS, pk=AS_id)
+                new_patient.origin_area = new_AS
+            else:
+                new_patient.origin_area = None
+
+            village_id = request.data.get("village_id", None)
+            if village_id:
+                new_village = get_object_or_404(Village, pk=village_id)
+                new_patient.origin_village = new_village
+            else:
+                new_patient.origin_village = None
+
+            origin_country = request.data.get("origin_country", None)
+            if origin_country:
+                new_patient.origin_country = (
+                    origin_country if len(origin_country) > 0 else None
+                )
+
+            death = request.data.get("death", None)
+            if death:
+                new_patient.dead = death.get("dead")
+                if new_patient.dead:
+                    new_patient.death_date = death.get("death_date")
+                    device = death.get("device")
+                else:
+                    new_patient.death_date = None
+
+            new_patient.save()
+            return Response(new_patient.as_full_dict())
+        else:
+            return Response("Unauthorized", status=401)

@@ -13,7 +13,6 @@ from hat.audit.models import log_modification, ORG_UNIT_API
 from hat.api.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from time import gmtime, strftime
-from iaso.utils import timestamp_to_datetime
 from django.http import StreamingHttpResponse, HttpResponse
 from django.core.exceptions import PermissionDenied
 from hat.api.export_utils import (
@@ -234,7 +233,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if app_id:
             queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
         searches = request.GET.get("searches", None)
-
+        counts = []
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -246,18 +245,22 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = additional_queryset
                 else:
                     queryset = queryset.union(additional_queryset)
+                counts.append(
+                    {"index": search_index, "count": additional_queryset.count(),}
+                )
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET)
         queryset = queryset.order_by(*order)
 
-        if csv_format is None:
+        if csv_format is None and xlsx_format is None:
             if limit and not as_location:
                 queryset.prefetch_related("group_set")
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
                 res = {"count": paginator.count}
+                res["counts"] = counts
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
@@ -313,49 +316,53 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
         else:
             columns = [
-                {"title": "ID", "width": 20},
-                {"title": "Nom", "width": 20},
-                {"title": "Type", "width": 20},
-                {"title": "Latitude", "width": 40},
-                {"title": "Longitude", "width": 20},
+                {"title": "ID", "width": 10},
+                {"title": "Nom", "width": 25},
+                {"title": "Type", "width": 15},
+                {"title": "Latitude", "width": 15},
+                {"title": "Longitude", "width": 15},
                 {"title": "Date de création", "width": 20},
                 {"title": "Date de modification", "width": 20},
                 {"title": "Source", "width": 20},
-                {"title": "Statut", "width": 20},
-                {"title": "Référence externe", "width": 20},
+                {"title": "Validé", "width": 15},
+                {"title": "Référence externe", "width": 17},
                 {"title": "parent1", "width": 20},
                 {"title": "parent2", "width": 20},
                 {"title": "parent3", "width": 20},
                 {"title": "parent4", "width": 20},
             ]
+            parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
+            queryset = queryset.values(
+                "id",
+                "name",
+                "org_unit_type__name",
+                "latitude",
+                "longitude",
+                "version__data_source__name",
+                "validated",
+                "source_ref",
+                "created_at",
+                "updated_at",
+                *parent_field_names
+            )
 
             filename = "org_units"
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(org_unit, **kwargs):
-                idict = org_unit.as_dict_with_parents()
-                created_at = timestamp_to_datetime(idict.get("created_at"))
-                updated_at = timestamp_to_datetime(idict.get("updated_at"))
                 org_unit_values = [
-                    idict.get("id"),
-                    idict.get("name"),
-                    idict.get("org_unit_type_name"),
-                    idict.get("latitude"),
-                    idict.get("longitude"),
-                    created_at,
-                    updated_at,
-                    idict.get("source"),
-                    idict.get("status"),
-                    idict.get("source_ref"),
+                    org_unit.get("id"),
+                    org_unit.get("name"),
+                    org_unit.get("org_unit_type__name"),
+                    org_unit.get("latitude"),
+                    org_unit.get("longitude"),
+                    org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
+                    org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
+                    org_unit.get("version__data_source__name"),
+                    org_unit.get("validated"),
+                    org_unit.get("source_ref"),
+                    *[org_unit.get(field_name) for field_name in parent_field_names],
                 ]
-                parent = idict.get("parent")
-                for i in range(4):
-                    if parent:
-                        org_unit_values.append(parent.get("name"))
-                        parent = parent.get("parent")
-                    else:
-                        org_unit_values.append("")
-
                 return org_unit_values
 
             queryset.prefetch_related(

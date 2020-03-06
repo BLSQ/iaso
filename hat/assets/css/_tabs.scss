@@ -15,7 +15,7 @@
         -moz-box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.2);
         -webkit-box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.2);
         box-shadow: inset 0 -10px 10px -10px rgba(0,0,0,0.2);
-        &:hover{
+        &:hover:not(.disabled){
             background-color: white;
         }
         &.selected {
@@ -36,6 +36,10 @@
                 left: -1px;
                 background-color: white;
             }
+        }
+        &.disabled {
+            cursor: not-allowed;
+            color: rgba($dark-blue, 0.60)
         }
     }
     &+*,

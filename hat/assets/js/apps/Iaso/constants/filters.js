@@ -3,6 +3,7 @@ import React from 'react';
 import MESSAGES from '../components/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
+import { getPrettyPeriod } from '../utils/periodsUtils';
 
 
 export const search = () => (
@@ -76,6 +77,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
         value,
     }
 );
+
 export const orgUnitType = (
     orgunitTypesList,
     urlKey = 'orgUnitTypeId',
@@ -346,6 +348,33 @@ export const group = groupList => (
             value: a.id,
         })),
         label: MESSAGES.group,
+        type: 'select',
+    }
+);
+
+
+export const periods = periodsList => (
+    {
+        urlKey: 'periods',
+        isMultiSelect: true,
+        isClearable: true,
+        options: periodsList.map(p => ({
+            label: getPrettyPeriod(p),
+            value: p,
+        })),
+        label: MESSAGES.periods,
+        type: 'select',
+    }
+);
+
+
+export const instanceStatus = options => (
+    {
+        urlKey: 'status',
+        isMultiSelect: true,
+        isClearable: true,
+        options,
+        label: MESSAGES.status,
         type: 'select',
     }
 );

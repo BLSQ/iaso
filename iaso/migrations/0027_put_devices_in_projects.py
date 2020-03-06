@@ -1,8 +1,8 @@
 from django.db import migrations
-from iaso.models import Instance
 
 
 def put_devices_in_projects(apps, schema_editor):
+    Instance = apps.get_model("iaso", "Instance")
     instances = Instance.objects.filter(device__isnull=False)
     for instance in instances:
         instance.device.projects.add(instance.project)

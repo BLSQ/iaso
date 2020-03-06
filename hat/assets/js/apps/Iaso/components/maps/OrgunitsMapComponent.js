@@ -24,7 +24,7 @@ import {
     getShapesBounds,
     colorClusterCustomMarker,
     customZoomBar,
-    colorMarker,
+    circleColorMarkerOptions,
 } from '../../utils/mapUtils';
 
 import { resetMapReducer } from '../../redux/mapReducer';
@@ -55,11 +55,16 @@ const styles = theme => ({
     },
 });
 
-const getOrgUnitsBounds = (orgUnits) => {
-    let orgUnitsLocations = [];
-    Object.values(orgUnits.locations).forEach((location) => {
-        orgUnitsLocations = orgUnitsLocations.concat(location.orgUnits);
+const getFullOrgUnits = (orgUnits) => {
+    let fullOrUnits = [];
+    Object.values(orgUnits).forEach((searchOrgUnits) => {
+        fullOrUnits = fullOrUnits.concat(searchOrgUnits);
     });
+    return fullOrUnits;
+};
+
+const getOrgUnitsBounds = (orgUnits) => {
+    const orgUnitsLocations = getFullOrgUnits(orgUnits.locations);
     const locationsBounds = orgUnitsLocations.length > 0 ? getLatLngBounds(orgUnitsLocations) : null;
     const shapeBounds = orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
     let bounds = null;
@@ -72,8 +77,14 @@ const getOrgUnitsBounds = (orgUnits) => {
     }
     return bounds;
 };
-
 class OrgunitsMap extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            fittedToBounds: false,
+        };
+    }
+
     componentDidMount() {
         const {
             orgUnitTypes,
@@ -93,8 +104,27 @@ class OrgunitsMap extends Component {
         }
     }
 
+    componentDidUpdate() {
+        const {
+            orgUnits,
+        } = this.props;
+        const {
+            fittedToBounds,
+        } = this.state;
+        if (!fittedToBounds && (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)) {
+            this.setFittedToBound();
+            this.fitToBounds();
+        }
+    }
+
     componentWillUnmount() {
         this.props.resetMapReducer();
+    }
+
+    setFittedToBound() {
+        this.setState({
+            fittedToBounds: true,
+        });
     }
 
     getSearchColor(currentSearchIndex) {
@@ -144,9 +174,12 @@ class OrgunitsMap extends Component {
             params,
             baseUrl,
             classes,
+            setFiltersUpdated,
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
-        if (!bounds && orgUnits.locations.length > 0) {
+        const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
+
+        if (!bounds && orgUnitsTotal.length > 0) {
             return (
                 <Grid container spacing={0}>
                     <Grid item xs={3} />
@@ -182,6 +215,7 @@ class OrgunitsMap extends Component {
                                 <FiltersComponent
                                     params={params}
                                     baseUrl={baseUrl}
+                                    onFilterChanged={() => setFiltersUpdated()}
                                     filters={[
                                         locationsLimit(),
                                     ]}
@@ -197,8 +231,6 @@ class OrgunitsMap extends Component {
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}
-                        bounds={bounds}
-                        boundsOptions={boundsOptions}
                         zoom={13}
                         zoomControl={false}
                         zoomSnap={0.1}
@@ -211,35 +243,45 @@ class OrgunitsMap extends Component {
                         {
                             isClusterActive
                             && (
-                                Object.values(orgUnits.locations).map(location => (
-                                    <MarkerClusterGroup
-                                        iconCreateFunction={cluster => colorClusterCustomMarker(cluster, this.getSearchColor(location.orgUnits[0] ? location.orgUnits[0].search_index : 0))}
-                                        key={location.source.id}
-                                    >
-                                        <MarkersListComponent
-                                            markerProps={o => ({
-                                                icon: colorMarker(this.getSearchColor(o.search_index)),
-                                            })}
-                                            items={location.orgUnits}
-                                            onMarkerClick={o => this.fetchDetail(o)}
-                                            PopupComponent={OrgUnitPopupComponent}
-                                        />
-                                    </MarkerClusterGroup>
-                                ))
+                                orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
+                                    const color = this.getSearchColor(searchIndex);
+                                    if (orgUnitsBySearch.length === 0) return null;
+                                    return (
+                                        <MarkerClusterGroup
+                                            iconCreateFunction={cluster => colorClusterCustomMarker(cluster, color)}
+                                            key={searchIndex}
+                                            polygonOptions={{
+                                                fillColor: color,
+                                                color,
+                                            }}
+                                        >
+                                            <MarkersListComponent
+                                                markerProps={() => ({
+                                                    ...circleColorMarkerOptions(color),
+                                                })}
+                                                items={orgUnitsBySearch}
+                                                onMarkerClick={o => this.fetchDetail(o)}
+                                                PopupComponent={OrgUnitPopupComponent}
+                                                isCircle
+                                            />
+                                        </MarkerClusterGroup>
+                                    );
+                                })
                             )
                         }
                         {
                             !isClusterActive
                             && (
-                                Object.values(orgUnits.locations).map(location => (
+                                orgUnits.locations.map((orgUnitsBySearch, searchIndex) => (
                                     <MarkersListComponent
-                                        key={location.source.id}
-                                        markerProps={o => ({
-                                            icon: colorMarker(this.getSearchColor(o.search_index)),
+                                        key={searchIndex}
+                                        markerProps={() => ({
+                                            ...circleColorMarkerOptions(this.getSearchColor(searchIndex)),
                                         })}
-                                        items={location.orgUnits}
+                                        items={orgUnitsBySearch}
                                         onMarkerClick={o => this.fetchDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
+                                        isCircle
                                     />
                                 ))
                             )
@@ -284,6 +326,7 @@ OrgunitsMap.propTypes = {
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     classes: PropTypes.object.isRequired,
+    setFiltersUpdated: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -10,17 +10,21 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 
 import { setForms, setCurrentForm } from '../redux/formsReducer';
+import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
+import { setProjects } from '../redux/projectsReducer';
 
 import formsTableColumns from '../constants/formsTableColumns';
 
 import { createUrl } from '../../../utils/fetchData';
 
+import commonStyles from '../styles/common';
 import TopBar from '../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../components/CustomTableComponent';
-import PeriodSelectorComponent from '../../../components/PeriodSelectorComponent';
+import FormDialogComponent from '../components/dialogs/FormDialogComponent';
+import AddButtonComponent from '../components/buttons/AddButtonComponent';
 
-import commonStyles from '../styles/common';
+import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../utils/requests';
 
 const baseUrl = 'forms';
 
@@ -37,7 +41,21 @@ class Forms extends Component {
         super(props);
         this.state = {
             tableColumns: formsTableColumns(props.intl.formatMessage, this),
+            isUpdated: false,
         };
+    }
+
+    /**
+   * TODO: replace by async actions or saga
+   */
+    componentDidMount() {
+        Promise.all([
+            fetchOrgUnitsTypes(this.props.dispatch),
+            fetchProjects(this.props.dispatch),
+        ]).then(([orgUnitsTypes, projects]) => {
+            this.props.setOrgUnitTypes(orgUnitsTypes);
+            this.props.setProjects(projects);
+        });
     }
 
     getExportUrl(exportType = 'csv') {
@@ -69,13 +87,17 @@ class Forms extends Component {
         redirectTo('instances', newParams);
     }
 
+    deleteForm(form) {
+        return deleteForm(this.props.dispatch, form.id)
+            .then(() => this.setState({ isUpdated: true }))
+            .catch(() => {});
+    }
 
     render() {
         const {
             classes,
             params,
             reduxPage,
-            redirectTo,
             intl: {
                 formatMessage,
             },
@@ -88,15 +110,6 @@ class Forms extends Component {
                 })}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <PeriodSelectorComponent
-                        dateFrom={params.date_from}
-                        dateTo={params.date_to}
-                        onChangeDate={(dateFrom, dateTo) => redirectTo(baseUrl, {
-                            ...this.props.params,
-                            date_from: dateFrom,
-                            date_to: dateTo,
-                        })}
-                    />
                     <div className={classes.reactTable}>
                         <CustomTableComponent
                             isSortable
@@ -110,24 +123,34 @@ class Forms extends Component {
                             dataKey="forms"
                             canSelect={false}
                             multiSort
-                            onDataLoaded={(newFormsList, count, pages) => this.props.setForms(newFormsList, true, params, count, pages)}
+                            onDataLoaded={(newFormsList, count, pages) => {
+                                this.props.setForms(newFormsList, true, params, count, pages);
+                                this.setState({ isUpdated: false });
+                            }}
                             reduxPage={reduxPage}
+                            isUpdated={this.state.isUpdated}
                         />
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        <FormDialogComponent
+                            titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            onSuccess={() => this.setState({ isUpdated: true })}
+                        />
                         {reduxPage.list
-                            && (
-                                <DownloadButtonsComponent
-                                    csvUrl={this.getExportUrl('csv')}
-                                    xlsxUrl={this.getExportUrl('xlsx')}
-                                />
-                            )}
+            && (
+                <DownloadButtonsComponent
+                    csvUrl={this.getExportUrl('csv')}
+                    xlsxUrl={this.getExportUrl('xlsx')}
+                />
+            )}
                     </Grid>
                 </Box>
             </section>
         );
     }
 }
+
 Forms.defaultProps = {
     reduxPage: undefined,
 };
@@ -139,7 +162,10 @@ Forms.propTypes = {
     params: PropTypes.object.isRequired,
     setForms: PropTypes.func.isRequired,
     setCurrentForm: PropTypes.func.isRequired,
+    setOrgUnitTypes: PropTypes.func.isRequired,
+    setProjects: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -149,7 +175,10 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     setForms: (forms, showPagination, params, count, pages) => dispatch(setForms(forms, showPagination, params, count, pages)),
+    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
+    setProjects: projects => dispatch(setProjects(projects)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    dispatch,
 });
 
 export default withStyles(styles)(

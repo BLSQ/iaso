@@ -51,6 +51,7 @@ class UserInfosComponent extends Component {
             teams,
             password,
             testerTypes,
+            screeningTypes,
             userLevels,
         } = this.props;
         return (
@@ -275,6 +276,26 @@ class UserInfosComponent extends Component {
                         placeholder={formatMessage(LOCAL_MESSAGES.none)}
                         options={institutions.map(institution => ({ label: institution.name, value: institution.id }))}
                         onChange={institutionId => this.props.updateUserField('institution', { id: institutionId })}
+                    />
+                </div>
+                <div>
+                    <label
+                        htmlFor="screeningType"
+                        className="filter__container__select__label"
+                    >
+                        <FormattedMessage
+                            id="main.label.screening_type"
+                            defaultMessage="Screening type"
+                        />
+                        :
+                    </label>
+                    <Select
+                        simpleValue
+                        name="screening_type"
+                        value={this.state.user.screening_type}
+                        placeholder={formatMessage(LOCAL_MESSAGES.noneMasc)}
+                        options={screeningTypes.map(t => ({ label: formatMessage(MESSAGES[t[0]]), value: t[0] }))}
+                        onChange={screeningType => this.props.updateUserField('screening_type', screeningType)}
                     />
                 </div>
                 <div>

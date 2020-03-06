@@ -237,7 +237,6 @@ class CustomTableComponent extends React.Component {
                 extraProps.onExpandedChange = (newExpanded, index, event) => this.props.onExpandedChange(newExpanded, index, event);
             }
         }
-
         return (
             <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
                 <section

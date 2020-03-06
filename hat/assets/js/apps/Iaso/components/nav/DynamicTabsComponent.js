@@ -8,11 +8,13 @@ import {
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import Add from '@material-ui/icons/Add';
-import Remove from '@material-ui/icons/Remove';
+import Remove from '@material-ui/icons/Clear';
+import Color from 'color';
 
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
+import { formatThousand } from '../../../../utils';
 
 
 const styles = theme => ({
@@ -37,11 +39,12 @@ const styles = theme => ({
     removeIconButton: {
         color: 'white',
         position: 'relative',
-        top: 8,
-        height: '1em',
+        top: 19,
+        right: 15,
+        height: 20,
         '& svg': {
-            width: '0.5em',
-            height: '0.5em',
+            width: 14,
+            height: 14,
         },
     },
     removeContainer: {
@@ -50,7 +53,7 @@ const styles = theme => ({
         top: -5,
         minHeight: 0,
         height: 1,
-        width: '100%',
+        width: `calc(100% - ${theme.spacing(4)}px)`,
         display: 'flex',
         listStyleType: 'none',
         zIndex: 100000,
@@ -66,8 +69,17 @@ const styles = theme => ({
         width: 15,
         height: 15,
         borderRadius: 15,
-        position: 'relative',
-        top: 4,
+        position: 'absolute',
+        top: 16,
+        left: theme.spacing(2),
+    },
+    tabContentAlone: {
+        paddingRight: theme.spacing(2),
+        paddingLeft: theme.spacing(4),
+    },
+    tabContent: {
+        paddingRight: theme.spacing(4),
+        paddingLeft: theme.spacing(4),
     },
 });
 
@@ -76,7 +88,22 @@ class DynamicTabsComponent extends Component {
         super(props);
         this.state = {
             tabIndex: parseInt(props.params[props.tabParamKey], 10) || 0,
+            tabsWidth: [],
         };
+    }
+
+    setTabsElement(element, index) {
+        const {
+            tabsWidth,
+        } = this.state;
+        const newWidth = element.getBoundingClientRect().width;
+        if (newWidth !== tabsWidth[index]) {
+            const newArray = [...tabsWidth];
+            newArray[index] = newWidth;
+            this.setState({
+                tabsWidth: newArray,
+            });
+        }
     }
 
     handleAddTab() {
@@ -113,12 +140,13 @@ class DynamicTabsComponent extends Component {
             paramKey,
             baseUrl,
             tabParamKey,
-            onTabsUpdated,
+            onTabsDeleted,
         } = this.props;
         const newItems = JSON.parse(params[paramKey]);
         newItems.splice(tabIndex, 1);
         const newParams = {
             ...params,
+            searchActive: false,
         };
 
         newParams[paramKey] = JSON.stringify(newItems);
@@ -128,7 +156,7 @@ class DynamicTabsComponent extends Component {
                 tabIndex: newItems.length - 1,
             });
         }
-        onTabsUpdated();
+        onTabsDeleted();
         redirectTo(baseUrl, newParams);
     }
 
@@ -161,9 +189,12 @@ class DynamicTabsComponent extends Component {
             params,
             paramKey,
             maxItems,
+            displayCounts,
+            counts,
         } = this.props;
         const {
             tabIndex,
+            tabsWidth,
         } = this.state;
         const itemsList = JSON.parse(params[paramKey]);
         return (
@@ -176,7 +207,13 @@ class DynamicTabsComponent extends Component {
                             <ul className={classes.removeContainer}>
                                 {
                                     itemsList.map((item, currentTabIndex) => (
-                                        <li className={classes.removeContainerItem} key={currentTabIndex}>
+                                        <li
+                                            className={classes.removeContainerItem}
+                                            key={currentTabIndex}
+                                            style={{
+                                                width: `${tabsWidth[currentTabIndex]}px`,
+                                            }}
+                                        >
                                             <Tooltip
                                                 size="small"
                                                 title={(
@@ -212,17 +249,26 @@ class DynamicTabsComponent extends Component {
                         {
                             itemsList.map((item, currentTabIndex) => (
                                 <Tab
+                                    ref={(ref) => { if (ref) this.setTabsElement(ref, currentTabIndex); }}
                                     key={currentTabIndex}
                                     value={currentTabIndex}
                                     label={(
-                                        <span>
-                                            {`${baseLabel} - `}
+                                        <span className={itemsList.length > 1 ? classes.tabContent : classes.tabContentAlone}>
                                             <span
                                                 style={{
                                                     backgroundColor: `#${item.color}`,
+                                                    border: `2px solid ${Color(`#${item.color}`).darken(0.5)}`,
                                                 }}
                                                 className={classes.roundColor}
                                             />
+                                            {baseLabel}
+                                            {
+                                                displayCounts
+                                                && counts[currentTabIndex]
+                                                && (
+                                                    ` (${formatThousand(counts[currentTabIndex].count)})`
+                                                )
+                                            }
                                         </span>
 
                                     )}
@@ -261,6 +307,9 @@ DynamicTabsComponent.defaultProps = {
     baseLabel: 'tab',
     maxItems: 5,
     onTabsUpdated: () => ({}),
+    onTabsDeleted: () => ({}),
+    displayCounts: false,
+    counts: [],
 };
 
 DynamicTabsComponent.propTypes = {
@@ -274,6 +323,9 @@ DynamicTabsComponent.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     maxItems: PropTypes.number,
     onTabsUpdated: PropTypes.func,
+    onTabsDeleted: PropTypes.func,
+    displayCounts: PropTypes.bool,
+    counts: PropTypes.array,
 };
 
 export default withStyles(styles)(DynamicTabsComponent);

@@ -6,14 +6,14 @@ const theme = createMuiTheme({
     },
     textColor: '#333',
     palette: {
-        primary: {
-            main: '#82AE2E',
-            dark: 'darken(#82AE2E, 50%)',
-            contrastText: '#FFFFFF',
-        },
-        secondary: {
-            main: '#EA622A',
-        },
+        // primary: {
+        //     main: '#82AE2E',
+        //     dark: 'darken(#82AE2E, 50%)',
+        //     contrastText: '#FFFFFF',
+        // },
+        // secondary: {
+        //     main: '#EA622A',
+        // },
         gray: {
             main: '#666',
         },
@@ -30,3 +30,4 @@ const theme = createMuiTheme({
 });
 
 export default theme;
+

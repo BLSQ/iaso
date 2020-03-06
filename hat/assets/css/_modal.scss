@@ -301,6 +301,12 @@
 .large-modal-content,
 .modal-content,
 .medium-modal-content {
+    .inline-infos {
+        position: relative;
+        display: inline-block;
+        margin-left: 10px;
+        top: 8px;
+    }
     .Select {
         width: 100%;
     }

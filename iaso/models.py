@@ -7,6 +7,7 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file
 import random
+import pathlib
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -44,6 +45,15 @@ STATUS_TYPE_CHOICES = (
     ("ERRORED", _("Errored")),
     ("SKIPPED", _("Skipped")),
 )
+INSTANCE_STATUS_READY = "READY"
+INSTANCE_STATUS_ERROR = "ERROR"
+INSTANCE_STATUS_EXPORTED = "EXPORTED"
+
+INSTANCE_STATUS_CHOICES = (
+    (INSTANCE_STATUS_READY, "Ready"),
+    (INSTANCE_STATUS_ERROR, "Error"),
+    (INSTANCE_STATUS_EXPORTED, "Exported"),
+)
 
 
 def generate_id_for_dhis_2():
@@ -77,6 +87,8 @@ class Account(models.Model):
 
 
 class Project(models.Model):
+    """A data collection project, associated with a single mobile application"""
+
     name = models.TextField(null=True, blank=True)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey(
@@ -548,37 +560,46 @@ class Link(models.Model):
 
 class Form(models.Model):
     org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
-    form_id = models.TextField(null=True, blank=True)
+    form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField()
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
+    # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
+    # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
-    period_type = models.TextField(choices=PERIOD_TYPE_CHOICES, null=True, blank=True)
-    single_per_period = models.BooleanField(blank=True, default=False)
+    period_type = models.TextField(null=True, blank=True, choices=PERIOD_TYPE_CHOICES)
+    single_per_period = models.BooleanField(default=False)
+    # The following two fields control the allowed period span (instances can be provided for the period corresponding
+    # to [current_period - periods_before_allowed, current_period + periods_after_allowed]
+    periods_before_allowed = models.IntegerField(default=3)
+    periods_after_allowed = models.IntegerField(default=3)
+
+    @property
+    def latest_version(self):
+        return self.form_versions.order_by("-created_at").first()
 
     def __str__(self):
         return "%s %s " % (self.name, self.form_id)
 
     def as_dict(self, additional_fields=None, show_version=True):
-        latest_form_version = self.form_versions.order_by("-created_at").first()
         res = {
             "form_id": self.form_id,
             "name": self.name,
             "id": self.id,
             "org_unit_types": [t.as_dict() for t in self.org_unit_types.all()],
             "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp()
-            if self.updated_at
-            else self.created_at.timestamp(),
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period_type": self.period_type,
             "single_per_period": self.single_per_period,
         }
 
         if show_version:
             res["latest_form_version"] = (
-                latest_form_version.as_dict() if latest_form_version else None
+                self.latest_version.as_dict()
+                if self.latest_version is not None
+                else None
             )
         if additional_fields:
             for field in additional_fields:
@@ -628,28 +649,23 @@ class GroupSet(models.Model):
         return "%s | %s " % (self.name, self.source_version)
 
 
+def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
+    path = pathlib.Path(filename)
+
+    return f"forms/{path.stem}_{instance.version_id}{path.suffix}"
+
+
 class FormVersion(models.Model):
-    UPLOADED_TO = "forms/"
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )
-    file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
-    version_id = models.TextField(null=True, blank=True)
+    file = models.FileField(upload_to=_form_version_upload_to)
+    xls_file = models.FileField(
+        upload_to=_form_version_upload_to, null=True, blank=True
+    )
+    version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def convert_xml_to_fields(self):
-        if self.file:
-            if "amazonaws" in self.file.url:
-                file = urlopen(self.file.url)
-            else:
-                file = self.file
-            file_content = flat_parse_xml_file(file)
-            self.form.fields = file_content
-            self.form.save()
-        else:
-            file_content = {}
-        return file_content
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
@@ -659,6 +675,7 @@ class FormVersion(models.Model):
             "id": self.id,
             "version_id": self.version_id,
             "file": self.file.url,
+            "xls_file": self.xls_file.url if self.xls_file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
@@ -713,6 +730,8 @@ class ExternalCredentials(models.Model):
 
 
 class Instance(models.Model):
+    """A series of answers by an individual for a specific form"""
+
     UPLOADED_TO = "instances/"
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -725,7 +744,9 @@ class Instance(models.Model):
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
-    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    form = models.ForeignKey(
+        Form, on_delete=models.PROTECT, null=True, blank=True, related_name="instances"
+    )
     project = models.ForeignKey(
         Project, blank=True, null=True, on_delete=models.DO_NOTHING
     )
@@ -846,7 +867,9 @@ class Instance(models.Model):
     def as_small_dict(self):
         return {
             "id": self.id,
+            "file_url": self.file.url if self.file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

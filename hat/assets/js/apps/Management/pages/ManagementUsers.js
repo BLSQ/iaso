@@ -40,6 +40,7 @@ class ManagementUsers extends React.Component {
         dispatch(userActions.fetchCoordinations(dispatch));
         dispatch(userActions.fetchUserTypes(dispatch));
         dispatch(userActions.fetchTesterTypes(dispatch));
+        dispatch(userActions.fetchScreeningTypes(dispatch));
         dispatch(userActions.fetchUserLevels(dispatch));
         this.state = {
             tableColumns: [
@@ -175,6 +176,7 @@ class ManagementUsers extends React.Component {
             institutionsList,
             userTypes,
             testerTypes,
+            screeningTypes,
             userLevels,
             permissions,
             provinces,
@@ -204,6 +206,7 @@ class ManagementUsers extends React.Component {
                             institutions={institutionsList}
                             userTypes={userTypes}
                             testerTypes={testerTypes}
+                            screeningTypes={screeningTypes}
                             userLevels={userLevels}
                             permissions={permissions}
                             provinces={provinces}
@@ -355,6 +358,7 @@ ManagementUsers.propTypes = {
     selectedUser: PropTypes.object,
     updateCurrentUser: PropTypes.func.isRequired,
     teamTypes: PropTypes.array.isRequired,
+    screeningTypes: PropTypes.array.isRequired,
 };
 
 const ManagementUsersIntl = injectIntl(ManagementUsers);
@@ -365,6 +369,7 @@ const MapStateToProps = state => ({
     coordinationsList: state.users.coordinations,
     userTypes: state.users.userTypes,
     testerTypes: state.users.testerTypes,
+    screeningTypes: state.users.screeningTypes,
     userLevels: state.users.userLevels,
     permissions: state.users.permissions,
     provinces: state.users.provinces,

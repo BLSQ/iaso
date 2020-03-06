@@ -91,6 +91,16 @@ class Patients extends Component {
                 this.onSearch();
                 redirectTo(baseUrl, params);
             }
+            if (currentUser.id) {
+                this.setState({
+                    tableColumns: registerListColumns(
+                        formatMessage,
+                        this,
+                        userHasPermission(permissions, currentUser, 'x_duplicates'),
+                        userHasPermission(permissions, currentUser, 'x_datas_patient_edition'),
+                    ),
+                });
+            }
         });
     }
 
@@ -117,7 +127,12 @@ class Patients extends Component {
                 permissions,
             } = newProps;
             this.setState({
-                tableColumns: registerListColumns(newProps.intl.formatMessage, this, userHasPermission(permissions, currentUser, 'x_duplicates')),
+                tableColumns: registerListColumns(
+                    newProps.intl.formatMessage,
+                    this,
+                    userHasPermission(permissions, currentUser, 'x_duplicates'),
+                    userHasPermission(permissions, currentUser, 'x_datas_patient_edition'),
+                ),
             });
         }
     }
@@ -165,13 +180,15 @@ class Patients extends Component {
     }
 
     selectPatient(patient) {
-        const { params, redirectTo } = this.props;
+        const { params, redirectTo, resetCurrentPatient } = this.props;
 
         const newParams = {
             patient_id: patient.id,
             ...params,
         };
-
+        if (patient.id === '0') {
+            resetCurrentPatient();
+        }
         redirectTo('register/detail', newParams);
     }
 
@@ -233,6 +250,7 @@ class Patients extends Component {
             baseUrl,
             coordinations || [],
         );
+        const userCanEditPatient = userHasPermission(permissions, currentUser, 'x_datas_patient_edition');
         return (
             <section className="cases-list-container">
                 {
@@ -246,8 +264,22 @@ class Patients extends Component {
                 }
 
                 <div className="widget__container ">
-                    <div className="widget__header">
-                        <h2 className="widget__heading"><FormattedMessage id="datas.register.header.title" defaultMessage="Register" /></h2>
+                    <div className={`widget__header${userCanEditPatient ? ' with-button' : ''}`}>
+                        <h2 className="widget__heading">
+                            <FormattedMessage id="datas.register.header.title" defaultMessage="Register" />
+                        </h2>
+                        {
+                            userCanEditPatient
+                            && (
+                                <button
+                                    className="button--save--tiny"
+                                    onClick={() => this.selectPatient({ id: '0' })}
+                                >
+                                    <i className="fa fa-plus" />
+                                    <FormattedMessage id="datas.register.add" defaultMessage="New patient" />
+                                </button>
+                            )
+                        }
                     </div>
                     <div className="border-bottom">
                         <ChoosePeriodSelectorComponent
@@ -364,6 +396,7 @@ Patients.propTypes = {
     emptyManualDuplicate: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
+    resetCurrentPatient: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -393,6 +426,7 @@ const MapDispatchToProps = dispatch => ({
     fetchPatients: (url, params) => dispatch(patientsActions.fetchPatients(dispatch, url, params)),
     loadManualDuplicate: manualDuplicate => dispatch(patientsActions.loadManualDuplicate(manualDuplicate)),
     emptyManualDuplicate: () => dispatch(patientsActions.emptyManualDuplicate()),
+    resetCurrentPatient: () => dispatch(patientsActions.resetCurrentPatient()),
 });
 
 const PatientsWithIntl = injectIntl(Patients);

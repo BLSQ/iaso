@@ -22,6 +22,7 @@ import {
     mapOrgUnitByLocation,
     shapeOptions,
     polygonDrawOpiton,
+    circleColorMarkerOptions,
 } from '../../utils/mapUtils';
 
 import TileSwitch from './tools/TileSwitchComponent';
@@ -140,7 +141,6 @@ class OrgUnitMapComponent extends Component {
             const catchmentGeoJSON = L.geoJson(orgUnit.catchment, shapeOptions);
             updateShape(catchmentGeoJSON, 'catchment');
         }
-        this.fitToBounds();
     }
 
 
@@ -183,9 +183,58 @@ class OrgUnitMapComponent extends Component {
     }
 
     fitToBounds() {
-        const { currentTile, orgUnit } = this.props;
+        const {
+            currentTile,
+            orgUnit,
+            orgUnitTypesSelected,
+            sourcesSelected,
+            formsSelected,
+        } = this.props;
+        const {
+            editGeoJson,
+        } = this.state;
+
+        const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
+        const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
+        const editLocationEnabled = editGeoJson.location;
 
         const groups = [];
+        const locations = [];
+        let shapesBounds;
+        mappedOrgUnitTypesSelected.forEach((ot) => {
+            ot.orgUnits.locations.forEach((o) => {
+                locations.push(L.latLng(o.latitude, o.longitude));
+            });
+            ot.orgUnits.shapes.forEach((o) => {
+                const tempBounds = L.geoJSON(o.geo_json);
+                if (shapesBounds) {
+                    shapesBounds = shapesBounds.extend(tempBounds.getBounds());
+                } else {
+                    shapesBounds = tempBounds.getBounds();
+                }
+            });
+        });
+
+        mappedSourcesSelected.forEach((s) => {
+            s.orgUnits.locations.forEach((o) => {
+                locations.push(L.latLng(o.latitude, o.longitude));
+            });
+            s.orgUnits.shapes.forEach((o) => {
+                const tempBounds = L.geoJSON(o.geo_json);
+                if (shapesBounds) {
+                    shapesBounds = shapesBounds.extend(tempBounds.getBounds());
+                } else {
+                    shapesBounds = tempBounds.getBounds();
+                }
+            });
+        });
+        if (!editLocationEnabled && formsSelected && formsSelected.instances) {
+            formsSelected.instances.forEach((i) => {
+                locations.push(L.latLng(i.latitude, i.longitude));
+            });
+        }
+        const locationsBounds = L.latLngBounds(locations);
+        const otherBounds = locationsBounds.extend(shapesBounds);
         if (orgUnit.geo_json) {
             groups.push(editableFetureGroups.location.group);
         }
@@ -200,9 +249,14 @@ class OrgUnitMapComponent extends Component {
                 const groupBounds = group.getBounds();
                 bounds = groupBounds.extend(bounds);
             }
+            bounds = otherBounds.extend(bounds);
             this.map.leafletElement.fitBounds(bounds, { maxZoom: 10, padding, animate: false });
         } else if (groups.length > 0) {
-            this.map.leafletElement.fitBounds(group.getBounds(), { maxZoom: currentTile.maxZoom, padding, animate: false });
+            let bounds = group.getBounds();
+            bounds = otherBounds.extend(bounds);
+            this.map.leafletElement.fitBounds(bounds, { maxZoom: currentTile.maxZoom, padding, animate: false });
+        } else if (otherBounds._southWest) {
+            this.map.leafletElement.fitBounds(otherBounds, { maxZoom: currentTile.maxZoom, padding, animate: false });
         }
     }
 
@@ -282,7 +336,6 @@ class OrgUnitMapComponent extends Component {
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
         const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
-        const currentOrgUnitHasLocation = orgUnit.has_geo_json || (orgUnit.latitude && orgUnit.longitude);
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -303,9 +356,9 @@ class OrgUnitMapComponent extends Component {
                     )}
                     filtersOptionComponent={(
                         <Fragment>
-                            <SourcesChipsFilterComponent />
-                            <OrgUnitTypeChipsFilterComponent />
-                            <FormsChipsFilterComponent />
+                            <SourcesChipsFilterComponent fitToBounds={() => this.fitToBounds()} />
+                            <OrgUnitTypeChipsFilterComponent fitToBounds={() => this.fitToBounds()} />
+                            <FormsChipsFilterComponent fitToBounds={() => this.fitToBounds()} />
                         </Fragment>
                     )}
                     editOptionComponent={(
@@ -354,10 +407,14 @@ class OrgUnitMapComponent extends Component {
                                         onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
                                         popupProps={{
-                                            displayUseLocation: (Boolean(orgUnit.latitude && orgUnit.longitude)) || !currentOrgUnitHasLocation,
+                                            displayUseLocation: true,
                                             useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                         }}
-                                        customMarker={colorMarker(ot.color, 'white-pentagon.svg')}
+                                        isCircle
+
+                                        markerProps={() => ({
+                                            ...circleColorMarkerOptions(ot.color),
+                                        })}
                                     />
                                     {
                                         ot.orgUnits.shapes.map(o => (
@@ -370,7 +427,7 @@ class OrgUnitMapComponent extends Component {
                                                 )}
                                             >
                                                 <OrgUnitPopupComponent
-                                                    displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
+                                                    displayUseLocation
                                                     useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                                 />
                                             </GeoJSON>
@@ -382,15 +439,18 @@ class OrgUnitMapComponent extends Component {
                         {!editLocationEnabled
                             && formsSelected.map(f => (
                                 <MarkersListComponent
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(f.color),
+                                    })}
                                     key={f.id}
                                     items={f.instances}
                                     onMarkerClick={i => this.fetchInstanceDetail(i)}
                                     PopupComponent={InstancePopupComponent}
                                     popupProps={{
-                                        displayUseLocation: (orgUnit.latitude && orgUnit.longitude) || !currentOrgUnitHasLocation,
+                                        displayUseLocation: true,
                                         useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
                                     }}
-                                    customMarker={colorMarker(f.color, 'white-form.svg')}
+                                    isCircle
                                 />
                             ))
                         }
@@ -400,7 +460,15 @@ class OrgUnitMapComponent extends Component {
                                     items={s.orgUnits.locations}
                                     onMarkerClick={o => this.fetchSubOrgUnitDetail(o)}
                                     PopupComponent={OrgUnitPopupComponent}
-                                    customMarker={colorMarker(s.color)}
+                                    popupProps={{
+                                        displayUseLocation: true,
+                                        useLocation: selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit),
+                                    }}
+                                    markerProps={() => ({
+                                        ...circleColorMarkerOptions(s.color),
+                                    })}
+                                    // customMarker={colorMarker(s.color)}
+                                    isCircle
                                 />
                                 {
                                     s.orgUnits.shapes.map(o => (
@@ -413,7 +481,7 @@ class OrgUnitMapComponent extends Component {
                                             )}
                                         >
                                             <OrgUnitPopupComponent
-                                                displayUseLocation={orgUnit.has_geo_json || !currentOrgUnitHasLocation}
+                                                displayUseLocation
                                                 useLocation={selectedOrgUnit => this.useOrgUnitLocation(selectedOrgUnit)}
                                             />
                                         </GeoJSON>
@@ -455,6 +523,7 @@ OrgUnitMapComponent.propTypes = {
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,
     orgUnitLocationModified: PropTypes.bool.isRequired,
+    fetchingSubOrgUnits: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -462,6 +531,7 @@ const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     orgUnitTypesSelected: state.orgUnits.currentSubOrgUnitsTypesSelected,
     sourcesSelected: state.orgUnits.currentSourcesSelected,
+    fetchingSubOrgUnits: state.orgUnits.fetchingSubOrgUnits,
 });
 
 const MapDispatchToProps = dispatch => ({

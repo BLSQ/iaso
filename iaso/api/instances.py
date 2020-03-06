@@ -108,6 +108,8 @@ class InstancesViewSet(viewsets.ViewSet):
         device_ownership_id = request.GET.get("deviceOwnershipId", None)
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         org_unit_id = request.GET.get("orgUnitId", None)
+        period_ids = request.GET.get("periods", None)
+        status = request.GET.get("status", None)
 
         queryset = Instance.objects.order_by("-id")
         if not request.user.is_anonymous:
@@ -123,6 +125,9 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
+
+        if period_ids:
+            queryset = queryset.filter(period__in=period_ids.split(','))
         if org_unit_type_id:
             queryset = queryset.filter(
                 org_unit__org_unit_type__in=org_unit_type_id.split(",")
@@ -166,6 +171,9 @@ class InstancesViewSet(viewsets.ViewSet):
         if form_id:
             form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
+
+        # if status:
+        #     queryset = queryset.filter(status=status)
 
         if csv_format is None and xlsx_format is None:
 

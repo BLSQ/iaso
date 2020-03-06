@@ -203,7 +203,6 @@ const TestInfoComponent = ({
                             )}
                             fieldComponent={(
                                 <Select
-                                    className={!tester ? 'form-error' : null}
                                     multi={false}
                                     clearable={false}
                                     simpleValue
@@ -284,14 +283,34 @@ const TestInfoComponent = ({
                                             />
                                         )}
                                         fieldComponent={(
-                                            <input
-                                                className={!currentCase.test_pl_gb_mm3 ? 'form-error' : null}
-                                                type="number"
-                                                min={0}
-                                                placeholder={inputPlaceHolder}
-                                                value={currentCase.test_pl_gb_mm3 || inputPlaceHolder}
-                                                onChange={event => onChange('test_pl_gb_mm3', event.currentTarget.value, 'currentCase')}
-                                            />
+                                            <Fragment>
+                                                <input
+                                                    className={!currentCase.test_pl_gb_mm3 ? 'form-error' : null}
+                                                    type="number"
+                                                    min={0}
+                                                    placeholder={inputPlaceHolder}
+                                                    value={currentCase.test_pl_gb_mm3 || inputPlaceHolder}
+                                                    onChange={event => onChange('test_pl_gb_mm3', event.currentTarget.value, 'currentCase')}
+                                                />
+                                                {
+                                                    currentCase.test_pl_result && (
+                                                        <span className="inline-infos">
+                                                            <FormattedMessage id="main.label.stage" defaultMessage="Stage" />
+                                                            {' '}
+                                                            {
+                                                                currentCase.test_pl_result === 'stage1' ? '1' : ''
+                                                            }
+                                                            {
+                                                                currentCase.test_pl_result === 'stage2' ? '2' : ''
+                                                            }
+                                                            {
+                                                                currentCase.test_pl_result === 'unknown'
+                                                                    ? <FormattedMessage id="main.label.unknown" defaultMessage="Inconnu" /> : ''
+                                                            }
+                                                        </span>
+                                                    )
+                                                }
+                                            </Fragment>
                                         )}
                                     />
                                     <ModalItem

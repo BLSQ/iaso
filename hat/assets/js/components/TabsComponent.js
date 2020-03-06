@@ -49,15 +49,28 @@ class TabsComponent extends Component {
         return (
             <ul className="tabs-container">
                 {
-                    tabs.map(t => (
-                        <li
-                            className={this.state.currentTab === t.key ? 'selected' : ''}
-                            key={t.key}
-                            onClick={() => this.onSelect(t.key)}
-                        >
-                            {t.label}
-                        </li>
-                    ))
+                    tabs.map((t) => {
+                        if (t.disabled) {
+                            return (
+                                <li
+                                    className="disabled"
+                                    key={t.key}
+                                    onClick={() => null}
+                                >
+                                    {t.label}
+                                </li>
+                            );
+                        }
+                        return (
+                            <li
+                                className={this.state.currentTab === t.key ? 'selected' : ''}
+                                key={t.key}
+                                onClick={() => this.onSelect(t.key)}
+                            >
+                                {t.label}
+                            </li>
+                        );
+                    })
                 }
             </ul>
         );

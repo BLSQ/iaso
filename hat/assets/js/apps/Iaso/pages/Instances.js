@@ -9,10 +9,13 @@ import {
 
 import PropTypes from 'prop-types';
 
-import { setInstances, setInstancesSmallDict, setInstancesFetching } from '../redux/instancesReducer';
+import {
+    setInstances, setInstancesSmallDict, setInstancesFetching,
+} from '../redux/instancesReducer';
 import { setCurrentForm } from '../redux/formsReducer';
 import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
 import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
+import { setPeriods } from '../redux/periodsReducer';
 
 import {
     fetchInstancesAsDict,
@@ -21,10 +24,12 @@ import {
     fetchOrgUnitsTypes,
     fetchDevices,
     fetchDevicesOwnerships,
+    fetchPeriods,
 } from '../utils/requests';
 
 import { createUrl } from '../../../utils/fetchData';
-import { getInstancesColumns, getInstancesFilesList } from '../utils/instancesUtils';
+import { getInstancesFilesList } from '../utils/instancesUtils';
+import instancesTableColumns from '../constants/instancesTableColumns';
 import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
 
 import TopBar from '../components/nav/TopBarComponent';
@@ -54,21 +59,33 @@ const styles = theme => ({
 class Instances extends Component {
     constructor(props) {
         super(props);
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         this.state = {
-            tableColumns: [],
+            tableColumns: instancesTableColumns(formatMessage),
             tab: props.params.tab ? props.params.tab : 'list',
         };
     }
 
     componentWillMount() {
-        fetchOrgUnitsTypes(this.props.dispatch)
+        const {
+            dispatch,
+            params: {
+                formId,
+            },
+        } = this.props;
+        fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchDevices(this.props.dispatch)
+        fetchDevices(dispatch)
             .then(devices => this.props.setDevicesList(devices));
-        fetchDevicesOwnerships(this.props.dispatch)
+        fetchDevicesOwnerships(dispatch)
             .then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
+        fetchPeriods(dispatch, formId)
+            .then(periods => this.props.setPeriods(periods));
     }
-
 
     componentDidMount() {
         const {
@@ -96,6 +113,7 @@ class Instances extends Component {
             || params.page !== prevProps.params.page) {
             this.fetchInstances();
         }
+
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
@@ -113,8 +131,11 @@ class Instances extends Component {
             withLocation: params.withLocation,
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
+            periods: params.periods,
+            status: params.status,
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+            asSmallDict: true,
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }
@@ -144,9 +165,6 @@ class Instances extends Component {
     fetchInstances() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
             dispatch,
         } = this.props;
 
@@ -156,13 +174,7 @@ class Instances extends Component {
         dispatch(this.props.setInstancesFetching(true));
         Promise.all([
             fetchInstancesAsDict(dispatch, url).then((data) => {
-                const instances = {
-                    ...data.instances,
-                };
                 this.props.setInstances(data.instances, params, data.count, data.pages);
-                this.setState({
-                    tableColumns: getInstancesColumns(formatMessage, instances),
-                });
             }),
             fetchInstancesAsSmallDict(dispatch, urlSmall)
                 .then(data => this.props.setInstancesSmallDict(data)),
@@ -188,6 +200,7 @@ class Instances extends Component {
         } = this.props;
         const {
             tab,
+            tableColumns,
         } = this.state;
         return (
             <section className={classes.relativeContainer}>
@@ -254,7 +267,7 @@ class Instances extends Component {
                                     isSortable
                                     pageSize={20}
                                     showPagination
-                                    columns={this.state.tableColumns}
+                                    columns={tableColumns}
                                     defaultSorted={[{ id: 'updated_at', desc: false }]}
                                     params={params}
                                     defaultPath={baseUrl}
@@ -325,6 +338,7 @@ Instances.propTypes = {
     router: PropTypes.object.isRequired,
     redirectToPush: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
+    setPeriods: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -346,6 +360,7 @@ const MapDispatchToProps = dispatch => ({
     redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
+    setPeriods: periods => dispatch(setPeriods(periods)),
 });
 
 

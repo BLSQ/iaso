@@ -55,18 +55,18 @@ class FormDialogComponent extends Component {
         }
 
         saveForm
-            .then((createdFormData) => {
+            .then((savedFormData) => {
                 if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
                     return Promise.resolve();
                 }
                 return createFormVersion(this.props.dispatch, {
-                    form_id: createdFormData.id,
+                    form_id: savedFormData.id,
                     xls_file: this.state.xls_file.value,
                 }, isUpdate)
                     .catch((createVersionError) => {
                         // when creating form, if version creation fails, delete freshly created, version-less form
                         if (!isUpdate) {
-                            return deleteForm(this.props.dispatch, createdFormData.id)
+                            return deleteForm(this.props.dispatch, savedFormData.id)
                                 .then(() => console.log('Form deleted'))
                                 .catch(() => console.warn('Form could not be deleted'))
                                 .then(() => {
@@ -100,6 +100,17 @@ class FormDialogComponent extends Component {
         this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
     }
 
+    // Workaround to map the comma-separated string used by InputComponent with type=select to an array of values
+    // TODO: select input component should return a list of values of the same type as the provided values
+    setRelatedSelectFieldValue(fieldName, fieldValue) {
+        const mappedFieldValue = fieldValue
+            .split(',')
+            .filter(singleValue => singleValue !== '')
+            .map(Number);
+
+        this.setFieldValue(fieldName, mappedFieldValue);
+    }
+
     setFieldErrors(fieldName, fieldErrors) {
         this.setState(state => ({ [fieldName]: { value: state[fieldName].value, errors: fieldErrors } }));
     }
@@ -125,7 +136,7 @@ class FormDialogComponent extends Component {
 
         return {
             id: { value: _.get(initialData, 'id', null), errors: [] },
-            name: { value: _.get(initialData, 'name', null), errors: [] },
+            name: { value: _.get(initialData, 'name', ''), errors: [] },
             xls_file: { value: null, errors: [] },
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
@@ -134,7 +145,7 @@ class FormDialogComponent extends Component {
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
             device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
-            location_field: { value: _.get(initialData, 'location_field', null), errors: [] },
+            location_field: { value: _.get(initialData, 'location_field', ''), errors: [] },
         };
     }
 
@@ -180,14 +191,6 @@ class FormDialogComponent extends Component {
                                     required
                                 />
                             </Grid>
-                            {
-                                this.state.xls_file.errors.length > 0
-                                  && (
-                                      <Grid item>
-                                          <ErrorPaperComponent message={this.state.xls_file.errors.join(',')} />
-                                      </Grid>
-                                  )
-                            }
                         </Grid>
                         <InputComponent
                             keyValue="period_type"
@@ -248,15 +251,11 @@ class FormDialogComponent extends Component {
                         />
                     </Grid>
                     <Grid xs={6} item>
-
-                        {
-                            // TODO: select input component should return a list of values of the same type as the provided values
-                        }
                         <InputComponent
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
                             value={this.state.project_ids.value.join(',')}
                             errors={this.state.project_ids.errors}
                             type="select"
@@ -270,14 +269,11 @@ class FormDialogComponent extends Component {
                             }}
                             required
                         />
-                        {
-                            // TODO: select input component should return a list of values of the same type as the provided values
-                        }
                         <InputComponent
                             multi
                             clearable
                             keyValue="org_unit_type_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
                             value={this.state.org_unit_type_ids.value.join(',')}
                             errors={this.state.org_unit_type_ids.errors}
                             type="select"

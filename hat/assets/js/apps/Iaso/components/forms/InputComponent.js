@@ -187,7 +187,7 @@ class InputComponent extends Component {
                 : value;
 
             return (
-                <FormControlComponent withMarginTop={withMarginTop}>
+                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
                     <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
@@ -212,7 +212,7 @@ class InputComponent extends Component {
             }
 
             return (
-                <FormControlComponent withMarginTop={withMarginTop}>
+                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
                     <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
                         label={labelText}
@@ -244,7 +244,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'arrayInput') { // TODO: implement required
+        if (type === 'arrayInput') { // TODO: implement required, errors...
             return (
                 <ArrayFieldInput
                     label={labelText}
@@ -286,7 +286,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'checkbox') { // TODO: implement required
+        if (type === 'checkbox') {
             return (
                 <FormControlLabel
                     disabled={disabled}

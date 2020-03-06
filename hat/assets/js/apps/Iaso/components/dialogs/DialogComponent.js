@@ -60,6 +60,7 @@ function DialogComponent({
                               paper: classes.paper,
                           }}
                           onBackdropClick={closeDialog}
+                          scroll="body"
                       >
                           <DialogTitle className={classes.title}>
                               <FormattedMessage {...titleMessage} />

@@ -10,5 +10,5 @@ export default function ColumnTextComponent({ text }) {
     );
 }
 ColumnTextComponent.propTypes = {
-    text: PropTypes.string.isRequired,
+    text: PropTypes.oneOfType([PropTypes.string, PropTypes.number]).isRequired,
 };

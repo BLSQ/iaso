@@ -7,6 +7,7 @@ import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../components/dialogs/FormDialogComponent';
 import EditRowButtonComponent from '../components/buttons/EditRowButtonComponent';
 import ViewRowButtonComponent from '../components/buttons/ViewRowButtonComponent';
+import ColumnTextComponent from '../components/tables/ColumnTextComponent';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -15,23 +16,20 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Name',
                 id: 'iaso.forms.name',
             }),
-            accessor: 'name',
-            className: 'justify-left',
+            Cell: settings => <ColumnTextComponent text={settings.original.name} />,
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Updated at',
                 id: 'iaso.forms.updated_at',
             }),
-            accessor: 'instance_updated_at',
-            Cell: settings => (
-                <section>
-                    {settings.original.instance_updated_at
-                        && moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')}
-                    {!settings.original.instance_updated_at
-                        && '/'}
-                </section>
-            ),
+            Cell: (settings) => {
+                const dateText = settings.original.instance_updated_at
+                    ? moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')
+                    : '/';
+
+                return <ColumnTextComponent text={dateText} />;
+            },
         },
         {
             Header: formatMessage({
@@ -40,9 +38,7 @@ const formsTableColumns = (formatMessage, component) => (
             }),
             accessor: 'created_at',
             Cell: settings => (
-                <section>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
-                </section>
+                <ColumnTextComponent text={moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')} />
             ),
         },
         {
@@ -53,11 +49,9 @@ const formsTableColumns = (formatMessage, component) => (
             sortable: false,
             accessor: 'org_unit_types',
             Cell: settings => (
-                <section>
-                    {
-                        settings.original.org_unit_types.map((o, index) => `${index > 0 ? ', ' : ''}${o.short_name}`)
-                    }
-                </section>
+                <ColumnTextComponent
+                    text={settings.original.org_unit_types.map(o => o.short_name).join(', ')}
+                />
             ),
         },
         {
@@ -67,22 +61,32 @@ const formsTableColumns = (formatMessage, component) => (
             }),
             accessor: 'instances_count',
             Cell: settings => (
-                <section>
-                    {settings.original.instances_count}
-                </section>
+                <ColumnTextComponent text={settings.original.instances_count} />
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Form id',
+                id: 'iaso.forms.form_id',
+            }),
+            sortable: false,
+            Cell: settings => (
+                <ColumnTextComponent text={settings.original.form_id} />
             ),
         },
         {
             Header: formatMessage({
                 defaultMessage: 'Latest version',
-                id: 'iaso.forms.latest_verision_files',
+                id: 'iaso.forms.latest_version_files',
             }),
             sortable: false,
             Cell: settings => (
                 settings.original.latest_form_version !== null
                   && (
                       <Grid container spacing={1} justify="center">
-                          <Grid item>{settings.original.latest_form_version.version_id}</Grid>
+                          <Grid item>
+                              <ColumnTextComponent text={settings.original.latest_form_version.version_id} />
+                          </Grid>
                           {
                               settings.original.latest_form_version.xls_file
                             && (
@@ -104,7 +108,6 @@ const formsTableColumns = (formatMessage, component) => (
                 id: 'iaso.forms.actions',
             }),
             resizable: false,
-            width: 250,
             sortable: false,
             Cell: settings => (
                 <section>

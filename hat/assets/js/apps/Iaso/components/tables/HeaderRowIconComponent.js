@@ -1,15 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip, withStyles } from '@material-ui/core';
-import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
-import ErrorOutline from '@material-ui/icons/ErrorOutline';
-import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
-
-const STATUS_COLUMN_ICONS = {
-    ready: HourglassEmpty,
-    error: ErrorOutline,
-    exported: CheckCircleOutline,
-};
 
 const styles = () => ({
     root: {
@@ -24,8 +15,7 @@ const styles = () => ({
     },
 });
 
-function StatusIcon({ status, title, classes }) {
-    const IconComponent = STATUS_COLUMN_ICONS[status];
+function HeaderRowIcon({ IconComponent, title, classes }) {
 
     return (
         <div className={classes.root}>
@@ -35,10 +25,10 @@ function StatusIcon({ status, title, classes }) {
         </div>
     );
 }
-StatusIcon.propTypes = {
-    status: PropTypes.oneOf(Object.keys(STATUS_COLUMN_ICONS)).isRequired,
+HeaderRowIcon.propTypes = {
     title: PropTypes.string.isRequired,
     classes: PropTypes.object.isRequired,
+    IconComponent: PropTypes.object.isRequired,
 };
 
-export default withStyles(styles)(StatusIcon);
+export default withStyles(styles)(HeaderRowIcon);

@@ -1,6 +1,9 @@
 import React from 'react';
+import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
+import ErrorOutline from '@material-ui/icons/ErrorOutline';
+import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 
-import StatusIcon from './components/CompletenessStatusComponent';
+import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
     PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPES,
 } from '../periods/constants';
@@ -12,6 +15,12 @@ const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_QUARTER]: undefined,
     [PERIOD_TYPE_SIX_MONTH]: 75,
     [PERIOD_TYPE_YEAR]: 50,
+};
+
+const STATUS_COLUMN_ICONS = {
+    ready: HourglassEmpty,
+    error: ErrorOutline,
+    exported: CheckCircleOutline,
 };
 
 const getBaseColumns = formatMessage => ([
@@ -45,8 +54,8 @@ export const getColumns = (
                 </span>
             ),
             columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({
-                Header: <StatusIcon
-                    status={status}
+                Header: <HeaderRowIcon
+                    IconComponent={STATUS_COLUMN_ICONS[status]}
                     title={formatMessage({
                         defaultMessage: status,
                         id: `iaso.label.instanceStatus.${status}`,

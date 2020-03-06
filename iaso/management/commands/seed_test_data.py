@@ -28,6 +28,7 @@ from iaso.dhis2.aggregate_exporter import (
 )
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from iaso.dhis2.status_queries import counts_by_status
+from django.utils.dateparse import parse_datetime
 
 
 class Command(BaseCommand):
@@ -1918,7 +1919,7 @@ class Command(BaseCommand):
 
             print("********* generating instances")
             self.seed_instances(source_version, form, periods, mapping_version)
-            print("generated", form.instance_set.count(), "instances")
+            print("generated", form.instances.count(), "instances")
 
         if mode == "export":
 
@@ -1947,9 +1948,7 @@ class Command(BaseCommand):
                 instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance()
-                    instance.created_at = datetime.strptime(
-                        "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-                    )
+                    instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit
                     instance.period = period
 
@@ -1963,7 +1962,5 @@ class Command(BaseCommand):
                     instance.save()
                     # force to past creation date
                     # looks the the first save don't take it
-                    instance.created_at = datetime.strptime(
-                        "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-                    )
+                    instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.save()

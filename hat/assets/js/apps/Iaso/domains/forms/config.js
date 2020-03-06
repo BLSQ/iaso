@@ -7,7 +7,7 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
-import ColumnTextComponent from '../components/tables/ColumnTextComponent';
+import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 
 const formsTableColumns = (formatMessage, component) => (
     [

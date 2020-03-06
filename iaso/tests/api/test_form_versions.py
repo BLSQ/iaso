@@ -92,10 +92,10 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertEqual(created_version.version_id, "2020022401")
         self.assertIsInstance(created_version.file, File)
         self.assertGreater(created_version.file.size, 100)
-        self.assertEqual(created_version.file.name, "forms/odk_form_valid_sample1_2020022401_2020022401.xml")
+        self.assertEqual(created_version.file.name, "forms/new_land_speeder_concept_2020022401.xml")
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
-        self.assertEqual(created_version.xls_file.name, "forms/odk_form_valid_sample1_2020022401_2020022401.xls")
+        self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xls")
 
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)

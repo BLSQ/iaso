@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup as Soup
 from datetime import datetime
+from django.utils.text import slugify
 
 
 def timestamp_to_datetime(timestamp):
@@ -35,3 +36,7 @@ def flat_parse_xml_file(file):
     flat_xml_dict = {}
     get_flat_children_tree(soup, flat_xml_dict)
     return flat_xml_dict
+
+
+def slugify_underscore(filename):
+    return slugify(filename).replace('-', '_')

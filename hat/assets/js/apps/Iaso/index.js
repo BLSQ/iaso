@@ -20,7 +20,7 @@ import { formsReducer, formsInitialState } from './redux/formsReducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
 import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
-import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
+import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
@@ -35,12 +35,12 @@ import chipColors from './constants/chipColors';
 import App from '../App';
 
 import Forms from './pages/Forms';
-import Instances from './pages/Instances';
 import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
 import Links from './pages/Links';
 import Runs from './pages/Runs';
 import OrgUnitDetail from './pages/OrgUnitDetail';
-import Completeness from './pages/Completeness';
+import Completeness from './domains/completeness';
+import Instances from './domains/instances';
 
 import {
     formsPath,

@@ -11,7 +11,7 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
 
-import commonStyles from '../../styles/common';
+import commonStyles from '../../../styles/common';
 
 import {
     orgUnitType,
@@ -20,10 +20,10 @@ import {
     deviceOwnership,
     periods,
     // instanceStatus,
-} from '../../constants/filters';
-import FiltersComponent from './FiltersComponent';
-import { createUrl } from '../../../../utils/fetchData';
-import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+} from '../../../constants/filters';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
+import { createUrl } from '../../../../../utils/fetchData';
+import OrgUnitsLevelsFiltersComponent from '../../../components/filters/OrgUnitsLevelsFiltersComponent';
 // import { INSTANCE_STATUSES } from '../../domains/instances/constants';
 
 // TODO: use config file

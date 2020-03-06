@@ -17,7 +17,6 @@ import isEqual from 'lodash/isEqual';
 import setDrawMessages from '../../../../utils/map/drawMapMessages';
 import {
     customZoomBar,
-    colorMarker,
     addDrawControl,
     mapOrgUnitByLocation,
     shapeOptions,
@@ -35,11 +34,11 @@ import SourcesChipsFilterComponent from '../filters/chips/SourcesChipsFilterComp
 import MarkerComponent from './markers/MarkerComponent';
 import MarkersListComponent from './markers/MarkersListComponent';
 import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
-import InstancePopupComponent from './popups/InstancePopupComponent';
+import InstancePopupComponent from '../../domains/instances/components/InstancePopupComponent';
 
 import { resetMapReducer } from '../../redux/mapReducer';
 import { setCurrentSubOrgUnit } from '../../redux/orgUnitsReducer';
-import { setCurrentInstance } from '../../redux/instancesReducer';
+import { setCurrentInstance } from '../../domains/instances/actions';
 
 import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../utils/requests';
 

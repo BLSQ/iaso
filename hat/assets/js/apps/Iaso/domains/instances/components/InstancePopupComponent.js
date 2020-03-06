@@ -18,9 +18,9 @@ import AttachFile from '@material-ui/icons/AttachFile';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import LoadingSpinner from '../../LoadingSpinnerComponent';
-import PopupItemComponent from './PopupItemComponent';
-import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
+import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';

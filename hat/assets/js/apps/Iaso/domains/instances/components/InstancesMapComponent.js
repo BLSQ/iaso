@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import {
     Map, TileLayer,
@@ -11,26 +12,24 @@ import {
     Divider,
 } from '@material-ui/core';
 
-import PropTypes from 'prop-types';
 
-import { getLatLngBounds, clusterCustomMarker, customZoomBar } from '../../utils/mapUtils';
+import { getLatLngBounds, clusterCustomMarker, customZoomBar } from '../../../utils/mapUtils';
 
-import { resetMapReducer } from '../../redux/mapReducer';
-import { setCurrentInstance } from '../../redux/instancesReducer';
+import { resetMapReducer } from '../../../redux/mapReducer';
+import { setCurrentInstance } from '../actions';
 
-import TileSwitch from './tools/TileSwitchComponent';
-import ClusterSwitch from './tools/ClusterSwitchComponent';
-import MarkersListComponent from './markers/MarkersListComponent';
-import ErrorPaperComponent from '../papers/ErrorPaperComponent';
-import InstancePopupComponent from './popups/InstancePopupComponent';
-import InnerDrawer from '../nav/InnerDrawerComponent';
+import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
+import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import InstancePopupComponent from './InstancePopupComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 
-import { fetchInstanceDetail } from '../../utils/requests';
+import { fetchInstanceDetail } from '../../../utils/requests';
 
 const boundsOptions = { padding: [50, 50] };
 
 class InstancesMap extends Component {
-
     componentWillUnmount() {
         this.props.resetMapReducer();
     }

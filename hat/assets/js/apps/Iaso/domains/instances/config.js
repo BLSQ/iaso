@@ -3,7 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import Link from '@material-ui/core/Link';
 
-import { getPrettyPeriod } from '../utils/periodsUtils';
+import { getPrettyPeriod } from '../../utils/periodsUtils';
 
 const instancesTableColumns = formatMessage => (
     [

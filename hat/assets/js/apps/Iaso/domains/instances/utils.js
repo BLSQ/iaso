@@ -1,5 +1,5 @@
 import React from 'react';
-import instancesTableColumns from '../constants/instancesTableColumns';
+import instancesTableColumns from './config';
 
 export const getInstancesColumns = (formatMessage, instances) => {
     let tableColumns = [...instancesTableColumns(formatMessage)];

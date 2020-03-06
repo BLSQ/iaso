@@ -11,11 +11,11 @@ import PropTypes from 'prop-types';
 
 import {
     setInstances, setInstancesSmallDict, setInstancesFetching,
-} from '../redux/instancesReducer';
-import { setCurrentForm } from '../redux/formsReducer';
-import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
-import { setDevicesList, setDevicesOwnershipList } from '../redux/devicesReducer';
-import { setPeriods } from '../redux/periodsReducer';
+} from './actions';
+import { setCurrentForm } from '../../redux/formsReducer';
+import { setOrgUnitTypes } from '../../redux/orgUnitsReducer';
+import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
+import { setPeriods } from '../../redux/periodsReducer';
 
 import {
     fetchInstancesAsDict,
@@ -25,24 +25,24 @@ import {
     fetchDevices,
     fetchDevicesOwnerships,
     fetchPeriods,
-} from '../utils/requests';
+} from '../../utils/requests';
 
-import { createUrl } from '../../../utils/fetchData';
-import { getInstancesFilesList } from '../utils/instancesUtils';
-import instancesTableColumns from '../constants/instancesTableColumns';
-import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
+import { createUrl } from '../../../../utils/fetchData';
+import { getInstancesFilesList } from './utils';
+import instancesTableColumns from './config';
+import { fetchLatestOrgUnitLevelId } from '../../utils/orgUnitUtils';
 
-import TopBar from '../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
-import InstancesMap from '../components/maps/InstancesMapComponent';
-import InstancesFilesList from '../components/files/InstancesFilesListComponent';
-import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import InstancesFiltersComponent from '../components/filters/InstancesFiltersComponent';
+import TopBar from '../../components/nav/TopBarComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import InstancesMap from './components/InstancesMapComponent';
+import InstancesFilesList from './components/InstancesFilesListComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 
-import commonStyles from '../styles/common';
+import commonStyles from '../../styles/common';
 
-import getTableUrl from '../utils/tableUtils';
+import getTableUrl from '../../utils/tableUtils';
 
 
 const baseUrl = 'instances';

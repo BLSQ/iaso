@@ -16,7 +16,6 @@ const styles = () => ({
 });
 
 function HeaderRowIcon({ IconComponent, title, classes }) {
-
     return (
         <div className={classes.root}>
             <Tooltip title={title}>

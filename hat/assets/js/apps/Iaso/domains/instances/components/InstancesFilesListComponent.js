@@ -12,15 +12,15 @@ import {
 
 import PropTypes from 'prop-types';
 
-import ErrorPaperComponent from '../papers/ErrorPaperComponent';
-import ImageGallery from '../dialogs/ImageGalleryComponent';
-import LazyImagesList from './LazyImagesListComponent';
-import DocumentsList from './DocumentsListComponent';
-import VideosList from './VideosListComponent';
-import InstancePopover from '../popover/InstancePopoverComponent';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import ImageGallery from '../../../components/dialogs/ImageGalleryComponent';
+import LazyImagesList from '../../../components/files/LazyImagesListComponent';
+import DocumentsList from '../../../components/files/DocumentsListComponent';
+import VideosList from '../../../components/files/VideosListComponent';
+import InstancePopover from './InstancePopoverComponent';
 
-import { sortFilesType } from '../../utils/filesUtils';
-import { fetchInstanceDetail } from '../../utils/requests';
+import { sortFilesType } from '../../../utils/filesUtils';
+import { fetchInstanceDetail } from '../../../utils/requests';
 
 const minTabHeight = 'calc(100vh - 500px)';
 

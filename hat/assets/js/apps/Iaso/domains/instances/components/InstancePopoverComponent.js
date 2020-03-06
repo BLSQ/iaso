@@ -9,10 +9,10 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Info from '@material-ui/icons/InfoOutlined';
 
-import MESSAGES from '../../messages/instanceMessages';
-import PopupItemComponent from '../maps/popups/PopupItemComponent';
+import MESSAGES from '../../../messages/instanceMessages';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
-import { getOrgUnitsTree } from '../../utils/orgUnitUtils';
+import { getOrgUnitsTree } from '../../../utils/orgUnitUtils';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {

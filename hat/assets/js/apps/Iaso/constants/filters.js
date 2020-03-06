@@ -77,6 +77,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
         value,
     }
 );
+
 export const orgUnitType = (
     orgunitTypesList,
     urlKey = 'orgUnitTypeId',
@@ -362,6 +363,18 @@ export const periods = periodsList => (
             value: p,
         })),
         label: MESSAGES.periods,
+        type: 'select',
+    }
+);
+
+
+export const instanceStatus = options => (
+    {
+        urlKey: 'status',
+        isMultiSelect: true,
+        isClearable: true,
+        options,
+        label: MESSAGES.status,
         type: 'select',
     }
 );

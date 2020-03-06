@@ -119,6 +119,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.deleteFormError',
         defaultMessage: 'An error occurred while deleting a form',
     },
+    fetchCompletenessError: {
+        id: 'iaso.snackBar.fetchCompletenessError',
+        defaultMessage: 'An error occured while fetching completness',
+    },
 };
 
 export default MESSAGES;

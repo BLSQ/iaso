@@ -109,6 +109,7 @@ class InstancesViewSet(viewsets.ViewSet):
         org_unit_parent_id = request.GET.get("orgUnitParentId", None)
         org_unit_id = request.GET.get("orgUnitId", None)
         period_ids = request.GET.get("periods", None)
+        status = request.GET.get("status", None)
 
         queryset = Instance.objects.order_by("-id")
         if not request.user.is_anonymous:
@@ -170,6 +171,9 @@ class InstancesViewSet(viewsets.ViewSet):
         if form_id:
             form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
+
+        # if status:
+        #     queryset = queryset.filter(status=status)
 
         if csv_format is None and xlsx_format is None:
 

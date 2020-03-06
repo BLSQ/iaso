@@ -77,7 +77,6 @@ class FormDialogComponent extends Component {
                     });
             })
             .then(() => {
-                this.setState(this.initialState());
                 closeDialog();
                 this.props.dispatch(enqueueSnackbar(succesfullSnackBar()));
                 this.props.onSuccess();
@@ -89,11 +88,6 @@ class FormDialogComponent extends Component {
                     });
                 }
             });
-    }
-
-    onCancel(closeDialog) {
-        this.setState(this.initialState());
-        closeDialog();
     }
 
     setFieldValue(fieldName, fieldValue) {
@@ -160,7 +154,7 @@ class FormDialogComponent extends Component {
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
-                onCancel={closeDialog => this.onCancel(closeDialog)}
+                onClosed={() => this.setState(this.initialState())}
                 cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
                 maxWidth="md"
             >

@@ -29,7 +29,7 @@ import InnerDrawer from '../nav/InnerDrawerComponent';
 import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
 import OrgunitOptionSaveComponent from './tools/OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from '../filters/chips/OrgUnitTypeChipsFilterComponent';
-import FormsChipsFilterComponent from '../filters/chips/FormsChipsFilterComponent';
+import FormsChipsFilterComponent from '../../domains/forms/components/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from './markers/MarkerComponent';
 import MarkersListComponent from './markers/MarkersListComponent';

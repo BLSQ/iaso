@@ -12,10 +12,10 @@ import PropTypes from 'prop-types';
 import {
     setInstances, setInstancesSmallDict, setInstancesFetching,
 } from './actions';
-import { setCurrentForm } from '../../redux/formsReducer';
+import { setCurrentForm } from '../forms/actions';
 import { setOrgUnitTypes } from '../../redux/orgUnitsReducer';
 import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
-import { setPeriods } from '../../redux/periodsReducer';
+import { setPeriods } from '../periods/actions';
 
 import {
     fetchInstancesAsDict,

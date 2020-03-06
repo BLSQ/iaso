@@ -3,10 +3,10 @@ import moment from 'moment';
 import Grid from '@material-ui/core/Grid';
 import Link from '@material-ui/core/Link';
 
-import DeleteDialog from '../components/dialogs/DeleteDialogComponent';
-import FormDialogComponent from '../components/dialogs/FormDialogComponent';
-import EditRowButtonComponent from '../components/buttons/EditRowButtonComponent';
-import ViewRowButtonComponent from '../components/buttons/ViewRowButtonComponent';
+import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
+import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
+import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 
 const formsTableColumns = (formatMessage, component) => (
     [

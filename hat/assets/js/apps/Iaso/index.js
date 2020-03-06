@@ -16,7 +16,7 @@ import createStore from '../../redux/createStore';
 
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
-import { formsReducer, formsInitialState } from './redux/formsReducer';
+import { formsReducer, formsInitialState } from './domains/forms/reducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
 import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
@@ -28,13 +28,13 @@ import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUn
 import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './redux/linksReducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
-import { periodsInitialState, periodsReducer } from './redux/periodsReducer';
+import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import chipColors from './constants/chipColors';
 
 import App from '../App';
 
-import Forms from './pages/Forms';
+import Forms from './domains/forms';
 import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
 import Links from './pages/Links';
 import Runs from './pages/Runs';

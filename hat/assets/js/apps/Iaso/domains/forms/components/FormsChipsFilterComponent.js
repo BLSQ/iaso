@@ -12,7 +12,7 @@ import {
 
 import { setFormsSelected } from '../../../redux/orgUnitsReducer';
 
-import ChipsFilterComponent from './ChipsFilterComponent';
+import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 
 import {
     fetchInstancesAsLocationsByForm,

@@ -10,8 +10,6 @@ import {
 
 import PropTypes from 'prop-types';
 
-import orgUnitIconUrl from '../../../../../../../dashboard/static/images/white-pentagon.svg';
-
 import commonStyles from '../../../styles/common';
 
 import { setCurrentSubOrgUnitTypesSelected, setFetching } from '../../../redux/orgUnitsReducer';

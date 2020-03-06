@@ -9,22 +9,22 @@ import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
 
-import { setForms, setCurrentForm } from '../redux/formsReducer';
-import { setOrgUnitTypes } from '../redux/orgUnitsReducer';
-import { setProjects } from '../redux/projectsReducer';
+import { setForms, setCurrentForm } from './actions';
+import { setOrgUnitTypes } from '../../redux/orgUnitsReducer';
+import { setProjects } from '../../redux/projectsReducer';
 
-import formsTableColumns from '../constants/formsTableColumns';
+import formsTableColumns from './config';
 
-import { createUrl } from '../../../utils/fetchData';
+import { createUrl } from '../../../../utils/fetchData';
 
-import commonStyles from '../styles/common';
-import TopBar from '../components/nav/TopBarComponent';
-import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import FormDialogComponent from '../components/dialogs/FormDialogComponent';
-import AddButtonComponent from '../components/buttons/AddButtonComponent';
+import commonStyles from '../../styles/common';
+import TopBar from '../../components/nav/TopBarComponent';
+import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
+import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
-import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../utils/requests';
+import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
 const baseUrl = 'forms';
 

@@ -119,6 +119,93 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(fifre_model.name, name2)
 
     @tag("iaso_only")
+    def test_org_unit_insertion_new_field_names(self):
+        """Creating Org Units through the API but using org_unit_type_id and parent_id instead of orgUnitTypeId and parentId """
+        c = APIClient()
+        hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
+        uuid = "r5dx2671-aa59-4fb2-a4a0-4af80573e2de"
+        name = "Hopital Saint-André"
+        unit_body = {
+            "id": uuid,
+            "latitude": 0,
+            "created_at": 1565194077692,
+            "updated_at": 1565194077693,
+            "org_unit_type_id": hospital_unit_type.id,
+            "parent_id": None,
+            "longitude": 0,
+            "accuracy": 0,
+            "altitude": 0,
+            "time": 0,
+            "name": name,
+        }
+
+        response = c.post("/api/orgunits/", data=[unit_body], format="json")
+        self.assertEqual(response.status_code, 200)
+        velpo_model = OrgUnit.objects.get(uuid=uuid)
+        self.assertEqual(velpo_model.name, name)
+
+        response = c.get("/api/orgunits/", accept="application/json")
+
+        json_response = json.loads(response.content)
+
+        units = json_response["orgUnits"]
+        self.assertEqual(len(units), 0)
+
+        velpo_model.validated = True
+        velpo_model.save()
+
+        response = c.get(
+            "/api/orgunits/", accept="application/json"
+        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
+
+        content_1 = response.content
+        json_response = json.loads(response.content)
+
+        units = json_response["orgUnits"]
+        velpo_json = units[0]
+        self.assertEqual(velpo_json["name"], name)
+        self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
+        self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
+        self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
+        self.assertEqual(velpo_json["parent_id"], None)
+        self.assertEqual(velpo_json["id"], velpo_model.id)
+
+        response = c.get(
+            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+        )  # this should be the same result as without the app_id
+        content_2 = response.content
+        self.assertEqual(content_1, content_2)
+
+        response = c.get(
+            "/api/orgunits/?app_id=com.pascallegitimus.iaso", accept="application/json"
+        )  # this should have 0 result
+        json_response = json.loads(response.content)
+        self.assertEqual(len(json_response["orgUnits"]), 0)
+
+        # inserting a child org_unit
+        uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f0"
+        name2 = "Hopital Sous Fifre"
+        unit_body_2 = {
+            "id": uuid2,
+            "latitude": 0,
+            "created_at": 1565194077699,
+            "updated_at": 1565194077800,
+            "orgUnitTypeId": hospital_unit_type.id,
+            "parentId": uuid,
+            "longitude": 0,
+            "accuracy": 0,
+            "altitude": 0,
+            "time": 0,
+            "name": name2,
+        }
+
+        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        self.assertEqual(response.status_code, 200)
+
+        fifre_model = OrgUnit.objects.get(uuid=uuid2)
+        self.assertEqual(fifre_model.name, name2)
+
+    @tag("iaso_only")
     def test_instance_insertion(self):
         """Creating Instance Units through the API"""
         c = APIClient()

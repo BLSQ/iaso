@@ -11,14 +11,14 @@ import {
 
 import PropTypes from 'prop-types';
 
-import LoadingSpinner from '../LoadingSpinnerComponent';
+import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import LinksCompare from './LinksCompareComponent';
 
-import commonStyles from '../../styles/common';
+import commonStyles from '../../../styles/common';
 
 import {
     fetchLinkDetail,
-} from '../../utils/requests';
+} from '../../../utils/requests';
 
 
 const styles = theme => ({

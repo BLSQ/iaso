@@ -7,9 +7,9 @@ import {
     withStyles, TableCell, TableRow,
 } from '@material-ui/core';
 
-import GeoJsonMap from '../maps/GeoJsonMapComponent';
+import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 
-import MESSAGES from '../../messages/forms';
+import MESSAGES from '../../../messages/forms';
 
 const styles = theme => ({
     cell: {

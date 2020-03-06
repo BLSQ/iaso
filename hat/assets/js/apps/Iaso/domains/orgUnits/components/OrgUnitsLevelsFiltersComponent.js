@@ -6,11 +6,11 @@ import PropTypes from 'prop-types';
 
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
-import { fetchOrgUnits } from '../../utils/requests';
-import { createUrl } from '../../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from '../../utils/orgUnitUtils';
+import { fetchOrgUnits } from '../../../utils/requests';
+import { createUrl } from '../../../../../utils/fetchData';
+import { fetchLatestOrgUnitLevelId } from '../utils';
 
-import { setOrgUnitsLevel } from '../../redux/orgUnitsLevelsReducer';
+import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';
 
 class OrgUnitsLevelsFiltersComponent extends Component {
     constructor(props) {

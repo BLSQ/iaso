@@ -12,7 +12,7 @@ import Info from '@material-ui/icons/InfoOutlined';
 import MESSAGES from '../../../messages/instances';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
-import { getOrgUnitsTree } from '../../../utils/orgUnitUtils';
+import { getOrgUnitsTree } from '../../orgUnits/utils';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {

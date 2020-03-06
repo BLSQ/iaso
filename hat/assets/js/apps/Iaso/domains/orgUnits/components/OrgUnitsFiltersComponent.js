@@ -12,8 +12,8 @@ import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
 
-import commonStyles from '../../styles/common';
-import chipColors from '../../constants/chipColors';
+import commonStyles from '../../../styles/common';
+import chipColors from '../../../constants/chipColors';
 
 import {
     search,
@@ -25,16 +25,16 @@ import {
     location,
     locationsLimit,
     group,
-} from '../../constants/filters';
+} from '../../../constants/filters';
 import {
     setFiltersUpdated,
     setOrgUnitsLocations,
-} from '../../redux/orgUnitsReducer';
+} from '../actions';
 
-import FiltersComponent from './FiltersComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../../../../utils/fetchData';
 
 const styles = theme => ({
     ...commonStyles(theme),

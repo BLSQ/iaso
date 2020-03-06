@@ -10,7 +10,7 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import { setFormsSelected } from '../../../redux/orgUnitsReducer';
+import { setFormsSelected } from '../../orgUnits/actions';
 
 import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 

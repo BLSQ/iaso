@@ -14,7 +14,7 @@ import L from 'leaflet';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
-import setDrawMessages from '../../../../utils/map/drawMapMessages';
+import setDrawMessages from '../../../../../utils/map/drawMapMessages';
 import {
     customZoomBar,
     addDrawControl,
@@ -22,25 +22,25 @@ import {
     shapeOptions,
     polygonDrawOpiton,
     circleColorMarkerOptions,
-} from '../../utils/mapUtils';
+} from '../../../utils/mapUtils';
 
-import TileSwitch from './tools/TileSwitchComponent';
-import InnerDrawer from '../nav/InnerDrawerComponent';
-import EditOrgUnitOptionComponent from './tools/EditOrgUnitOptionComponent';
-import OrgunitOptionSaveComponent from './tools/OrgunitOptionSaveComponent';
-import OrgUnitTypeChipsFilterComponent from '../filters/chips/OrgUnitTypeChipsFilterComponent';
-import FormsChipsFilterComponent from '../../domains/forms/components/FormsChipsFilterComponent';
-import SourcesChipsFilterComponent from '../filters/chips/SourcesChipsFilterComponent';
-import MarkerComponent from './markers/MarkerComponent';
-import MarkersListComponent from './markers/MarkersListComponent';
-import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
-import InstancePopupComponent from '../../domains/instances/components/InstancePopupComponent';
+import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import EditOrgUnitOptionComponent from '../../../components/maps/tools/EditOrgUnitOptionComponent';
+import OrgunitOptionSaveComponent from '../../../components/maps/tools/OrgunitOptionSaveComponent';
+import OrgUnitTypeChipsFilterComponent from './OrgUnitTypeChipsFilterComponent';
+import FormsChipsFilterComponent from '../../forms/components/FormsChipsFilterComponent';
+import SourcesChipsFilterComponent from '../../../components/filters/chips/SourcesChipsFilterComponent';
+import MarkerComponent from '../../../components/maps/markers/MarkerComponent';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import OrgUnitPopupComponent from '../../../components/maps/popups/OrgUnitPopupComponent';
+import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
-import { resetMapReducer } from '../../redux/mapReducer';
-import { setCurrentSubOrgUnit } from '../../redux/orgUnitsReducer';
-import { setCurrentInstance } from '../../domains/instances/actions';
+import { resetMapReducer } from '../../../redux/mapReducer';
+import { setCurrentSubOrgUnit } from '../actions';
+import { setCurrentInstance } from '../../instances/actions';
 
-import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../utils/requests';
+import { fetchOrgUnitDetail, fetchInstanceDetail } from '../../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
 

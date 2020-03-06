@@ -10,7 +10,8 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 
 import { setForms, setCurrentForm } from './actions';
-import { setOrgUnitTypes } from '../../redux/orgUnitsReducer';
+import { setOrgUnitTypes } from '../orgUnits/actions';
+
 import { setProjects } from '../../redux/projectsReducer';
 
 import formsTableColumns from './config';

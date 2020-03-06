@@ -25,7 +25,7 @@ import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
 
-import { getOrgUnitsTree } from '../../../utils/orgUnitUtils';
+import { getOrgUnitsTree } from '../../orgUnits/utils';
 
 import MESSAGES from '../../../messages/instances';
 

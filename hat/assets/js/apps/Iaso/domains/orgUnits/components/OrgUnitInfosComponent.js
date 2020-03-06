@@ -6,10 +6,10 @@ import Grid from '@material-ui/core/Grid';
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import InputComponent from '../forms/InputComponent';
-import OrgUnitsLevelsFiltersComponent from '../filters/OrgUnitsLevelsFiltersComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
-import MESSAGES from '../../messages/forms';
+import MESSAGES from '../../../messages/forms';
 
 function OrgUnitInfosComponent(props) {
     const {

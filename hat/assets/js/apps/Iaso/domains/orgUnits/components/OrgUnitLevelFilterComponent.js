@@ -3,9 +3,9 @@ import { injectIntl } from 'react-intl';
 
 import PropTypes from 'prop-types';
 
-import FiltersComponent from './FiltersComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 
-import { orgUnitLevel } from '../../constants/filters';
+import { orgUnitLevel } from '../../../constants/filters';
 
 class OrgUnitLevelFilterComponent extends Component {
     render() {

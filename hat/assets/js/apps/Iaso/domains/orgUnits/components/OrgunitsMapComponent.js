@@ -17,7 +17,7 @@ import {
 import PropTypes from 'prop-types';
 import {
     locationsLimit,
-} from '../../constants/filters';
+} from '../../../constants/filters';
 
 import {
     getLatLngBounds,
@@ -25,22 +25,22 @@ import {
     colorClusterCustomMarker,
     customZoomBar,
     circleColorMarkerOptions,
-} from '../../utils/mapUtils';
+} from '../../../utils/mapUtils';
 
-import { resetMapReducer } from '../../redux/mapReducer';
-import { setCurrentSubOrgUnit } from '../../redux/orgUnitsReducer';
+import { resetMapReducer } from '../../../redux/mapReducer';
+import { setCurrentSubOrgUnit } from '../actions';
 
-import TileSwitch from './tools/TileSwitchComponent';
-import ClusterSwitch from './tools/ClusterSwitchComponent';
-import MarkersListComponent from './markers/MarkersListComponent';
-import ErrorPaperComponent from '../papers/ErrorPaperComponent';
-import OrgUnitPopupComponent from './popups/OrgUnitPopupComponent';
-import InnerDrawer from '../nav/InnerDrawerComponent';
-import FiltersComponent from '../filters/FiltersComponent';
+import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
+import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
+import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
+import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
+import OrgUnitPopupComponent from '../../../components/maps/popups/OrgUnitPopupComponent';
+import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 
-import { fetchOrgUnitDetail } from '../../utils/requests';
-import chipColors from '../../constants/chipColors';
-import commonStyles from '../../styles/common';
+import { fetchOrgUnitDetail } from '../../../utils/requests';
+import chipColors from '../../../constants/chipColors';
+import commonStyles from '../../../styles/common';
 
 const boundsOptions = {
     padding: [50, 50],

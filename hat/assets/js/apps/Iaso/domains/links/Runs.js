@@ -15,34 +15,35 @@ import {
     runAlgorithm,
     fetchSources,
     fetchIasoProfiles,
-} from '../utils/requests';
+} from '../../utils/requests';
 
 import {
     setRuns,
     setIsFetching,
     setAlgorithms,
-} from '../redux/linksReducer';
+} from './actions';
 
 import {
     setSources,
-} from '../redux/orgUnitsReducer';
+} from '../orgUnits/actions';
+
 import {
     setProfiles,
-} from '../redux/profilesReducer';
+} from '../../redux/profilesReducer';
 
-import runsTableColumns from '../constants/runsTableColumns';
+import { runsTableColumns } from './config';
 
-import { createUrl } from '../../../utils/fetchData';
-import getTableUrl from '../utils/tableUtils';
+import { createUrl } from '../../../../utils/fetchData';
+import getTableUrl from '../../utils/tableUtils';
 
 
-import TopBar from '../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import RunsFiltersComponent from '../components/filters/RunsFiltersComponent';
-import AddRunDialogComponent from '../components/dialogs/AddRunDialogComponent';
+import TopBar from '../../components/nav/TopBarComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import RunsFiltersComponent from './components/RunsFiltersComponent';
+import AddRunDialogComponent from '../../components/dialogs/AddRunDialogComponent';
 
-import commonStyles from '../styles/common';
+import commonStyles from '../../styles/common';
 
 const baseUrl = 'links/runs';
 

@@ -18,7 +18,7 @@ import {
     fetchSources,
     fetchOrgUnitsList,
     fetchGroups,
-} from '../utils/requests';
+} from '../../utils/requests';
 
 import {
     setOrgUnits,
@@ -30,29 +30,29 @@ import {
     setFiltersUpdated,
     setGroups,
     resetOrgUnits,
-} from '../redux/orgUnitsReducer';
-import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
+} from './actions';
+import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
-import orgUnitsTableColumns from '../constants/orgUnitsTableColumns';
+import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from '../utils/orgUnitUtils';
-import getTableUrl from '../utils/tableUtils';
+import { createUrl } from '../../../../utils/fetchData';
+import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
+import getTableUrl from '../../utils/tableUtils';
 
-import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
-import TopBar from '../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import OrgUnitsFiltersComponent from '../components/filters/OrgUnitsFiltersComponent';
-import OrgunitsMap from '../components/maps/OrgunitsMapComponent';
+import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import TopBar from '../../components/nav/TopBarComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
+import OrgunitsMap from './components/OrgunitsMapComponent';
 
-import commonStyles from '../styles/common';
-import chipColors from '../constants/chipColors';
+import commonStyles from '../../styles/common';
+import chipColors from '../../constants/chipColors';
 
-import { warningSnackBar } from '../components/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
+import { warningSnackBar } from '../../components/snackBars';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
 
-import DynamicTabsComponent from '../components/nav/DynamicTabsComponent';
+import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
 const baseUrl = 'orgunits';
 let warningDisplayed = false;

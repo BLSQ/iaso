@@ -13,7 +13,7 @@ import {
     setInstances, setInstancesSmallDict, setInstancesFetching,
 } from './actions';
 import { setCurrentForm } from '../forms/actions';
-import { setOrgUnitTypes } from '../../redux/orgUnitsReducer';
+import { setOrgUnitTypes } from '../orgUnits/actions';
 import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
 import { setPeriods } from '../periods/actions';
 
@@ -30,7 +30,7 @@ import {
 import { createUrl } from '../../../../utils/fetchData';
 import { getInstancesFilesList } from './utils';
 import instancesTableColumns from './config';
-import { fetchLatestOrgUnitLevelId } from '../../utils/orgUnitUtils';
+import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../../components/CustomTableComponent';

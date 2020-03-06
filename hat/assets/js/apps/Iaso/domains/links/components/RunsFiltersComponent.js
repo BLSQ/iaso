@@ -10,40 +10,52 @@ import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
+import Autorenew from '@material-ui/icons/Autorenew';
 
-import commonStyles from '../../styles/common';
+import commonStyles from '../../../styles/common';
 
 import {
-    search,
-    orgUnitType,
-    source,
-    status,
-    validator,
     algo,
-    score,
+    source,
+    profile,
     version,
-    algoRun,
-} from '../../constants/filters';
+} from '../../../constants/filters';
 
-import FiltersComponent from './FiltersComponent';
+import FiltersComponent from '../../../components/filters/FiltersComponent';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../../../../utils/fetchData';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
-class LinksFiltersComponent extends Component {
+class RunsFiltersComponent extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            filtersUpdated: true,
+            filtersUpdated: props.params.searchActive !== 'true',
+            refreshEnabled: props.params.searchActive === 'true',
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        const tempParams = {
+            ...this.props.params,
+        };
+        if (prevProps.params.origin !== this.props.params.origin) {
+            tempParams.originVersion = undefined;
+            this.props.redirectTo(this.props.baseUrl, tempParams);
+        }
+        if (prevProps.params.destination !== this.props.params.destination) {
+            tempParams.destinationVersion = undefined;
+            this.props.redirectTo(this.props.baseUrl, tempParams);
+        }
     }
 
     onFilterChanged() {
         this.setState({
             filtersUpdated: true,
+            refreshEnabled: true,
         });
     }
 
@@ -61,6 +73,7 @@ class LinksFiltersComponent extends Component {
         this.props.onSearch();
     }
 
+
     render() {
         const {
             params,
@@ -69,12 +82,15 @@ class LinksFiltersComponent extends Component {
             intl: {
                 formatMessage,
             },
-            orgUnitTypes,
+            algorithms,
+            onRefresh,
             sources,
             profiles,
-            algorithms,
-            algorithmRuns,
         } = this.props;
+        const {
+            filtersUpdated,
+            refreshEnabled,
+        } = this.state;
         let currentOrigin;
         if (params.origin && sources) {
             currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
@@ -86,34 +102,27 @@ class LinksFiltersComponent extends Component {
         return (
             <Fragment>
                 <Grid container spacing={4}>
-                    <Grid item xs={3}>
+                    <Grid item xs={4}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                search(),
-                                algoRun(algorithmRuns, formatMessage),
-                                orgUnitType(orgUnitTypes),
-                                status(formatMessage),
-                            ]}
-                            onEnterPressed={() => this.onSearch()}
-                        />
-                    </Grid>
-                    <Grid item xs={3}>
-                        <FiltersComponent
-                            params={params}
-                            baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
-                            filters={[
-                                validator(profiles),
                                 algo(algorithms),
-                                score(),
+                                profile(
+                                    profiles || [],
+                                    false,
+                                    'launcher',
+                                    formatMessage({
+                                        id: 'iaso.label.launcher',
+                                        defaultMessage: 'Launcher',
+                                    }),
+                                ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={4}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -144,7 +153,7 @@ class LinksFiltersComponent extends Component {
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
-                    <Grid item xs={3}>
+                    <Grid item xs={4}>
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
@@ -177,10 +186,20 @@ class LinksFiltersComponent extends Component {
                     </Grid>
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
-                    <Grid item xs={2} container justify="flex-end" alignItems="center">
+                    <Grid item xs={12} container justify="flex-end" alignItems="center">
                         <Button
+                            disabled={!refreshEnabled}
                             variant="contained"
-                            className={classes.button}
+                            color="primary"
+                            onClick={() => onRefresh()}
+                        >
+                            <Autorenew className={classes.buttonIcon} />
+                            <FormattedMessage id="iaso.label.refresh" defaultMessage="Refresh" />
+                        </Button>
+                        <Button
+                            disabled={!filtersUpdated}
+                            variant="contained"
+                            className={classes.marginLeft}
                             color="primary"
                             onClick={() => this.onSearch()}
                         >
@@ -193,31 +212,29 @@ class LinksFiltersComponent extends Component {
         );
     }
 }
-LinksFiltersComponent.defaultProps = {
+RunsFiltersComponent.defaultProps = {
     baseUrl: '',
     sources: [],
 };
 
-LinksFiltersComponent.propTypes = {
+RunsFiltersComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
+    onRefresh: PropTypes.func.isRequired,
+    algorithms: PropTypes.array.isRequired,
+    redirectTo: PropTypes.func.isRequired,
     sources: PropTypes.array,
     profiles: PropTypes.array.isRequired,
-    algorithms: PropTypes.array.isRequired,
-    algorithmRuns: PropTypes.array.isRequired,
-    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
+    algorithms: state.links.algorithmsList,
     sources: state.orgUnits.sources,
     profiles: state.profiles.list,
-    algorithms: state.links.algorithmsList,
-    algorithmRuns: state.links.algorithmRunsList,
 });
 
 
@@ -226,4 +243,4 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(LinksFiltersComponent)));
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(RunsFiltersComponent)));

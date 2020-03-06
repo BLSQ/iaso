@@ -17,7 +17,7 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './domains/forms/reducer';
-import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
+import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reducer';
 import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
@@ -26,7 +26,7 @@ import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsRe
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
-import { linksInitialState, linksReducer } from './redux/linksReducer';
+import { linksInitialState, linksReducer } from './domains/links/reducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
@@ -35,10 +35,10 @@ import chipColors from './constants/chipColors';
 import App from '../App';
 
 import Forms from './domains/forms';
-import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
-import Links from './pages/Links';
-import Runs from './pages/Runs';
-import OrgUnitDetail from './pages/OrgUnitDetail';
+import OrgUnits, { locationLimitMax } from './domains/orgUnits';
+import Links from './domains/links';
+import Runs from './domains/links/Runs';
+import OrgUnitDetail from './domains/orgUnits/details';
 import Completeness from './domains/completeness';
 import Instances from './domains/instances';
 

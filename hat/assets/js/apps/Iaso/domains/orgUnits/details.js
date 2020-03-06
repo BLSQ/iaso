@@ -20,10 +20,10 @@ import {
     setSources,
     setGroups,
     setFetching,
-} from '../redux/orgUnitsReducer';
-import { resetOrgUnitsLevels } from '../redux/orgUnitsLevelsReducer';
+} from './actions';
+import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
-import { createUrl } from '../../../utils/fetchData';
+import { createUrl } from '../../../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchSourceTypes,
@@ -33,18 +33,18 @@ import {
     saveOrgUnit,
     fetchGroups,
     fetchSources,
-} from '../utils/requests';
-import { getAliasesArrayFromString, getOrgUnitsTree } from '../utils/orgUnitUtils';
+} from '../../utils/requests';
+import { getAliasesArrayFromString, getOrgUnitsTree } from '../orgUnits/utils';
 
-import TopBar from '../components/nav/TopBarComponent';
-import OrgUnitInfos from '../components/infos/OrgUnitInfosComponent';
-import OrgUnitMap from '../components/maps/OrgUnitMapComponent';
-import Logs from '../components/logs/LogsComponent';
-import LoadingSpinner from '../components/LoadingSpinnerComponent';
+import TopBar from '../../components/nav/TopBarComponent';
+import OrgUnitInfos from './components/OrgUnitInfosComponent';
+import OrgUnitMap from './components/OrgUnitMapComponent';
+import Logs from '../../components/logs/LogsComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
-import commonStyles from '../styles/common';
+import commonStyles from '../../styles/common';
 
-import chipColors from '../constants/chipColors';
+import chipColors from '../../constants/chipColors';
 
 const baseUrl = 'orgunits/detail';
 

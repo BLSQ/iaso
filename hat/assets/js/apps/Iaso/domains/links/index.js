@@ -16,36 +16,37 @@ import {
     fetchIasoProfiles,
     fetchAlgorithms,
     fetchAlgorithmRuns,
-} from '../utils/requests';
+} from '../../utils/requests';
 
 import {
     setOrgUnitTypes,
     setSources,
-} from '../redux/orgUnitsReducer';
+} from '../orgUnits/actions';
+
 import {
     setLinks,
     setIsFetching,
     setAlgorithms,
     setAlgorithmRuns,
-} from '../redux/linksReducer';
+} from './actions';
 import {
     setProfiles,
-} from '../redux/profilesReducer';
+} from '../../redux/profilesReducer';
 
-import linksTableColumns from '../constants/linksTableColumns';
+import { linksTableColumns } from './config';
 
-import { createUrl } from '../../../utils/fetchData';
-import getTableUrl from '../utils/tableUtils';
+import { createUrl } from '../../../../utils/fetchData';
+import getTableUrl from '../../utils/tableUtils';
 
-import DownloadButtonsComponent from '../components/buttons/DownloadButtonsComponent';
-import TopBar from '../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import LoadingSpinner from '../components/LoadingSpinnerComponent';
-import LinksFiltersComponent from '../components/filters/LinksFiltersComponent';
-import LinksDetails from '../components/links/LinksDetailsComponent';
+import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import TopBar from '../../components/nav/TopBarComponent';
+import CustomTableComponent from '../../../../components/CustomTableComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import LinksFiltersComponent from './components/LinksFiltersComponent';
+import LinksDetails from './components/LinksDetailsComponent';
 
 
-import commonStyles from '../styles/common';
+import commonStyles from '../../styles/common';
 
 const baseUrl = 'links/list';
 

@@ -1,45 +1,10 @@
-const SET_LINKS = 'SET_LINKS';
-const SET_RUNS = 'SET_RUNS';
-const SET_ALGO_LIST = 'SET_ALGO_LIST';
-const SET_ALGO_RUNS_LIST = 'SET_ALGO_RUNS_LIST';
-const SET_IS_FETCHING = 'SET_IS_FETCHING';
-
-export const setLinks = (list, showPagination, params, count, pages) => ({
-    type: SET_LINKS,
-    payload: {
-        list,
-        showPagination,
-        params,
-        count,
-        pages,
-    },
-});
-
-export const setRuns = (list, showPagination, params, count, pages) => ({
-    type: SET_RUNS,
-    payload: {
-        list,
-        showPagination,
-        params,
-        count,
-        pages,
-    },
-});
-
-export const setAlgorithms = algoList => ({
-    type: SET_ALGO_LIST,
-    payload: algoList,
-});
-
-export const setAlgorithmRuns = algoRunsList => ({
-    type: SET_ALGO_RUNS_LIST,
-    payload: algoRunsList,
-});
-
-export const setIsFetching = isFetching => ({
-    type: SET_IS_FETCHING,
-    payload: isFetching,
-});
+import {
+    SET_LINKS,
+    SET_RUNS,
+    SET_ALGO_LIST,
+    SET_ALGO_RUNS_LIST,
+    SET_IS_FETCHING,
+} from './actions';
 
 export const linksInitialState = {
     current: null,

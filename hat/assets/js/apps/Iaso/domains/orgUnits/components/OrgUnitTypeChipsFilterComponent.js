@@ -12,11 +12,11 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
-import { setCurrentSubOrgUnitTypesSelected, setFetching } from '../../../redux/orgUnitsReducer';
+import { setCurrentSubOrgUnitTypesSelected, setFetching } from '../actions';
 
 import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
-import InputComponent from '../../forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent';
 
 import { otChipColors } from '../../../constants/chipColors';
 

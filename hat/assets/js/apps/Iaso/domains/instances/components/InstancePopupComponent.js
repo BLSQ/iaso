@@ -27,7 +27,7 @@ import mapPopupStyles from '../../../styles/mapPopup';
 
 import { getOrgUnitsTree } from '../../../utils/orgUnitUtils';
 
-import MESSAGES from '../../../messages/instanceMessages';
+import MESSAGES from '../../../messages/instances';
 
 const styles = theme => ({
     ...commonStyles(theme),

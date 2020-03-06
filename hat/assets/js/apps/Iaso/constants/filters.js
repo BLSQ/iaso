@@ -1,9 +1,9 @@
 import React from 'react';
 
-import MESSAGES from '../components/forms/messages';
+import MESSAGES from '../messages/forms';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
-import { getPrettyPeriod } from '../utils/periodsUtils';
+import { Period } from '../domains/periods/models';
 
 
 export const search = () => (
@@ -359,7 +359,7 @@ export const periods = periodsList => (
         isMultiSelect: true,
         isClearable: true,
         options: periodsList.map(p => ({
-            label: getPrettyPeriod(p),
+            label: Period.getPrettyPeriod(p),
             value: p,
         })),
         label: MESSAGES.periods,

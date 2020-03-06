@@ -9,7 +9,7 @@ import moment from 'moment';
 import InputComponent from '../forms/InputComponent';
 import OrgUnitsLevelsFiltersComponent from '../filters/OrgUnitsLevelsFiltersComponent';
 
-import MESSAGES from '../forms/messages';
+import MESSAGES from '../../messages/forms';
 
 function OrgUnitInfosComponent(props) {
     const {

@@ -3,7 +3,7 @@ import React from 'react';
 import moment from 'moment';
 import Link from '@material-ui/core/Link';
 
-import { getPrettyPeriod } from '../../utils/periodsUtils';
+import { Period } from '../periods/models';
 
 const instancesTableColumns = formatMessage => (
     [
@@ -40,7 +40,7 @@ const instancesTableColumns = formatMessage => (
             Cell: settings => (
                 <span>
                     {settings.original.period
-                        ? `${getPrettyPeriod(settings.original.period)}`
+                        ? `${Period.getPrettyPeriod(settings.original.period)}`
                         : '/'}
                 </span>
             ),

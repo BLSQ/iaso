@@ -140,7 +140,7 @@ class FormsVersionAPITestCase(APITestCase):
             }, format='multipart', HTTP_ACCEPT='application/json')
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), 'xls_file',
-                            "Form_id should stay constant across form versions.")
+                            "Form id should stay constant across form versions.")
 
     def test_form_versions_create_invalid_xls_version(self):
         """POST /form-versions/ attempt to create a second version with a version inferior to the previous one"""

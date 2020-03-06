@@ -121,18 +121,23 @@ const formsTableColumns = (formatMessage, component) => (
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
                         key={settings.original.updated_at}
                     />
-                    <DeleteDialog
-                        disabled={settings.original.instances_count > 0}
-                        titleMessage={{
-                            id: 'iaso.forms.dialog.deleteFormTitle',
-                            defaultMessage: 'Are you sure you want to delete this form?',
-                        }}
-                        message={{
-                            id: 'iaso.forms.dialog.deleteFormText',
-                            defaultMessage: 'This operation cannot be undone.',
-                        }}
-                        onConfirm={closeDialog => component.deleteForm(settings.original).then(closeDialog)}
-                    />
+                    {
+                        // TODO: deactivated, hard delete is too dangerous - to discuss
+                        false && (
+                            <DeleteDialog
+                                disabled={settings.original.instances_count > 0}
+                                titleMessage={{
+                                    id: 'iaso.forms.dialog.deleteFormTitle',
+                                    defaultMessage: 'Are you sure you want to delete this form?',
+                                }}
+                                message={{
+                                    id: 'iaso.forms.dialog.deleteFormText',
+                                    defaultMessage: 'This operation cannot be undone.',
+                                }}
+                                onConfirm={closeDialog => component.deleteForm(settings.original).then(closeDialog)}
+                            />
+                        )
+                    }
                 </section>
             ),
         },

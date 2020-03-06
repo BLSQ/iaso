@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
+
 import {
     createForm,
     updateForm,
@@ -20,6 +21,7 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,
 } from '../../domains/periods/constants';
+import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
@@ -165,17 +167,28 @@ class FormDialogComponent extends Component {
                             }}
                             required
                         />
-
-                        <FileInputComponent
-                            keyValue="xls_file"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            label={{
-                                id: 'iaso.label.xls_form_file',
-                                defaultMessage: 'XLSForm file',
-                            }}
-                            errors={this.state.xls_file.errors}
-                            required
-                        />
+                        <Grid container direction="column">
+                            <Grid item>
+                                <FileInputComponent
+                                    keyValue="xls_file"
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
+                                    label={{
+                                        id: 'iaso.label.xls_form_file',
+                                        defaultMessage: 'XLSForm file',
+                                    }}
+                                    errors={this.state.xls_file.errors}
+                                    required
+                                />
+                            </Grid>
+                            {
+                                this.state.xls_file.errors.length > 0
+                                  && (
+                                      <Grid item>
+                                          <ErrorPaperComponent message={this.state.xls_file.errors.join(',')} />
+                                      </Grid>
+                                  )
+                            }
+                        </Grid>
                         <InputComponent
                             keyValue="period_type"
                             clearable

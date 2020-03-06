@@ -46,7 +46,7 @@ class FormVersionSerializer(serializers.ModelSerializer):
 
         # validate that form_id stays constant across versions
         if form.form_id is not None and xml_form['form_id'] != form.form_id:
-            raise serializers.ValidationError({'xls_file': 'Form_id should stay constant across form versions.'})
+            raise serializers.ValidationError({'xls_file': 'Form id should stay constant across form versions.'})
 
         # validate form_id (from XLS file) uniqueness across account
         all_accounts = set(project.account for project in form.projects.all())  # TODO: discuss - smells weird

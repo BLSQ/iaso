@@ -28,6 +28,16 @@ PERIOD_TYPE_CHOICES = (
     (SIX_MONTH, "Six-month"),
 )
 
+INSTANCE_STATUS_READY = "READY"
+INSTANCE_STATUS_ERROR = "ERROR"
+INSTANCE_STATUS_EXPORTED = "EXPORTED"
+
+INSTANCE_STATUS_CHOICES = (
+    (INSTANCE_STATUS_READY, "Ready"),
+    (INSTANCE_STATUS_ERROR, "Error"),
+    (INSTANCE_STATUS_EXPORTED, "Exported"),
+)
+
 
 def generate_id_for_dhis_2():
     letters = "abcdefghijklmnopqrstuvwxyz"
@@ -706,6 +716,7 @@ class Instance(models.Model):
         "Device", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     period = models.TextField(null=True, blank=True, db_index=True)
+    # status = models.TextField(choices=INSTANCE_STATUS_CHOICES, null=True, blank=True)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -815,7 +826,9 @@ class Instance(models.Model):
     def as_small_dict(self):
         return {
             "id": self.id,
+            "file_url": self.file.url if self.file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

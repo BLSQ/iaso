@@ -54,6 +54,11 @@ export const instancesPath = getPath({
             isRequired: false,
             key: 'periods',
         },
+        // TODO: activate next entry when API is ready
+        /* {
+            isRequired: false,
+            key: 'status',
+        }, */
         {
             isRequired: false,
             key: 'levels',

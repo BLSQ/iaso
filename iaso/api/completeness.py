@@ -3,15 +3,27 @@ from rest_framework.response import Response
 
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.permissions import IsAuthenticated
 
-import os
-import json
+from iaso.dhis2 import status_queries
+from iaso.models import Instance
 
 
-def load_canned_response(filename):
-    with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
-        document = json.load(f)
-        return document
+def to_completeness(count):
+    return {
+        "period": count["period"],
+        "form": {
+            "id": count["form_id"],
+            "name": count["form__name"],
+            "period_type": "MONTH",
+        },
+        "counts": {
+            "total": count["total_count"],
+            "error": count["duplicated_count"],
+            "exported": count["exported_count"],
+            "ready": count["ready_count"],
+        },
+    }
 
 
 class CompletenessViewSet(viewsets.ViewSet):
@@ -20,11 +32,16 @@ class CompletenessViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
 
     def list(self, request):
-        return Response(
-            {
-                "completeness": load_canned_response('fixtures/completeness.json')
-            }
-        )
+
+        queryset = Instance.objects
+        profile = request.user.iaso_profile
+        queryset = queryset.filter(project__account=profile.account)
+
+        counts = [
+            to_completeness(count)
+            for count in status_queries.counts_by_status(queryset)
+        ]
+        return Response({"completeness": counts})

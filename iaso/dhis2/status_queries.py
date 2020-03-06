@@ -52,5 +52,6 @@ def counts_by_status(instances_query_set=Instance.objects):
                 filter=Q(last_export_success_at__isnull=True) & Q(duplicated=False),
             )
         )
+        .order_by("period", "form__name")
     )
     return [x for x in queryset]

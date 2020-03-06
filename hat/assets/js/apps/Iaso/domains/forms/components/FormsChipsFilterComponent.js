@@ -3,24 +3,21 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
+
 import {
     withStyles,
     Box,
     Typography,
 } from '@material-ui/core';
 
-import { setSourcesSelected } from '../../../domains/orgUnits/actions';
+import { setFormsSelected } from '../../orgUnits/actions';
 
-import ChipsFilterComponent from './ChipsFilterComponent';
+import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 
 import {
-    fetchAssociatedOrgUnits,
+    fetchInstancesAsLocationsByForm,
 } from '../../../utils/requests';
 import commonStyles from '../../../styles/common';
-
-import {
-    getSourcesWithoutCurrentSource,
-} from '../../../domains/orgUnits/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -29,16 +26,16 @@ const styles = theme => ({
     },
 });
 
-function SourcesChipsFilterComponent(props) {
+
+function FormsChipsFilterComponent(props) {
     const {
         classes,
-        sourcesSelected,
-        currentSources,
+        formsSelected,
+        currentForms,
         dispatch,
         currentOrgUnit,
         fitToBounds,
     } = props;
-    const sources = getSourcesWithoutCurrentSource(currentSources, currentOrgUnit.source_id);
     return (
         <Fragment>
             <Box
@@ -47,60 +44,61 @@ function SourcesChipsFilterComponent(props) {
                 component="div"
             >
                 <Typography variant="subtitle1">
-                    <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
+                    <FormattedMessage id="iaso.forms.title" defaultMessage="Forms" />
                 </Typography>
             </Box>
             {
-                sources.length === 0
+                (!currentForms || (currentForms && currentForms.length === 0))
                 && (
                     <Typography variant="body2" align="center" color="textSecondary">
-                        <FormattedMessage id="iaso.orgUnits.sources.noData" defaultMessage="No source" />
+                        <FormattedMessage id="iaso.orgUnits.forms.noData" defaultMessage="No form" />
                     </Typography>
                 )
             }
             <ChipsFilterComponent
                 selectLabelMessage={{
-                    id: 'iaso.orgUnits.addSource',
-                    defaultMessage: 'Add source',
+                    id: 'iaso.orgUnits.addForm',
+                    defaultMessage: 'Add form',
                 }}
-                locationsKey="orgUnits"
-                fetchDetails={source => fetchAssociatedOrgUnits(
+                locationsKey="instances"
+                fetchDetails={form => fetchInstancesAsLocationsByForm(
                     dispatch,
-                    source,
+                    form,
                     currentOrgUnit,
                     fitToBounds,
                 )}
                 setSelectedItems={props.setFormsSelected}
-                selectedItems={sourcesSelected}
-                currentItems={sources}
+                selectedItems={formsSelected}
+                currentItems={currentForms}
+                displayTotal
             />
         </Fragment>
     );
 }
 
-SourcesChipsFilterComponent.defaultProps = {
-    currentSources: null,
+FormsChipsFilterComponent.defaultProps = {
+    currentForms: null,
 };
 
-SourcesChipsFilterComponent.propTypes = {
+FormsChipsFilterComponent.propTypes = {
     classes: PropTypes.object.isRequired,
-    currentSources: PropTypes.any,
+    currentForms: PropTypes.any,
     currentOrgUnit: PropTypes.object.isRequired,
-    sourcesSelected: PropTypes.array.isRequired,
+    formsSelected: PropTypes.array.isRequired,
     setFormsSelected: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
-    currentSources: state.orgUnits.sources,
-    sourcesSelected: state.orgUnits.currentSourcesSelected,
+    currentForms: state.orgUnits.currentForms,
+    formsSelected: state.orgUnits.currentFormsSelected,
     currentOrgUnit: state.orgUnits.current,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setFormsSelected: sources => dispatch(setSourcesSelected(sources)),
+    setFormsSelected: forms => dispatch(setFormsSelected(forms)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(SourcesChipsFilterComponent));
+export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(FormsChipsFilterComponent));

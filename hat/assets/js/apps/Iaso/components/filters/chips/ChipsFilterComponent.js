@@ -11,7 +11,7 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
-import { setFetching } from '../../../redux/orgUnitsReducer';
+import { setFetching } from '../../../domains/orgUnits/actions';
 
 import InputComponent from '../../forms/InputComponent';
 

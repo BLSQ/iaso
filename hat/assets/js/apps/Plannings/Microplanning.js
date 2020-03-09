@@ -375,7 +375,7 @@ export class Microplanning extends Component {
                 }
             });
         }
-
+        console.log('data', data);
         return (
             <div
                 tabIndex={0}

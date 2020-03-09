@@ -27,7 +27,7 @@ const styles = theme => ({
 });
 
 function DialogComponent({
-    classes, children, titleMessage, renderActions, renderTrigger, maxWidth,
+    classes, children, titleMessage, renderActions, renderTrigger, maxWidth, onClosed,
 }) {
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
@@ -39,6 +39,7 @@ function DialogComponent({
     }, [setOpen, setRenderDialog]);
     const closeDialog = useCallback(() => {
         setOpen(false);
+        onClosed();
         setTimeout(() => {
             if (!open) {
                 setRenderDialog(false);
@@ -60,6 +61,7 @@ function DialogComponent({
                               paper: classes.paper,
                           }}
                           onBackdropClick={closeDialog}
+                          scroll="body"
                       >
                           <DialogTitle className={classes.title}>
                               <FormattedMessage {...titleMessage} />
@@ -76,6 +78,7 @@ function DialogComponent({
 }
 DialogComponent.defaultProps = {
     maxWidth: 'sm',
+    onClosed: () => {},
 };
 DialogComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -84,5 +87,6 @@ DialogComponent.propTypes = {
     maxWidth: PropTypes.string,
     renderActions: PropTypes.func.isRequired,
     renderTrigger: PropTypes.func.isRequired,
+    onClosed: PropTypes.func,
 };
 export default withStyles(styles)(DialogComponent);

@@ -17,11 +17,12 @@ function FileInputComponent({
     const hasErrors = errors.length > 0;
 
     return (
-        <FormControlComponent>
+        <FormControlComponent errors={errors}>
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}
                 required={required}
+                error={hasErrors}
             />
             <OutlinedInput
                 size="small"

@@ -28,7 +28,7 @@ const styles = theme => ({
 });
 
 function InputLabelComponent({
-    classes, htmlFor, label, required, isFocused, shrink,
+    classes, htmlFor, label, required, isFocused, shrink, error,
 }) {
     return (
         <InputLabel
@@ -39,6 +39,7 @@ function InputLabelComponent({
             }}
             className={classes.inputLabel}
             shrink={shrink}
+            error={error}
         >
             { label }
             { required && <sup> *</sup> }
@@ -48,6 +49,7 @@ function InputLabelComponent({
 InputLabelComponent.defaultProps = {
     isFocused: false,
     shrink: true,
+    error: false,
 };
 InputLabelComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -56,5 +58,6 @@ InputLabelComponent.propTypes = {
     required: PropTypes.bool.isRequired,
     isFocused: PropTypes.bool,
     shrink: PropTypes.bool,
+    error: PropTypes.bool,
 };
 export default withStyles(styles)(InputLabelComponent);

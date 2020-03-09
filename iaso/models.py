@@ -1,13 +1,13 @@
+import random
+from urllib.request import urlopen
+import pathlib
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
-from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
-from iaso.utils import flat_parse_xml_file
-import random
-import pathlib
+from iaso.utils import flat_parse_xml_file, slugify_underscore
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -632,8 +632,9 @@ class GroupSet(models.Model):
 
 def _form_version_upload_to(instance: 'FormVersion', filename: str) -> str:
     path = pathlib.Path(filename)
+    underscored_form_name = slugify_underscore(instance.form.name)
 
-    return f"forms/{path.stem}_{instance.version_id}{path.suffix}"
+    return f"forms/{underscored_form_name}_{instance.version_id}{path.suffix}"
 
 
 class FormVersion(models.Model):

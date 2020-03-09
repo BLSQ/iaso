@@ -99,11 +99,6 @@ def get_menu(user, active_link):
                     "perms": "x_management_coordinations"
                 },
                 {
-                    "name": "Plannings",
-                    "url_key": reverse("dashboard:management_planning"),
-                    "perms": "x_management_plannings"
-                },
-                {
                     "name": "Rayons d\'actions",
                     "url_key": reverse("dashboard:management_workzone"),
                     "perms": "x_management_workzones"
@@ -133,8 +128,13 @@ def get_menu(user, active_link):
         },
         {
             "name": "Plannings",
-                    "url_key": reverse("dashboard:macro"),
+                    "url_key": reverse("dashboard:plannings"),
             "items": [
+                {
+                    "name": "Plannings  ",
+                    "url_key": reverse("dashboard:plannings"),
+                    "perms": "x_management_plannings"
+                },
                 {
                     "name": "Macroplanification",
                     "url_key": reverse("dashboard:macro") +"/years/" + get_last_years(3),

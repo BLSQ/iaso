@@ -100,6 +100,16 @@ def reports(request: HttpRequest) -> HttpResponse:
         {"menu": get_menu(request.user, reverse("dashboard:reports"))},
     )
 
+@is_user_authorized
+@login_required()
+@permission_required("menupermissions.x_management_plannings")
+@require_http_methods(["GET"])
+def plannings(request: HttpRequest) -> HttpResponse:
+    return render(
+        request,
+        "dashboard/plannings.html",
+        {"menu": get_menu(request.user, reverse("dashboard:plannings"))},
+    )
 
 @is_user_authorized
 @login_required()
@@ -212,21 +222,6 @@ def workzones_management(request: HttpRequest) -> HttpResponse:
         {
             "json_data": [],
             "menu": get_menu(request.user, reverse("dashboard:management_workzone")),
-        },
-    )
-
-
-@is_user_authorized
-@login_required()
-@permission_required("menupermissions.x_management_plannings")
-@require_http_methods(["GET"])
-def plannings_management(request: HttpRequest) -> HttpResponse:
-    return render(
-        request,
-        "dashboard/management.html",
-        {
-            "json_data": [],
-            "menu": get_menu(request.user, reverse("dashboard:management_planning")),
         },
     )
 

@@ -8,6 +8,7 @@ import createStore from '../../redux/createStore';
 import { loadReducer } from '../../redux/load';
 import App from '../App';
 
+import Plannings from './Plannings';
 import MicroplanningContainerPage from './MicroplanningContainer';
 import RoutesPage from './pages/Route';
 import MacroplanningPage from './pages/Macroplanning';
@@ -27,6 +28,10 @@ export default function microplanningApp(element, baseUrl) {
     const defaultPathMicro = `/micro/years/${years.join(',')}`;
     const routes = [
         <Route
+            path="list(/order/:order)(/pageSize/:pageSize)(/page/:page)"
+            component={Plannings}
+        />,
+        <Route
             path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
             component={MicroplanningContainerPage}
         />,
@@ -44,7 +49,7 @@ export default function microplanningApp(element, baseUrl) {
     ];
 
     let history = useRouterHistory(createHistory)({
-    // baseUrl is the django route to the page
+        // baseUrl is the django route to the page
         basename: baseUrl,
     });
     const store = createStore({

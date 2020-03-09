@@ -22,6 +22,7 @@ function FileInputComponent({
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}
                 required={required}
+                error={hasErrors}
             />
             <OutlinedInput
                 size="small"

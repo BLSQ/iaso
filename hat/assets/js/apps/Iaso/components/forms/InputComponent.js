@@ -192,6 +192,7 @@ class InputComponent extends Component {
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
                         required={required}
+                        error={hasErrors}
                     />
                     <OutlinedInput
                         size="small"
@@ -219,6 +220,7 @@ class InputComponent extends Component {
                         shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
                         isFocused={isFocused}
                         required={required}
+                        error={hasErrors}
                     />
                     <div className={selectClassNames.join(' ')}>
                         <Select

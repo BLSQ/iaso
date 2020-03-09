@@ -3,7 +3,7 @@
  * and options indicated in the rest of components.
  */
 
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
@@ -26,9 +26,11 @@ import {
     updateBaseLayer,
     includeControlsInMap,
     genericMap,
+    includeZoombar,
     zooms,
 } from '../../../utils/map/mapUtils';
 
+let theZoomBar;
 const radius = 600;
 
 const renderDivIcon = (content, key, size) => L.divIcon({
@@ -79,8 +81,11 @@ class Map extends Component {
     }
 
     componentDidMount() {
+        const { workzoneId, toggleSearchModal } = this.props;
         this.createMap();
-        includeControlsInMap(this, this.state.map, true);
+
+        includeControlsInMap(this, this.state.map, true, false, () => null, false);
+        theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal());
         this.includeDefaultLayersInMap();
         updateBaseLayer(this.state.map, this.props.baseLayer);
         this.fitToBounds();
@@ -90,9 +95,13 @@ class Map extends Component {
         this.props.leafletMap(this.state.map);
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
+        const { workzoneId, toggleSearchModal } = this.props;
         const { map } = this.state;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
+        if (prevProps.workzoneId !== workzoneId) {
+            theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal(), theZoomBar);
+        }
         const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'nr_positive_cases']);
         const containSameItems = (prev, curr, key) => {
             if (!hasChanged(prev, curr, key)) return true;
@@ -144,9 +153,10 @@ class Map extends Component {
         }
     }
 
+
     onResize(width, height) {
         const { map } = this.state;
-        exportControl = onResizeMap(width, height, exportControl, map, 'Microplanning');
+        exportControl = onResizeMap(width, height, exportControl, map, 'Microplanning', 'topright');
     }
 
     /* ***************************************************************************
@@ -461,7 +471,7 @@ class Map extends Component {
                     className="map__tooltip--close"
                 >
                     <FormattedMessage id="microplanning.label.close" defaultMessage="close" />
-&nbsp;
+                    &nbsp;
                     <i className="fa fa-close" />
                 </div>
                 <MapTooltip
@@ -607,6 +617,7 @@ Map.propTypes = {
     selectItems: PropTypes.func.isRequired,
     workzoneId: PropTypes.string,
     withCluster: PropTypes.bool,
+    toggleSearchModal: PropTypes.func.isRequired,
 };
 
 export default injectIntl(Map);

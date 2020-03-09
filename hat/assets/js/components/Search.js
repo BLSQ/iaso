@@ -12,7 +12,7 @@ class Search extends React.Component {
     }
 
     componentWillReceiveProps(newProps) {
-        if (newProps.searchString !== this.props.searchString) {
+        if (newProps.searchString !== this.props.searchString || newProps.searchString === '') {
             this.setState({
                 searchString: newProps.searchString,
             });
@@ -34,8 +34,8 @@ class Search extends React.Component {
             this.setState({
                 isChanged: false,
             });
-            if ((this.state.searchString !== '' && this.state.searchString.length > this.props.minCharCount) ||
-                this.props.allowEmptySearch) {
+            if ((this.state.searchString !== '' && this.state.searchString.length > this.props.minCharCount)
+                || this.props.allowEmptySearch) {
                 this.props.onSearch(this.state.searchString, this.state.limit);
             } else {
                 this.props.resetSearch();
@@ -99,100 +99,112 @@ class Search extends React.Component {
                         }}
                     />
                     {
-                        displayIcon &&
-                        <i className="fa fa-search" aria-hidden="true" onClick={() => this.onSearch()} />
+                        displayIcon
+                        && <i className="fa fa-search" aria-hidden="true" onClick={() => this.onSearch()} />
                     }
                     {
-                        showResetSearch && this.state.searchString !== '' &&
-                        <span
-                            role="button"
-                            tabIndex={0}
-                            className={`Select-clear ${!displayIcon ? 'no-icon' : ''}`}
-                            onClick={() => this.props.resetSearch()}
-                        >
+                        showResetSearch && this.state.searchString !== ''
+                        && (
+                            <span
+                                role="button"
+                                tabIndex={0}
+                                className={`Select-clear ${!displayIcon ? 'no-icon' : ''}`}
+                                onClick={() => this.props.resetSearch()}
+                            >
                             ×
-                        </span>
+                            </span>
+                        )
                     }
                     {
-                        showLimit &&
-                        <div className="limit-container">
-                            {this.props.limitText}:
-                            <input
-                                type="number"
-                                className="small"
-                                min="0"
-                                value={this.state.limit}
-                                onChange={event =>
-                                    this.setState({
+                        showLimit
+                        && (
+                            <div className="limit-container">
+                                {this.props.limitText}
+:
+                                <input
+                                    type="number"
+                                    className="small"
+                                    min="0"
+                                    value={this.state.limit}
+                                    onChange={event => this.setState({
                                         limit: event.target.value,
                                     })}
-                                onKeyPress={(event) => {
-                                    if (event.which === 13 || event.keyCode === 13) {
-                                        this.onSearch();
-                                    }
-                                }}
-                            />
-                        </div>
+                                    onKeyPress={(event) => {
+                                        if (event.which === 13 || event.keyCode === 13) {
+                                            this.onSearch();
+                                        }
+                                    }}
+                                />
+                            </div>
+                        )
                     }
                 </div>
                 {
-                    displayResults &&
-                    <div className="search-results">
-                        {
-                            results.length > 0 &&
-                            !isLoading &&
-                            <section>
-                                <div>
-                                    <table>
-                                        <thead>
-                                            <tr>
-                                                {keys.map(key =>
-                                                    <th className={key.value} key={key.value}>{key.translation}</th>)}
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            {
-                                                results.map(result =>
-                                                    (
+                    displayResults
+                    && (
+                        <div className="search-results">
+                            {
+                                results.length > 0
+                            && !isLoading
+                            && (
+                                <section>
+                                    <div>
+                                        <table>
+                                            <thead>
+                                                <tr>
+                                                    {keys.map(key => <th className={key.value} key={key.value}>{key.translation}</th>)}
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {
+                                                    results.map(result => (
                                                         <tr key={result.id} onClick={() => this.props.onSelect(result)}>
-                                                            {keys.map(key =>
-                                                                <td className={key.value} key={key.value}>{result[key.value]}</td>)}
+                                                            {keys.map(key => <td className={key.value} key={key.value}>{result[key.value]}</td>)}
                                                         </tr>
                                                     ))
-                                            }
-                                        </tbody>
-                                    </table>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <span className="count">
+                                        {results.length}
+                                        {` ${this.props.resultText}`}
+                                    </span>
+                                </section>
+                            )
+                            }
+                            {
+                                isLoading
+                            && (
+                                <div className="loading-small">
+                                    <i className="fa fa-spinner" />
                                 </div>
-                                <span className="count">
-                                    {results.length}{` ${this.props.resultText}`}
+                            )
+                            }
+                            {
+                                results.length === 0
+                            && this.state.searchString.length > this.props.minCharCount
+                            && !isLoading
+                            && !this.state.isChanged
+                            && (
+                                <span className="search-empty">
+                                    {this.props.noResultText}
                                 </span>
-                            </section>
-                        }
-                        {
-                            isLoading &&
-                            <div className="loading-small">
-                                <i className="fa fa-spinner" />
-                            </div>
-                        }
-                        {
-                            results.length === 0 &&
-                            this.state.searchString.length > this.props.minCharCount &&
-                            !isLoading &&
-                            !this.state.isChanged &&
-                            <span className="search-empty">
-                                {this.props.noResultText}
-                            </span>
-                        }
-                        {
-                            results.length === 0 &&
-                            this.state.searchString.length <= this.props.minCharCount &&
-                            this.state.searchString !== '' &&
-                            !isLoading &&
-                            <span className="search-empty">
-                                {this.props.noEnoughText}
-                            </span>
-                        }
-                    </div>
+                            )
+                            }
+                            {
+                                results.length === 0
+                            && this.state.searchString.length <= this.props.minCharCount
+                            && this.state.searchString !== ''
+                            && !isLoading
+                            && (
+                                <span className="search-empty">
+                                    {this.props.noEnoughText}
+                                </span>
+                            )
+                            }
+                        </div>
+                    )
                 }
             </div>
         );

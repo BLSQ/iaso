@@ -16,6 +16,7 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         zoomInfoTitle: 'Current zoom level',
         zoomBoxTitle: 'Click here then draw a square on the map, to zoom in to an area',
         fitToBoundsTitle: 'Fit to bounds',
+        searchTitle: 'Search village',
     },
 
     initialize(options) {
@@ -27,7 +28,6 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         const className = 'leaflet-control-zoom';
         const container = L.DomUtil.create('div', `${className} leaflet-bar hide-on-print`);
         const { options } = this;
-
         this._map = map;
 
         // _createButton signature: function (html, title, className, container, fn)
@@ -57,6 +57,12 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
             );
         }
 
+        if (options.withVillageSearch) {
+            this._searchButton = this._createButton(
+                '', options.searchTitle,
+                `${className}-search`, container, options.onSearch, this,
+            );
+        }
         this._updateDisabled();
         map.on('zoomend zoomlevelschange', this._updateDisabled, this);
         // .on('zoomend zoomlevelschange', this._updateInfoValue, this)

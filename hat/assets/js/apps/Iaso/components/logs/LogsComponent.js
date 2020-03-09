@@ -9,7 +9,7 @@ import PropTypes from 'prop-types';
 import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../LoadingSpinnerComponent';
 
-import orgUnitsLogsColumns from '../../constants/orgUnitsLogsColumns';
+import { orgUnitsLogsColumns } from '../../domains/orgUnits/config';
 import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
 

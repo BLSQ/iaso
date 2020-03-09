@@ -8,7 +8,7 @@ import { withSnackbar } from 'notistack';
 import { removeSnackbar } from '../../../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButtonComponent';
 
-import MESSAGES from './messages';
+import MESSAGES from '../../messages/snackBars';
 
 let displayed = [];
 const saveDisplayedSnackBar = (snackBar) => {

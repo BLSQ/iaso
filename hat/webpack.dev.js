@@ -14,53 +14,43 @@ module.exports = {
     // use same settings as in Prod
     'home': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Home/index'
     ],
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/css/index.scss'
     ],
     'plannings': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Plannings/index'
     ],
     'management': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Management/index'
     ],
     'locator': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Locator/index'
     ],
     'vector': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Vector/index'
     ],
     'quality_control': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/QualityControl/index'
     ],
     'stats': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Stats/index'
     ],
     'datas': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Datas/index'
     ],
     'iaso': [
       'webpack-dev-server/client?' + WEBPACK_URL,
-      'webpack/hot/only-dev-server',
       './assets/js/apps/Iaso/index'
     ]
   },
@@ -91,7 +81,6 @@ module.exports = {
       /^__intl\/messages\/fr$/,
       '../translations/fr.json'
     ),
-    new webpack.HotModuleReplacementPlugin(),
     new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
     new BundleTracker({
       path: __dirname,

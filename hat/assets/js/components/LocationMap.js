@@ -133,6 +133,21 @@ class LocationMap extends Component {
         exportControl = onResizeMap(width, height, exportControl, locationMap, 'Location');
     }
 
+    getLocation(featureItem) {
+        const {
+            geoJson,
+        } = this.props;
+        const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === featureItem.properties.ZS)[0];
+        const zsId = parseInt(zone.id, 10);
+        const provinceId = parseInt(zone.properties.province, 10);
+        const asId = parseInt(featureItem.id, 10);
+        return {
+            AS__ZS_id: zsId,
+            AS__ZS__province_id: provinceId,
+            AS_id: asId,
+        };
+    }
+
     updateBaseLayer(baseLayer) {
         const { locationMap } = this;
         Object.keys(BASE_LAYERS).forEach((key) => {
@@ -162,10 +177,12 @@ class LocationMap extends Component {
         }).on('click', (event) => {
             reinitShapesColor();
             if (!this.props.location.latitude || !this.props.location.longitude) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
+                const { location } = this.state;
+                this.props.updateCurrentVillage({
+                    location,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                });
             }
         });
         this.locationMap = locationMap;
@@ -181,6 +198,7 @@ class LocationMap extends Component {
         locationMap.addLayer(this.locationGroup);
         const {
             geoJson,
+            setAsGroup,
         } = this.props;
 
         this.provinceGroup.addLayer(L.geoJson(geoJson.provinces, shapeOptions('provinces', this)));
@@ -188,39 +206,27 @@ class LocationMap extends Component {
         this.asGroup.addLayer(L.geoJson(geoJson.as, shapeAsOptions('as', this)));
         this.asGroup.on('click', (event) => {
             const { location } = this.state;
-            if (event.sourceTarget.feature.properties.ZS && location.latitude === 0 && location.longitude === 0) {
-                const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
-                this.props.updateLocation({
-                    AS__ZS_id: zone.id,
-                    AS__ZS__province_id: `${zone.properties.province}`,
-                    AS_id: event.sourceTarget.feature.id,
-                });
-            }
+            let newVillage = {
+                ...location,
+            };
             if (location.latitude === 0 && location.longitude === 0) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
+                newVillage = {
+                    ...newVillage,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                };
             }
+            this.props.updateCurrentVillage(newVillage);
         }).on('mouseup', (event) => {
             locationMap.getPane('custom-pane-as-shapes').style.zIndex = 400;
             if (!locationMap.dragging._enabled && !locationMap.boxZoom._box) {
-                this.props.updatePosition(
-                    parseFloat(event.latlng.lat).toFixed(5),
-                    parseFloat(event.latlng.lng).toFixed(5),
-                );
                 const { location } = this.state;
-                if (event.sourceTarget.feature.properties.ZS && location && !locationMap.dragging._enabled) {
-                    const zone = geoJson.zs.features.filter(z => parseInt(z.id, 10) === event.sourceTarget.feature.properties.ZS)[0];
-                    const zsId = parseInt(zone.id, 10);
-                    const provinceId = parseInt(zone.properties.province, 10);
-                    const asId = parseInt(event.sourceTarget.feature.id, 10);
-                    this.props.updateLocation({
-                        AS__ZS_id: zsId,
-                        AS__ZS__province_id: provinceId,
-                        AS_id: asId,
-                    });
-                }
+                const newVillage = {
+                    ...location,
+                    latitude: parseFloat(event.latlng.lat).toFixed(5),
+                    longitude: parseFloat(event.latlng.lng).toFixed(5),
+                };
+                this.props.updateCurrentVillage(newVillage);
             }
         });
 
@@ -233,6 +239,7 @@ class LocationMap extends Component {
             plotOrHideLayer(locationMap, zooms.zs, 'zs');
             plotOrHideLayer(locationMap, zooms.as, 'as');
         });
+        setAsGroup(this.asGroup);
     }
 
     /*
@@ -243,35 +250,38 @@ class LocationMap extends Component {
 
     updateMap(location) {
         const { locationMap } = this;
-        this.locationGroup.clearLayers();
-        const color = 'blue';
-        if (location && location.latitude !== 0 && location.longitude !== 0) {
-            const newLocation = L.circle([
-                location.latitude ? location.latitude : 0,
-                location.longitude ? location.longitude : 0,
-            ], {
-                color,
-                fillColor: color,
-                fillOpacity: 0.5,
-                radius: 500,
-                pane: 'custom-pane-markers',
-            }).on('mousedown', () => {
-                locationMap.dragging.disable();
-                locationMap.getPane('custom-pane-as-shapes').style.zIndex = 650;
-                locationMap.on('mousemove', (event) => {
-                    if (!locationMap.dragging._enabled) {
-                        newLocation.setLatLng([event.latlng.lat, event.latlng.lng]);
-                    }
-                });
-            });
-            newLocation.addTo(this.locationGroup);
-        }
 
-        if (this.state.isFirstLoad) {
-            this.fitToBounds();
-            this.setState({
-                isFirstLoad: false,
-            });
+        const color = 'blue';
+
+        if (location && location.latitude !== 0 && location.longitude !== 0) {
+            if (this.state.isFirstLoad) {
+                this.villageMarker = L.circle([
+                    location.latitude ? location.latitude : 0,
+                    location.longitude ? location.longitude : 0,
+                ], {
+                    color,
+                    fillColor: color,
+                    fillOpacity: 0.5,
+                    radius: 500,
+                    pane: 'custom-pane-markers',
+                }).on('mousedown', () => {
+                    locationMap.dragging.disable();
+                    locationMap.getPane('custom-pane-as-shapes').style.zIndex = 650;
+                    locationMap.on('mousemove', (event) => {
+                        if (!locationMap.dragging._enabled) {
+                            this.villageMarker.setLatLng([event.latlng.lat, event.latlng.lng]);
+                        }
+                    });
+                });
+                this.villageMarker.addTo(this.locationGroup);
+                this.fitToBounds();
+                this.setState({
+                    isFirstLoad: false,
+                });
+            } else {
+                const latlng = new L.LatLng(location.latitude, location.longitude);
+                this.villageMarker.setLatLng(latlng);
+            }
         }
     }
 
@@ -298,7 +308,7 @@ class LocationMap extends Component {
 
     fitToBounds() {
         const { locationMap } = this;
-        defaultFitToBound(locationMap, this.locationGroup.getBounds(), 10);
+        defaultFitToBound(locationMap, this.locationGroup.getBounds(), 12);
     }
 
     /*
@@ -348,9 +358,9 @@ LocationMap.propTypes = {
     geoJson: PropTypes.object,
     intl: intlShape.isRequired,
     location: PropTypes.object,
-    updatePosition: PropTypes.func.isRequired,
-    updateLocation: PropTypes.func.isRequired,
+    updateCurrentVillage: PropTypes.func.isRequired,
     filters: PropTypes.array.isRequired,
+    setAsGroup: PropTypes.func.isRequired,
 };
 
 export default injectIntl(LocationMap);

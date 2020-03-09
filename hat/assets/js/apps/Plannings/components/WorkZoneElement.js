@@ -65,6 +65,8 @@ class WorkZoneElement extends Component {
             index,
             compareZs,
             compareAs,
+            endemicAsPopulations,
+            redirect,
         } = this.props;
         const isUnderCapicity = parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10);
         return (
@@ -84,16 +86,24 @@ class WorkZoneElement extends Component {
                     >
                         {`${workZone.name} - `}
                         <span>
-                            {formatMessage(MESSAGES.capacity)} {formatThousand(workZone.total_capacity)} / {formatMessage(MESSAGES.endemic_population)} {formatThousand(workZone.population_endemic_villages)}
+                            {formatMessage(MESSAGES.capacity)}
+                            {' '}
+                            {formatThousand(workZone.total_capacity)}
+                            {' '}
+                            /
+                            {' '}
+                            {formatMessage(MESSAGES.endemic_population)}
+                            {' '}
+                            {formatThousand(workZone.population_endemic_villages)}
                         </span>
                         <br />
                         <span>
                             {
-                                isUnderCapicity ?
-                                    formatMessage(MESSAGES.lowCapacity)
-                                    :
-                                    formatMessage(MESSAGES.goodCapacity)
-                            }{':  '}
+                                isUnderCapicity
+                                    ? formatMessage(MESSAGES.lowCapacity)
+                                    : formatMessage(MESSAGES.goodCapacity)
+                            }
+                            {':  '}
                             {
                                 !isUnderCapicity ? '+' : ''
                             }
@@ -102,12 +112,12 @@ class WorkZoneElement extends Component {
                             }
                         </span>
                         {
-                            selectedWorkZoneId === workZone.id &&
-                            <i className="fa fa-chevron-down" />
+                            selectedWorkZoneId === workZone.id
+                            && <i className="fa fa-chevron-down" />
                         }
                         {
-                            selectedWorkZoneId !== workZone.id &&
-                            <i className="fa fa-chevron-right" />
+                            selectedWorkZoneId !== workZone.id
+                            && <i className="fa fa-chevron-right" />
                         }
                     </div>
                 </section>
@@ -118,7 +128,7 @@ class WorkZoneElement extends Component {
                     onClick={() => selectWorkZone(workZone.id)}
                     className={`button ${parseInt(workZone.total_capacity, 10) < parseInt(workZone.population_endemic_villages, 10) ? 'alert' : ''}`}
                 />
-                <div className={`color-picker-container${workZone.showColor ? ' visible' : ''}`} >
+                <div className={`color-picker-container${workZone.showColor ? ' visible' : ''}`}>
                     <GithubPicker
                         width={`${26.2 * workZonesColors.length}px`}
                         colors={workZonesColors}
@@ -137,12 +147,12 @@ class WorkZoneElement extends Component {
                             >
                                 <FormattedMessage id="main.label.zonesOr" defaultMessage="Health zone(s)" />
                                 {
-                                    this.state.isZonesOpen &&
-                                    <i className="fa fa-minus" />
+                                    this.state.isZonesOpen
+                                    && <i className="fa fa-minus" />
                                 }
                                 {
-                                    !this.state.isZonesOpen &&
-                                    <i className="fa fa-plus" />
+                                    !this.state.isZonesOpen
+                                    && <i className="fa fa-plus" />
                                 }
                             </div>
                             <div className={this.state.isZonesOpen ? 'open' : ''}>
@@ -152,8 +162,7 @@ class WorkZoneElement extends Component {
                                     name="zoneId"
                                     value={workZone.currentZones}
                                     placeholder="--"
-                                    options={zones.features.map(zone =>
-                                        ({ label: zone.properties.name, value: zone.properties.pk }))}
+                                    options={zones.features.map(zone => ({ label: zone.properties.name, value: zone.properties.pk }))}
                                     onChange={value => compareZs(value, index)}
                                 />
                             </div>
@@ -167,12 +176,12 @@ class WorkZoneElement extends Component {
                             >
                                 <FormattedMessage id="main.label.areasOr" defaultMessage="Health area(s)" />
                                 {
-                                    this.state.isAreasOpen &&
-                                    <i className="fa fa-minus" />
+                                    this.state.isAreasOpen
+                                    && <i className="fa fa-minus" />
                                 }
                                 {
-                                    !this.state.isAreasOpen &&
-                                    <i className="fa fa-plus" />
+                                    !this.state.isAreasOpen
+                                    && <i className="fa fa-plus" />
                                 }
                             </div>
                             <div className={this.state.isAreasOpen ? 'open' : ''}>
@@ -182,11 +191,27 @@ class WorkZoneElement extends Component {
                                     name="areaId"
                                     value={workZone.currentAreas}
                                     placeholder="--"
-                                    options={areas.features.map(area =>
-                                        ({ label: area.properties.name, value: area.properties.pk }))}
+                                    options={areas.features.map(area => ({
+                                        label: (
+                                            <span className={`${endemicAsPopulations[area.properties.pk] ? 'endemic' : ''}`}>
+                                                {area.properties.name}
+                                                {endemicAsPopulations[area.properties.pk]
+                                                    && ` (${endemicAsPopulations[area.properties.pk]})`}
+                                            </span>
+                                        ),
+                                        value: area.properties.pk,
+                                    }))}
                                     onChange={value => compareAs(value, index)}
                                 />
                             </div>
+                        </div>
+                        <div className="padding-right padding-bottom align-right">
+                            <button
+                                className="button--tiny"
+                                onClick={() => redirect(workZone.id)}
+                            >
+                                <FormattedMessage id="macroplanning.label.seeMicroPlanning" defaultMessage="See microplanning" />
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -195,9 +220,10 @@ class WorkZoneElement extends Component {
     }
 }
 WorkZoneElement.defaultProps = {
-    selectedWorkZoneId: undefined,
-    zones: undefined,
-    areas: undefined,
+    selectedWorkZoneId: null,
+    zones: null,
+    areas: null,
+    endemicAsPopulations: null,
 };
 
 WorkZoneElement.propTypes = {
@@ -212,6 +238,8 @@ WorkZoneElement.propTypes = {
     index: PropTypes.number.isRequired,
     compareZs: PropTypes.func.isRequired,
     compareAs: PropTypes.func.isRequired,
+    endemicAsPopulations: PropTypes.object,
+    redirect: PropTypes.func.isRequired,
 };
 
 export default injectIntl(WorkZoneElement);

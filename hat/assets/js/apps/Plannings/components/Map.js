@@ -3,11 +3,13 @@
  * and options indicated in the rest of components.
  */
 
-import React, { Component } from 'react';
+import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import ReactDOM from 'react-dom';
 import * as d3 from 'd3';
-import { FormattedMessage, IntlProvider, injectIntl, intlShape } from 'react-intl';
+import {
+    FormattedMessage, IntlProvider, injectIntl, intlShape,
+} from 'react-intl';
 import PrintControl from 'react-leaflet-easyprint';
 import ReactResizeDetector from 'react-resize-detector';
 
@@ -23,9 +25,11 @@ import {
     updateBaseLayer,
     includeControlsInMap,
     genericMap,
+    includeZoombar,
     zooms,
-} from '../../../utils//map/mapUtils';
+} from '../../../utils/map/mapUtils';
 
+let theZoomBar;
 const radius = 600;
 
 const renderDivIcon = (content, key, size) => L.divIcon({
@@ -76,8 +80,11 @@ class Map extends Component {
     }
 
     componentDidMount() {
+        const { workzoneId, toggleSearchModal } = this.props;
         this.createMap();
-        includeControlsInMap(this, this.state.map, true);
+
+        includeControlsInMap(this, this.state.map, true, false, () => null, false);
+        theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal());
         this.includeDefaultLayersInMap();
         updateBaseLayer(this.state.map, this.props.baseLayer);
         this.fitToBounds();
@@ -87,9 +94,13 @@ class Map extends Component {
         this.props.leafletMap(this.state.map);
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate(prevProps) {
+        const { workzoneId, toggleSearchModal } = this.props;
         const { map } = this.state;
         const hasChanged = (prev, curr, key) => (prev[key] !== curr[key]);
+        if (prevProps.workzoneId !== workzoneId) {
+            theZoomBar = includeZoombar(this.state.map, this, Boolean(workzoneId), () => toggleSearchModal(), theZoomBar);
+        }
         const sameVillage = (a, b) => geoUtils.areEqual(a, b, ['id', 'nr_positive_cases']);
         const containSameItems = (prev, curr, key) => {
             if (!hasChanged(prev, curr, key)) return true;
@@ -113,10 +124,10 @@ class Map extends Component {
 
 
             // only call if legend or items changed
-            if (!containSameItems(prevProps, this.props, 'items') ||
-                !containSameItems(prevProps, this.props, 'selectedItems') ||
-                hasChanged(prevProps, this.props, 'assignationsMap' ||
-                    this.props.withCluster !== prevProps.withCluster)
+            if (!containSameItems(prevProps, this.props, 'items')
+                || !containSameItems(prevProps, this.props, 'selectedItems')
+                || hasChanged(prevProps, this.props, 'assignationsMap'
+                    || this.props.withCluster !== prevProps.withCluster)
             ) {
                 this.updateItems(true);
             } else if (hasChanged(prevProps, this.props, 'legend')) {
@@ -141,9 +152,10 @@ class Map extends Component {
         }
     }
 
+
     onResize(width, height) {
         const { map } = this.state;
-        exportControl = onResizeMap(width, height, exportControl, map, 'Microplanning');
+        exportControl = onResizeMap(width, height, exportControl, map, 'Microplanning', 'topright');
     }
 
     /* ***************************************************************************
@@ -371,6 +383,7 @@ class Map extends Component {
         // resize map
         map.invalidateSize();
     }
+
     updateHighlightBuffer() {
         const { legend, highlightBufferSize } = this.props;
         const { highlightBufferGroup } = this.state.layers;
@@ -381,8 +394,7 @@ class Map extends Component {
         if (highlightBufferSize > 0) {
             const { items } = this.props;
 
-            const highlight = items.filter(item =>
-                legend[item.village_official] && item._isHighlight);
+            const highlight = items.filter(item => legend[item.village_official] && item._isHighlight);
 
             highlight.forEach((item) => {
                 const options = {
@@ -396,6 +408,7 @@ class Map extends Component {
             });
         }
     }
+
     updateTooltipSmall(item) {
         if (!this.props.chosenItem && item) {
             this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
@@ -456,7 +469,8 @@ class Map extends Component {
                     onClick={() => this.closeTooltipLarge()}
                     className="map__tooltip--close"
                 >
-                    <FormattedMessage id="microplanning.label.close" defaultMessage="close" />&nbsp;
+                    <FormattedMessage id="microplanning.label.close" defaultMessage="close" />
+                    &nbsp;
                     <i className="fa fa-close" />
                 </div>
                 <MapTooltip
@@ -498,8 +512,8 @@ class Map extends Component {
         setTimeout(() => {
             if (selectedGroup.getBounds().isValid()) {
                 map.fitBounds(selectedGroup.getBounds(), { maxZoom: MAX_ZOOM });
-            } else if (markersGroups.group.hasLayer(markersGroups.YES) &&
-                markersGroups.YES.getBounds().isValid()) {
+            } else if (markersGroups.group.hasLayer(markersGroups.YES)
+                && markersGroups.YES.getBounds().isValid()) {
                 map.fitBounds(markersGroups.YES.getBounds(), { maxZoom: MAX_ZOOM });
             } else if (defaultBounds) {
                 map.fitBounds(defaultBounds, { maxZoom: MAX_ZOOM });
@@ -554,11 +568,11 @@ class Map extends Component {
                 <section className="map-parent-container">
                     <div ref={(node) => { this.state.containers.map = node; }} className="map-container" />
                     {
-                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
-                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area)
+                        && <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
                     }
                 </section>
-            </ReactResizeDetector >
+            </ReactResizeDetector>
         );
     }
 }
@@ -602,6 +616,7 @@ Map.propTypes = {
     selectItems: PropTypes.func.isRequired,
     workzoneId: PropTypes.string,
     withCluster: PropTypes.bool,
+    toggleSearchModal: PropTypes.func.isRequired,
 };
 
 export default injectIntl(Map);

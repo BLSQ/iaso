@@ -1,7 +1,7 @@
 from rest_framework import viewsets, status
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
-from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group
+from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group, Project
 from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
@@ -33,11 +33,14 @@ def check_access(org_unit, user):
         raise PermissionDenied("Your account does not have access to this org unit")
 
 
-def import_data(org_units, user, api_import):
+def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
     new_org_units = []
     version = None
     if not user.is_anonymous:
         version = user.iaso_profile.account.default_version
+    elif app_id is not None:
+        project = Project.objects.get(app_id=app_id)
+        version = project.account.default_version
 
     for org_unit in org_units:
         uuid = org_unit.get("id", None)
@@ -49,20 +52,26 @@ def import_data(org_units, user, api_import):
         if latitude and longitude:
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
         if created:
             org_unit_db.custom = True
             org_unit_db.validated = False
             org_unit_db.name = org_unit.get("name", None)
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
+            if not parent_id:
+                parent_id = org_unit.get("parent_id", None) # there exist versions of the mobile app in the wild with both parentId and parent_id
+
             if parent_id is not None:
                 if str.isdigit(parent_id):
                     org_unit_db.parent_id = parent_id
                 else:
                     parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
                     org_unit_db.parent_id = parent_org_unit.id
-            org_unit_db.org_unit_type_id = org_unit.get("orgUnitTypeId", None)
+
+            org_unit_type_id =  org_unit.get("orgUnitTypeId", None) # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            if not org_unit_type_id:
+                org_unit_type_id = org_unit.get("org_unit_type_id", None)
+            org_unit_db.org_unit_type_id = org_unit_type_id
 
             t = org_unit.get("created_at", None)
             if t:
@@ -492,6 +501,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def create(self, request):
         org_units = request.data
+        app_id = request.GET.get("app_id")
 
         api_import = APIImport()
         if not request.user.is_anonymous:
@@ -501,10 +511,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         api_import.save()
 
         try:
-            new_org_units = import_data(org_units, request.user, api_import)
+            new_org_units = import_data(org_units, request.user, api_import, app_id)
             return Response([org_unit.as_dict() for org_unit in new_org_units])
         except Exception as exe:
-            print("Exception", exe)
             return Response({"res": "a problem happened, but your data was saved"})
 
     def retrieve(self, request, pk=None):

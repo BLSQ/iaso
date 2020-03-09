@@ -11,14 +11,14 @@ import {
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import { getPolygonPositionsFromSimplifiedGeom } from '../../utils/orgUnitUtils';
+import { getPolygonPositionsFromSimplifiedGeom } from '../../domains/orgUnits/utils';
 
 import PolygonMap from '../maps/PolygonMapComponent';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 import commonStyles from '../../styles/common';
 
-import MESSAGES from '../forms/messages';
+import MESSAGES from '../../messages/forms';
 
 const styles = theme => ({
     ...commonStyles(theme),

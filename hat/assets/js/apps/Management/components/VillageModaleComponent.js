@@ -11,6 +11,7 @@ import filtersGeo from '../constants/geoFilters';
 import VillageInfosComponent from './VillageInfosComponent';
 import LocationMapComponent from '../../../components/LocationMapComponent';
 import TabsComponent from '../../../components/TabsComponent';
+import { villageActions } from '../redux/villages';
 
 const MESSAGES = defineMessages({
     infos: {
@@ -30,7 +31,6 @@ class VillageModale extends Component {
         super(props);
         this.state = {
             showModale: props.showModale,
-            village: props.village,
             isChanged: false,
             isUpdated: false,
             error: false,
@@ -55,16 +55,12 @@ class VillageModale extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
-        if (nextProps.village.AS__ZS__province_id !== this.props.village.AS__ZS__province_id) {
-            this.props.selectProvince(nextProps.village.AS__ZS__province_id, nextProps.village.AS__ZS_id, nextProps.village.AS_id);
-        } else if (nextProps.village.AS__ZS_id !== this.props.village.AS__ZS_id) {
-            this.props.selectZone(nextProps.village.AS__ZS_id, nextProps.village.AS_id);
-        } else if (nextProps.village.AS_id !== this.props.village.AS_id) {
-            this.props.selectArea(nextProps.village.AS_id, nextProps.village.AS__ZS_id);
-        }
         let newState = {};
-        newState.village = nextProps.village;
+        if (!deepEqual(nextProps.village, this.props.village, true) && !nextProps.isUpdated) {
+            newState.isChanged = true;
+        }
         if (nextProps.isUpdated) {
+            newState.isChanged = false;
             newState.isUpdated = nextProps.isUpdated;
             newState.error = false;
             timerSuccess = setTimeout(() => {
@@ -73,9 +69,7 @@ class VillageModale extends Component {
                 });
             }, 10000);
         }
-        if (!deepEqual(nextProps.village, this.props.village, true)) {
-            newState.village = nextProps.village;
-        } else if (nextProps.error) {
+        if (nextProps.error) {
             newState = {
                 error: nextProps.error,
                 isUpdated: false,
@@ -90,6 +84,19 @@ class VillageModale extends Component {
         this.setState(newState);
     }
 
+    componentDidUpdate(prevProps) {
+        const {
+            village,
+        } = this.props;
+        if (prevProps.village.AS__ZS__province_id !== village.AS__ZS__province_id) {
+            this.props.selectProvince(village.AS__ZS__province_id, village.AS__ZS_id, village.AS_id);
+        } else if (prevProps.village.AS__ZS_id !== village.AS__ZS_id) {
+            this.props.selectZone(village.AS__ZS_id, village.AS_id);
+        } else if (prevProps.village.AS_id !== village.AS_id) {
+            this.props.selectArea(village.AS_id, village.AS__ZS_id);
+        }
+    }
+
     componentWillUnmount() {
         this.props.selectProvince(null);
         if (timerSuccess) {
@@ -100,51 +107,23 @@ class VillageModale extends Component {
         }
     }
 
-    updateVillageLocation(location) {
-        const newVillage = Object.assign({}, this.state.village, {
-            AS__ZS__province_id: location.AS__ZS__province_id,
-            AS__ZS_id: location.AS__ZS_id,
-            AS_id: location.AS_id,
-        });
-        this.props.updateCurrentVillage(newVillage);
-        this.setState({
-            isChanged: true,
-        });
-    }
-
-    updateVillageField(key, value) {
-        const newVillage = Object.assign({}, this.state.village, { [key]: value });
-        if (key === 'AS__ZS__province_id') {
-            newVillage.AS__ZS_id = null;
-            newVillage.AS_id = null;
-        }
-        if (key === 'AS__ZS_id') {
-            newVillage.AS_id = null;
-        }
-        this.props.updateCurrentVillage(newVillage);
-        this.setState({
-            isChanged: true,
-        });
-    }
-
-    updateVillagePosition(latitude, longitude) {
-        const newVillage = Object.assign({}, this.state.village, { latitude, longitude });
-        this.props.updateCurrentVillage(newVillage);
-        this.setState({
-            isChanged: true,
-        });
-    }
 
     isSavedDisabled() {
-        return (this.state.village.name === ''
-            || !this.state.village.name
-            || !this.state.village.AS__ZS__province_id
-            || !this.state.village.AS__ZS_id
-            || !this.state.village.AS_id
-            || !this.state.village.village_official
-            || this.state.village.latitude === 0
-            || this.state.village.longitude === 0
-            || (!this.state.isChanged && this.state.village.id !== 0));
+        const {
+            village,
+        } = this.props;
+        const {
+            isChanged,
+        } = this.state;
+        return (village.name === ''
+            || !village.name
+            || !village.AS__ZS__province_id
+            || !village.AS__ZS_id
+            || !village.AS_id
+            || !village.village_official
+            || village.latitude === 0
+            || village.longitude === 0
+            || (!isChanged && village.id !== 0));
     }
 
     render() {
@@ -157,6 +136,7 @@ class VillageModale extends Component {
             },
             villageSources,
             params,
+            village,
         } = this.props;
         const geo = filtersGeo(
             provinces,
@@ -186,20 +166,20 @@ class VillageModale extends Component {
                         this.state.currentTab === 'infos'
                         && (
                             <VillageInfosComponent
-                                village={this.state.village}
-                                updateVillageField={(key, value) => this.updateVillageField(key, value)}
+                                village={village}
+                                updateVillageField={(key, value) => this.props.updateCurrentVillage({
+                                    ...village,
+                                    [key]: value,
+                                })}
                                 villageSources={villageSources}
                             />
                         )
                     }
                     <section className={this.state.currentTab !== 'localisation' ? 'hidden-opacity' : ''}>
                         <LocationMapComponent
-                            location={this.state.village}
-                            updateField={(key, value) => this.updateVillageField(key, value)}
+                            updateCurrentVillage={newVillage => this.props.updateCurrentVillage(newVillage)}
                             filters={geo}
                             params={params}
-                            updatePosition={(lat, lng) => this.updateVillagePosition(lat, lng)}
-                            updateLocation={location => this.updateVillageLocation(location)}
                             baseUrl="management/villages"
                         />
                     </section>
@@ -207,7 +187,7 @@ class VillageModale extends Component {
                         this.state.isUpdated
                         && (
                             <div className="align-right text--success">
-                                <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village sauvegardé" />
+                                <FormattedMessage id="main.label.villageUpdated" defaultMessage="Village saved" />
                             </div>
                         )
                     }
@@ -230,7 +210,7 @@ class VillageModale extends Component {
                         <button
                             disabled={this.isSavedDisabled()}
                             className="button--save"
-                            onClick={() => this.props.saveVillage(this.state.village)}
+                            onClick={() => this.props.saveVillage(village)}
                         >
                             <i className="fa fa-save" />
                             <FormattedMessage id="management.label.saveVillage" defaultMessage="Save village" />
@@ -267,6 +247,7 @@ VillageModale.propTypes = {
 const MapStateToProps = state => ({
     geoFiltersModale: state.geoFiltersModale,
     provinces: state.geoFilters.provinces,
+    village: state.villages.current,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -276,6 +257,7 @@ const MapDispatchToProps = dispatch => ({
     selectProvince: (provinceId, zoneId, areaId) => dispatch(geoActions.selectProvince(provinceId, dispatch, zoneId, areaId, null, false)),
     selectZone: (zoneId, areaId) => dispatch(geoActions.selectZone(zoneId, dispatch, false, areaId)),
     selectArea: (areaId, zoneId) => dispatch(geoActions.selectArea(areaId, dispatch, false, zoneId)),
+    updateCurrentVillage: village => dispatch(villageActions.updateCurrentVillage(village)),
 });
 
 

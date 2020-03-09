@@ -121,6 +121,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                     classes={{
                         paper: classes.paper,
                     }}
+                    scroll="body"
                 >
                     <DialogTitle className={classes.title}>
                         <FormattedMessage

@@ -43,7 +43,7 @@ class Plannings extends React.Component {
                 },
                 {
                     Header: formatMessage({
-                        defaultMessage: 'Année',
+                        defaultMessage: 'Year',
                         id: 'main.label.year',
                     }),
                     accessor: 'year',
@@ -210,7 +210,7 @@ class Plannings extends React.Component {
                     isDuplicate: false,
                 });
             } else {
-                console.error(`One error occured when trying to duplicate planning: ${newPlanning.name}`);
+                console.error(`One error occurred when trying to duplicate planning: ${newPlanning.name}`);
             }
         });
     }
@@ -227,7 +227,7 @@ class Plannings extends React.Component {
                     planningDeleted: undefined,
                 });
             } else {
-                console.error(`One error occured when trying to delete planning: ${planning.name}`);
+                console.error(`One error occurred when trying to delete planning: ${planning.name}`);
             }
         });
     }

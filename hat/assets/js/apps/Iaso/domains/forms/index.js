@@ -116,7 +116,7 @@ class Forms extends Component {
                             isSortable
                             pageSize={50}
                             showPagination
-                            endPointUrl={`/api/forms/?date_from=${params.date_from}&date_to=${params.date_to}&all=true`}
+                            endPointUrl="/api/forms/?all=true"
                             columns={this.state.tableColumns}
                             defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
                             params={params}

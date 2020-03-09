@@ -30,14 +30,6 @@ const getPath = (path) => {
 export const formsPath = getPath({
     baseUrl: 'forms',
     params: [
-        {
-            isRequired: true,
-            key: 'date_from',
-        },
-        {
-            isRequired: true,
-            key: 'date_to',
-        },
         ...paginationPathParams,
     ],
 });

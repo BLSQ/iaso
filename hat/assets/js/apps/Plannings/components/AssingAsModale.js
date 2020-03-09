@@ -39,76 +39,94 @@ class AssingAsModale extends Component {
             >
                 <section className="half">
                     <div>
-                        <FormattedMessage id="main.label.area" defaultMessage="Health area" />:
+                        <FormattedMessage id="main.label.area" defaultMessage="Health area" />
+:
                         {' '}
                         <b>{area.name}</b>
                         <div className="align-center">
                             {
-                                workZone.id && workZone.id !== area.workzoneId &&
-                                <button
-                                    className="button"
-                                    onClick={() => assignArea(true)}
-                                >
-                                    <span>
-                                        <FormattedMessage
-                                            id="macroplanning.label.assignAs"
-                                            defaultMessage="Assigner l'AS à"
-                                        />
-                                        {' '}   {workZone.name}
-                                    </span>
-                                </button>
+                                workZone.id && workZone.id !== area.workzoneId
+                                && (
+                                    <button
+                                        className="button"
+                                        onClick={() => assignArea(true)}
+                                    >
+                                        <span>
+                                            <FormattedMessage
+                                                id="macroplanning.label.assignAs"
+                                                defaultMessage="Assign health area to"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            {workZone.name}
+                                        </span>
+                                    </button>
+                                )
                             }
                             {
-                                area.workzone &&
-                                <button
-                                    className="button--danger"
-                                    onClick={() => assignArea(false)}
-                                >
-                                    <span>
-                                        <FormattedMessage
-                                            id="macroplanning.label.unAssignAs"
-                                            defaultMessage="Remove the area from"
-                                        />
-                                        {' '}  {area.workzone}
-                                    </span>
-                                </button>
+                                area.workzone
+                                && (
+                                    <button
+                                        className="button--danger"
+                                        onClick={() => assignArea(false)}
+                                    >
+                                        <span>
+                                            <FormattedMessage
+                                                id="macroplanning.label.unAssignAs"
+                                                defaultMessage="Remove the area from"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            {area.workzone}
+                                        </span>
+                                    </button>
+                                )
                             }
                         </div>
                     </div>
                     <div>
-                        <FormattedMessage id="main.label.zone" defaultMessage="Health area" />:
+                        <FormattedMessage id="main.label.zone" defaultMessage="Health area" />
+:
                         {' '}
                         <b>{zoneName}</b>
                         <div className="align-center">
                             {
-                                workZone.id && workZone.id !== area.workzoneId &&
-                                <button
-                                    className="button"
-                                    onClick={() => assignZone(true)}
-                                >
-                                    <span>
-                                        <FormattedMessage
-                                            id="macroplanning.label.assignZs"
-                                            defaultMessage="Assigned zone to"
-                                        />
-                                        {' '}   {workZone.name}
-                                    </span>
-                                </button>
+                                workZone.id && workZone.id !== area.workzoneId
+                                && (
+                                    <button
+                                        className="button"
+                                        onClick={() => assignZone(true)}
+                                    >
+                                        <span>
+                                            <FormattedMessage
+                                                id="macroplanning.label.assignZs"
+                                                defaultMessage="Assigned zone to"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            {workZone.name}
+                                        </span>
+                                    </button>
+                                )
                             }
                             {
-                                area.workzone &&
-                                <button
-                                    className="button--danger"
-                                    onClick={() => assignZone(false)}
-                                >
-                                    <span>
-                                        <FormattedMessage
-                                            id="macroplanning.label.unAssignZs"
-                                            defaultMessage="Remove zone from"
-                                        />
-                                        {' '}  {area.workzone}
-                                    </span>
-                                </button>
+                                area.workzone
+                                && (
+                                    <button
+                                        className="button--danger"
+                                        onClick={() => assignZone(false)}
+                                    >
+                                        <span>
+                                            <FormattedMessage
+                                                id="macroplanning.label.unAssignZs"
+                                                defaultMessage="Remove zone from"
+                                            />
+                                            {' '}
+                                            {' '}
+                                            {area.workzone}
+                                        </span>
+                                    </button>
+                                )
                             }
                         </div>
                     </div>

@@ -81,7 +81,8 @@ export const MESSAGES = defineMessages({
     },
 });
 
-export const onResizeMap = (width, height, exportControl, currentMap, filename) => {
+
+export const onResizeMap = (width, height, exportControl, currentMap, filename, position = 'topleft') => {
     const customSize = {
         width,
         height,
@@ -92,7 +93,7 @@ export const onResizeMap = (width, height, exportControl, currentMap, filename) 
         currentMap.removeControl(exportControl);
     }
     const newExportControl = L.easyPrint({
-        position: 'topleft',
+        position,
         sizeModes: [customSize],
         hideControlContainer: true,
         title: 'Télécharger',
@@ -122,19 +123,31 @@ export const updateBaseLayer = (currentMap, baseLayer) => {
     });
 };
 
-
-export const includeControlsInMap = (component, currentMap, hasLargeTooltip = false) => {
+export const includeZoombar = (currentMap, component, withVillageSearch, onSearch, zoomBar = undefined) => {
     const { formatMessage } = component.props.intl;
-    const tempContainer = component.state.containers;
+    if (zoomBar) {
+        currentMap.removeControl(zoomBar);
+    }
     // The order in which the controls are added matters
     // zoom bar control
-    L.control.zoombar({
+    const newZoomBar = L.control.zoombar({
         zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
         zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
         fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
         fitToBounds: () => { component.fitToBounds(); },
         position: 'topleft',
-    }).addTo(currentMap);
+        withVillageSearch,
+        onSearch,
+    });
+    newZoomBar.addTo(currentMap);
+    return newZoomBar;
+};
+
+export const includeControlsInMap = (component, currentMap, hasLargeTooltip = false, withVillageSearch = false, onSearch = () => null, withZoomBar = true) => {
+    if (withZoomBar) {
+        includeZoombar(currentMap, component, withVillageSearch, onSearch);
+    }
+    const tempContainer = component.state.containers;
 
     // control to visualize warnings
     const warningControl = L.control({ position: 'topright' });

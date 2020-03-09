@@ -42,7 +42,6 @@ class LazyImagesList extends Component {
             classes,
             onImageClick,
         } = this.props;
-        console.log('render images');
         return (
             <Grid container spacing={2}>
                 {

@@ -8,7 +8,7 @@ import L from 'leaflet';
 import 'leaflet-draw';
 import 'leaflet-draw/dist/leaflet.draw.css';
 import { renderVillagesPopup } from '../utlls/vectorMapUtils';
-import 'leaflet.markercluster'; // eslint-disable-line
+import 'leaflet.markercluster';
 import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
 import {

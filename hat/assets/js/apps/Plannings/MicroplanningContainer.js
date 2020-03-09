@@ -208,6 +208,7 @@ export class MicroplanningContainer extends Component {
         );
     }
 }
+
 MicroplanningContainer.defaultProps = {
     isTest: false,
 };

@@ -103,10 +103,10 @@ export const onResizeMap = (width, height, exportControl, currentMap, filename, 
     return newExportControl;
 };
 
-export const defaultFitToBound = (currentMap, bounds, maxZoom) => {
+export const defaultFitToBound = (currentMap, bounds, maxZoom, padding = [50, 50]) => {
     setTimeout(() => {
         if (bounds.isValid()) {
-            currentMap.fitBounds(bounds, { maxZoom, padding: [50, 50] });
+            currentMap.fitBounds(bounds, { maxZoom, padding });
         }
         currentMap.invalidateSize();
     }, 1);

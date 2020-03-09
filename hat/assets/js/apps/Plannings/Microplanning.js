@@ -84,19 +84,28 @@ export class Microplanning extends Component {
     }
 
     componentWillReceiveProps(nextProps) {
+        const {
+            changeHighlightBufferSize,
+            changeCluster,
+            params: {
+                team_id,
+                workzone_id,
+            },
+            selection,
+        } = nextProps;
+        const {
+            currentTab,
+        } = this.state;
         // if we add a team, reset highlight buffer size
-        if (nextProps.params.team_id && !this.props.params.team_id) {
-            this.props.changeHighlightBufferSize(0);
+        if (team_id && !this.props.params.team_id) {
+            changeHighlightBufferSize(0);
         }
-        if (nextProps.params.workzone_id && !this.props.params.workzone_id) {
-            this.props.changeCluster(false);
-        }
-        if (!nextProps.params.workzone_id && this.props.params.workzone_id) {
-            this.props.changeCluster(true);
+        if ((workzone_id && !this.props.params.workzone_id) || (!workzone_id && this.props.params.workzone_id)) {
+            changeCluster(false);
         }
         this.setState({
-            isSelectionModified: nextProps.selection.isSelectionModified || false,
-            currentTab: !nextProps.params.team_id ? 'villageSelection' : this.state.currentTab,
+            isSelectionModified: selection.isSelectionModified || false,
+            currentTab: !team_id ? 'villageSelection' : currentTab,
         });
     }
 
@@ -160,20 +169,28 @@ export class Microplanning extends Component {
     }
 
     saveTeam() {
+        const {
+            params: {
+                planning_id,
+                coordination_id,
+                workzone_id,
+            },
+            selection,
+        } = this.props;
         this.setState({ isSavingTeam: true });
-        if (this.props.params.workzone_id) {
+        if (workzone_id) {
             saveWorkzonePlanning(
-                this.props.selection.assignations,
-                parseInt(this.props.params.planning_id, 10),
-                this.props.params.workzone_id,
+                selection.assignations,
+                parseInt(planning_id, 10),
+                workzone_id,
             ).then((isSaved) => {
                 this.saveCallBack(isSaved);
             });
-        } else if (this.props.params.coordination_id) {
+        } else if (coordination_id) {
             saveCoordinationPlanning(
-                this.props.selection.assignations,
-                parseInt(this.props.params.planning_id, 10),
-                this.props.params.coordination_id,
+                selection.assignations,
+                parseInt(planning_id, 10),
+                coordination_id,
             ).then((isSaved) => {
                 this.saveCallBack(isSaved);
             });
@@ -181,10 +198,6 @@ export class Microplanning extends Component {
     }
 
     // HANDLERS
-
-    deSelectVillage(list) {
-        this.props.deselectItems(list);
-    }
 
     activateFullscreenHandler() {
         // give focus to the map, otherwhise we need to click on the map to close it
@@ -320,14 +333,14 @@ export class Microplanning extends Component {
 
 
         let villages = [];
-        let capacity = 0;
         let selectedVillages = [];
         let currentTeam;
         const selectedAndUnselectedVillages = [];
-        const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`
+        const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`;
         const shortVillageSelectionLegend = villageSelectionLegend.slice();
         shortVillageSelectionLegend.pop();
         let mapLegendItems = villageSelectionLegend.slice(0, 2);
+        let team;
 
         if (data && data.villagesMap) {
             for (const villageId of Object.keys(data.villagesMap)) {
@@ -335,16 +348,21 @@ export class Microplanning extends Component {
             }
             villages = Object.keys(villagesMap).map(key => villagesMap[key]);
         }
-        for (let i = 0; i < teams.length; i += 1) {
-            const team = teams[i];
-            teamsMap[team.id] = team;
-            capacity += team.capacity;
+        if (team_id) {
+            [currentTeam] = teams.filter(t => t.id === parseInt(team_id, 10));
+            mapLegendItems = villageSelectionLegend;
+            team = teamsMap[team_id];
+        } else if (workzone_id) {
+            mapLegendItems = shortVillageSelectionLegend;
         }
 
-        if (team_id) {
-            const team = teamsMap[team_id];
-            if (team) {
-                capacity = team.capacity;
+        let capacity = team ? team.capacity : 0;
+
+        if (!team) {
+            for (let i = 0; i < teams.length; i += 1) {
+                team = teams[i];
+                teamsMap[team.id] = team;
+                capacity += team.capacity;
             }
         }
         for (let i = 0; i < assignations.length; i += 1) {
@@ -353,7 +371,6 @@ export class Microplanning extends Component {
                 assignationsMap[assignation.village_id] = assignation.team_id;
             }
         }
-
 
         // planning selection
         // if a planning is selected we need to preselect the villages from the planning
@@ -373,15 +390,6 @@ export class Microplanning extends Component {
             });
         }
 
-        // map
-        if (team_id) {
-            [currentTeam] = teams.filter(t => t.id === parseInt(team_id, 10));
-        }
-        if (team_id) {
-            mapLegendItems = villageSelectionLegend;
-        } else if (workzone_id) {
-            mapLegendItems = shortVillageSelectionLegend;
-        }
         return (
             <div
                 tabIndex={0}
@@ -398,7 +406,7 @@ export class Microplanning extends Component {
                             filters={{
                                 planningId: planning_id,
                                 workZoneId: workzone_id,
-                                years: years,
+                                years,
                                 teamId: team_id,
                             }}
                             assignations={assignations}
@@ -557,7 +565,7 @@ export class Microplanning extends Component {
                                                     <MapSelectionList
                                                         data={selectedAndUnselectedVillages}
                                                         show={item => displayItem(item)}
-                                                        deselect={list => this.deSelectVillage(list)}
+                                                        deselect={list => deselectItems(list)}
                                                         assignationsMap={assignationsMap}
                                                         teamsMap={teamsMap}
                                                         coordinationId={coordination_id}
@@ -636,6 +644,7 @@ export class Microplanning extends Component {
         );
     }
 }
+
 Microplanning.defaultProps = {
     isTest: false,
 };
@@ -687,6 +696,5 @@ const MapStateToProps = state => ({
     selection: state.selection,
     map: state.map,
 });
-
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);

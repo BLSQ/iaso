@@ -1,12 +1,15 @@
 from datetime import datetime, date
 from random import random, randint
+
+from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from iaso.models import (
     User,
     Instance,
-    OrgUnit,
+    OrgUnitType,
     Form,
+    Project,
     FormVersion,
     Mapping,
     MappingVersion,
@@ -45,16 +48,21 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dhis2_version = "2.30"
         mode = options.get("mode")
+        project = Project.objects.first()
         form, created = Form.objects.get_or_create(
             form_id="quality_pca_" + dhis2_version,
             name="Quality PCA form " + dhis2_version,
-            period_type="month",
+            period_type="MONTH",
             single_per_period=True,
         )
+        project.forms.add(form)
+        form.org_unit_types.add(OrgUnitType.objects.first())
+        project.save()
         self.form = form
+        self.project = project
         form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id=1
-        )
+            form=form, version_id=1, file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+        )  # TODO: use better fixture
 
         self.form = form
         self.form_version = form_version
@@ -1947,7 +1955,7 @@ class Command(BaseCommand):
             for period in periods:
                 instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
                 for instance_count in range(0, instance_by_ou_periods):
-                    instance = Instance()
+                    instance = Instance(project=self.project)
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit
                     instance.period = period
@@ -1959,6 +1967,7 @@ class Command(BaseCommand):
 
                     instance.json = test_data
                     instance.form = self.form
+                    instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
                     instance.save()
                     # force to past creation date
                     # looks the the first save don't take it

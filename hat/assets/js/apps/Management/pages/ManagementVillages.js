@@ -155,8 +155,6 @@ class ManagementVillages extends React.Component {
         const { loading } = this.props.load;
         const { formatMessage } = this.props.intl;
         const {
-            updateCurrentVillage,
-            selectedVillage,
             isUpdated,
             load,
             selectVillage,
@@ -186,9 +184,7 @@ class ManagementVillages extends React.Component {
                         <VillageModaleComponent
                             showModale={this.state.showEditModale}
                             closeModal={() => selectVillage(null)}
-                            village={selectedVillage}
                             saveVillage={newVillage => this.saveData(newVillage)}
-                            updateCurrentVillage={village => updateCurrentVillage(village)}
                             isUpdated={isUpdated}
                             error={load.error}
                             params={this.props.params}
@@ -258,7 +254,7 @@ class ManagementVillages extends React.Component {
                             />
                         </div>
                     </div>
-                    <SearchButton onSearch={() => this.onSearch()}/>
+                    <SearchButton onSearch={() => this.onSearch()} />
                 </div>
                 <div className="widget__container management-control">
                     {
@@ -326,7 +322,6 @@ ManagementVillages.propTypes = {
     dispatch: PropTypes.func.isRequired,
     setVillages: PropTypes.func.isRequired,
     villageUpdated: PropTypes.func.isRequired,
-    updateCurrentVillage: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     isUpdated: PropTypes.bool.isRequired,
     selectedVillage: PropTypes.object,
@@ -356,7 +351,6 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setVillages: villages => dispatch(villageActions.setVillages(villages)),
     villageUpdated: isUpdated => dispatch(villageActions.villageUpdated(isUpdated)),
-    updateCurrentVillage: villageId => dispatch(villageActions.updateCurrentVillage(villageId)),
     selectVillage: village => dispatch(villageActions.selectVillage(village)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),

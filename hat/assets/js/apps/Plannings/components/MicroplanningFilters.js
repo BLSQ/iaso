@@ -9,9 +9,13 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { fetchAction, setVillages } from '../redux/microplanning';
+import {
+    fetchAction, setVillages, setTeams, setWorkzones,
+} from '../redux/microplanning';
 
 import { getPossibleYears } from '../../../utils';
+import { getUrl } from '../../../utils/routesUtils';
+import { mapActions } from '../redux/map';
 
 const MESSAGES = defineMessages({
     all: {
@@ -35,6 +39,9 @@ class MicroplanningFilters extends Component {
             plannings: props.plannings,
             searchDisabled: false,
         };
+        if (props.params.workzone_id) {
+            this.props.changeCluster(false);
+        }
     }
 
     componentDidMount() {
@@ -46,33 +53,32 @@ class MicroplanningFilters extends Component {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        let currentPlanning = null;
-        nextProps.plannings.map((p) => {
-            if (p.id === parseInt(nextProps.params.planning_id, 10)) {
-                currentPlanning = p;
-            }
-            return true;
-        });
-        this.setState({
-            currentPlanning,
-            workzones: nextProps.workzones,
-            coordinations: nextProps.coordinations,
-            plannings: nextProps.plannings,
-            teams: nextProps.teams,
-        });
+    componentDidUpdate(prevProps) {
+        const {
+            params,
+        } = this.props;
+        if (params.coordination_id && prevProps.params.coordination_id !== params.coordination_id) {
+            this.props.fetchAction(
+                `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
+                setWorkzones,
+            );
+            this.props.fetchAction(getUrl('teams', params), setTeams);
+        } else if (params.workzone_id && prevProps.params.workzone_id !== params.workzone_id) {
+            this.props.fetchAction(getUrl('teams', params), setTeams);
+        }
     }
 
     onChangeHandler(key, value) {
         const {
             setCurrentTeam,
         } = this.props;
-        this.setState({
-            searchDisabled: false,
-        });
         const tempParams = {
             ...this.props.params,
             [key]: value,
+        };
+        const newState = {
+            ...this.state,
+            searchDisabled: false,
         };
         setCurrentTeam(null);
         if (key === 'planning_id') {
@@ -83,9 +89,9 @@ class MicroplanningFilters extends Component {
             delete tempParams.workzone_id;
         }
         delete tempParams.team_id;
-        delete tempParams.zs_id;
         this.props.deselectAll();
         this.props.closeTooltip();
+        this.setState(newState);
         this.props.redirect(tempParams);
     }
 
@@ -107,22 +113,24 @@ class MicroplanningFilters extends Component {
         const {
             getAdditionalSelectData,
             setCurrentTeam,
+            changeCluster,
+            map: {
+                withCluster,
+            },
         } = this.props;
         const tempParams = {
             ...this.props.params,
         };
-        let url = '/api/villages/?';
-        Object.keys(tempParams).forEach((key) => {
-            const value = tempParams[key];
-            if (value && !url.includes(key)) {
-                url += `&${key}=${value}`;
-            }
-        });
+        const url = getUrl('villages', tempParams);
         setCurrentTeam(tempParams.team_id);
-        this.props.fetchAction(url, setVillages);
-        getAdditionalSelectData();
-        this.setState({
-            searchDisabled: true,
+        this.props.fetchAction(url, setVillages).then(() => {
+            getAdditionalSelectData();
+            this.setState({
+                searchDisabled: true,
+            });
+            if (withCluster !== !tempParams.workzone_id) {
+                changeCluster(!tempParams.workzone_id);
+            }
         });
     }
 
@@ -132,24 +140,24 @@ class MicroplanningFilters extends Component {
                 formatMessage,
             },
             params,
-        } = this.props;
-        const {
-            teams,
-            plannings,
-            currentPlanning,
             coordinations,
             workzones,
+            teams,
+            plannings,
+        } = this.props;
+        const {
             searchDisabled,
         } = this.state;
 
         let totalCapacity = 0;
         const possibleYears = getPossibleYears();
         if (teams && teams.length > 0) {
-            teams.map((team) => {
+            teams.forEach((team) => {
                 totalCapacity += team.capacity;
-                return true;
             });
         }
+
+        const currentPlanning = plannings.find(p => p.id === parseInt(params.planning_id, 10));
         return (
             <section>
                 <div className="widget__container full">
@@ -265,6 +273,14 @@ class MicroplanningFilters extends Component {
                             </div>
 
                             <div className="widget__content align-right no-padding-top">
+                                {
+                                    !searchDisabled
+                                    && (
+                                        <div className="error-text margin-bottom">
+                                            <FormattedMessage id="microplanning.error.refreshMap" defaultMessage="Click on search to refresh the map" />
+                                        </div>
+                                    )
+                                }
                                 <button
                                     disabled={searchDisabled}
                                     className="button"
@@ -300,15 +316,21 @@ MicroplanningFilters.propTypes = {
     fetchAction: PropTypes.func.isRequired,
     getAdditionalSelectData: PropTypes.func.isRequired,
     setCurrentTeam: PropTypes.func.isRequired,
+    changeCluster: PropTypes.func.isRequired,
+    map: PropTypes.object.isRequired,
 };
 
+const MapStateToProps = state => ({
+    map: state.map,
+});
 
-const mapDispatchToProps = dispatch => (
+const MapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
             fetchAction,
         }, dispatch),
+        changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
     }
 );
 
-export default connect(() => ({}), mapDispatchToProps)(injectIntl(MicroplanningFilters));
+export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(MicroplanningFilters));

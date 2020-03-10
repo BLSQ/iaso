@@ -73,9 +73,6 @@ export class Microplanning extends Component {
             showSearchModal: false,
             currentTeam: null,
         };
-        if (props.params.workzone_id) {
-            this.props.changeCluster(false);
-        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -95,7 +92,6 @@ export class Microplanning extends Component {
     componentDidUpdate(prevProps) {
         const {
             changeHighlightBufferSize,
-            changeCluster,
             params,
             teamsList,
         } = this.props;
@@ -105,9 +101,6 @@ export class Microplanning extends Component {
         // if we add a team, reset highlight buffer size
         if (params.team_id && !prevProps.params.team_id) {
             changeHighlightBufferSize(0);
-        }
-        if ((params.workzone_id && !prevProps.params.workzone_id) || (!params.workzone_id && prevProps.params.workzone_id)) {
-            changeCluster(false);
         }
         if (params.team_id && !currentTeam && teamsList) {
             this.setCurrentTeam(params.team_id);
@@ -158,9 +151,11 @@ export class Microplanning extends Component {
         } = this.props;
         const teams = (teamsList || []);
         const currentTeam = teams.find(t => t.id === parseInt(teamId, 10));
-        this.setState({
-            currentTeam,
-        });
+        if (currentTeam) {
+            this.setState({
+                currentTeam,
+            });
+        }
     }
 
     removeSavingMsg() {
@@ -313,7 +308,7 @@ export class Microplanning extends Component {
             teamsList,
             workZonesList,
         } = this.props;
-        console.log('workZonesList', workZonesList);
+
         const {
             showSearchModal,
             currentTab,
@@ -617,7 +612,6 @@ Microplanning.propTypes = {
     intl: PropTypes.object.isRequired,
     isAssignationLoading: PropTypes.bool.isRequired,
     chageSelectionModified: PropTypes.func.isRequired,
-    changeCluster: PropTypes.func.isRequired,
     villagesList: PropTypes.object,
     workZonesList: PropTypes.any,
     teamsList: PropTypes.any,
@@ -639,7 +633,6 @@ const MapDispatchToProps = dispatch => ({
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: url => getRequest(url, dispatch, null, false),
     chageSelectionModified: isSelectionModified => dispatch(selectionActions.chageSelectionModified(isSelectionModified)),
-    changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
 });
 
 const MapStateToProps = state => ({

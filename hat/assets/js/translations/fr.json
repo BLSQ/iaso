@@ -716,6 +716,7 @@
     "map.label.fitToBounds": "Centrer la carte",
     "map.label.zoom.box": "Dessiner un carré sur la carte pour agrandir une zone",
     "map.label.zoom.info": "Niveau de zoom actuel",
+    "microplanning.error.refreshMap": "Cliquez sur recherche pour rafraîchir la carte",
     "microplanning.export.area": "Aire de santé",
     "microplanning.export.case.date": "Date du dernier cas THA confirmé",
     "microplanning.export.case.year": "Année du dernier cas THA confirmé",

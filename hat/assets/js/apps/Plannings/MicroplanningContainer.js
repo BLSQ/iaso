@@ -30,7 +30,7 @@ const request = require('superagent');
 // the order is used in the success handler below
 // the value for each key is some url, name and mock data.
 // The name is used as the key in the results payload.
-export const urls = workZonesWithAreas => (
+export const urls = () => (
     [
         {
             name: 'locations',
@@ -156,22 +156,23 @@ export class MicroplanningContainer extends Component {
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
             fetchUrls(urls(params.workzone_id), params, oldParams, dispatch, false).then(() => {
-                const promisesArray = [];
-                promisesArray.push(
-                    this.props.fetchAction(getUrl('teams'), setTeams, false),
-                );
-                promisesArray.push(
-                    this.props.fetchAction(
-                        `${getUrl('workzones')}${params.workzone_id ? '?with_areas=False' : ''}`,
-                        setWorkzones,
-                        false,
-                    ),
-                );
-
-                dispatch(loadActions.startLoading());
-                Promise.all(promisesArray).then(() => {
-                    dispatch(loadActions.successLoadingNoData());
-                });
+                if (params.planning_id) {
+                    const promisesArray = [];
+                    promisesArray.push(
+                        this.props.fetchAction(getUrl('teams', params), setTeams, false),
+                    );
+                    promisesArray.push(
+                        this.props.fetchAction(
+                            `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
+                            setWorkzones,
+                            false,
+                        ),
+                    );
+                    dispatch(loadActions.startLoading());
+                    Promise.all(promisesArray).then(() => {
+                        dispatch(loadActions.successLoadingNoData());
+                    });
+                }
             });
         }
     }

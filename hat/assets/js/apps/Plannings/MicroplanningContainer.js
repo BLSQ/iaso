@@ -27,23 +27,6 @@ const request = require('superagent');
 // The name is used as the key in the results payload.
 export const urls = workZonesWithAreas => (
     [
-        // {
-        //     name: 'villagesMap',
-        //     url: '/api/villages/',
-        //     mock: [{
-        //         AS: 'Muwanda-koso',
-        //         confirmedCases: 1,
-        //         lastConfirmedCase: '2016-06-27T13:29:03.141000Z',
-        //         village: 'Polongo',
-        //         ZS: 'Mosango',
-        //     }, {
-        //         AS: 'Fula',
-        //         confirmedCases: 2,
-        //         lastConfirmedCase: '2016-08-21T12:27:17.420000Z',
-        //         village: 'Kikonzi-mf',
-        //         ZS: 'Yasa Bonga',
-        //     }],
-        // },
         {
             name: 'locations',
             url: '/api/zs/',
@@ -123,7 +106,7 @@ export class MicroplanningContainer extends Component {
         super(props);
         this.currentParams = '';
         this.state = {
-            isAssignationLoading: false,
+            isAssignationLoading: Boolean(props.params.planning_id),
         };
     }
 
@@ -132,12 +115,6 @@ export class MicroplanningContainer extends Component {
         this.props.fetchCurrentUserInfos();
     }
 
-    // componentWillReceiveProps(newProps) {
-    //     if (newProps.params.with_cluster === this.props.params.with_cluster) {
-    //         this.loadFullData(newProps.params);
-    //     }
-    // }
-
     getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
         const newParams = Object.assign({}, params);
@@ -145,27 +122,25 @@ export class MicroplanningContainer extends Component {
         this.setState({
             isAssignationLoading: true,
         });
-        if (!this.props.isTest) {
-            request
-                .get('/api/assignations/')
-                .query(newParams)
-                .then((result) => {
-                    this.selectItems(result.body, false);
-                    this.setState({
-                        isAssignationLoading: false,
-                    });
-                })
-                .catch((err) => {
-                    console.error(err);
-                    console.error('Error when fetching assignations details');
-                    this.setState({
-                        isAssignationLoading: false,
-                    });
+        request
+            .get('/api/assignations/')
+            .query(newParams)
+            .then((result) => {
+                this.selectItems(result.body, false);
+                this.setState({
+                    isAssignationLoading: false,
                 });
+            })
+            .catch((err) => {
+                console.error(err);
+                console.error('Error when fetching assignations details');
+                this.setState({
+                    isAssignationLoading: false,
+                });
+            });
 
-            if (params.team_id) {
-                dispatch(selectionActions.getTeamDetails(dispatch, params.team_id, params.planning_id));
-            }
+        if (params.team_id) {
+            dispatch(selectionActions.getTeamDetails(dispatch, params.team_id, params.planning_id));
         }
     }
 
@@ -174,11 +149,7 @@ export class MicroplanningContainer extends Component {
         const oldParams = clone(this.currentParams);
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
-            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch).then(() => {
-                if (params.planning_id && params.workzone_id) {
-                    this.getAdditionalSelectData(params);
-                }
-            });
+            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch, false);
         }
     }
 
@@ -199,24 +170,20 @@ export class MicroplanningContainer extends Component {
     render() {
         return (
             <MicroplanningComponent
-                isTest={this.props.isTest}
                 params={this.props.params}
                 launchAlgo={algoParams => this.launchAlgo(algoParams)}
                 selectItems={(items, activateSaveButton) => this.selectItems(items, activateSaveButton)}
                 isAssignationLoading={this.state.isAssignationLoading}
+                getAdditionalSelectData={() => this.getAdditionalSelectData()}
             />
         );
     }
 }
 
-MicroplanningContainer.defaultProps = {
-    isTest: false,
-};
 
 MicroplanningContainer.propTypes = {
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
-    isTest: PropTypes.bool,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
 };
 

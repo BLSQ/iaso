@@ -259,10 +259,6 @@ $directions: left right top bottom;
     padding-right: $padding-unit/2;
 }
 
-.no-padding-top {
-    padding-top: 0 !important;
-}
-
 .big-padding-right {
     padding-right: $padding-unit;
 }
@@ -285,6 +281,10 @@ $directions: left right top bottom;
 
 .margin-bottom {
     margin-bottom: $padding-unit/2 !important;
+}
+
+.margin-bottom--tiny {
+    margin-bottom: $padding-unit/5 !important;
 }
 
 .big-margin-bottom {
@@ -324,6 +324,7 @@ $directions: left right top bottom;
 .no-margin {
     margin: 0 !important;
 }
+
 
 .bold-subtitle {
     font-weight: bold;

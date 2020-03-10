@@ -4,8 +4,14 @@
 
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
+import Grid from '@material-ui/core/Grid';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import { fetchVillages as fetchVillagesAction } from '../redux/villages';
+
+import { getPossibleYears } from '../../../utils';
 
 const MESSAGES = defineMessages({
     all: {
@@ -16,6 +22,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'All',
         id: 'main.label.allMale',
     },
+    'years-select': {
+        defaultMessage: 'Select years',
+        id: 'microplanning.labels.years.select',
+    },
 });
 
 class MicroplanningFilters extends Component {
@@ -23,7 +33,17 @@ class MicroplanningFilters extends Component {
         super(props);
         this.state = {
             plannings: props.plannings,
+            searchDisabled: false,
         };
+    }
+
+    componentDidMount() {
+        const {
+            params,
+        } = this.props;
+        if (params.planning_id) {
+            this.onSearch();
+        }
     }
 
     componentWillReceiveProps(nextProps) {
@@ -44,10 +64,17 @@ class MicroplanningFilters extends Component {
     }
 
     onChangeHandler(key, value) {
+        const {
+            setCurrentTeam,
+        } = this.props;
+        this.setState({
+            searchDisabled: false,
+        });
         const tempParams = {
             ...this.props.params,
             [key]: value,
         };
+        setCurrentTeam(null);
         if (key === 'planning_id') {
             delete tempParams.coordination_id;
             delete tempParams.workzone_id;
@@ -62,13 +89,50 @@ class MicroplanningFilters extends Component {
         this.props.redirect(tempParams);
     }
 
+    onChangeTeam(teamId) {
+        const {
+            params,
+            redirect,
+        } = this.props;
+        this.setState({
+            searchDisabled: false,
+        });
+        redirect({
+            ...params,
+            team_id: teamId,
+        });
+    }
+
+    onSearch() {
+        const {
+            fetchVillages,
+            getAdditionalSelectData,
+            setCurrentTeam,
+        } = this.props;
+        const tempParams = {
+            ...this.props.params,
+        };
+        let url = '/api/villages/?';
+        Object.keys(tempParams).forEach((key) => {
+            const value = tempParams[key];
+            if (value && !url.includes(key)) {
+                url += `&${key}=${value}`;
+            }
+        });
+        setCurrentTeam(tempParams.team_id);
+        fetchVillages(url);
+        getAdditionalSelectData();
+        this.setState({
+            searchDisabled: true,
+        });
+    }
+
     render() {
         const {
             intl: {
                 formatMessage,
             },
             params,
-            redirect,
         } = this.props;
         const {
             teams,
@@ -76,9 +140,11 @@ class MicroplanningFilters extends Component {
             currentPlanning,
             coordinations,
             workzones,
+            searchDisabled,
         } = this.state;
 
         let totalCapacity = 0;
+        const possibleYears = getPossibleYears();
         if (teams && teams.length > 0) {
             teams.map((team) => {
                 totalCapacity += team.capacity;
@@ -88,24 +154,46 @@ class MicroplanningFilters extends Component {
         return (
             <section>
                 <div className="widget__container full">
-                    <div className="widget__content--tier">
-                        <div>
-                            <FormattedMessage id="microplanning.label.planning" defaultMessage="Planning: " />
-                            {
-                                plannings.length > 0
-                                && (
-                                    <Select
-                                        simpleValue
-                                        name="planning_id"
-                                        value={parseInt(params.planning_id, 10)}
-                                        placeholder={formatMessage(MESSAGES.allMale)}
-                                        options={plannings.map(planning => ({ label: planning.name, value: planning.id }))}
-                                        onChange={value => this.onChangeHandler('planning_id', value)}
-                                    />
-                                )
+                    <div className="widget__content">
+                        <Grid container spacing={4}>
+                            <Grid item xs={4}>
+                                <div className="margin-bottom--tiny">
+                                    <FormattedMessage id="microplanning.label.planning" defaultMessage="Planning: " />
+                                </div>
+                                {
+                                    plannings.length > 0
+                                    && (
+                                        <Select
+                                            simpleValue
+                                            name="planning_id"
+                                            value={parseInt(params.planning_id, 10)}
+                                            placeholder={formatMessage(MESSAGES.allMale)}
+                                            options={plannings.map(planning => ({ label: planning.name, value: planning.id }))}
+                                            onChange={value => this.onChangeHandler('planning_id', value)}
+                                        />
+                                    )
 
-                            }
-                        </div>
+                                }
+                            </Grid>
+                            <Grid item xs={4}>
+                                <div className="margin-bottom--tiny">
+                                    <FormattedMessage
+                                        id="microplanning.filter.cases.date"
+                                        defaultMessage="Highlight villages with last HAT case in years"
+                                    />
+                                </div>
+                                <Select
+                                    multi
+                                    simpleValue
+                                    autosize={false}
+                                    name="years"
+                                    value={params.years || ''}
+                                    placeholder={formatMessage(MESSAGES['years-select'])}
+                                    options={possibleYears.map(value => ({ label: value, value }))}
+                                    onChange={value => this.onChangeHandler('years', value)}
+                                />
+                            </Grid>
+                        </Grid>
                     </div>
                 </div>
                 {
@@ -119,60 +207,72 @@ class MicroplanningFilters extends Component {
                                     {` (${currentPlanning.year})`}
                                 </h2>
                             </div>
-                            <div className="widget__content--tier">
-                                <div>
-                                    <span>
-                                        <FormattedMessage id="main.label.coordination" defaultMessage="Coordination" />
-                                        {': '}
-                                    </span>
-                                    <Select
-                                        simpleValue
-                                        name="coordination_id"
-                                        value={parseInt(params.coordination_id, 10)}
-                                        placeholder={formatMessage(MESSAGES.all)}
-                                        options={coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
-                                        onChange={value => this.onChangeHandler('coordination_id', value)}
-                                    />
-                                </div>
-                                <div>
-                                    <span>
-                                        <FormattedMessage id="main.label.workzone" defaultMessage="Work zone" />
-                                        {': '}
-                                    </span>
+                            <div className="widget__content">
+                                <Grid container spacing={4}>
+                                    <Grid item xs={4}>
+                                        <div className="margin-bottom--tiny">
+                                            <FormattedMessage id="main.label.coordination" defaultMessage="Coordination" />
+                                            {': '}
+                                        </div>
+                                        <Select
+                                            simpleValue
+                                            name="coordination_id"
+                                            value={parseInt(params.coordination_id, 10)}
+                                            placeholder={formatMessage(MESSAGES.all)}
+                                            options={coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
+                                            onChange={value => this.onChangeHandler('coordination_id', value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <div className="margin-bottom--tiny">
+                                            <FormattedMessage id="main.label.workzone" defaultMessage="Work zone" />
+                                            {': '}
+                                        </div>
 
-                                    <Select
-                                        disabled={!params.coordination_id}
-                                        simpleValue
-                                        name="workzone_id"
-                                        value={parseInt(params.workzone_id, 10)}
-                                        placeholder={
-                                            formatMessage(
-                                                {
-                                                    id: 'main.label.workzone',
-                                                    defaultMessage: 'Work zone',
-                                                },
-                                            )
-                                        }
-                                        options={workzones.map(wz => ({ label: wz.name, value: wz.id }))}
-                                        onChange={value => this.onChangeHandler('workzone_id', value)}
-                                    />
-                                </div>
-                                <div>
-                                    <FormattedMessage id="microplanning.label.team" defaultMessage="Team" />
+                                        <Select
+                                            disabled={!params.coordination_id}
+                                            simpleValue
+                                            name="workzone_id"
+                                            value={parseInt(params.workzone_id, 10)}
+                                            placeholder={
+                                                formatMessage(
+                                                    {
+                                                        id: 'main.label.workzone',
+                                                        defaultMessage: 'Work zone',
+                                                    },
+                                                )
+                                            }
+                                            options={workzones.map(wz => ({ label: wz.name, value: wz.id }))}
+                                            onChange={value => this.onChangeHandler('workzone_id', value)}
+                                        />
+                                    </Grid>
+                                    <Grid item xs={4}>
+                                        <div className="margin-bottom--tiny">
+                                            <FormattedMessage id="microplanning.label.team" defaultMessage="Team" />
+                                            {': '}
+                                        </div>
 
-                                    <Select
-                                        disabled={!params.workzone_id}
-                                        simpleValue
-                                        name="team_id"
-                                        value={parseInt(params.team_id, 10)}
-                                        placeholder={`${formatMessage(MESSAGES.all)} - ${totalCapacity}`}
-                                        options={teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
-                                        onChange={event => redirect({
-                                            ...params,
-                                            team_id: event,
-                                        })}
-                                    />
-                                </div>
+                                        <Select
+                                            disabled={!params.workzone_id}
+                                            simpleValue
+                                            name="team_id"
+                                            value={parseInt(params.team_id, 10)}
+                                            placeholder={`${formatMessage(MESSAGES.all)} - ${totalCapacity}`}
+                                            options={teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
+                                            onChange={teamId => this.onChangeTeam(teamId)}
+                                        />
+                                    </Grid>
+                                </Grid>
+                            </div>
+
+                            <div className="widget__content align-right no-padding-top">
+                                <button
+                                    disabled={searchDisabled}
+                                    className="button"
+                                    onClick={() => this.onSearch()}
+                                >
+                                    <FormattedMessage id="main.label.search" defaultMessage="Search" />
+                                </button>
                             </div>
                         </div>
                     )
@@ -198,6 +298,18 @@ MicroplanningFilters.propTypes = {
     redirect: PropTypes.func.isRequired,
     deselectAll: PropTypes.func.isRequired,
     closeTooltip: PropTypes.func.isRequired,
+    fetchVillages: PropTypes.func.isRequired,
+    getAdditionalSelectData: PropTypes.func.isRequired,
+    setCurrentTeam: PropTypes.func.isRequired,
 };
 
-export default injectIntl(MicroplanningFilters);
+
+const mapDispatchToProps = dispatch => (
+    {
+        ...bindActionCreators({
+            fetchVillages: fetchVillagesAction,
+        }, dispatch),
+    }
+);
+
+export default connect(() => ({}), mapDispatchToProps)(injectIntl(MicroplanningFilters));

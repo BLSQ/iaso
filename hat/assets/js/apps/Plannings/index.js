@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Route, Redirect, useRouterHistory } from 'react-router';
+import thunk from 'redux-thunk';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { createHistory } from 'history';
 
@@ -18,6 +19,7 @@ import { coordinationReducer, coordinationInitialState } from './redux/coordinat
 import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
+import { villagesInitialState, villagesReducer } from './redux/villages';
 import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
@@ -63,6 +65,7 @@ export default function microplanningApp(element, baseUrl) {
         assignations: [],
         geoScope: geoScopeMapInitialState,
         currentUser: currentUserInitialState,
+        villages: villagesInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -74,8 +77,10 @@ export default function microplanningApp(element, baseUrl) {
         assignations: assignationReducer,
         geoScope: geoScopeMapReducer,
         currentUser: currentUserReducer,
+        villages: villagesReducer,
     }, [
         routerMiddleware(history),
+        thunk,
     ]);
     history = syncHistoryWithStore(
         history,

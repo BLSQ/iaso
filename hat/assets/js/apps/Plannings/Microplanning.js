@@ -15,14 +15,12 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
-import Select from 'react-select';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import TabsComponent from '../../components/TabsComponent';
 import GeoScope from './components/GeoScope';
 import { createUrl, getRequest } from '../../utils/fetchData';
 import { saveCoordinationPlanning, saveWorkzonePlanning } from '../../utils/saveData';
-import { getPossibleYears } from '../../utils';
 import geoUtils from '../../utils/geo';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
@@ -46,10 +44,6 @@ const MESSAGES = defineMessages({
     'location-all': {
         defaultMessage: 'All',
         id: 'microplanning.labels.all',
-    },
-    'years-select': {
-        defaultMessage: 'Select years',
-        id: 'microplanning.labels.years.select',
     },
     loading: {
         defaultMessage: 'Loading',
@@ -77,6 +71,7 @@ export class Microplanning extends Component {
             errorOnSave: undefined,
             currentTab: 'villageSelection',
             showSearchModal: false,
+            currentTeam: null,
         };
         if (props.params.workzone_id) {
             this.props.changeCluster(false);
@@ -97,19 +92,27 @@ export class Microplanning extends Component {
         });
     }
 
-
     componentDidUpdate(prevProps) {
         const {
             changeHighlightBufferSize,
             changeCluster,
             params,
+            load: {
+                data,
+            },
         } = this.props;
+        const {
+            currentTeam,
+        } = this.state;
         // if we add a team, reset highlight buffer size
         if (params.team_id && !prevProps.params.team_id) {
             changeHighlightBufferSize(0);
         }
         if ((params.workzone_id && !prevProps.params.workzone_id) || (!params.workzone_id && prevProps.params.workzone_id)) {
             changeCluster(false);
+        }
+        if (params.team_id && !currentTeam && data && data.teams) {
+            this.setCurrentTeam(params.team_id);
         }
     }
 
@@ -151,6 +154,18 @@ export class Microplanning extends Component {
         return url;
     }
 
+    setCurrentTeam(teamId) {
+        const {
+            load: {
+                data,
+            },
+        } = this.props;
+        const teams = ((data && data.teams) || []);
+        const currentTeam = teams.find(t => t.id === parseInt(teamId, 10));
+        this.setState({
+            currentTeam,
+        });
+    }
 
     removeSavingMsg() {
         if (timerMsg) {
@@ -196,7 +211,6 @@ export class Microplanning extends Component {
             });
         }
     }
-
     // HANDLERS
 
     activateFullscreenHandler() {
@@ -274,7 +288,6 @@ export class Microplanning extends Component {
 
     render() {
         const {
-            isTest,
             isAssignationLoading,
             intl: {
                 formatMessage,
@@ -300,11 +313,14 @@ export class Microplanning extends Component {
             setLeafletMap,
             getShape,
             selectItems,
+            villagesList,
+            getAdditionalSelectData,
         } = this.props;
 
         const {
             showSearchModal,
             currentTab,
+            currentTeam,
         } = this.state;
 
         const { highlightBufferSize } = selection;
@@ -313,7 +329,6 @@ export class Microplanning extends Component {
         const workzones = ((data && data.workzones) || []);
         const plannings = ((data && data.plannings) || []);
         const assignations = (selection.assignations) || [];
-        const possibleYears = getPossibleYears();
         const villagesMap = {};
         const teamsMap = {};
         const assignationsMap = {};
@@ -326,18 +341,15 @@ export class Microplanning extends Component {
         let team;
         const villages = [];
         let selectedVillages = [];
-        let currentTeam;
-
-        if (data && data.villagesMap) {
-            Object.keys(data.villagesMap).forEach((villageId) => {
-                villagesMap[villageId] = geoUtils.extendVillageInfo(data.villagesMap[villageId]);
-                villages.push(geoUtils.extendVillageInfo(data.villagesMap[villageId]));
+        if (villagesList) {
+            Object.keys(villagesList).forEach((villageId) => {
+                villagesMap[villageId] = geoUtils.extendVillageInfo(villagesList[villageId]);
+                villages.push(geoUtils.extendVillageInfo(villagesList[villageId]));
             });
         }
-        if (params.team_id) {
-            [currentTeam] = teams.filter(t => t.id === parseInt(params.team_id, 10));
+        if (currentTeam) {
             mapLegendItems = villageSelectionLegend;
-            team = teamsMap[params.team_id];
+            team = teamsMap[currentTeam.id];
         } else if (params.workzone_id) {
             mapLegendItems = shortVillageSelectionLegend;
         }
@@ -361,7 +373,7 @@ export class Microplanning extends Component {
 
         // planning selection
         // if a planning is selected we need to preselect the villages from the planning
-        if (params.planning_id && data && data.villagesMap) {
+        if (params.planning_id && data && villagesList) {
             let assignationsTempList = [...assignations];
 
             if (params.team_id) {
@@ -375,7 +387,6 @@ export class Microplanning extends Component {
                 }
             });
         }
-        console.log('data', data);
         return (
             <div
                 tabIndex={0}
@@ -405,7 +416,7 @@ export class Microplanning extends Component {
                 }
 
                 {
-                    loading && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
+                    (loading || isAssignationLoading) && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }
 
                 {
@@ -432,9 +443,11 @@ export class Microplanning extends Component {
                     redirect={newParams => redirect(newParams)}
                     deselectAll={() => deselectItems(null, false)}
                     closeTooltip={() => displayItem(null)}
+                    getAdditionalSelectData={getAdditionalSelectData}
+                    setCurrentTeam={teamId => this.setCurrentTeam(teamId)}
                 />
                 {
-                    params.team_id
+                    currentTeam
                     && (
                         <TabsComponent
                             currentTab={currentTab}
@@ -455,35 +468,6 @@ export class Microplanning extends Component {
                             <MapLegend
                                 items={mapLegendItems}
                             />
-                        </div>
-
-                        {/* Param Filters */}
-                        <div className="map__header--filters">
-                            <div className="map__filters">
-
-                                <div className="map__filters--option">
-                                    <span className="map__text--select">
-                                        <FormattedMessage
-                                            id="microplanning.filter.cases.date"
-                                            defaultMessage="Highlight villages with last HAT case in years"
-                                        />
-                                    </span>
-                                    <Select
-                                        multi
-                                        simpleValue
-                                        autosize={false}
-                                        disabled={loading}
-                                        name="years"
-                                        value={params.years || ''}
-                                        placeholder={formatMessage(MESSAGES['years-select'])}
-                                        options={possibleYears.map(value => ({ label: value, value }))}
-                                        onChange={yearsList => redirect({
-                                            ...params,
-                                            years: yearsList,
-                                        })}
-                                    />
-                                </div>
-                            </div>
                         </div>
                         <div>
                             <MapLayers
@@ -580,33 +564,28 @@ export class Microplanning extends Component {
                         }
                         {/* Map */}
                         <div className={mapClass} id="planning-map">
-                            {
-                                !isTest
-                                && (
-                                    <Map
-                                        teams={teams}
-                                        teamId={params.team_id}
-                                        planningId={params.planning_id}
-                                        baseLayer={baseLayer}
-                                        legend={legend}
-                                        fullscreen={fullscreen}
-                                        items={villages}
-                                        assignationsMap={assignationsMap}
-                                        assignations={assignations}
-                                        selectedItems={selectedVillages}
-                                        highlightBufferSize={highlightBufferSize}
-                                        deselectItems
-                                        chosenItem={selection.displayedItem}
-                                        showItem={item => displayItem(item)}
-                                        leafletMap={map => setLeafletMap(map)}
-                                        getShape={type => getShape(type)}
-                                        selectItems={(items, activateSaveButton) => selectItems(items, activateSaveButton)}
-                                        workzoneId={params.workzone_id}
-                                        withCluster={withCluster}
-                                        toggleSearchModal={() => this.toggleSearchModal()}
-                                    />
-                                )
-                            }
+                            <Map
+                                teams={teams}
+                                teamId={params.team_id}
+                                planningId={params.planning_id}
+                                baseLayer={baseLayer}
+                                legend={legend}
+                                fullscreen={fullscreen}
+                                items={villages}
+                                assignationsMap={assignationsMap}
+                                assignations={assignations}
+                                selectedItems={selectedVillages}
+                                highlightBufferSize={highlightBufferSize}
+                                deselectItems
+                                chosenItem={selection.displayedItem}
+                                showItem={item => displayItem(item)}
+                                leafletMap={map => setLeafletMap(map)}
+                                getShape={type => getShape(type)}
+                                selectItems={(items, activateSaveButton) => selectItems(items, activateSaveButton)}
+                                workzoneId={params.workzone_id}
+                                withCluster={withCluster}
+                                toggleSearchModal={() => this.toggleSearchModal()}
+                            />
                         </div>
                     </div>
                 </div>
@@ -632,7 +611,7 @@ export class Microplanning extends Component {
 }
 
 Microplanning.defaultProps = {
-    isTest: false,
+    villagesList: null,
 };
 
 Microplanning.propTypes = {
@@ -652,10 +631,11 @@ Microplanning.propTypes = {
     map: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    isTest: PropTypes.bool,
     isAssignationLoading: PropTypes.bool.isRequired,
     chageSelectionModified: PropTypes.func.isRequired,
     changeCluster: PropTypes.func.isRequired,
+    villagesList: PropTypes.object,
+    getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
@@ -681,6 +661,7 @@ const MapStateToProps = state => ({
     load: state.load,
     selection: state.selection,
     map: state.map,
+    villagesList: state.villages.list,
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);

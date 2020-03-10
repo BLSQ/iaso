@@ -794,6 +794,7 @@
     "microplanning.selected.population.warning.3": "Données démographiques incluses dans les fichiers de forme organisés par UCLA et basées sur les villages Z.S.",
     "microplanning.selected.reset": "Désélectionner tout",
     "microplanning.selected.selection.title": "Votre sélection comprend:",
+    "microplanning.selected.warning": "Attention la capacité dépasse la population assignée",
     "microplanning.selection.actions.buffer.explanation": "Vous pouvez ajuster la taille de la zone tampon de sélection pour inclure/supprimer plus/moins de villages dans votre sélection.",
     "microplanning.selection.active.assign": "Assigner villages",
     "microplanning.selection.active.deselect": "Désélectionner des villages",

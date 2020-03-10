@@ -9,7 +9,7 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { fetchVillages as fetchVillagesAction } from '../redux/villages';
+import { fetchAction, setVillages } from '../redux/microplanning';
 
 import { getPossibleYears } from '../../../utils';
 
@@ -105,7 +105,6 @@ class MicroplanningFilters extends Component {
 
     onSearch() {
         const {
-            fetchVillages,
             getAdditionalSelectData,
             setCurrentTeam,
         } = this.props;
@@ -120,7 +119,7 @@ class MicroplanningFilters extends Component {
             }
         });
         setCurrentTeam(tempParams.team_id);
-        fetchVillages(url);
+        this.props.fetchAction(url, setVillages);
         getAdditionalSelectData();
         this.setState({
             searchDisabled: true,
@@ -298,7 +297,7 @@ MicroplanningFilters.propTypes = {
     redirect: PropTypes.func.isRequired,
     deselectAll: PropTypes.func.isRequired,
     closeTooltip: PropTypes.func.isRequired,
-    fetchVillages: PropTypes.func.isRequired,
+    fetchAction: PropTypes.func.isRequired,
     getAdditionalSelectData: PropTypes.func.isRequired,
     setCurrentTeam: PropTypes.func.isRequired,
 };
@@ -307,7 +306,7 @@ MicroplanningFilters.propTypes = {
 const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
-            fetchVillages: fetchVillagesAction,
+            fetchAction,
         }, dispatch),
     }
 );

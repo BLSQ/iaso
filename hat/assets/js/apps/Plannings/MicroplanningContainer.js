@@ -13,11 +13,16 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
+
 import { deepEqual, clone } from '../../utils/index';
+import { getUrl } from '../../utils/routesUtils';
 import { fetchUrls, launchAlgo } from '../../utils/fetchData';
 import MicroplanningComponent from './Microplanning';
 import { selectionActions } from './redux/selection';
 import { currentUserActions } from '../../redux/currentUserReducer';
+import { fetchAction, setTeams, setWorkzones } from './redux/microplanning';
+import { loadActions } from '../../redux/load';
 
 const request = require('superagent');
 
@@ -55,13 +60,13 @@ export const urls = workZonesWithAreas => (
                 ],
             ],
         },
-        {
-            name: 'workzones',
-            url: workZonesWithAreas ? '/api/workzones' : '/api/workzones/?with_areas=False',
-            paramsToRemove: 'years',
-            mock: [
-            ],
-        },
+        // {
+        //     name: 'workzones',
+        //     url: workZonesWithAreas ? '/api/workzones' : '/api/workzones/?with_areas=False',
+        //     paramsToRemove: 'years',
+        //     mock: [
+        //     ],
+        // },
         {
             name: 'areas',
             url: '/api/as/',
@@ -84,20 +89,20 @@ export const urls = workZonesWithAreas => (
                 },
             ],
         },
-        {
-            name: 'teams',
-            url: '/api/teams/',
-            mock: [
-                [
-                    2,
-                    'qsdf',
-                ],
-                [
-                    1,
-                    'team 1',
-                ],
-            ],
-        },
+        // {
+        //     name: 'teams',
+        //     url: '/api/teams/',
+        //     mock: [
+        //         [
+        //             2,
+        //             'qsdf',
+        //         ],
+        //         [
+        //             1,
+        //             'team 1',
+        //         ],
+        //     ],
+        // },
     ]
 );
 
@@ -115,6 +120,7 @@ export class MicroplanningContainer extends Component {
         this.props.fetchCurrentUserInfos();
     }
 
+    // TO-DO => need to move ths to redux as fetchAction
     getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
         const newParams = Object.assign({}, params);
@@ -149,7 +155,24 @@ export class MicroplanningContainer extends Component {
         const oldParams = clone(this.currentParams);
         this.currentParams = clone(params);
         if (!deepEqual(oldParams, params, true)) {
-            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch, false);
+            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch, false).then(() => {
+                const promisesArray = [];
+                promisesArray.push(
+                    this.props.fetchAction(getUrl('teams'), setTeams, false),
+                );
+                promisesArray.push(
+                    this.props.fetchAction(
+                        `${getUrl('workzones')}${params.workzone_id ? '?with_areas=False' : ''}`,
+                        setWorkzones,
+                        false,
+                    ),
+                );
+
+                dispatch(loadActions.startLoading());
+                Promise.all(promisesArray).then(() => {
+                    dispatch(loadActions.successLoadingNoData());
+                });
+            });
         }
     }
 
@@ -185,15 +208,22 @@ MicroplanningContainer.propTypes = {
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    fetchAction: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     load: state.load,
 });
 
-const MapDispatchToProps = dispatch => ({
-    dispatch,
-    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
-});
+const MapDispatchToProps = dispatch => (
+    {
+        dispatch,
+        fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
+        ...bindActionCreators({
+            fetchAction,
+        }, dispatch),
+    }
+);
+
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningContainer);

@@ -97,9 +97,7 @@ export class Microplanning extends Component {
             changeHighlightBufferSize,
             changeCluster,
             params,
-            load: {
-                data,
-            },
+            teamsList,
         } = this.props;
         const {
             currentTeam,
@@ -111,7 +109,7 @@ export class Microplanning extends Component {
         if ((params.workzone_id && !prevProps.params.workzone_id) || (!params.workzone_id && prevProps.params.workzone_id)) {
             changeCluster(false);
         }
-        if (params.team_id && !currentTeam && data && data.teams) {
+        if (params.team_id && !currentTeam && teamsList) {
             this.setCurrentTeam(params.team_id);
         }
     }
@@ -156,11 +154,9 @@ export class Microplanning extends Component {
 
     setCurrentTeam(teamId) {
         const {
-            load: {
-                data,
-            },
+            teamsList,
         } = this.props;
-        const teams = ((data && data.teams) || []);
+        const teams = (teamsList || []);
         const currentTeam = teams.find(t => t.id === parseInt(teamId, 10));
         this.setState({
             currentTeam,
@@ -295,7 +291,6 @@ export class Microplanning extends Component {
             params,
             load: {
                 data,
-                error,
                 loading,
             },
             map: {
@@ -315,8 +310,10 @@ export class Microplanning extends Component {
             selectItems,
             villagesList,
             getAdditionalSelectData,
+            teamsList,
+            workZonesList,
         } = this.props;
-
+        console.log('workZonesList', workZonesList);
         const {
             showSearchModal,
             currentTab,
@@ -324,9 +321,9 @@ export class Microplanning extends Component {
         } = this.state;
 
         const { highlightBufferSize } = selection;
-        const teams = ((data && data.teams) || []);
+        const teams = (teamsList || []);
         const coordinations = ((data && data.coordinations) || []);
-        const workzones = ((data && data.workzones) || []);
+        const workzones = (workZonesList || []);
         const plannings = ((data && data.plannings) || []);
         const assignations = (selection.assignations) || [];
         const villagesMap = {};
@@ -419,21 +416,6 @@ export class Microplanning extends Component {
                     (loading || isAssignationLoading) && <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                 }
 
-                {
-                    error
-                    && (
-                        <div className="widget__container">
-                            <div className="widget__header">
-                                <h2 className="widget__heading text--error">
-                                    <FormattedMessage id="microplanning.label.error" defaultMessage="Error:" />
-                                </h2>
-                            </div>
-                            <div className="widget__content">
-                                {error}
-                            </div>
-                        </div>
-                    )
-                }
                 <MicroplanningFilters
                     params={params}
                     plannings={plannings}
@@ -612,6 +594,8 @@ export class Microplanning extends Component {
 
 Microplanning.defaultProps = {
     villagesList: null,
+    teamsList: null,
+    workZonesList: null,
 };
 
 Microplanning.propTypes = {
@@ -635,6 +619,8 @@ Microplanning.propTypes = {
     chageSelectionModified: PropTypes.func.isRequired,
     changeCluster: PropTypes.func.isRequired,
     villagesList: PropTypes.object,
+    workZonesList: PropTypes.any,
+    teamsList: PropTypes.any,
     getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
@@ -661,7 +647,9 @@ const MapStateToProps = state => ({
     load: state.load,
     selection: state.selection,
     map: state.map,
-    villagesList: state.villages.list,
+    villagesList: state.microplanning.villagesList,
+    workZonesList: state.microplanning.workZonesList,
+    teamsList: state.microplanning.teamsList,
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);

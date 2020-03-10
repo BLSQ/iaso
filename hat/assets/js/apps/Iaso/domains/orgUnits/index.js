@@ -49,7 +49,7 @@ import OrgunitsMap from './components/OrgunitsMapComponent';
 import commonStyles from '../../styles/common';
 import chipColors from '../../constants/chipColors';
 
-import { warningSnackBar } from '../../components/snackBars';
+import { warningSnackBar } from '../../../../components/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';

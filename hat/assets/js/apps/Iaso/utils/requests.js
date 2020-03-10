@@ -7,7 +7,7 @@ import {
 } from '../libs/Api';
 
 import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
-import { succesfullSnackBar, errorSnackBar } from '../components/snackBars';
+import { succesfullSnackBar, errorSnackBar } from '../../../components/snackBars';
 
 export const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}`)
     .then(res => res.orgUnits)

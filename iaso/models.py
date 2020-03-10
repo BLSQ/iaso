@@ -45,15 +45,6 @@ STATUS_TYPE_CHOICES = (
     ("ERRORED", _("Errored")),
     ("SKIPPED", _("Skipped")),
 )
-INSTANCE_STATUS_READY = "READY"
-INSTANCE_STATUS_ERROR = "ERROR"
-INSTANCE_STATUS_EXPORTED = "EXPORTED"
-
-INSTANCE_STATUS_CHOICES = (
-    (INSTANCE_STATUS_READY, "Ready"),
-    (INSTANCE_STATUS_ERROR, "Error"),
-    (INSTANCE_STATUS_EXPORTED, "Exported"),
-)
 
 
 def generate_id_for_dhis_2():
@@ -730,10 +721,45 @@ class ExternalCredentials(models.Model):
         return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
 
+class InstanceQuerySet(models.QuerySet):
+    # TODO: check if more appropriate to use duplicate logic in status_queries
+    def with_status(self):
+        duplicates_subquery = (self
+                               .exclude(id=models.OuterRef('id'))
+                               .filter(form_id=models.OuterRef('form_id'),
+                                       org_unit_id=models.OuterRef('org_unit_id'),
+                                       period=models.OuterRef('period'))
+                               .values('form_id', 'org_unit_id', 'period')
+                               .annotate(duplicates_count=models.Count('*')))
+
+        qs = self.annotate(duplicates_count=models.Subquery(duplicates_subquery.values('duplicates_count'),
+                                                            output_field=models.IntegerField()))
+
+        return qs.annotate(
+            status=models.Case(
+                models.When(duplicates_count__gt=0, then=models.Value(Instance.STATUS_DUPLICATED)),
+                models.When(last_export_success_at__isnull=False, then=models.Value(Instance.STATUS_EXPORTED)),
+                default=models.Value(Instance.STATUS_READY),
+                output_field=models.CharField(),
+            )
+        )
+
+
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""
 
     UPLOADED_TO = "instances/"
+
+    STATUS_READY = "READY"
+    STATUS_DUPLICATED = "DUPLICATED"
+    STATUS_EXPORTED = "EXPORTED"
+
+    STATUS_CHOICES = (
+        (STATUS_READY, "Ready"),
+        (STATUS_DUPLICATED, "Duplicated"),
+        (STATUS_EXPORTED, "Exported"),
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
@@ -759,6 +785,8 @@ class Instance(models.Model):
     period = models.TextField(null=True, blank=True, db_index=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
+
+    objects = InstanceQuerySet.as_manager()
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -824,6 +852,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "status": getattr(self, 'status', None)
         }
 
     def as_dict_with_parents(self):
@@ -843,6 +872,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "status": getattr(self, 'status', None)
         }
 
     def as_full_model(self):
@@ -863,6 +893,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
+            "status": getattr(self, 'status', None)
         }
 
     def as_small_dict(self):
@@ -878,6 +909,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
+            "status": getattr(self, 'status', None)
         }
 
 

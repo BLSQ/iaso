@@ -1,4 +1,7 @@
 import typing
+from unittest import mock
+from django.core.files import File
+from django.test import TestCase as BaseTestCase
 from django.contrib.auth import get_user_model
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework.response import Response
@@ -7,12 +10,7 @@ from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 from iaso import models as m
 
 
-class APITestCase(BaseAPITestCase):
-    def setUp(self):
-        """Make sure we have a fresh client at the beginning of each test"""
-
-        self.client = APIClient()
-
+class IasoTestCaseMixin:
     @staticmethod
     def create_user_with_profile(*, username: str, account: m.Account, **kwargs):
         User = get_user_model()
@@ -21,6 +19,24 @@ class APITestCase(BaseAPITestCase):
         m.Profile.objects.create(user=user, account=account)
 
         return user
+
+    @staticmethod
+    def create_form_instance(*, form: m.Form, period: str, org_unit: m.OrgUnit):
+        instance_file_mock = mock.MagicMock(spec=File)
+        instance_file_mock.name = 'test.xml'
+
+        return m.Instance.objects.create(form=form, period=period, org_unit=org_unit, file=instance_file_mock)
+
+
+class TestCase(BaseTestCase, IasoTestCaseMixin):
+    pass
+
+
+class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
+    def setUp(self):
+        """Make sure we have a fresh client at the beginning of each test"""
+
+        self.client = APIClient()
 
     def assertJSONResponse(self, response: typing.Any, expected_status_code: int):
         self.assertIsInstance(response, Response)

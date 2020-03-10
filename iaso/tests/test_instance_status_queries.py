@@ -104,8 +104,6 @@ class DuplicatesTestCase(TestCase):
         exported_instance.last_export_success_at = timezone.now()
         exported_instance.save()
 
-        settings.DEBUG = True
-
         instances = annotate_with_duplicated_field(Instance.objects).prefetch_related(
             "form"
         )

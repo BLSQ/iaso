@@ -172,6 +172,9 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
             queryset = queryset.filter(form_id=form_id)
 
+        # add status annotation
+        queryset = queryset.with_status()
+
         # if status:
         #     queryset = queryset.filter(status=status)
 

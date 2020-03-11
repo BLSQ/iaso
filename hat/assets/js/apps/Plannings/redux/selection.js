@@ -15,6 +15,7 @@ export const UPDATE_GEO_SCOPE = 'hat/microplanning/selection/UPDATE_GEO_SCOPE';
 export const GET_TEAM_DETAIL = 'hat/microplanning/selection/GET_TEAM_DETAIL';
 export const SAVE_AREA_IN_GEOLOC = 'hat/microplanning/selection/SAVE_AREA_IN_GEOLOC';
 export const CHANGE_SELECTION_MODIFIED = 'hat/microplanning/selection/CHANGE_SELECTION_MODIFIED';
+export const RESET_ASSIGNATIONS = 'hat/microplanning/selection/RESET_ASSIGNATIONS';
 
 const request = require('superagent');
 
@@ -24,8 +25,6 @@ export const selectionModes = {
     deselect: -1,
 };
 
-// Note: `TypeError: Object.values is not a function` in tests :'(
-const validSelectionModes = Object.keys(selectionModes).map(key => selectionModes[key]);
 
 const calculateAssignations = (mode, patchAssignations, existingAssignations) => {
     switch (mode) {
@@ -89,6 +88,10 @@ export const updateGeoScope = geoScope => ({
     payload: geoScope,
 });
 
+export const resetAssignations = () => ({
+    type: RESET_ASSIGNATIONS,
+});
+
 export const getTeamDetails = (dispatch, teamId, planningId, stopLoading = false) => {
     request
         .get(`/api/teams/${teamId}?planning_id=${planningId}`)
@@ -149,6 +152,7 @@ export const selectionActions = {
     getTeamDetails,
     saveAreaInGeoloc,
     chageSelectionModified,
+    resetAssignations,
 };
 
 export const selectionInitialState = {
@@ -209,6 +213,13 @@ export const selectionReducer = (state = selectionInitialState, action = {}) => 
             return {
                 ...state,
                 displayedItem: action.payload,
+            };
+        }
+
+        case RESET_ASSIGNATIONS: {
+            return {
+                ...state,
+                assignations: [],
             };
         }
 

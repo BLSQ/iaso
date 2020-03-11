@@ -15,112 +15,65 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { deepEqual, clone } from '../../utils/index';
 import { getUrl } from '../../utils/routesUtils';
-import { fetchUrls, launchAlgo } from '../../utils/fetchData';
+import { launchAlgo } from '../../utils/fetchData';
 import MicroplanningComponent from './Microplanning';
 import { selectionActions } from './redux/selection';
 import { currentUserActions } from '../../redux/currentUserReducer';
-import { fetchAction, setTeams, setWorkzones } from './redux/microplanning';
-import { loadActions } from '../../redux/load';
+import {
+    setCoordinations,
+    setPlannings,
+    setTeams,
+    setWorkzones,
+} from './redux/microplanning';
+import { fetchMutliRequests } from '../../utils/requests';
 
 const request = require('superagent');
 
-// This is where we configure the app data urls:
-// the order is used in the success handler below
-// the value for each key is some url, name and mock data.
-// The name is used as the key in the results payload.
-export const urls = () => (
-    [
+const getUrls = (params) => {
+    let urls = [
         {
-            name: 'locations',
-            url: '/api/zs/',
-            mock: [
-                [
-                    1,
-                    'Mosango',
-                ],
-                [
-                    2,
-                    'Yasa-bonga',
-                ],
-            ],
+            url: getUrl('coordinations', params),
+            action: setCoordinations,
         },
         {
-            name: 'coordinations',
-            url: '/api/coordinations/',
-            mock: [
-                [
-                    1,
-                    'Mosango',
-                ],
-                [
-                    2,
-                    'Yasa-bonga',
-                ],
-            ],
+            url: getUrl('plannings', params),
+            action: setPlannings,
         },
-        // {
-        //     name: 'workzones',
-        //     url: workZonesWithAreas ? '/api/workzones' : '/api/workzones/?with_areas=False',
-        //     paramsToRemove: 'years',
-        //     mock: [
-        //     ],
-        // },
-        {
-            name: 'areas',
-            url: '/api/as/',
-            mock: [
-                1,
-                'Kinzamba Ii',
-            ],
-        },
-        {
-            name: 'plannings',
-            url: '/api/plannings/',
-            mock: [
+    ];
+    if (params.planning_id) {
+        urls = urls.concat(
+            [
                 {
-                    name: 'planning 2',
-                    id: 2,
+                    url: getUrl('teams', params),
+                    action: setTeams,
                 },
                 {
-                    name: 'Test',
-                    id: 1,
+                    url: `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
+                    action: setWorkzones,
                 },
             ],
-        },
-        // {
-        //     name: 'teams',
-        //     url: '/api/teams/',
-        //     mock: [
-        //         [
-        //             2,
-        //             'qsdf',
-        //         ],
-        //         [
-        //             1,
-        //             'team 1',
-        //         ],
-        //     ],
-        // },
-    ]
-);
+        );
+    }
+    return urls;
+};
 
 export class MicroplanningContainer extends Component {
     constructor(props) {
         super(props);
         this.currentParams = '';
         this.state = {
-            isAssignationLoading: Boolean(props.params.planning_id),
+            isAssignationLoading: Boolean(props.params.workzone_id),
         };
     }
 
     componentDidMount() {
-        this.loadFullData(this.props.params);
+        const { params } = this.props;
+        this.props.fetchMutliRequests(getUrls(params));
         this.props.fetchCurrentUserInfos();
     }
 
-    // TO-DO => need to move ths to redux as fetchAction
+    // TO-DO => need to move ths to redux as fetchRequest
     getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
         const newParams = Object.assign({}, params);
@@ -147,33 +100,6 @@ export class MicroplanningContainer extends Component {
 
         if (params.team_id) {
             dispatch(selectionActions.getTeamDetails(dispatch, params.team_id, params.planning_id));
-        }
-    }
-
-    loadFullData(params) {
-        const { dispatch } = this.props;
-        const oldParams = clone(this.currentParams);
-        this.currentParams = clone(params);
-        if (!deepEqual(oldParams, params, true)) {
-            fetchUrls(urls(params.workzone_id), params, oldParams, dispatch, false).then(() => {
-                if (params.planning_id) {
-                    const promisesArray = [];
-                    promisesArray.push(
-                        this.props.fetchAction(getUrl('teams', params), setTeams, false),
-                    );
-                    promisesArray.push(
-                        this.props.fetchAction(
-                            `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
-                            setWorkzones,
-                            false,
-                        ),
-                    );
-                    dispatch(loadActions.startLoading());
-                    Promise.all(promisesArray).then(() => {
-                        dispatch(loadActions.successLoadingNoData());
-                    });
-                }
-            });
         }
     }
 
@@ -209,7 +135,7 @@ MicroplanningContainer.propTypes = {
     dispatch: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
-    fetchAction: PropTypes.func.isRequired,
+    fetchMutliRequests: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -221,7 +147,7 @@ const MapDispatchToProps = dispatch => (
         dispatch,
         fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
         ...bindActionCreators({
-            fetchAction,
+            fetchMutliRequests,
         }, dispatch),
     }
 );

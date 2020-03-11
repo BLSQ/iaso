@@ -15,6 +15,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import Grid from '@material-ui/core/Grid';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import TabsComponent from '../../components/TabsComponent';
@@ -26,6 +27,7 @@ import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { villageSelectionLegend } from './constants/microplanningLegends';
 import MicroplanningVillageSearch from './components/MicroplanningVillageSearch';
+import SaveButon from './components/SaveButon';
 
 import {
     Map,
@@ -93,7 +95,7 @@ export class Microplanning extends Component {
         const {
             changeHighlightBufferSize,
             params,
-            teamsList,
+            teams,
         } = this.props;
         const {
             currentTeam,
@@ -102,7 +104,7 @@ export class Microplanning extends Component {
         if (params.team_id && !prevProps.params.team_id) {
             changeHighlightBufferSize(0);
         }
-        if (params.team_id && !currentTeam && teamsList) {
+        if (params.team_id && !currentTeam && teams.length > 0) {
             this.setCurrentTeam(params.team_id);
         }
     }
@@ -147,15 +149,13 @@ export class Microplanning extends Component {
 
     setCurrentTeam(teamId) {
         const {
-            teamsList,
+            teams,
         } = this.props;
-        const teams = (teamsList || []);
         const currentTeam = teams.find(t => t.id === parseInt(teamId, 10));
-        if (currentTeam) {
-            this.setState({
-                currentTeam,
-            });
-        }
+
+        this.setState({
+            currentTeam,
+        });
     }
 
     removeSavingMsg() {
@@ -178,7 +178,7 @@ export class Microplanning extends Component {
         this.props.chageSelectionModified(!isSaved);
     }
 
-    saveTeam() {
+    saveAssignations() {
         const {
             params,
             selection,
@@ -239,44 +239,6 @@ export class Microplanning extends Component {
         launchAlgo(algoParams);
     }
 
-
-    renderSaveTeamButton() {
-        const {
-            params,
-        } = this.props;
-        const {
-            errorOnSave,
-            isSelectionModified,
-            isSavingTeam,
-        } = this.state;
-
-        if (!params.coordination_id && !params.team_id) {
-            return null;
-        }
-        return (
-            <div className="save-assignations">
-                {
-                    errorOnSave === true
-                    && <div className="error"><FormattedMessage id="microplanning.label.save.error" defaultMessage="Error while saving" /></div>
-                }
-                {
-                    errorOnSave === false && errorOnSave !== undefined
-                    && <div className="success"><FormattedMessage id="microplanning.label.save.success" defaultMessage="Selection saved" /></div>
-                }
-                <button
-                    className="button--save"
-                    disabled={!isSelectionModified || isSavingTeam}
-                    onClick={() => this.saveTeam()}
-                >
-                    {
-                        isSavingTeam ? <i className="fa fa-spinner" /> : <i className="fa fa-save" />
-                    }
-                    <FormattedMessage id="microplanning.label.save" defaultMessage="Sauver Sélection" />
-                </button>
-            </div>
-        );
-    }
-
     render() {
         const {
             isAssignationLoading,
@@ -285,7 +247,6 @@ export class Microplanning extends Component {
             },
             params,
             load: {
-                data,
                 loading,
             },
             map: {
@@ -295,6 +256,10 @@ export class Microplanning extends Component {
                 withCluster,
             },
             selection,
+            selection: {
+                highlightBufferSize,
+                assignations,
+            },
             displayItem,
             redirect,
             deselectItems,
@@ -303,69 +268,61 @@ export class Microplanning extends Component {
             setLeafletMap,
             getShape,
             selectItems,
-            villagesList,
+            villagesObject,
             getAdditionalSelectData,
-            teamsList,
-            workZonesList,
+            teams,
+            workzones,
         } = this.props;
 
         const {
             showSearchModal,
             currentTab,
             currentTeam,
+            errorOnSave,
+            isSelectionModified,
+            isSavingTeam,
         } = this.state;
 
-        const { highlightBufferSize } = selection;
-        const teams = (teamsList || []);
-        const coordinations = ((data && data.coordinations) || []);
-        const workzones = (workZonesList || []);
-        const plannings = ((data && data.plannings) || []);
-        const assignations = (selection.assignations) || [];
-        const villagesMap = {};
-        const teamsMap = {};
-        const assignationsMap = {};
-        const selectedAndUnselectedVillages = [];
-        const mapClass = `map__panel${fullscreen ? '--fullscreen' : '--right'}`;
-        const shortVillageSelectionLegend = villageSelectionLegend.slice();
-        shortVillageSelectionLegend.pop();
 
-        let mapLegendItems = villageSelectionLegend.slice(0, 2);
-        let team;
         const villages = [];
-        let selectedVillages = [];
-        if (villagesList) {
-            Object.keys(villagesList).forEach((villageId) => {
-                villagesMap[villageId] = geoUtils.extendVillageInfo(villagesList[villageId]);
-                villages.push(geoUtils.extendVillageInfo(villagesList[villageId]));
+        const villagesMap = {};
+        if (villagesObject) {
+            Object.keys(villagesObject).forEach((villageId) => {
+                const fullVillage = geoUtils.extendVillageInfo(villagesObject[villageId]);
+                villagesMap[villageId] = fullVillage;
+                villages.push(fullVillage);
             });
         }
+
+        const shortVillageSelectionLegend = villageSelectionLegend.slice();
+        shortVillageSelectionLegend.pop();
+        const teamsMap = {};
+        let capacity = currentTeam ? currentTeam.capacity : 0;
+        let mapLegendItems = villageSelectionLegend.slice(0, 2);
         if (currentTeam) {
             mapLegendItems = villageSelectionLegend;
-            team = teamsMap[currentTeam.id];
-        } else if (params.workzone_id) {
-            mapLegendItems = shortVillageSelectionLegend;
-        }
-
-        let capacity = team ? team.capacity : 0;
-
-        if (!team) {
-            for (let i = 0; i < teams.length; i += 1) {
-                team = teams[i];
-                teamsMap[team.id] = team;
-                capacity += team.capacity;
+        } else {
+            teams.forEach((t) => {
+                capacity += t.capacity;
+                teamsMap[t.id] = t;
+            });
+            if (params.workzone_id) {
+                mapLegendItems = shortVillageSelectionLegend;
             }
         }
 
-        for (let i = 0; i < assignations.length; i += 1) {
-            const assignation = assignations[i];
+        const assignationsMap = {};
+        assignations.forEach((assignation) => {
             if (assignation.team_id !== -1) {
                 assignationsMap[assignation.village_id] = assignation.team_id;
             }
-        }
+        });
 
         // planning selection
         // if a planning is selected we need to preselect the villages from the planning
-        if (params.planning_id && data && villagesList) {
+        let selectedVillages = [];
+        const selectedAndUnselectedVillages = [];
+        if (params.planning_id && villagesObject) {
             let assignationsTempList = [...assignations];
 
             if (params.team_id) {
@@ -413,18 +370,16 @@ export class Microplanning extends Component {
 
                 <MicroplanningFilters
                     params={params}
-                    plannings={plannings}
-                    coordinations={coordinations}
-                    workzones={workzones}
-                    teams={teams}
                     redirect={newParams => redirect(newParams)}
                     deselectAll={() => deselectItems(null, false)}
                     closeTooltip={() => displayItem(null)}
                     getAdditionalSelectData={getAdditionalSelectData}
                     setCurrentTeam={teamId => this.setCurrentTeam(teamId)}
+                    capacity={capacity}
                 />
                 {
                     currentTeam
+                    && villages.length > 0
                     && (
                         <TabsComponent
                             currentTab={currentTab}
@@ -438,63 +393,81 @@ export class Microplanning extends Component {
                         />
                     )
                 }
-                <div className={`widget__container ${currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
-                    <div className="widget__header--tier">
+                <div className={`widget__container ${villages.length === 0 ? 'hidden-opacity' : ''} ${currentTab !== 'villageSelection' ? 'hidden' : ''}`}>
+                    <div className="widget__content">
                         {/* Map legend */}
-                        <div>
-                            <MapLegend
-                                items={mapLegendItems}
-                            />
-                        </div>
-                        <div>
-                            <MapLayers
-                                base={baseLayer}
-                                change={(type, key) => changeLayer(type, key)}
-                                teamId={params.team_id}
-                            />
-                        </div>
+                        <Grid container spacing={4}>
+                            <Grid item xs={4}>
+                                <div className="map__selection__title">
+                                    <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
+                                    {
+                                        this.state.isSelectionModified && !this.state.isSavingTeam && !loading
+                                        && (
+                                            <div className="warning-box">
+                                                <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
+                                            </div>
+                                        )
+                                    }
+                                </div>
+
+                                {/* Selection actions */}
+                                <MapSelectionControl
+                                    mode={selection.mode}
+                                    teamId={params.team_id}
+                                    workzoneId={params.workzone_id}
+                                    highlightBufferSize={selection.highlightBufferSize}
+                                    changeHighlightBufferSize={event => changeHighlightBufferSize(event.target.value)}
+                                    selectHighlightBuffer={() => this.selectHighlightBuffer(villages, selection)}
+                                />
+
+                                {/* Selected summary */}
+                                {
+                                    !isAssignationLoading
+                                    && (
+                                        <MapSelectionSummary
+                                            data={selectedAndUnselectedVillages}
+                                            assignationsMap={assignationsMap}
+                                            capacity={capacity}
+                                        />
+                                    )
+                                }
+                                {
+                                    params.coordination_id
+                                    && params.workzone_id
+                                    && (
+                                        <SaveButon
+                                            saveMessage={formatMessage({
+                                                id: 'microplanning.label.save',
+                                                defaultMessage: 'Save selection',
+                                            })}
+                                            isDisabled={!isSelectionModified || isSavingTeam}
+                                            isSaving={isSavingTeam}
+                                            onSave={() => this.saveAssignations()}
+                                            errorOnSave={errorOnSave}
+                                        />
+                                    )
+                                }
+                            </Grid>
+                            <Grid item xs={4}>
+                                <MapLegend
+                                    items={mapLegendItems}
+                                />
+                            </Grid>
+                            <Grid item xs={4}>
+                                <MapLayers
+                                    base={baseLayer}
+                                    change={(type, key) => changeLayer(type, key)}
+                                    teamId={params.team_id}
+                                />
+                            </Grid>
+                        </Grid>
                     </div>
-                    <div className="map__panel__container">
+
+                    <div className={`map__panel__container ${villages.length === 0 ? 'hidden-opacity' : ''}`}>
                         {!fullscreen
                             && (
                                 <div className="map__panel--left">
                                     <div className="map__selection">
-                                        <div className="map__selection__top">
-                                            <div className="map__selection__title">
-                                                <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
-                                                {
-                                                    this.state.isSelectionModified && !this.state.isSavingTeam && !loading
-                                                    && (
-                                                        <div className="warning-box">
-                                                            <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
-                                                        </div>
-                                                    )
-                                                }
-                                            </div>
-
-                                            {/* Selection actions */}
-                                            <MapSelectionControl
-                                                mode={selection.mode}
-                                                teamId={params.team_id}
-                                                workzoneId={params.workzone_id}
-                                                highlightBufferSize={selection.highlightBufferSize}
-                                                changeHighlightBufferSize={event => changeHighlightBufferSize(event.target.value)}
-                                                selectHighlightBuffer={() => this.selectHighlightBuffer(villages, selection)}
-                                            />
-
-                                            {/* Selected summary */}
-                                            {
-                                                !isAssignationLoading
-                                                && (
-                                                    <MapSelectionSummary
-                                                        data={selectedAndUnselectedVillages}
-                                                        assignationsMap={assignationsMap}
-                                                        capacity={capacity}
-                                                    />
-                                                )
-                                            }
-                                        </div>
-
                                         <div className="map__selection__middle">
 
                                             {/* Selected list */}
@@ -523,7 +496,6 @@ export class Microplanning extends Component {
 
                                         <div className="map__selection__bottom">
                                             {/* actions */}
-                                            {this.renderSaveTeamButton()}
                                             <button className="button--tiny middle" onClick={() => this.activateFullscreenHandler()}>
                                                 <i className="fa fa-print" />
                                                 <FormattedMessage id="microplanning.label.print" defaultMessage="Print map" />
@@ -540,7 +512,10 @@ export class Microplanning extends Component {
                             )
                         }
                         {/* Map */}
-                        <div className={mapClass} id="planning-map">
+                        <div
+                            className={`map__panel${fullscreen ? '--fullscreen' : '--right'}`}
+                            id="planning-map"
+                        >
                             <Map
                                 teams={teams}
                                 teamId={params.team_id}
@@ -588,9 +563,7 @@ export class Microplanning extends Component {
 }
 
 Microplanning.defaultProps = {
-    villagesList: null,
-    teamsList: null,
-    workZonesList: null,
+    villagesObject: null,
 };
 
 Microplanning.propTypes = {
@@ -612,9 +585,9 @@ Microplanning.propTypes = {
     intl: PropTypes.object.isRequired,
     isAssignationLoading: PropTypes.bool.isRequired,
     chageSelectionModified: PropTypes.func.isRequired,
-    villagesList: PropTypes.object,
-    workZonesList: PropTypes.any,
-    teamsList: PropTypes.any,
+    villagesObject: PropTypes.object,
+    teams: PropTypes.arrayOf(PropTypes.object).isRequired,
+    workzones: PropTypes.arrayOf(PropTypes.object).isRequired,
     getAdditionalSelectData: PropTypes.func.isRequired,
 };
 
@@ -640,9 +613,9 @@ const MapStateToProps = state => ({
     load: state.load,
     selection: state.selection,
     map: state.map,
-    villagesList: state.microplanning.villagesList,
-    workZonesList: state.microplanning.workZonesList,
-    teamsList: state.microplanning.teamsList,
+    villagesObject: state.microplanning.villagesObject,
+    workzones: state.microplanning.workZonesList,
+    teams: state.microplanning.teamsList,
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MicroplanningWithIntl);

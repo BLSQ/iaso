@@ -1,15 +1,5 @@
 from django.db import transaction
-from iaso.models import (
-    Instance,
-    OrgUnit,
-    Form,
-    FormVersion,
-    MappingVersion,
-    ExportRequest,
-    ExportStatus,
-)
-
-from iaso.dhis2.status_queries import duplicate_ids_query
+from iaso.models import Instance, ExportRequest, ExportStatus
 
 
 class ExportRequestBuilder:
@@ -62,7 +52,7 @@ class ExportRequestBuilder:
         instances = instances.filter(period__in=periods, form_id__in=form_ids)
 
         # don't export duplicate instances
-        instances = instances.exclude(id__in=duplicate_ids_query(instances))
+        instances = instances.with_status().exclude(status=Instance.STATUS_DUPLICATED)
 
         # don't export already exported instances except if forced to
         if not force_export:

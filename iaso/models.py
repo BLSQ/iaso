@@ -31,10 +31,7 @@ PERIOD_TYPE_CHOICES = (
 AGGREGATE = "AGGREGATE"
 EVENT = "EVENT"
 
-MAPPING_TYPE_CHOICES = (
-    (AGGREGATE, _("Aggregate")),
-    (EVENT, _("Event")),
-)
+MAPPING_TYPE_CHOICES = ((AGGREGATE, _("Aggregate")), (EVENT, _("Event")))
 
 QUEUED = "QUEUED"
 
@@ -722,26 +719,66 @@ class ExternalCredentials(models.Model):
 
 
 class InstanceQuerySet(models.QuerySet):
-    # TODO: check if more appropriate to use duplicate logic in status_queries
     def with_status(self):
-        duplicates_subquery = (self
-                               .exclude(id=models.OuterRef('id'))
-                               .filter(form_id=models.OuterRef('form_id'),
-                                       org_unit_id=models.OuterRef('org_unit_id'),
-                                       period=models.OuterRef('period'))
-                               .values('form_id', 'org_unit_id', 'period')
-                               .annotate(duplicates_count=models.Count('*')))
+        duplicates_subquery = (
+            self.exclude(id=models.OuterRef("id"))
+            .filter(
+                form_id=models.OuterRef("form_id"),
+                org_unit_id=models.OuterRef("org_unit_id"),
+                period=models.OuterRef("period"),
+            )
+            .values("form_id", "org_unit_id", "period")
+            .annotate(duplicates_count=models.Count("*"))
+        )
 
-        qs = self.annotate(duplicates_count=models.Subquery(duplicates_subquery.values('duplicates_count'),
-                                                            output_field=models.IntegerField()))
+        qs = self.annotate(
+            duplicates_count=models.Subquery(
+                duplicates_subquery.values("duplicates_count"),
+                output_field=models.IntegerField(),
+            )
+        )
 
         return qs.annotate(
             status=models.Case(
-                models.When(duplicates_count__gt=0, then=models.Value(Instance.STATUS_DUPLICATED)),
-                models.When(last_export_success_at__isnull=False, then=models.Value(Instance.STATUS_EXPORTED)),
+                models.When(
+                    duplicates_count__gt=0,
+                    then=models.Value(Instance.STATUS_DUPLICATED),
+                ),
+                models.When(
+                    last_export_success_at__isnull=False,
+                    then=models.Value(Instance.STATUS_EXPORTED),
+                ),
                 default=models.Value(Instance.STATUS_READY),
                 output_field=models.CharField(),
             )
+        )
+
+    def counts_by_status(self):
+        grouping_fields = ["period", "form_id", "form__name"]
+
+        return (
+            self.values(*grouping_fields)
+            .annotate(total_count=models.Count("id", distinct=True))
+            .annotate(
+                duplicated_count=models.Count(
+                    "id",
+                    distinct=True,
+                    filter=models.Q(status=Instance.STATUS_DUPLICATED),
+                )
+            )
+            .annotate(
+                exported_count=models.Count(
+                    "id",
+                    distinct=True,
+                    filter=models.Q(status=Instance.STATUS_EXPORTED),
+                )
+            )
+            .annotate(
+                ready_count=models.Count(
+                    "id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)
+                )
+            )
+            .order_by("period", "form__name")
         )
 
 
@@ -852,7 +889,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
-            "status": getattr(self, 'status', None)
+            "status": getattr(self, "status", None),
         }
 
     def as_dict_with_parents(self):
@@ -872,7 +909,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
-            "status": getattr(self, 'status', None)
+            "status": getattr(self, "status", None),
         }
 
     def as_full_model(self):
@@ -893,7 +930,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
-            "status": getattr(self, 'status', None)
+            "status": getattr(self, "status", None),
         }
 
     def as_small_dict(self):
@@ -909,7 +946,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
-            "status": getattr(self, 'status', None)
+            "status": getattr(self, "status", None),
         }
 
 

@@ -1,33 +1,8 @@
-from datetime import datetime, date
-from random import random, randint
 from django.core.management.base import BaseCommand
-from django.db import transaction
-from iaso.models import (
-    User,
-    Instance,
-    OrgUnit,
-    Form,
-    FormVersion,
-    Mapping,
-    MappingVersion,
-    DataSource,
-    SourceVersion,
-    ExternalCredentials,
-    Account,
-    ExportLog,
-    ExportRequest,
-    ExportStatus,
-)
-from django.core import management
+from iaso.models import User, Instance, Form
 
-from iaso.dhis2.aggregate_exporter import (
-    handle_exception,
-    map_to_aggregate,
-    AggregateExporter,
-    InstanceExportError,
-)
+from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from iaso.dhis2.status_queries import counts_by_status
 
 
 def boolean_input(question, default=None):
@@ -98,11 +73,12 @@ class Command(BaseCommand):
                 force_export=force,
             )
             print("will export", export_request.exportstatus_set.count(), "instances")
-            for c in counts_by_status(
-                Instance.objects.filter(
-                    id__in=export_request.exportstatus_set.values("instance_id")
-                )
-            ):
+            queryset = Instance.objects.filter(
+                id__in=export_request.exportstatus_set.values("instance_id")
+            ).with_status()
+            for c in queryset.filter(
+                id__in=export_request.exportstatus_set.values("instance_id")
+            ).counts_by_status():
                 print(c)
             sure = boolean_input("Are you sure ? (y/n)")
             if sure:
@@ -111,7 +87,7 @@ class Command(BaseCommand):
                 AggregateExporter().export_instances(export_request, True)
 
         elif mode == "stats":
-            for c in counts_by_status():
+            for c in Instance.objects.with_status().counts_by_status():
                 print(c)
         else:
             print("supported mode stats vs export")

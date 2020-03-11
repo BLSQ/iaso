@@ -1,5 +1,4 @@
-from datetime import datetime, date
-from random import random, randint
+from random import randint
 
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
@@ -17,20 +16,11 @@ from iaso.models import (
     SourceVersion,
     ExternalCredentials,
     Account,
-    ExportLog,
-    ExportRequest,
-    ExportStatus,
 )
 from django.core import management
 
-from iaso.dhis2.aggregate_exporter import (
-    handle_exception,
-    map_to_aggregate,
-    AggregateExporter,
-    InstanceExportError,
-)
+from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from iaso.dhis2.status_queries import counts_by_status
 from django.utils.dateparse import parse_datetime
 
 
@@ -61,7 +51,9 @@ class Command(BaseCommand):
         self.form = form
         self.project = project
         form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id=1, file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+            form=form,
+            version_id=1,
+            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
         )  # TODO: use better fixture
 
         self.form = form
@@ -1946,7 +1938,7 @@ class Command(BaseCommand):
             AggregateExporter().export_instances(export_request, True)
 
         if mode == "stats":
-            for c in counts_by_status():
+            for c in Instance.objects.with_status().counts_by_status():
                 print(c)
 
     @transaction.atomic
@@ -1967,7 +1959,9 @@ class Command(BaseCommand):
 
                     instance.json = test_data
                     instance.form = self.form
-                    instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
+                    instance.file = UploadedFile(
+                        open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+                    )
                     instance.save()
                     # force to past creation date
                     # looks the the first save don't take it

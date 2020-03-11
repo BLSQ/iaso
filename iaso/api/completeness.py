@@ -5,7 +5,6 @@ from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
-from iaso.dhis2 import status_queries
 from iaso.models import Instance
 
 
@@ -35,13 +34,10 @@ class CompletenessViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
-
-        queryset = Instance.objects
         profile = request.user.iaso_profile
-        queryset = queryset.filter(project__account=profile.account)
+        queryset = Instance.objects.filter(
+            project__account=profile.account
+        ).with_status()
+        counts = [to_completeness(count) for count in queryset.counts_by_status()]
 
-        counts = [
-            to_completeness(count)
-            for count in status_queries.counts_by_status(queryset)
-        ]
         return Response({"completeness": counts})

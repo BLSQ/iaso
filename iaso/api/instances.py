@@ -127,7 +127,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
 
         if period_ids:
-            queryset = queryset.filter(period__in=period_ids.split(','))
+            queryset = queryset.filter(period__in=period_ids.split(","))
         if org_unit_type_id:
             queryset = queryset.filter(
                 org_unit__org_unit_type__in=org_unit_type_id.split(",")
@@ -175,8 +175,8 @@ class InstancesViewSet(viewsets.ViewSet):
         # add status annotation
         queryset = queryset.with_status()
 
-        # if status:
-        #     queryset = queryset.filter(status=status)
+        if status:
+            queryset = queryset.filter(status=status)
 
         if csv_format is None and xlsx_format is None:
 

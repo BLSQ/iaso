@@ -13,10 +13,18 @@ class MapSelectionList extends Component {
     render() {
         const { data, show, coordinationId } = this.props;
 
-        if (!data || data.length === 0) {
-            return <div />;
+        if (!data) {
+            return null;
         }
-
+        if (data && data.length === 0) {
+            return (
+                <div className="display-flex flex-center">
+                    <h6 className="align-center">
+                        <FormattedMessage id="microplanning.selected.emptyList" defaultMessage="Selection is empty" />
+                    </h6>
+                </div>
+            );
+        }
         const ordererdData = orderBy(data, [v => v.name.toLowerCase()], ['asc']);
         return (
             <div>

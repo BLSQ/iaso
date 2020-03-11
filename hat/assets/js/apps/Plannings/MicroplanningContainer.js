@@ -19,12 +19,14 @@ import { getUrl } from '../../utils/routesUtils';
 import { launchAlgo } from '../../utils/fetchData';
 import MicroplanningComponent from './Microplanning';
 import { selectionActions } from './redux/selection';
+import { mapActions } from './redux/map';
 import { currentUserActions } from '../../redux/currentUserReducer';
 import {
     setCoordinations,
     setPlannings,
     setTeams,
     setWorkzones,
+    setVillages,
 } from './redux/microplanning';
 import { fetchMutliRequests } from '../../utils/requests';
 
@@ -52,6 +54,10 @@ const getUrls = (params) => {
                     url: `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
                     action: setWorkzones,
                 },
+                {
+                    url: getUrl('villages', params),
+                    action: setVillages,
+                },
             ],
         );
     }
@@ -69,7 +75,12 @@ export class MicroplanningContainer extends Component {
 
     componentDidMount() {
         const { params } = this.props;
-        this.props.fetchMutliRequests(getUrls(params));
+        this.props.fetchMutliRequests(getUrls(params)).then(() => {
+            if (params.workzone_id) {
+                this.getAdditionalSelectData();
+            }
+            this.props.changeCluster(!params.workzone_id);
+        });
         this.props.fetchCurrentUserInfos();
     }
 
@@ -136,6 +147,7 @@ MicroplanningContainer.propTypes = {
     params: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     fetchMutliRequests: PropTypes.func.isRequired,
+    changeCluster: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -145,6 +157,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => (
     {
         dispatch,
+        changeCluster: withCluster => dispatch(mapActions.changeCluster(withCluster)),
         fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
         ...bindActionCreators({
             fetchMutliRequests,

@@ -931,9 +931,9 @@ path.map-marker {
 }
 
 
-.map__selection__middle {
+.map__selection__container{
     padding: $padding-unit/4 $padding-unit/3;
-    height: 90%;
+    height: 100%;
 
     >div {
         display: flex;
@@ -946,32 +946,6 @@ path.map-marker {
 
 }
 
-.map__selection__bottom {
-    border: 1px solid $gray;
-    padding: 15px $padding-unit/6 15px $padding-unit/6;
-    text-align: center;
-
-    button {
-        max-width: 170px;
-
-        &.middle {
-            margin-right: 10px;
-        }
-    }
-
-    .button--tiny {
-        margin: 0 10px 0 0 !important;
-        padding: 0.75em 1em;
-    }
-
-    .button--save {
-        margin-bottom: 15px;
-    }
-
-    >div {
-        text-align: center;
-    }
-}
 
 .map__selection__title {
     @include heading--medium;

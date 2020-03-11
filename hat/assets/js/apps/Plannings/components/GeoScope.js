@@ -216,19 +216,15 @@ class GeoScope extends Component {
         );
     }
 }
-GeoScope.defaultProps = {
-    workzones: [],
-    teamGeoScope: {},
-};
 
 GeoScope.propTypes = {
     geoScope: PropTypes.object.isRequired,
     workzoneId: PropTypes.string.isRequired,
     coordinationId: PropTypes.string.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    workzones: PropTypes.array,
+    workzones: PropTypes.array.isRequired,
     getShapes: PropTypes.func.isRequired,
-    teamGeoScope: PropTypes.object,
+    teamGeoScope: PropTypes.object.isRequired,
     team: PropTypes.object.isRequired,
     planningId: PropTypes.string.isRequired,
     saveAreaInGeoloc: PropTypes.func.isRequired,
@@ -238,6 +234,8 @@ GeoScope.propTypes = {
 
 const MapStateToProps = state => ({
     geoScope: state.geoScope,
+    workzones: state.microplanning.workZonesList,
+    teamGeoScope: state.selection.geoScope,
 });
 
 const MapDispatchToProps = dispatch => ({

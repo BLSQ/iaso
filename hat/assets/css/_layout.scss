@@ -178,6 +178,10 @@ $directions: left right top bottom;
 .display-flex {
     display: flex ! important;
 }
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
 
 .display-inline-block {
     display: inline-block !important;

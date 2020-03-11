@@ -40,19 +40,10 @@ class MicroplanningFilters extends Component {
         super(props);
         this.state = {
             plannings: props.plannings,
-            searchDisabled: false,
+            searchDisabled: true,
         };
         if (props.params.workzone_id) {
             this.props.changeCluster(false);
-        }
-    }
-
-    componentDidMount() {
-        const {
-            params,
-        } = this.props;
-        if (params.planning_id) {
-            this.onSearch();
         }
     }
 

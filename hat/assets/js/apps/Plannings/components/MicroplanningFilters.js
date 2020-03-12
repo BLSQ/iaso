@@ -70,6 +70,7 @@ class MicroplanningFilters extends Component {
             deselectAll,
             closeTooltip,
             params,
+            onChangeFilter,
         } = this.props;
         const tempParams = {
             ...params,
@@ -94,6 +95,7 @@ class MicroplanningFilters extends Component {
         deselectAll();
         closeTooltip();
         redirect(tempParams);
+        onChangeFilter();
     }
 
     onChangeTeam(teamId) {
@@ -269,6 +271,24 @@ class MicroplanningFilters extends Component {
                                             options={teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
                                             onChange={teamId => this.onChangeTeam(teamId)}
                                         />
+                                        {
+                                            params.team_id
+                                            && (
+                                                <div className="margin-top align-right">
+                                                    <button
+                                                        className="button--tiny"
+                                                        onClick={() => this.props.redirect({
+                                                            planning_id: params.planning_id,
+                                                            team_id: params.team_id,
+                                                            month_id: 1,
+                                                        }, 'routes')}
+                                                    >
+                                                        <FormattedMessage id="microplanning.label.seeTeamsRoutes" defaultMessage="See teams routes" />
+                                                    </button>
+
+                                                </div>
+                                            )
+                                        }
                                     </Grid>
                                 </Grid>
                             </div>
@@ -317,6 +337,7 @@ MicroplanningFilters.propTypes = {
     map: PropTypes.object.isRequired,
     dispatch: PropTypes.func.isRequired,
     capacity: PropTypes.number.isRequired,
+    onChangeFilter: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -3,6 +3,7 @@ export const SET_WORKZONES = 'hat/microplanning/SET_WORKZONES';
 export const SET_TEAMS = 'hat/microplanning/SET_TEAMS';
 export const SET_COORDINATIONS = 'hat/microplanning/SET_COORDINATIONS';
 export const SET_PLANNINGS = 'hat/microplanning/SET_PLANNINGS';
+export const GET_ASSIGNATIONS = 'hat/microplanning/GET_ASSIGNATIONS';
 export const SAVE_ASSIGNATIONS = 'hat/microplanning/SAVE_ASSIGNATIONS';
 
 export const setVillages = data => ({
@@ -59,6 +60,13 @@ export const saveAssignations = () => ({
     },
 });
 
+export const getAssignations = () => ({
+    type: GET_ASSIGNATIONS,
+    errorMessage: {
+        id: 'main.snackBar.errors.setAssignations',
+        defaultMessage: 'An error occurred while Error when fetching assignations',
+    },
+});
 
 export const microplanningInitialState = {
     villagesObject: null,
@@ -67,6 +75,7 @@ export const microplanningInitialState = {
     coordinationsList: [],
     planningsList: [],
 };
+
 export const microplanningReducer = (state = microplanningInitialState, action = {}) => {
     switch (action.type) {
         case SET_VILLAGES:

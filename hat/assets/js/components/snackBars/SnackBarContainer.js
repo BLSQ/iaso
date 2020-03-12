@@ -45,7 +45,6 @@ class SnackBarContainer extends Component {
                 />
             );
         }
-        console.log('notification', notification);
         // Display snackbar using notistack
         const message = notification.messageObject
             ? formatMessage(notification.messageObject) : formatMessage(MESSAGES[notification.messageKey]);

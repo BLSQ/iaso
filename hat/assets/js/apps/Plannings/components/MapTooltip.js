@@ -16,191 +16,40 @@ import {
     FormattedDate,
     FormattedMessage,
     FormattedNumber,
-    defineMessages,
     injectIntl,
 } from 'react-intl';
 
 import { capitalize } from '../../../utils';
+import { MESSAGES, ROWS } from '../constants/maptooltip';
 
 const request = require('superagent');
-
-export const urls = [{
-    name: 'village_detail',
-    id: 'village_id',
-    url: ' /api/villages/',
-    mock: [{
-        province: 'Kwilu',
-        former_province: '',
-        zs: 'Bagata',
-        as: 'Bangumi',
-        type: 'YES',
-        latitude: -3.4995401,
-        longitude: 17.681,
-        gps_source: 'ITM',
-        population: 799,
-        population_year: 2016,
-        population_source: 'BCZ BAGATA',
-    }],
-}];
-
-const MESSAGES = defineMessages({
-    province: {
-        id: 'microplanning.tooltip.province',
-        defaultMessage: 'Province',
-    },
-    former_province: {
-        id: 'microplanning.tooltip.province.former',
-        defaultMessage: 'Former province',
-    },
-    zs: {
-        id: 'microplanning.tooltip.zone',
-        defaultMessage: 'Zone de sante',
-    },
-    as: {
-        id: 'microplanning.tooltip.area',
-        defaultMessage: 'Health area',
-    },
-    name: {
-        id: 'microplanning.tooltip.village',
-        defaultMessage: 'Village',
-    },
-    villagesOfficial: {
-        id: 'microplanning.tooltip.villages.official',
-        defaultMessage: 'Villages Z.S.',
-    },
-    villagesOther: {
-        id: 'microplanning.tooltip.villages.other',
-        defaultMessage: 'Villages non-Z.S.',
-    },
-    villagesUnknown: {
-        id: 'microplanning.tooltip.villages.unknown',
-        defaultMessage: 'Villages satellite',
-    },
-    village_official: {
-        id: 'microplanning.tooltip.type',
-        defaultMessage: 'Classification',
-    },
-    latitude: {
-        id: 'microplanning.tooltip.latitude',
-        defaultMessage: 'Latitude',
-    },
-    longitude: {
-        id: 'microplanning.tooltip.longitude',
-        defaultMessage: 'Longitude',
-    },
-    gps_source: {
-        id: 'microplanning.tooltip.gps.source',
-        defaultMessage: 'GPS source',
-    },
-
-    population: {
-        id: 'microplanning.tooltip.population',
-        defaultMessage: 'Population',
-    },
-    population_source: {
-        id: 'microplanning.tooltip.population.source',
-        defaultMessage: 'Population source',
-    },
-    population_year: {
-        id: 'microplanning.tooltip.population.year',
-        defaultMessage: 'Year surveyed population',
-    },
-
-    lastConfirmedCaseDate: {
-        id: 'microplanning.tooltip.case.date',
-        defaultMessage: 'Last confirmed HAT case date',
-    },
-    lastConfirmedCaseYear: {
-        id: 'microplanning.tooltip.case.year',
-        defaultMessage: 'Last confirmed HAT case year',
-    },
-    nr_positive_cases: {
-        id: 'microplanning.tooltip.cases',
-        defaultMessage: 'Confirmed HAT cases',
-    },
-    team_all: {
-        defaultMessage: 'None',
-        id: 'main.label.none',
-    },
-    team_select: {
-        defaultMessage: 'Team',
-        id: 'microplanning.label.team',
-    },
-    add_as: {
-        defaultMessage: 'Add arrea to the',
-        id: 'microplanning.label.add_as',
-    },
-    remove_as: {
-        defaultMessage: 'Remove area form the team',
-        id: 'microplanning.label.remove_as',
-    },
-
-    // type values
-    YES: {
-        id: 'microplanning.tooltip.village.type.official',
-        defaultMessage: 'from Z.S.',
-    },
-    NO: {
-        id: 'microplanning.tooltip.village.type.notofficial',
-        defaultMessage: 'not from Z.S.',
-    },
-    OTHER: {
-        id: 'microplanning.tooltip.village.type.other',
-        defaultMessage: 'found during campaigns',
-    },
-    NA: {
-        id: 'microplanning.tooltip.village.type.unknown',
-        defaultMessage: 'visible from satellite',
-    },
-});
-
-const ROWS = [
-    { key: 'name' },
-    { key: 'zs' },
-    { key: 'as' },
-    { key: 'province' },
-    { key: 'former_province' },
-    { key: 'villagesOfficial', type: 'integer' },
-    { key: 'villagesOther', type: 'integer' },
-    { key: 'villagesUnknown', type: 'integer' },
-    { key: 'village_official', type: 'message' },
-    { key: 'latitude', type: 'coordinates' },
-    { key: 'longitude', type: 'coordinates' },
-    { key: 'gps_source' },
-    { key: 'population', type: 'integer' },
-    { key: 'population_year' },
-    { key: 'population_source' },
-    { key: 'lastConfirmedCaseDate', type: 'date' },
-    { key: 'lastConfirmedCaseYear' },
-    { key: 'nr_positive_cases', type: 'integer' },
-];
 
 class MapTooltip extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            item: props.item,
+            fullItem: null,
             teams: props.teams,
             isloading: true,
         };
     }
 
-    componentWillMount() {
-        this.loadVillageDetail(this.state.item.id);
+    componentDidMount() {
+        this.loadVillageDetail(this.props.item.id, this.props.item);
     }
 
-    componentWillReceiveProps(newProps) {
-        this.setState({
-            item: newProps.item,
-        });
-        if (newProps.item.name) {
-            this.loadVillageDetail(newProps.item.id);
+    componentDidUpdate(prevProps) {
+        const {
+            item,
+        } = this.props;
+        if (prevProps.item.id !== item.id) {
+            this.loadVillageDetail(item.id);
         }
     }
 
     onChangeTeam(selectedTeamId) {
         this.setState({ selectedTeamId });
-        const villageId = parseInt(this.state.item.id, 10);
+        const villageId = parseInt(this.props.item.id, 10);
         const newAssignations = [];
         this.props.assignations.map((a) => {
             const newAssignation = Object.assign({}, a);
@@ -226,132 +75,156 @@ class MapTooltip extends Component {
 
     updateItemField(value) {
         this.setState({
-            item: Object.assign({}, this.state.item, value),
+            fullItem: Object.assign({}, this.state.fullItem, value),
         });
     }
 
     loadVillageDetail(itemId) {
         this.setState({
             isloading: true,
+            fullItem: null,
             // isVillage: true,
         });
-        if (itemId) {
-            request
-                .get(`/api/villages/${itemId}`)
-                .query({ planning_id: this.props.planningId })
-                .then((result) => {
-                    this.updateItemField(result.body);
-                    const existingTeamId = this.props.assignations.filter(a => a.village_id === parseInt(itemId, 10));
-                    this.setState({
-                        isloading: false,
-                        selectedTeamId: existingTeamId.length > 0 ? existingTeamId[0].team_id : null,
-                    });
-                })
-                .catch((err) => {
-                    console.error('Error when fetching villages details');
+        request
+            .get(`/api/villages/${itemId}`)
+            .query({ planning_id: this.props.planningId })
+            .then((result) => {
+                this.updateItemField(result.body);
+                const existingTeamId = this.props.assignations.filter(a => a.village_id === parseInt(itemId, 10));
+                this.setState({
+                    isloading: false,
+                    selectedTeamId: existingTeamId.length > 0 ? existingTeamId[0].team_id : null,
                 });
-        }
+            })
+            .catch((err) => {
+                console.error('Error when fetching villages details');
+            });
     }
 
 
     render() {
-        const { formatMessage } = this.props.intl;
-        if (!this.state.item || this.state.isloading) {
-            return null;
-        }
+        const {
+            intl: {
+                formatMessage,
+            },
+            workzoneId,
+            planningId,
+            item,
+        } = this.props;
+        const {
+            fullItem,
+            selectedTeamId,
+            teams,
+            isloading,
+        } = this.state;
         let selectedTeam = {
             name: '--',
         };
-        if (this.state.selectedTeamId) {
-            [selectedTeam] = this.state.teams.filter(t => t.id === parseInt(this.state.selectedTeamId, 10));
+        if (selectedTeamId) {
+            [selectedTeam] = teams.filter(t => t.id === parseInt(selectedTeamId, 10));
         }
         return (
-            <div key={this.state.item.id} className="map__tooltip">
-                {this.state.item.name && this.props.planningId ? (
-                    <div className="property">
-                        <div className={`label${this.props.workzoneId !== '' ? ' select-team' : ''}`}>
-                            <FormattedMessage
-                                id="microplanning.label.team"
-                                defaultMessage="Team"
-                            />
-                        </div>
-                        <div className="value">
-                            {
-                                this.props.workzoneId === ''
-                                && selectedTeam.name
-                            }
-                            {
-                                this.props.workzoneId !== ''
-                                && (
-                                    <select
-                                        value={this.state.selectedTeamId || ''}
-                                        className="styled-select"
-                                        onChange={event => this.onChangeTeam(event.currentTarget.value)}
-                                    >
-                                        <option value="none">{formatMessage(MESSAGES.team_all)}</option>
-                                        {
-                                            this.state.teams.map(value => (
-                                                <option key={value.id} value={value.id}>
-                                                    {value.name}
-                                                </option>
-                                            ))}
-                                    </select>
-                                )
-                            }
-                        </div>
-                    </div>
-                )
-                    : null}
+            <div key={item.id} className="map__tooltip microplanning">
                 {
-                    ROWS
-                        .filter(row => this.state.item[row.key] && this.state.item[row.key] !== '')
-                        .map((row) => {
-                            let value = this.state.item[row.key];
-                            switch (row.type) {
-                                case 'date':
-                                    value = <FormattedDate value={value} year="numeric" month="long" day="numeric" />;
-                                    break;
-                                case 'capitalize':
-                                    value = capitalize(value);
-                                    break;
-                                case 'coordinates':
-                                    value = (
-                                        <FormattedNumber
-                                            value={value}
-                                            minimumFractionDigits={8}
+                    (!fullItem || isloading)
+                    && (
+                        <div className="loading-map__tooltip">
+                            <i className="fa fa-spinner" />
+                        </div>
+                    )
+                }
+                {
+                    (fullItem && !isloading)
+                    && (
+                        <section>
+                            {fullItem.name && planningId ? (
+                                <div className="property">
+                                    <div className={`label${workzoneId !== '' ? ' select-team' : ''}`}>
+                                        <FormattedMessage
+                                            id="microplanning.label.team"
+                                            defaultMessage="Team"
                                         />
-                                    );
-                                    break;
-                                case 'float':
-                                    value = (
-                                        <FormattedNumber
-                                            value={value}
-                                            minimumFractionDigits={2}
-                                        />
-                                    );
-                                    break;
-                                case 'integer':
-                                    value = <FormattedNumber value={value} />;
-                                    break;
-                                case 'message':
-                                    value = <FormattedMessage {...MESSAGES[value]} />;
-                                    const temp = <FormattedMessage {...MESSAGES[row.key]} />;
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            return (
-                                <div key={row.key} className="property">
-                                    <div className="label">
-                                        <FormattedMessage {...MESSAGES[row.key]} />
                                     </div>
                                     <div className="value">
-                                        {value}
+                                        {
+                                            workzoneId === ''
+                                            && selectedTeam.name
+                                        }
+                                        {
+                                            workzoneId !== ''
+                                            && (
+                                                <select
+                                                    value={selectedTeamId || ''}
+                                                    className="styled-select"
+                                                    onChange={event => this.onChangeTeam(event.currentTarget.value)}
+                                                >
+                                                    <option value="none">{formatMessage(MESSAGES.team_all)}</option>
+                                                    {
+                                                        teams.map(value => (
+                                                            <option key={value.id} value={value.id}>
+                                                                {value.name}
+                                                            </option>
+                                                        ))}
+                                                </select>
+                                            )
+                                        }
                                     </div>
                                 </div>
-                            );
-                        })
+                            )
+                                : null}
+                            {
+                                ROWS
+                                    .filter(row => fullItem[row.key] && fullItem[row.key] !== '')
+                                    .map((row) => {
+                                        let value = fullItem[row.key];
+                                        switch (row.type) {
+                                            case 'date':
+                                                value = <FormattedDate value={value} year="numeric" month="long" day="numeric" />;
+                                                break;
+                                            case 'capitalize':
+                                                value = capitalize(value);
+                                                break;
+                                            case 'coordinates':
+                                                value = (
+                                                    <FormattedNumber
+                                                        value={value}
+                                                        minimumFractionDigits={8}
+                                                    />
+                                                );
+                                                break;
+                                            case 'float':
+                                                value = (
+                                                    <FormattedNumber
+                                                        value={value}
+                                                        minimumFractionDigits={2}
+                                                    />
+                                                );
+                                                break;
+                                            case 'integer':
+                                                value = <FormattedNumber value={value} />;
+                                                break;
+                                            case 'message':
+                                                value = <FormattedMessage {...MESSAGES[value]} />;
+                                                const temp = <FormattedMessage {...MESSAGES[row.key]} />;
+                                                break;
+                                            default:
+                                                break;
+                                        }
+
+                                        return (
+                                            <div key={row.key} className="property">
+                                                <div className="label">
+                                                    <FormattedMessage {...MESSAGES[row.key]} />
+                                                </div>
+                                                <div className="value">
+                                                    {value}
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                            }
+                        </section>
+                    )
                 }
             </div>
         );

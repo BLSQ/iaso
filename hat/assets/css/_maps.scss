@@ -628,6 +628,9 @@ $color in $types {
 
 .map__tooltip {
     min-width: 250px;
+    &.microplanning {
+        min-height: 300px;
+    }
 
     div.property {
         padding: 0.4em 0;
@@ -667,6 +670,16 @@ $color in $types {
         &:hover {
             color: $red;
         }
+    }
+    .loading-map__tooltip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
     }
 }
 

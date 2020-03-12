@@ -140,6 +140,13 @@ export class Microplanning extends Component {
         }
     }
 
+    onChangeFilter() {
+        const {
+            dispatch,
+        } = this.props;
+        dispatch(closeFixedSnackbar('saveWarning'));
+    }
+
     getDownloadUrl(exportType) {
         let url = '/api/assignations/?';
 
@@ -232,6 +239,7 @@ export class Microplanning extends Component {
         };
         launchAlgo(algoParams);
     }
+
 
     render() {
         const {
@@ -364,12 +372,13 @@ export class Microplanning extends Component {
 
                 <MicroplanningFilters
                     params={params}
-                    redirect={newParams => redirect(newParams)}
+                    redirect={(newParams, baseUrl) => redirect(newParams, baseUrl)}
                     deselectAll={() => deselectItems(null, false)}
                     closeTooltip={() => displayItem(null)}
                     getAdditionalSelectData={getAdditionalSelectData}
                     setCurrentTeam={teamId => this.setCurrentTeam(teamId)}
                     capacity={capacity}
+                    onChangeFilter={() => this.onChangeFilter()}
                 />
                 {
                     currentTeam
@@ -600,7 +609,7 @@ const MapDispatchToProps = dispatch => ({
     setLeafletMap: map => dispatch(mapActions.setLeafletMap(map)),
     activateFullscreen: () => dispatch(mapActions.activateFullscreen()),
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
-    redirect: params => dispatch(push(createUrl(params, 'micro'))),
+    redirect: (params, baseUrl) => dispatch(push(createUrl(params, baseUrl || 'micro'))),
     getShape: url => getRequest(url, dispatch, null, false),
     changeSelectionModified: isSelectionModified => dispatch(selectionActions.changeSelectionModified(isSelectionModified)),
     ...bindActionCreators({

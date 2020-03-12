@@ -4,6 +4,47 @@ import { loadActions } from '../redux/load';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from './constants/snackBars';
 
+const MESSAGES = {
+    error: {
+        id: 'main.snackBar.error',
+        defaultMessage: 'An error occured',
+    },
+    success: {
+        id: 'main.snackBar.successful',
+        defaultMessage: 'Saved successfully',
+    },
+};
+
+const returnSuccess = (
+    dispatch,
+    result,
+    action,
+    toggleLoad,
+    displaySnackBar,
+    successMessage,
+) => {
+    if (toggleLoad) {
+        dispatch(loadActions.successLoadingNoData());
+    }
+    const reduxAction = action(result.body);
+    dispatch(reduxAction);
+    if (displaySnackBar) {
+        dispatch(enqueueSnackbar(succesfullSnackBar(null, successMessage || MESSAGES.success)));
+    }
+    return result.body;
+};
+
+const returnError = (dispatch, err, action) => {
+    let message = MESSAGES.error;
+    const reduxAction = action(null);
+    if (reduxAction.errorMessage) {
+        message = reduxAction.errorMessage;
+    }
+    dispatch(enqueueSnackbar(errorSnackBar(null, message)));
+    console.error(`${message}: ${err}`);
+    return err;
+};
+
 const req = require('superagent');
 
 /**
@@ -25,20 +66,8 @@ export const fetchRequest = (
     }
     return req
         .get(url)
-        .then((result) => {
-            if (toggleLoad) {
-                dispatch(loadActions.successLoadingNoData());
-            }
-            const reduxAction = setAction(result.body);
-            dispatch(reduxAction);
-            return true;
-        })
-        .catch((err) => {
-            const reduxAction = setAction(null);
-            dispatch(enqueueSnackbar(errorSnackBar(null, reduxAction.errorMessage)));
-            console.error(`${reduxAction.errorMessage}: ${err}`);
-            return err;
-        });
+        .then(result => returnSuccess(dispatch, result, setAction, toggleLoad, false))
+        .catch(err => returnError(dispatch, err, setAction));
 };
 
 /**
@@ -91,24 +120,8 @@ export const putRequest = (
         .put(url)
         .set('Content-Type', 'application/json')
         .send(data)
-        .then((result) => {
-            if (toggleLoad) {
-                dispatch(loadActions.successLoadingNoData());
-            }
-            const reduxAction = putAction(result.body);
-            dispatch(enqueueSnackbar(succesfullSnackBar(null, {
-                id: 'main.snackBar.successful',
-                defaultMessage: 'Saved successfully',
-            })));
-            dispatch(reduxAction);
-            return true;
-        })
-        .catch((err) => {
-            const reduxAction = putAction(null);
-            dispatch(enqueueSnackbar(errorSnackBar(null, reduxAction.errorMessage)));
-            console.error(`${reduxAction.errorMessage}: ${err}`);
-            return err;
-        });
+        .then(result => returnSuccess(dispatch, result, putAction, toggleLoad, true))
+        .catch(err => returnError(dispatch, err, putAction));
 };
 
 
@@ -135,24 +148,8 @@ export const postRequest = (
         .post(url)
         .set('Content-Type', 'application/json')
         .send(data)
-        .then((result) => {
-            if (toggleLoad) {
-                dispatch(loadActions.successLoadingNoData());
-            }
-            const reduxAction = postAction(result.body);
-            dispatch(enqueueSnackbar(succesfullSnackBar(null, {
-                id: 'main.snackBar.successful',
-                defaultMessage: 'Saved successfully',
-            })));
-            dispatch(reduxAction);
-            return true;
-        })
-        .catch((err) => {
-            const reduxAction = postAction(null);
-            dispatch(enqueueSnackbar(errorSnackBar(null, reduxAction.errorMessage)));
-            console.error(`${reduxAction.errorMessage}: ${err}`);
-            return err;
-        });
+        .then(result => returnSuccess(dispatch, result, postAction, toggleLoad, true))
+        .catch(err => returnError(dispatch, err, postAction));
 };
 
 
@@ -179,22 +176,6 @@ export const patchRequest = (
         .patch(url)
         .set('Content-Type', 'application/json')
         .send(data)
-        .then((result) => {
-            if (toggleLoad) {
-                dispatch(loadActions.successLoadingNoData());
-            }
-            const reduxAction = patchAction(result.body);
-            dispatch(enqueueSnackbar(succesfullSnackBar(null, {
-                id: 'main.snackBar.successful',
-                defaultMessage: 'Saved successfully',
-            })));
-            dispatch(reduxAction);
-            return true;
-        })
-        .catch((err) => {
-            const reduxAction = patchAction(null);
-            dispatch(enqueueSnackbar(errorSnackBar(null, reduxAction.errorMessage)));
-            console.error(`${reduxAction.errorMessage}: ${err}`);
-            return err;
-        });
+        .then(result => returnSuccess(dispatch, result, patchAction, toggleLoad, true))
+        .catch(err => returnError(dispatch, err, patchAction));
 };

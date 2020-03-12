@@ -27,10 +27,10 @@ import {
     setTeams,
     setWorkzones,
     setVillages,
+    getAssignations,
 } from './redux/microplanning';
-import { fetchMutliRequests } from '../../utils/requests';
+import { fetchMutliRequests, fetchRequest } from '../../utils/requests';
 
-const request = require('superagent');
 
 const getUrls = (params) => {
     let urls = [
@@ -84,7 +84,6 @@ export class MicroplanningContainer extends Component {
         this.props.fetchCurrentUserInfos();
     }
 
-    // TO-DO => need to move ths to redux as fetchRequest
     getAdditionalSelectData(params = this.props.params) {
         const { dispatch } = this.props;
         const newParams = Object.assign({}, params);
@@ -92,18 +91,12 @@ export class MicroplanningContainer extends Component {
         this.setState({
             isAssignationLoading: true,
         });
-        request
-            .get('/api/assignations/')
-            .query(newParams)
+        this.props.fetchRequest(
+            getUrl('assignations', newParams),
+            getAssignations,
+        )
             .then((result) => {
-                this.selectItems(result.body, false);
-                this.setState({
-                    isAssignationLoading: false,
-                });
-            })
-            .catch((err) => {
-                console.error(err);
-                console.error('Error when fetching assignations details');
+                this.selectItems(result, false);
                 this.setState({
                     isAssignationLoading: false,
                 });
@@ -147,6 +140,7 @@ MicroplanningContainer.propTypes = {
     params: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
     fetchMutliRequests: PropTypes.func.isRequired,
+    fetchRequest: PropTypes.func.isRequired,
     changeCluster: PropTypes.func.isRequired,
 };
 
@@ -161,6 +155,7 @@ const MapDispatchToProps = dispatch => (
         fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
         ...bindActionCreators({
             fetchMutliRequests,
+            fetchRequest,
         }, dispatch),
     }
 );

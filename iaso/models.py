@@ -717,6 +717,7 @@ class Instance(models.Model):
     )
     period = models.TextField(null=True, blank=True, db_index=True)
     # status = models.TextField(choices=INSTANCE_STATUS_CHOICES, null=True, blank=True)
+    deleted = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name

@@ -87,6 +87,7 @@ def handle_exception(resp, message):
 
 
 def map_to_event(instance, form_mapping):
+
     event = {
         "program": form_mapping["program_id"],
         "event": instance.export_id,
@@ -103,6 +104,22 @@ def map_to_event(instance, form_mapping):
     errored = False
     event_errors = []
     question_mappings = CaseInsensitiveDict(form_mapping["question_mappings"])
+
+    if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        errored = True
+        event_errors.append(
+            [
+                "orgUnit",
+                Exception(
+                    "unknown orgunit in dhis2 : "
+                    + str(instance.org_unit.name)
+                    + "("
+                    + str(instance.org_unit.name)
+                    + ")"
+                ),
+            ]
+        )
+        print(event_errors)
 
     for question_key in instance.json.keys():
         if question_key in question_mappings:
@@ -178,7 +195,7 @@ class EventExporter:
                 "done processing page %d/%d" % (page, paginator.num_pages), len(events)
             )
         print(errors)
-        print(json.dumps(events, indent=4))
+        # print(json.dumps(events, indent=4))
         print("instances", paginator.count)
         print("events", len(events))
         print("errors", len(errors))

@@ -67,7 +67,7 @@ export const changeBufferSize = size => ({
     payload: parseInt(size, 10),
 });
 
-export const chageSelectionModified = isSelectionModified => ({
+export const changeSelectionModified = isSelectionModified => ({
     type: CHANGE_SELECTION_MODIFIED,
     payload: isSelectionModified,
 });
@@ -151,7 +151,7 @@ export const selectionActions = {
     displayItem,
     getTeamDetails,
     saveAreaInGeoloc,
-    chageSelectionModified,
+    changeSelectionModified,
     resetAssignations,
 };
 

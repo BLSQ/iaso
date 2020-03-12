@@ -29,9 +29,11 @@ import { patchRequest } from '../../utils/requests';
 import { selectionActions } from './redux/selection';
 import { mapActions } from './redux/map';
 import { saveAssignations } from './redux/microplanning';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
 import { villageSelectionLegend } from './constants/microplanningLegends';
 import MicroplanningVillageSearch from './components/MicroplanningVillageSearch';
+import { warningSnackBar } from '../../utils/constants/snackBars';
 
 import {
     Map,
@@ -75,6 +77,7 @@ export class Microplanning extends Component {
             currentTab: 'villageSelection',
             showSearchModal: false,
             currentTeam: null,
+            displayWarning: false,
         };
     }
 
@@ -97,9 +100,12 @@ export class Microplanning extends Component {
             changeHighlightBufferSize,
             params,
             teams,
+            dispatch,
         } = this.props;
         const {
             currentTeam,
+            displayWarning,
+            isSelectionModified,
         } = this.state;
         // if we add a team, reset highlight buffer size
         if (params.team_id && !prevProps.params.team_id) {
@@ -107,6 +113,16 @@ export class Microplanning extends Component {
         }
         if (params.team_id && !currentTeam && teams.length > 0) {
             this.setCurrentTeam(params.team_id);
+        }
+        if (isSelectionModified && !displayWarning) {
+            this.toggleWarning();
+            dispatch(enqueueSnackbar(warningSnackBar(
+                'saveWarning',
+                {
+                    id: 'microplanning.label.save.needToSave',
+                    defaultMessage: 'Planning modified but not saved',
+                },
+            )));
         }
     }
 
@@ -153,10 +169,17 @@ export class Microplanning extends Component {
         });
     }
 
+    toggleWarning() {
+        this.setState({
+            displayWarning: !this.state.displayWarning,
+        });
+    }
+
     saveAssignations() {
         const {
             params,
             selection,
+            dispatch,
         } = this.props;
         if (params.workzone_id) {
             this.props.patchRequest(
@@ -167,7 +190,9 @@ export class Microplanning extends Component {
                 },
                 saveAssignations,
             ).then(() => {
-                this.props.chageSelectionModified(false);
+                this.props.changeSelectionModified(false);
+                this.toggleWarning();
+                dispatch(closeFixedSnackbar('saveWarning'));
             });
         }
     }
@@ -305,8 +330,6 @@ export class Microplanning extends Component {
                 }
             });
         }
-        console.log('loading', loading);
-        console.log('isAssignationLoading', isAssignationLoading);
         return (
             <div
                 tabIndex={0}
@@ -377,14 +400,6 @@ export class Microplanning extends Component {
                                             <Grid item xs={4}>
                                                 <div className="map__selection__title">
                                                     <FormattedMessage id="microplanning.label.selection" defaultMessage="Village selection" />
-                                                    {
-                                                        this.state.isSelectionModified && !loading
-                                                        && (
-                                                            <div className="warning-box">
-                                                                <FormattedMessage id="microplanning.label.save.needToSave" defaultMessage="Planning modified but not saved" />
-                                                            </div>
-                                                        )
-                                                    }
                                                 </div>
 
                                                 {/* Selection actions */}
@@ -512,7 +527,7 @@ export class Microplanning extends Component {
                                         >
                                             <FormattedMessage
                                                 id="microplanning.label.save"
-                                                defaultMessage="Save selection"
+                                                defaultMessage="Save planning"
                                             />
                                         </button>
                                     )
@@ -565,11 +580,12 @@ Microplanning.propTypes = {
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     isAssignationLoading: PropTypes.bool.isRequired,
-    chageSelectionModified: PropTypes.func.isRequired,
+    changeSelectionModified: PropTypes.func.isRequired,
     villagesObject: PropTypes.object,
     teams: PropTypes.arrayOf(PropTypes.object).isRequired,
     getAdditionalSelectData: PropTypes.func.isRequired,
     patchRequest: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MicroplanningWithIntl = injectIntl(Microplanning);
@@ -586,10 +602,11 @@ const MapDispatchToProps = dispatch => ({
     deactivateFullscreen: () => dispatch(mapActions.deactivateFullscreen()),
     redirect: params => dispatch(push(createUrl(params, 'micro'))),
     getShape: url => getRequest(url, dispatch, null, false),
-    chageSelectionModified: isSelectionModified => dispatch(selectionActions.chageSelectionModified(isSelectionModified)),
+    changeSelectionModified: isSelectionModified => dispatch(selectionActions.changeSelectionModified(isSelectionModified)),
     ...bindActionCreators({
         patchRequest,
     }, dispatch),
+    dispatch,
 });
 
 const MapStateToProps = state => ({

@@ -750,7 +750,7 @@
     "microplanning.label.print.esc": "Appuyer sur «Esc» pour revenir à la vue normale.",
     "microplanning.label.print.info": "Appuyer ici ou faire «Ctrl+P» pour imprimer la carte.",
     "microplanning.label.remove_as": "Supprimer l'aire de santé de l'équipe",
-    "microplanning.label.save": "Sauver la selection",
+    "microplanning.label.save": "Sauver le planning",
     "microplanning.label.save.error": "Erreur lors de la sauvegarde",
     "microplanning.label.save.needToSave": "Planning modifié mais non sauvegardé",
     "microplanning.label.selection": "Sélection de village",

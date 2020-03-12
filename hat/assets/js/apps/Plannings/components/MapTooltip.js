@@ -181,19 +181,12 @@ class MapTooltip extends Component {
         this.state = {
             item: props.item,
             teams: props.teams,
-            // areas: props.areas,
             isloading: true,
-            // isVillage: false,
         };
     }
 
-    componentDidMount() {
-        // If this is a village we need to fetch the detail of it
-        if (this.state.item.name) {
-            this.loadVillageDetail(this.state.item.id);
-        } else {
-            this.setState({ isloading: false });// eslint-disable-line
-        }
+    componentWillMount() {
+        this.loadVillageDetail(this.state.item.id);
     }
 
     componentWillReceiveProps(newProps) {
@@ -284,29 +277,31 @@ class MapTooltip extends Component {
                         </div>
                         <div className="value">
                             {
-                                this.props.workzoneId === '' &&
-                                selectedTeam.name
+                                this.props.workzoneId === ''
+                                && selectedTeam.name
                             }
                             {
-                                this.props.workzoneId !== '' &&
-                                <select
-                                    value={this.state.selectedTeamId || ''}
-                                    className="styled-select"
-                                    onChange={event => this.onChangeTeam(event.currentTarget.value)}
-                                >
-                                    <option value="none">{formatMessage(MESSAGES.team_all)}</option>
-                                    {
-                                        this.state.teams.map(value =>
-                                            (
+                                this.props.workzoneId !== ''
+                                && (
+                                    <select
+                                        value={this.state.selectedTeamId || ''}
+                                        className="styled-select"
+                                        onChange={event => this.onChangeTeam(event.currentTarget.value)}
+                                    >
+                                        <option value="none">{formatMessage(MESSAGES.team_all)}</option>
+                                        {
+                                            this.state.teams.map(value => (
                                                 <option key={value.id} value={value.id}>
                                                     {value.name}
                                                 </option>
                                             ))}
-                                </select>
+                                    </select>
+                                )
                             }
                         </div>
-                    </div>) :
-                    null}
+                    </div>
+                )
+                    : null}
                 {
                     ROWS
                         .filter(row => this.state.item[row.key] && this.state.item[row.key] !== '')
@@ -383,4 +378,3 @@ MapTooltip.propTypes = {
 };
 
 export default injectIntl(MapTooltip);
-

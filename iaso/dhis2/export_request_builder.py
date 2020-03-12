@@ -18,7 +18,9 @@ class ExportRequestBuilder:
         mappings = []
         for form_mapping in instance.form.mapping_set.all():
             for form_mapping_version in form_mapping.versions.all():
-                if form_mapping_version.form_version.version_id == ona_version:
+                if str(form_mapping_version.form_version.version_id) == str(
+                    ona_version
+                ):
                     mappings.append(form_mapping_version)
 
         if len(mappings) == 0:

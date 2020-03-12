@@ -24,6 +24,41 @@ from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 
+"""
+
+to be able to export
+
+run this in taskr (TODO port it to python)
+// https://play.dhis2.org/2.30/api/apps/Dhis2-Taskr/index.html
+const api = await dhis2.api();
+const ou = await api.get("categoryOptions", {
+  fields: ":all",
+  paging: false
+});
+
+for (categoryOption of ou.categoryOptions) {
+  await api.post(
+    "/sharing?type=categoryOption&id=" + categoryOption.id,
+
+    {
+      meta: { allowPublicAccess: true, allowExternalAccess: false },
+
+      object: {
+        id: categoryOption.id,
+        name: categoryOption.name,
+        displayName: categoryOption.displayName,
+        publicAccess: "rwrw----",
+
+        user: categoryOption.user,
+        externalAccess: false
+      }
+    }
+  );
+}
+
+return ou.organisationUnits;
+ """
+
 
 class Command(BaseCommand):
     def add_arguments(self, parser):
@@ -1885,10 +1920,10 @@ class Command(BaseCommand):
         }
 
         if (
-                MappingVersion.objects.filter(
-                    name="aggregate", form_version=self.form_version
-                ).count()
-                == 0
+            MappingVersion.objects.filter(
+                name="aggregate", form_version=self.form_version
+            ).count()
+            == 0
         ):
             MappingVersion.objects.get_or_create(
                 name="aggregate",
@@ -1960,7 +1995,7 @@ class Command(BaseCommand):
                     instance.org_unit = org_unit
                     instance.period = period
 
-                    test_data = {}
+                    test_data = {"_version": 1}
 
                     for key in mapping_version.json["question_mappings"]:
                         test_data[key] = randint(1, 10)

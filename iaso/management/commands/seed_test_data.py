@@ -16,6 +16,7 @@ from iaso.models import (
     SourceVersion,
     ExternalCredentials,
     Account,
+    Profile,
 )
 from django.core import management
 
@@ -38,7 +39,33 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dhis2_version = "2.30"
         mode = options.get("mode")
-        project = Project.objects.first()
+
+        account, account_created = Account.objects.get_or_create(
+            name="Organisation Name" + dhis2_version
+        )
+
+        user, user_created = User.objects.get_or_create(
+            username="testemail" + dhis2_version,
+            email="testemail" + dhis2_version + "@bluesquarehub.com",
+        )
+        if user.password == "":
+            user.set_password("testemail" + dhis2_version)
+        user.save()
+        try:
+            user.iaso_profile
+        except Profile.DoesNotExist:
+            Profile.objects.create(account=account, user=user)
+        self.user = user
+
+        credentials, creds_created = ExternalCredentials.objects.get_or_create(
+            name="Test export api",
+            url="https://play.dhis2.org/" + dhis2_version,
+            login="admin",
+            password="district",
+            account=account,
+        )
+
+        project = Project.objects.create(name="Test", account=account)
         form, created = Form.objects.get_or_create(
             form_id="quality_pca_" + dhis2_version,
             name="Quality PCA form " + dhis2_version,
@@ -58,24 +85,6 @@ class Command(BaseCommand):
 
         self.form = form
         self.form_version = form_version
-
-        account, account_created = Account.objects.get_or_create(
-            name="Organisation Name" + dhis2_version
-        )
-
-        user, user_created = User.objects.get_or_create(
-            username="Test User Name" + dhis2_version,
-            email="testemail" + dhis2_version + "@bluesquarehub.com",
-        )
-        self.user = user
-
-        credentials, creds_created = ExternalCredentials.objects.get_or_create(
-            name="Test export api",
-            url="https://play.dhis2.org/" + dhis2_version,
-            login="admin",
-            password="district",
-            account=account,
-        )
 
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
@@ -1876,10 +1885,10 @@ class Command(BaseCommand):
         }
 
         if (
-            MappingVersion.objects.filter(
-                name="aggregate", form_version=self.form_version
-            ).count()
-            == 0
+                MappingVersion.objects.filter(
+                    name="aggregate", form_version=self.form_version
+                ).count()
+                == 0
         ):
             MappingVersion.objects.get_or_create(
                 name="aggregate",
@@ -1922,7 +1931,6 @@ class Command(BaseCommand):
             print("generated", form.instances.count(), "instances")
 
         if mode == "export":
-
             force = options.get("force")
 
             print("********* exporting")

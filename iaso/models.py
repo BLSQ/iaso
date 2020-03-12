@@ -3,6 +3,7 @@ from urllib.request import urlopen
 import pathlib
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
@@ -720,6 +721,32 @@ class ExternalCredentials(models.Model):
 
 class InstanceQuerySet(models.QuerySet):
     def with_status(self):
+        duplicates_subquery = (
+            self.values("period", "form", "org_unit")
+            .annotate(ids=ArrayAgg("id"))
+            .annotate(c=models.Func("ids", models.Value(1), function="array_length"))
+            .filter(form__in=Form.objects.filter(single_per_period=True))
+            .filter(c__gt=1)
+            .annotate(id=models.Func("ids", function="unnest"))
+            .values("id")
+        )
+
+        return self.annotate(
+            status=models.Case(
+                models.When(
+                    id__in=duplicates_subquery,
+                    then=models.Value(Instance.STATUS_DUPLICATED),
+                ),
+                models.When(
+                    last_export_success_at__isnull=False,
+                    then=models.Value(Instance.STATUS_EXPORTED),
+                ),
+                default=models.Value(Instance.STATUS_READY),
+                output_field=models.CharField(),
+            )
+        )
+
+    def with_status_alternate(self):  # TODO: probably not needed
         duplicates_subquery = (
             self.exclude(id=models.OuterRef("id"))
             .filter(

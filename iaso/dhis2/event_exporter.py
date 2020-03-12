@@ -151,6 +151,9 @@ class EventExporter:
             for instance in paginator.page(page).object_list:
                 if instance.json:
                     event, event_errors = map_to_event(instance, form_mapping)
+                    if event and len(event["dataValues"]) == 0:
+                        # todo throw ?
+                        print("WARN no davaValues but had values", instance.json)
                     if not event_errors:
                         events.append(event)
                     else:

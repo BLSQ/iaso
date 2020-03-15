@@ -112,6 +112,20 @@ class Command(BaseCommand):
         project.save()
 
         self.quantity_form = quantity_form
+
+        # cvs
+        cvs_form, created = Form.objects.get_or_create(
+            form_id="css_" + dhis2_version,
+            name="Community Verification Satisfaction form " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=False,
+        )
+        cvs_form.org_unit_types.add(orgunit_type)
+
+        cvs_mapping_version = self.seed_form(cvs_form, datasource, credentials,mapping_file="./testdata/seed-data-command-cvs-form-mapping.json")
+        project.forms.add(cvs_form)
+
+        
         self.project = project
 
         periods = ["201801", "201802", "201803", "201804", "201805", "201806"]
@@ -141,44 +155,42 @@ class Command(BaseCommand):
 
             print("********* generating instances")
             self.seed_instances(
+                source_version,
+                cvs_form,
+                quarter_periods[0:1],
+                cvs_mapping_version,
+                fixed_instance_count=50,
+            )
+            print(
+                "generated", cvs_form.name, cvs_form.instances.count(), "instances",
+            )
+            self.seed_instances(
                 source_version, quantity_form, periods, quantity_mapping_version
+            )
+            print(
+                "generated",
+                quantity_form.name,
+                quantity_form.instances.count(),
+                "instances",
             )
             self.seed_instances(
                 source_version, quality_form, quarter_periods, quality_form_version
             )
-            print("generated", quantity_form.instances.count(), "instances")
-            print("generated", quality_form.instances.count(), "instances")
+            print(
+                "generated",
+                quality_form.name,
+                quality_form.instances.count(),
+                "instances",
+            )
 
         if mode == "export":
             force = options.get("force")
             print("********* exporting")
             print("fixing categoryOptions sharing")
-            api = Api(credentials.url, credentials.login, credentials.password)
-            for page in api.get_paged(
-                "categoryOptions", params={"fields": ":all"}, page_size=100
-            ):
-                for category_option in page["categoryOptions"]:
-                    if category_option["name"] != "default":
-                        api.post(
-                            "/sharing?type=categoryOption&id=" + category_option["id"],
-                            {
-                                "meta": {
-                                    "allowPublicAccess": True,
-                                    "allowExternalAccess": False,
-                                },
-                                "object": {
-                                    "id": category_option["id"],
-                                    "name": category_option["name"],
-                                    "displayName": category_option["displayName"],
-                                    "publicAccess": "rwrw----",
-                                    "user": category_option["user"],
-                                    "externalAccess": False,
-                                },
-                            },
-                        )
+            self.make_category_options_public(credentials)
 
             export_periods = quarter_periods[0:1] + periods[0:3]
-            print("creating export request ",export_periods)
+            print("creating export request ", export_periods)
             export_request = ExportRequestBuilder().build_export_request(
                 periods=export_periods,
                 form_ids=[quantity_form.id, quality_form.id],
@@ -194,46 +206,84 @@ class Command(BaseCommand):
             for c in Instance.objects.with_status().counts_by_status():
                 print(c)
 
-    def seed_form(self, form, datasource, credentials):
+    def make_category_options_public(self, credentials):
+        api = Api(credentials.url, credentials.login, credentials.password)
+        for page in api.get_paged(
+            "categoryOptions", params={"fields": ":all"}, page_size=100
+        ):
+            for category_option in page["categoryOptions"]:
+                if category_option["name"] != "default":
+                    api.post(
+                        "/sharing?type=categoryOption&id=" + category_option["id"],
+                        {
+                            "meta": {
+                                "allowPublicAccess": True,
+                                "allowExternalAccess": False,
+                            },
+                            "object": {
+                                "id": category_option["id"],
+                                "name": category_option["name"],
+                                "displayName": category_option["displayName"],
+                                "publicAccess": "rwrw----",
+                                "user": category_option["user"],
+                                "externalAccess": False,
+                            },
+                        },
+                    )
+
+    def seed_form(
+        self,
+        form,
+        datasource,
+        credentials,
+        mapping_file="./testdata/seed-data-command-form-mapping.json",
+    ):
         form_version, created = FormVersion.objects.get_or_create(
             form=form,
             version_id=1,
             file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
         )  # TODO: use better fixture
+        mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
+        mapping_version_name = "aggregate" if form.single_per_period else "derived"
 
         mapping, _mapping_created = Mapping.objects.get_or_create(
-            form=form, data_source=datasource, mapping_type="AGGREGATE"
+            form=form, data_source=datasource, mapping_type=mapping_type
         )
 
-        mapping_version_json = self.mapping_json(
-            "./testdata/seed-data-command-form-mapping.json"
-        )
+        mapping_version_json = self.mapping_json(mapping_file)
 
         if (
             MappingVersion.objects.filter(
-                name="aggregate", form_version=form_version
+                name=mapping_version_name, form_version=form_version
             ).count()
             == 0
         ):
             MappingVersion.objects.get_or_create(
-                name="aggregate",
+                name=mapping_version_name,
                 form_version=form_version,
                 mapping=mapping,
                 json=mapping_version_json,
             )
 
         mapping_version, mapping_version_created = MappingVersion.objects.get_or_create(
-            name="aggregate", form_version=form_version, mapping=mapping
+            name=mapping_version_name, form_version=form_version, mapping=mapping
         )
         mapping_version.json = mapping_version_json
         mapping_version.save()
         return mapping_version
 
     @transaction.atomic
-    def seed_instances(self, source_version, form, periods, mapping_version):
+    def seed_instances(
+        self, source_version, form, periods, mapping_version, fixed_instance_count=None
+    ):
         for org_unit in source_version.orgunit_set.all():
+            instances = []
             for period in periods:
-                instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
+                if fixed_instance_count and "Clinic" in org_unit.name:
+                    instance_by_ou_periods = randint(1, fixed_instance_count)
+                else:
+                    instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
+                #print("generating", form.name, org_unit.name, instance_by_ou_periods)
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
@@ -242,19 +292,28 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    for key in mapping_version.json["question_mappings"]:
-                        test_data[key] = randint(1, 10)
+                    if  "question_mappings" in mapping_version.json:
+                        # quality or quantity
+                        for key in mapping_version.json["question_mappings"]:
+                            test_data[key] = randint(1, 10)
+                    else:
+                        # CVS
+                        for key in mapping_version.json["aggregations"]:
+                            test_data[key["question_key"]] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form
                     instance.file = UploadedFile(
                         open("iaso/tests/fixtures/hydroponics_test_upload.xml")
                     )
-                    instance.save()
+                    
+                    instances.append(instance)
                     # force to past creation date
                     # looks the the first save don't take it
-                    instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
-                    instance.save()
+                    #instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
+                    #instance.save()
+            
+            Instance.objects.bulk_create(instances)
 
     def mapping_json(self, file):
         with open(file) as json_file:

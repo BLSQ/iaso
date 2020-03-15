@@ -23,42 +23,15 @@ from django.core import management
 from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
-
+from dhis2 import Api
 import json
 
 """
-
-to be able to export
-
-run this in taskr (TODO port it to python)
-// https://play.dhis2.org/2.30/api/apps/Dhis2-Taskr/index.html
-const api = await dhis2.api();
-const ou = await api.get("categoryOptions", {
-  fields: ":all",
-  paging: false
-});
-
-for (categoryOption of ou.categoryOptions) {
-  await api.post(
-    "/sharing?type=categoryOption&id=" + categoryOption.id,
-
-    {
-      meta: { allowPublicAccess: true, allowExternalAccess: false },
-
-      object: {
-        id: categoryOption.id,
-        name: categoryOption.name,
-        displayName: categoryOption.displayName,
-        publicAccess: "rwrw----",
-
-        user: categoryOption.user,
-        externalAccess: false
-      }
-    }
-  );
-}
-
-return ou.organisationUnits;
+seed_test_data --mode=seed
+seed_test_data --mode=stats
+seed_test_data --mode=export
+seed_test_data --mode=stats
+seed_test_data --mode=export --force
  """
 
 
@@ -103,29 +76,6 @@ class Command(BaseCommand):
         )
 
         project = Project.objects.create(name="Test", account=account)
-        form, created = Form.objects.get_or_create(
-            form_id="quality_pca_" + dhis2_version,
-            name="Quality PCA form " + dhis2_version,
-            period_type="MONTH",
-            single_per_period=True,
-        )
-        project.forms.add(form)
-        orgunit_type, created = OrgUnitType.objects.get_or_create(
-            name="FosaPlay", short_name="FosaPlay"
-        )
-        form.org_unit_types.add(orgunit_type)
-        project.save()
-        self.form = form
-        self.project = project
-        form_version, created = FormVersion.objects.get_or_create(
-            form=form,
-            version_id=1,
-            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
-        )  # TODO: use better fixture
-
-        self.form = form
-        self.form_version = form_version
-
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
         )
@@ -133,34 +83,39 @@ class Command(BaseCommand):
             number=1, data_source=datasource
         )
 
-        mapping, _mapping_created = Mapping.objects.get_or_create(
-            form=form, data_source=datasource, mapping_type="AGGREGATE"
+        orgunit_type, created = OrgUnitType.objects.get_or_create(
+            name="FosaPlay", short_name="FosaPlay"
         )
-        self.mapping = mapping
-
-        mapping_version_json = self.mapping_json(
-            "./testdata/seed-data-command-form-mapping.json"
+        # quantity
+        quantity_form, created = Form.objects.get_or_create(
+            form_id="quantity_pca_" + dhis2_version,
+            name="Quantity PCA form " + dhis2_version,
+            period_type="MONTH",
+            single_per_period=True,
+        )
+        project.forms.add(quantity_form)
+        quantity_form.org_unit_types.add(orgunit_type)
+        quantity_mapping_version = self.seed_form(
+            quantity_form, datasource, credentials
         )
 
-        if (
-            MappingVersion.objects.filter(
-                name="aggregate", form_version=self.form_version
-            ).count()
-            == 0
-        ):
-            MappingVersion.objects.get_or_create(
-                name="aggregate",
-                form_version=self.form_version,
-                mapping=self.mapping,
-                json=mapping_version_json,
-            )
-
-        mapping_version, mapping_version_created = MappingVersion.objects.get_or_create(
-            name="aggregate", form_version=self.form_version, mapping=self.mapping
+        # quality
+        quality_form, created = Form.objects.get_or_create(
+            form_id="quality_pca_" + dhis2_version,
+            name="Quality PCA form " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=True,
         )
-        mapping_version.json = mapping_version_json
-        mapping_version.save()
+        quality_form.org_unit_types.add(orgunit_type)
+        project.forms.add(quality_form)
+        quality_form_version = self.seed_form(quality_form, datasource, credentials)
+        project.save()
+
+        self.quantity_form = quantity_form
+        self.project = project
+
         periods = ["201801", "201802", "201803", "201804", "201805", "201806"]
+        quarter_periods = ["2018Q1", "2018Q2"]
 
         print("********* FORM seed done")
         if mode == "seed":
@@ -185,27 +140,94 @@ class Command(BaseCommand):
             )
 
             print("********* generating instances")
-            self.seed_instances(source_version, form, periods, mapping_version)
-            print("generated", form.instances.count(), "instances")
+            self.seed_instances(
+                source_version, quantity_form, periods, quantity_mapping_version
+            )
+            self.seed_instances(
+                source_version, quality_form, quarter_periods, quality_form_version
+            )
+            print("generated", quantity_form.instances.count(), "instances")
+            print("generated", quality_form.instances.count(), "instances")
 
         if mode == "export":
             force = options.get("force")
-
             print("********* exporting")
+            print("fixing categoryOptions sharing")
+            api = Api(credentials.url, credentials.login, credentials.password)
+            for page in api.get_paged(
+                "categoryOptions", params={"fields": ":all"}, page_size=100
+            ):
+                for category_option in page["categoryOptions"]:
+                    if category_option["name"] != "default":
+                        api.post(
+                            "/sharing?type=categoryOption&id=" + category_option["id"],
+                            {
+                                "meta": {
+                                    "allowPublicAccess": True,
+                                    "allowExternalAccess": False,
+                                },
+                                "object": {
+                                    "id": category_option["id"],
+                                    "name": category_option["name"],
+                                    "displayName": category_option["displayName"],
+                                    "publicAccess": "rwrw----",
+                                    "user": category_option["user"],
+                                    "externalAccess": False,
+                                },
+                            },
+                        )
+
+            export_periods = quarter_periods[0:1] + periods[0:3]
+            print("creating export request ",export_periods)
             export_request = ExportRequestBuilder().build_export_request(
-                periods=periods,
-                form_ids=[self.form.id],
+                periods=export_periods,
+                form_ids=[quantity_form.id, quality_form.id],
                 orgunit_ids=[],
                 launcher=self.user,
                 force_export=force,
             )
 
-            print("exporting")
+            print("exporting", export_request.exportstatus_set.count())
             AggregateExporter().export_instances(export_request, True)
 
         if mode == "stats":
             for c in Instance.objects.with_status().counts_by_status():
                 print(c)
+
+    def seed_form(self, form, datasource, credentials):
+        form_version, created = FormVersion.objects.get_or_create(
+            form=form,
+            version_id=1,
+            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
+        )  # TODO: use better fixture
+
+        mapping, _mapping_created = Mapping.objects.get_or_create(
+            form=form, data_source=datasource, mapping_type="AGGREGATE"
+        )
+
+        mapping_version_json = self.mapping_json(
+            "./testdata/seed-data-command-form-mapping.json"
+        )
+
+        if (
+            MappingVersion.objects.filter(
+                name="aggregate", form_version=form_version
+            ).count()
+            == 0
+        ):
+            MappingVersion.objects.get_or_create(
+                name="aggregate",
+                form_version=form_version,
+                mapping=mapping,
+                json=mapping_version_json,
+            )
+
+        mapping_version, mapping_version_created = MappingVersion.objects.get_or_create(
+            name="aggregate", form_version=form_version, mapping=mapping
+        )
+        mapping_version.json = mapping_version_json
+        mapping_version.save()
+        return mapping_version
 
     @transaction.atomic
     def seed_instances(self, source_version, form, periods, mapping_version):
@@ -224,7 +246,7 @@ class Command(BaseCommand):
                         test_data[key] = randint(1, 10)
 
                     instance.json = test_data
-                    instance.form = self.form
+                    instance.form = form
                     instance.file = UploadedFile(
                         open("iaso/tests/fixtures/hydroponics_test_upload.xml")
                     )

@@ -308,10 +308,6 @@ class Command(BaseCommand):
                     )
                     
                     instances.append(instance)
-                    # force to past creation date
-                    # looks the the first save don't take it
-                    #instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
-                    #instance.save()
             
             Instance.objects.bulk_create(instances)
 

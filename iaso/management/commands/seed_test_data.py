@@ -115,17 +115,37 @@ class Command(BaseCommand):
 
         # cvs
         cvs_form, created = Form.objects.get_or_create(
-            form_id="css_" + dhis2_version,
+            form_id="cvs_" + dhis2_version,
             name="Community Verification Satisfaction form " + dhis2_version,
             period_type="QUARTER",
             single_per_period=False,
         )
         cvs_form.org_unit_types.add(orgunit_type)
 
-        cvs_mapping_version = self.seed_form(cvs_form, datasource, credentials,mapping_file="./testdata/seed-data-command-cvs-form-mapping.json")
+        cvs_mapping_version = self.seed_form(
+            cvs_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+        )
         project.forms.add(cvs_form)
 
-        
+        cvs_stat_form, created = Form.objects.get_or_create(
+            form_id="cvs_stat_" + dhis2_version,
+            name="CVS Stats " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=False,
+        )
+        cvs_stat_form.org_unit_types.add(orgunit_type)
+
+        cvs_stat_mapping_version = self.seed_form(
+            cvs_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+        )
+        project.forms.add(cvs_stat_form)
+
         self.project = project
 
         periods = ["201801", "201802", "201803", "201804", "201805", "201806"]
@@ -206,6 +226,17 @@ class Command(BaseCommand):
             for c in Instance.objects.with_status().counts_by_status():
                 print(c)
 
+        if mode == "derived":
+            from iaso.dhis2.derived_instance_generator import generate_instances
+
+            generate_instances(
+                project,
+                cvs_form,
+                cvs_mapping_version,
+                cvs_stat_form,
+                cvs_stat_mapping_version,
+            )
+
     def make_category_options_public(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
         for page in api.get_paged(
@@ -283,7 +314,7 @@ class Command(BaseCommand):
                     instance_by_ou_periods = randint(1, fixed_instance_count)
                 else:
                     instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
-                #print("generating", form.name, org_unit.name, instance_by_ou_periods)
+                # print("generating", form.name, org_unit.name, instance_by_ou_periods)
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
@@ -292,23 +323,23 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    if  "question_mappings" in mapping_version.json:
+                    if "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
                     else:
                         # CVS
                         for key in mapping_version.json["aggregations"]:
-                            test_data[key["question_key"]] = randint(1, 100)
+                            test_data[key["questionKey"]] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form
                     instance.file = UploadedFile(
                         open("iaso/tests/fixtures/hydroponics_test_upload.xml")
                     )
-                    
+
                     instances.append(instance)
-            
+
             Instance.objects.bulk_create(instances)
 
     def mapping_json(self, file):

@@ -4,19 +4,19 @@
     {
       "id": "cs_304_avg",
       "name": "Average statisfaction score",
-      "question_key": "cs_304",
+      "questionKey": "cs_304",
       "aggregationType": "avg"
     },
     {
       "id": "cs_304_count",
       "name": "Number of submissions with answered survey",
-      "question_key": "cs_304",
+      "questionKey": "cs_304",
       "aggregationType": "count"
     },
     {
-      "id": "cs_304_count",
-      "name": "Number of submissions with satisfied patient",
-      "question_key": "cs_304",
+      "id": "cs_304_sum",
+      "name": "sum of budget",
+      "questionKey": "cs_304",
       "aggregationType": "sum"
     }
   ]

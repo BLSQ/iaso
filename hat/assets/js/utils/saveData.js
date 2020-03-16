@@ -47,30 +47,6 @@ export function deleteFull(url) {
         .catch(err => false);
 }
 
-export function saveCoordinationPlanning(assignations, planning_id, coordination_id) {
-    return request
-        .put(`/api/coordinations/${coordination_id}/`)
-        .set('Content-Type', 'application/json')
-        .send({
-            planning_id,
-            assignations,
-        })
-        .then(() => true)
-        .catch(err => false);
-}
-
-export function saveWorkzonePlanning(assignations, planning_id, workzone_id) {
-    return request
-        .patch(`/api/workzones/${workzone_id}/`)
-        .set('Content-Type', 'application/json')
-        .send({
-            planning_id,
-            assignations,
-        })
-        .then(() => true)
-        .catch(err => false);
-}
-
 
 export function saveTest(test, dispatch) {
     return request

@@ -5,24 +5,27 @@ export const buttonReloadMessageKey = 'reload';
 export const reloadPageMessageKey = 'reloadPage';
 
 
-export const succesfullSnackBar = (messageKey = formSuccessFullMessageKey) => ({
+export const succesfullSnackBar = (messageKey = formSuccessFullMessageKey, messageObject) => ({
     messageKey,
+    messageObject,
     options: {
         variant: 'success',
         persist: false,
     },
 });
 
-export const errorSnackBar = (messageKey = formErrorMessageKey) => ({
+export const errorSnackBar = (messageKey = formErrorMessageKey, messageObject) => ({
     messageKey,
+    messageObject,
     options: {
         variant: 'error',
         persist: false,
     },
 });
 
-export const warningSnackBar = (messageKey = formWarningMessageKey) => ({
+export const warningSnackBar = (messageKey = formWarningMessageKey, messageObject) => ({
     messageKey,
+    messageObject,
     options: {
         maxsnack: 1, // always display snackBar
         variant: 'warning',

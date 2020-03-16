@@ -23,6 +23,9 @@ class ValueFormatterTests(TestCase):
             ("BOOLEAN", "", None),
             ("TEXT", "super large", "super large"),
             ("LONG_TEXT", "super large", "super large"),
+            ("TIME", "08:30:00.000+01:00", "08:30"),
+            ("DATE", "2017-11-28", "2017-11-28"),
+            ("DATE", "", None),
         )
 
         for testcase in testcases:

@@ -20,8 +20,7 @@ class MapSelectionSummary extends Component {
 
         // calculate total villages population
         const { assignationsMap, capacity } = this.props;
-        const assignedPopulation = data.filter(village =>
-            assignationsMap[village.id]).reduce((prev, curr) => (prev + (curr.population || 0)), 0);
+        const assignedPopulation = data.filter(village => assignationsMap[village.id]).reduce((prev, curr) => (prev + (curr.population || 0)), 0);
         const population = data.reduce((prev, curr) => (prev + (curr.population || 0)), 0);
 
         const displayWarning = parseInt(population, 10) > parseInt(capacity, 10);
@@ -34,13 +33,15 @@ class MapSelectionSummary extends Component {
                     />
                 </h4>
                 {
-                    displayWarning &&
-                    <div className="map__selection__summary__item error-text">
-                        <FormattedMessage
-                            id="microplanning.selected.warning"
-                            defaultMessage="Attention la capacité dépasse la population assignée"
-                        />
-                    </div>
+                    displayWarning
+                    && (
+                        <div className="map__selection__summary__item error-text">
+                            <FormattedMessage
+                                id="microplanning.selected.warning"
+                                defaultMessage="Capicity is higher than endemicpopulation"
+                            />
+                        </div>
+                    )
                 }
                 <div className="map__selection__summary__item">
                     <FormattedMessage

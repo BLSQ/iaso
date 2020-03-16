@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Button } from '@material-ui/core';
 
-import MESSAGES from '../../messages/snackBars';
+import MESSAGES from './messages';
 
 
 function SnackBarButton(props) {

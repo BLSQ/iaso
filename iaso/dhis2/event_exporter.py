@@ -2,10 +2,12 @@ from django.core.paginator import Paginator
 from dhis2 import RequestException
 from .value_formatter import format_value
 import json
+from requests.structures import CaseInsensitiveDict
 
 
 def uniquify(seq, idfun=None):
     if idfun is None:
+
         def idfun(x):
             return x
 
@@ -37,6 +39,7 @@ def handle_exception(resp, message):
 
 
 def map_to_event(instance, form_mapping):
+
     event = {
         "program": form_mapping["program_id"],
         "event": instance.export_id,
@@ -52,19 +55,50 @@ def map_to_event(instance, form_mapping):
         }
     errored = False
     event_errors = []
-    question_mappings = form_mapping["question_mappings"]
+    question_mappings = CaseInsensitiveDict(form_mapping["question_mappings"])
+
+    if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+        errored = True
+        event_errors.append(
+            [
+                "orgUnit",
+                Exception(
+                    "unknown orgunit in dhis2 : "
+                    + str(instance.org_unit.name)
+                    + "("
+                    + str(instance.org_unit.name)
+                    + ")"
+                ),
+            ]
+        )
+        print(event_errors)
+
     for question_key in instance.json.keys():
         if question_key in question_mappings:
             try:
                 data_element = question_mappings[question_key]
                 data_element["question_key"] = question_key
                 raw_value = instance.json[question_key]
-                data_value = {
-                    "dataElement": data_element["id"],
-                    "value": format_value(data_element, raw_value),
-                    "debug": str(raw_value) + " " + question_key,
-                }
-                event["dataValues"].append(data_value)
+
+                if data_element.get("type") == "multiple":
+                    raw_values = raw_value.split(" ")
+
+                    for value in data_element["values"]:
+                        mapping_de = data_element["values"][value]
+                        boolval = "1" if (value in raw_values) else "0"
+                        data_value = {
+                            "dataElement": mapping_de["id"],
+                            "value": format_value(mapping_de, boolval)
+                            # "debug": str(raw_value) + " " + question_key,
+                        }
+                        event["dataValues"].append(data_value)
+                else:
+                    data_value = {
+                        "dataElement": data_element["id"],
+                        "value": format_value(data_element, raw_value),
+                        # "debug": str(raw_value) + " " + question_key,
+                    }
+                    event["dataValues"].append(data_value)
             except Exception as error:
                 errored = True
                 event_errors.append([question_key, error])
@@ -77,35 +111,55 @@ def map_to_event(instance, form_mapping):
 
 class EventExporter:
     def export_events(self, api, instances_qs, form_mapping, export):
-        paginator = Paginator(instances_qs, 100)
-        events = []
+        paginator = Paginator(instances_qs, 50)
         errors = []
+        skipped = []
+        created = 0
 
         for page in range(1, paginator.num_pages + 1):
+            events = []
             for instance in paginator.page(page).object_list:
-                if instance.json:
+                if instance.json and not instance.deleted:
                     event, event_errors = map_to_event(instance, form_mapping)
+                    if event and len(event["dataValues"]) == 0:
+                        # todo throw ?
+                        print("WARN no davaValues but had values", instance.json)
                     if not event_errors:
                         events.append(event)
                     else:
                         errors.append(event_errors)
+                else:
+                    skipped.append((instance.id, "no json data"))
             if export and len(events) > 0:
                 try:
-                    resp = api.post("events", {"events": events}).json()
+                    payload = {"events": events}
+                    print(json.dumps(payload, indent=2))
+                    resp = api.post("events", payload).json()
                     print(resp)
+                    created += len(events)
                 except RequestException as dhis2_exception:
                     message = (
                         "error while processing page %d/%d"
                         % (page, paginator.num_pages),
                     )
                     resp = json.loads(dhis2_exception.description)
+                    for event in events:
+                        errors.append(event)
                     handle_exception(resp, message)
 
             print(
                 "done processing page %d/%d" % (page, paginator.num_pages), len(events)
             )
         print(errors)
-        print(json.dumps(events, indent=4))
+        # print(json.dumps(events, indent=4))
         print("instances", paginator.count)
         print("events", len(events))
         print("errors", len(errors))
+        print("skipped", len(skipped), skipped)
+        return {
+            "stats": {
+                "created": created,
+                "skipped": len(skipped),
+                "errors": len(errors),
+            }
+        }

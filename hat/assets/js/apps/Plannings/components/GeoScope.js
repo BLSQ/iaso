@@ -7,10 +7,10 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import Select from 'react-select';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import { geoScopeLegend } from './../constants/microplanningLegends';
-import { MapLegend, GeoScopeMap, MapLayers } from './../components';
-import { geoScopeMapActions } from './../redux/geoScope';
-import { selectionActions } from './../redux/selection';
+import { geoScopeLegend } from '../constants/microplanningLegends';
+import { MapLegend, GeoScopeMap, MapLayers } from '.';
+import { geoScopeMapActions } from '../redux/geoScope';
+import { selectionActions } from '../redux/selection';
 import { loadActions } from '../../../redux/load';
 import { getRequest } from '../../../utils/fetchData';
 
@@ -143,17 +143,18 @@ class GeoScope extends Component {
                             </div>
                             <div>
                                 {
-                                    currentCoordination &&
-                                    <Select
-                                        multi
-                                        clearable={false}
-                                        name="zoneId"
-                                        value={this.state.activeGeoList.zones}
-                                        placeholder="--"
-                                        options={currentCoordination.zones.features.map(area =>
-                                            ({ label: area.properties.name, value: area.properties.pk }))}
-                                        onChange={(value) => { this.selectZs(value); }}
-                                    />
+                                    currentCoordination
+                                    && (
+                                        <Select
+                                            multi
+                                            clearable={false}
+                                            name="zoneId"
+                                            value={this.state.activeGeoList.zones}
+                                            placeholder="--"
+                                            options={currentCoordination.zones.features.map(area => ({ label: area.properties.name, value: area.properties.pk }))}
+                                            onChange={(value) => { this.selectZs(value); }}
+                                        />
+                                    )
                                 }
                             </div>
                         </div>
@@ -163,17 +164,18 @@ class GeoScope extends Component {
                             </div>
                             <div>
                                 {
-                                    currentCoordination &&
-                                    <Select
-                                        multi
-                                        clearable={false}
-                                        name="areaId"
-                                        value={this.state.activeGeoList.areas}
-                                        placeholder="--"
-                                        options={currentCoordination.areas.features.map(area =>
-                                            ({ label: area.properties.name, value: area.properties.pk }))}
-                                        onChange={(value) => { this.selectAs(value); }}
-                                    />
+                                    currentCoordination
+                                    && (
+                                        <Select
+                                            multi
+                                            clearable={false}
+                                            name="areaId"
+                                            value={this.state.activeGeoList.areas}
+                                            placeholder="--"
+                                            options={currentCoordination.areas.features.map(area => ({ label: area.properties.name, value: area.properties.pk }))}
+                                            onChange={(value) => { this.selectAs(value); }}
+                                        />
+                                    )
                                 }
                             </div>
                         </div>
@@ -194,17 +196,19 @@ class GeoScope extends Component {
                     </div>
                     <div className="map geo-scope-map">
                         {
-                            currentCoordination && this.state.currentWorkZone &&
-                            <GeoScopeMap
-                                coordinationId={this.props.coordinationId}
-                                baseLayer={baseLayer}
-                                overlays={{ labels: false }}
-                                coordination={currentCoordination}
-                                workzone={this.state.currentWorkZone}
-                                selectAs={currentAs => this.selectAsMap(currentAs)}
-                                teamGeoScope={teamGeoScope}
-                                getShape={type => this.props.getShape(type)}
-                            />
+                            currentCoordination && this.state.currentWorkZone
+                            && (
+                                <GeoScopeMap
+                                    coordinationId={this.props.coordinationId}
+                                    baseLayer={baseLayer}
+                                    overlays={{ labels: false }}
+                                    coordination={currentCoordination}
+                                    workzone={this.state.currentWorkZone}
+                                    selectAs={currentAs => this.selectAsMap(currentAs)}
+                                    teamGeoScope={teamGeoScope}
+                                    getShape={type => this.props.getShape(type)}
+                                />
+                            )
                         }
                     </div>
                 </div>
@@ -212,19 +216,15 @@ class GeoScope extends Component {
         );
     }
 }
-GeoScope.defaultProps = {
-    workzones: [],
-    teamGeoScope: {},
-};
 
 GeoScope.propTypes = {
     geoScope: PropTypes.object.isRequired,
     workzoneId: PropTypes.string.isRequired,
     coordinationId: PropTypes.string.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    workzones: PropTypes.array,
+    workzones: PropTypes.array.isRequired,
     getShapes: PropTypes.func.isRequired,
-    teamGeoScope: PropTypes.object,
+    teamGeoScope: PropTypes.object.isRequired,
     team: PropTypes.object.isRequired,
     planningId: PropTypes.string.isRequired,
     saveAreaInGeoloc: PropTypes.func.isRequired,
@@ -234,6 +234,8 @@ GeoScope.propTypes = {
 
 const MapStateToProps = state => ({
     geoScope: state.geoScope,
+    workzones: state.microplanning.workZonesList,
+    teamGeoScope: state.selection.geoScope,
 });
 
 const MapDispatchToProps = dispatch => ({

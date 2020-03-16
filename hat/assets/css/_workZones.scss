@@ -254,5 +254,6 @@
 }
 .wz-select-container {
     height: 796px;
-    overflow: auto;
+    overflow-y: auto;
+    overflow-x: hidden;
 }

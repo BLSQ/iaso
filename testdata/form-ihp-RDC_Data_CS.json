@@ -1,0 +1,3293 @@
+{
+  "type": "simple_event",
+  "program_id": "im79c92MOfX",
+  "question_mappings": {
+    "CS_105": {
+      "code": "CS_105",
+      "name": "EDL - CS - 105. Type de  Formation Sanitaire",
+      "id": "YF4JLtENIKg",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "cs",
+            "name": "1. Centre de Santé",
+            "id": "ehqvlIc6gWk",
+            "odk": "type_fosa1"
+          },
+          {
+            "code": "ps",
+            "name": "2. Poste de santé",
+            "id": "WdPe4IkfBtR",
+            "odk": "type_fosa2"
+          }
+        ],
+        "id": "wZGNKUSrKlf"
+      }
+    },
+    "CS_106": {
+      "code": "CS_106",
+      "name": "EDL - CS - 106. Adresse Physique de la FOSA",
+      "id": "i9waOuhju5f",
+      "valueType": "TEXT"
+    },
+    "CS_108": {
+      "code": "CS_108",
+      "name": "EDL - CS - 108. Appartenance",
+      "id": "u4iUbzjj147",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "pub",
+            "name": "1. Publique",
+            "id": "Jlvcb2t4f1o",
+            "odk": "1"
+          },
+          {
+            "code": "ong",
+            "name": "2. Organisation Non Gouvernementale / Privée non lucratif",
+            "id": "kgBM3YLU9Ed",
+            "odk": "2"
+          },
+          {
+            "code": "priv",
+            "name": "3. Privé lucratif",
+            "id": "h4ZXEqnMKQv",
+            "odk": "3"
+          },
+          {
+            "code": "conf",
+            "name": "4. Confessionnelle",
+            "id": "RsdpKRkua4w",
+            "odk": "4"
+          },
+          {
+            "code": "aut",
+            "name": "5. Autre",
+            "id": "BtIHE3R61vA",
+            "odk": "5"
+          }
+        ],
+        "id": "epY8yyw4AxA"
+      }
+    },
+    "CS_109_1": {
+      "code": "CS_109_1",
+      "name": "EDL - CS - 109.1 Si appartenance confessionnelle, laquelle ?",
+      "id": "BIQKheeWDsT",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_confessionnel1",
+            "name": "1. Catholique"
+          },
+          {
+            "code": "type_confessionnel2",
+            "name": "2. Protestante"
+          },
+          {
+            "code": "type_confessionnel3",
+            "name": "3. Kimbaguiste"
+          },
+          {
+            "code": "type_confessionnel4",
+            "name": "4. Musulmane"
+          },
+          {
+            "code": "type_confessionnel5",
+            "name": "5. Eglise de reveil"
+          },
+          {
+            "code": "type_confessionnel7",
+            "name": "6. Autres"
+          }
+        ],
+        "id": "JQgXuiaX04k"
+      }
+    },
+    "CS_109_2": {
+      "code": "CS_109_2",
+      "name": "EDL - CS - 109.2 Si FOSA publique, existence d'une convention de cession en gestion avec le Ministere de sant\u00e9 ?",
+      "id": "wZiOIuPMPW9",
+      "valueType": "BOOLEAN"
+    },
+    "CS_109_3": {
+      "code": "CS_109_3",
+      "name": "EDL - CS - 109.3 Si FOSA priv\u00e9e, existence d'une convention d'integration \u00e0 la politique sanitaire nationale ou d'appui au Ministere de sant\u00e9",
+      "id": "anmBJ2mRgV9",
+      "valueType": "BOOLEAN"
+    },
+    "CS_110": {
+      "code": "CS_110",
+      "name": "EDL - CS - 110. Existence des titres fonciers (certificat d'enregistrement)",
+      "id": "xD3TmGVHAAg",
+      "valueType": "BOOLEAN"
+    },
+    "CS_110_0": {
+      "code": "CS_110_0",
+      "name": "EDL - CS - 110.0 Existence de l'autorisation d'ouverture du Ministere de la Sant\u00e9",
+      "id": "UmN6BWLglRH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_111": {
+      "code": "CS_111",
+      "name": "EDL - CS - 111. Nom complet de l'Infirmier titulaire",
+      "id": "zIlK4sXBj5e",
+      "valueType": "TEXT"
+    },
+    "CS_112": {
+      "code": "CS_112",
+      "name": "EDL - CS - 112. Sexe de l'Infirmier titulaire",
+      "id": "JYsWCYtwpt8",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "CS_113": {
+      "code": "CS_113",
+      "name": "EDL - CS - 113. Qualification de l'infirmier titulaire",
+      "id": "mlEDmx2fVSq",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Infirmier Licenci\u00e9 (A0)"
+          },
+          {
+            "code": "2",
+            "name": "2. Infirmier gradu\u00e9 (A1)"
+          },
+          {
+            "code": "3",
+            "name": "3. Infirmier Dipl\u00f4m\u00e9 (A2)"
+          },
+          {
+            "code": "4",
+            "name": "4. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "KkTUBuZBaWR"
+      }
+    },
+    "CS_113_autres": {
+      "code": "CS_113_autres",
+      "name": "EDL - CS - 113. Si autre, pr\u00e9ciser : ",
+      "id": "kz7IpNqOLVX",
+      "valueType": "TEXT"
+    },
+    "CS_114": {
+      "code": "CS_114",
+      "name": "EDL - CS - 114. Num\u00e9ro de contact de la FOSA",
+      "id": "xDcnZakg1UN",
+      "valueType": "TEXT"
+    },
+    "CS_115": {
+      "code": "CS_115",
+      "name": "EDL - CS - 115. Adresse Email de la FOSA",
+      "id": "EUXaD0mr7Sk",
+      "valueType": "TEXT"
+    },
+    "CS_115_1": {
+      "code": "CS_115_1",
+      "name": "EDL - CS - 115.1 Existence d'une radiophonie fonctionnelle ?",
+      "id": "AuRCEs6w2Qs",
+      "valueType": "BOOLEAN"
+    },
+    "CS_115_2": {
+      "code": "CS_115_2",
+      "name": "EDL - CS - 115.2 Fr\u00e9quence de la radiophonie utilis\u00e9e",
+      "id": "qlNkzIJiULf",
+      "valueType": "TEXT"
+    },
+    "CS_115_3": {
+      "code": "CS_115_3",
+      "name": "EDL - CS - 115.3 Heure de Contact pour la phonie",
+      "id": "tlwaltuwFWk",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "heure_contact_phonie_1",
+            "name": "1.7h00-8h00"
+          },
+          {
+            "code": "heure_contact_phonie_2",
+            "name": "2. 9h00-10h00"
+          },
+          {
+            "code": "heure_contact_phonie_3",
+            "name": "3. 11h00-12h00"
+          },
+          {
+            "code": "heure_contact_phonie_4",
+            "name": "4. 13h00-14h00"
+          },
+          {
+            "code": "heure_contact_phonie_5",
+            "name": "5. 14h00-15h00"
+          }
+        ],
+        "id": "MVPDR8bWggT"
+      }
+    },
+    "CS_116": {
+      "code": "CS_116",
+      "name": "EDL - CS - 116. Nombre des villages",
+      "id": "y4tHDkdfRSE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_117": {
+      "code": "CS_117",
+      "name": "EDL - CS - 117. Nombre des rues sous la responsabilit\u00e9 de la FOSA (Milieu urbain)",
+      "id": "fRLUhKRRSSY",
+      "valueType": "INTEGER"
+    },
+    "CS_118": {
+      "code": "CS_118",
+      "name": "EDL - CS - 118. Distance entre la FOSA et le Bureau Central de la Zone de Sant\u00e9 ( BCZS)",
+      "id": "CwTNLiI00w6",
+      "valueType": "NUMBER"
+    },
+    "CS_119": {
+      "code": "CS_119",
+      "name": "EDL - CS - 119. Distance entre la FOSA et la structure de r\u00e9f\u00e9rence la plus proche",
+      "id": "La25cgNKGhJ",
+      "valueType": "NUMBER"
+    },
+    "CS_120": {
+      "code": "CS_120",
+      "name": "EDL - CS - 120. Enclavement total pr\u00e9visible \u00e0 certaines p\u00e9riodes de l'ann\u00e9e suite \u00e0 des intemp\u00e9ries",
+      "id": "q9Lw6rf3ynD",
+      "valueType": "BOOLEAN"
+    },
+    "CS_121": {
+      "code": "CS_121",
+      "name": "EDL - CS - 121. Si enclavement, pendant quel trimestre de l'ann\u00e9e ? ",
+      "id": "doANSm9qYIk",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "q1",
+            "name": "Trimestre 1",
+            "id": "CmYSE2QGRmc",
+            "odk": "trimestre1"
+          },
+          {
+            "code": "q2",
+            "name": "Trimestre 2",
+            "id": "BCeaextENBF",
+            "odk": "trimestre2"
+          },
+          {
+            "code": "q3",
+            "name": "Trimestre 3",
+            "id": "HrU6B45wdUY",
+            "odk": "trimestre3"
+          },
+          {
+            "code": "q4",
+            "name": "Trimestre 4",
+            "id": "AK4yzRjuQnl",
+            "odk": "trimestre4"
+          }
+        ],
+        "id": "DoD15mO6L1A"
+      }
+    },
+    "CS_122": {
+      "code": "CS_122",
+      "name": "EDL - CS - 122. Prise en charge des patients ,y compris les cas d'urgence, 24h/24h ",
+      "id": "VWp1xLM5Jnw",
+      "valueType": "BOOLEAN"
+    },
+    "CS_123": {
+      "code": "CS_123",
+      "name": "EDL - CS - 123. La FOSA est-elle le centre de sant\u00e9 de Responsabilit\u00e9 de l'aire de sant\u00e9?",
+      "id": "baKssCUwyGc",
+      "valueType": "BOOLEAN"
+    },
+    "CS_124": {
+      "code": "CS_124",
+      "name": "EDL - CS - 124. Population totale de l'aire de sant\u00e9 pour le Centre de Sant\u00e9  de responsabilit\u00e9",
+      "id": "ntvU3UaUdTB",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_125": {
+      "code": "CS_125",
+      "name": "EDL - CS - 125. Population couverte dans l'aire de sant\u00e9 ",
+      "id": "Hz4iOZrUGbv",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_201_Homme": {
+      "code": "CS_201_Homme",
+      "name": "EDL - CS - 201 - RH au CS : Nombre de m\u00e9decin - femme",
+      "id": "MxNVdnF4sKM",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_201_Femme": {
+      "code": "CS_201_Femme",
+      "name": "EDL - CS - 202 - RH au CS : Nombre de m\u00e9decin - homme",
+      "id": "Gf1EoFII3iw",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.1_Homme": {
+      "code": "CS_202.1_Homme",
+      "name": "EDL - CS - 202.1 RH au CS : Nombre d'infirmiers - Licenci\u00e9 A0 - homme ",
+      "id": "rQT4uF9lhi8",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.1_Femme": {
+      "code": "CS_202.1_Femme",
+      "name": "EDL - CS - 202.1 RH au CS : Nombre d'infirmiers - Licenci\u00e9 A1 - femme",
+      "id": "TJUlWLSvAfc",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.2_Homme": {
+      "code": "CS_202.2_Homme",
+      "name": "EDL - CS - 202.2 RH au CS : Nombre d'infirmiers - Gradu\u00e9 A1 - homme ",
+      "id": "nOzE1FXWqoE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.2_Femme": {
+      "code": "CS_202.2_Femme",
+      "name": "EDL - CS - 202.2 RH au CS : Nombre d'infirmiers - Gradu\u00e9 A1 - femme ",
+      "id": "wNMy1kaIMJD",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.3_Homme": {
+      "code": "CS_202.3_Homme",
+      "name": "EDL - CS - 202.3 RH au CS : Nombre d'infirmiers - Dipl\u00f4m\u00e9 A2 - homme",
+      "id": "bbi9RuEp9n3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_202.3_Femme": {
+      "code": "CS_202.3_Femme",
+      "name": "EDL - CS - 202.3 RH au CS : Nombre d'infirmiers - Dipl\u00f4m\u00e9 A2 - femme",
+      "id": "P43KDlKrb4z",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_203_Homme": {
+      "code": "CS_203_Homme",
+      "name": "EDL - CS - 203. RH au CS : Nombre d'Infirmiers A3 - homme",
+      "id": "xSyq7WpexRU",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_203_Femme": {
+      "code": "CS_203_Femme",
+      "name": "EDL - CS - 203. RH au CS : Nombre d'Infirmiers A3 - femme",
+      "id": "W5ZdMiuEsRH",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_204_Homme": {
+      "code": "CS_204_Homme",
+      "name": "EDL - CS - 204. RH au CS : Nombre de Pharmaciens - homme",
+      "id": "qWZpEqnoNyA",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_204_Femme": {
+      "code": "CS_204_Femme",
+      "name": "EDL - CS - 204. RH au CS : Nombre de Pharmaciens - femme",
+      "id": "m1g3w2RkUHZ",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_205_Homme": {
+      "code": "CS_205_Homme",
+      "name": "EDL - CS - 205. RH au CS : Nombre d'assistants de pharmacie - homme",
+      "id": "stGVnQoXHtE",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_205_Femme": {
+      "code": "CS_205_Femme",
+      "name": "EDL - CS - 205. RH au CS : Nombre d'assistants de pharmacie - femme",
+      "id": "KqKUoKUvkMv",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_206_Homme": {
+      "code": "CS_206_Homme",
+      "name": "EDL - CS - 206. RH au CS : Nombre de Sage-Femme gradu\u00e9 (A1) - homme",
+      "id": "EzDAXZsi4EV",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_206_Femme": {
+      "code": "CS_206_Femme",
+      "name": "EDL - CS - 206. RH au CS : Nombre de Sage-Femme gradu\u00e9 (A1) - femme",
+      "id": "mJE20Ftp3c8",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_207_Homme": {
+      "code": "CS_207_Homme",
+      "name": "EDL - CS - 207. RH au CS : Nombre d'accoucheuse dipl\u00f4m\u00e9  (A2) - homme",
+      "id": "eeGF9B721Vz",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_207_Femme": {
+      "code": "CS_207_Femme",
+      "name": "EDL - CS - 207. RH au CS : Nombre d'accoucheuse dipl\u00f4m\u00e9  (A2) - femme",
+      "id": "u6DJQPBiLJe",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_208_Homme": {
+      "code": "CS_208_Homme",
+      "name": "EDL - CS - 208. RH au CS : Nombre de Matronnes/Accoucheuses - homme",
+      "id": "jEJf7xWldtM",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_208_Femme": {
+      "code": "CS_208_Femme",
+      "name": "EDL - CS - 208. RH au CS : Nombre de Matronnes/Accoucheuses - femme",
+      "id": "MGoFT1hCEy5",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_209_Homme": {
+      "code": "CS_209_Homme",
+      "name": "EDL - CS - 209. RH au CS : Nombre de Techniciens de Labo gradu\u00e9 ou  Dipl\u00f4m\u00e9 (A2) - homme",
+      "id": "IUqzvN5wQp5",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_209_Femme": {
+      "code": "CS_209_Femme",
+      "name": "EDL - CS - 209. RH au CS : Nombre de Techniciens de Labo gradu\u00e9 ou  Dipl\u00f4m\u00e9 (A2) - femme",
+      "id": "fVOKehoBvxi",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_209.1_Homme": {
+      "code": "CS_209.1_Homme",
+      "name": "EDL - CS - 209.1 RH au CS : Nombre de  biologiste m\u00e9dical - homme",
+      "id": "gUDVm2POyyo",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_209.1_Femme": {
+      "code": "CS_209.1_Femme",
+      "name": "EDL - CS - 209.1 RH au CS : Nombre de  biologiste m\u00e9dical - femme",
+      "id": "A5MJEUrSdqf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_210_Homme": {
+      "code": "CS_210_Homme",
+      "name": "EDL - CS - 210. RH au CS : Nombre de microscopistes - homme",
+      "id": "lBQewBQ8nap",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_210_Femme": {
+      "code": "CS_210_Femme",
+      "name": "EDL - CS - 210. RH au CS : Nombre de microscopistes - femme",
+      "id": "Vw7yoi7ZLPY",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_211_Homme": {
+      "code": "CS_211_Homme",
+      "name": "EDL - CS - 211. RH au CS : Nombre de nutritionnistes - homme",
+      "id": "GZziqntLwBk",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_211_Femme": {
+      "code": "CS_211_Femme",
+      "name": "EDL - CS - 211. RH au CS : Nombre de nutritionnistes - femme",
+      "id": "jbkTwiFaS4L",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_212_Homme": {
+      "code": "CS_212_Homme",
+      "name": "EDL - CS - 212. RH au CS : Nombre de personnel administratif - homme",
+      "id": "q5Su6eP3cOP",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_212_Femme": {
+      "code": "CS_212_Femme",
+      "name": "EDL - CS - 212. RH au CS : Nombre de personnel administratif - femme",
+      "id": "wyFCbGXKnrn",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_213_2Homme": {
+      "code": "CS_213_2Homme",
+      "name": "EDL - CS - 213.2 RH au CS : Autre personnel de sant\u00e9 non qualifi\u00e9  Hommes :",
+      "id": "OAHAx30qE8J",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_213_2Femme": {
+      "code": "CS_213_2Femme",
+      "name": "EDL - CS - 213.2  RH au CS : Autre personnel de sant\u00e9 non qualifi\u00e9  Femmes :",
+      "id": "QVrzBucHl9K",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_213_Homme": {
+      "code": "CS_213_Homme",
+      "name": "EDL - CS - 213. RH dans la FOSA : total homme",
+      "id": "N2sBPuNMUzK",
+      "valueType": "INTEGER"
+    },
+    "CS_213_Femme": {
+      "code": "CS_213_Femme",
+      "name": "EDL - CS - 213. RH dans la FOSA : total femme",
+      "id": "TgVxpIGuJ3d",
+      "valueType": "INTEGER"
+    },
+    "CS_214_1": {
+      "code": "CS_214_1",
+      "name": "EDL - CS - 214.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re et Nouveau (SMN) approche par comp\u00e9tence? Nombre d'Hommes ",
+      "id": "Ur2VaiZGmhm",
+      "valueType": "INTEGER"
+    },
+    "CS_214_2": {
+      "code": "CS_214_2",
+      "name": "EDL - CS - 214.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re et Nouveau (SMN) approche par comp\u00e9tence? Nombre de Femmes",
+      "id": "ViMJLCiIL7s",
+      "valueType": "INTEGER"
+    },
+    "CS_215.1": {
+      "code": "CS_215.1",
+      "name": "EDL - CS - 215.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence de Base. Nombre d'Hommes",
+      "id": "CypEwQKyxw6",
+      "valueType": "INTEGER"
+    },
+    "CS_215.2": {
+      "code": "CS_215.2",
+      "name": "EDL - CS - 215.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence de Base. Nombre de Femmes",
+      "id": "JLxDl4Vl3Yj",
+      "valueType": "INTEGER"
+    },
+    "CS_216.1": {
+      "code": "CS_216.1",
+      "name": "EDL - CS - 216.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en r\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 restpirer. Nombre d'hommes",
+      "id": "do6jFgqdQSb",
+      "valueType": "INTEGER"
+    },
+    "CS_216.2": {
+      "code": "CS_216.2",
+      "name": "EDL - CS - 216.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en r\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 restpirer. Nombre de Femmes",
+      "id": "nYsXnOxMBQR",
+      "valueType": "INTEGER"
+    },
+    "CS_217.1": {
+      "code": "CS_217.1",
+      "name": "EDL - CS - 217.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur la prevention et Prise en charge de l'hemorragie en post partum : Aider les m\u00e8res \u00e0 survivre. Nombre d'hommes",
+      "id": "dzDYYi3NMbz",
+      "valueType": "INTEGER"
+    },
+    "CS_217.2": {
+      "code": "CS_217.2",
+      "name": "EDL - CS - 217.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur la prevention et Prise en charge de l'hemorragie en post partum : Aider les m\u00e8res \u00e0 survivre. Nombre de Femmes",
+      "id": "e6PU3ngl2ue",
+      "valueType": "INTEGER"
+    },
+    "CS_218.1": {
+      "code": "CS_218.1",
+      "name": "EDL - CS - 218.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur la planification Familiale. Nombre d'hommes",
+      "id": "Lu9eoH4ebH5",
+      "valueType": "INTEGER"
+    },
+    "CS_218.2": {
+      "code": "CS_218.2",
+      "name": "EDL - CS - 218.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur la planification Familiale. Nombre de Femmes",
+      "id": "WLaiLhquot5",
+      "valueType": "INTEGER"
+    },
+    "CS_219.1": {
+      "code": "CS_219.1",
+      "name": "EDL - CS - 219.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Clinique ( PCIME-Clinique). Nombre d'hommes",
+      "id": "TlcxvHP0Pw3",
+      "valueType": "INTEGER"
+    },
+    "CS_219.2": {
+      "code": "CS_219.2",
+      "name": "EDL - CS - 219.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Clinique ( PCIME-Clinique). Nombre de Femmes",
+      "id": "nqIVJRggryC",
+      "valueType": "INTEGER"
+    },
+    "CS_220.1": {
+      "code": "CS_220.1",
+      "name": "EDL - CS - 220.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9s en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Communautaires - Sites de soins communautaires (SSC). Nombre d'hommes",
+      "id": "PdoSk6pJHvw",
+      "valueType": "INTEGER"
+    },
+    "CS_220.2": {
+      "code": "CS_220.2",
+      "name": "EDL - CS - 220.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9s en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Communautaires - Sites de soins communautaires (SSC). Nombre de Femmes",
+      "id": "ErEowJSaIkE",
+      "valueType": "INTEGER"
+    },
+    "CS_221.1": {
+      "code": "CS_221.1",
+      "name": "EDL - CS - 221.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur l'utilisation des ordinogramme des soins. Nombre d'hommes",
+      "id": "LlAqOVgtyjH",
+      "valueType": "INTEGER"
+    },
+    "CS_221.2": {
+      "code": "CS_221.2",
+      "name": "EDL - CS - 221.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur l'utilisation des ordinogramme des soins. Nombre de Femmes",
+      "id": "fBiOfZHOndO",
+      "valueType": "INTEGER"
+    },
+    "CS_222.1": {
+      "code": "CS_222.1",
+      "name": "EDL - CS - 222.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les Consultation Prescolaire (CPS ) Redynamis\u00e9e. Nombre d'hommes",
+      "id": "ojrNjCcpefO",
+      "valueType": "INTEGER"
+    },
+    "CS_222.2": {
+      "code": "CS_222.2",
+      "name": "EDL - CS - 222.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les Consultation Prescolaire (CPS ) Redynamis\u00e9e. Nombre de Femmes",
+      "id": "h5xgzF26Gan",
+      "valueType": "INTEGER"
+    },
+    "CS_223.1": {
+      "code": "CS_223.1",
+      "name": "EDL - CS - 223.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur l'alimentation du nourrisson et de jeune enfant ( ANJE). Nombre d'hommes",
+      "id": "U03wBmvQ95Y",
+      "valueType": "INTEGER"
+    },
+    "CS_223.2": {
+      "code": "CS_223.2",
+      "name": "EDL - CS - 223.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9 sur l'alimentation du nourrisson et de jeune enfant ( ANJE). Nombre de Femmes",
+      "id": "J7wiiXN9ldT",
+      "valueType": "INTEGER"
+    },
+    "CS_224.1": {
+      "code": "CS_224.1",
+      "name": "EDL - CS - 224.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9s sur la prise en Charge Int\u00e9gr\u00e9e de Malnutrition Aigue (PCIMA). Nombre d'hommes",
+      "id": "AQECtF48YBy",
+      "valueType": "INTEGER"
+    },
+    "CS_224.2": {
+      "code": "CS_224.2",
+      "name": "EDL - CS - 224.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9s sur la prise en Charge Int\u00e9gr\u00e9e de Malnutrition Aigue (PCIMA). Nombre de Femmes",
+      "id": "edGp6gpvFwG",
+      "valueType": "INTEGER"
+    },
+    "CS_225.1": {
+      "code": "CS_225.1",
+      "name": "EDL - CS - 225.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Programme Elargie de Vaccination ( PEV). Nombre d'hommes",
+      "id": "EjX3me80qAZ",
+      "valueType": "INTEGER"
+    },
+    "CS_225.2": {
+      "code": "CS_225.2",
+      "name": "EDL - CS - 225.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Programme Elargie de Vaccination ( PEV). Nombre de Femmes",
+      "id": "YTWIGhNp8oN",
+      "valueType": "INTEGER"
+    },
+    "CS_226.1": {
+      "code": "CS_226.1",
+      "name": "EDL - CS - 226.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en assusrance qualit\u00e9 deS Test de D\u00e9pistage Rapide ( TDR) pour paludisme. Nombre d'hommes",
+      "id": "DuQnOaNLqTX",
+      "valueType": "INTEGER"
+    },
+    "CS_226.2": {
+      "code": "CS_226.2",
+      "name": "EDL - CS - 226.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en assusrance qualit\u00e9 deS Test de D\u00e9pistage Rapide ( TDR) pour paludisme. Nombre de Femmes",
+      "id": "kZCPex575ir",
+      "valueType": "INTEGER"
+    },
+    "CS_227.1": {
+      "code": "CS_227.1",
+      "name": "EDL - CS - 227.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en Charge (PEC) du paludisme. Nombre d'hommes",
+      "id": "xwCKytOewyb",
+      "valueType": "INTEGER"
+    },
+    "CS_227.2": {
+      "code": "CS_227.2",
+      "name": "EDL - CS - 227.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 en Charge (PEC) du paludisme. Nombre de Femmes",
+      "id": "wELECzP5ycL",
+      "valueType": "INTEGER"
+    },
+    "CS_228.1": {
+      "code": "CS_228.1",
+      "name": "EDL - CS - 228.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la prise en charge du paludisme chez la femme enceinte. Nombre d'hommes",
+      "id": "dTCeKkxBHhx",
+      "valueType": "INTEGER"
+    },
+    "CS_228.2": {
+      "code": "CS_228.2",
+      "name": "EDL - CS - 228.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la prise en charge du paludisme chez la femme enceinte. Nombre de Femmes",
+      "id": "WYE5o2yUv1L",
+      "valueType": "INTEGER"
+    },
+    "CS_229.1": {
+      "code": "CS_229.1",
+      "name": "EDL - CS - 229.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la prise en charge m\u00e9dicale des survivantes des violences sexuelles. Nombre d'hommes",
+      "id": "HOyEbpqlhKF",
+      "valueType": "INTEGER"
+    },
+    "CS_229.2": {
+      "code": "CS_229.2",
+      "name": "EDL - CS - 229.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la prise en charge m\u00e9dicale des survivantes des violences sexuelles. Nombre de Femmes",
+      "id": "JlRsZRwIXmw",
+      "valueType": "INTEGER"
+    },
+    "CS_230.1": {
+      "code": "CS_230.1",
+      "name": "EDL - CS - 230.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes (SSRAJ). Nombre d'hommes",
+      "id": "R3DnbWEFPVW",
+      "valueType": "INTEGER"
+    },
+    "CS_230.2": {
+      "code": "CS_230.2",
+      "name": "EDL - CS - 230.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combiens des prestataires de cette FOSA sont form\u00e9 sur la sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes (SSRAJ). Nombre de Femmes",
+      "id": "zxt4plFpYJy",
+      "valueType": "INTEGER"
+    },
+    "CS_231.1": {
+      "code": "CS_231.1",
+      "name": "EDL - CS - 231.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la prise en charge de Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V (PATI V). Nombre d'hommes",
+      "id": "poc0bi5wEdR",
+      "valueType": "INTEGER"
+    },
+    "CS_231.2": {
+      "code": "CS_231.2",
+      "name": "EDL - CS - 231.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la prise en charge de Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V (PATI V). Nombre de Femmes",
+      "id": "UDk9QWyHYmR",
+      "valueType": "INTEGER"
+    },
+    "CS_232.1": {
+      "code": "CS_232.1",
+      "name": "EDL - CS - 232.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur Microscopie TB pour les Technicien de Labo/microscopiste. Nombre d'hommes",
+      "id": "vcH5izcsknb",
+      "valueType": "INTEGER"
+    },
+    "CS_232.2": {
+      "code": "CS_232.2",
+      "name": "EDL - CS - 232.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur Microscopie TB pour les Technicien de Labo/microscopiste. Nombre de Femmes",
+      "id": "M19RUnrHLrN",
+      "valueType": "INTEGER"
+    },
+    "CS_233.1": {
+      "code": "CS_233.1",
+      "name": "EDL - CS - 233.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur le GeneXpert pour les technicien de Labo. Nombre d'hommes",
+      "id": "qbvQMm2EINQ",
+      "valueType": "INTEGER"
+    },
+    "CS_233.2": {
+      "code": "CS_233.2",
+      "name": "EDL - CS - 233.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur le GeneXpert pour les technicien de Labo. Nombre de Femmes",
+      "id": "hd8jzRwlaTt",
+      "valueType": "INTEGER"
+    },
+    "CS_234.1": {
+      "code": "CS_234.1",
+      "name": "EDL - CS - 234.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur gestion des Medicaments. Nombre d'hommes",
+      "id": "jCPL0ym31FA",
+      "valueType": "INTEGER"
+    },
+    "CS_234.2": {
+      "code": "CS_234.2",
+      "name": "EDL - CS - 234.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur gestion des Medicaments. Nombre de Femmes",
+      "id": "bgDPmlV55tf",
+      "valueType": "INTEGER"
+    },
+    "CS_235.1": {
+      "code": "CS_235.1",
+      "name": "EDL - CS - 235.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur le contr\u00f4le de l'infection. Nombre d'hommes",
+      "id": "SilduE92JhE",
+      "valueType": "INTEGER"
+    },
+    "CS_235.2": {
+      "code": "CS_235.2",
+      "name": "EDL - CS - 235.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) :Combien des prestataires de cette FOSA sont form\u00e9s sur le contr\u00f4le de l'infection. Nombre de Femmes",
+      "id": "iI0HkHrabw8",
+      "valueType": "INTEGER"
+    },
+    "CS_236.1": {
+      "code": "CS_236.1",
+      "name": "EDL - CS - 236.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la d\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e ( DQI). Nombre d'hommes",
+      "id": "WhIygzVOsEZ",
+      "valueType": "INTEGER"
+    },
+    "CS_236.2": {
+      "code": "CS_236.2",
+      "name": "EDL - CS - 236.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur la d\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e ( DQI). Nombre de Femmes",
+      "id": "nDswzjyl1NK",
+      "valueType": "INTEGER"
+    },
+    "CS_237.1": {
+      "code": "CS_237.1",
+      "name": "EDL - CS - 237.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur le Syst\u00e8me National d'Information Sanitaire ( SNIS). Nombre d'hommes",
+      "id": "lhVenxVfBiK",
+      "valueType": "INTEGER"
+    },
+    "CS_237.2": {
+      "code": "CS_237.2",
+      "name": "EDL - CS - 237.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur le Syst\u00e8me National d'Information Sanitaire ( SNIS). Nombre de Femmes",
+      "id": "WqbDKqNI4N3",
+      "valueType": "INTEGER"
+    },
+    "CS_238.1": {
+      "code": "CS_238.1",
+      "name": "EDL - CS - 238.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les MTN ? Nombre d'hommes ",
+      "id": "ByPQXFxm7Hg",
+      "valueType": "INTEGER"
+    },
+    "CS_238.2": {
+      "code": "CS_238.2",
+      "name": "EDL - CS - 238.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur les MTN ? Nombre de Femmes",
+      "id": "LIYMVu6RvG8",
+      "valueType": "INTEGER"
+    },
+    "CS_239.1": {
+      "code": "CS_239.1",
+      "name": "EDL - CS - 239.1 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur l\u2019hygi\u00e8ne hospitali\u00e8re? Nombre d'hommes",
+      "id": "ZoKC2Qp9svl",
+      "valueType": "INTEGER"
+    },
+    "CS_239.2": {
+      "code": "CS_239.2",
+      "name": "EDL - CS - 239.2 Formation re\u00e7ue dans le cadre du PMA (entre 2017 et aujourd'hui) : Combien des prestataires de cette FOSA sont form\u00e9s sur l\u2019hygi\u00e8ne hospitali\u00e8re? Nombre de Femmes",
+      "id": "DoRIK4j6nHt",
+      "valueType": "INTEGER"
+    },
+    "CS_301": {
+      "code": "CS_301",
+      "name": "EDL - CS - 301. Gestion des m\u00e9dicaments : Existe-t-il d'un local de la pharmacie",
+      "id": "ioAyT5I1K7s",
+      "valueType": "BOOLEAN"
+    },
+    "CS_302": {
+      "code": "CS_302",
+      "name": "EDL - CS - 302. Gestion des m\u00e9dicaments : S'il existe un local de pharmacie quelle est la capacit\u00e9 de stockage ?",
+      "id": "YU4QgT5me7E",
+      "valueType": "INTEGER"
+    },
+    "CS_303": {
+      "code": "CS_303",
+      "name": "EDL - CS - 303. Gestion des m\u00e9dicaments :Les M\u00e9dicaments sont ils stock\u00e9s dans une sall\u00e9 ferm\u00e9e ?",
+      "id": "CvastP5y6kZ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_304": {
+      "code": "CS_304",
+      "name": "EDL - CS - 304. Gestion des m\u00e9dicaments : Si les m\u00e9dicaments sont stock\u00e9s dans une salle, est-ce que la salle de stockage des m\u00e9dicaments est dot\u00e9e d'un plafond et de pavement au sol ? ",
+      "id": "ZXl9Sk7aCpl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_305": {
+      "code": "CS_305",
+      "name": "EDL - CS - 305. Gestion des m\u00e9dicaments : Avez-vous des armoires avec cl\u00e9s pour le stockage des medicaments ? ",
+      "id": "p6c0IyREqRl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.1": {
+      "code": "CS_306.1",
+      "name": "EDL - CS - 306.1 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Chaleur",
+      "id": "qoBjOSv7Llv",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.2": {
+      "code": "CS_306.2",
+      "name": "EDL - CS - 306.2 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Lumi\u00e8re directe du soleil",
+      "id": "YdeShaoTEoK",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.3": {
+      "code": "CS_306.3",
+      "name": "EDL - CS - 306.3 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 l'Humidit\u00e9",
+      "id": "YWXRQ0YH10g",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.4": {
+      "code": "CS_306.4",
+      "name": "EDL - CS - 306.4 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Poussi\u00e8re",
+      "id": "iPgUyi2yiAd",
+      "valueType": "BOOLEAN"
+    },
+    "CS_307": {
+      "code": "CS_307",
+      "name": "EDL - CS - 307. Gestion des m\u00e9dicaments : L'\u00e9clairage est il suffisant dans le lieu de stockage?",
+      "id": "xvrJbfBnxHC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_308": {
+      "code": "CS_308",
+      "name": "EDL - CS - 308. Gestion des m\u00e9dicaments : Avez-vous au moins un refrigerateur pour la conservation des medicaments?",
+      "id": "FV7Fr8vnU4E",
+      "valueType": "BOOLEAN"
+    },
+    "CS_309": {
+      "code": "CS_309",
+      "name": "EDL - CS - 309. Gestion des m\u00e9dicaments : Les refrigerateurs fonctionnels sont tous dot\u00e9s de fridge tag et des fiches de temp\u00e9rature?",
+      "id": "asMjjB9sJm4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_310": {
+      "code": "CS_310",
+      "name": "EDL - CS - 310. Gestion des m\u00e9dicaments : Quelle est la source principale d'approvisionnement en M\u00e9dicament?",
+      "id": "Epxbfynk0Sm",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. CDR"
+          },
+          {
+            "code": "2",
+            "name": "2. ZS"
+          },
+          {
+            "code": "3",
+            "name": "3. March\u00e9 local"
+          },
+          {
+            "code": "4",
+            "name": "4. Partenaire Technique et Financier"
+          },
+          {
+            "code": "5",
+            "name": "5. Autre sources d'approvisonnements"
+          }
+        ],
+        "id": "Ch5RQ92Pz3E"
+      }
+    },
+    "CS_310.2": {
+      "code": "CS_310.2",
+      "name": "EDL - CS - 310.2 Gestion des m\u00e9dicaments : Si autres sources d'approvisonnement en m\u00e9dicaments, pr\u00e9ciser",
+      "id": "mhcFi7iH0Hx",
+      "valueType": "TEXT"
+    },
+    "CS_310.3": {
+      "code": "CS_310.3",
+      "name": "EDL - CS - 310.3 Gestion des m\u00e9dicaments : Comment s\u2019expriment les besoins en m\u00e9dicaments\u00a0?",
+      "id": "P9jxcrtLcCC",
+      "valueType": "TEXT"
+    },
+    "CS_311": {
+      "code": "CS_311",
+      "name": "EDL - CS - 311. Gestion des m\u00e9dicaments : Quel est le co\u00fbt moyen mensuel de transport pour les m\u00e9dicaments?",
+      "id": "cvnow1sPzGc",
+      "valueType": "TEXT"
+    },
+    "CS_312": {
+      "code": "CS_312",
+      "name": "EDL - CS - 312. Gestion des m\u00e9dicaments : Comment g\u00e9rez-vous les m\u00e9dicaments p\u00e9rim\u00e9s ?",
+      "id": "HTHFKhjOEK7",
+      "valueType": "TEXT"
+    },
+    "CS_401": {
+      "code": "CS_401",
+      "name": "EDL - CS - 401. Infrastructures: Type de b\u00e2timent de la FOSA  ",
+      "id": "GGUG7drMuSf",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "dur",
+            "name": "1. Durables ",
+            "id": "nKkxe5SFCy3",
+            "odk": "type-batiment1"
+          },
+          {
+            "code": "sem_dur",
+            "name": "2. Semi-durables ",
+            "id": "mbf3CKvEPtX",
+            "odk": "type-batiment2"
+          },
+          {
+            "code": "pis",
+            "name": "3. En pisé",
+            "id": "jV5IKz6916F",
+            "odk": "type-batiment3"
+          }
+        ],
+        "id": "TM07k1FPact"
+      }
+    },
+    "CS_402": {
+      "code": "CS_402",
+      "name": "EDL - CS - 402. Infrastructures : Existe-t-il au moins une salle ou un espace d'attente avec si\u00e8ge pour les patients/clients?",
+      "id": "p846kdVvBhW",
+      "valueType": "BOOLEAN"
+    },
+    "CS_403": {
+      "code": "CS_403",
+      "name": "EDL - CS - 403. Infrastructures : Combien de salle/locaux existe-t-elle dans la FOSA?",
+      "id": "yxclBTFOXyp",
+      "valueType": "INTEGER"
+    },
+    "CS_404": {
+      "code": "CS_404",
+      "name": "EDL - CS - 404. Infrastructures : Existe t-il un bureau de l'Infirmier Titulaire ( IT) ?",
+      "id": "p7yrFMSTdM0",
+      "valueType": "BOOLEAN"
+    },
+    "CS_405": {
+      "code": "CS_405",
+      "name": "EDL - CS - 405. Infrastructures : Existence d'une salle de consultation",
+      "id": "Pc1KLmITbxA",
+      "valueType": "BOOLEAN"
+    },
+    "CS_406": {
+      "code": "CS_406",
+      "name": "EDL - CS - 406. Infrastructures : Existe-t-il une salle counseilling pour Planification Familiale ou Survivants de violences sexuelles qui garanti la confidentialit\u00e9, la s\u00e9curit\u00e9)?",
+      "id": "JEzOEEgxVlc",
+      "valueType": "BOOLEAN"
+    },
+    "CS_407": {
+      "code": "CS_407",
+      "name": "EDL - CS - 407. Infrastructures : Existe-t-il une salle de soins/ traitement ?",
+      "id": "OqAUgI4YeIL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_408": {
+      "code": "CS_408",
+      "name": "EDL - CS - 408. Infrastructures : Existe-t-il une salle d'observation?",
+      "id": "lFVNqMMugAC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_409": {
+      "code": "CS_409",
+      "name": "EDL - CS - 409. Infrastructures : Existence d'une salle pour le laboratoire",
+      "id": "Dz05fPRO9zJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_410": {
+      "code": "CS_410",
+      "name": "EDL - CS - 410. Infrastructures : Existence d'une salle d'accouchement",
+      "id": "wahPVwSrjsP",
+      "valueType": "BOOLEAN"
+    },
+    "CS_411": {
+      "code": "CS_411",
+      "name": "EDL - CS - 411. Infrastructures : Existe-t-il une salle de travail ?",
+      "id": "OR8xGDWa94i",
+      "valueType": "BOOLEAN"
+    },
+    "CS_412": {
+      "code": "CS_412",
+      "name": "EDL - CS - 412. Infrastructures : Existence d\u2019une salle d'observation en post-partum",
+      "id": "Mr7udRtf9hr",
+      "valueType": "BOOLEAN"
+    },
+    "CS_413": {
+      "code": "CS_413",
+      "name": "EDL - CS - 413. Infrastructures : Existe-t-il une salle/espace pour les activit\u00e9s de masse ( Consulation Pr\u00e9natale, Consultation Pr\u00e9scolaire, Vaccination\u2026) ?",
+      "id": "zR645gNa9or",
+      "valueType": "BOOLEAN"
+    },
+    "CS_414": {
+      "code": "CS_414",
+      "name": "EDL - CS - 414. Infrastructures : Existe-t-il une salle pour le Traitement Directement Observ\u00e9 ( TB)?",
+      "id": "Ku6orIcRN4V",
+      "valueType": "BOOLEAN"
+    },
+    "CS_415": {
+      "code": "CS_415",
+      "name": "EDL - CS - 415. Infrastructures : Le CS a besoin d'une r\u00e9habilitation l\u00e9g\u00e8re (Portes, fen\u00eatres, pavement, peinture, plafond)",
+      "id": "AL7OM1ZgcLm",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_416": {
+      "code": "CS_416",
+      "name": "EDL - CS - 416. Infrastructures : Le CS a besoin d'une r\u00e9habilitation lourde (toiture, murs, autres)",
+      "id": "qhiQxtxHEKL",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_417": {
+      "code": "CS_417",
+      "name": "EDL - CS - 417. Infrastructures : Le CS a besoin d'une construction",
+      "id": "hWgrPMoaiZI",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_418": {
+      "code": "CS_418",
+      "name": "EDL - CS - 418. Infrastructures - Capacit\u00e9 d'accueil : Combien y a t-il des lits mont\u00e9s avec matelas en toile cir\u00e9",
+      "id": "AetFbETcAvU",
+      "valueType": "INTEGER"
+    },
+    "CS_419": {
+      "code": "CS_419",
+      "name": "EDL - CS - 419. Infrastructures - Capacit\u00e9 d'accueil : Combien y a til des lits mont\u00e9s \u00e0 la maternit\u00e9 avec matelas en toile cir\u00e9",
+      "id": "XIbTn815s7c",
+      "valueType": "INTEGER"
+    },
+    "CS_420": {
+      "code": "CS_420",
+      "name": "EDL - CS - 420. Infrastructures - Capacit\u00e9 d'accueil : Combien y a til des lits mont\u00e9s avec matelas non prot\u00e9g\u00e9 par toile cir\u00e9",
+      "id": "Pa2yXdFBOTC",
+      "valueType": "INTEGER"
+    },
+    "CS_421": {
+      "code": "CS_421",
+      "name": "EDL - CS - 421. Infrastructures - Capacit\u00e9 d'accueil : Combien y a til des lits mont\u00e9s \u00e0 la maternit\u00e9 avec matelas non prot\u00e9g\u00e9 par toile cir\u00e9",
+      "id": "GEbJazGZjNY",
+      "valueType": "INTEGER"
+    },
+    "CS_422": {
+      "code": "CS_422",
+      "name": "EDL - CS - 422. Infrastructures - Capacit\u00e9 d'accueil : Combien y a til des lits sans mat\u00e9las \u00e0 la FOSA",
+      "id": "zvmMtgdqV4n",
+      "valueType": "INTEGER"
+    },
+    "CS_423": {
+      "code": "CS_423",
+      "name": "EDL - CS - 423. Infrastructures - WASH : Principale source d'eau utilis\u00e9e par la formation sanitaire en ce moment",
+      "id": "j7PsQllPOHl",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "eau_cou",
+            "name": "1. Eau courante dans les locaux ",
+            "id": "qE3Al38XzRw",
+            "odk": "source_eau1"
+          },
+          {
+            "code": "eau_rac",
+            "name": "2. Eaux raccordées  dans la parcelle",
+            "id": "KGxCxiZgOG5",
+            "odk": "source_eau2"
+          },
+          {
+            "code": "born",
+            "name": "3. Borne Fontaine, Forage, puits tubé",
+            "id": "Tq64Qo2xj9y",
+            "odk": "source_eau3"
+          },
+          {
+            "code": "puit",
+            "name": "4. Puits ordinaires protégés",
+            "id": "T3JVeyup5lS",
+            "odk": "source_eau4"
+          },
+          {
+            "code": "pluie",
+            "name": "5. Collecte d'eau de pluie ",
+            "id": "dzJTJPbTAgd",
+            "odk": "source_eau5"
+          },
+          {
+            "code": "aut",
+            "name": "6. Autres à préciser ",
+            "id": "Knk7Sg05IAt",
+            "odk": "source_eau6"
+          }
+        ],
+        "id": "SXACQsfSvzW"
+      }
+    },
+    "CS_424": {
+      "code": "CS_424",
+      "name": "EDL - CS - 424. Infrastructures - WASH : L'approvionnment en eau \u00e0 partir de cette source est disponible au sein de la FOSA, ou \u00e0 distance?",
+      "id": "z4F9mnVCTqs",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "dispo_appro_eau1",
+            "name": "1. Au sein de la FOSA"
+          },
+          {
+            "code": "dispo_appro_eau2",
+            "name": "2. A moins de  500 m\u00e8tres de la FOSA"
+          },
+          {
+            "code": "dispo_appro_eau3",
+            "name": "3. A plus de 500 \u00e8tres de la FOSA"
+          }
+        ],
+        "id": "djXbDPiptGi"
+      }
+    },
+    "CS_425": {
+      "code": "CS_425",
+      "name": "EDL - CS - 425. Infrastructures - WASH : Latrines hygi\u00e9niques  fonctionnelles pour les malades au niveau de la FOSA",
+      "id": "AqwcFdXI4nl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_425_1": {
+      "code": "CS_425_1",
+      "name": "EDL - CS - 425.1 Infrastructures - WASH : Si Oui, ces latrines sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "J996S9ZTidn",
+      "valueType": "BOOLEAN"
+    },
+    "CS_426": {
+      "code": "CS_426",
+      "name": "EDL - CS - 426. Infrastructures - WASH : Si latrine existe, d\u00e9terminer le type de latrine ",
+      "id": "PxGOgCdnZGX",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_latrine1",
+            "name": "1. Toilette \u00e0 chasse d'eau"
+          },
+          {
+            "code": "type_latrine2",
+            "name": "2. Latrines ventil\u00e9e Am\u00e9lior\u00e9es"
+          },
+          {
+            "code": "type_latrine3",
+            "name": "3. Fosse avec dalle"
+          },
+          {
+            "code": "type_latrine4",
+            "name": "4. Fosse sans dalle"
+          },
+          {
+            "code": "type_latrine5",
+            "name": "5. Toilette \u00e0 compostage"
+          }
+        ],
+        "id": "zperWNGb0Kh"
+      }
+    },
+    "CS_426_2": {
+      "code": "CS_426_2",
+      "name": "EDL - CS - 426.2 Infrastructures - WASH : Existe-t-il des douches hygi\u00e9niques fonctionnelles pour les malades pour au niveau de la FOSA ?",
+      "id": "sDnwmRz4JoV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_426_3": {
+      "code": "CS_426_3",
+      "name": "EDL - CS - 426.3 Infrastructures - WASH : Si Oui, ces douches sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "B9TAfVlPhJJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_427": {
+      "code": "CS_427",
+      "name": "EDL - CS - 427. Infrastructures - WASH : Incin\u00e9rateur fonctionnel",
+      "id": "y40rxKykane",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428": {
+      "code": "CS_428",
+      "name": "EDL - CS - 428. Infrastructures - WASH : Existe t-il une Fosse \u00e0 placenta fonctionnel",
+      "id": "HdugFeSZm2Y",
+      "valueType": "BOOLEAN"
+    },
+    "CS_429": {
+      "code": "CS_429",
+      "name": "EDL - CS - 429. Infrastructures - WASH : Existe t-il unTrou \u00e0 ordure",
+      "id": "zCKCDzqlbXG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_430": {
+      "code": "CS_430",
+      "name": "EDL - CS - 430. Infrastructures - WASH : Existe t-il des Poubelles en plastic avec couvercles en bon etat",
+      "id": "LSL5DNoS7CI",
+      "valueType": "BOOLEAN"
+    },
+    "CS_431": {
+      "code": "CS_431",
+      "name": "EDL - CS - 431. Infrastructures - WASH : Existe t-il des Receptacles pour seringues",
+      "id": "B5I928o1ITi",
+      "valueType": "BOOLEAN"
+    },
+    "CS_432": {
+      "code": "CS_432",
+      "name": "EDL - CS - 432. Infrastructures - Energie : Approvisionnement en \u00e9lectricit\u00e9",
+      "id": "SRPH1VXsalC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_433": {
+      "code": "CS_433",
+      "name": "EDL - CS - 433. Infrastructures - Energie : Principale source d'\u00e9lectricit\u00e9 de la FOSA",
+      "id": "dE3qGtJxHTS",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "pub",
+            "name": "1. Reseau Public ",
+            "id": "WN417JJFVSr",
+            "odk": "source_elect1"
+          },
+          {
+            "code": "priv",
+            "name": "2. Reseau Privé ",
+            "id": "S4FFRtvJLYo",
+            "odk": "source_elect2"
+          },
+          {
+            "code": "gr_el",
+            "name": "3. Groupe electrogène",
+            "id": "GxIXZ0QtfLs",
+            "odk": "source_elect3"
+          },
+          {
+            "code": "sol",
+            "name": "4. Sytème solaire",
+            "id": "HfzvoeglUhp",
+            "odk": "source_elect4"
+          },
+          {
+            "code": "aut",
+            "name": "5. Autres à préciser ",
+            "id": "I024BCkgSoH",
+            "odk": "source_elect5"
+          }
+        ],
+        "id": "gw4l1qahuvU"
+      }
+    },
+    "CS_434": {
+      "code": "CS_434",
+      "name": "EDL - CS - 434. Infrastructures - S\u00e9curit\u00e9 : Existe-t-il un paratonnerre install\u00e9 en etat de fonctionnement?",
+      "id": "aoeKlc51SZO",
+      "valueType": "BOOLEAN"
+    },
+    "CS_435": {
+      "code": "CS_435",
+      "name": "EDL - CS - 435. Infrastructures - S\u00e9curi\u00e9 : Existe-t-il un extincteur en etat fonctionnel",
+      "id": "TphNiMLglo0",
+      "valueType": "BOOLEAN"
+    },
+    "CS_436": {
+      "type": "multiple",
+      "values": {
+        "reseaux1": {
+          "code": "CS_436_reseaux1",
+          "comment": "1.Vodacom,",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 1.Vodacom, ",
+          "id": "ahcPha1Mc5O",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux2": {
+          "code": "CS_436_reseaux2",
+          "comment": "2. Airtel,",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 2. Airtel,",
+          "id": "sNly294xGce",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux3": {
+          "code": "CS_436_reseaux3",
+          "comment": "3. Tigo, Orange,",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 3. Tigo, Orange, ",
+          "id": "X2vOno0pHUH",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux4": {
+          "code": "CS_436_reseaux4",
+          "comment": "4. Africel",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 4. Africel",
+          "id": "Sy4FjLCQsGS",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux5": {
+          "code": "CS_436_reseaux5",
+          "comment": "5. Pas de reseau disponible",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 5. Pas de reseau disponible",
+          "id": "N9PVXoWqqp7",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux6": {
+          "code": "CS_436_reseaux6",
+          "comment": "6. Phonie",
+          "name": "EDL - CS - 436. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 6. Phonie",
+          "id": "chpZl9c9Q12",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_437": {
+      "code": "CS_437",
+      "name": "EDL - CS - 437. Infrastructures - Connectivit\u00e9 : Si reseau disponible, quelle est le niveau de disponibilit\u00e9 ",
+      "id": "XE6biAULTh2",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "reseau_dispo1",
+            "name": "a. Disponible 24 heures sur 24"
+          },
+          {
+            "code": "reseau_dispo2",
+            "name": "b. Disponible quelques heures par jour"
+          },
+          {
+            "code": "reseau_dispo3",
+            "name": "c. Disponible moins de deux heures par jour"
+          }
+        ],
+        "id": "IZJNKzL9KpH"
+      }
+    },
+    "CS_438": {
+      "code": "CS_438",
+      "name": "EDL - CS - 438. Infrastructures - Connectivit\u00e9 : Comment accedez-vous \u00e0 internet dans la FOSA ?",
+      "id": "jRDA5R3a2HA",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Modem"
+          },
+          {
+            "code": "2",
+            "name": "2. V-sat"
+          }
+        ],
+        "id": "pJHYoxrF2XZ"
+      }
+    },
+    "CS_439": {
+      "code": "CS_439",
+      "name": "EDL - CS - 439. Infrastructures - Connectivit\u00e9 : Si modem determiner le type de signal re\u00e7u par la FOSA",
+      "id": "CcQDlA72k0f",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_signal1",
+            "name": "a. 2 G"
+          },
+          {
+            "code": "type_signal2",
+            "name": "b. 3G"
+          },
+          {
+            "code": "type_signal3",
+            "name": "c. 4G"
+          }
+        ],
+        "id": "tfNUs9F7a8q "
+      }
+    },
+    "CS_440": {
+      "type": "multiple",
+      "values": {
+        "2": {
+          "code": "CS_440_2",
+          "comment": "2. autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - CS - 440. Infrastructures - Connectivit\u00e9 : Quelles sont les chaines TV pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9 ? autre",
+          "id": "SDWAXF3iSVn",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_441": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "CS_441_1",
+          "comment": "1. RTNC",
+          "name": "EDL - CS - 441. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9?1. RTNC",
+          "id": "i8fkb1AumlZ",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "CS_441_2",
+          "comment": "2. Radio communautaire",
+          "name": "EDL - CS - 441. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9?2. Radio communautaire ",
+          "id": "WHDyo0UjPS7",
+          "valueType": "BOOLEAN"
+        },
+        "3": {
+          "code": "CS_441_3",
+          "comment": "3. Autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - CS - 441. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9?3. Autres \u00e0 pr\u00e9ciser ",
+          "id": "qWSSlY0gdFB",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_442": {
+      "code": "CS_442",
+      "name": "EDL - CS - 442. Equipement - Mat\u00e9riel : Autoclave",
+      "id": "APXwUrf44lY",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_443": {
+      "code": "CS_443",
+      "name": "EDL - CS - 443. Equipement - Mat\u00e9riel : Microscope binoculaire diagnostic TB",
+      "id": "CLqeDIxz719",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_444": {
+      "code": "CS_444",
+      "name": "EDL - CS - 444. Equipement - Mat\u00e9riel : Hemoglobinom\u00e8tre ",
+      "id": "N56ACYN6yKa",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_445": {
+      "code": "CS_445",
+      "name": "EDL - CS - 445. Equipement - Mat\u00e9riel : Centrifugeuse \u00e9lectrique ou manuel ",
+      "id": "B24BhWIn79z",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_446": {
+      "code": "CS_446",
+      "name": "EDL - CS - 446. Equipement - Mat\u00e9riel : Aspirateur manuel ou \u00e9lectrique \u00e0 pression \u2264 130mm/Hg",
+      "id": "W0YRjo8FyEL",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_447": {
+      "code": "CS_447",
+      "name": "EDL - CS - 447. Equipement - Mat\u00e9riel : Ventouse obst\u00e9tricale",
+      "id": "uYgjW3H3oju",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_448": {
+      "code": "CS_448",
+      "name": "EDL - CS - 448. Equipement - Mat\u00e9riel : Sp\u00e9culum vaginal ",
+      "id": "DIo45yXERm3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_449": {
+      "code": "CS_449",
+      "name": "EDL - CS - 449. Equipement - Mat\u00e9riel : Otoscope ",
+      "id": "C34oxU0pvby",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_450": {
+      "code": "CS_450",
+      "name": "EDL - CS - 450. Equipement - Mat\u00e9riel : Ballon autogonflable (Ambu) + masques N\u00b00/1",
+      "id": "KwwLAGFFYiq",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_450_1": {
+      "code": "CS_450_1",
+      "name": "EDL - CS - 450.1 Equipement - Mat\u00e9riel : Table d'examen",
+      "id": "UEKtsEtyMNf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_450_2": {
+      "code": "CS_450_2",
+      "name": "EDL - CS - 450.2 Equipement - Mat\u00e9riel : Table d'accouchement",
+      "id": "s4UxaOGiP91",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_451": {
+      "code": "CS_451",
+      "name": "EDL - CS - 451. Equipement - Mat\u00e9riel : Table pour les soins  du Nouveau-n\u00e9",
+      "id": "ztQG9XdLKkf",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_452": {
+      "code": "CS_452",
+      "name": "EDL - CS - 452. Equipement - Mat\u00e9riel : Table chauffante pour Nouveau-n\u00e9",
+      "id": "RBHY8Vft0dJ",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_453": {
+      "code": "CS_453",
+      "name": "EDL - CS - 453. Equipement - Mat\u00e9riel : Balance P\u00e8se b\u00e9b\u00e9",
+      "id": "oBsXByZdw8G",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_454": {
+      "code": "CS_454",
+      "name": "EDL - CS - 454. Equipement - Mat\u00e9riel : Balance enfant ",
+      "id": "ijHdErECIkU",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_455": {
+      "code": "CS_455",
+      "name": "EDL - CS - 455. Equipement - Mat\u00e9riel : Balance adulte ",
+      "id": "pSjFzVcWumO",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_456": {
+      "code": "CS_456",
+      "name": "EDL - CS - 456. Equipement - Mat\u00e9riel : Source de lumi\u00e8re ( lampe d'examen)",
+      "id": "JYLFrMw4wGA",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_457": {
+      "code": "CS_457",
+      "name": "EDL - CS - 457. Equipement - Mat\u00e9riel : Tensiom\u00e8tre fonctionnel ",
+      "id": "AqMbslHPmSq",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_458": {
+      "code": "CS_458",
+      "name": "EDL - CS - 458. Equipement - Mat\u00e9riel : St\u00e9thoscope fonctionnel ",
+      "id": "grF9tjcoUdP",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_459": {
+      "code": "CS_459",
+      "name": "EDL - CS - 459. Equipement - Mat\u00e9riel : Thermom\u00e8tre  ",
+      "id": "O7131suSaQu",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_460": {
+      "code": "CS_460",
+      "name": "EDL - CS - 460. Equipement - Mat\u00e9riel : Toise ",
+      "id": "cTGk6OWZ6Gw",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_461": {
+      "code": "CS_461",
+      "name": "EDL - CS - 461. Equipement - Mat\u00e9riel : Metre ruban ( MUAC) ",
+      "id": "jatblNaRLAt",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_462": {
+      "code": "CS_462",
+      "name": "EDL - CS - 462. Equipement - Mat\u00e9riel : Minuterie ",
+      "id": "smpQHm52aox",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_462_1": {
+      "code": "CS_462_1",
+      "name": "EDL - CS - 462.1 Equipement - Mat\u00e9riel : Boite de petite chirurgie",
+      "id": "QURdbn0hfw3",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_462_2": {
+      "code": "CS_462_2",
+      "name": "EDL - CS - 462.2 Equipement - Mat\u00e9riel : Boite d'accouchement",
+      "id": "rAZnQm0VeHN",
+      "valueType": "INTEGER_ZERO_OR_POSITIVE"
+    },
+    "CS_463": {
+      "code": "CS_463",
+      "name": "EDL - CS - 463. Equipement - PF : Kit Insertion/Retrait des Dispositif Intra uterin (DIU)",
+      "id": "oug5v6W9Dsh",
+      "valueType": "BOOLEAN"
+    },
+    "CS_464": {
+      "code": "CS_464",
+      "name": "EDL - CS - 464. Equipement - PF : Kit Insertion/Retrait des Implants",
+      "id": "uMkiRuFBQEB",
+      "valueType": "TEXT"
+    },
+    "CS_465": {
+      "code": "CS_465",
+      "name": "EDL - CS - 465. Equipement - Cha\u00eene de froid : Combien des refrig\u00e9rateur PEV y a-t-il dans ce centre de sant\u00e9 ?",
+      "id": "faUbCZKScBe",
+      "valueType": "INTEGER"
+    },
+    "CS_466_1": {
+      "code": "CS_466_1",
+      "name": "EDL - CS - 466.1 Equipement - Cha\u00eene de froid :  R\u00e9frig\u00e9rateur de type Solaire :",
+      "id": "HsdkxCVPIB5",
+      "valueType": "INTEGER"
+    },
+    "CS_466_2": {
+      "code": "CS_466_2",
+      "name": "EDL - CS - 466.2 Equipement - Cha\u00eene de froid :  R\u00e9frig\u00e9rateur de type Petrole :",
+      "id": "qw3eSPhjqsK",
+      "valueType": "INTEGER"
+    },
+    "CS_466_3": {
+      "code": "CS_466_3",
+      "name": "EDL - CS - 466.3 Equipement - Cha\u00eene de froid :  R\u00e9frig\u00e9rateur de type Electrique :",
+      "id": "GjsJMTScDMe",
+      "valueType": "INTEGER"
+    },
+    "CS_470": {
+      "code": "CS_470",
+      "name": "EDL - CS - 470. Equipement - Cha\u00eene de froid : Les frigos fonctionnels sont tous dot\u00e9s de fridge tag ou de fiche de suivi de temp\u00e9rature \u00e0 jour ?",
+      "id": "EBC30p5X5Uj",
+      "valueType": "BOOLEAN"
+    },
+    "CS_471": {
+      "code": "CS_471",
+      "name": "EDL - CS - 471. Equipement - Cha\u00eene de froid : Y a t'il des Boites isothermes?",
+      "id": "SlV17AJPykp",
+      "valueType": "INTEGER"
+    },
+    "CS_472": {
+      "code": "CS_472",
+      "name": "EDL - CS - 472. Equipement - Mat\u00e9riel roulant : Moto",
+      "id": "Ukv53w8UHlM",
+      "valueType": "INTEGER"
+    },
+    "CS_473": {
+      "code": "CS_473",
+      "name": "EDL - CS - 473. Equipement - Mat\u00e9riel roulant : V\u00e9los",
+      "id": "ge1pfK9sLYn",
+      "valueType": "INTEGER"
+    },
+    "CS_474": {
+      "code": "CS_474",
+      "name": "EDL - CS - 474. Equipement - Mat\u00e9riel roulant : Pirogue/Barque",
+      "id": "eFJ1rIOupVg",
+      "valueType": "INTEGER"
+    },
+    "CS_475": {
+      "code": "CS_475",
+      "name": "EDL - CS - 475. Equipement - Mat\u00e9riel roulant : Le moyen de transport d'urgence",
+      "id": "MRQnXkA1WRz",
+      "valueType": "BOOLEAN"
+    },
+    "CS_476": {
+      "code": "CS_476",
+      "name": "EDL - CS - 476. Equipement - Mat\u00e9riel informatique : Laptop",
+      "id": "lHuiDl2frdf",
+      "valueType": "INTEGER"
+    },
+    "CS_477": {
+      "code": "CS_477",
+      "name": "EDL - CS - 477. Equipement - Mat\u00e9riel informatique : Desktop",
+      "id": "QBD7GgkQ7cs",
+      "valueType": "INTEGER"
+    },
+    "CS_478": {
+      "code": "CS_478",
+      "name": "EDL - CS - 478. Equipement - Mat\u00e9riel informatique : Tablette",
+      "id": "U6nj0OVaVUX",
+      "valueType": "INTEGER"
+    },
+    "CS_479": {
+      "code": "CS_479",
+      "name": "EDL - CS - 479. Equipement - Mat\u00e9riel informatique : Imprimante/photocopieuse",
+      "id": "JT2g6HOsZJp",
+      "valueType": "INTEGER"
+    },
+    "CS_501_1": {
+      "code": "CS_501_1",
+      "name": "EDL - CS - 501.1. Outils disponibles : Partogramme",
+      "id": "HeaFIfkj2wv",
+      "valueType": "INTEGER"
+    },
+    "CS_501_2": {
+      "code": "CS_501_2",
+      "name": "EDL - CS - 501.2. Outils disponibles : Fiches CPN",
+      "id": "ePVBFxYl7ou",
+      "valueType": "INTEGER"
+    },
+    "CS_501_3": {
+      "code": "CS_501_3",
+      "name": "EDL - CS - 501.3. Outils disponibles : Cartes CPS ",
+      "id": "y2dAfwld232",
+      "valueType": "INTEGER"
+    },
+    "CS_501_4": {
+      "code": "CS_501_4",
+      "name": "EDL - CS - 501.4. Outils disponibles : Fiche PCIMNE pour pneumonie",
+      "id": "baM0uikrghU",
+      "valueType": "INTEGER"
+    },
+    "CS_501_5": {
+      "code": "CS_501_5",
+      "name": "EDL - CS - 501.5. Outils disponibles : Fiche PCIMNE pour paludisme",
+      "id": "EmKByLEB9Gq",
+      "valueType": "INTEGER"
+    },
+    "CS_501_6": {
+      "code": "CS_501_6",
+      "name": "EDL - CS - 501.6. Outils disponibles : Fiche PCIMNE pour diarh\u00e9e",
+      "id": "qjRXzGqz5jF",
+      "valueType": "INTEGER"
+    },
+    "CS_501_7": {
+      "code": "CS_501_7",
+      "name": "EDL - CS - 501.7. Outils disponibles : Fiches CPoN d'il ya au moins 2 mois",
+      "id": "Am8NGE6aF6I",
+      "valueType": "INTEGER"
+    },
+    "CS_501_8": {
+      "code": "CS_501_8",
+      "name": "EDL - CS - 501.8. Outils disponibles : Fiches PF il ya 1 mois",
+      "id": "S0Sx1wqZpiY",
+      "valueType": "INTEGER"
+    },
+    "CS_501_9": {
+      "code": "CS_501_9",
+      "name": "EDL - CS - 501.9. Outils disponibles : Fiches de patient TB",
+      "id": "twJMmN8Qocc",
+      "valueType": "INTEGER"
+    },
+    "CS_501_10": {
+      "code": "CS_501_10",
+      "name": "EDL - CS - 501.10. Outils disponibles : Fomulaire 1",
+      "id": "lkIml00qqZ6",
+      "valueType": "INTEGER"
+    },
+    "CS_501_11": {
+      "code": "CS_501_11",
+      "name": "EDL - CS - 501.11. Outils disponibles : Fiche de pointage",
+      "id": "KckepluoAuj",
+      "valueType": "INTEGER"
+    },
+    "CS_502": {
+      "code": "CS_502",
+      "name": "EDL - CS - 502. La FOSA r\u00e9alise-t-elle la communication ( sensiblisation communautaire ou Counseling des clients) pour la PF ?",
+      "id": "wNfPJTpiEIh",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_1": {
+      "code": "CS_503_1",
+      "name": "EDL - CS - 503.1. La FOSA offre des m\u00e9thodes contraceptives modernes : pr\u00e9servatifs masculins",
+      "id": "xt2LZRjKUqN",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_2": {
+      "code": "CS_503_2",
+      "name": "EDL - CS - 503.2. La FOSA offre des m\u00e9thodes contraceptives modernes : Pr\u00e9servatifs f\u00e9minins",
+      "id": "GLKIQHuRlBN",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_3": {
+      "code": "CS_503_3",
+      "name": "EDL - CS - 503.3. La FOSA offre des m\u00e9thodes contraceptives modernes : contraceptif Oral combin\u00e9 ( COC)",
+      "id": "mphY0f5BQJg",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_4": {
+      "code": "CS_503_4",
+      "name": "EDL - CS - 503.4. La FOSA offre des m\u00e9thodes contraceptives modernes : Contraceptif Oral Progestatif (POP)",
+      "id": "T98iGEgHIYY",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_5": {
+      "code": "CS_503_5",
+      "name": "EDL - CS - 503.5. La FOSA offre des m\u00e9thodes contraceptives modernes : Contraceptif injectable en Intramusculaire ( Depo provera)",
+      "id": "PvZauTK7IAX",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_6": {
+      "code": "CS_503_6",
+      "name": "EDL - CS - 503.6. La FOSA offre des m\u00e9thodes contraceptives modernes : Contraceptif injectable en Intramusculaire ( NET-EN)",
+      "id": "UkJIYxKLPXQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_7": {
+      "code": "CS_503_7",
+      "name": "EDL - CS - 503.7. La FOSA offre des m\u00e9thodes contraceptives modernes : Contraceptif injectable esn sous cutan\u00e9 -(sayana press)",
+      "id": "ERCGBlzhrW6",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_8": {
+      "code": "CS_503_8",
+      "name": "EDL - CS - 503.8. La FOSA offre des m\u00e9thodes contraceptives modernes : Implants ( Jadelle )",
+      "id": "ymqzrtrQWjH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_9": {
+      "code": "CS_503_9",
+      "name": "EDL - CS - 503.9. La FOSA offre des m\u00e9thodes contraceptives modernes : Implants Implanon NxT)",
+      "id": "TXRWadpX7cQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_10": {
+      "code": "CS_503_10",
+      "name": "EDL - CS - 503.10. La FOSA offre des m\u00e9thodes contraceptives modernes : Dispositif Intra Ut\u00e9rin",
+      "id": "IUycFI3qxgl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_503_11": {
+      "code": "CS_503_11",
+      "name": "EDL - CS - 503.11. La FOSA offre des m\u00e9thodes contraceptives modernes : Collier du Cycle",
+      "id": "R2ytKAmyBA3",
+      "valueType": "BOOLEAN"
+    },
+    "CS_504": {
+      "code": "CS_504",
+      "name": "EDL - CS - 504. La FOSA suit-t-elle des clients/clientes sous methodes contraceptives?",
+      "id": "sIbWNxla3Px",
+      "valueType": "INTEGER"
+    },
+    "CS_505": {
+      "code": "CS_505",
+      "name": "EDL - CS - 505. La FOSA dispose-t-elle d'un espace convivial avec avec des boite \u00e0 image, poster, video pour les activit\u00e9s de communication \u00e0 l'intentions des jeunes et adolescents ( 10 -24 ans)?",
+      "id": "b0wVrJJwdJo",
+      "valueType": "BOOLEAN"
+    },
+    "CS_507": {
+      "code": "CS_507",
+      "name": "EDL - CS - 507. Les jeunes et les adolescent utilisent -t-ils le service le service de Sant\u00e9 de la Reproduction adapt\u00e9s aux Jeunes et adolescents ?",
+      "id": "EhirnLimKxG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.1": {
+      "code": "CS_509.1",
+      "name": "EDL - CS - 509.1. La FOSA dispose de Pep kit : Test de grossesse",
+      "id": "wXvPCjDWrBq",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.2": {
+      "code": "CS_509.2",
+      "name": "EDL - CS - 509.2. La FOSA dispose de Pep kit : Test Hepatite",
+      "id": "KtvHD3HwbSn",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.3": {
+      "code": "CS_509.3",
+      "name": "EDL - CS - 509.3. La FOSA dispose de Pep kit : Cefixime",
+      "id": "RMJORr1k5ev",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.4": {
+      "code": "CS_509.4",
+      "name": "EDL - CS - 509.4. La FOSA dispose de Pep kit : Azithromycine;",
+      "id": "PZZx19Aye7X",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.5": {
+      "code": "CS_509.5",
+      "name": "EDL - CS - 509.5. La FOSA dispose de Pep kit : Antiretroviraux ;",
+      "id": "MKT342jkbvp",
+      "valueType": "BOOLEAN"
+    },
+    "CS_509.6": {
+      "code": "CS_509.6",
+      "name": "EDL - CS - 509.6. La FOSA dispose de Pep kit : Contraception d'urgence",
+      "id": "xAYKibBoszB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_510": {
+      "code": "CS_510",
+      "name": "EDL - CS - 510. La FOSA fournit-il de couseilling aux survivantes des violences sexuelles?",
+      "id": "hwgmiDfaSMM",
+      "valueType": "BOOLEAN"
+    },
+    "CS_511": {
+      "code": "CS_511",
+      "name": "EDL - CS - 511. Les survivantes des violences sexuelles recoivent-elles les soins pr\u00e9ventifs et curatifs ?",
+      "id": "v3Hw9KukHFH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_1": {
+      "code": "CS_512_1",
+      "name": "EDL - CS - 512.1. Commodit\u00e9s disponibles dans la FOSA : pr\u00e9servatifs masculins",
+      "id": "OQgPLwr3KKj",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_2": {
+      "code": "CS_512_2",
+      "name": "EDL - CS - 512.2. Commodit\u00e9s disponibles dans la FOSA : Pr\u00e9servatif f\u00e9minin",
+      "id": "IMuG74pF3oD",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_3": {
+      "code": "CS_512_3",
+      "name": "EDL - CS - 512.3. Commodit\u00e9s disponibles dans la FOSA : contraceptif oral combin\u00e9 ( COC)",
+      "id": "M6C0AIoXyj4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_4": {
+      "code": "CS_512_4",
+      "name": "EDL - CS - 512.4. Commodit\u00e9s disponibles dans la FOSA : Contractif oral progestatif (POP)",
+      "id": "GrNKJjsQw2I",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_5": {
+      "code": "CS_512_5",
+      "name": "EDL - CS - 512.5. Commodit\u00e9s disponibles dans la FOSA : Contraceptif d'urgence",
+      "id": "SM6Xhdpuxam",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_6": {
+      "code": "CS_512_6",
+      "name": "EDL - CS - 512.6. Commodit\u00e9s disponibles dans la FOSA : Contraceptif injectable en Intramusculaire ( Depo provera)",
+      "id": "udAxo1aWv1s",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_7": {
+      "code": "CS_512_7",
+      "name": "EDL - CS - 512.7. Commodit\u00e9s disponibles dans la FOSA : Contraceptif injectable esn sous cutan\u00e9 -(sayana press)",
+      "id": "z3N9vWXWdKG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_8": {
+      "code": "CS_512_8",
+      "name": "EDL - CS - 512.8. Commodit\u00e9s disponibles dans la FOSA : Implants ( Jadelle",
+      "id": "kkWvsxer1b8",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_9": {
+      "code": "CS_512_9",
+      "name": "EDL - CS - 512.9. Commodit\u00e9s disponibles dans la FOSA : Implants Implanon NxT)",
+      "id": "alEe7DXGIft",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_10": {
+      "code": "CS_512_10",
+      "name": "EDL - CS - 512.10. Commodit\u00e9s disponibles dans la FOSA : Dispositif Intra Ut\u00e9rin",
+      "id": "EZRDNWLelfs",
+      "valueType": "BOOLEAN"
+    },
+    "CS_512_11": {
+      "code": "CS_512_11",
+      "name": "EDL - CS - 512.11. Commodit\u00e9s disponibles dans la FOSA : Collier pour les m\u00e9thode des jours fixes",
+      "id": "PhFFwbRm5ju",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_1": {
+      "code": "CS_513_1",
+      "name": "EDL - CS - 513.1. Intrants disponibles dans la FOSA : Test de prot\u00e9inurie",
+      "id": "Epj0lFUUuaY",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_2": {
+      "code": "CS_513_2",
+      "name": "EDL - CS - 513.2. Intrants disponibles dans la FOSA : SP",
+      "id": "jSM63WZIlsz",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_3": {
+      "code": "CS_513_3",
+      "name": "EDL - CS - 513.3. Intrants disponibles dans la FOSA : Fer et acide folique",
+      "id": "NfdOAl0BjxT",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_4": {
+      "code": "CS_513_4",
+      "name": "EDL - CS - 513.4. Intrants disponibles dans la FOSA : Mebendazole",
+      "id": "wzgMDU82AOn",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_5": {
+      "code": "CS_513_5",
+      "name": "EDL - CS - 513.5. Intrants disponibles dans la FOSA : VAT",
+      "id": "wgJTYhr98VL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_6": {
+      "code": "CS_513_6",
+      "name": "EDL - CS - 513.5. Intrants disponibles dans la FOSA : Ocytocine",
+      "id": "xebXwvoBeoP",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_7": {
+      "code": "CS_513_7",
+      "name": "EDL - CS - 513.7. Intrants disponibles dans la FOSA : Sulfate de magn\u00e9sium",
+      "id": "oOK9Fi28SLC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_8": {
+      "code": "CS_513_8",
+      "name": "EDL - CS - 513.8. Intrants disponibles dans la FOSA : chlorhexidine digluconate 7,1%",
+      "id": "IOtv8K8Zm2U",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_9": {
+      "code": "CS_513_9",
+      "name": "EDL - CS - 513.9. Intrants disponibles dans la FOSA : Pommade t\u00e9tracycline",
+      "id": "yQR4syPXCdr",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_10": {
+      "code": "CS_513_10",
+      "name": "EDL - CS - 513.10. Intrants disponibles dans la FOSA : Vitamine K1",
+      "id": "OzjpDOE8en8",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_11": {
+      "code": "CS_513_11",
+      "name": "EDL - CS - 513.11. Intrants disponibles dans la FOSA : Amoxicilline 250 mg dispersible",
+      "id": "AJU7zdaok25",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_12": {
+      "code": "CS_513_12",
+      "name": "EDL - CS - 513.12. Intrants disponibles dans la FOSA : Ceftriaxone injectable",
+      "id": "BuitFDl0pwK",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_13": {
+      "code": "CS_513_13",
+      "name": "EDL - CS - 513.13. Intrants disponibles dans la FOSA : ACT 1-5 ans",
+      "id": "qnJciWAlQoB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_14": {
+      "code": "CS_513_14",
+      "name": "EDL - CS - 513.14. Intrants disponibles dans la FOSA : MILD",
+      "id": "LKZo3UK8SYx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_513_15": {
+      "code": "CS_513_15",
+      "name": "EDL - CS - 513.15. Intrants disponibles dans la FOSA : TDR",
+      "id": "LKn7ux28bi6",
+      "valueType": "BOOLEAN"
+    },
+    "CS_514": {
+      "code": "CS_514",
+      "name": "EDL - CS - 514. La FOSA organise-t-elle Consulation Pr\u00e9natale (CPN) ?",
+      "id": "Y3Yzy8ok3i4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_1": {
+      "code": "CS_515_1",
+      "name": "EDL - CS - 515.1. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Prise de tension arterielle",
+      "id": "tsTW5iqM10d",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_2": {
+      "code": "CS_515_2",
+      "name": "EDL - CS - 515.2. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Dosage de la prot\u00e9inurie",
+      "id": "gvADGH8Rb6k",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_3": {
+      "code": "CS_515_3",
+      "name": "EDL - CS - 515.3. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Dosage d'h\u00e9moglobine",
+      "id": "JdfsMMz06qB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_4": {
+      "code": "CS_515_4",
+      "name": "EDL - CS - 515.4. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : prevention du paludisme (TPI),",
+      "id": "xsMGvs0iWLp",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_5": {
+      "code": "CS_515_5",
+      "name": "EDL - CS - 515.5. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Administration de Fer acide folique",
+      "id": "qwSzMOtnhFm",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_6": {
+      "code": "CS_515_6",
+      "name": "EDL - CS - 515.6. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : D\u00e9parasitage ( Mebendazole/albendazole)",
+      "id": "ILX98aY6zlx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_7": {
+      "code": "CS_515_7",
+      "name": "EDL - CS - 515.7. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Vaccination antitetanique",
+      "id": "NpLzN6ctZvR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_8": {
+      "code": "CS_515_8",
+      "name": "EDL - CS - 515.8. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : R\u00e9f\u00e9rence de grossesse \u00e0 haut risque",
+      "id": "ToNPszbUvgE",
+      "valueType": "BOOLEAN"
+    },
+    "CS_515_9": {
+      "code": "CS_515_9",
+      "name": "EDL - CS - 515.9. T\u00e2che r\u00e9alis\u00e9e pendant la CPN : Moustiquaire Impr\u00e9gn\u00e9 d'insecticide ( MILD)",
+      "id": "bP0KY67a97B",
+      "valueType": "BOOLEAN"
+    },
+    "CS_516.1": {
+      "code": "CS_516.1",
+      "name": "EDL - CS - 516.1 Nombre d\u2019accouchements v\u00e9rifi\u00e9s dans le registre :",
+      "id": "QlxpZLhpkFU",
+      "valueType": "INTEGER"
+    },
+    "CS_516.2": {
+      "code": "CS_516.2",
+      "name": "EDL - CS - 516.2 Nombre d'accouchement pour lequel un partogramme a \u00e9t\u00e9 utilis\u00e9 :",
+      "id": "xpMvs1Dxb0y",
+      "valueType": "INTEGER"
+    },
+    "CS_517.1": {
+      "code": "CS_517.1",
+      "name": "EDL - CS - 517.1 Nombre de partogrammes utilis\u00e9s pour la v\u00e9rification :",
+      "id": "YcyYr54fy4B",
+      "valueType": "INTEGER"
+    },
+    "CS_517.2": {
+      "code": "CS_517.2",
+      "name": "EDL - CS - 517.2 Nombre d'accouchements pour lequel \u00a0l'ocytocine a \u00e9t\u00e9 administr\u00e9e :",
+      "id": "W6iNUMqfLp6",
+      "valueType": "INTEGER"
+    },
+    "CS_518": {
+      "code": "CS_518",
+      "name": "EDL - CS - 518. La FOSA dirige-t-elle des accouchements par voie basse \u00e0 l'aide des ventouses ou forceps ?",
+      "id": "t90JgeFlwo5",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_519": {
+      "code": "CS_519",
+      "name": "EDL - CS - 519. La FOSA administre-t-elle des antibiotiques en injectable (Intramusculaire ou Intraveineuse) pour la gestion des infections s\u00e9v\u00e8res pendant la grossesse ou l'accouchement ou le post partum?",
+      "id": "XrI0zCbuTs2",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_520": {
+      "code": "CS_520",
+      "name": "EDL - CS - 520. La FOSA administre-t-elle le Sulfate de Magnesium en parenteral pour le traitement de pr\u00e9 \u00e9clampsie sev\u00e8re ou \u00e9clampsie (Intramusculaire ou Intraveineuse)",
+      "id": "Rshm0qrVCH1",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_521": {
+      "code": "CS_521",
+      "name": "EDL - CS - 521. La FOSA fait-elle l'extration manuelle de placenta ?",
+      "id": "mQjmCYCuBg4",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_522": {
+      "code": "CS_522",
+      "name": "EDL - CS - 522. La FOSA r\u00e9alise-t-elle des \u00e9vacuations des produits r\u00e9siduels ut\u00e9rins (post- avortement)",
+      "id": "zENe90VlI8Q",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_523.1": {
+      "code": "CS_523.1",
+      "name": "EDL - CS - 523.1 Nombre de partogrammes utilis\u00e9s pour la v\u00e9rification :",
+      "id": "q3Q6zLOqrSF",
+      "valueType": "INTEGER"
+    },
+    "CS_523.2": {
+      "code": "CS_523.2",
+      "name": "EDL - CS - 523.2 Nombre de partogramme avec les \u00a0visites \u00e0 la 6i\u00e8me heure r\u00e9alis\u00e9e:",
+      "id": "Lyn4OrHljyI",
+      "valueType": "INTEGER"
+    },
+    "CS_524.1": {
+      "code": "CS_524.1",
+      "name": "EDL - CS - 524.1 Nombre de fiches de CPoN utilis\u00e9es pour la v\u00e9rification :",
+      "id": "Lt1Yln4SiwQ",
+      "valueType": "INTEGER"
+    },
+    "CS_524.2": {
+      "code": "CS_524.2",
+      "name": "EDL - CS - 524.2 Nombre de fiches de CPoN \u00a0avec Visites au 6i\u00e8me jour ont \u00e9t\u00e9 r\u00e9alis\u00e9es :",
+      "id": "MsNGMJAeeX8",
+      "valueType": "INTEGER"
+    },
+    "CS_524.3": {
+      "code": "CS_524.3",
+      "name": "EDL - CS - 524.3 Nombre de fiches de CPoN \u00a0avec Visites au 6i\u00e8me semaine ont \u00e9t\u00e9 r\u00e9alis\u00e9es :",
+      "id": "zbgcqy4bxFo",
+      "valueType": "INTEGER"
+    },
+    "CS_526": {
+      "code": "CS_526",
+      "name": "EDL - CS - 526. La FOSA prend-t-elle en charge des nouveaux-n\u00e9s de faible poids de naissance?",
+      "id": "kId3JvwRXkb",
+      "valueType": "BOOLEAN"
+    },
+    "CS_527": {
+      "code": "CS_527",
+      "name": "EDL - CS - 527. La FOSA reanime-t-elle les nouveaux-n\u00e9s pr\u00e9sentant une asphyxie \u00e0 la naissance suivant la m\u00e9thode ABR ( Aider les b\u00e9b\u00e9s \u00e0 Respirer) ?",
+      "id": "gooZlRJ9G9V",
+      "valueType": "BOOLEAN"
+    },
+    "CS_528": {
+      "code": "CS_528",
+      "name": "EDL - CS - 528. La FOSA assure-t-elle la prise en charge des infections n\u00e9onatales selon le protocole national",
+      "id": "oqnGUo6DPap",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_531": {
+      "code": "CS_531",
+      "name": "EDL - CS - 531. Avez vous un microplan PEV pour l'aire de sant\u00e9?",
+      "id": "wDOg2sVvGNJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_1": {
+      "code": "CS_532_1",
+      "name": "EDL - CS - 532.1. Strat\u00e9gie de vaccination mise en oeuvre : Fixe",
+      "id": "kc4ypBPZoQS",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_2": {
+      "code": "CS_532_2",
+      "name": "EDL - CS - 532.2. Strat\u00e9gie de vaccination mise en oeuvre : avanc\u00e9e",
+      "id": "SSoTVLzSXs2",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_3": {
+      "code": "CS_532_3",
+      "name": "EDL - CS - 532.3. Strat\u00e9gie de vaccination mise en oeuvre : saisir les opportunit\u00e9s manqu\u00e9es de vaccinations",
+      "id": "yMoingmpp9t",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_4": {
+      "code": "CS_532_4",
+      "name": "EDL - CS - 532.4. Strat\u00e9gie de vaccination mise en oeuvre : activit\u00e9s des vaccinations intensifi\u00e9es",
+      "id": "pluLsjGE1kl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_5": {
+      "code": "CS_532_5",
+      "name": "EDL - CS - 532.5. Strat\u00e9gie de vaccination mise en oeuvre : vaccination \u00e0 tout contact",
+      "id": "vxSmS9QZ79u",
+      "valueType": "BOOLEAN"
+    },
+    "CS_532_6": {
+      "code": "CS_532_6",
+      "name": "EDL - CS - 532.6. Strat\u00e9gie de vaccination mise en oeuvre : vaccination chez les d\u00e9plac\u00e9s",
+      "id": "U4EXnUoM8km",
+      "valueType": "BOOLEAN"
+    },
+    "CS_533": {
+      "code": "CS_533",
+      "name": "EDL - CS - 533. La FOSA organise-t-elle des s\u00e9ances de sensibilisation pour le PEV?",
+      "id": "IujbnHAubJW",
+      "valueType": "BOOLEAN"
+    },
+    "CS_534": {
+      "code": "CS_534",
+      "name": "EDL - CS - 534. La FOSA organise-t-elle des r\u00e9unions de suivi des activit\u00e9s de vaccination avec la communaut\u00e9",
+      "id": "JCdefSAoADd",
+      "valueType": "BOOLEAN"
+    },
+    "CS_536": {
+      "code": "CS_536",
+      "name": "EDL - CS - 536. La FOSA offre t-elle le service de la prise en charge de malnutrition mod\u00e9r\u00e9e ?",
+      "id": "TTrWIKaz8qx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_537": {
+      "code": "CS_537",
+      "name": "EDL - CS - 537. La FOSA offre t-elle le service de la prise en charge de la malnutrition aigue sev\u00e8re sans complications ?",
+      "id": "ZHXGqXspurh",
+      "valueType": "BOOLEAN"
+    },
+    "CS_538": {
+      "code": "CS_538",
+      "name": "EDL - CS - 538. La FOSA fait-elle la promotion de l'allaitement optimal ( initiation \u00e0 l'allaitement pr\u00e9coce dans l'heure qui suit la naissance, l'allaitement maternel exclusif jusqu'\u00e0 l'age de 6 mois; Alimentation de compl\u00e9ment?",
+      "id": "x902vWgyI0y",
+      "valueType": "BOOLEAN"
+    },
+    "CS_539": {
+      "code": "CS_539",
+      "name": "EDL - CS - 539. La FOSA organise-t-elle le service de la CPS?",
+      "id": "HbcxigNYZXR",
+      "valueType": "BOOLEAN"
+    },
+    "nombre_tdr": {
+      "code": "nombre_tdr",
+      "name": "EDL - CS - 542. Nombre de TDR r\u00e9alis\u00e9s (fiche CPN)",
+      "id": "u15ClmkZFNy",
+      "valueType": "INTEGER"
+    },
+    "nombre_cas_pos": {
+      "code": "nombre_cas_pos",
+      "name": "EDL - CS - 542. Nombre de cas positifs (fiche CPN)",
+      "id": "EeewjKGTcpt",
+      "valueType": "INTEGER"
+    },
+    "nombre_cas_trait": {
+      "code": "nombre_cas_trait",
+      "name": "EDL - CS - 542. Nombre de cas trait\u00e9s (CPN)",
+      "id": "O1JNcgGiBHu",
+      "valueType": "INTEGER"
+    },
+    "CS_543": {
+      "code": "CS_543",
+      "name": "EDL - CS - 543. Le centre de sant\u00e9 est il un Centre de traitement et D\u00e9pistage de Tuberculose (CST)?",
+      "id": "BnKedSDcPXG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_544": {
+      "code": "CS_544",
+      "name": "EDL - CS - 544. La FOSA organise-t-elle la sensibilisation sur la tuberculose avec l'appui de la communaut\u00e9?",
+      "id": "J732L6cfO1Y",
+      "valueType": "BOOLEAN"
+    },
+    "CS_545": {
+      "type": "multiple",
+      "values": {
+        "10_patients_toux1": {
+          "code": "CS_545_10_patients_toux1",
+          "comment": "Patient 1",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) ? Patient 1",
+          "id": "p7f5DD2yYlp",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux2": {
+          "code": "CS_545_10_patients_toux2",
+          "comment": "Patient 2",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 2",
+          "id": "p4rAQNQS2J1",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux3": {
+          "code": "CS_545_10_patients_toux3",
+          "comment": "Patient 3",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 3",
+          "id": "teLypYhdCcp",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux4": {
+          "code": "CS_545_10_patients_toux4",
+          "comment": "Patient 4",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 4",
+          "id": "p8VseA3Q77R",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux5": {
+          "code": "CS_545_10_patients_toux5",
+          "comment": "Patient 5",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 5",
+          "id": "jcpLLfzByVo",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux6": {
+          "code": "CS_545_10_patients_toux6",
+          "comment": "Patient 6",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 6",
+          "id": "B9PHxn9c3EN",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux7": {
+          "code": "CS_545_10_patients_toux7",
+          "comment": "Patient 7",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 7",
+          "id": "zIWvxFNZQPm",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux8": {
+          "code": "CS_545_10_patients_toux8",
+          "comment": "Patient 8",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 8",
+          "id": "oNfrka8ZSS3",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux9": {
+          "code": "CS_545_10_patients_toux9",
+          "comment": "Patient 9",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 9",
+          "id": "GCEuuomud3S",
+          "valueType": "BOOLEAN"
+        },
+        "10_patients_toux10": {
+          "code": "CS_545_10_patients_toux10",
+          "comment": "Patient 10",
+          "name": "EDL - CS - 545. La FOSA recherche-t-elle (parfois avec l'aide de la communaut\u00e9) les sujets pr\u00e9sum\u00e9s tuberculeux parmi les tousseurs, les contacts des malades tuberculeux, le malades VIH, les malnourris?) Patient 10",
+          "id": "iRE4ultUVE0",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_546": {
+      "code": "CS_546",
+      "name": "EDL - CS - 546. La FOSA pr\u00e9l\u00e8ve-t-elle des crachats et les envoie au CSDT",
+      "id": "bBdCyYSnYkG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_547": {
+      "code": "CS_547",
+      "name": "EDL - CS - 547. La FOSA oriente-t-elle les sujets pr\u00e9sum\u00e9s de tuberculose vers le CSDT",
+      "id": "a7VNMlqMTxD",
+      "valueType": "BOOLEAN"
+    },
+    "CS_548_1": {
+      "code": "CS_548_1",
+      "name": "EDL - CS - 548.1. Traitement et suivi patients TB selon TDO : Nombre total des patients tuberculeux",
+      "id": "pzwxhUDu52U",
+      "valueType": "INTEGER"
+    },
+    "CS_548_2": {
+      "code": "CS_548_2",
+      "name": "EDL - CS - 548.2. Traitement et suivi patients TB selon TDO : Nombre de ceux qui prennent quotidiennement les m\u00e9dicaments sous observation directe du prestataires ( voir le fiche de traitement)",
+      "id": "sTl1iipgf64",
+      "valueType": "INTEGER"
+    },
+    "CS_548_3": {
+      "code": "CS_548_3",
+      "name": "EDL - CS - 548.3. Traitement et suivi patients TB selon TDO : Nombre patients tuberculeux enregistr\u00e9s sont inscrit sur l' \u00e9ch\u00e9ancier",
+      "id": "mhzK2X5U4ng",
+      "valueType": "INTEGER"
+    },
+    "CS_549": {
+      "code": "CS_549",
+      "name": "EDL - CS - 549. La FOSA assure-t-elle le diagnostic bacteriologique de la TB (Ziehl )?",
+      "id": "ni8BOmcUdgI",
+      "valueType": "BOOLEAN"
+    },
+    "CS_550": {
+      "code": "CS_550",
+      "name": "EDL - CS - 550. La FOSA envoie-t-elle les \u00e9chantillons des cas pr\u00e9sum\u00e9s de tuberculose multi r\u00e9sistante (TB-MR) vers le laboratoire de reference de GeneXpert?",
+      "id": "uVicAoYZtTk",
+      "valueType": "BOOLEAN"
+    },
+    "CS_551_1": {
+      "code": "CS_551_1",
+      "name": "EDL - CS - 551.1. Traitement et suivi patients MDR-TB selon SN : Nombre total des patients tuberculeux MDR -TB",
+      "id": "jx3ESOCnp12",
+      "valueType": "INTEGER"
+    },
+    "CS_551_2": {
+      "code": "CS_551_2",
+      "name": "EDL - CS - 551.2. Traitement et suivi patients MDR-TB selon SN : Nombre de ceux qui prennent quotidiennement les m\u00e9dicaments sous observation dir\u00e9cte du prestataire",
+      "id": "EckgnlPA2cU",
+      "valueType": "INTEGER"
+    },
+    "CS_551_3": {
+      "code": "CS_551_3",
+      "name": "EDL - CS - 551.3. Traitement et suivi patients MDR-TB selon SN : Nombre des patients inscrit sur l' \u00e9chancier pour les examens de controle",
+      "id": "FI6GYCewd2E",
+      "valueType": "INTEGER"
+    },
+    "CS_552_1": {
+      "code": "CS_552_1",
+      "name": "EDL - CS - 552.1. Traitement et suivi pateints TB-VIH : Nombre total des patients tuberculeux avec VIH",
+      "id": "HBFG9u0KMZs",
+      "valueType": "INTEGER"
+    },
+    "CS_552_2": {
+      "code": "CS_552_2",
+      "name": "EDL - CS - 552.2. Traitement et suivi pateints TB-VIH : Nombre de ceux avec VIH qui prennent quotidiennement les m\u00e9dicaments sous observation dir\u00e9cte du prestataire",
+      "id": "XvEGdrfmYBk",
+      "valueType": "INTEGER"
+    },
+    "CS_552_3": {
+      "code": "CS_552_3",
+      "name": "EDL - CS - 552.3. Traitement et suivi pateints TB-VIH : Nombre des patients avec VIH inscrit sur l' \u00e9chancier pour les examens de controle",
+      "id": "uMHGaL4wTYW",
+      "valueType": "INTEGER"
+    },
+    "CS_553": {
+      "code": "CS_553",
+      "name": "EDL - CS - 553. La FOSA assure-t-elle des activit\u00e9s de monitorage ou validation des donn\u00e9es TB avec les CST satellites",
+      "id": "xzKwlRRTiGt",
+      "valueType": "BOOLEAN"
+    },
+    "CS_554": {
+      "code": "CS_554",
+      "name": "EDL - CS - 554. La FOSA organise-t-elle des activit\u00e9s de monitorage mensuel des activit\u00e9s des soins de sant\u00e9 primaires ?",
+      "id": "U4Sa5z8nriJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_555": {
+      "code": "CS_555",
+      "name": "EDL - CS - 555. La FOSA utilise -t-elle la D\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e ( DQI) pour evaluer la qualit\u00e9 des soins et des services",
+      "id": "N8LfDxzunNJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_601": {
+      "code": "CS_601",
+      "name": "EDL - CS - 601. Guides et fiches techniques : Ordinogramme",
+      "id": "J0VbtZjfRPc",
+      "valueType": "BOOLEAN"
+    },
+    "CS_602": {
+      "code": "CS_602",
+      "name": "EDL - CS - 602. Guides et fiches techniques : Livret des Tableaux PCIME Clinique version 2016",
+      "id": "srr9fCt2GSV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603": {
+      "code": "CS_603",
+      "name": "EDL - CS - 603. Guides et fiches techniques : Normes ZS relatives aux Interventions Integrees de SMNEA",
+      "id": "wCIuH6RgJMP",
+      "valueType": "BOOLEAN"
+    },
+    "CS_604.1": {
+      "code": "CS_604.1",
+      "name": "EDL - CS - 604.1 Guides et fiches techniques - SRMNEA : Fiche AQA",
+      "id": "BlAoU6vQzSo",
+      "valueType": "BOOLEAN"
+    },
+    "CS_604.2": {
+      "code": "CS_604.2",
+      "name": "EDL - CS - 604.2 Guides et fiches techniques - SRMNEA : Fiche CPN",
+      "id": "MGXQYB4nBSH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_604.3": {
+      "code": "CS_604.3",
+      "name": "EDL - CS - 604.3 Guides et fiches techniques - SRMNEA : Fiche CPoN",
+      "id": "Cu9gfDlMXeR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_604.4": {
+      "code": "CS_604.4",
+      "name": "EDL - CS - 604.4 Guides et fiches techniques - SRMNEA : Fiche SEN",
+      "id": "ENpvJb74hIq",
+      "valueType": "BOOLEAN"
+    },
+    "CS_605": {
+      "code": "CS_605",
+      "name": "EDL - CS - 605. Guides et fiches techniques : Fiches techniques PF",
+      "id": "H61HNyhILvF",
+      "valueType": "BOOLEAN"
+    },
+    "CS_606": {
+      "code": "CS_606",
+      "name": "EDL - CS - 606. Guides et fiches techniques : Fiche technique PNLP",
+      "id": "R8r3gVtvzRl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_607": {
+      "code": "CS_607",
+      "name": "EDL - CS - 607. Guides et fiches techniques : Fiche technique PEV",
+      "id": "epBj2WL03dV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_608": {
+      "code": "CS_608",
+      "name": "EDL - CS - 608. Guides et fiches techniques : Fiche Technique Diarrh\u00e9e",
+      "id": "McfZcDFewFr",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609": {
+      "code": "CS_609",
+      "name": "EDL - CS - 609. Guides et fiches techniques : Fiche Technique IRA",
+      "id": "gpTw3oCgc4P",
+      "valueType": "BOOLEAN"
+    },
+    "CS_610": {
+      "code": "CS_610",
+      "name": "EDL - CS - 610. Guides et fiches techniques : Livret PATI V",
+      "id": "B6XHW3zerJR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_611": {
+      "code": "CS_611",
+      "name": "EDL - CS - 611. Guides et fiches techniques : Fiche technique TB",
+      "id": "SpIWnHOYA5x",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612": {
+      "code": "CS_612",
+      "name": "EDL - CS - 612. Guides et fiches techniques : Protocole pour la Prise en Charge m\u00e9dicale des survivantes des violences sexuelles (VVS)",
+      "id": "KjZ0DaUpQzp",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613": {
+      "code": "CS_613",
+      "name": "EDL - CS - 613. Guides et fiches techniques : Guide d'utilisation du Partogramme",
+      "id": "YnwoEjW7WYG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_614": {
+      "code": "CS_614",
+      "name": "EDL - CS - 614. Guides et fiches techniques : Affiche Protocole de la GATPA",
+      "id": "hbLlv8zY8xi",
+      "valueType": "BOOLEAN"
+    },
+    "CS_615": {
+      "code": "CS_615",
+      "name": "EDL - CS - 615. Guides et fiches techniques : Affiche Protocole Aider les b\u00e9b\u00e9s \u00e0 respirer",
+      "id": "FiTV9fACrHs",
+      "valueType": "BOOLEAN"
+    },
+    "CS_616": {
+      "code": "CS_616",
+      "name": "EDL - CS - 616. Guides et fiches techniques : Score de Keith Edouard",
+      "id": "rwwcPhx6u2A",
+      "valueType": "BOOLEAN"
+    },
+    "CS_617": {
+      "code": "CS_617",
+      "name": "EDL - CS - 617. Guides et fiches techniques : Poster Tiarht",
+      "id": "SrLVoPWhPpA",
+      "valueType": "BOOLEAN"
+    },
+    "CS_618": {
+      "code": "CS_618",
+      "name": "EDL - CS - 618. Guides et fiches techniques : Affiche Protocole Aider les m\u00e8res \u00e0 survivre",
+      "id": "ItWywB9drXv",
+      "valueType": "BOOLEAN"
+    },
+    "CS_618_1": {
+      "code": "CS_618_1",
+      "name": "EDL - CS - 618.1 Guides et fiches techniques : Affiche PTME",
+      "id": "E0zK0Ul3rhM",
+      "valueType": "BOOLEAN"
+    },
+    "CS_619": {
+      "code": "CS_619",
+      "name": "EDL - CS - 619. Guides et fiches techniques : Fiche Technique PNAM (Gestion des m\u00e9dicaments)",
+      "id": "tuag1PXCn6Q",
+      "valueType": "BOOLEAN"
+    },
+    "CS_620": {
+      "code": "CS_620",
+      "name": "EDL - CS - 620. Guides et fiches techniques : Manuel Descriptif SIGL en RDC",
+      "id": "BIfP0tl3a2E",
+      "valueType": "BOOLEAN"
+    },
+    "CS_621": {
+      "code": "CS_621",
+      "name": "EDL - CS - 621. Guides et fiches techniques : Registres et manuel de remplissage SNIS",
+      "id": "YOPxtR7ORcV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_701": {
+      "code": "CS_701",
+      "name": "EDL - CS - 701. Financement des soins : Existence d'une mutuelle de sant\u00e9",
+      "id": "UVPWtL0V8nu",
+      "valueType": "BOOLEAN"
+    },
+    "CS_702": {
+      "code": "CS_702",
+      "name": "EDL - CS - 702. Financement des soins : Type de mutuelle",
+      "id": "SJPdk9el3rd",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_mutuel1",
+            "name": "1. Communautaire,"
+          },
+          {
+            "code": "type_mutuel2",
+            "name": "2. Obligatoire"
+          },
+          {
+            "code": "type_mutuel3",
+            "name": "3. Corporative"
+          },
+          {
+            "code": "type_mutuel4",
+            "name": "4. Autres"
+          }
+        ],
+        "id": "dydsQz2cwwt"
+      }
+    },
+    "CS_703": {
+      "code": "CS_703",
+      "name": "EDL - CS - 703. Financement des soins : La FOSA utilise-t-elle les Financement Bas\u00e9 sur les R\u00e9sultats ou achat des services",
+      "id": "HrYXgB5osN8",
+      "valueType": "BOOLEAN"
+    },
+    "CS_704": {
+      "code": "CS_704",
+      "name": "EDL - CS - 704. Financement des soins : Quel est le type de tarif pratiqu\u00e9 \u00e0 la FOSA?",
+      "id": "kDAIiat1On3",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_tarif1",
+            "name": "1. Forfaitaire"
+          },
+          {
+            "code": "type_tarif2",
+            "name": "2. Par Acte"
+          },
+          {
+            "code": "type_tarif3",
+            "name": "3. Par Episode"
+          }
+        ],
+        "id": "EJ0Pz1OIob0"
+      }
+    },
+    "CS_705": {
+      "code": "CS_705",
+      "name": "EDL - CS - 705. Financement des soins : Est-ce le tarif de soins est il affich\u00e9 \u00e0 la FOSA?",
+      "id": "HIWMMWEU6xe",
+      "valueType": "BOOLEAN"
+    },
+    "CS_706": {
+      "code": "CS_706",
+      "name": "EDL - CS - 706. Financement des soins : Quel est la part de la contribution financi\u00e8re du Gouvernement Central et provincial \u00e0 la mise en \u0153uvre de Plan d'action Op\u00e9rationnel de l'ann\u00e9e pass\u00e9e (2018) de la FOSA?",
+      "id": "XYaLxShzQ4s",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "part_contrib1",
+            "name": "1. 0%"
+          },
+          {
+            "code": "part_contrib2",
+            "name": "2. moins de 10%"
+          },
+          {
+            "code": "part_contrib3",
+            "name": "3. 10%-20%"
+          },
+          {
+            "code": "part_contrib4",
+            "name": "4. 21%-30%"
+          },
+          {
+            "code": "part_contrib5",
+            "name": "5. 31%-40%"
+          },
+          {
+            "code": "part_contrib6",
+            "name": "6. 41%- 50%"
+          },
+          {
+            "code": "part_contrib7",
+            "name": "7. 51%-60%"
+          },
+          {
+            "code": "part_contrib8",
+            "name": "8. 61%-70%"
+          },
+          {
+            "code": "part_contrib9",
+            "name": "9. 71%-80%"
+          },
+          {
+            "code": "part_contrib10",
+            "name": "10. 81%-90%"
+          },
+          {
+            "code": "part_contrib11",
+            "name": "11. 91%-100%"
+          }
+        ],
+        "id": "rt54NUYUSlt"
+      }
+    },
+    "CS_801": {
+      "code": "CS_801",
+      "name": "EDL - CS - 801. Combien des ONG locales /Organisation \u00e0 Assises Communautaire sont actives dans l'aire de Sant\u00e9 ?",
+      "id": "xnLbtwH5nhW",
+      "valueType": "INTEGER"
+    },
+    "CS_802_1": {
+      "code": "CS_802_1",
+      "name": "EDL - CS - 802.1 ONG locales dans le domaine de la Sant\u00e9",
+      "id": "G3QL2PS2Yv2",
+      "valueType": "INTEGER"
+    },
+    "CS_802_2": {
+      "code": "CS_802_2",
+      "name": "EDL - CS - 802.2. ONG locales dans le domaine de l'Agriculture, P\u00eache et \u00e9levage",
+      "id": "Uuom1mxbsOH",
+      "valueType": "INTEGER"
+    },
+    "CS_802_3": {
+      "code": "CS_802_3",
+      "name": "EDL - CS - 802.3. ONG locales dans le domaine de l'Artisanat",
+      "id": "Xi0U14rLtk9",
+      "valueType": "INTEGER"
+    },
+    "CS_802_4": {
+      "code": "CS_802_4",
+      "name": "EDL - CS - 802.4. ONG locales dans le domaine de l'Education",
+      "id": "fVRJqWcl4vs",
+      "valueType": "INTEGER"
+    },
+    "CS_802_5": {
+      "code": "CS_802_5",
+      "name": "EDL - CS - 802.5. ONG locales Multisectorielles (au moins deux domaines)",
+      "id": "SqPfeRwfFFD",
+      "valueType": "INTEGER"
+    },
+    "CS_803": {
+      "code": "CS_803",
+      "name": "EDL - CS - 803. Les membres de l'OAC participent-ils dans les activit\u00e9s de l'aire de sant\u00e9 comme la microplanification \u00e0 la base, la revue, le monitorrage de l'AS?",
+      "id": "PVHNpwGw1ev",
+      "valueType": "BOOLEAN"
+    },
+    "CS_804": {
+      "type": "multiple",
+      "values": {
+        "confessions_religieuses1": {
+          "code": "CS_804_confessions_religieuses1",
+          "comment": "1. Catholique",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 1. Catholique",
+          "id": "IDX1z28TvLj",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses2": {
+          "code": "CS_804_confessions_religieuses2",
+          "comment": "2. Protestante",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 2. Protestante",
+          "id": "BN6HiRApFP0",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses3": {
+          "code": "CS_804_confessions_religieuses3",
+          "comment": "3. Reveil",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 3. Reveil",
+          "id": "bzhtipb7Uxz",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses4": {
+          "code": "CS_804_confessions_religieuses4",
+          "comment": "3. Kimbaguiste",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 3. Kimbaguiste",
+          "id": "gKvyaWo1oKW",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses5": {
+          "code": "CS_804_confessions_religieuses5",
+          "comment": "4. Musulmane",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 4. Musulmane",
+          "id": "ZtmzWDabbdG",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses6": {
+          "code": "CS_804_confessions_religieuses6",
+          "comment": "6. Secte",
+          "name": "EDL - CS - 804. Quelles sont les confessions Religieuses pr\u00e9sentes dans l`Aires de Sant\u00e9? 6. Secte",
+          "id": "WczQPqJP3Pc",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_901_1": {
+      "code": "CS_901_1",
+      "name": "EDL - CS - 901.1 combien des CAC ont aumoins 30% des femmes parmi les membres?",
+      "id": "EGIoqj0HjMU",
+      "valueType": "INTEGER"
+    },
+    "CS_901_2": {
+      "code": "CS_901_2",
+      "name": "EDL - CS - 901.2 Combien des CAC ont un plan d'action communautaire en cours?",
+      "id": "yeVsBkncrnD",
+      "valueType": "INTEGER"
+    },
+    "CS_901_3": {
+      "code": "CS_901_3",
+      "name": "EDL - CS - 901.3 combien des CAC ont le rapport mensuel d'activit\u00e9 disponibles de trois derniers mois?",
+      "id": "D0Hc0HuHnWL",
+      "valueType": "INTEGER"
+    },
+    "CS_901_4": {
+      "code": "CS_901_4",
+      "name": "EDL - CS - 901.4 Sexe du pr\u00e9sident de la CAC",
+      "id": "GTThZeVaMxU",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "CS_902": {
+      "code": "CS_902",
+      "name": "EDL - CS - 902. Existe-t-il un CODESA pour cette aire de sant\u00e9?",
+      "id": "FZMuESapXPH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_903": {
+      "code": "CS_903",
+      "name": "EDL - CS - 903. Le CODESA a -t-il un plan d'action actualis\u00e9?",
+      "id": "FKAoM6r26cd",
+      "valueType": "BOOLEAN"
+    },
+    "CS_904": {
+      "code": "CS_904",
+      "name": "EDL - CS - 904. Les rapport d'activites des CODESA sont disponibles ?",
+      "id": "n1h0lSm2PEV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_905_1": {
+      "code": "CS_905_1",
+      "name": "EDL - CS - 905.1. Nombre total des membres du CODESA",
+      "id": "TtDLqhQuDqF",
+      "valueType": "INTEGER"
+    },
+    "CS_905_2": {
+      "code": "CS_905_2",
+      "name": "EDL - CS - 905.2. Nombre total des femmes du CODESA",
+      "id": "fasgnPBQ5rH",
+      "valueType": "INTEGER"
+    },
+    "CS_905_3": {
+      "code": "CS_905_3",
+      "name": "EDL - CS - 905.3. Nombre total des jeunes ( moins de 24 ans) du CODESA : poser la question \u00e0 l'IT pour les jeunes",
+      "id": "u26Qlq34E8g",
+      "valueType": "INTEGER"
+    },
+    "CS_906": {
+      "code": "CS_906",
+      "name": "EDL - CS - 906. Sexe du pr\u00e9sident du CODESA",
+      "id": "GRLWrUyDkEw",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "CS_907": {
+      "code": "CS_907",
+      "name": "EDL - CS - 907. Niveau d'\u00e9tude du pr\u00e9sident du CODESA",
+      "id": "zjoFv2xqtWl",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "niveau_etude1",
+            "name": "1. Primaire"
+          },
+          {
+            "code": "niveau_etude2",
+            "name": "2. Secondaire"
+          },
+          {
+            "code": "niveau_etude3",
+            "name": "3. Sup\u00e9rieur"
+          }
+        ],
+        "id": "FrECGoFgmdc"
+      }
+    },
+    "CS_908": {
+      "code": "CS_908",
+      "name": "EDL - CS - 908. Le CODESA est il impliqu\u00e9 dans la co- gestion du centre de sant\u00e9 y compris la gestion des m\u00e9dicaments ?",
+      "id": "ElCfj5aBH2B",
+      "valueType": "BOOLEAN"
+    },
+    "CS_909": {
+      "type": "multiple",
+      "values": {
+        "mecan_codesa1": {
+          "code": "CS_909_mecan_codesa1",
+          "comment": "1. R\u00e9unions communautaires",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 1. R\u00e9unions communautaires ",
+          "id": "gzPt1CM2ZWQ",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa2": {
+          "code": "CS_909_mecan_codesa2",
+          "comment": "2. Rapport aux autorit\u00e9s politico adminstrative et coutumi\u00e8res",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 2. Rapport aux autorit\u00e9s politico adminstrative et coutumi\u00e8res",
+          "id": "ieSjZXFGf4S",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa3": {
+          "code": "CS_909_mecan_codesa3",
+          "comment": "3. Rapport d'activit\u00e9s",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 3. Rapport d'activit\u00e9s  ",
+          "id": "Csm40tShUJ0",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa4": {
+          "code": "CS_909_mecan_codesa4",
+          "comment": "4. Bulletin de performance",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 4. Bulletin de performance ",
+          "id": "ZJy5vznWRpz",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa5": {
+          "code": "CS_909_mecan_codesa5",
+          "comment": "5. Audit communautaire",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 5. Audit communautaire",
+          "id": "UPHxytJzfYD",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa6": {
+          "code": "CS_909_mecan_codesa6",
+          "comment": "6. Autre m\u00e9canisme \u00e0 identifier",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 6. Autre m\u00e9canisme \u00e0 identifier ",
+          "id": "m3FxNHwpLmD",
+          "valueType": "BOOLEAN"
+        },
+        "mecan_codesa7": {
+          "code": "CS_909_mecan_codesa7",
+          "comment": "7. Aucun",
+          "name": "EDL - CS - 909. Quels sont les m\u00e9canismes que le CODESA utilise pour rendre compte de ses activit\u00e9s \u00e0 la communaut\u00e9? 7. Aucun ",
+          "id": "xPlXXWna0DX",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_910": {
+      "code": "CS_910",
+      "name": "EDL - CS - 910. Le CODESA a-t-il acc\u00e8s aux informations sur le service de sant\u00e9 fourni par la FOSA?",
+      "id": "XQH0ivysQ0a",
+      "valueType": "BOOLEAN"
+    },
+    "CS_911_1.1": {
+      "code": "CS_911_1.1",
+      "name": "EDL - CS - 911.1.1.  Relais dans l'AS : Nombre de relais communautaires Femmes",
+      "id": "Ma5czr79KYA",
+      "valueType": "INTEGER"
+    },
+    "CS_911_1.2": {
+      "code": "CS_911_1.2",
+      "name": "EDL - CS - 911.1.2. Relais dans l'AS : Nombre de relais communautaires Hommes",
+      "id": "drYOZO1IRui",
+      "valueType": "INTEGER"
+    },
+    "CS_911_2.1": {
+      "code": "CS_911_2.1",
+      "name": "EDL - CS - 911.2.1. Relais dans l'AS : Nombre de relais communautaires actifs Femmes",
+      "id": "Nz4NkHwetGj",
+      "valueType": "INTEGER"
+    },
+    "CS_911_2.2": {
+      "code": "CS_911_2.2",
+      "name": "EDL - CS - 911.2.2. Relais dans l'AS : Nombre de relais communautaires actifs Hommes",
+      "id": "j6qnR22rGOY",
+      "valueType": "INTEGER"
+    },
+    "CS_912_1_1": {
+      "code": "CS_912_1_1",
+      "name": "EDL - CS - 912.1.1 Combien de Distributeurs \u00e0 Base Communautaire (DBC) actifs y a-t-il dans l'aire de sant\u00e9 ? - 1. Femmes (> 24 ans)",
+      "id": "KyrfXnAvDSp",
+      "valueType": "INTEGER"
+    },
+    "CS_912_1_2": {
+      "code": "CS_912_1_2",
+      "name": "EDL - CS - 912.1.2 Combien de Distributeurs \u00e0 Base Communautaire (DBC) actifs y a-t-il dans l'aire de sant\u00e9 ? - 2. Hommes (> 24 ans)",
+      "id": "EJP7k73T5pJ",
+      "valueType": "INTEGER"
+    },
+    "CS_912_1_3": {
+      "code": "CS_912_1_3",
+      "name": "EDL - CS - 912.1.3 Combien de Distributeurs \u00e0 Base Communautaire (DBC) actifs y a-t-il dans l'aire de sant\u00e9 ? - 3. Jeunes Hommes (\u2264 24 ans)",
+      "id": "lDrIWijW76V",
+      "valueType": "INTEGER"
+    },
+    "CS_912_1_4": {
+      "code": "CS_912_1_4",
+      "name": "EDL - CS - 912.1.4 Combien de Distributeurs \u00e0 Base Communautaire (DBC) actifs y a-t-il dans l'aire de sant\u00e9 ? - 4. Jeunes femmes (\u2264 24 ans)",
+      "id": "Skkcmj25xx6",
+      "valueType": "INTEGER"
+    },
+    "CS_912_2_1": {
+      "code": "CS_912_2_1",
+      "name": "EDL - CS - 912.2.1 Combien de Distributeurs \u00e0 Base Communautaire (DBC) y a-t-il dans l'aire de sant\u00e9 ? - 1. Femmes (> 24 ans)",
+      "id": "pop8iHBpdra",
+      "valueType": "INTEGER"
+    },
+    "CS_912_2_2": {
+      "code": "CS_912_2_2",
+      "name": "EDL - CS - 912.2.2 Combien de Distributeurs \u00e0 Base Communautaire (DBC) y a-t-il dans l'aire de sant\u00e9 ? - 2. Hommes (> 24 ans)",
+      "id": "KCY7f2X4Iij",
+      "valueType": "INTEGER"
+    },
+    "CS_912_2_3": {
+      "code": "CS_912_2_3",
+      "name": "EDL - CS - 912.2.3 Combien de Distributeurs \u00e0 Base Communautaire (DBC) y a-t-il dans l'aire de sant\u00e9 ? -  3. Jeunes Hommes (\u2264 24 ans)",
+      "id": "BT4dIfm7eEK",
+      "valueType": "INTEGER"
+    },
+    "CS_912_2_4": {
+      "code": "CS_912_2_4",
+      "name": "EDL - CS - 912.2.4 Combien de Distributeurs \u00e0 Base Communautaire (DBC) y a-t-il dans l'aire de sant\u00e9 ?4. Jeunes femmes (\u2264 24 ans)",
+      "id": "YHw0exo6QiH",
+      "valueType": "INTEGER"
+    },
+    "CS_913": {
+      "code": "CS_913",
+      "name": "EDL - CS - 913. Combien de groupe de soutien \u00e0 l'Alimentation du Nourrisson et des Jeunes Enfants fonctionnels dans l'aire de sant\u00e9",
+      "id": "a8uEdDzT9JL",
+      "valueType": "INTEGER"
+    },
+    "CS_914_1": {
+      "code": "CS_914_1",
+      "name": "EDL - CS - 914.1. Villages ayant besoin des SSC : Nombre de villages situ\u00e9s \u00e0 plus de 5 km ou ayant un barri\u00e8re naturelle d'acc\u00e8s \u00e0 une formation sanitaire ( villages d'acc\u00e8s difficile) , ",
+      "id": "hukwCKhL2YU",
+      "valueType": "INTEGER"
+    },
+    "CS_914_2": {
+      "code": "CS_914_2",
+      "name": "EDL - CS - 914.2. Villages ayant besion des SSC : Parmi les villages d'acc\u00e8s difficile ceux qui ont plus de 500 habitants, ",
+      "id": "jFWAdC6yGwC",
+      "valueType": "INTEGER"
+    },
+    "CS_915": {
+      "code": "CS_915",
+      "name": "EDL - CS - 915. Combien de Sites Soins Communautaires (SSC) existent-ils dans l'aire de sante?",
+      "id": "VOD3pucu9GM",
+      "valueType": "INTEGER"
+    },
+    "CS_915.1": {
+      "code": "CS_915.1",
+      "name": "EDL - CS - 915.1 Combien de SSC ont transmis les rapports les 3 derniers mois?",
+      "id": "hcS60MOl11D",
+      "valueType": "INTEGER"
+    }
+  }
+}

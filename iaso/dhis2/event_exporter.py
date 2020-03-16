@@ -160,13 +160,14 @@ def map_to_event(instance, form_mapping):
 class EventExporter:
     def export_events(self, api, instances_qs, form_mapping, export):
         paginator = Paginator(instances_qs, 50)
-        events = []
         errors = []
         skipped = []
+        created = 0
 
         for page in range(1, paginator.num_pages + 1):
+            events = []
             for instance in paginator.page(page).object_list:
-                if instance.json:
+                if instance.json and not instance.deleted:
                     event, event_errors = map_to_event(instance, form_mapping)
                     if event and len(event["dataValues"]) == 0:
                         # todo throw ?
@@ -183,12 +184,15 @@ class EventExporter:
                     print(json.dumps(payload, indent=2))
                     resp = api.post("events", payload).json()
                     print(resp)
+                    created += len(events)
                 except RequestException as dhis2_exception:
                     message = (
                         "error while processing page %d/%d"
                         % (page, paginator.num_pages),
                     )
                     resp = json.loads(dhis2_exception.description)
+                    for event in events:
+                        errors.append(event)
                     handle_exception(resp, message)
 
             print(
@@ -200,3 +204,10 @@ class EventExporter:
         print("events", len(events))
         print("errors", len(errors))
         print("skipped", len(skipped), skipped)
+        return {
+            "stats": {
+                "created": created,
+                "skipped": len(skipped),
+                "errors": len(errors),
+            }
+        }

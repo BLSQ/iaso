@@ -86,6 +86,9 @@ class EventExporterTests(TestCase):
         # setup
         # persist an instance
         instance = build_instance()
+        instance2 = build_instance()
+        instance2.deleted = True
+        instance2.save()
 
         # mock expected calls
 
@@ -96,9 +99,11 @@ class EventExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        EventExporter().export_events(
+        stats = EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True
         )
+
+        self.assertEquals(stats, {"stats": {"created": 1, "errors": 0, "skipped": 1}})
 
     @responses.activate
     def test_event_export_handle_dhis2_errors(self):
@@ -119,9 +124,11 @@ class EventExporterTests(TestCase):
             Instance.objects.prefetch_related("org_unit").order_by("id").all()
         )
 
-        EventExporter().export_events(
+        stats = EventExporter().export_events(
             build_api(), instances_qs, build_form_mapping(), True
         )
+
+        self.assertEquals(stats, {"stats": {"created": 0, "errors": 1, "skipped": 0}})
 
     @responses.activate
     def test_event_export_handle_mapping_errors(self):

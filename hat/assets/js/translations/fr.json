@@ -281,7 +281,7 @@
     "iaso.snackBar.reload": "Recharger",
     "iaso.snackBar.reloadPage": "Une nouvelle version est disponible! Rafraichissez la page.",
     "iaso.snackBar.successful": "Sauvegarde effectuée avec succès",
-    "iaso.table.columnSelect.tooltip": "Sélectionnez les colonnes visibles",
+    "iaso.table.columnSelect.tooltip": "Colonnes visibles",
     "iaso.tile.arcgis.satellite": "ArcGIS Satellite Map",
     "iaso.tile.arcgis.street": "ArcGIS Street Map",
     "iaso.tile.arcgis.topo": "ArcGIS Topo Map",

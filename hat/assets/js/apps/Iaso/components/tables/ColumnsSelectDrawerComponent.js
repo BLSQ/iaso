@@ -18,6 +18,7 @@ import FilterList from '@material-ui/icons/FilterList';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 
 import RowButtonComponent from '../buttons/RowButtonComponent';
+import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 const styles = theme => ({
     root: {
@@ -139,7 +140,7 @@ const ColumnsSelectDrawerComponent = (
                                                                     inputProps={{ 'aria-label': o.label }}
                                                                     className={classes.switch}
                                                                 />
-                                                                <ListItemText primary={o.label} />
+                                                                <ListItemText primary={o.label || o.key} />
                                                             </>
                                                         )
                                                     }
@@ -147,17 +148,8 @@ const ColumnsSelectDrawerComponent = (
                                                         !inView
                                                         && (
                                                             <>
-                                                                <div
-                                                                    className={classes.placeholder}
-                                                                    style={
-                                                                        {
-                                                                            width: 30,
-                                                                        }
-                                                                    }
-                                                                />
-                                                                <div
-                                                                    className={classes.placeholder}
-                                                                />
+                                                                <BlockPlaceholder width="30px" />
+                                                                <BlockPlaceholder />
                                                             </>
                                                         )
                                                     }

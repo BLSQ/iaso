@@ -6,7 +6,8 @@ import Link from '@material-ui/core/Link';
 import { Period } from '../periods/models';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 
-const instancesTableColumns = formatMessage => (
+
+const instancesTableColumns = (formatMessage = () => ({})) => (
     [
         {
             Header: formatMessage({
@@ -78,4 +79,5 @@ const instancesTableColumns = formatMessage => (
         },
     ]
 );
+
 export default instancesTableColumns;

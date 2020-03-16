@@ -2,16 +2,23 @@ import React from 'react';
 import instancesTableColumns from './config';
 
 export const getInstancesColumns = (formatMessage, visibleColumns) => {
-    let tableColumns = [...instancesTableColumns(formatMessage)];
+    const metasColumns = [...instancesTableColumns(formatMessage)];
+    let tableColumns = [];
+    metasColumns.forEach((c) => {
+        const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
+        if (metaColumn && metaColumn.active) {
+            tableColumns.push(c);
+        }
+    });
 
     const childrenArray = [];
-    visibleColumns.forEach((c) => {
+    visibleColumns.filter(c => !c.meta).forEach((c) => {
         if (c.active) {
             childrenArray.push({
                 class: 'small',
                 sortable: false,
                 accessor: c.key,
-                Header: c.label,
+                Header: c.label || c.key,
                 Cell: settings => (
                     <span>
                         {!settings.original.file_content[c.key] || settings.original.file_content[c.key] === '' ? '/' : settings.original.file_content[c.key]}
@@ -21,23 +28,29 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
             });
         }
     });
-    // tableColumns = tableColumns.map(c => ({
-    //     ...c,
-    //     width: c.accessor === 'uuid' ? 300 : 200,
-    // }));
     tableColumns = tableColumns.concat(childrenArray);
     return tableColumns;
 };
 
-export const getInstancesVisibleColumns = (instance) => {
-    const columns = [];
+export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
+
+export const getInstancesVisibleColumns = (formatMessage, instance, columnsParams = undefined) => {
+    const metasColumns = [...instancesTableColumns(formatMessage)];
+    const columns = metasColumns.map(c => (
+        {
+            key: c.accessor,
+            label: c.Header,
+            active: columnsParams !== undefined && columnsParams.includes(c.accessor),
+            meta: true,
+        }
+    ));
     if (instance) {
         Object.keys(instance.file_content).forEach((k) => {
             if (k !== 'meta' && k !== 'uuid') {
                 columns.push({
                     key: k,
-                    label: k,
-                    active: false,
+                    label: instance.file_content[k].label,
+                    active: columnsParams !== undefined && columnsParams.includes(k),
                 });
             }
         });

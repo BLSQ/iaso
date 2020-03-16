@@ -29,7 +29,9 @@ import {
 } from '../../utils/requests';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { getInstancesFilesList, getInstancesVisibleColumns, getInstancesColumns } from './utils';
+import {
+    getInstancesFilesList, getInstancesVisibleColumns, getInstancesColumns, getMetasColumns,
+} from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -88,7 +90,10 @@ class Instances extends Component {
             dispatch,
             params: {
                 formId,
+                columns,
             },
+            params,
+            redirectTo,
         } = this.props;
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -98,6 +103,13 @@ class Instances extends Component {
             .then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
         fetchPeriods(dispatch, formId)
             .then(periods => this.props.setPeriods(periods));
+        if (!columns) {
+            const newParams = {
+                ...params,
+                columns: getMetasColumns().join(','),
+            };
+            redirectTo(baseUrl, newParams);
+        }
     }
 
     componentDidMount() {
@@ -120,6 +132,9 @@ class Instances extends Component {
         const {
             params,
             reduxPage,
+            intl: {
+                formatMessage,
+            },
         } = this.props;
         if (params.pageSize !== prevProps.params.pageSize
             || params.formId !== prevProps.params.formId
@@ -132,7 +147,7 @@ class Instances extends Component {
             this.handleChangeTab(params.tab, false);
         }
         if (reduxPage.list && !isEqual(reduxPage.list, prevProps.reduxPage.list)) {
-            this.changeVisibleColumns(getInstancesVisibleColumns(reduxPage.list[0]));
+            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params.columns));
         }
     }
 
@@ -205,11 +220,19 @@ class Instances extends Component {
             intl: {
                 formatMessage,
             },
+            redirectTo,
+            params,
         } = this.props;
+        const newParams = {
+            ...params,
+            columns: visibleColumns.filter(c => c.active).map(c => c.key).join(','),
+        };
         this.setState({
             visibleColumns,
             tableColumns: getInstancesColumns(formatMessage, visibleColumns),
         });
+
+        redirectTo(baseUrl, newParams);
     }
 
     render() {

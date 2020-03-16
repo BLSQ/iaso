@@ -75,6 +75,10 @@ export const instancesPath = getPath({
             isRequired: false,
             key: 'tab',
         },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
     ],
 });
 

@@ -1,6 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
+import { InView } from 'react-intersection-observer';
+
 import {
     withStyles,
     Drawer,
@@ -31,13 +33,28 @@ const styles = theme => ({
         justifyContent: 'flex-start',
         paddingLeft: theme.spacing(3),
         paddingRight: theme.spacing(3),
-        height: 60,
+        height: 64,
     },
     title: {
         marginLeft: theme.spacing(1),
     },
+    list: {
+        height: 'calc(100vh - 64px)',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+    },
+    listItem: {
+        height: 48,
+    },
     switch: {
         marginRight: theme.spacing(1),
+    },
+    placeholder: {
+        height: 15,
+        backgroundColor: theme.palette.ligthGray.main,
+        borderRadius: 5,
+        marginRight: theme.spacing(1),
+        width: '50%',
     },
 });
 
@@ -101,23 +118,57 @@ const ColumnsSelectDrawerComponent = (
                         </Typography>
                     </div>
                     <Divider />
-                    <List>
-                        {
-                            options.map((o, i) => (
-                                <ListItem key={o.key}>
-                                    <Switch
-                                        size="small"
-                                        checked={o.active}
-                                        onChange={handleChange(i)}
-                                        color="primary"
-                                        inputProps={{ 'aria-label': o.label }}
-                                        className={classes.switch}
-                                    />
-                                    <ListItemText primary={o.label} />
-                                </ListItem>
-                            ))
-                        }
-                    </List>
+                    <div className={classes.list}>
+                        <List>
+                            {
+                                options.map((o, i) => (
+
+                                    <InView key={o.key}>
+                                        {({ inView, ref }) => (
+                                            <div ref={ref}>
+                                                <ListItem className={classes.listItem}>
+                                                    {
+                                                        inView
+                                                        && (
+                                                            <>
+                                                                <Switch
+                                                                    size="small"
+                                                                    checked={o.active}
+                                                                    onChange={handleChange(i)}
+                                                                    color="primary"
+                                                                    inputProps={{ 'aria-label': o.label }}
+                                                                    className={classes.switch}
+                                                                />
+                                                                <ListItemText primary={o.label} />
+                                                            </>
+                                                        )
+                                                    }
+                                                    {
+                                                        !inView
+                                                        && (
+                                                            <>
+                                                                <div
+                                                                    className={classes.placeholder}
+                                                                    style={
+                                                                        {
+                                                                            width: 30,
+                                                                        }
+                                                                    }
+                                                                />
+                                                                <div
+                                                                    className={classes.placeholder}
+                                                                />
+                                                            </>
+                                                        )
+                                                    }
+                                                </ListItem>
+                                            </div>
+                                        )}
+                                    </InView>
+                                ))
+                            }
+                        </List>
+                    </div>
                 </div>
             </Drawer>
         </>

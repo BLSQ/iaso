@@ -78,6 +78,7 @@
     "react-datepicker": "~1.2.1",
     "react-dom": "^16.8.6",
     "react-hot-loader": "^4.12.0",
+    "react-intersection-observer": "^8.26.1",
     "react-intl": "^2.9.0",
     "react-lazy-progressive-image": "^1.4.0",
     "react-leaflet": "^2.4.0",

@@ -17,6 +17,9 @@ const theme = createMuiTheme({
         gray: {
             main: '#666',
         },
+        ligthGray: {
+            main: '#F7F7F7',
+        },
         error: {
             main: 'rgb(215, 25, 28)',
             background: 'rgba(215, 25, 28, 0.2)',

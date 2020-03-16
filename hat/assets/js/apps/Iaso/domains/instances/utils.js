@@ -1,33 +1,31 @@
 import React from 'react';
 import instancesTableColumns from './config';
 
-export const getInstancesColumns = (formatMessage, instances) => {
+export const getInstancesColumns = (formatMessage, visibleColumns) => {
     let tableColumns = [...instancesTableColumns(formatMessage)];
-    if (instances[0]) {
-        const childrenArray = [];
 
-        Object.keys(instances[0].file_content).forEach((k) => {
-            if (k !== 'meta' && k !== 'uuid') {
-                childrenArray.push({
-                    class: 'small',
-                    sortable: false,
-                    accessor: k,
-                    Header: k,
-                    Cell: settings => (
-                        <span>
-                            {!settings.original.file_content[k] || settings.original.file_content[k] === '' ? '/' : settings.original.file_content[k]}
-                        </span>
-                    ),
-                    width: 150,
-                });
-            }
-        });
-        tableColumns = tableColumns.map(c => ({
-            ...c,
-            width: c.accessor === 'uuid' ? 300 : 200,
-        }));
-        tableColumns = tableColumns.concat(childrenArray);
-    }
+    const childrenArray = [];
+    visibleColumns.forEach((c) => {
+        if (c.active) {
+            childrenArray.push({
+                class: 'small',
+                sortable: false,
+                accessor: c.key,
+                Header: c.label,
+                Cell: settings => (
+                    <span>
+                        {!settings.original.file_content[c.key] || settings.original.file_content[c.key] === '' ? '/' : settings.original.file_content[c.key]}
+                    </span>
+                ),
+                width: 150,
+            });
+        }
+    });
+    // tableColumns = tableColumns.map(c => ({
+    //     ...c,
+    //     width: c.accessor === 'uuid' ? 300 : 200,
+    // }));
+    tableColumns = tableColumns.concat(childrenArray);
     return tableColumns;
 };
 

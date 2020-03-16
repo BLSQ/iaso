@@ -29,8 +29,7 @@ import {
 } from '../../utils/requests';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { getInstancesFilesList, getInstancesVisibleColumns } from './utils';
-import instancesTableColumns from './config';
+import { getInstancesFilesList, getInstancesVisibleColumns, getInstancesColumns } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -66,13 +65,8 @@ const styles = theme => ({
 class Instances extends Component {
     constructor(props) {
         super(props);
-        const {
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
         this.state = {
-            tableColumns: instancesTableColumns(formatMessage),
+            tableColumns: [],
             tab: props.params.tab ? props.params.tab : 'list',
             visibleColumns: [
                 {
@@ -207,8 +201,14 @@ class Instances extends Component {
     }
 
     changeVisibleColumns(visibleColumns) {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
         this.setState({
             visibleColumns,
+            tableColumns: getInstancesColumns(formatMessage, visibleColumns),
         });
     }
 

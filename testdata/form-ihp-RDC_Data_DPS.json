@@ -115,25 +115,25 @@
       "code": "heure_deb",
       "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : semaine: Heure debut",
       "id": "Bez7tvQwvgV",
-      "valueType": "INTEGER"
+      "valueType": "TIME"
     },
     "heure_fin": {
       "code": "heure_fin",
       "name": "EDL - DPS -112. Informations generales : Heure de Contact pour la phonie : semaine:  Heure fin",
       "id": "UPQzayJHuUn",
-      "valueType": "INTEGER"
+      "valueType": "TIME"
     },
     "heure_deb_sam": {
       "code": "heure_deb_sam",
       "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : samedi : Heure debut",
       "id": "hSLbwrRVSPj",
-      "valueType": "INTEGER"
+      "valueType": "TIME"
     },
     "heure_fin_sam": {
       "code": "heure_fin_sam",
       "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : samedi : Heure fin",
       "id": "PDarGpBGeTS",
-      "valueType": "INTEGER"
+      "valueType": "TIME"
     },
     "BCZS_114": {
       "code": "DPS_114",

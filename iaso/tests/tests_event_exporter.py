@@ -81,6 +81,24 @@ class EventExporterTests(TestCase):
             },
         )
 
+    def test_event_mapping_works_case_insensitive(self):
+        instance = build_instance()
+        instance.json = {"QUESTION1": 4}
+        event, errors = map_to_event(instance, build_form_mapping())
+
+        self.assertEquals(
+            event,
+            {
+                "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": 4}],
+                "event": "EVENT_DHIS2_UID",
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                "eventDate": "2018-02-16",
+                "orgUnit": "OU_DHIS2_ID",
+                "program": "PROGRAM_DHIS2_ID",
+                "status": "COMPLETED",
+            },
+        )
+
     @responses.activate
     def test_event_export_works(self):
         # setup

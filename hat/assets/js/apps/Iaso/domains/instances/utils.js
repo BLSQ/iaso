@@ -31,6 +31,22 @@ export const getInstancesColumns = (formatMessage, instances) => {
     return tableColumns;
 };
 
+export const getInstancesVisibleColumns = (instance) => {
+    const columns = [];
+    if (instance) {
+        Object.keys(instance.file_content).forEach((k) => {
+            if (k !== 'meta' && k !== 'uuid') {
+                columns.push({
+                    key: k,
+                    label: k,
+                    active: false,
+                });
+            }
+        });
+    }
+    return columns;
+};
+
 
 export const getInstancesFilesList = (instances) => {
     const filesList = [];

@@ -8,6 +8,7 @@ import {
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import isEqual from 'lodash/isEqual';
 
 import {
     setInstances, setInstancesSmallDict, setInstancesFetching,
@@ -28,7 +29,7 @@ import {
 } from '../../utils/requests';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { getInstancesFilesList } from './utils';
+import { getInstancesFilesList, getInstancesVisibleColumns } from './utils';
 import instancesTableColumns from './config';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
@@ -39,6 +40,7 @@ import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
+import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -52,6 +54,11 @@ const styles = theme => ({
     reactTable: {
         ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
+    },
+    selectColmunsContainer: {
+        paddingRight: theme.spacing(4),
+        position: 'relative',
+        top: -theme.spacing(2),
     },
 });
 
@@ -67,6 +74,18 @@ class Instances extends Component {
         this.state = {
             tableColumns: instancesTableColumns(formatMessage),
             tab: props.params.tab ? props.params.tab : 'list',
+            visibleColumns: [
+                {
+                    key: 'brol',
+                    label: 'Affichage brol',
+                    active: true,
+                },
+                {
+                    key: 'machin',
+                    label: 'Affichage machin',
+                    active: false,
+                },
+            ],
         };
     }
 
@@ -106,6 +125,7 @@ class Instances extends Component {
     componentDidUpdate(prevProps) {
         const {
             params,
+            reduxPage,
         } = this.props;
         if (params.pageSize !== prevProps.params.pageSize
             || params.formId !== prevProps.params.formId
@@ -116,6 +136,9 @@ class Instances extends Component {
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
+        }
+        if (reduxPage.list && !isEqual(reduxPage.list, prevProps.reduxPage.list)) {
+            this.changeVisibleColumns(getInstancesVisibleColumns(reduxPage.list[0]));
         }
     }
 
@@ -183,6 +206,12 @@ class Instances extends Component {
         });
     }
 
+    changeVisibleColumns(visibleColumns) {
+        this.setState({
+            visibleColumns,
+        });
+    }
+
     render() {
         const {
             classes,
@@ -201,6 +230,7 @@ class Instances extends Component {
         const {
             tab,
             tableColumns,
+            visibleColumns,
         } = this.state;
         return (
             <section className={classes.relativeContainer}>
@@ -218,37 +248,54 @@ class Instances extends Component {
                         }
                     }}
                 >
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                            indicator: classes.indicator,
-                        }}
-                        onChange={(event, newtab) => this.handleChangeTab(newtab)
-                        }
-                    >
-                        <Tab
-                            value="list"
-                            label={formatMessage({
-                                defaultMessage: 'List',
-                                id: 'iaso.label.list',
-                            })}
-                        />
-                        <Tab
-                            value="map"
-                            label={formatMessage({
-                                defaultMessage: 'Map',
-                                id: 'iaso.label.map',
-                            })}
-                        />
-                        <Tab
-                            value="files"
-                            label={formatMessage({
-                                defaultMessage: 'Files',
-                                id: 'iaso.label.files',
-                            })}
-                        />
-                    </Tabs>
+                    <Grid container spacing={0}>
+                        <Grid xs={10} item>
+                            <Tabs
+                                value={tab}
+                                classes={{
+                                    root: classes.tabs,
+                                    indicator: classes.indicator,
+                                }}
+                                onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                }
+                            >
+                                <Tab
+                                    value="list"
+                                    label={formatMessage({
+                                        defaultMessage: 'List',
+                                        id: 'iaso.label.list',
+                                    })}
+                                />
+                                <Tab
+                                    value="map"
+                                    label={formatMessage({
+                                        defaultMessage: 'Map',
+                                        id: 'iaso.label.map',
+                                    })}
+                                />
+                                <Tab
+                                    value="files"
+                                    label={formatMessage({
+                                        defaultMessage: 'Files',
+                                        id: 'iaso.label.files',
+                                    })}
+                                />
+                            </Tabs>
+                        </Grid>
+                        <Grid
+                            xs={2}
+                            item
+                            container
+                            alignItems="center"
+                            justify="flex-end"
+                            className={classes.selectColmunsContainer}
+                        >
+                            <ColumnsSelectDrawerComponent
+                                options={visibleColumns}
+                                setOptions={cols => this.changeVisibleColumns(cols)}
+                            />
+                        </Grid>
+                    </Grid>
                 </TopBar>
                 {
                     fetching

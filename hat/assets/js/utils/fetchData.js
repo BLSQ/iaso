@@ -1,6 +1,8 @@
 import { push } from 'react-router-redux';
 import request from './request';
-import { LOAD, LOAD_SUCCESS, LOAD_SUCCESS_NO_DATA, LOAD_ERROR } from '../redux/load';
+import {
+    LOAD, LOAD_SUCCESS, LOAD_SUCCESS_NO_DATA, LOAD_ERROR,
+} from '../redux/load';
 
 
 const req = require('superagent');
@@ -20,8 +22,8 @@ export function createUrl(params, url = '/charts') {
 export function checkLocation(params, results, dispatch) {
     // Check if we have data for the selected location,
     // if not, redirect
-    const selectedLocation = params.location &&
-        decodeURIComponent(params.location);
+    const selectedLocation = params.location
+        && decodeURIComponent(params.location);
     const validLocation = results.locations.some(location => location === selectedLocation);
     if (selectedLocation && !validLocation) {
         // No data for this location, redirect to all

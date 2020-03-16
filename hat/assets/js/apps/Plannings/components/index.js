@@ -11,7 +11,7 @@ import MapSelectionControl from './MapSelectionControl';
 import MapSelectionSummary from './MapSelectionSummary';
 import MapSelectionList from './MapSelectionList';
 import MapTooltip from './MapTooltip';
-import TeamSelectionTool from './TeamSelectionTool';
+import MicroplanningFilters from './MicroplanningFilters';
 import AreaModal from './AreaModal';
 import GeoScopeMap from './GeoScopeMap';
 
@@ -23,7 +23,7 @@ export {
     MapSelectionList,
     MapSelectionSummary,
     MapTooltip,
-    TeamSelectionTool,
+    MicroplanningFilters,
     AreaModal,
     GeoScopeMap,
 };

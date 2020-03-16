@@ -49,6 +49,7 @@
         "react/no-access-state-in-setstate": "off",
         "react/destructuring-assignment": "off",
         "react/button-has-type": "off",
-        "max-len": ["warn", { "code": 200 }]
+        "max-len": ["warn", { "code": 200 }],
+        "import/prefer-default-export": "off"
     }
 }

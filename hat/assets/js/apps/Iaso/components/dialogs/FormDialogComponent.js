@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
+
 import {
     createForm,
     updateForm,
@@ -15,22 +16,21 @@ import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { succesfullSnackBar } from '../snackBars';
+import {
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_YEAR,
+} from '../../domains/periods/constants';
+import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 
-// TODO: use API to fetch those
-const PERIOD_TYPE_CHOICES = [
-    {
-        label: 'Monthly',
-        value: 'MONTH',
+// TODO: use config file
+const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
+    value: periodType,
+    label: {
+        id: `iaso.label.periodType.${periodType.toLowerCase()}`,
+        defaultMessage: periodType,
     },
-    {
-        label: 'Quarterly',
-        value: 'QUARTER',
-    },
-    {
-        label: 'Yearly',
-        value: 'YEAR',
-    },
-];
+}));
 
 class FormDialogComponent extends Component {
     constructor(props) {
@@ -55,18 +55,18 @@ class FormDialogComponent extends Component {
         }
 
         saveForm
-            .then((createdFormData) => {
+            .then((savedFormData) => {
                 if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
                     return Promise.resolve();
                 }
                 return createFormVersion(this.props.dispatch, {
-                    form_id: createdFormData.id,
+                    form_id: savedFormData.id,
                     xls_file: this.state.xls_file.value,
                 }, isUpdate)
                     .catch((createVersionError) => {
                         // when creating form, if version creation fails, delete freshly created, version-less form
                         if (!isUpdate) {
-                            return deleteForm(this.props.dispatch, createdFormData.id)
+                            return deleteForm(this.props.dispatch, savedFormData.id)
                                 .then(() => console.log('Form deleted'))
                                 .catch(() => console.warn('Form could not be deleted'))
                                 .then(() => {
@@ -77,7 +77,6 @@ class FormDialogComponent extends Component {
                     });
             })
             .then(() => {
-                this.setState(this.initialState());
                 closeDialog();
                 this.props.dispatch(enqueueSnackbar(succesfullSnackBar()));
                 this.props.onSuccess();
@@ -91,13 +90,19 @@ class FormDialogComponent extends Component {
             });
     }
 
-    onCancel(closeDialog) {
-        this.setState(this.initialState());
-        closeDialog();
-    }
-
     setFieldValue(fieldName, fieldValue) {
         this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
+    }
+
+    // Workaround to map the comma-separated string used by InputComponent with type=select to an array of values
+    // TODO: select input component should return a list of values of the same type as the provided values
+    setRelatedSelectFieldValue(fieldName, fieldValue) {
+        const mappedFieldValue = fieldValue
+            .split(',')
+            .filter(singleValue => singleValue !== '')
+            .map(Number);
+
+        this.setFieldValue(fieldName, mappedFieldValue);
     }
 
     setFieldErrors(fieldName, fieldErrors) {
@@ -125,7 +130,7 @@ class FormDialogComponent extends Component {
 
         return {
             id: { value: _.get(initialData, 'id', null), errors: [] },
-            name: { value: _.get(initialData, 'name', null), errors: [] },
+            name: { value: _.get(initialData, 'name', ''), errors: [] },
             xls_file: { value: null, errors: [] },
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
@@ -134,7 +139,7 @@ class FormDialogComponent extends Component {
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
             device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
-            location_field: { value: _.get(initialData, 'location_field', null), errors: [] },
+            location_field: { value: _.get(initialData, 'location_field', ''), errors: [] },
         };
     }
 
@@ -149,7 +154,7 @@ class FormDialogComponent extends Component {
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
-                onCancel={closeDialog => this.onCancel(closeDialog)}
+                onClosed={() => this.setState(this.initialState())}
                 cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
                 maxWidth="md"
             >
@@ -167,17 +172,20 @@ class FormDialogComponent extends Component {
                             }}
                             required
                         />
-
-                        <FileInputComponent
-                            keyValue="xls_file"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            label={{
-                                id: 'iaso.label.xls_form_file',
-                                defaultMessage: 'XLSForm file',
-                            }}
-                            errors={this.state.xls_file.errors}
-                            required
-                        />
+                        <Grid container direction="column">
+                            <Grid item>
+                                <FileInputComponent
+                                    keyValue="xls_file"
+                                    onChange={(key, value) => this.setFieldValue(key, value)}
+                                    label={{
+                                        id: 'iaso.label.xls_form_file',
+                                        defaultMessage: 'XLSForm file',
+                                    }}
+                                    errors={this.state.xls_file.errors}
+                                    required
+                                />
+                            </Grid>
+                        </Grid>
                         <InputComponent
                             keyValue="period_type"
                             clearable
@@ -185,7 +193,7 @@ class FormDialogComponent extends Component {
                             value={this.state.period_type.value}
                             errors={this.state.period_type.errors}
                             type="select"
-                            options={PERIOD_TYPE_CHOICES}
+                            options={periodTypeOptions}
                             label={{
                                 id: 'iaso.label.periodType',
                                 defaultMessage: 'Period type',
@@ -237,15 +245,11 @@ class FormDialogComponent extends Component {
                         />
                     </Grid>
                     <Grid xs={6} item>
-
-                        {
-                            // TODO: select input component should return a list of values of the same type as the provided values
-                        }
                         <InputComponent
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
                             value={this.state.project_ids.value.join(',')}
                             errors={this.state.project_ids.errors}
                             type="select"
@@ -259,14 +263,11 @@ class FormDialogComponent extends Component {
                             }}
                             required
                         />
-                        {
-                            // TODO: select input component should return a list of values of the same type as the provided values
-                        }
                         <InputComponent
                             multi
                             clearable
                             keyValue="org_unit_type_ids"
-                            onChange={(key, value) => this.setFieldValue(key, value.split(',').map(Number))}
+                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
                             value={this.state.org_unit_type_ids.value.join(',')}
                             errors={this.state.org_unit_type_ids.errors}
                             type="select"

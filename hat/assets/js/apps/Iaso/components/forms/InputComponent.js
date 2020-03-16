@@ -10,11 +10,11 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
-import MESSAGES from './messages';
+import MESSAGES from '../../messages/forms';
 import ArrayFieldInput from './ArrayFieldInput';
 import InputLabelComponent from './InputLabelComponent';
 import FormControlComponent from './FormControlComponent';
-
+import { translateOptions } from '../../utils/intlUtil';
 
 const styles = theme => ({
     select: {
@@ -187,11 +187,12 @@ class InputComponent extends Component {
                 : value;
 
             return (
-                <FormControlComponent withMarginTop={withMarginTop}>
+                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
                     <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
                         required={required}
+                        error={hasErrors}
                     />
                     <OutlinedInput
                         size="small"
@@ -210,14 +211,16 @@ class InputComponent extends Component {
             if (hasErrors) {
                 selectClassNames.push(classes.selectError);
             }
+
             return (
-                <FormControlComponent withMarginTop={withMarginTop}>
+                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
                     <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
                         label={labelText}
                         shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
                         isFocused={isFocused}
                         required={required}
+                        error={hasErrors}
                     />
                     <div className={selectClassNames.join(' ')}>
                         <Select
@@ -232,7 +235,7 @@ class InputComponent extends Component {
                             placeholder=""
                             onBlur={() => this.toggleFocused(false)}
                             onFocus={() => this.toggleFocused(true)}
-                            options={options}
+                            options={translateOptions(options, formatMessage)}
                             noResultsText={formatMessage({
                                 id: 'iaso.label.noOptions',
                                 defaultMessage: 'No results found',
@@ -243,7 +246,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'arrayInput') { // TODO: implement required
+        if (type === 'arrayInput') { // TODO: implement required, errors...
             return (
                 <ArrayFieldInput
                     label={labelText}
@@ -285,7 +288,7 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'checkbox') { // TODO: implement required
+        if (type === 'checkbox') {
             return (
                 <FormControlLabel
                     disabled={disabled}

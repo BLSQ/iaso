@@ -2,6 +2,7 @@ import React, { Fragment } from 'react';
 import ReactDOM from 'react-dom';
 import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
+import thunk from 'redux-thunk';
 import { createHistory } from 'history';
 import moment from 'moment';
 
@@ -15,29 +16,31 @@ import createStore from '../../redux/createStore';
 
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
-import { formsReducer, formsInitialState } from './redux/formsReducer';
-import { orgUnitsReducer, orgUnitsInitialState } from './redux/orgUnitsReducer';
+import { formsReducer, formsInitialState } from './domains/forms/reducer';
+import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reducer';
 import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
-import { instancesReducer, instancesInitialState } from './redux/instancesReducer';
+import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
-import { linksInitialState, linksReducer } from './redux/linksReducer';
+import { linksInitialState, linksReducer } from './domains/links/reducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
-import { periodsInitialState, periodsReducer } from './redux/periodsReducer';
+import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
+import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import chipColors from './constants/chipColors';
 
 import App from '../App';
 
-import Forms from './pages/Forms';
-import Instances from './pages/Instances';
-import OrgUnits, { locationLimitMax } from './pages/OrgUnits';
-import Links from './pages/Links';
-import Runs from './pages/Runs';
-import OrgUnitDetail from './pages/OrgUnitDetail';
+import Forms from './domains/forms';
+import OrgUnits, { locationLimitMax } from './domains/orgUnits';
+import Links from './domains/links';
+import Runs from './domains/links/Runs';
+import OrgUnitDetail from './domains/orgUnits/details';
+import Completeness from './domains/completeness';
+import Instances from './domains/instances';
 
 import {
     formsPath,
@@ -111,12 +114,19 @@ export default function iasoApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
-        <Redirect path="/" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
-        <Redirect path="/forms" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Route
+            path="completeness"
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <Completeness {...props} />
+                </Fragment>
+            )}
+        />,
+        <Redirect path="/" to="/forms" />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${chipColors[0].replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
-
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -137,6 +147,7 @@ export default function iasoApp(element, baseUrl) {
         links: linksInitialState,
         profiles: profilesInitialState,
         periods: periodsInitialState,
+        completeness: completenessInitialState,
         projects: projectsInitialState,
     }, {
         load: loadReducer,
@@ -153,9 +164,11 @@ export default function iasoApp(element, baseUrl) {
         links: linksReducer,
         profiles: profilesReducer,
         periods: periodsReducer,
+        completeness: completenessReducer,
         projects: projectsReducer,
     }, [
         routerMiddleware(history),
+        thunk,
     ]);
 
     history = syncHistoryWithStore(

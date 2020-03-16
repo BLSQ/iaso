@@ -50,6 +50,13 @@ body {
                 }
             }
 
+            &.select {
+                overflow: visible !important;
+                .Select {
+                    text-align: left;
+                }
+            }
+
             &.action-zone {
                 padding: 0;
                 align-items: center;

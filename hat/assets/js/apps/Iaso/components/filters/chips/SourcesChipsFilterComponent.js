@@ -9,7 +9,7 @@ import {
     Typography,
 } from '@material-ui/core';
 
-import { setSourcesSelected } from '../../../redux/orgUnitsReducer';
+import { setSourcesSelected } from '../../../domains/orgUnits/actions';
 
 import ChipsFilterComponent from './ChipsFilterComponent';
 
@@ -20,7 +20,7 @@ import commonStyles from '../../../styles/common';
 
 import {
     getSourcesWithoutCurrentSource,
-} from '../../../utils/orgUnitUtils';
+} from '../../../domains/orgUnits/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),

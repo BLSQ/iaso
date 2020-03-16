@@ -310,3 +310,11 @@ export const createFormVersion = (dispatch, formVersionData, isUpdate) => {
             throw error;
         });
 };
+
+export const fetchCompleteness = (dispatch, url) => getRequest(url)
+    .then(res => res.completeness)
+    .catch((error) => {
+        dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError')));
+        console.error('Error while fetching  while fetching completness:', error);
+        throw error;
+    });

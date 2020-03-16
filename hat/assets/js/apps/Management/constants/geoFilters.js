@@ -22,7 +22,10 @@ const filtersGeo = (
                 defaultMessage: 'Province',
             },
             type: 'select',
-            callback: value => component.updateVillageField('AS__ZS__province_id', value),
+            callback: value => component.props.updateCurrentVillage({
+                ...component.props.village,
+                AS__ZS__province_id: value,
+            }),
         },
         {
             name: 'AS__ZS_id',
@@ -42,7 +45,10 @@ const filtersGeo = (
                 defaultMessage: 'Zone de santé',
             },
             type: 'select',
-            callback: value => component.updateVillageField('AS__ZS_id', value),
+            callback: value => component.props.updateCurrentVillage({
+                ...component.props.village,
+                AS__ZS_id: value,
+            }),
         },
         {
             name: 'AS_id',
@@ -62,7 +68,10 @@ const filtersGeo = (
                 defaultMessage: 'Aire de santé',
             },
             type: 'select',
-            callback: value => component.updateVillageField('AS_id', value),
+            callback: value => component.props.updateCurrentVillage({
+                ...component.props.village,
+                AS_id: value,
+            }),
         },
     ]
 );

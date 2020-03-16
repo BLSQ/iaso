@@ -67,6 +67,7 @@ ConfirmCancelDialogComponent.defaultProps = {
     confirmMessage: { id: 'iaso.label.yes', defaultMessage: 'Yes' },
     cancelMessage: { id: 'iaso.label.no', defaultMessage: 'No' },
     maxWidth: 'sm',
+    onClosed: () => {},
 };
 ConfirmCancelDialogComponent.propTypes = {
     allowConfirm: PropTypes.bool,
@@ -75,4 +76,5 @@ ConfirmCancelDialogComponent.propTypes = {
     onCancel: PropTypes.func,
     cancelMessage: PropTypes.object, // TODO: make a message prop type
     maxWidth: PropTypes.string,
+    onClosed: PropTypes.func,
 };

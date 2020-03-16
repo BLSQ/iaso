@@ -1,13 +1,13 @@
+import random
+from urllib.request import urlopen
+import pathlib
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
-from urllib.request import urlopen
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
-from iaso.utils import flat_parse_xml_file
-import random
-import pathlib
+from iaso.utils import flat_parse_xml_file, slugify_underscore
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -26,6 +26,16 @@ PERIOD_TYPE_CHOICES = (
     (QUARTER, "Quarter"),
     (MONTH, "Month"),
     (SIX_MONTH, "Six-month"),
+)
+
+INSTANCE_STATUS_READY = "READY"
+INSTANCE_STATUS_ERROR = "ERROR"
+INSTANCE_STATUS_EXPORTED = "EXPORTED"
+
+INSTANCE_STATUS_CHOICES = (
+    (INSTANCE_STATUS_READY, "Ready"),
+    (INSTANCE_STATUS_ERROR, "Error"),
+    (INSTANCE_STATUS_EXPORTED, "Exported"),
 )
 
 
@@ -622,8 +632,9 @@ class GroupSet(models.Model):
 
 def _form_version_upload_to(instance: 'FormVersion', filename: str) -> str:
     path = pathlib.Path(filename)
+    underscored_form_name = slugify_underscore(instance.form.name)
 
-    return f"forms/{path.stem}_{instance.version_id}{path.suffix}"
+    return f"forms/{underscored_form_name}_{instance.version_id}{path.suffix}"
 
 
 class FormVersion(models.Model):
@@ -705,6 +716,8 @@ class Instance(models.Model):
         "Device", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     period = models.TextField(null=True, blank=True, db_index=True)
+    # status = models.TextField(choices=INSTANCE_STATUS_CHOICES, null=True, blank=True)
+    deleted = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -814,7 +827,9 @@ class Instance(models.Model):
     def as_small_dict(self):
         return {
             "id": self.id,
+            "file_url": self.file.url if self.file else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,

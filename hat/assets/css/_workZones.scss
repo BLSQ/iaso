@@ -5,21 +5,27 @@
     border-top: 1px solid $gray;
     border-left: 1px solid $gray;
     border-right: 1px solid $gray;
+
     &:before {
         display: none !important;
     }
+
     &.selected,
+    &.open,
     &:hover {
         background-color: $background-gray;
     }
+
     &.none {
         cursor: default;
         background-color: transparent !important;
     }
+
     >section {
         display: flex;
         width: 100%;
         align-items: center;
+
         >span {
             display: inline-block;
             width: 25px;
@@ -33,6 +39,7 @@
             box-shadow: none !important;
         }
     }
+
     div {
         &.button {
             position: absolute;
@@ -44,6 +51,7 @@
             box-shadow: none !important;
             opacity: 0;
         }
+
         &.infos {
             display: inline-block;
             height: auto;
@@ -54,12 +62,21 @@
             box-shadow: none !important;
             padding-right: 50px;
             line-height: 14px;
+
             span {
                 font-weight: normal;
             }
+
+            .area-count {
+                font-weight: bold;
+                display: inline-block;
+                margin-left: 5px;
+            }
+
             &.alert {
                 color: red;
             }
+
             i {
                 position: absolute;
                 right: 20px;
@@ -67,54 +84,114 @@
             }
         }
     }
+
     &:first-child {
         border-top-left-radius: 5px;
         border-top-right-radius: 5px;
     }
+
     &:last-child {
         border-bottom: 1px solid $gray;
         border-bottom-left-radius: 5px;
         border-bottom-right-radius: 5px;
     }
+
     .expand-collapse {
         height: 0px;
         overflow: hidden;
+
+        &.open {
+            height: auto;
+            overflow: visible;
+        }
+
         >div {
             padding: 10px 0 0 0;
         }
+
         .location-filter {
             padding: 0;
             border-top: 1px solid $gray;
+
             .location-subtitle {
                 padding: $padding-unit / 2;
                 margin: 0;
                 outline: none;
                 cursor: pointer;
                 box-shadow: none;
+
                 i {
                     float: right;
                     margin-right: 5px;
                 }
+
                 &+div {
                     height: 0;
                     overflow: hidden;
+
                     &.open {
                         padding: 0 $padding-unit / 2 $padding-unit / 2 $padding-unit / 2;
                         height: auto;
                         overflow: visible;
                     }
                 }
+
                 &.alert {
                     color: $red;
                 }
             }
         }
     }
+
     &.selected {
         padding-bottom: 0;
+
         .expand-collapse {
             height: auto;
             overflow: visible;
+        }
+    }
+
+    .endemic-icon-container {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        .fa-tint {
+            color: $green;
+            font-size: 16px;
+
+            &.endemic {
+                color: $red;
+            }
+        }
+    }
+
+    .areas-chips-container {
+        margin: 16px;
+        padding: 8px 8px 0px 8px !important;
+        background-color: white;
+        border: 1px solid $gray;
+        border-radius: 5px;
+
+        .MuiChip-clickable {
+            margin: 0 8px 8px 0;
+            font-weight: normal;
+        }
+
+        &.endemic {
+            .MuiChip-clickable {
+                background-color: $red;
+                color: white;
+
+                svg {
+                    fill: white;
+                }
+
+                &:hover {
+                    background-color: darken($red, 10%);
+                }
+            }
         }
     }
 }
@@ -126,15 +203,18 @@
 
 .macro-map {
     border-left: 1px solid $gray;
+    overflow: hidden;
 }
 
 .macro-map .leaflet-pane>svg path,
-.geo-scope-map .leaflet-pane>svg path  {
+.geo-scope-map .leaflet-pane>svg path {
     stroke-width: 2px !important;
     stroke-opacity: 0.5;
+
     &.selected-area {
         stroke: red !important;
     }
+
     &.zone {
         @include layer(black, 2);
         fill-opacity: 0;
@@ -146,17 +226,33 @@
 .workzones-list {
     list-style-type: none;
     overflow: visible !important;
-    padding: 40px;
     padding: 40px 40px 50px 40px;
     margin: -30px -40px -25px -40px;
+
+    &.sub {
+        padding: 0px 40px 0px 40px;
+        margin: -25px -40px -25px -40px;
+    }
+
     &.legend {
         .workzones-item {
             height: 50px;
             background-color: transparent !important;
             padding: 18px 10px ! important;
+
             strong {
                 float: right;
             }
         }
     }
+    .Select span {
+        font-weight: normal;
+        &.endemic {
+            font-weight: bold;
+        }
+    }
+}
+.wz-select-container {
+    height: 796px;
+    overflow: auto;
 }

@@ -5,7 +5,7 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import FormControlComponent from './FormControlComponent';
 import InputLabelComponent from './InputLabelComponent';
-import MESSAGES from './messages';
+import MESSAGES from '../../messages/forms';
 
 function FileInputComponent({
     intl, keyValue, label, labelString, disabled, onChange, required, errors,
@@ -17,11 +17,12 @@ function FileInputComponent({
     const hasErrors = errors.length > 0;
 
     return (
-        <FormControlComponent>
+        <FormControlComponent errors={errors}>
             <InputLabelComponent
                 htmlFor={`input-text-${keyValue}`}
                 label={labelText}
                 required={required}
+                error={hasErrors}
             />
             <OutlinedInput
                 size="small"

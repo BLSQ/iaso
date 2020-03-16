@@ -30,14 +30,6 @@ const getPath = (path) => {
 export const formsPath = getPath({
     baseUrl: 'forms',
     params: [
-        {
-            isRequired: true,
-            key: 'date_from',
-        },
-        {
-            isRequired: true,
-            key: 'date_to',
-        },
         ...paginationPathParams,
     ],
 });
@@ -54,6 +46,11 @@ export const instancesPath = getPath({
             isRequired: false,
             key: 'periods',
         },
+        // TODO: activate next entry when API is ready
+        /* {
+            isRequired: false,
+            key: 'status',
+        }, */
         {
             isRequired: false,
             key: 'levels',

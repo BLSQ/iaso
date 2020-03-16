@@ -8,18 +8,25 @@ from django.core.files.uploadedfile import UploadedFile
 from iaso.models import Instance
 
 
-def generate_instances(project, cvs_form, cvs_mapping_version, cvs_stat_form, cvs_stat_mapping_version):
+def generate_instances(
+    project,
+    cvs_form,
+    cvs_mapping_version,
+    cvs_stat_form,
+    cvs_stat_mapping_version,
+    period,
+):
 
     # fetch aggregated values
     aggregations = cvs_mapping_version.json["aggregations"]
 
-    queryset = cvs_form.instances.filter(form_id=cvs_form.id, period="2018Q1").values(
-        "period", "org_unit_id", "form_id",
+    queryset = cvs_form.instances.filter(form_id=cvs_form.id, period=period).values(
+        "period", "org_unit_id", "form_id"
     )
 
     for aggregation in aggregations:
         answer = Cast(
-            KeyTextTransform(aggregation["questionKey"], "json"), FloatField(),
+            KeyTextTransform(aggregation["questionKey"], "json"), FloatField()
         )
         if aggregation["aggregationType"] == "sum":
             queryset = queryset.annotate(**{aggregation["id"]: Sum(answer)})
@@ -32,6 +39,7 @@ def generate_instances(project, cvs_form, cvs_mapping_version, cvs_stat_form, cv
                 "unsupported aggregationType : " + aggregation["aggregationType"]
             )
 
+    queryset = queryset.order_by("period", "org_unit_id", "form_id")
     # generate "derived" instances
     page_size = 50
 
@@ -58,4 +66,3 @@ def generate_instances(project, cvs_form, cvs_mapping_version, cvs_stat_form, cv
             instances.append(instance)
 
         Instance.objects.bulk_create(instances)
-

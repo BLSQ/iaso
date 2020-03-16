@@ -227,6 +227,10 @@ class Command(BaseCommand):
                 print(c)
 
         if mode == "derived":
+            period = "2018Q1"
+            for i in cvs_stat_form.instances.filter(period=period).all():
+                i.delete()
+
             from iaso.dhis2.derived_instance_generator import generate_instances
 
             generate_instances(
@@ -235,6 +239,13 @@ class Command(BaseCommand):
                 cvs_mapping_version,
                 cvs_stat_form,
                 cvs_stat_mapping_version,
+                period,
+            )
+            print(
+                "generated",
+                cvs_stat_form.name,
+                cvs_stat_form.instances.count(),
+                "instances",
             )
 
     def make_category_options_public(self, credentials):
@@ -311,7 +322,7 @@ class Command(BaseCommand):
             instances = []
             for period in periods:
                 if fixed_instance_count and "Clinic" in org_unit.name:
-                    instance_by_ou_periods = randint(1, fixed_instance_count)
+                    instance_by_ou_periods = fixed_instance_count
                 else:
                     instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)

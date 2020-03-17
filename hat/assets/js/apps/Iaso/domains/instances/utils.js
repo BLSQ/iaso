@@ -24,7 +24,6 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
                         {!settings.original.file_content[c.key] || settings.original.file_content[c.key] === '' ? '/' : settings.original.file_content[c.key]}
                     </span>
                 ),
-                width: 150,
             });
         }
     });

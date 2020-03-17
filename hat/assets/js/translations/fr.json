@@ -121,6 +121,7 @@
     "iaso.label.periodType.month": "Mois",
     "iaso.label.periodType.six_month": "Semestre",
     "iaso.label.textSearch": "Recherche",
+    "iaso.label.resetSearch": "Vider la recherche",
     "iaso.label.instanceStatus.ready": "prêt(s)",
     "iaso.label.instanceStatus.readyMulti": "Prêts",
     "iaso.label.instanceStatus.error": "erreur(s)",

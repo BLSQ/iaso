@@ -17,26 +17,34 @@ import {
 } from '@material-ui/core';
 import FilterList from '@material-ui/icons/FilterList';
 import Close from '@material-ui/icons/Close';
+import ArrowBack from '@material-ui/icons/ArrowBack';
 
 import RowButtonComponent from '../buttons/RowButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 const MESSAGES = {
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
     search: {
         id: 'iaso.label.textSearch',
         defaultMessage: 'Search',
     },
-    close: {
-        id: 'iaso.label.close',
-        defaultMessage: 'Close',
+    resetSearch: {
+        id: 'iaso.label.resetSearch',
+        defaultMessage: 'Empty search',
     },
 };
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];
     if (searchString !== '') {
-        displayedOptions = displayedOptions.filter(o => (o.key && o.key.includes(searchString))
-            || (o.label && o.label.includes(searchString)));
+        const search = searchString.toLowerCase();
+        displayedOptions = displayedOptions.filter(
+            o => (o.key && o.key.toLowerCase().includes(search))
+            || (o.label && o.label.toLowerCase().includes(search)),
+        );
     }
     return displayedOptions;
 };
@@ -83,6 +91,10 @@ const styles = theme => ({
         marginRight: theme.spacing(1),
         width: '50%',
     },
+    input: {
+        width: '100%',
+        padding: 0,
+    },
 });
 
 const ColumnsSelectDrawerComponent = (
@@ -106,8 +118,8 @@ const ColumnsSelectDrawerComponent = (
         setState({ ...state, open });
     };
 
-    const handleSearch = () => (event) => {
-        setState({ ...state, searchString: event.target.value });
+    const handleSearch = reset => (event) => {
+        setState({ ...state, searchString: reset ? '' : event.target.value });
     };
 
     const handleChangeOptions = index => (event) => {
@@ -122,7 +134,6 @@ const ColumnsSelectDrawerComponent = (
     const activeOptionsCount = options.filter(o => o.active).length;
 
     const displayedOptions = filterResults(state.searchString, options);
-
     return (
         <>
             <RowButtonComponent
@@ -144,19 +155,35 @@ const ColumnsSelectDrawerComponent = (
                     className={classes.root}
                 >
                     <div className={classes.toolbar}>
+                        <Tooltip title={formatMessage(MESSAGES.close)}>
+                            <IconButton onClick={toggleDrawer(false)}>
+                                <ArrowBack />
+                            </IconButton>
+                        </Tooltip>
                         <div className={classes.search}>
                             <InputBase
+                                value={state.searchString}
                                 onChange={handleSearch()}
                                 className={classes.input}
                                 placeholder={formatMessage(MESSAGES.search)}
-                                inputProps={{ 'aria-label': formatMessage(MESSAGES.search) }}
+                                inputProps={{
+                                    'aria-label': formatMessage(MESSAGES.search),
+                                    className: classes.input,
+                                }}
                             />
                         </div>
-                        <Tooltip title={formatMessage(MESSAGES.close)}>
-                            <IconButton onClick={toggleDrawer(false)}>
-                                <Close />
-                            </IconButton>
-                        </Tooltip>
+                        {
+                            state.searchString !== ''
+                            && (
+                                <Tooltip title={formatMessage(MESSAGES.resetSearch)}>
+                                    <IconButton
+                                        onClick={handleSearch(true)}
+                                    >
+                                        <Close />
+                                    </IconButton>
+                                </Tooltip>
+                            )
+                        }
                     </div>
                     <Divider />
                     <div className={classes.list}>

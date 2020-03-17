@@ -41,6 +41,7 @@ import Runs from './domains/links/Runs';
 import OrgUnitDetail from './domains/orgUnits/details';
 import Completeness from './domains/completeness';
 import Instances from './domains/instances';
+import InstanceDetail from './domains/instances/details';
 
 import {
     formsPath,
@@ -49,6 +50,7 @@ import {
     orgUnitsDetailsPath,
     linksPath,
     algosPath,
+    instanceDetailPath,
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
@@ -75,6 +77,15 @@ export default function iasoApp(element, baseUrl) {
                 <Fragment>
                     <SidebarMenu {...props} />
                     <Instances {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={instanceDetailPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <InstanceDetail {...props} />
                 </Fragment>
             )}
         />,

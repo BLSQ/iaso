@@ -24,7 +24,6 @@ export const fetchCompleteness = () => (dispatch) => {
     dispatch(startFetchingCompleteness());
     return getRequest('/api/completeness/')
         .then(res => dispatch(setCompleteness(res.completeness)))
-    // .catch(console.error)
         .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError'))))
         .then(() => {
             dispatch(stopFetchingCompleteness());

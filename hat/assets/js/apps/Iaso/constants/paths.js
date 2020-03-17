@@ -82,6 +82,16 @@ export const instancesPath = getPath({
     ],
 });
 
+export const instanceDetailPath = getPath({
+    baseUrl: 'instance',
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceId',
+        },
+    ],
+});
+
 export const orgUnitsPath = getPath({
     baseUrl: 'orgunits',
     params: [

@@ -1,12 +1,12 @@
 import React from 'react';
 import instancesTableColumns from './config';
 
-export const getInstancesColumns = (formatMessage, visibleColumns) => {
-    const metasColumns = [...instancesTableColumns(formatMessage)];
+export const getInstancesColumns = (formatMessage, visibleColumns, component) => {
+    const metasColumns = [...instancesTableColumns(formatMessage, component)];
     let tableColumns = [];
     metasColumns.forEach((c) => {
         const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
-        if (metaColumn && metaColumn.active) {
+        if ((metaColumn && metaColumn.active) || c.accessor === 'actions') {
             tableColumns.push(c);
         }
     });
@@ -34,7 +34,7 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
 export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
 
 export const getInstancesVisibleColumns = (formatMessage, instance, columnsParams = undefined) => {
-    const metasColumns = [...instancesTableColumns(formatMessage)];
+    const metasColumns = [...instancesTableColumns(formatMessage).filter(c => c.accessor !== 'actions')];
     const columns = metasColumns.map(c => (
         {
             key: c.accessor,

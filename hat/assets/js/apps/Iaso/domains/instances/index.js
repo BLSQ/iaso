@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { injectIntl } from 'react-intl';
-import { replace, push } from 'react-router-redux';
 
 import {
     withStyles, Tabs, Grid, Tab, Box,
@@ -11,24 +11,27 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import {
+    setCurrentForm,
+    fetchFormDetail as fetchFormDetailAction,
     setInstances, setInstancesSmallDict, setInstancesFetching,
 } from './actions';
-import { setCurrentForm } from '../forms/actions';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
 import { setPeriods } from '../periods/actions';
+import {
+    redirectTo as redirectToAction,
+    redirectToReplace as redirectToReplaceAction,
+} from '../../routing/actions';
 
 import {
     fetchInstancesAsDict,
     fetchInstancesAsSmallDict,
-    fetchFormDetail,
     fetchOrgUnitsTypes,
     fetchDevices,
     fetchDevicesOwnerships,
     fetchPeriods,
 } from '../../utils/requests';
 
-import { createUrl } from '../../../../utils/fetchData';
 import {
     getInstancesFilesList, getInstancesVisibleColumns, getInstancesColumns, getMetasColumns,
 } from './utils';
@@ -70,18 +73,7 @@ class Instances extends Component {
         this.state = {
             tableColumns: [],
             tab: props.params.tab ? props.params.tab : 'list',
-            visibleColumns: [
-                {
-                    key: 'brol',
-                    label: 'Affichage brol',
-                    active: true,
-                },
-                {
-                    key: 'machin',
-                    label: 'Affichage machin',
-                    active: false,
-                },
-            ],
+            visibleColumns: [],
         };
     }
 
@@ -93,7 +85,7 @@ class Instances extends Component {
                 columns,
             },
             params,
-            redirectTo,
+            redirectToReplace,
         } = this.props;
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
@@ -108,23 +100,19 @@ class Instances extends Component {
                 ...params,
                 columns: getMetasColumns().join(','),
             };
-            redirectTo(baseUrl, newParams);
+            redirectToReplace(baseUrl, newParams);
         }
     }
 
     componentDidMount() {
+        console.log('componentDidMount');
         const {
             params: {
                 formId,
             },
-            dispatch,
-            currentForm,
+            fetchFormDetail,
         } = this.props;
-        if (formId && !currentForm) {
-            fetchFormDetail(dispatch, formId).then((form) => {
-                this.props.setCurrentForm(form);
-            });
-        }
+        fetchFormDetail(formId);
         this.fetchInstances();
     }
 
@@ -136,6 +124,9 @@ class Instances extends Component {
                 formatMessage,
             },
         } = this.props;
+        const {
+            tableColumns,
+        } = this.state;
         if (params.pageSize !== prevProps.params.pageSize
             || params.formId !== prevProps.params.formId
             || params.order !== prevProps.params.order
@@ -146,7 +137,12 @@ class Instances extends Component {
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
-        if (reduxPage.list && !isEqual(reduxPage.list, prevProps.reduxPage.list)) {
+        if (
+            (
+                reduxPage.list
+                && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)
+            )
+        ) {
             this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params.columns));
         }
     }
@@ -174,12 +170,12 @@ class Instances extends Component {
 
     handleChangeTab(tab, redirect = true) {
         if (redirect) {
-            const { redirectTo, params } = this.props;
+            const { redirectToReplace, params } = this.props;
             const newParams = {
                 ...params,
                 tab,
             };
-            redirectTo(baseUrl, newParams);
+            redirectToReplace(baseUrl, newParams);
         }
         this.setState({
             tab,
@@ -220,7 +216,7 @@ class Instances extends Component {
             intl: {
                 formatMessage,
             },
-            redirectTo,
+            redirectToReplace,
             params,
         } = this.props;
         const newParams = {
@@ -229,10 +225,19 @@ class Instances extends Component {
         };
         this.setState({
             visibleColumns,
-            tableColumns: getInstancesColumns(formatMessage, visibleColumns),
+            tableColumns: getInstancesColumns(formatMessage, visibleColumns, this),
         });
 
-        redirectTo(baseUrl, newParams);
+        redirectToReplace(baseUrl, newParams);
+    }
+
+    selectInstance(instance) {
+        const {
+            redirectTo,
+        } = this.props;
+        redirectTo('instance', {
+            instanceId: instance.id,
+        });
     }
 
     render() {
@@ -248,7 +253,7 @@ class Instances extends Component {
             },
             router,
             prevPathname,
-            redirectToPush,
+            redirectTo,
         } = this.props;
         const {
             tab,
@@ -267,7 +272,7 @@ class Instances extends Component {
                         if (prevPathname) {
                             router.goBack();
                         } else {
-                            redirectToPush('forms', {});
+                            redirectTo('forms', {});
                         }
                     }}
                 >
@@ -408,16 +413,17 @@ Instances.propTypes = {
     setDevicesList: PropTypes.func.isRequired,
     setDevicesOwnershipList: PropTypes.func.isRequired,
     router: PropTypes.object.isRequired,
-    redirectToPush: PropTypes.func.isRequired,
+    redirectToReplace: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
     setPeriods: PropTypes.func.isRequired,
+    fetchFormDetail: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.instances.instancesPage,
     instancesSmall: state.instances.instancesSmall,
     fetching: state.instances.fetching,
-    currentForm: state.forms.current,
+    currentForm: state.instances.currentForm,
     prevPathname: state.routerCustom.prevPathname,
 });
 
@@ -428,13 +434,15 @@ const MapDispatchToProps = dispatch => ({
     setInstancesSmallDict: instances => dispatch(setInstancesSmallDict(instances)),
     setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
-    redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
+    ...bindActionCreators({
+        fetchFormDetail: fetchFormDetailAction,
+        redirectTo: redirectToAction,
+        redirectToReplace: redirectToReplaceAction,
+    }, dispatch),
 });
-
 
 export default withStyles(styles)(
     connect(MapStateToProps, MapDispatchToProps)(injectIntl(Instances)),

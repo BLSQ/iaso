@@ -805,6 +805,7 @@ class Instance(models.Model):
         }
 
     def as_full_model(self):
+        file_content = self.get_and_save_json_of_xml()
         return {
             "uuid": self.uuid,
             "id": self.id,
@@ -812,6 +813,7 @@ class Instance(models.Model):
             "file_name": self.file_name,
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
+            "form_name": self.form.name,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
@@ -819,6 +821,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "file_content": file_content,
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],

@@ -5,10 +5,25 @@ import Link from '@material-ui/core/Link';
 
 import { Period } from '../periods/models';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
+import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 
 
-const instancesTableColumns = (formatMessage = () => ({})) => (
+const instancesTableColumns = (formatMessage = () => ({}), component) => (
     [
+        {
+            Header: formatMessage({
+                defaultMessage: 'Action(s)',
+                id: 'iaso.forms.actions',
+            }),
+            accessor: 'actions',
+            resizable: false,
+            sortable: false,
+            Cell: settings => (
+                <section>
+                    <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
+                </section>
+            ),
+        },
         {
             Header: formatMessage({
                 defaultMessage: 'Updated at',

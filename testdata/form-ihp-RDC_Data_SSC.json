@@ -1,0 +1,328 @@
+{
+  "type": "simple_event",
+  "program_id": "cPPiaPCicRc",
+  "question_mappings": {
+    "SSC_106": {
+      "code": "SSC_106",
+      "name": "EDL - SSC - 106. Adresse Physique (ou Nom du village)",
+      "id": "GBxIrRt5kdZ",
+      "valueType": "TEXT"
+    },
+    "CS_916": {
+      "code": "CS_916",
+      "name": "EDL - SSC - 916. SSC : Comment s'appelle le Site de soins commuanutaires",
+      "id": "oD31WY2FsJH",
+      "valueType": "TEXT"
+    },
+    "CS_917": {
+      "code": "CS_917",
+      "name": "EDL - SSC - 917. SSC :Quelle est population couverte par le SSC",
+      "id": "cM35bfBy9TB",
+      "valueType": "INTEGER"
+    },
+    "CS_918": {
+      "code": "CS_918",
+      "name": "EDL - SSC - 918. SSC : Quelle distance s\u00e9pare ce SSC du CS",
+      "id": "M9BG5mI46Lc",
+      "valueType": "NUMBER"
+    },
+    "CS_919": {
+      "type": "multiple",
+      "values": {
+        "obstacle_ssc_1": {
+          "code": "CS_919_obstacle_ssc_1",
+          "comment": "1. Rivi\u00e8re",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Rivi\u00e8re",
+          "id": "JuydpKqAlHY",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_2": {
+          "code": "CS_919_obstacle_ssc_2",
+          "comment": "2. Ravin",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Ravin",
+          "id": "TP7ZnpgVhM6",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_3": {
+          "code": "CS_919_obstacle_ssc_3",
+          "comment": "3. Foret",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Foret",
+          "id": "zOh4gRKpgCg",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_4": {
+          "code": "CS_919_obstacle_ssc_4",
+          "comment": "4. Montagne",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Montagne",
+          "id": "BbzdEjb2mED",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_5": {
+          "code": "CS_919_obstacle_ssc_5",
+          "comment": "5. Ilots",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS :  Ilots",
+          "id": "dcNw2vXg49F",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_6": {
+          "code": "CS_919_obstacle_ssc_6",
+          "comment": "6. Groupes arm\u00e9s",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Groupes arm\u00e9s",
+          "id": "URhkuZ9bE60",
+          "valueType": "BOOLEAN"
+        },
+        "obstacle_ssc_7": {
+          "code": "CS_919_obstacle_ssc_7",
+          "comment": "7. Aucun",
+          "name": "EDL - SSC - 919. SSC : Obstacle entre SSC et CS : Autre",
+          "id": "yikKWXTPxVN",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_921": {
+      "type": "multiple",
+      "values": {
+        "maladies_ssc_1": {
+          "code": "CS_921_maladies_ssc_1",
+          "comment": "1. Paludisme seul,",
+          "name": "EDL - SSC - 921.2 SSC : Maladies trait\u00e9es dans le SSC :  Paludisme, Pneumonie, Diarrh\u00e9e ",
+          "id": "u5q4ZgkNqTR",
+          "valueType": "BOOLEAN"
+        },
+        "maladies_ssc_2": {
+          "code": "CS_921_maladies_ssc_2",
+          "comment": "2. Paludisme, Pneumonie, Diarrh\u00e9e",
+          "name": "EDL - SSC - 921.3 SSC : Maladies trait\u00e9es dans le SSC : Paludisme, Pneumonie, Diarrh\u00e9e et Malnutrition ( screeninng)",
+          "id": "kEQXVf3H4sD",
+          "valueType": "BOOLEAN"
+        },
+        "maladies_ssc_3": {
+          "code": "CS_921_maladies_ssc_3",
+          "comment": "3. Paludisme, Pneumonie, Diarrh\u00e9e et Malnutrition ( screeninng)",
+          "name": "EDL - SSC - 921.4 SSC : Maladies trait\u00e9es dans le SSC : Paludisme, Pneumonie, Diarrh\u00e9e, Malnutrition et PF ",
+          "id": "ymwanZKloXu",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_922_1": {
+      "code": "CS_922_1",
+      "name": "EDL - SSC - 922.1. SSC : Nom du relais communautaire responsable du SSC",
+      "id": "LKUYD5TVCdj",
+      "valueType": "TEXT"
+    },
+    "CS_922_2": {
+      "code": "CS_922_2",
+      "name": "EDL - SSC - 922.2 SSC : Num\u00e9ro de T\u00e9l du relais responsable du SSC",
+      "id": "L839II2KGuw",
+      "valueType": "TEXT"
+    },
+    "CS_923": {
+      "code": "CS_923",
+      "name": "EDL - SSC - 923. SSC : Quel est le travail du relais ( Occupation ) ?",
+      "id": "I4HXCsvp92l",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "occupation_relai_1",
+            "name": "1. Enseignant"
+          },
+          {
+            "code": "occupation_relai_2",
+            "name": "2. Pasteur"
+          },
+          {
+            "code": "occupation_relai_3",
+            "name": "3. Cultivateur"
+          },
+          {
+            "code": "occupation_relai_4",
+            "name": "4. P\u00eacheur"
+          },
+          {
+            "code": "occupation_relai_5",
+            "name": "5. M\u00e9nag\u00e8re"
+          },
+          {
+            "code": "occupation_relai_6",
+            "name": "6. Commer\u00e7ant"
+          },
+          {
+            "code": "occupation_relai_7",
+            "name": "7. Autre"
+          }
+        ],
+        "id": "IrVly16tzF2"
+      }
+    },
+    "CS_924": {
+      "code": "CS_924",
+      "name": "EDL - SSC - 924. SSC : Quel est le Sexe du relais du site?",
+      "id": "PLsEBfBeMby",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "CS_925": {
+      "code": "CS_925",
+      "name": "EDL - SSC - 925. SSC : Quel est le niveau d'\u00e9tude du relais?",
+      "id": "lGsI4jJXwQY",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "niveau_etude1",
+            "name": "1. Aucun"
+          },
+          {
+            "code": "niveau_etude2",
+            "name": "2. Primaire"
+          },
+          {
+            "code": "niveau_etude3",
+            "name": "3. Secondaire"
+          },
+          {
+            "code": "niveau_etude4",
+            "name": "4. Sup\u00e9rieur"
+          }
+        ],
+        "id": "ARwWOoEPZg9"
+      }
+    },
+    "CS_926": {
+      "code": "CS_926",
+      "name": "EDL -SSC -  926. SSC : Quelle formation a benefici\u00e9 le relai pour devenir relais prestataire ? ",
+      "id": "DpXIwdXJ3cB",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "niveau_formation_relai_1",
+            "name": "1. Formation classique ( 5 jours avec suivi) ;"
+          },
+          {
+            "code": "niveau_formation_relai_2",
+            "name": "2. Formation par accompagnement"
+          }
+        ],
+        "id": "i786bm23dMq"
+      }
+    },
+    "CS_927": {
+      "code": "CS_927",
+      "name": "EDL - SSC - 927. SSC : Quelle est la date du dernier suivi/recyclage r\u00e9alis\u00e9 par le niveau BCZ ou la DPS ?",
+      "id": "Xk0UGYgyuVj",
+      "valueType": "DATE"
+    },
+    "CS_928": {
+      "type": "multiple",
+      "values": {
+        "petits_mat_1": {
+          "code": "CS_928_petits_mat_1",
+          "comment": "1. Minuteur ARI",
+          "name": "EDL - SSC - 928.1  SSC : Petits materiels disponibles au SSC : Minuteur ARI",
+          "id": "SvaHcjlWmIV",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_2": {
+          "code": "CS_928_petits_mat_2",
+          "comment": "2. Minuteur TDR,",
+          "name": "EDL - SSC - 928.2  SSC : Petits materiels disponibles au SSC : Minuteur TDR,",
+          "id": "wEzi1sRG24d",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_3": {
+          "code": "CS_928_petits_mat_3",
+          "comment": "3. Lampe torche,",
+          "name": "EDL - SSC - 928.3  SSC : Petits materiels disponibles au SSC : Lampe torche, ",
+          "id": "dSZWAj6HpKB",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_4": {
+          "code": "CS_928_petits_mat_4",
+          "comment": "4. Collier de comptage,",
+          "name": "EDL - SSC - 928.4  SSC : Petits materiels disponibles au SSC : Collier de comptage,",
+          "id": "cRGXJx6nIox",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_5": {
+          "code": "CS_928_petits_mat_5",
+          "comment": "5. MUAC ( Ruban pour mesurer le perimetre brachial )",
+          "name": "EDL - SSC - 928.5  SSC : Petits materiels disponibles au SSC : MUAC ( Ruban pour mesurer le perimetre brachial )",
+          "id": "PO9np4rdoTW",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_6": {
+          "code": "CS_928_petits_mat_6",
+          "comment": "6. Caisse m\u00e9dicaments",
+          "name": "EDL - SSC - 928.6  SSC : Petits materiels disponibles au SSC : Caisse m\u00e9dicaments",
+          "id": "tKo01rgkSx9",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_7": {
+          "code": "CS_928_petits_mat_7",
+          "comment": "7. Balance salter",
+          "name": "EDL - SSC - 928.7  SSC : Petits materiels disponibles au SSC : Balance salter",
+          "id": "sR4bhS1oJXp",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_8": {
+          "code": "CS_928_petits_mat_8",
+          "comment": "8. Chaises",
+          "name": "EDL - SSC - 928.8  SSC : Petits materiels disponibles au SSC : Chaises",
+          "id": "nlNAplMqWnB",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_9": {
+          "code": "CS_928_petits_mat_9",
+          "comment": "9. Bidons",
+          "name": "EDL - SSC - 928.9  SSC : Petits materiels disponibles au SSC : Bidons",
+          "id": "njV6KaNGE1k",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_10": {
+          "code": "CS_928_petits_mat_10",
+          "comment": "10. Gobelets",
+          "name": "EDL - SSC - 928.10  SSC : Petits materiels disponibles au SSC : Gobelets",
+          "id": "TUUoUDIb6lx",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_11": {
+          "code": "CS_928_petits_mat_11",
+          "comment": "11. Carafe",
+          "name": "EDL - SSC - 928.11  SSC : Petits materiels disponibles au SSC : Carafe",
+          "id": "WxkJ4qUk3Xx",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_12": {
+          "code": "CS_928_petits_mat_12",
+          "comment": "12. Poubelle/receptacle",
+          "name": "EDL - SSC - 928.12  SSC : Petits materiels disponibles au SSC : Poubelle/receptacle",
+          "id": "HYSFoHCuXRx",
+          "valueType": "BOOLEAN"
+        },
+        "petits_mat_13": {
+          "code": "CS_928_petits_mat_13",
+          "comment": "13. Autre",
+          "name": "EDL - SSC - 928.13  SSC : Petits materiels disponibles au SSC : Autre",
+          "id": "Ydaxcqfm8jI",
+          "valueType": "BOOLEAN"
+        }
+      }
+    }
+  }
+}

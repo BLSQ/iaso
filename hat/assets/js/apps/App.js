@@ -12,7 +12,7 @@ import en from '__intl/messages/en'; // eslint-disable-line
 import localeDataFr from '__intl/localeData/fr'; // eslint-disable-line
 import localeDataEn from '__intl/localeData/en'; // eslint-disable-line
 
-import SnackBarContainer from './Iaso/components/snackBars/SnackBarContainer';
+import SnackBarContainer from '../components/snackBars/SnackBarContainer';
 
 const messages = {
     fr,

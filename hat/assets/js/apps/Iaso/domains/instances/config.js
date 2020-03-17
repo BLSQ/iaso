@@ -4,6 +4,7 @@ import moment from 'moment';
 import Link from '@material-ui/core/Link';
 
 import { Period } from '../periods/models';
+import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 
 const instancesTableColumns = formatMessage => (
     [
@@ -18,17 +19,17 @@ const instancesTableColumns = formatMessage => (
                     {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
                 </span>
             ),
-        },
-        {
+        }, {
             Header: formatMessage({
-                defaultMessage: 'Created at',
-                id: 'iaso.instance.created_at',
+                defaultMessage: 'Org unit',
+                id: 'iaso.instance.org_unit',
             }),
-            accessor: 'created_at',
+            accessor: 'org_unit__name',
             Cell: settings => (
-                <span>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
-                </span>
+                <ColumnTextComponent text={settings.original.org_unit
+                    ? `${settings.original.org_unit.name} (${settings.original.org_unit.org_unit_type_name})`
+                    : '/'}
+                />
             ),
         },
         {
@@ -60,6 +61,18 @@ const instancesTableColumns = formatMessage => (
                     >
                         XML
                     </Link>
+                </span>
+            ),
+        },
+        {
+            Header: formatMessage({
+                defaultMessage: 'Created at',
+                id: 'iaso.instance.created_at',
+            }),
+            accessor: 'created_at',
+            Cell: settings => (
+                <span>
+                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
                 </span>
             ),
         },

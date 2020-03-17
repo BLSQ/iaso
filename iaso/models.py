@@ -818,12 +818,6 @@ class Instance(models.Model):
     STATUS_DUPLICATED = "DUPLICATED"
     STATUS_EXPORTED = "EXPORTED"
 
-    STATUS_CHOICES = (
-        (STATUS_READY, "Ready"),
-        (STATUS_DUPLICATED, "Duplicated"),
-        (STATUS_EXPORTED, "Exported"),
-    )
-
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
@@ -851,6 +845,8 @@ class Instance(models.Model):
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
     objects = InstanceQuerySet.as_manager()
+
+    deleted = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name

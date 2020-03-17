@@ -18,7 +18,8 @@ import * as zoomBar from '../../../components/leaflet/zoom-bar';
 
 import geoUtils from '../../../utils/geo';
 import MapTooltip from './MapTooltip';
-import 'leaflet.markercluster'; // eslint-disable-line
+import 'leaflet.markercluster';
+
 import {
     MESSAGES,
     onResizeMap,
@@ -411,7 +412,15 @@ class Map extends Component {
 
     updateTooltipSmall(item) {
         if (!this.props.chosenItem && item) {
-            this.state.containers.tooltipSmall.innerHTML = item.label ? item.label : item.name;
+            let label = item.label ? item.label : item.name;
+            if (item.ZS) {
+                label = `AS - ${label}`;
+            } else if (item.province) {
+                label = `ZS - ${label}`;
+            } else if (!item.id) {
+                label = `Province - ${label}`;
+            }
+            this.state.containers.tooltipSmall.innerHTML = label;
         } else {
             this.state.containers.tooltipSmall.innerHTML = '';
         }
@@ -432,14 +441,6 @@ class Map extends Component {
         const {
             legend, items,
         } = this.props;
-        // clean previous
-        if (map.hasLayer(chosenMarker)) {
-            chosenMarker.setRadius(0);
-            map.removeLayer(chosenMarker);
-        }
-        if (map.hasLayer(chosenMarkerCluster)) {
-            map.removeLayer(chosenMarkerCluster);
-        }
         if (!chosenItem) {
             this.closeTooltipLarge();
             return;
@@ -448,6 +449,14 @@ class Map extends Component {
             ? geoUtils.extendDivisionInfo(chosenItem, items, legend)
             : chosenItem
         );
+        // clean previous
+        if (map.hasLayer(chosenMarker)) {
+            chosenMarker.setRadius(0);
+            map.removeLayer(chosenMarker);
+        }
+        if (map.hasLayer(chosenMarkerCluster)) {
+            map.removeLayer(chosenMarkerCluster);
+        }
 
         if (item._latlon) {
             if (!withCluster) {
@@ -460,7 +469,6 @@ class Map extends Component {
             }
             map.panTo(item._latlon);
         }
-
         const tootltip = (
             <div>
                 <div
@@ -533,7 +541,9 @@ class Map extends Component {
         layer.on({
             click: (event) => {
                 L.DomEvent.stop(event);
-                this.props.showItem(item);
+                if (item.id) {
+                    this.props.showItem(item);
+                }
             },
             contextmenu: (event) => {
                 L.DomEvent.stop(event);

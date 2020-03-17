@@ -58,39 +58,56 @@ class ZSViewSet(viewsets.ViewSet):
         queryset = queryset.filter(is_erased=is_erased)
 
         if search:
-            aliases_query = RawSQL("select count(*) from unnest(""geo_zs"".aliases) it where it ilike %s",
-                                   (f"%{search}%",))
+            aliases_query = RawSQL(
+                "select count(*) from unnest("
+                "geo_zs"
+                ".aliases) it where it ilike %s",
+                (f"%{search}%",),
+            )
             queryset = queryset.annotate(alias_match=aliases_query)
             queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
 
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(province_id__in=get_user_geo_list(request.user, 'province_scope'))
+            queryset = queryset.filter(
+                province_id__in=get_user_geo_list(request.user, "province_scope")
+            )
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'ZS_scope'))
+            queryset = queryset.filter(
+                id__in=get_user_geo_list(request.user, "ZS_scope")
+            )
         if request.user.profile.AS_scope.count() != 0:
-            zs_from_as = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope'))\
-                .values_list("ZS_id", flat=True).distinct()
+            zs_from_as = (
+                AS.objects.filter(id__in=get_user_geo_list(request.user, "AS_scope"))
+                .values_list("ZS_id", flat=True)
+                .distinct()
+            )
             queryset = queryset.filter(id__in=zs_from_as)
         if shapes == "with":
             queryset = queryset.filter(simplified_geom__isnull=False)
         if shapes == "without":
             queryset = queryset.filter(simplified_geom__isnull=True)
         if province_ids:
-            queryset = queryset.filter(province_id__in=province_ids.split(','))
+            queryset = queryset.filter(province_id__in=province_ids.split(","))
 
-        values = ['name', 'id', 'province_id']
+        values = ["name", "id", "province_id"]
         if with_geo_json:
             queryset = queryset.filter(geom__isnull=False)
         if years:
             years_array = years.split(",")
             nr_positive_cases = Count(
-                "as", filter=Q(as__village__caseview__confirmed_case=True, as__village__caseview__normalized_year__in=years_array)
+                "as",
+                filter=Q(
+                    as__village__caseview__confirmed_case=True,
+                    as__village__caseview__normalized_year__in=years_array,
+                ),
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-            values.append('nr_positive_cases')
+            values.append("nr_positive_cases")
         if as_geo_json:
             queryset = queryset.filter(geom__isnull=False)
-            geo_json = geojson_queryset(queryset, geometry_field='simplified_geom', fields=['name', 'province'])
+            geo_json = geojson_queryset(
+                queryset, geometry_field="simplified_geom", fields=["name", "province"]
+            )
             return Response(geo_json)
         elif as_list:
             if page_offset:
@@ -110,63 +127,71 @@ class ZSViewSet(viewsets.ViewSet):
                 res["limit"] = limit
             return Response(res)
         elif csv_format or xlsx_format:
-                if (
-                    request.user.has_perm("menupermissions.x_anonymous")
-                    or not request.user.has_perm("menupermissions.x_datas_download")
-                ) and not request.user.is_superuser:
-                    return Response("Unauthorized", status=401)
-                filename = "zones"
-                columns = [
-                    {"title": "Identifiant"},
-                    {"title": "Nom"},
-                    {"title": "Province"},
-                    {"title": "Alias"},
-                    {"title": "Source"},
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
+            filename = "zones"
+            columns = [
+                {"title": "Identifiant"},
+                {"title": "Nom"},
+                {"title": "Province"},
+                {"title": "Alias"},
+                {"title": "Source"},
+            ]
+
+            def get_row(zone, **kwargs):
+                aliases = "/"
+                if zone.aliases:
+                    aliases = ", ".join(zone.aliases)
+                return [
+                    zone.id,
+                    zone.name,
+                    zone.province.name,
+                    aliases,
+                    zone.source,
                 ]
 
-                def get_row(zone, **kwargs):
-                    aliases = "/"
-                    if zone.aliases:
-                        aliases = ', '.join(zone.aliases)
-                    return [
-                        zone.id,
-                        zone.name,
-                        zone.province.name,
-                        aliases,
-                        zone.source,
-                    ]
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Villages", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                filename = filename + ".csv"
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type="text/csv",
+                )
 
-                if xlsx_format:
-                    filename = filename + ".xlsx"
-                    response = HttpResponse(
-                        generate_xlsx("Villages", columns, queryset, get_row),
-                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    )
-                if csv_format:
-                    filename = filename + ".csv"
-                    response = StreamingHttpResponse(
-                        streaming_content=(
-                            iter_items(queryset, Echo(), columns, get_row)
-                        ),
-                        content_type="text/csv",
-                    )
-
-                response["Content-Disposition"] = "attachment; filename=%s" % filename
-                response["Cache-Control"] = "no-cache, no-store, must-revalidate"
-                return response
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return response
         else:
-            return Response(queryset.values(*values).order_by('name'))
+            return Response(queryset.values(*values).order_by("name"))
 
     def retrieve(self, request, pk=None):
         zs = get_object_or_404(ZS, pk=pk)
-        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
-        user_as_zs_ids = AS.objects.filter(id__in=get_user_geo_list(request.user, 'AS_scope'))\
-            .values_list("ZS_id", flat=True).distinct()
-        user_province_ids = get_user_geo_list(request.user, 'province_scope')
-        is_authorized = len(user_as_zs_ids) == 0 and len(user_zs_ids) == 0 and \
-            len(user_province_ids) == 0
+        user_zs_ids = get_user_geo_list(request.user, "ZS_scope")
+        user_as_zs_ids = (
+            AS.objects.filter(id__in=get_user_geo_list(request.user, "AS_scope"))
+            .values_list("ZS_id", flat=True)
+            .distinct()
+        )
+        user_province_ids = get_user_geo_list(request.user, "province_scope")
+        is_authorized = (
+            len(user_as_zs_ids) == 0
+            and len(user_zs_ids) == 0
+            and len(user_province_ids) == 0
+        )
         if not is_authorized:
-            if (zs.province.id in user_province_ids) and len(user_zs_ids) == 0 and len(user_as_zs_ids) == 0:
+            if (
+                (zs.province.id in user_province_ids)
+                and len(user_zs_ids) == 0
+                and len(user_as_zs_ids) == 0
+            ):
                 is_authorized = True
             if zs.id in user_zs_ids:
                 is_authorized = True
@@ -175,17 +200,22 @@ class ZSViewSet(viewsets.ViewSet):
         res = zs.as_full_dict()
         if zs.simplified_geom:
             queryset = ZS.objects.all().filter(id=zs.id)
-            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
+            res["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
         if is_authorized:
             return Response(res)
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def partial_update(self, request, pk=None):
         zone = get_object_or_404(ZS, id=pk)
         is_authorized = is_authorized_user(
             request.user, zone.province.id, zone.id, None
-        ) and (request.user.has_perm("menupermissions.x_management_edit_zones") or request.user.is_superuser)
+        ) and (
+            request.user.has_perm("menupermissions.x_management_edit_zones")
+            or request.user.is_superuser
+        )
         if is_authorized:
             original_zone = copy(zone)
             zone.name = request.data.get("name", "")
@@ -194,13 +224,21 @@ class ZSViewSet(viewsets.ViewSet):
             zone.is_erased = request.data.get("is_erased", False)
             if "geo_json" in request.data:
                 geo_json = request.data.get("geo_json", None)
-                if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                if (
+                    geo_json
+                    and geo_json["geometry"]
+                    and geo_json["geometry"]["coordinates"]
+                ):
                     if len(geo_json["geometry"]["coordinates"]) == 1:
-                        zone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                        zone.simplified_geom = Polygon(
+                            geo_json["geometry"]["coordinates"][0]
+                        )
                     else:
                         # DB has a single Polygon, refuse if we have more, or less.
-                        return Response("Only one polygon should be saved in the geo_json shape",
-                                        status=status.HTTP_400_BAD_REQUEST)
+                        return Response(
+                            "Only one polygon should be saved in the geo_json shape",
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
                 else:
                     zone.simplified_geom = None
             province_id = request.data.get("province_id")
@@ -212,23 +250,33 @@ class ZSViewSet(viewsets.ViewSet):
         else:
             return Response("Unauthorized", status=401)
 
-
     def create(self, request):
         newZone = ZS()
-        is_authorized = request.user.has_perm("menupermissions.x_management_edit_zones") or request.user.is_superuser
+        is_authorized = (
+            request.user.has_perm("menupermissions.x_management_edit_zones")
+            or request.user.is_superuser
+        )
         if is_authorized:
             newZone.name = request.data.get("name", "")
             newZone.source = request.data.get("source", None)
             newZone.aliases = request.data.get("aliases", None)
             newZone.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
-            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+            if (
+                geo_json
+                and geo_json["geometry"]
+                and geo_json["geometry"]["coordinates"]
+            ):
                 if len(geo_json["geometry"]["coordinates"]) == 1:
-                    newZone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                    newZone.simplified_geom = Polygon(
+                        geo_json["geometry"]["coordinates"][0]
+                    )
                 else:
                     # DB has a single Polygon, refuse if we have more, or less.
-                    return Response("Only one polygon should be saved in the geo_json shape",
-                                    status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        "Only one polygon should be saved in the geo_json shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             else:
                 newZone.simplified_geom = None
 
@@ -241,4 +289,3 @@ class ZSViewSet(viewsets.ViewSet):
             return Response(newZone.as_dict())
         else:
             return Response("Unauthorized", status=401)
-

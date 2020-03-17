@@ -100,7 +100,7 @@ def get_row_tests(test, request=None, **kwargs):
         testResultString(test.result),
         test.team.name if test.team else "/",
         test.village.name if test.village else "/",
-        test.date.strftime("%Y-%m-%d %H:%M"),
+        test.date.strftime("%Y-%m-%d %H:%M") if test.date else None,
         test.created_at.strftime("%Y-%m-%d %H:%M"),
         test.updated_at.strftime("%Y-%m-%d %H:%M"),
         request.build_absolute_uri(test.image.image.url) if test.image else None,

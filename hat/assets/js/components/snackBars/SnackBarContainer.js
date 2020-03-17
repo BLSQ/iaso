@@ -5,10 +5,10 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
 import { withSnackbar } from 'notistack';
-import { removeSnackbar } from '../../../../redux/snackBarsReducer';
+import { removeSnackbar } from '../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButtonComponent';
 
-import MESSAGES from '../../messages/snackBars';
+import MESSAGES from './messages';
 
 let displayed = [];
 const saveDisplayedSnackBar = (snackBar) => {
@@ -45,9 +45,10 @@ class SnackBarContainer extends Component {
                 />
             );
         }
-
         // Display snackbar using notistack
-        const message = formatMessage(MESSAGES[notification.messageKey]);
+        const message = notification.messageObject
+            ? formatMessage(notification.messageObject) : formatMessage(MESSAGES[notification.messageKey]);
+
         const id = this.props.enqueueSnackbar(message, options);
 
         // Keep track of snackbars that we've displayed

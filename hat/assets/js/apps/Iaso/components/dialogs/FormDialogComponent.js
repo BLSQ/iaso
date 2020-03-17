@@ -15,13 +15,12 @@ import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import InputComponent from '../forms/InputComponent';
 import FileInputComponent from '../forms/FileInputComponent';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { succesfullSnackBar } from '../snackBars';
+import { succesfullSnackBar } from '../../../../utils/constants/snackBars';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,
 } from '../../domains/periods/constants';
-import ErrorPaperComponent from '../papers/ErrorPaperComponent';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({

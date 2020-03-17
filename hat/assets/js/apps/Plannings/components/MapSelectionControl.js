@@ -25,41 +25,43 @@ class MapSelectionControl extends Component {
         } = this.props;
         return (
             <div className="map__selection__control__container">
-                {this.props.workzoneId && !this.props.teamId &&
-                    <div>
-                        <div className="map__selection__actions">
-                            <span className="map__text--select">
-                                <FormattedMessage id="microplanning.selection.buffer.highlight" defaultMessage="Taille zone tampon" />
-                            </span>
-                            <input
-                                type="number"
-                                className="small"
-                                min="0"
-                                name="buffer-value"
-                                value={highlightBufferSize}
-                                onChange={changeHighlightBufferSize}
-                            />
-                            <span className="map__text--select">km</span>
-                        </div>
-
-                        <div
-                            tabIndex={0}
-                            role="button"
-                            className="map__control__button--highlight"
-                            onClick={() => selectHighlightBuffer()}
-                        >
-                            <span className="map__text--select">
-                                <FormattedMessage id="microplanning.selection.active.assign" defaultMessage="Assign villages" />
-                                &nbsp;
-                                <FormattedMessage
-                                    id="microplanning.selection.buffer.highlight.label"
-                                    defaultMessage="autour des cas confirmés"
+                {this.props.workzoneId && !this.props.teamId
+                    && (
+                        <div>
+                            <div className="map__selection__actions">
+                                <span className="map__text--select">
+                                    <FormattedMessage id="microplanning.selection.buffer.highlight" defaultMessage="Taille zone tampon" />
+                                </span>
+                                <input
+                                    type="number"
+                                    className="small"
+                                    min="0"
+                                    name="buffer-value"
+                                    value={highlightBufferSize}
+                                    onChange={changeHighlightBufferSize}
                                 />
-                            </span>
+                                <span className="map__text--select">km</span>
+                            </div>
+
+                            <div
+                                tabIndex={0}
+                                role="button"
+                                className="map__control__button--highlight margin-top  margin-bottom"
+                                onClick={() => selectHighlightBuffer()}
+                            >
+                                <span className="map__text--select">
+                                    <FormattedMessage id="microplanning.selection.active.assign" defaultMessage="Assign villages" />
+                                &nbsp;
+                                    <FormattedMessage
+                                        id="microplanning.selection.buffer.highlight.label"
+                                        defaultMessage="autour des cas confirmés"
+                                    />
+                                </span>
+                            </div>
+
+
                         </div>
-
-
-                    </div>
+                    )
                 }
             </div>
         );

@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Route, Redirect, useRouterHistory } from 'react-router';
+import thunk from 'redux-thunk';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { createHistory } from 'history';
 
@@ -18,8 +19,10 @@ import { coordinationReducer, coordinationInitialState } from './redux/coordinat
 import { assignationReducer } from './redux/assignation';
 import { selectionReducer, selectionInitialState } from './redux/selection';
 import { mapReducer, mapInitialState } from './redux/map';
+import { microplanningInitialState, microplanningReducer } from './redux/microplanning';
 import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
+import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 
 export default function microplanningApp(element, baseUrl) {
     const currentYear = new Date().getFullYear();
@@ -63,6 +66,8 @@ export default function microplanningApp(element, baseUrl) {
         assignations: [],
         geoScope: geoScopeMapInitialState,
         currentUser: currentUserInitialState,
+        microplanning: microplanningInitialState,
+        snackBar: snackBarsInitialState,
     }, {
         config: (state = {}) => state,
         load: loadReducer,
@@ -74,8 +79,11 @@ export default function microplanningApp(element, baseUrl) {
         assignations: assignationReducer,
         geoScope: geoScopeMapReducer,
         currentUser: currentUserReducer,
+        microplanning: microplanningReducer,
+        snackBar: snackBarsReducer,
     }, [
         routerMiddleware(history),
+        thunk,
     ]);
     history = syncHistoryWithStore(
         history,

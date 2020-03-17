@@ -851,6 +851,7 @@ class Instance(models.Model):
     last_export_success_at = models.DateTimeField(null=True, blank=True)
 
     objects = InstanceQuerySet.as_manager()
+    deleted = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name

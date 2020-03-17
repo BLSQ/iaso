@@ -1,6 +1,6 @@
 import { getRequest } from '../../libs/Api';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar } from '../../components/snackBars';
+import { errorSnackBar } from '../../../../utils/constants/snackBars';
 
 export const START_FETCHING_COMPLETENESS = 'START_FETCHING_COMPLETENESS';
 export const STOP_FETCHING_COMPLETENESS = 'STOP_FETCHING_COMPLETENESS';

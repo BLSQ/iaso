@@ -11,11 +11,9 @@ class Search extends React.Component {
         };
     }
 
-    componentWillReceiveProps(newProps) {
-        if (newProps.searchString !== this.props.searchString || newProps.searchString === '') {
-            this.setState({
-                searchString: newProps.searchString,
-            });
+    componentDidUpdate(prevProps) {
+        if (this.props.searchString === '' && prevProps.searchString && prevProps.searchString !== '') {
+            this.onChange(this.props.searchString);
         }
     }
 
@@ -111,7 +109,7 @@ class Search extends React.Component {
                                 className={`Select-clear ${!displayIcon ? 'no-icon' : ''}`}
                                 onClick={() => this.props.resetSearch()}
                             >
-                            ×
+                                ×
                             </span>
                         )
                     }
@@ -145,63 +143,63 @@ class Search extends React.Component {
                         <div className="search-results">
                             {
                                 results.length > 0
-                            && !isLoading
-                            && (
-                                <section>
-                                    <div>
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    {keys.map(key => <th className={key.value} key={key.value}>{key.translation}</th>)}
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {
-                                                    results.map(result => (
-                                                        <tr key={result.id} onClick={() => this.props.onSelect(result)}>
-                                                            {keys.map(key => <td className={key.value} key={key.value}>{result[key.value]}</td>)}
-                                                        </tr>
-                                                    ))
-                                                }
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                    <span className="count">
-                                        {results.length}
-                                        {` ${this.props.resultText}`}
-                                    </span>
-                                </section>
-                            )
+                                && !isLoading
+                                && (
+                                    <section>
+                                        <div>
+                                            <table>
+                                                <thead>
+                                                    <tr>
+                                                        {keys.map(key => <th className={key.value} key={key.value}>{key.translation}</th>)}
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {
+                                                        results.map(result => (
+                                                            <tr key={result.id} onClick={() => this.props.onSelect(result)}>
+                                                                {keys.map(key => <td className={key.value} key={key.value}>{result[key.value]}</td>)}
+                                                            </tr>
+                                                        ))
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                        <span className="count">
+                                            {results.length}
+                                            {` ${this.props.resultText}`}
+                                        </span>
+                                    </section>
+                                )
                             }
                             {
                                 isLoading
-                            && (
-                                <div className="loading-small">
-                                    <i className="fa fa-spinner" />
-                                </div>
-                            )
+                                && (
+                                    <div className="loading-small">
+                                        <i className="fa fa-spinner" />
+                                    </div>
+                                )
                             }
                             {
                                 results.length === 0
-                            && this.state.searchString.length > this.props.minCharCount
-                            && !isLoading
-                            && !this.state.isChanged
-                            && (
-                                <span className="search-empty">
-                                    {this.props.noResultText}
-                                </span>
-                            )
+                                && this.state.searchString.length > this.props.minCharCount
+                                && !isLoading
+                                && !this.state.isChanged
+                                && (
+                                    <span className="search-empty">
+                                        {this.props.noResultText}
+                                    </span>
+                                )
                             }
                             {
                                 results.length === 0
-                            && this.state.searchString.length <= this.props.minCharCount
-                            && this.state.searchString !== ''
-                            && !isLoading
-                            && (
-                                <span className="search-empty">
-                                    {this.props.noEnoughText}
-                                </span>
-                            )
+                                && this.state.searchString.length <= this.props.minCharCount
+                                && this.state.searchString !== ''
+                                && !isLoading
+                                && (
+                                    <span className="search-empty">
+                                        {this.props.noEnoughText}
+                                    </span>
+                                )
                             }
                         </div>
                     )

@@ -179,6 +179,18 @@ class VillageViewSet(viewsets.ViewSet):
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ("nr_positive_cases",)
+            for year in years_array:
+                nr_positive_cases_year = Count(
+                    "caseview",
+                    filter=Q(
+                        caseview__confirmation_result=RES_POSITIVE,
+                        caseview__normalized_year=year,
+                    ),
+                )
+                queryset = queryset.annotate(
+                    **{f"nr_positive_cases_{year}": nr_positive_cases_year}
+                )
+                values = values + (f"nr_positive_cases_{year}",)
         else:
             if from_date is not None and to_date is not None:
                 nr_positive_cases = Count(
@@ -248,21 +260,24 @@ class VillageViewSet(viewsets.ViewSet):
                 filename = "villages"
                 columns = [
                     {"title": "Identifiant"},
-                    {"title": "Nom"},
+                    {"title": "Nom", "width": 15},
                     {"title": "Population"},
                     {"title": "Cas positifs"},
                     {"title": "Province"},
-                    {"title": "ZS"},
-                    {"title": "AS"},
+                    {"title": "ZS", "width": 15},
+                    {"title": "AS", "width": 15},
                     {"title": "Longitude"},
                     {"title": "Latitude"},
                     {"title": "Officiel"},
                     {"title": "Source"},
-                    {"title": "Source Gps"},
+                    {"title": "Source Gps", "width": 12},
                 ]
+                if years:
+                    for year in years_array:
+                        columns.append({"title": f"Cas positifs\n{year}", "width": 10})
 
-                def get_row(village, **kwargs):
-                    return [
+                def get_row(village, years=None, **kwargs):
+                    row = [
                         village.id,
                         village.name,
                         village.population,
@@ -276,18 +291,31 @@ class VillageViewSet(viewsets.ViewSet):
                         village.village_source,
                         village.gps_source,
                     ]
+                    for year in years:
+                        row.append(getattr(village, f"nr_positive_cases_{year}"))
+                    return row
 
                 if xlsx_format:
                     filename = filename + ".xlsx"
                     response = HttpResponse(
-                        generate_xlsx("Villages", columns, queryset, get_row),
+                        generate_xlsx(
+                            "Villages",
+                            columns,
+                            queryset,
+                            lambda row, **kwargs: get_row(row, years_array),
+                        ),
                         content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                     )
                 if csv_format:
                     filename = filename + ".csv"
                     response = StreamingHttpResponse(
                         streaming_content=(
-                            iter_items(queryset, Echo(), columns, get_row)
+                            iter_items(
+                                queryset,
+                                Echo(),
+                                columns,
+                                lambda row, **kwargs: get_row(row, years_array),
+                            )
                         ),
                         content_type="text/csv",
                     )

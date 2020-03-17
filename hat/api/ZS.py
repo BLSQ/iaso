@@ -192,16 +192,17 @@ class ZSViewSet(viewsets.ViewSet):
             zone.source = request.data.get("source", None)
             zone.aliases = request.data.get("aliases", None)
             zone.is_erased = request.data.get("is_erased", False)
-            geo_json = request.data.get("geo_json", None)
-            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
-                if len(geo_json["geometry"]["coordinates"]) == 1:
-                    zone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+            if "geo_json" in request.data:
+                geo_json = request.data.get("geo_json", None)
+                if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                    if len(geo_json["geometry"]["coordinates"]) == 1:
+                        zone.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                    else:
+                        # DB has a single Polygon, refuse if we have more, or less.
+                        return Response("Only one polygon should be saved in the geo_json shape",
+                                        status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response("Only one polygon should be saved in the geo_json shape",
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                zone.simplified_geom = None
+                    zone.simplified_geom = None
             province_id = request.data.get("province_id")
             province = get_object_or_404(Province, id=province_id)
             zone.province = province

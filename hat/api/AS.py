@@ -236,16 +236,17 @@ class ASViewSet(viewsets.ViewSet):
             area.source = request.data.get("source", None)
             area.aliases = request.data.get("aliases", None)
             area.is_erased = request.data.get("is_erased", False)
-            geo_json = request.data.get("geo_json", None)
-            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
-                if len(geo_json["geometry"]["coordinates"]) == 1:
-                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+            if "geo_json" in request.data:
+                geo_json = request.data.get("geo_json", None)
+                if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+                    if len(geo_json["geometry"]["coordinates"]) == 1:
+                        area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                    else:
+                        # DB has a single Polygon, refuse if we have more, or less.
+                        return Response("Only one polygon should be saved in the geo_json shape",
+                                        status=status.HTTP_400_BAD_REQUEST)
                 else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response("Only one polygon should be saved in the geo_json shape",
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                area.simplified_geom = None
+                    area.simplified_geom = None
             zone_id = request.data.get("ZS_id")
             zone = get_object_or_404(ZS, id=zone_id)
             area.ZS = zone

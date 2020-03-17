@@ -1,5 +1,6 @@
 from django.db import transaction
 from iaso.models import Instance, ExportRequest, ExportStatus
+from django.core.paginator import Paginator
 
 
 class ExportRequestBuilder:
@@ -78,14 +79,21 @@ class ExportRequestBuilder:
         export_request.errored_count = 0
 
         export_request.save()
+        # make paginator deterministic
+        instances = instances.order_by("id")
+        paginator = Paginator(instances, 200)
 
-        for instance in instances:
-            for mapping_version in self.get_form_mapping_versions(instance):
-                export_status = ExportStatus(
-                    export_request=export_request,
-                    instance=instance,
-                    mapping_version=mapping_version,
-                )
-                export_status.save()
+        for page in range(1, paginator.num_pages + 1):
+            export_statuses = []
+            for instance in paginator.page(page).object_list:
+                for mapping_version in self.get_form_mapping_versions(instance):
+                    export_status = ExportStatus(
+                        export_request=export_request,
+                        instance=instance,
+                        mapping_version=mapping_version,
+                    )
+                    export_statuses.append(export_status)
+
+            ExportStatus.objects.bulk_create(export_statuses)
 
         return export_request

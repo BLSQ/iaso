@@ -122,10 +122,14 @@ class Command(BaseCommand):
         )
         cvs_form.org_unit_types.add(orgunit_type)
 
-        cvs_mapping_version = self.seed_form(cvs_form, datasource, credentials,mapping_file="./testdata/seed-data-command-cvs-form-mapping.json")
+        cvs_mapping_version = self.seed_form(
+            cvs_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+        )
         project.forms.add(cvs_form)
 
-        
         self.project = project
 
         periods = ["201801", "201802", "201803", "201804", "201805", "201806"]
@@ -185,12 +189,14 @@ class Command(BaseCommand):
 
         if mode == "export":
             force = options.get("force")
+            from django.utils import timezone
+
             print("********* exporting")
-            print("fixing categoryOptions sharing")
+            print("fixing categoryOptions sharing", timezone.now())
             self.make_category_options_public(credentials)
 
             export_periods = quarter_periods[0:1] + periods[0:3]
-            print("creating export request ", export_periods)
+            print("creating export request ", export_periods, timezone.now())
             export_request = ExportRequestBuilder().build_export_request(
                 periods=export_periods,
                 form_ids=[quantity_form.id, quality_form.id],
@@ -199,7 +205,7 @@ class Command(BaseCommand):
                 force_export=force,
             )
 
-            print("exporting", export_request.exportstatus_set.count())
+            print("exporting", export_request.exportstatus_set.count(), timezone.now())
             AggregateExporter().export_instances(export_request, True)
 
         if mode == "stats":
@@ -283,7 +289,7 @@ class Command(BaseCommand):
                     instance_by_ou_periods = randint(1, fixed_instance_count)
                 else:
                     instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
-                #print("generating", form.name, org_unit.name, instance_by_ou_periods)
+                # print("generating", form.name, org_unit.name, instance_by_ou_periods)
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
@@ -292,7 +298,7 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    if  "question_mappings" in mapping_version.json:
+                    if "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
@@ -306,9 +312,9 @@ class Command(BaseCommand):
                     instance.file = UploadedFile(
                         open("iaso/tests/fixtures/hydroponics_test_upload.xml")
                     )
-                    
+
                     instances.append(instance)
-            
+
             Instance.objects.bulk_create(instances)
 
     def mapping_json(self, file):

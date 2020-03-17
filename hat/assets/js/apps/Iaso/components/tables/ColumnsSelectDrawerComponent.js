@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage } from 'react-intl';
 import { InView } from 'react-intersection-observer';
+import { injectIntl } from 'react-intl';
 
 import {
     withStyles,
@@ -12,17 +12,39 @@ import {
     ListItemText,
     Divider,
     Switch,
-    Typography,
+    InputBase,
+    Tooltip,
 } from '@material-ui/core';
 import FilterList from '@material-ui/icons/FilterList';
-import ArrowBack from '@material-ui/icons/ArrowBack';
+import Close from '@material-ui/icons/Close';
 
 import RowButtonComponent from '../buttons/RowButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
+const MESSAGES = {
+    search: {
+        id: 'iaso.label.textSearch',
+        defaultMessage: 'Search',
+    },
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+};
+
+const filterResults = (searchString, options) => {
+    let displayedOptions = [...options];
+    if (searchString !== '') {
+        displayedOptions = displayedOptions.filter(o => (o.key && o.key.includes(searchString))
+            || (o.label && o.label.includes(searchString)));
+    }
+    return displayedOptions;
+};
+
 const styles = theme => ({
     root: {
         width: 400,
+        overflow: 'hidden',
     },
     colorPrimary: {
         color: 'white',
@@ -32,20 +54,24 @@ const styles = theme => ({
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'flex-start',
-        paddingLeft: theme.spacing(3),
-        paddingRight: theme.spacing(3),
-        height: 64,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        height: theme.spacing(8),
     },
-    title: {
+    search: {
         marginLeft: theme.spacing(1),
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        width: '100%',
     },
     list: {
-        height: 'calc(100vh - 64px)',
+        height: `calc(100vh - ${theme.spacing(8)}px)`,
         overflowY: 'auto',
         overflowX: 'hidden',
     },
     listItem: {
-        height: 48,
+        height: theme.spacing(6),
     },
     switch: {
         marginRight: theme.spacing(1),
@@ -65,17 +91,26 @@ const ColumnsSelectDrawerComponent = (
         iconColor,
         options,
         setOptions,
+        minColumns,
+        intl: {
+            formatMessage,
+        },
     },
 ) => {
     const [state, setState] = React.useState({
         open: false,
+        searchString: '',
     });
 
     const toggleDrawer = open => () => {
         setState({ ...state, open });
     };
 
-    const handleChange = index => (event) => {
+    const handleSearch = () => (event) => {
+        setState({ ...state, searchString: event.target.value });
+    };
+
+    const handleChangeOptions = index => (event) => {
         const newOptions = [...options];
         newOptions[index] = {
             ...newOptions[index],
@@ -83,6 +118,10 @@ const ColumnsSelectDrawerComponent = (
         };
         setOptions(newOptions);
     };
+
+    const activeOptionsCount = options.filter(o => o.active).length;
+
+    const displayedOptions = filterResults(state.searchString, options);
 
     return (
         <>
@@ -105,24 +144,25 @@ const ColumnsSelectDrawerComponent = (
                     className={classes.root}
                 >
                     <div className={classes.toolbar}>
-                        <IconButton onClick={toggleDrawer(false)}>
-                            <ArrowBack />
-                        </IconButton>
-                        <Typography
-                            className={classes.title}
-                            type="body2"
-                        >
-                            <FormattedMessage
-                                id="iaso.table.columnSelect.tooltip"
-                                defaultMessage="Select visible columns"
+                        <div className={classes.search}>
+                            <InputBase
+                                onChange={handleSearch()}
+                                className={classes.input}
+                                placeholder={formatMessage(MESSAGES.search)}
+                                inputProps={{ 'aria-label': formatMessage(MESSAGES.search) }}
                             />
-                        </Typography>
+                        </div>
+                        <Tooltip title={formatMessage(MESSAGES.close)}>
+                            <IconButton onClick={toggleDrawer(false)}>
+                                <Close />
+                            </IconButton>
+                        </Tooltip>
                     </div>
                     <Divider />
                     <div className={classes.list}>
                         <List>
                             {
-                                options.map((o, i) => (
+                                displayedOptions.map((o, i) => (
 
                                     <InView key={o.key}>
                                         {({ inView, ref }) => (
@@ -133,9 +173,10 @@ const ColumnsSelectDrawerComponent = (
                                                         && (
                                                             <>
                                                                 <Switch
+                                                                    disabled={activeOptionsCount === minColumns && o.active}
                                                                     size="small"
                                                                     checked={o.active}
-                                                                    onChange={handleChange(i)}
+                                                                    onChange={handleChangeOptions(i)}
                                                                     color="primary"
                                                                     inputProps={{ 'aria-label': o.label }}
                                                                     className={classes.switch}
@@ -170,6 +211,7 @@ const ColumnsSelectDrawerComponent = (
 
 ColumnsSelectDrawerComponent.defaultProps = {
     iconColor: 'primary',
+    minColumns: 2,
 };
 
 ColumnsSelectDrawerComponent.propTypes = {
@@ -177,7 +219,9 @@ ColumnsSelectDrawerComponent.propTypes = {
     iconColor: PropTypes.string,
     options: PropTypes.array.isRequired,
     setOptions: PropTypes.func.isRequired,
+    minColumns: PropTypes.number,
+    intl: PropTypes.object.isRequired,
 };
 
 
-export default withStyles(styles)(ColumnsSelectDrawerComponent);
+export default withStyles(styles)(injectIntl(ColumnsSelectDrawerComponent));

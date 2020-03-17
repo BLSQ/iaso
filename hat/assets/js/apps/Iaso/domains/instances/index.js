@@ -331,7 +331,9 @@ class Instances extends Component {
                         onSearch={() => this.fetchInstances()}
                     />
                     {
-                        tab === 'list' && (
+                        tab === 'list'
+                        && tableColumns.length > 0
+                        && (
                             <div className={classes.reactTable}>
                                 <CustomTableComponent
                                     isSortable

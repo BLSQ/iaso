@@ -10,7 +10,7 @@ import Checkbox from '@material-ui/core/Checkbox';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
-import MESSAGES from '../../messages/forms';
+import MESSAGES from '../../domains/forms/messages';
 import ArrayFieldInput from './ArrayFieldInput';
 import InputLabelComponent from './InputLabelComponent';
 import FormControlComponent from './FormControlComponent';

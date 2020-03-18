@@ -1,6 +1,6 @@
 import React from 'react';
 
-import MESSAGES from '../messages/forms';
+import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';

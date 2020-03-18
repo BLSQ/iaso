@@ -48,7 +48,7 @@ export const getInstancesVisibleColumns = (formatMessage, instance, columnsParam
             if (k !== 'meta' && k !== 'uuid') {
                 columns.push({
                     key: k,
-                    label: instance.file_content[k].label,
+                    label: k, // TO-DO: get field label from API
                     active: columnsParams !== undefined && columnsParams.includes(k),
                 });
             }

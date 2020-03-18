@@ -105,7 +105,7 @@ const formsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Action(s)',
-                id: 'iaso.forms.actions',
+                id: 'iaso.labels.actions',
             }),
             resizable: false,
             sortable: false,

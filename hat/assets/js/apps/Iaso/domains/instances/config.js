@@ -1,20 +1,18 @@
 /* globals window */
 import React from 'react';
-import moment from 'moment';
 import Link from '@material-ui/core/Link';
 
 import { Period } from '../periods/models';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import MESSAGES from './messages';
 
 
 const instancesTableColumns = (formatMessage = () => ({}), component) => (
     [
         {
-            Header: formatMessage({
-                defaultMessage: 'Action(s)',
-                id: 'iaso.forms.actions',
-            }),
+            Header: formatMessage(MESSAGES.actions),
             accessor: 'actions',
             resizable: false,
             sortable: false,
@@ -25,21 +23,15 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Updated at',
-                id: 'iaso.instance.updated_at',
-            }),
+            Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (
                 <span>
-                    {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
+                    {displayDateFromTimestamp(settings.original.updated_at)}
                 </span>
             ),
         }, {
-            Header: formatMessage({
-                defaultMessage: 'Org unit',
-                id: 'iaso.instance.org_unit',
-            }),
+            Header: formatMessage(MESSAGES.org_unit),
             accessor: 'org_unit__name',
             Cell: settings => (
                 <ColumnTextComponent text={settings.original.org_unit
@@ -49,10 +41,7 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Period',
-                id: 'iaso.instance.period',
-            }),
+            Header: formatMessage(MESSAGES.period),
             accessor: 'period',
             Cell: settings => (
                 <span>
@@ -63,10 +52,7 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'File',
-                id: 'iaso.instance.file',
-            }),
+            Header: formatMessage(MESSAGES.file),
             sortable: false,
             accessor: 'file_url',
             Cell: settings => (
@@ -81,14 +67,11 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Created at',
-                id: 'iaso.instance.created_at',
-            }),
+            Header: formatMessage(MESSAGES.created_at),
             accessor: 'created_at',
             Cell: settings => (
                 <span>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
+                    {displayDateFromTimestamp(settings.original.created_at)}
                 </span>
             ),
         },

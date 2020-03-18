@@ -16,6 +16,10 @@ const MESSAGES = {
         id: 'iaso.instance.created_at',
         defaultMessage: 'Created at',
     },
+    updated_at: {
+        id: 'iaso.instance.updated_at',
+        defaultMessage: 'Updated at',
+    },
     files: {
         id: 'iaso.instance.files',
         defaultMessage: 'Files',
@@ -39,6 +43,30 @@ const MESSAGES = {
     message: {
         id: 'iaso.label.useOrgUnitLocation.message',
         defaultMessage: 'Don\'t forget to save',
+    },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.labels.actions',
+    },
+    org_unit: {
+        defaultMessage: 'Org unit',
+        id: 'iaso.instance.org_unit',
+    },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.instance.period',
+    },
+    file: {
+        defaultMessage: 'File',
+        id: 'iaso.instance.file',
+    },
+    metas: {
+        defaultMessage: 'Metadatas',
+        id: 'iaso.instance.metas',
+    },
+    form: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
     },
 };
 

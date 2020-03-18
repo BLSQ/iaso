@@ -18,7 +18,7 @@ import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 import commonStyles from '../../styles/common';
 
-import MESSAGES from '../../messages/forms';
+import MESSAGES from '../../domains/forms/messages';
 
 const styles = theme => ({
     ...commonStyles(theme),

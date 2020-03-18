@@ -9,7 +9,7 @@ import {
 
 import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 
-import MESSAGES from '../../../messages/forms';
+import MESSAGES from '../../forms/messages';
 
 const styles = theme => ({
     cell: {

@@ -1,0 +1,23 @@
+{
+  "formName": "CVS statistics",
+  "aggregations": [
+    {
+      "id": "cs_304_avg",
+      "name": "Average statisfaction score",
+      "question_key": "cs_304",
+      "aggregationType": "avg"
+    },
+    {
+      "id": "cs_304_count",
+      "name": "Number of submissions with answered survey",
+      "question_key": "cs_304",
+      "aggregationType": "count"
+    },
+    {
+      "id": "cs_304_count",
+      "name": "Number of submissions with satisfied patient",
+      "question_key": "cs_304",
+      "aggregationType": "sum"
+    }
+  ]
+}

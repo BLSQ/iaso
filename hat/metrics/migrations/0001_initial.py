@@ -33,7 +33,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='datapoint',
             name='metric',
-            field=models.ForeignKey(on_delete=True, to='metrics.Metric'),
+            field=models.ForeignKey(on_delete=models.DO_NOTHING, to='metrics.Metric'),
         ),
         migrations.AddIndex(
             model_name='datapoint',

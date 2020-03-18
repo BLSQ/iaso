@@ -1,0 +1,10 @@
+{
+  "httpStatus": "InternalError",
+  "httpStatusCode": 500,
+  "response": {
+    "status": "ERROR",
+    "description": "The import process failed: Failed to flush BatchHandler",
+    "import_count": { "deleted": 0, "ignored": 0, "updated": 0, "imported": 0 },
+    "response_type": "ImportSummary"
+  }
+}

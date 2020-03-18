@@ -2,7 +2,7 @@ import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo
 
 const MESSAGES = {
     positive: {
-        defaultMessage: 'Posiotive',
+        defaultMessage: 'Positive',
         id: 'main.label.positive',
     },
     negative: {
@@ -34,8 +34,8 @@ const MESSAGES = {
         id: 'village.type.satellite',
     },
     located: {
-        defaultMessage: 'Locacted',
-        id: 'main.label.willagelocated',
+        defaultMessage: 'Located',
+        id: 'main.label.villagelocated',
     },
     unlocated: {
         defaultMessage: 'Not located',

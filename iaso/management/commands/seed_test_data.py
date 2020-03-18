@@ -1,5 +1,5 @@
-from random import randint
-
+from random import randint, random
+from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
@@ -75,10 +75,14 @@ class Command(BaseCommand):
             account=account,
         )
 
-        project = Project.objects.create(name="Test", account=account)
+        project, p_created = Project.objects.get_or_create(
+            name="Test" + dhis2_version, account=account
+        )
+
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
         )
+        datasource.projects.add(project)
         source_version, _created = SourceVersion.objects.get_or_create(
             number=1, data_source=datasource
         )
@@ -86,6 +90,7 @@ class Command(BaseCommand):
         orgunit_type, created = OrgUnitType.objects.get_or_create(
             name="FosaPlay", short_name="FosaPlay"
         )
+        orgunit_type.projects.add(project)
         # quantity
         quantity_form, created = Form.objects.get_or_create(
             form_id="quantity_pca_" + dhis2_version,
@@ -155,6 +160,7 @@ class Command(BaseCommand):
                 version_number=source_version.number,
                 org_unit_type_csv_file="./iaso/tests/fixtures/empty_unit_types.csv",
                 force=True,
+                validate=True,
             )
 
             print("********* generating instances")
@@ -165,9 +171,7 @@ class Command(BaseCommand):
                 cvs_mapping_version,
                 fixed_instance_count=50,
             )
-            print(
-                "generated", cvs_form.name, cvs_form.instances.count(), "instances",
-            )
+            print("generated", cvs_form.name, cvs_form.instances.count(), "instances")
             self.seed_instances(
                 source_version, quantity_form, periods, quantity_mapping_version
             )
@@ -198,9 +202,12 @@ class Command(BaseCommand):
             export_periods = quarter_periods[0:1] + periods[0:3]
             print("creating export request ", export_periods, timezone.now())
             export_request = ExportRequestBuilder().build_export_request(
-                periods=export_periods,
-                form_ids=[quantity_form.id, quality_form.id],
-                orgunit_ids=[],
+                filters={
+                    "period_ids": ",".join(export_periods),
+                    "form_ids": ",".join(
+                        list(map(str, [quantity_form.id, quality_form.id],))
+                    ),
+                },
                 launcher=self.user,
                 force_export=force,
             )
@@ -219,23 +226,26 @@ class Command(BaseCommand):
         ):
             for category_option in page["categoryOptions"]:
                 if category_option["name"] != "default":
-                    api.post(
-                        "/sharing?type=categoryOption&id=" + category_option["id"],
-                        {
-                            "meta": {
-                                "allowPublicAccess": True,
-                                "allowExternalAccess": False,
+                    try:
+                        api.post(
+                            "sharing?type=categoryOption&id=" + category_option["id"],
+                            {
+                                "meta": {
+                                    "allowPublicAccess": True,
+                                    "allowExternalAccess": False,
+                                },
+                                "object": {
+                                    "id": category_option["id"],
+                                    "name": category_option["name"],
+                                    "displayName": category_option["displayName"],
+                                    "publicAccess": "rwrw----",
+                                    "user": category_option["user"],
+                                    "externalAccess": False,
+                                },
                             },
-                            "object": {
-                                "id": category_option["id"],
-                                "name": category_option["name"],
-                                "displayName": category_option["displayName"],
-                                "publicAccess": "rwrw----",
-                                "user": category_option["user"],
-                                "externalAccess": False,
-                            },
-                        },
-                    )
+                        )
+                    except Exception as e:
+                        print("Failed to fix ", category_option["name"], e)
 
     def seed_form(
         self,
@@ -289,12 +299,18 @@ class Command(BaseCommand):
                     instance_by_ou_periods = randint(1, fixed_instance_count)
                 else:
                     instance_by_ou_periods = 2 if randint(1, 100) == 50 else 1
+
+                with_location = randint(1, 3) == 2
                 # print("generating", form.name, org_unit.name, instance_by_ou_periods)
                 for instance_count in range(0, instance_by_ou_periods):
                     instance = Instance(project=self.project)
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit
                     instance.period = period
+                    if with_location:
+                        instance.location = Point(
+                            -11.7868289 + (2 * random()), 8.4494988 + (2 * random())
+                        )
 
                     test_data = {"_version": 1}
 

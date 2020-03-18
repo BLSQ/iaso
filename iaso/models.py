@@ -9,6 +9,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
+from django.db.models import Q, Count
+
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -808,6 +810,77 @@ class InstanceQuerySet(models.QuerySet):
             .order_by("period", "form__name")
         )
 
+    def for_filters(
+        self,
+        form_id=None,
+        form_ids=None,
+        with_location=None,
+        org_unit_type_id=None,
+        device_id=None,
+        device_ownership_id=None,
+        org_unit_parent_id=None,
+        org_unit_id=None,
+        period_ids=None,
+        status=None,
+    ):
+        queryset = self
+        if period_ids:
+            queryset = queryset.filter(period__in=period_ids.split(","))
+
+        if org_unit_type_id:
+            queryset = queryset.filter(
+                org_unit__org_unit_type__in=org_unit_type_id.split(",")
+            )
+        if org_unit_id:
+            queryset = queryset.filter(org_unit_id=org_unit_id)
+
+        if org_unit_parent_id:
+            queryset = queryset.filter(
+                Q(org_unit__id=org_unit_parent_id)
+                | Q(org_unit__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+                | Q(
+                    org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+                )
+            )
+
+        if with_location == "true":
+            queryset = queryset.filter(location__isnull=False)
+
+        if with_location == "false":
+            queryset = queryset.filter(location__isnull=True)
+
+        if device_id:
+            queryset = queryset.filter(device__id=device_id)
+
+        if device_ownership_id:
+            device_ownership = get_object_or_404(
+                DeviceOwnership, pk=device_ownership_id
+            )
+            queryset = queryset.filter(device__id=device_ownership.device.id)
+
+        if form_id:
+            queryset = queryset.filter(form_id=form_id)
+
+        if form_ids:
+            queryset = queryset.filter(form_id__in=form_ids.split(","))
+
+        # add status annotation
+        queryset = queryset.with_status()
+
+        if status:
+            queryset = queryset.filter(status=status)
+
+        return queryset
+
 
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""
@@ -1089,6 +1162,20 @@ class ExportRequest(models.Model):
     started_at = models.DateTimeField(null=True, blank=True)
     # backend ended processing the export
     ended_at = models.DateTimeField(null=True, blank=True)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "finished": self.finished,
+            "status": self.status,
+            "last_error_message": self.last_error_message,
+            "params": self.params,
+            "stats": {
+                "instance_count": self.instance_count,
+                "exported_count": self.exported_count,
+                "errored_count": self.errored_count,
+            },
+        }
 
 
 class ExportLog(models.Model):

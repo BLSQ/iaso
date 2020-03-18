@@ -1,5 +1,6 @@
 import json
 import responses
+from django.core.files.uploadedfile import UploadedFile
 from collections import namedtuple
 from django.test import TestCase
 from iaso.models import (
@@ -77,6 +78,9 @@ class AggregateExporterTests(TestCase):
                 "version": self.form_quality_version.version_id,
             }
 
+        instance.file = UploadedFile(
+            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+        )
         instance.form = form
         instance.save()
         # force to past creation date
@@ -394,7 +398,12 @@ class AggregateExporterTests(TestCase):
         instance = self.build_instance(self.form)
 
         export_request = ExportRequestBuilder().build_export_request(
-            ["201801"], [self.form.id], [instance.org_unit.id], self.user
+            filters={
+                "period_ids": "201801",
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
         )
         # mock expected calls
 
@@ -447,10 +456,12 @@ class AggregateExporterTests(TestCase):
         instance_quality = self.build_instance(self.form_quality)
 
         export_request = ExportRequestBuilder().build_export_request(
-            ["201801", "2018Q1"],
-            [self.form.id, self.form_quality.id],
-            [instance.org_unit.id],
-            self.user,
+            filters={
+                "period_ids": ",".join(["201801", "2018Q1"]),
+                "form_ids": ",".join([str(self.form.id), str(self.form_quality.id)]),
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
         )
 
         # mock expected calls
@@ -502,7 +513,12 @@ class AggregateExporterTests(TestCase):
             )
 
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
             AggregateExporter().export_instances(export_request, True)
 
@@ -535,7 +551,12 @@ class AggregateExporterTests(TestCase):
 
         with self.assertRaises(InstanceExportError) as context:
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
 
             AggregateExporter().export_instances(export_request, True)
@@ -570,7 +591,12 @@ class AggregateExporterTests(TestCase):
             )
 
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
             AggregateExporter().export_instances(export_request, True)
 

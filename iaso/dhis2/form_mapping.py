@@ -1,7 +1,7 @@
 import json
 
 
-def seed_mapping(api, program_id):
+def seed_event_mapping(api, program_id):
     program = api.get(
         "programs/" + program_id,
         params={

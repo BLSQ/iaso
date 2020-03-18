@@ -3,6 +3,7 @@ from urllib.request import urlopen
 import pathlib
 from django.db import models
 from django.contrib.gis.db.models.fields import PointField, PolygonField
+from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
@@ -28,14 +29,19 @@ PERIOD_TYPE_CHOICES = (
     (SIX_MONTH, "Six-month"),
 )
 
-INSTANCE_STATUS_READY = "READY"
-INSTANCE_STATUS_ERROR = "ERROR"
-INSTANCE_STATUS_EXPORTED = "EXPORTED"
+AGGREGATE = "AGGREGATE"
+EVENT = "EVENT"
 
-INSTANCE_STATUS_CHOICES = (
-    (INSTANCE_STATUS_READY, "Ready"),
-    (INSTANCE_STATUS_ERROR, "Error"),
-    (INSTANCE_STATUS_EXPORTED, "Exported"),
+MAPPING_TYPE_CHOICES = ((AGGREGATE, _("Aggregate")), (EVENT, _("Event")))
+
+QUEUED = "QUEUED"
+
+STATUS_TYPE_CHOICES = (
+    (QUEUED, _("Queued")),
+    ("RUNNING", _("Running")),
+    ("EXPORTED", _("Exported")),
+    ("ERRORED", _("Errored")),
+    ("SKIPPED", _("Skipped")),
 )
 
 
@@ -580,7 +586,9 @@ class Form(models.Model):
 
         if show_version:
             res["latest_form_version"] = (
-                self.latest_version.as_dict() if self.latest_version is not None else None
+                self.latest_version.as_dict()
+                if self.latest_version is not None
+                else None
             )
         if additional_fields:
             for field in additional_fields:
@@ -630,7 +638,7 @@ class GroupSet(models.Model):
         return "%s | %s " % (self.name, self.source_version)
 
 
-def _form_version_upload_to(instance: 'FormVersion', filename: str) -> str:
+def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     path = pathlib.Path(filename)
     underscored_form_name = slugify_underscore(instance.form.name)
 
@@ -642,7 +650,9 @@ class FormVersion(models.Model):
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )
     file = models.FileField(upload_to=_form_version_upload_to)
-    xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
+    xls_file = models.FileField(
+        upload_to=_form_version_upload_to, null=True, blank=True
+    )
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -662,8 +672,26 @@ class FormVersion(models.Model):
 
 
 class Mapping(models.Model):
+    name = models.TextField()
+    data_source = models.ForeignKey(
+        DataSource, on_delete=models.CASCADE, related_name="mappings"
+    )
+    form = models.ForeignKey(Form, on_delete=models.DO_NOTHING, null=True, blank=True)
+    mapping_type = models.TextField(choices=MAPPING_TYPE_CHOICES)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+
+class MappingVersion(models.Model):
     form_version = models.ForeignKey(
-        FormVersion, on_delete=models.CASCADE, related_name="mappings"
+        FormVersion, on_delete=models.CASCADE, related_name="mapping_versions"
+    )
+    mapping = models.ForeignKey(
+        Mapping,
+        on_delete=models.CASCADE,
+        related_name="versions",
+        null=True,
+        blank=True,
     )
     name = models.TextField()
     json = JSONField()
@@ -691,10 +719,105 @@ class ExternalCredentials(models.Model):
         return "%s - %s - %s (%s)" % (self.name, self.login, self.url, self.account)
 
 
+class InstanceQuerySet(models.QuerySet):
+    def with_status(self):
+        duplicates_subquery = (
+            self.values("period", "form", "org_unit")
+            .annotate(ids=ArrayAgg("id"))
+            .annotate(c=models.Func("ids", models.Value(1), function="array_length"))
+            .filter(form__in=Form.objects.filter(single_per_period=True))
+            .filter(c__gt=1)
+            .annotate(id=models.Func("ids", function="unnest"))
+            .values("id")
+        )
+
+        return self.annotate(
+            status=models.Case(
+                models.When(
+                    id__in=duplicates_subquery,
+                    then=models.Value(Instance.STATUS_DUPLICATED),
+                ),
+                models.When(
+                    last_export_success_at__isnull=False,
+                    then=models.Value(Instance.STATUS_EXPORTED),
+                ),
+                default=models.Value(Instance.STATUS_READY),
+                output_field=models.CharField(),
+            )
+        )
+
+    def with_status_alternate(self):  # TODO: probably not needed
+        duplicates_subquery = (
+            self.exclude(id=models.OuterRef("id"))
+            .filter(
+                form_id=models.OuterRef("form_id"),
+                org_unit_id=models.OuterRef("org_unit_id"),
+                period=models.OuterRef("period"),
+            )
+            .values("form_id", "org_unit_id", "period")
+            .annotate(duplicates_count=models.Count("*"))
+        )
+
+        qs = self.annotate(
+            duplicates_count=models.Subquery(
+                duplicates_subquery.values("duplicates_count"),
+                output_field=models.IntegerField(),
+            )
+        )
+
+        return qs.annotate(
+            status=models.Case(
+                models.When(
+                    duplicates_count__gt=0,
+                    then=models.Value(Instance.STATUS_DUPLICATED),
+                ),
+                models.When(
+                    last_export_success_at__isnull=False,
+                    then=models.Value(Instance.STATUS_EXPORTED),
+                ),
+                default=models.Value(Instance.STATUS_READY),
+                output_field=models.CharField(),
+            )
+        )
+
+    def counts_by_status(self):
+        grouping_fields = ["period", "form_id", "form__name"]
+
+        return (
+            self.values(*grouping_fields)
+            .annotate(total_count=models.Count("id", distinct=True))
+            .annotate(
+                duplicated_count=models.Count(
+                    "id",
+                    distinct=True,
+                    filter=models.Q(status=Instance.STATUS_DUPLICATED),
+                )
+            )
+            .annotate(
+                exported_count=models.Count(
+                    "id",
+                    distinct=True,
+                    filter=models.Q(status=Instance.STATUS_EXPORTED),
+                )
+            )
+            .annotate(
+                ready_count=models.Count(
+                    "id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)
+                )
+            )
+            .order_by("period", "form__name")
+        )
+
+
 class Instance(models.Model):
     """A series of answers by an individual for a specific form"""
 
     UPLOADED_TO = "instances/"
+
+    STATUS_READY = "READY"
+    STATUS_DUPLICATED = "DUPLICATED"
+    STATUS_EXPORTED = "EXPORTED"
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
@@ -706,7 +829,9 @@ class Instance(models.Model):
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
-    form = models.ForeignKey(Form, on_delete=models.PROTECT, null=True, blank=True, related_name='instances')
+    form = models.ForeignKey(
+        Form, on_delete=models.PROTECT, null=True, blank=True, related_name="instances"
+    )
     project = models.ForeignKey(
         Project, blank=True, null=True, on_delete=models.DO_NOTHING
     )
@@ -716,7 +841,11 @@ class Instance(models.Model):
         "Device", null=True, blank=True, on_delete=models.DO_NOTHING
     )
     period = models.TextField(null=True, blank=True, db_index=True)
-    # status = models.TextField(choices=INSTANCE_STATUS_CHOICES, null=True, blank=True)
+
+    last_export_success_at = models.DateTimeField(null=True, blank=True)
+
+    objects = InstanceQuerySet.as_manager()
+
     deleted = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
@@ -783,6 +912,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "status": getattr(self, "status", None),
         }
 
     def as_dict_with_parents(self):
@@ -802,6 +932,7 @@ class Instance(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "period": self.period,
+            "status": getattr(self, "status", None),
         }
 
     def as_full_model(self):
@@ -822,6 +953,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
+            "status": getattr(self, "status", None),
         }
 
     def as_small_dict(self):
@@ -837,6 +969,7 @@ class Instance(models.Model):
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
+            "status": getattr(self, "status", None),
         }
 
 
@@ -930,3 +1063,55 @@ class Profile(models.Model):
 
     def as_short_dict(self):
         return self.as_dict()
+
+
+class ExportRequest(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+    params = JSONField(null=True, blank=True)
+    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    result = JSONField(null=True, blank=True)
+
+    finished = models.BooleanField(default=False)
+
+    status = models.TextField(choices=STATUS_TYPE_CHOICES, default=QUEUED)
+
+    instance_count = models.IntegerField()
+    exported_count = models.IntegerField()
+    errored_count = models.IntegerField()
+
+    last_error_message = models.TextField()
+
+    # user requested the export
+    queued_at = models.DateTimeField(auto_now_add=True)
+    # backend started processing the export
+    started_at = models.DateTimeField(null=True, blank=True)
+    # backend ended processing the export
+    ended_at = models.DateTimeField(null=True, blank=True)
+
+
+class ExportLog(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+    sent = JSONField(null=True, blank=True)
+    received = JSONField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    http_status = models.IntegerField(null=True, blank=True)
+    url = models.TextField(null=True, blank=True)
+
+
+class ExportStatus(models.Model):
+    id = models.BigAutoField(
+        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
+    )
+
+    export_request = models.ForeignKey(ExportRequest, on_delete=models.CASCADE)
+    instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
+    status = models.TextField(choices=STATUS_TYPE_CHOICES, default=QUEUED)
+    mapping_version = models.ForeignKey(MappingVersion, on_delete=models.CASCADE)
+
+    export_logs = models.ManyToManyField(ExportLog, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)

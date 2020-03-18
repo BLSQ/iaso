@@ -74,7 +74,7 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
             component={ManagementUsersPage}
         />,
         <Route
-            path="/villages(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_official/:village_official)(/village_source/:village_source)(/population/:population)(/unlocated/:unlocated)(/results/:results)"
+            path="/villages(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/village_official/:village_official)(/village_source/:village_source)(/population/:population)(/unlocated/:unlocated)(/results/:results)(/years/:years)"
             component={ManagementVillagesPage}
         />,
         <Route

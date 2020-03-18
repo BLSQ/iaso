@@ -97,6 +97,8 @@ class ManagementVillages extends React.Component {
         const {
             params,
         } = this.props;
+        const currentYear = new Date().getFullYear();
+        const years = [...Array(5).keys()].map(x=>currentYear-4+x).join(",");
         const urlParams = {
             include_unlocated: true,
             unlocated: params.unlocated,
@@ -109,6 +111,7 @@ class ManagementVillages extends React.Component {
             results: params.results,
             village_source: params.village_source,
             as_list: true,
+            years: years,
         };
 
         if (toExport) {

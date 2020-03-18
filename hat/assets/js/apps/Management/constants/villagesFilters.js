@@ -110,7 +110,7 @@ const filtersZone2 = (
     resultValue,
 ) => {
     const years = getYears(10);
-    const filters = [
+    return [
         {
             name: 'results',
             urlKey: 'results',
@@ -136,31 +136,26 @@ const filtersZone2 = (
             },
             type: 'select',
         },
-    ];
-    if (resultValue) {
-        filters.push(
-            {
-                name: 'years',
-                urlKey: 'years',
-                isMultiSelect: true,
-                isClearable: true,
-                options: years.map(y => ({
-                    label: y,
-                    value: y,
-                })),
-                placeholder: {
-                    id: 'main.label.all',
-                    defaultMessage: 'All',
-                },
-                label: {
-                    id: 'main.label.years',
-                    defaultMessage: 'Years',
-                },
-                type: 'select',
+        {
+            isDisabled: !resultValue,
+            name: 'years',
+            urlKey: 'years',
+            isMultiSelect: true,
+            isClearable: true,
+            options: years.map(y => ({
+                label: y,
+                value: y,
+            })),
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'All',
             },
-        );
-    }
-    filters.push(
+            label: {
+                id: 'main.label.years',
+                defaultMessage: 'Years',
+            },
+            type: 'select',
+        },
         {
             name: 'unlocated',
             urlKey: 'unlocated',
@@ -186,8 +181,7 @@ const filtersZone2 = (
             },
             type: 'select',
         },
-    );
-    return filters;
+    ];
 };
 
 const filtersSearch = (

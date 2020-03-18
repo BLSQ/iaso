@@ -87,6 +87,13 @@ class ManagementVillages extends React.Component {
             };
             this.props.redirectTo(baseUrl, newParams);
         }
+        if (prevProps.params.results && !params.results && params.years) {
+            const newParams = {
+                ...this.props.params,
+            };
+            delete newParams.years;
+            this.props.redirectTo(baseUrl, newParams);
+        }
     }
 
     onSearch() {

@@ -4,7 +4,7 @@ import SvgIcon from '@material-ui/core/SvgIcon';
 function PdfSvg(props) {
     const finalProps = {
         ...props,
-        viewBox: '-4 -3 40 40',
+        viewBox: '0 0 40 40',
     };
     return (
         <SvgIcon

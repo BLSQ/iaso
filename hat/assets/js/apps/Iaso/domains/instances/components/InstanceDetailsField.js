@@ -16,6 +16,10 @@ const styles = theme => ({
         justifyContent: 'flex-end',
         alignItems: 'center',
     },
+    label: {
+        position: 'relative',
+        top: 1,
+    },
 });
 
 
@@ -26,6 +30,7 @@ const InstanceDetailsField = ({
         <Grid xs={5} item>
             <div className={classes.labelContainer}>
                 <Typography
+                    className={classes.label}
                     variant="body2"
                     noWrap
                     color="inherit"

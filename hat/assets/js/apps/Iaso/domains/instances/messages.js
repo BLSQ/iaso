@@ -60,9 +60,9 @@ const MESSAGES = {
         defaultMessage: 'File',
         id: 'iaso.instance.file',
     },
-    metas: {
-        defaultMessage: 'Metadatas',
-        id: 'iaso.instance.metas',
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
     },
     form: {
         defaultMessage: 'Form',

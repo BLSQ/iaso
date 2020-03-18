@@ -1,10 +1,22 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import { bindActionCreators } from 'redux';
 
 import {
-    withStyles, Box, Grid, Paper, Divider, Typography, Link,
+    withStyles,
+    Box,
+    Grid,
+    Paper,
+    Divider,
+    Typography,
+    Tooltip,
+    IconButton,
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+    TableHead,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -31,19 +43,43 @@ import commonStyles from '../../styles/common';
 const styles = theme => ({
     ...commonStyles(theme),
     paperTitle: {
-        padding: theme.spacing(2, 4),
+        padding: theme.spacing(2),
+        display: 'flex',
     },
     paperContent: {
-        padding: theme.spacing(4),
+        padding: theme.spacing(2),
     },
     label: {
         fontWeight: 'bold',
     },
+    downloadLinkContainer: {
+        position: 'relative',
+    },
+    downloadLink: {
+        position: 'absolute',
+        right: -theme.spacing(2),
+        top: -theme.spacing(1),
+    },
     icon: {
-        width: 65,
+        width: 30,
         height: 'auto',
         display: 'block',
         cursor: 'pointer',
+    },
+    tableCellHead: {
+        fontWeight: 'bold',
+        backgroundColor: 'transparent',
+        borderTop: 'none !important',
+        borderLeft: 'none !important',
+        borderRight: 'none !important',
+        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
+    },
+    tableCell: {
+        backgroundColor: 'transparent',
+        borderTop: 'none !important',
+        borderLeft: 'none !important',
+        borderRight: 'none !important',
+        borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
     },
 });
 
@@ -102,15 +138,15 @@ class InstanceDetails extends Component {
                     currentInstance
                     && (
                         <Box className={classes.containerFullHeightNoTabPadded}>
-                            <Grid container spacing={0} className={classes.marginBottom}>
-                                <Grid xs={9} lg={5} item>
+                            <Grid container spacing={4}>
+                                <Grid xs={12} md={5} item>
                                     <Paper elevation={1}>
                                         <Typography
                                             className={classes.paperTitle}
                                             color="primary"
                                             variant="h5"
                                         >
-                                            {formatMessage(MESSAGES.metas)}
+                                            {formatMessage(MESSAGES.infos)}
                                         </Typography>
                                         <Divider />
                                         <div className={classes.paperContent}>
@@ -146,40 +182,68 @@ class InstanceDetails extends Component {
                                     </Paper>
                                 </Grid>
 
-                                <Grid xs={3} lg={7} item container justify="flex-end">
-                                    <Link
-                                        onClick={() => window.open(currentInstance.file_url, '_blank')}
-                                        size="small"
-                                    >
-                                        <XmlSvg color="secondary" className={classes.icon} />
-                                    </Link>
+                                <Grid xs={12} md={7} item>
+                                    <Paper elevation={1}>
+                                        <div className={classes.paperTitle}>
+                                            <Grid xs={10} item>
+                                                <Typography
+                                                    color="primary"
+                                                    variant="h5"
+                                                >
+                                                    {formatMessage(MESSAGES.form)}
+                                                </Typography>
+                                            </Grid>
+                                            <Grid xs={2} item container justify="flex-end" className={classes.downloadLinkContainer}>
+                                                <Tooltip
+                                                    className={classes.downloadLink}
+                                                    title={<FormattedMessage id="iaso.label.download" defaultMessage="Download" />}
+                                                >
+                                                    <IconButton
+                                                        onClick={() => window.open(currentInstance.file_url, '_blank')}
+                                                    >
+                                                        <XmlSvg color="secondary" className={classes.icon} />
+                                                    </IconButton>
+                                                </Tooltip>
+                                            </Grid>
+                                        </div>
+                                        <Divider />
+                                        <div>
+                                            <Table>
+                                                <TableHead>
+                                                    <TableRow>
+                                                        <TableCell width={150} className={classes.tableCellHead}>
+                                                            <FormattedMessage id="iaso.label.field" defaultMessage="Field" />
+                                                        </TableCell>
+                                                        <TableCell width={150} align="right" className={classes.tableCellHead}>
+                                                            <FormattedMessage id="iaso.label.key" defaultMessage="Key" />
+                                                        </TableCell>
+                                                        <TableCell width={250} align="right" className={classes.tableCellHead}>
+                                                            <FormattedMessage id="iaso.label.value" defaultMessage="Value" />
+                                                        </TableCell>
+                                                    </TableRow>
+                                                </TableHead>
+                                                <TableBody>
+                                                    {
+                                                        Object.keys(currentInstance.file_content).map((k) => {
+                                                            if (k !== 'meta' && k !== 'uuid') {
+                                                                return (
+                                                                    <TableRow key={k}>
+                                                                        {/* TO-DO: get field label from API */}
+                                                                        <TableCell className={classes.tableCell}>{k}</TableCell>
+                                                                        <TableCell className={classes.tableCell} align="right">{k}</TableCell>
+                                                                        <TableCell className={classes.tableCell} align="right">{currentInstance.file_content[k] || '/'}</TableCell>
+                                                                    </TableRow>
+                                                                );
+                                                            }
+                                                            return null;
+                                                        })
+                                                    }
+                                                </TableBody>
+                                            </Table>
+                                        </div>
+                                    </Paper>
                                 </Grid>
                             </Grid>
-                            <Paper elevation={1}>
-                                <Typography
-                                    className={classes.paperTitle}
-                                    color="primary"
-                                    variant="h5"
-                                >
-                                    {formatMessage(MESSAGES.form)}
-                                </Typography>
-                                <Divider />
-                                <div className={classes.paperContent}>
-                                    {
-                                        Object.keys(currentInstance.file_content).map((k) => {
-                                            if (k !== 'meta' && k !== 'uuid') {
-                                                return (
-                                                    <InstanceDetailsField
-                                                        label={k} // TO-DO: get field label from API
-                                                        value={currentInstance.file_content[k] || '/'}
-                                                    />
-                                                );
-                                            }
-                                            return null;
-                                        })
-                                    }
-                                </div>
-                            </Paper>
                         </Box>
                     )
                 }

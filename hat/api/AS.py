@@ -34,11 +34,12 @@ class ASViewSet(viewsets.ViewSet):
     It is also possible to get additional information on a given AS by providing directly its id
         /api/as/2
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
-        'menupermissions.x_management_users',
-        'menupermissions.x_plannings_microplanning',
-        'menupermissions.x_locator'
+        "menupermissions.x_management_users",
+        "menupermissions.x_plannings_microplanning",
+        "menupermissions.x_locator",
     ]
 
     # @cache_control(max_age=24*60*60, public=True)
@@ -63,8 +64,12 @@ class ASViewSet(viewsets.ViewSet):
 
         queryset = queryset.filter(is_erased=is_erased)
         if search:
-            aliases_query = RawSQL("select count(*) from unnest(""geo_as"".aliases) it where it ilike %s",
-                                   (f"%{search}%",))
+            aliases_query = RawSQL(
+                "select count(*) from unnest("
+                "geo_as"
+                ".aliases) it where it ilike %s",
+                (f"%{search}%",),
+            )
             queryset = queryset.annotate(alias_match=aliases_query)
             queryset = queryset.filter(Q(name__icontains=search) | Q(alias_match__gt=0))
 
@@ -73,31 +78,43 @@ class ASViewSet(viewsets.ViewSet):
         if shapes == "without":
             queryset = queryset.filter(simplified_geom__isnull=True)
         if province_ids:
-            queryset = queryset.filter(ZS__province_id__in=province_ids.split(','))
+            queryset = queryset.filter(ZS__province_id__in=province_ids.split(","))
         if zone_ids:
-            queryset = queryset.filter(ZS_id__in=zone_ids.split(','))
+            queryset = queryset.filter(ZS_id__in=zone_ids.split(","))
 
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(
+                ZS__province_id__in=get_user_geo_list(request.user, "province_scope")
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(ZS_id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(
+                ZS_id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
         if request.user.profile.AS_scope.count() != 0:
-            queryset = queryset.filter(id__in=get_user_geo_list(request.user, 'AS_scope')).distinct()
+            queryset = queryset.filter(
+                id__in=get_user_geo_list(request.user, "AS_scope")
+            ).distinct()
         if zs_ids:
-            queryset = queryset.filter(ZS_id__in=zs_ids.split(','))
+            queryset = queryset.filter(ZS_id__in=zs_ids.split(","))
 
-        values = ['name', 'id', 'ZS_id']
+        values = ["name", "id", "ZS_id"]
         if years:
             years_array = years.split(",")
             nr_positive_cases = Count(
-                "village", filter=Q(village__caseview__confirmed_case=True, village__caseview__normalized_year__in=years_array)
+                "village",
+                filter=Q(
+                    village__caseview__confirmed_case=True,
+                    village__caseview__normalized_year__in=years_array,
+                ),
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
-            values.append('nr_positive_cases')
+            values.append("nr_positive_cases")
 
         if as_geo_json:
             queryset = queryset.filter(simplified_geom__isnull=False)
-            geo_json = geojson_queryset(queryset, geometry_field='geo_as.simplified_geom', fields=['name', 'ZS'])
+            geo_json = geojson_queryset(
+                queryset, geometry_field="geo_as.simplified_geom", fields=["name", "ZS"]
+            )
             return Response(geo_json)
         elif as_list:
             queryset = queryset.order_by(*orders)
@@ -114,65 +131,67 @@ class ASViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         elif csv_format or xlsx_format:
-                if (
-                    request.user.has_perm("menupermissions.x_anonymous")
-                    or not request.user.has_perm("menupermissions.x_datas_download")
-                ) and not request.user.is_superuser:
-                    return Response("Unauthorized", status=401)
-                filename = "aires"
-                columns = [
-                    {"title": "Identifiant"},
-                    {"title": "Nom"},
-                    {"title": "Province"},
-                    {"title": "Zone"},
-                    {"title": "Alias"},
-                    {"title": "Source"},
+            if (
+                request.user.has_perm("menupermissions.x_anonymous")
+                or not request.user.has_perm("menupermissions.x_datas_download")
+            ) and not request.user.is_superuser:
+                return Response("Unauthorized", status=401)
+            filename = "aires"
+            columns = [
+                {"title": "Identifiant"},
+                {"title": "Nom"},
+                {"title": "Province"},
+                {"title": "Zone"},
+                {"title": "Alias"},
+                {"title": "Source"},
+            ]
+
+            def get_row(area, **kwargs):
+                aliases = "/"
+                if area.aliases:
+                    aliases = ", ".join(area.aliases)
+                return [
+                    area.id,
+                    area.name,
+                    area.ZS.province.name,
+                    area.ZS.name,
+                    aliases,
+                    area.source,
                 ]
 
-                def get_row(area, **kwargs):
-                    aliases = "/"
-                    if area.aliases:
-                        aliases = ', '.join(area.aliases)
-                    return [
-                        area.id,
-                        area.name,
-                        area.ZS.province.name,
-                        area.ZS.name,
-                        aliases,
-                        area.source,
-                    ]
+            if xlsx_format:
+                filename = filename + ".xlsx"
+                response = HttpResponse(
+                    generate_xlsx("Villages", columns, queryset, get_row),
+                    content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                )
+            if csv_format:
+                filename = filename + ".csv"
+                response = StreamingHttpResponse(
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
+                    content_type="text/csv",
+                )
 
-                if xlsx_format:
-                    filename = filename + ".xlsx"
-                    response = HttpResponse(
-                        generate_xlsx("Villages", columns, queryset, get_row),
-                        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-                    )
-                if csv_format:
-                    filename = filename + ".csv"
-                    response = StreamingHttpResponse(
-                        streaming_content=(
-                            iter_items(queryset, Echo(), columns, get_row)
-                        ),
-                        content_type="text/csv",
-                    )
-
-                response["Content-Disposition"] = "attachment; filename=%s" % filename
-                response["Cache-Control"] = "no-cache, no-store, must-revalidate"
-                return response
+            response["Content-Disposition"] = "attachment; filename=%s" % filename
+            response["Cache-Control"] = "no-cache, no-store, must-revalidate"
+            return response
         else:
-            return Response(queryset.values(*values).order_by('name'))
+            return Response(queryset.values(*values).order_by("name"))
 
     def retrieve(self, request, pk=None):
         aire = get_object_or_404(AS, pk=pk)
-        user_as_ids = get_user_geo_list(request.user, 'AS_scope')
-        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
-        province_ids = get_user_geo_list(request.user, 'province_scope')
-        is_authorized = len(user_as_ids) == 0 and \
-            len(user_zs_ids) == 0 and \
-            len(province_ids) == 0
+        user_as_ids = get_user_geo_list(request.user, "AS_scope")
+        user_zs_ids = get_user_geo_list(request.user, "ZS_scope")
+        province_ids = get_user_geo_list(request.user, "province_scope")
+        is_authorized = (
+            len(user_as_ids) == 0 and len(user_zs_ids) == 0 and len(province_ids) == 0
+        )
         if not is_authorized:
-            if (aire.ZS.province.id in province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+            if (
+                (aire.ZS.province.id in province_ids)
+                and len(user_zs_ids) == 0
+                and len(user_as_ids) == 0
+            ):
                 is_authorized = True
             if (aire.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
                 is_authorized = True
@@ -181,11 +200,13 @@ class ASViewSet(viewsets.ViewSet):
         res = aire.as_full_dict()
         if aire.simplified_geom:
             queryset = AS.objects.all().filter(id=aire.id)
-            res["geo_json"] = geojson_queryset(queryset, geometry_field='simplified_geom')
+            res["geo_json"] = geojson_queryset(
+                queryset, geometry_field="simplified_geom"
+            )
         if is_authorized:
             return Response(res)
         else:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
 
     def update(self, request, pk=None):
         planning_id = request.data.get("planning_id", None)
@@ -194,18 +215,22 @@ class ASViewSet(viewsets.ViewSet):
 
         team = get_object_or_404(Team, id=team_id)
         planning = get_object_or_404(Planning, id=planning_id)
-        user_as_ids = get_user_geo_list(request.user, 'AS_scope')
-        user_zs_ids = get_user_geo_list(request.user, 'ZS_scope')
-        province_ids = get_user_geo_list(request.user, 'province_scope')
-        is_authorized = len(user_as_ids) == 0 and \
-            len(user_zs_ids) == 0 and \
-            len(province_ids) == 0
+        user_as_ids = get_user_geo_list(request.user, "AS_scope")
+        user_zs_ids = get_user_geo_list(request.user, "ZS_scope")
+        province_ids = get_user_geo_list(request.user, "province_scope")
+        is_authorized = (
+            len(user_as_ids) == 0 and len(user_zs_ids) == 0 and len(province_ids) == 0
+        )
 
-        for as_id in pk.split(','):
+        for as_id in pk.split(","):
             area = get_object_or_404(AS, id=as_id)
 
             if not is_authorized:
-                if (area.ZS.province.id in province_ids) and len(user_zs_ids) == 0 and len(user_as_ids) == 0:
+                if (
+                    (area.ZS.province.id in province_ids)
+                    and len(user_zs_ids) == 0
+                    and len(user_as_ids) == 0
+                ):
                     is_authorized = True
                 if (area.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
                     is_authorized = True
@@ -214,9 +239,13 @@ class ASViewSet(viewsets.ViewSet):
 
             if is_authorized:
                 if delete:
-                    TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
+                    TeamActionZone.objects.filter(
+                        area=area, planning=planning, team=team
+                    ).delete()
                 else:
-                    TeamActionZone.objects.filter(area=area, planning=planning, team=team).delete()
+                    TeamActionZone.objects.filter(
+                        area=area, planning=planning, team=team
+                    ).delete()
                     taz = TeamActionZone()
                     taz.team = team
                     taz.area = area
@@ -229,23 +258,35 @@ class ASViewSet(viewsets.ViewSet):
         area = get_object_or_404(AS, id=pk)
         is_authorized = is_authorized_user(
             request.user, area.ZS.province.id, area.ZS.id, area.id
-        ) and (request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser)
+        ) and (
+            request.user.has_perm("menupermissions.x_management_edit_areas")
+            or request.user.is_superuser
+        )
         if is_authorized:
             original_area = copy(area)
             area.name = request.data.get("name", "")
             area.source = request.data.get("source", None)
             area.aliases = request.data.get("aliases", None)
             area.is_erased = request.data.get("is_erased", False)
-            geo_json = request.data.get("geo_json", None)
-            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
-                if len(geo_json["geometry"]["coordinates"]) == 1:
-                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+            if "geo_json" in request.data:
+                geo_json = request.data.get("geo_json", None)
+                if (
+                    geo_json
+                    and geo_json["geometry"]
+                    and geo_json["geometry"]["coordinates"]
+                ):
+                    if len(geo_json["geometry"]["coordinates"]) == 1:
+                        area.simplified_geom = Polygon(
+                            geo_json["geometry"]["coordinates"][0]
+                        )
+                    else:
+                        # DB has a single Polygon, refuse if we have more, or less.
+                        return Response(
+                            "Only one polygon should be saved in the geo_json shape",
+                            status=status.HTTP_400_BAD_REQUEST,
+                        )
                 else:
-                    # DB has a single Polygon, refuse if we have more, or less.
-                    return Response("Only one polygon should be saved in the geo_json shape",
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                area.simplified_geom = None
+                    area.simplified_geom = None
             zone_id = request.data.get("ZS_id")
             zone = get_object_or_404(ZS, id=zone_id)
             area.ZS = zone
@@ -257,20 +298,31 @@ class ASViewSet(viewsets.ViewSet):
 
     def create(self, request):
         area = AS()
-        is_authorized = request.user.has_perm("menupermissions.x_management_edit_areas") or request.user.is_superuser
+        is_authorized = (
+            request.user.has_perm("menupermissions.x_management_edit_areas")
+            or request.user.is_superuser
+        )
         if is_authorized:
             area.name = request.data.get("name", "")
             area.source = request.data.get("source", None)
             area.aliases = request.data.get("aliases", None)
             area.is_erased = request.data.get("is_erased", False)
             geo_json = request.data.get("geo_json", None)
-            if geo_json and geo_json["geometry"] and geo_json["geometry"]["coordinates"]:
+            if (
+                geo_json
+                and geo_json["geometry"]
+                and geo_json["geometry"]["coordinates"]
+            ):
                 if len(geo_json["geometry"]["coordinates"]) == 1:
-                    area.simplified_geom = Polygon(geo_json["geometry"]["coordinates"][0])
+                    area.simplified_geom = Polygon(
+                        geo_json["geometry"]["coordinates"][0]
+                    )
                 else:
                     # DB has a single Polygon, refuse if we have more, or less.
-                    return Response("Only one polygon should be saved in the geo_json shape",
-                                    status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        "Only one polygon should be saved in the geo_json shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
             else:
                 area.simplified_geom = None
             zone_id = request.data.get("ZS_id")
@@ -282,6 +334,3 @@ class ASViewSet(viewsets.ViewSet):
             return Response(area.as_dict())
         else:
             return Response("Unauthorized", status=401)
-
-
-

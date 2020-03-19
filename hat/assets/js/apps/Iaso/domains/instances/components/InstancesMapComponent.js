@@ -6,7 +6,6 @@ import {
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { injectIntl, intlShape } from 'react-intl';
-import isEqual from 'lodash/isEqual';
 
 import {
     Grid,

@@ -16,6 +16,7 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => {
             accessor: 'actions',
             resizable: false,
             sortable: false,
+            width: 150,
             Cell: settings => (
                 <section>
                     <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
@@ -31,7 +32,12 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => {
     metaFields.forEach(f => columns.push({
         Header: formatMessage(MESSAGES[f.key]),
         accessor: f.accessor || f.key,
-        Cell: settings => <ColumnTextComponent text={f.render ? f.render(settings.original[f.key]) : settings.original[f.key]} />,
+        Cell: settings => (
+            <ColumnTextComponent
+                title={f.title ? f.title(settings.original[f.key]) : null}
+                text={f.render ? f.render(settings.original[f.key]) : settings.original[f.key]}
+            />
+        ),
     }));
     return columns;
 };

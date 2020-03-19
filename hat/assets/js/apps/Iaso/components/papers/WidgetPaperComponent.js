@@ -25,7 +25,7 @@ const styles = theme => ({
     },
     paperTitleButton: {
         position: 'absolute',
-        right: -theme.spacing(2),
+        right: -theme.spacing(1),
         top: -theme.spacing(1),
     },
     padded: {

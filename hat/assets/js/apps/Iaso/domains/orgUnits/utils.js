@@ -1,3 +1,5 @@
+import { textPlaceholder } from '../../constants/uiConstants';
+
 export const getPolygonPositionsFromSimplifiedGeom = (field) => {
     const positionsArrays = field.split('((')[1].replace('))', '').replace(/, /gi, ',').split(',');
     const polygonPositions = [];
@@ -48,4 +50,16 @@ export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => 
         }
     });
     return sources;
+};
+
+
+export const getOrgunitMessage = (orgUnit) => {
+    let message = textPlaceholder;
+    if (orgUnit) {
+        message = orgUnit.name;
+        if (orgUnit.org_unit_type_name) {
+            message += `(${orgUnit.org_unit_type_name})`;
+        }
+    }
+    return message;
 };

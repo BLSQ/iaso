@@ -3,6 +3,7 @@ import React from 'react';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import OrgUnitDisplay from '../orgUnits/components/OrgUnitDisplay';
 import { Period } from '../periods/models';
+import { getOrgunitMessage } from '../orgUnits/utils';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -32,6 +33,7 @@ export const INSTANCE_METAS_FIELDS = [
         key: 'org_unit',
         accessor: 'org_unit__name',
         render: value => (<OrgUnitDisplay orgUnit={value} />),
+        title: value => getOrgunitMessage(value),
         tableOrder: 2,
     },
     {

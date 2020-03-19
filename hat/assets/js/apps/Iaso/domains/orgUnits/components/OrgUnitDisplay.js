@@ -3,41 +3,40 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import {
-    Link,
+    Link, withStyles,
 } from '@material-ui/core';
 
-import { textPlaceholder } from '../../../constants/uiConstants';
 import {
     redirectTo as redirectToAction,
 } from '../../../routing/actions';
+import { getOrgunitMessage } from '../utils';
 
+const styles = () => ({
+    link: {
+        cursor: 'pointer',
+    },
+});
 
 const OrgUnitDisplay = ({
     orgUnit,
     redirectTo,
-}) => {
-    let message = textPlaceholder;
-    if (orgUnit) {
-        message = orgUnit.name;
-        if (orgUnit.org_unit_type_name) {
-            message += `(${orgUnit.org_unit_type_name})`;
-        }
-    }
-    return (
-        <Link
-            size="small"
-            onClick={() => redirectTo('orgunits/detail', {
-                orgUnitId: orgUnit.id,
-            })}
-        >
-            {message}
-        </Link>
-    );
-};
+    classes,
+}) => (
+    <Link
+        size="small"
+        className={classes.link}
+        onClick={() => redirectTo('orgunits/detail', {
+            orgUnitId: orgUnit.id,
+        })}
+    >
+        {getOrgunitMessage(orgUnit)}
+    </Link>
+);
 
 
 OrgUnitDisplay.propTypes = {
     orgUnit: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
 };
 
@@ -47,4 +46,4 @@ const MapDispatchToProps = dispatch => ({
     }, dispatch),
 });
 
-export default connect(() => ({}), MapDispatchToProps)(OrgUnitDisplay);
+export default connect(() => ({}), MapDispatchToProps)(withStyles(styles)(OrgUnitDisplay));

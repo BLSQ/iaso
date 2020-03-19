@@ -24,7 +24,7 @@ const styles = theme => ({
 
 
 const InstanceDetailsField = ({
-    classes, label, value, Icon,
+    classes, label, value, Icon, valueTitle,
 }) => (
     <Grid container spacing={1}>
         <Grid xs={5} item>
@@ -47,7 +47,7 @@ const InstanceDetailsField = ({
                 variant="body1"
                 noWrap
                 color="inherit"
-                title={value}
+                title={valueTitle !== '' ? valueTitle : value}
             >
                 {value}
             </Typography>
@@ -57,6 +57,7 @@ const InstanceDetailsField = ({
 
 InstanceDetailsField.defaultProps = {
     Icon: null,
+    valueTitle: '',
 };
 
 InstanceDetailsField.propTypes = {
@@ -64,5 +65,6 @@ InstanceDetailsField.propTypes = {
     label: PropTypes.string.isRequired,
     value: PropTypes.any.isRequired,
     Icon: PropTypes.object,
+    valueTitle: PropTypes.string,
 };
 export default withStyles(styles)(InstanceDetailsField);

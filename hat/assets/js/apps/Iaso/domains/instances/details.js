@@ -110,6 +110,7 @@ class InstanceDetails extends Component {
                                                 <InstanceDetailsField
                                                     key={f.key}
                                                     label={formatMessage(MESSAGES[f.key])}
+                                                    valueTitle={f.title ? f.title(currentInstance[f.key]) : null}
                                                     value={f.render ? f.render(currentInstance[f.key]) : currentInstance[f.key]}
                                                 />
                                             ))

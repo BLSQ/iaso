@@ -2,10 +2,20 @@ import React, { Component } from 'react';
 import {
     Map, TileLayer,
 } from 'react-leaflet';
-import { injectIntl, intlShape } from 'react-intl';
+import Control from 'react-leaflet-control';
+import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
 import L from 'leaflet';
 
-import { withStyles } from '@material-ui/core';
+import {
+    withStyles,
+    Dialog,
+    DialogTitle,
+    DialogContent,
+    DialogActions,
+    Button,
+} from '@material-ui/core';
+import Layers from '@material-ui/icons/Layers';
+
 
 import PropTypes from 'prop-types';
 
@@ -13,6 +23,7 @@ import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import MarkerComponent from './markers/MarkerComponent';
+import TileSwitch from './tools/TileSwitchComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -25,9 +36,30 @@ const styles = theme => ({
         minWidth: 200,
         marginBottom: 0,
     },
+    barButton: {
+        display: 'flex',
+        position: 'relative',
+        backgroundColor: 'white',
+        borderRadius: '4px',
+        padding: '2px',
+        cursor: 'pointer',
+        outline: 'none',
+        boxShadow: 'none',
+    },
+    tileSwitchContainer: {
+        marginBottom: -theme.spacing(4),
+    },
 });
 
 class MarkerMap extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            displayTilePopup: false,
+            currentTile: tiles.osm,
+        };
+    }
+
     componentDidMount() {
         const {
             intl: {
@@ -51,16 +83,50 @@ class MarkerMap extends Component {
         });
     }
 
+    toggleTilePopup() {
+        this.setState({
+            displayTilePopup: !this.state.displayTilePopup,
+        });
+    }
+
+    handleChangeTile(currentTile) {
+        this.setState({
+            currentTile,
+        });
+    }
+
     render() {
         const {
             classes,
             latitude,
             longitude,
         } = this.props;
-        const currentTile = tiles.osm;
+        const {
+            currentTile,
+            displayTilePopup,
+        } = this.state;
         if (!latitude || !longitude) return null;
         return (
             <div className={classes.mapContainer}>
+                <Dialog
+                    open={displayTilePopup}
+                    onClick={() => this.toggleTilePopup()}
+                >
+                    <div className={classes.tileSwitchContainer}>
+                        <TileSwitch
+                            setCurrentTile={newtile => this.handleChangeTile(newtile)}
+                            currentTile={currentTile}
+                        />
+                    </div>
+                    <DialogActions>
+                        <Button onClick={() => this.toggleTilePopup()} color="primary">
+                            <FormattedMessage
+                                id="iaso.label.close"
+                                defaultMessage="Close"
+                            />
+                        </Button>
+                    </DialogActions>
+                </Dialog>
                 <Map
                     scrollWheelZoom={false}
                     maxZoom={currentTile.maxZoom}
@@ -83,6 +149,19 @@ class MarkerMap extends Component {
                             longitude,
                         }}
                     />
+                    <Control position="topright">
+                        <div className="leaflet-bar">
+                            <span
+                                className={classes.barButton}
+                                role="button"
+                                tabIndex="0"
+                                onClick={() => this.toggleTilePopup()}
+                            >
+                                <Layers fontSize="small" />
+                            </span>
+                        </div>
+                    </Control>
+
                 </Map>
             </div>
         );

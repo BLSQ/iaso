@@ -68,6 +68,14 @@ const MESSAGES = {
         defaultMessage: 'Form',
         id: 'iaso.instance.formShort',
     },
+    location: {
+        defaultMessage: 'Location',
+        id: 'iaso.map.location',
+    },
+    uuid: {
+        defaultMessage: 'Uuid',
+        id: 'iaso.label.uuid',
+    },
 };
 
 export default MESSAGES;

@@ -58,6 +58,7 @@ class MarkerMap extends Component {
             longitude,
         } = this.props;
         const currentTile = tiles.osm;
+        if (!latitude || !longitude) return null;
         return (
             <div className={classes.mapContainer}>
                 <Map

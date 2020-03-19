@@ -18,17 +18,18 @@ const styles = theme => ({
     },
     label: {
         position: 'relative',
-        top: 1,
+        top: 2,
     },
 });
 
 
 const InstanceDetailsField = ({
-    classes, label, value,
+    classes, label, value, Icon,
 }) => (
     <Grid container spacing={1}>
         <Grid xs={5} item>
             <div className={classes.labelContainer}>
+                {Icon && <Icon />}
                 <Typography
                     className={classes.label}
                     variant="body2"
@@ -54,9 +55,14 @@ const InstanceDetailsField = ({
     </Grid>
 );
 
+InstanceDetailsField.defaultProps = {
+    Icon: null,
+};
+
 InstanceDetailsField.propTypes = {
     classes: PropTypes.object.isRequired,
     label: PropTypes.string.isRequired,
     value: PropTypes.any.isRequired,
+    Icon: PropTypes.object,
 };
 export default withStyles(styles)(InstanceDetailsField);

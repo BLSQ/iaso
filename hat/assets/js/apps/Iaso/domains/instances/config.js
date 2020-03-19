@@ -1,16 +1,16 @@
 /* globals window */
 import React from 'react';
-import Link from '@material-ui/core/Link';
+import orderBy from 'lodash/orderBy';
 
-import { Period } from '../periods/models';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
-import { displayDateFromTimestamp } from '../../utils/intlUtil';
+import XmlButton from '../../components/buttons/XmlButtonComponent';
+
+import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 
-
-const instancesTableColumns = (formatMessage = () => ({}), component) => (
-    [
+const instancesTableColumns = (formatMessage = () => ({}), component) => {
+    const columns = [
         {
             Header: formatMessage(MESSAGES.actions),
             accessor: 'actions',
@@ -19,63 +19,21 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => (
             Cell: settings => (
                 <section>
                     <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
+                    <XmlButton
+                        onClick={() => window.open(settings.original.file_url, '_blank')}
+                    />
                 </section>
             ),
         },
-        {
-            Header: formatMessage(MESSAGES.updated_at),
-            accessor: 'updated_at',
-            Cell: settings => (
-                <span>
-                    {displayDateFromTimestamp(settings.original.updated_at)}
-                </span>
-            ),
-        }, {
-            Header: formatMessage(MESSAGES.org_unit),
-            accessor: 'org_unit__name',
-            Cell: settings => (
-                <ColumnTextComponent text={settings.original.org_unit
-                    ? `${settings.original.org_unit.name} (${settings.original.org_unit.org_unit_type_name})`
-                    : '/'}
-                />
-            ),
-        },
-        {
-            Header: formatMessage(MESSAGES.period),
-            accessor: 'period',
-            Cell: settings => (
-                <span>
-                    {settings.original.period
-                        ? `${Period.getPrettyPeriod(settings.original.period)}`
-                        : '/'}
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage(MESSAGES.file),
-            sortable: false,
-            accessor: 'file_url',
-            Cell: settings => (
-                <span>
-                    <Link
-                        onClick={() => window.open(settings.original.file_url, '_blank')}
-                        size="small"
-                    >
-                        XML
-                    </Link>
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage(MESSAGES.created_at),
-            accessor: 'created_at',
-            Cell: settings => (
-                <span>
-                    {displayDateFromTimestamp(settings.original.created_at)}
-                </span>
-            ),
-        },
-    ]
-);
+    ];
+    let metaFields = INSTANCE_METAS_FIELDS.filter(f => Boolean(f.tableOrder));
+    metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
+    metaFields.forEach(f => columns.push({
+        Header: formatMessage(MESSAGES[f.key]),
+        accessor: f.accessor || f.key,
+        Cell: settings => <ColumnTextComponent text={f.render ? f.render(settings.original[f.key]) : settings.original[f.key]} />,
+    }));
+    return columns;
+};
 
 export default instancesTableColumns;

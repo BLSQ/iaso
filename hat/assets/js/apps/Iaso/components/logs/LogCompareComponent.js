@@ -17,6 +17,7 @@ import PolygonMap from '../maps/PolygonMapComponent';
 import MarkerMap from '../maps/MarkerMapComponent';
 import ConfirmDialog from '../dialogs/ConfirmDialogComponent';
 import commonStyles from '../../styles/common';
+import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from '../../domains/forms/messages';
 
@@ -48,15 +49,13 @@ const styles = theme => ({
     },
 });
 
-const placeholder = '--';
-
 const renderValue = (
     fieldKey,
     value,
     fields,
     classes,
 ) => {
-    if (!value || value.toString().length === 0) return placeholder;
+    if (!value || value.toString().length === 0) return textPlaceholder;
     switch (fieldKey) {
         case 'simplified_geom': {
             const polygonPositions = getPolygonPositionsFromSimplifiedGeom(value);

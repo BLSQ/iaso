@@ -130,6 +130,10 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
     },
 });
 
-L.control.zoombar = function (options) {
-    return new L.Control.ZoomBar(options);
+let zoomBar;
+L.control.zoombar = (options) => {
+    if (!zoomBar) {
+        zoomBar = new L.Control.ZoomBar(options);
+    }
+    return zoomBar;
 };

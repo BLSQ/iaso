@@ -9,6 +9,7 @@ import {
     TableHead,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 const styles = theme => ({
     tableCellHead: {
@@ -55,7 +56,7 @@ const InstanceFileContent = ({
                                 {/* TO-DO: get field label from API */}
                                 <TableCell className={classes.tableCell}>{k}</TableCell>
                                 <TableCell className={classes.tableCell} align="right">{k}</TableCell>
-                                <TableCell className={classes.tableCell} align="right">{fileContent[k] || '/'}</TableCell>
+                                <TableCell className={classes.tableCell} align="right">{fileContent[k] || textPlaceholder}</TableCell>
                             </TableRow>
                         );
                     }

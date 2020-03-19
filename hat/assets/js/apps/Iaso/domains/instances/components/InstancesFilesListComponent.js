@@ -43,13 +43,14 @@ const MESSAGES = {
     },
 };
 
-const styles = () => ({
+const styles = theme => ({
     root: {
         position: 'relative',
     },
     images: {
         height: 'auto',
         width: '100%',
+        marginTop: theme.spacing(2),
     },
     hiddenImages: {
         width: '100%',
@@ -57,10 +58,12 @@ const styles = () => ({
         overflow: 'hidden',
         position: 'absolute',
         zIndex: '-1',
+        marginTop: theme.spacing(2),
     },
     tabContainer: {
         minHeight: minTabHeight,
         backgroundColor: 'white',
+        marginTop: theme.spacing(2),
     },
 });
 

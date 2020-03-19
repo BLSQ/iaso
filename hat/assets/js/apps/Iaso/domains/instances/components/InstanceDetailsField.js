@@ -58,12 +58,13 @@ const InstanceDetailsField = ({
 InstanceDetailsField.defaultProps = {
     Icon: null,
     valueTitle: '',
+    value: null,
 };
 
 InstanceDetailsField.propTypes = {
     classes: PropTypes.object.isRequired,
     label: PropTypes.string.isRequired,
-    value: PropTypes.any.isRequired,
+    value: PropTypes.any,
     Icon: PropTypes.object,
     valueTitle: PropTypes.string,
 };

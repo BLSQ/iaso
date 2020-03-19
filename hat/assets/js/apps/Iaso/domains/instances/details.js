@@ -24,9 +24,13 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import XmlButton from '../../components/buttons/XmlButtonComponent';
 import MarkerMap from '../../components/maps/MarkerMapComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import InstancesFilesList from './components/InstancesFilesListComponent';
 
 import InstanceFileContent from './components/InstanceFileContent';
 import InstanceDetailsField from './components/InstanceDetailsField';
+import {
+    getInstancesFilesList,
+} from './utils';
 
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
@@ -124,6 +128,19 @@ class InstanceDetails extends Component {
                                                 title={formatMessage(MESSAGES.location)}
                                             >
                                                 <MarkerMap latitude={currentInstance.latitude} longitude={currentInstance.longitude} />
+                                            </WidgetPaper>
+                                        )
+                                    }
+                                    {
+                                        currentInstance.files.length > 0
+                                        && (
+                                            <WidgetPaper
+                                                title={formatMessage(MESSAGES.files)}
+                                                padded
+                                            >
+                                                <InstancesFilesList
+                                                    files={getInstancesFilesList([currentInstance])}
+                                                />
                                             </WidgetPaper>
                                         )
                                     }

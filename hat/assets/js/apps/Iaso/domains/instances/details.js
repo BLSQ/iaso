@@ -16,7 +16,6 @@ import {
     fetchInstanceDetail as fetchInstanceDetailAction,
 } from './actions';
 import {
-    redirectTo as redirectToAction,
     redirectToReplace as redirectToReplaceAction,
 } from '../../routing/actions';
 
@@ -181,7 +180,6 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators({
         fetchInstanceDetail: fetchInstanceDetailAction,
-        redirectTo: redirectToAction,
         redirectToReplace: redirectToReplaceAction,
         setCurrentInstance: setCurrentInstanceAction,
     }, dispatch),

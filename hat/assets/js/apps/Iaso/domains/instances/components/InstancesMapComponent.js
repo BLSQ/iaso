@@ -6,6 +6,7 @@ import {
 } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { injectIntl, intlShape } from 'react-intl';
+import isEqual from 'lodash/isEqual';
 
 import {
     Grid,
@@ -21,18 +22,46 @@ import { setCurrentInstance } from '../actions';
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
 import InstancePopupComponent from './InstancePopupComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
+import { warningSnackBar } from '../../../../../utils/constants/snackBars';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
 
 const boundsOptions = { padding: [50, 50] };
 
 class InstancesMap extends Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            warningDisplayed: false,
+        };
+    }
+
+    componentDidUpdate() {
+        const {
+            instances,
+            dispatch,
+            fetching,
+        } = this.props;
+        const bounds = getLatLngBounds(instances);
+        const { warningDisplayed } = this.state;
+        if (!fetching && instances.length > 0) {
+            if (!bounds && !warningDisplayed) {
+                this.toggleWarning(true);
+                dispatch(enqueueSnackbar(warningSnackBar('noInstancesOnMap')));
+            } else if (bounds && warningDisplayed) {
+                this.toggleWarning(false);
+                dispatch(closeFixedSnackbar('noInstancesOnMap'));
+            }
+        }
+    }
+
     componentWillUnmount() {
         this.props.resetMapReducer();
     }
+
 
     onMapLoaded(ref) {
         this.map = ref;
@@ -45,6 +74,12 @@ class InstancesMap extends Component {
         if (this.map) {
             zoomBar.addTo(this.map.leafletElement);
         }
+    }
+
+    toggleWarning(warningDisplayed) {
+        this.setState({
+            warningDisplayed,
+        });
     }
 
     fetchDetail(instance) {
@@ -71,28 +106,10 @@ class InstancesMap extends Component {
             instances,
             currentTile,
             isClusterActive,
-            intl: {
-                formatMessage,
-            },
             fetching,
         } = this.props;
         if (fetching) return null;
         const bounds = getLatLngBounds(instances);
-        if (!bounds) {
-            return (
-                <Grid container spacing={0}>
-                    <Grid item xs={4} />
-                    <Grid item xs={4}>
-                        <ErrorPaperComponent message={formatMessage({
-                            defaultMessage: 'Cannot find an instance with geolocation',
-                            id: 'iaso.instance.missingGeolocation',
-                        })}
-                        />
-                    </Grid>
-                    <Grid item xs={4} />
-                </Grid>
-            );
-        }
         if (this.map) {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }

@@ -139,6 +139,8 @@ class InstanceDetails extends Component {
                                                 padded
                                             >
                                                 <InstancesFilesList
+                                                    fetchDetails={false}
+                                                    instanceDetail={currentInstance}
                                                     files={getInstancesFilesList([currentInstance])}
                                                 />
                                             </WidgetPaper>

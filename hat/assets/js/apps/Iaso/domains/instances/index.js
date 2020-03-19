@@ -105,7 +105,6 @@ class Instances extends Component {
     }
 
     componentDidMount() {
-        console.log('componentDidMount');
         const {
             params: {
                 formId,

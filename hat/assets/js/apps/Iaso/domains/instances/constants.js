@@ -30,6 +30,15 @@ export const INSTANCE_METAS_FIELDS = [
         tableOrder: 4,
     },
     {
+        key: 'device_id',
+    },
+    {
+        key: 'latitude',
+    },
+    {
+        key: 'longitude',
+    },
+    {
         key: 'org_unit',
         accessor: 'org_unit__name',
         render: value => (<OrgUnitDisplay orgUnit={value} />),

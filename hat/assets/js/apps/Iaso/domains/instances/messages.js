@@ -8,6 +8,10 @@ const MESSAGES = {
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
     },
+    device_id: {
+        id: 'iaso.instance.device',
+        defaultMessage: 'IMEI device',
+    },
     coordinate: {
         id: 'iaso.instance.coordinate',
         defaultMessage: 'Coordinates',

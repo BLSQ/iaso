@@ -7,6 +7,8 @@ def parse_instance_filters(req):
         "device_ownership_id": req.get("deviceOwnershipId", None),
         "org_unit_parent_id": req.get("orgUnitParentId", None),
         "org_unit_id": req.get("orgUnitId", None),
-        "period_ids": req.get("period_ids", None),
+        "period_ids": req.get(
+            "period_ids", req.get("periods", req.get("period", None))
+        ),
         "status": req.get("status", None),
     }

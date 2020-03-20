@@ -22,7 +22,6 @@ export const fetchLatestOrgUnitLevelId = (levels) => {
 
 export const getOrgUnitsTree = (orgUnit) => {
     let tree = [orgUnit];
-
     const orgUnitLoop = (parent, tempTree) => {
         let treeCopy = [
             parent,
@@ -53,11 +52,11 @@ export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => 
 };
 
 
-export const getOrgunitMessage = (orgUnit) => {
+export const getOrgunitMessage = (orgUnit, withType) => {
     let message = textPlaceholder;
     if (orgUnit) {
         message = orgUnit.name;
-        if (orgUnit.org_unit_type_name) {
+        if (orgUnit.org_unit_type_name && withType) {
             message += `(${orgUnit.org_unit_type_name})`;
         }
     }

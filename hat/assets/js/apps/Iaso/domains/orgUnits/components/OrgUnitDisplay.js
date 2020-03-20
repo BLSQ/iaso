@@ -21,6 +21,7 @@ const OrgUnitDisplay = ({
     orgUnit,
     redirectTo,
     classes,
+    withType,
 }) => (
     <Link
         size="small"
@@ -29,15 +30,20 @@ const OrgUnitDisplay = ({
             orgUnitId: orgUnit.id,
         })}
     >
-        {getOrgunitMessage(orgUnit)}
+        {getOrgunitMessage(orgUnit, withType)}
     </Link>
 );
+
+OrgUnitDisplay.defaultProps = {
+    withType: true,
+};
 
 
 OrgUnitDisplay.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    withType: PropTypes.bool,
 };
 
 const MapDispatchToProps = dispatch => ({

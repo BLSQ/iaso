@@ -22,17 +22,17 @@ import {
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import XmlButton from '../../components/buttons/XmlButtonComponent';
-import MarkerMap from '../../components/maps/MarkerMapComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import InstancesFilesList from './components/InstancesFilesListComponent';
 
+import InstanceDetailsInfos from './components/InstanceDetailsInfos';
+import InstanceDetailsLocation from './components/InstanceDetailsLocation';
+import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
-import InstanceDetailsField from './components/InstanceDetailsField';
+
 import {
     getInstancesFilesList,
 } from './utils';
 
-import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 
 import commonStyles from '../../styles/common';
@@ -108,17 +108,7 @@ class InstanceDetails extends Component {
                                         title={formatMessage(MESSAGES.infos)}
                                         padded
                                     >
-
-                                        {
-                                            INSTANCE_METAS_FIELDS.map(f => (
-                                                <InstanceDetailsField
-                                                    key={f.key}
-                                                    label={formatMessage(MESSAGES[f.key])}
-                                                    valueTitle={f.title ? f.title(currentInstance[f.key]) : null}
-                                                    value={f.render ? f.render(currentInstance[f.key]) : currentInstance[f.key]}
-                                                />
-                                            ))
-                                        }
+                                        <InstanceDetailsInfos currentInstance={currentInstance} />
                                     </WidgetPaper>
                                     {
                                         currentInstance.latitude
@@ -127,7 +117,7 @@ class InstanceDetails extends Component {
                                             <WidgetPaper
                                                 title={formatMessage(MESSAGES.location)}
                                             >
-                                                <MarkerMap latitude={currentInstance.latitude} longitude={currentInstance.longitude} />
+                                                <InstanceDetailsLocation currentInstance={currentInstance} />
                                             </WidgetPaper>
                                         )
                                     }

@@ -18,25 +18,23 @@ export const INSTANCE_STATUSES = [
 export const INSTANCE_METAS_FIELDS = [
     {
         key: 'uuid',
+        type: 'info',
     },
     {
         key: 'updated_at',
         render: value => displayDateFromTimestamp(value),
         tableOrder: 1,
+        type: 'info',
     },
     {
         key: 'created_at',
         render: value => displayDateFromTimestamp(value),
         tableOrder: 4,
+        type: 'info',
     },
     {
         key: 'device_id',
-    },
-    {
-        key: 'latitude',
-    },
-    {
-        key: 'longitude',
+        type: 'info',
     },
     {
         key: 'org_unit',
@@ -44,10 +42,20 @@ export const INSTANCE_METAS_FIELDS = [
         render: value => (<OrgUnitDisplay orgUnit={value} />),
         title: value => getOrgunitMessage(value),
         tableOrder: 2,
+        type: 'location',
+    },
+    {
+        key: 'latitude',
+        type: 'location',
+    },
+    {
+        key: 'longitude',
+        type: 'location',
     },
     {
         key: 'period',
         render: value => Period.getPrettyPeriod(value),
         tableOrder: 3,
+        type: 'info',
     },
 ];

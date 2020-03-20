@@ -1,14 +1,10 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import {
-    Link, withStyles,
+    Link,
+    withStyles,
 } from '@material-ui/core';
 
-import {
-    redirectTo as redirectToAction,
-} from '../../../routing/actions';
 import { getOrgunitMessage } from '../utils';
 
 const styles = () => ({
@@ -19,16 +15,13 @@ const styles = () => ({
 
 const OrgUnitDisplay = ({
     orgUnit,
-    redirectTo,
     classes,
     withType,
 }) => (
     <Link
-        size="small"
+        target="_blank"
         className={classes.link}
-        onClick={() => redirectTo('orgunits/detail', {
-            orgUnitId: orgUnit.id,
-        })}
+        href={`/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`}
     >
         {getOrgunitMessage(orgUnit, withType)}
     </Link>
@@ -42,14 +35,7 @@ OrgUnitDisplay.defaultProps = {
 OrgUnitDisplay.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
     withType: PropTypes.bool,
 };
 
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators({
-        redirectTo: redirectToAction,
-    }, dispatch),
-});
-
-export default connect(() => ({}), MapDispatchToProps)(withStyles(styles)(OrgUnitDisplay));
+export default withStyles(styles)(OrgUnitDisplay);

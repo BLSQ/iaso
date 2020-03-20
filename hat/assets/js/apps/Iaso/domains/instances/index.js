@@ -11,6 +11,7 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import {
+    resetInstances,
     setCurrentForm,
     fetchFormDetail as fetchFormDetailAction,
     setInstances, setInstancesSmallDict, setInstancesFetching,
@@ -87,6 +88,7 @@ class Instances extends Component {
             params,
             redirectToReplace,
         } = this.props;
+        this.props.resetInstances();
         fetchOrgUnitsTypes(dispatch)
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchDevices(dispatch)
@@ -410,6 +412,7 @@ Instances.propTypes = {
     setOrgUnitTypes: PropTypes.func.isRequired,
     setInstancesFetching: PropTypes.func.isRequired,
     setDevicesList: PropTypes.func.isRequired,
+    resetInstances: PropTypes.func.isRequired,
     setDevicesOwnershipList: PropTypes.func.isRequired,
     router: PropTypes.object.isRequired,
     redirectToReplace: PropTypes.func.isRequired,
@@ -429,6 +432,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentForm: form => dispatch(setCurrentForm(form)),
+    resetInstances: () => dispatch(resetInstances()),
     setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
     setInstancesSmallDict: instances => dispatch(setInstancesSmallDict(instances)),
     setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),

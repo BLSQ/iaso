@@ -110,17 +110,11 @@ class InstanceDetails extends Component {
                                     >
                                         <InstanceDetailsInfos currentInstance={currentInstance} />
                                     </WidgetPaper>
-                                    {
-                                        currentInstance.latitude
-                                        && currentInstance.longitude
-                                        && (
-                                            <WidgetPaper
-                                                title={formatMessage(MESSAGES.location)}
-                                            >
-                                                <InstanceDetailsLocation currentInstance={currentInstance} />
-                                            </WidgetPaper>
-                                        )
-                                    }
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.location)}
+                                    >
+                                        <InstanceDetailsLocation currentInstance={currentInstance} />
+                                    </WidgetPaper>
                                     {
                                         currentInstance.files.length > 0
                                         && (

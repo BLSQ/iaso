@@ -64,7 +64,13 @@ const InstanceDetailsInfos = ({
                     })
                 }
             </div>
-            <MarkerMap latitude={currentInstance.latitude} longitude={currentInstance.longitude} />
+            {
+                currentInstance.latitude
+                && currentInstance.longitude
+                && (
+                    <MarkerMap latitude={currentInstance.latitude} longitude={currentInstance.longitude} />
+                )
+            }
         </>
     );
 };

@@ -7,6 +7,7 @@ export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
 export const SET_INSTANCES_FETCHING = 'SET_INSTANCES_FETCHING';
 export const SET_CURRENT_INSTANCE = 'SET_CURRENT_INSTANCE';
 export const SET_INSTANCE_CURRENT_FORM = 'SET_INSTANCE_CURRENT_FORM';
+export const RESET_INSTANCES = 'RESET_INSTANCES';
 
 
 export const setInstances = (list, showPagination, params, count, pages) => ({
@@ -39,6 +40,10 @@ export const setCurrentInstance = instance => ({
 export const setCurrentForm = form => ({
     type: SET_INSTANCE_CURRENT_FORM,
     payload: form,
+});
+
+export const resetInstances = () => ({
+    type: RESET_INSTANCES,
 });
 
 

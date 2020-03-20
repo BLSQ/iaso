@@ -3,6 +3,7 @@ import PropTypes from 'prop-types';
 import { Grid, withStyles, Typography } from '@material-ui/core';
 
 import commonStyles from '../../../styles/common';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 
 const styles = theme => ({
@@ -46,7 +47,7 @@ const InstanceDetailsField = ({
                 color="inherit"
                 title={valueTitle !== '' ? valueTitle : value}
             >
-                {value}
+                {value || textPlaceholder}
             </Typography>
         </Grid>
     </Grid>

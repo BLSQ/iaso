@@ -4,6 +4,7 @@ import {
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCE_CURRENT_FORM,
+    RESET_INSTANCES,
 } from './actions';
 
 export const instancesInitialState = {
@@ -56,6 +57,10 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
         case SET_INSTANCE_CURRENT_FORM: {
             const currentForm = action.payload;
             return { ...state, currentForm };
+        }
+    
+        case RESET_INSTANCES: {
+            return instancesInitialState;
         }
 
         default:

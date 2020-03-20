@@ -77,10 +77,6 @@ class ExportRequestsAPITestCase(APITestCase):
         )
         instance.json = {"question_1": "answer1", "_version": 1}
         instance.save()
-        # force to past creation date
-        # looks the the first save don't take it
-
-        instance.save()
         return instance
 
     def uuid(self, number):
@@ -133,4 +129,63 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(
             response_data["export_requests"][1]["params"]["filters"]["period_ids"],
             "201901,201902",
+        )
+
+    def test_exportrequests_create_works(self):
+        self.build_instance(self.village_1, self.uuid(1), "201901")
+        self.build_instance(self.village_1, self.uuid(2), "201901")
+        self.build_instance(self.village_1, self.uuid(3), "201902")
+        self.build_instance(self.village_1, self.uuid(4), "201903")
+
+        self.build_instance(self.village_2, self.uuid(5), "201901")
+        self.build_instance(self.village_2, self.uuid(6), "201902")
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            f"/api/exportrequests/", data={"period_ids": "201901,201902"}
+        )
+
+        self.assertEqual(201, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+
+    def test_exportrequests_create_ko_when_bad_filter(self):
+        self.build_instance(self.village_1, self.uuid(1), "201901")
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            f"/api/exportrequests/", data={"period_ids": "204112"}
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        response_data = response.json()
+        self.assertEqual(
+            response_data,
+            {
+                "params": "no instance to export for {'filters': {'form_id': None, 'with_location': None, 'org_unit_type_id': None, 'device_id': None, 'device_ownership_id': None, 'org_unit_parent_id': None, 'org_unit_id': None, 'period_ids': '204112', 'status': None}, 'force_export': False}"
+            },
+        )
+
+    def test_exportrequests_create_ko_when_no_version(self):
+        instance = self.build_instance(self.village_1, self.uuid(1), "201901")
+        instance.json = {"demo": "noversion"}
+        instance.save()
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(
+            f"/api/exportrequests/", data={"period_ids": "201901"}
+        )
+
+        self.assertEqual(400, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        response_data = response.json()
+        self.assertEqual(
+            response_data,
+            {
+                "params": "No version specified (_version or version) in instance json : "
+                + str(instance.id)
+                + " {'demo': 'noversion'}"
+            },
         )

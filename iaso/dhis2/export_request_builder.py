@@ -62,7 +62,12 @@ class ExportRequestBuilder:
     def get_form_mapping_versions(self, instance):
         ona_version = instance.json.get("_version") or instance.json.get("version")
         if ona_version is None:
-            raise Exception("No version specified in instance json : " + str(instance))
+            raise Exception(
+                "No version specified (_version or version) in instance json : "
+                + str(instance.id)
+                + " "
+                + str(instance.json)
+            )
 
         key = (instance.form_id, ona_version)
         if key in self.form_mappings_cache:

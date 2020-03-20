@@ -104,7 +104,7 @@ class InstancesViewSet(viewsets.ViewSet):
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
 
-        filters = parse_instance_filters(request)
+        filters = parse_instance_filters(request.GET)
         form_id = filters["form_id"]
         if form_id:
             form = Form.objects.get(pk=form_id)

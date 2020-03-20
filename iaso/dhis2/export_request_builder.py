@@ -14,8 +14,8 @@ class ExportRequestBuilder:
         # normal filters
         instances = instances.for_filters(**filters)
 
-        # add account from Launcher TODO MartinD ??
-
+        # add account from Launcher
+        instances = instances.filter(project__account=launcher.iaso_profile.account)
         # don't export duplicate instances
         instances = instances.with_status().exclude(status=Instance.STATUS_DUPLICATED)
         # don't export deleted instances

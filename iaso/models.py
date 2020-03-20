@@ -1170,6 +1170,7 @@ class ExportRequest(models.Model):
             "status": self.status,
             "last_error_message": self.last_error_message,
             "params": self.params,
+            "launcher": self.launcher.iaso_profile.as_dict(),
             "stats": {
                 "instance_count": self.instance_count,
                 "exported_count": self.exported_count,

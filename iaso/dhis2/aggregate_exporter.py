@@ -342,9 +342,13 @@ class AggregateExporter:
                 )
                 raise exception
 
-            except Exception as exception:
+            # it's ok to catch BaseException, we want to be able to mark it as errored if cancelled or worst
+            except BaseException as exception:
                 self.flag_as_errored(
-                    export_request, export_statuses, str(exception), stats
+                    export_request,
+                    export_statuses,
+                    repr(exception) + " : " + type(exception).__name__,
+                    stats,
                 )
                 raise exception
 

@@ -5,9 +5,11 @@ from iaso.test import APITestCase
 from iaso import models as m
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from iaso.dhis2.export_request_builder import ExportRequestBuilder
+from django.core.files.uploadedfile import UploadedFile
 
 
-class ProjectsAPITestCase(APITestCase):
+class ExportRequestsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.maxDiff = None
@@ -49,6 +51,16 @@ class ProjectsAPITestCase(APITestCase):
         form.save()
         cls.form = form
 
+        form_version = m.FormVersion.objects.create(form=form, version_id=1)
+        cls.form_version = form_version
+
+        mapping = m.Mapping.objects.create(
+            form=form, data_source=source, mapping_type="AGGREGATE"
+        )
+        m.MappingVersion.objects.create(
+            name="aggregate", form_version=form_version, mapping=mapping, json={}
+        )
+
     def build_instance(self, org_unit, instance_uuid, period):
 
         instance = m.Instance()
@@ -60,6 +72,14 @@ class ProjectsAPITestCase(APITestCase):
         instance.period = period
         instance.form = self.form
         instance.project = self.project
+        instance.file = UploadedFile(
+            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+        )
+        instance.json = {"question_1": "answer1", "_version": 1}
+        instance.save()
+        # force to past creation date
+        # looks the the first save don't take it
+
         instance.save()
         return instance
 
@@ -67,16 +87,16 @@ class ProjectsAPITestCase(APITestCase):
         return str(number) + "b7c3954-f69a-4b99-83b1-db73957b32b" + str(number)
 
     @tag("iaso_only")
-    def test_completeness_list_without_auth(self):
-        """GET /completeness/ without auth should result in a 403"""
+    def test_exportrequests_list_without_auth(self):
+        """GET /exportrequests/ without auth should result in a 403"""
 
-        response = self.client.get("/api/completeness/")
+        response = self.client.get("/api/exportrequests/")
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
     @tag("iaso_only")
-    def test_completeness_list(self):
-        """GET /completeness/ should return counts"""
+    def test_exportrequests_list(self):
+        """GET /exportrequests/ should return counts"""
 
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.build_instance(self.village_1, self.uuid(2), "201901")
@@ -85,62 +105,32 @@ class ProjectsAPITestCase(APITestCase):
 
         self.build_instance(self.village_2, self.uuid(5), "201901")
         self.build_instance(self.village_2, self.uuid(6), "201902")
-        exported_instance = self.build_instance(self.village_2, self.uuid(7), "201903")
-        exported_instance.last_export_success_at = timezone.now()
-        exported_instance.save()
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201901,201902"}, launcher=self.user
+        )
+        export_request2 = ExportRequestBuilder().build_export_request(
+            filters={"period_ids": "201903"}, launcher=self.user
+        )
 
         self.client.force_authenticate(self.user)
 
-        expected_counts = [
-            {
-                "period": "201901",
-                "form": {
-                    "id": self.form.id,
-                    "name": "Quantity FORM",
-                    "period_type": "MONTH",
-                },
-                "counts": {"total": 3, "error": 2, "exported": 0, "ready": 1},
-            },
-            {
-                "period": "201902",
-                "form": {
-                    "id": self.form.id,
-                    "name": "Quantity FORM",
-                    "period_type": "MONTH",
-                },
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 2},
-            },
-            {
-                "period": "201903",
-                "form": {
-                    "id": self.form.id,
-                    "name": "Quantity FORM",
-                    "period_type": "MONTH",
-                },
-                "counts": {"total": 2, "error": 0, "exported": 1, "ready": 1},
-            },
-        ]
-        current = [
-            {
-                "period": "201901",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 3, "error": 2, "exported": 2, "ready": 1},
-            },
-            {
-                "period": "201902",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 2},
-            },
-            {
-                "period": "201903",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 1},
-            },
-        ]
-
-        response = self.client.get("/api/completeness/")
+        response = self.client.get("/api/exportrequests/")
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
-        print(response_data)
-        self.assertEqual({"completeness": expected_counts}, response_data)
+
+        self.assertEqual(
+            response_data["export_requests"][0]["stats"]["instance_count"], 1
+        )
+        self.assertEqual(
+            response_data["export_requests"][0]["params"]["filters"]["period_ids"],
+            "201903",
+        )
+        self.assertEqual(
+            response_data["export_requests"][1]["stats"]["instance_count"], 3
+        )
+        self.assertEqual(
+            response_data["export_requests"][1]["params"]["filters"]["period_ids"],
+            "201901,201902",
+        )

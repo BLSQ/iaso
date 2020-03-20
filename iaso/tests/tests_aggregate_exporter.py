@@ -18,6 +18,8 @@ from iaso.models import (
     ExportLog,
     ExportRequest,
     ExportStatus,
+    Profile,
+    Project,
 )
 
 import os
@@ -82,6 +84,7 @@ class AggregateExporterTests(TestCase):
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")
         )
         instance.form = form
+        instance.project = self.project
         instance.save()
         # force to past creation date
         # looks the the first save don't take it
@@ -134,7 +137,8 @@ class AggregateExporterTests(TestCase):
             username="Test User Name", email="testemail@bluesquarehub.com"
         )
         self.user = user
-
+        p = Profile(user=user, account=account)
+        p.save()
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
             url="https://dhis2.com",
@@ -151,6 +155,13 @@ class AggregateExporterTests(TestCase):
             number=1, data_source=datasource
         )
         self.source_version = source_version
+
+        self.project = Project(
+            name="Hyrule", app_id="magic.countries.hyrule.collect", account=account
+        )
+        self.project.save()
+
+        datasource.projects.add(self.project)
 
         org_unit = OrgUnit()
         org_unit.validated = True

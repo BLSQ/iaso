@@ -47,7 +47,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        dhis2_version = "2.30"
+        dhis2_version = "2.31.7"
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(
@@ -64,7 +64,8 @@ class Command(BaseCommand):
         try:
             user.iaso_profile
         except Profile.DoesNotExist:
-            Profile.objects.create(account=account, user=user)
+            iaso_profile = Profile.objects.create(account=account, user=user)
+            user.iaso_profile = iaso_profile
         self.user = user
 
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
@@ -137,7 +138,7 @@ class Command(BaseCommand):
 
         self.project = project
 
-        periods = ["201801", "201802", "201803", "201804", "201805", "201806"]
+        periods = ["201801", "201802", "201803"]
         quarter_periods = ["2018Q1", "2018Q2"]
 
         print("********* FORM seed done")
@@ -205,7 +206,7 @@ class Command(BaseCommand):
                 filters={
                     "period_ids": ",".join(export_periods),
                     "form_ids": ",".join(
-                        list(map(str, [quantity_form.id, quality_form.id],))
+                        list(map(str, [quantity_form.id, quality_form.id]))
                     ),
                 },
                 launcher=self.user,
@@ -255,10 +256,14 @@ class Command(BaseCommand):
         mapping_file="./testdata/seed-data-command-form-mapping.json",
     ):
         form_version, created = FormVersion.objects.get_or_create(
-            form=form,
-            version_id=1,
-            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
-        )  # TODO: use better fixture
+            form=form, version_id=1
+        )
+        # don't use uploadedFile in get_or_create, it will end up non unique
+        form_version.file = UploadedFile(
+            # TODO: use better fixture
+            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+        )
+        form_version.save()
         mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
         mapping_version_name = "aggregate" if form.single_per_period else "derived"
 
@@ -330,7 +335,6 @@ class Command(BaseCommand):
                     )
 
                     instances.append(instance)
-
             Instance.objects.bulk_create(instances)
 
     def mapping_json(self, file):

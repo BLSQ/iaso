@@ -120,23 +120,6 @@ class ProjectsAPITestCase(APITestCase):
                 "counts": {"total": 2, "error": 0, "exported": 1, "ready": 1},
             },
         ]
-        current = [
-            {
-                "period": "201901",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 3, "error": 2, "exported": 2, "ready": 1},
-            },
-            {
-                "period": "201902",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 2},
-            },
-            {
-                "period": "201903",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 1},
-            },
-        ]
 
         response = self.client.get("/api/completeness/")
         self.assertEqual(200, response.status_code)

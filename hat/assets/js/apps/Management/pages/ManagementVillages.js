@@ -20,6 +20,7 @@ import {
 } from '../constants/villagesFilters';
 import { currentUserActions } from '../../../redux/currentUserReducer';
 import SearchButton from '../../../components/SearchButton';
+import { getYears } from '../../../utils/index';
 
 const newItem = {
     id: 0,
@@ -63,32 +64,41 @@ class ManagementVillages extends React.Component {
         });
     }
 
-    componentWillReceiveProps(nextProps) {
-        this.setState({
-            showEditModale: nextProps.selectedVillage !== null,
-        });
-        if (nextProps.params.province_id !== this.props.params.province_id) {
-            this.props.selectProvince(nextProps.params.province_id);
+    componentDidUpdate(prevProps) {
+        const {
+            params,
+        } = this.props;
+        if (prevProps.selectedVillage !== null && !this.state.showEditModale) {
+            this.toggleEditModale(prevProps.selectedVillage !== null);
         }
-        if (nextProps.params.zs_id !== this.props.params.zs_id) {
-            this.props.selectZone(nextProps.params.zs_id, nextProps.params.as_id, nextProps.params.village_id);
+        if (prevProps.params.province_id !== params.province_id) {
+            this.props.selectProvince(params.province_id);
         }
-        if (nextProps.params.as_id !== this.props.params.as_id) {
-            this.props.selectArea(nextProps.params.as_id, nextProps.params.village_id, nextProps.params.zs_id);
+        if (prevProps.params.zs_id !== params.zs_id) {
+            this.props.selectZone(params.zs_id, params.as_id, params.village_id);
+        }
+        if (prevProps.params.as_id !== params.as_id) {
+            this.props.selectArea(params.as_id, params.village_id, params.zs_id);
+        }
+        if (!prevProps.params.results && params.results && !params.years) {
+            const newParams = {
+                ...this.props.params,
+                years: getYears(5).join(','),
+            };
+            this.props.redirectTo(baseUrl, newParams);
+        }
+        if (prevProps.params.results && !params.results && params.years) {
+            const newParams = {
+                ...this.props.params,
+            };
+            delete newParams.years;
+            this.props.redirectTo(baseUrl, newParams);
         }
     }
-
 
     onSearch() {
         this.setState({
             tableUrl: this.getEndpointUrl(),
-        });
-    }
-
-    onChangeFilters(key, value) {
-        this.props.redirectTo(baseUrl, {
-            ...this.props.params,
-            [key]: value,
         });
     }
 
@@ -109,6 +119,7 @@ class ManagementVillages extends React.Component {
             results: params.results,
             village_source: params.village_source,
             as_list: true,
+            years: params.years,
         };
 
         if (toExport) {
@@ -124,6 +135,13 @@ class ManagementVillages extends React.Component {
         });
         return newEndPointUrl;
     }
+
+    toggleEditModale(showEditModale) {
+        this.setState({
+            showEditModale,
+        });
+    }
+
 
     toggleDeleteModale() {
         this.setState({
@@ -165,9 +183,10 @@ class ManagementVillages extends React.Component {
                 areas,
                 villageSources,
             },
+            params,
         } = this.props;
         const filters1 = filtersZone1(formatMessage, defineMessages, villageSources);
-        const filters2 = filtersZone2(formatMessage, defineMessages);
+        const filters2 = filtersZone2(formatMessage, defineMessages, params.results);
         const geo = filtersGeo(
             provinces || [],
             zones || [],

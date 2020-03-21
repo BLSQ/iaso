@@ -138,7 +138,8 @@ const ImageGallery = ({
                         {getExtraInfos(currentImg)}
                     </div>
                     <Typography
-                        type="body2"
+                        color="primary"
+                        type="h6"
                         className={classes.count}
                     >
                         {`${currentIndex + 1} / ${imageList.length}`}

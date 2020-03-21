@@ -1,34 +1,60 @@
 import React from 'react';
 import instancesTableColumns from './config';
 
-export const getInstancesColumns = (formatMessage, instances) => {
-    let tableColumns = [...instancesTableColumns(formatMessage)];
-    if (instances[0]) {
-        const childrenArray = [];
+export const getInstancesColumns = (formatMessage, visibleColumns, component) => {
+    const metasColumns = [...instancesTableColumns(formatMessage, component)];
+    let tableColumns = [];
+    metasColumns.forEach((c) => {
+        const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
+        if ((metaColumn && metaColumn.active) || c.accessor === 'actions') {
+            tableColumns.push(c);
+        }
+    });
 
-        Object.keys(instances[0].file_content).forEach((k) => {
+    const childrenArray = [];
+    visibleColumns.filter(c => !c.meta).forEach((c) => {
+        if (c.active) {
+            childrenArray.push({
+                class: 'small',
+                sortable: false,
+                accessor: c.key,
+                Header: c.label || c.key,
+                Cell: settings => (
+                    <span>
+                        {!settings.original.file_content[c.key] || settings.original.file_content[c.key] === '' ? '/' : settings.original.file_content[c.key]}
+                    </span>
+                ),
+            });
+        }
+    });
+    tableColumns = tableColumns.concat(childrenArray);
+    return tableColumns;
+};
+
+export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
+
+export const getInstancesVisibleColumns = (formatMessage, instance, columnsParams = undefined) => {
+    const metasColumns = [...instancesTableColumns(formatMessage).filter(c => c.accessor !== 'actions')];
+    const columns = metasColumns.map(c => (
+        {
+            key: c.accessor,
+            label: c.Header,
+            active: columnsParams !== undefined && columnsParams.includes(c.accessor),
+            meta: true,
+        }
+    ));
+    if (instance) {
+        Object.keys(instance.file_content).forEach((k) => {
             if (k !== 'meta' && k !== 'uuid') {
-                childrenArray.push({
-                    class: 'small',
-                    sortable: false,
-                    accessor: k,
-                    Header: k,
-                    Cell: settings => (
-                        <span>
-                            {!settings.original.file_content[k] || settings.original.file_content[k] === '' ? '/' : settings.original.file_content[k]}
-                        </span>
-                    ),
-                    width: 150,
+                columns.push({
+                    key: k,
+                    label: k, // TO-DO: get field label from API
+                    active: columnsParams !== undefined && columnsParams.includes(k),
                 });
             }
         });
-        tableColumns = tableColumns.map(c => ({
-            ...c,
-            width: c.accessor === 'uuid' ? 300 : 200,
-        }));
-        tableColumns = tableColumns.concat(childrenArray);
     }
-    return tableColumns;
+    return columns;
 };
 
 

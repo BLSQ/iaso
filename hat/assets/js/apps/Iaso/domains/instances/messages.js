@@ -8,6 +8,10 @@ const MESSAGES = {
         id: 'iaso.instance.device',
         defaultMessage: 'IMEI device',
     },
+    device_id: {
+        id: 'iaso.instance.device',
+        defaultMessage: 'IMEI device',
+    },
     coordinate: {
         id: 'iaso.instance.coordinate',
         defaultMessage: 'Coordinates',
@@ -15,6 +19,10 @@ const MESSAGES = {
     created_at: {
         id: 'iaso.instance.created_at',
         defaultMessage: 'Created at',
+    },
+    updated_at: {
+        id: 'iaso.instance.updated_at',
+        defaultMessage: 'Updated at',
     },
     files: {
         id: 'iaso.instance.files',
@@ -39,6 +47,38 @@ const MESSAGES = {
     message: {
         id: 'iaso.label.useOrgUnitLocation.message',
         defaultMessage: 'Don\'t forget to save',
+    },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.labels.actions',
+    },
+    org_unit: {
+        defaultMessage: 'Org unit',
+        id: 'iaso.instance.org_unit',
+    },
+    period: {
+        defaultMessage: 'Period',
+        id: 'iaso.instance.period',
+    },
+    file: {
+        defaultMessage: 'File',
+        id: 'iaso.instance.file',
+    },
+    infos: {
+        defaultMessage: 'Informations',
+        id: 'iaso.instance.infos',
+    },
+    form: {
+        defaultMessage: 'Form',
+        id: 'iaso.instance.formShort',
+    },
+    location: {
+        defaultMessage: 'Location',
+        id: 'iaso.map.location',
+    },
+    uuid: {
+        defaultMessage: 'Uuid',
+        id: 'iaso.label.uuid',
     },
 };
 

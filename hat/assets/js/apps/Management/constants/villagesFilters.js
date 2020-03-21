@@ -1,8 +1,9 @@
 import { selectProvince, selectZone, selectArea } from '../../../utils/selectGeo';
+import { getYears } from '../../../utils/index';
 
 const MESSAGES = {
     positive: {
-        defaultMessage: 'Posiotive',
+        defaultMessage: 'Positive',
         id: 'main.label.positive',
     },
     negative: {
@@ -34,8 +35,8 @@ const MESSAGES = {
         id: 'village.type.satellite',
     },
     located: {
-        defaultMessage: 'Locacted',
-        id: 'main.label.willagelocated',
+        defaultMessage: 'Located',
+        id: 'main.label.villagelocated',
     },
     unlocated: {
         defaultMessage: 'Not located',
@@ -106,8 +107,10 @@ const filtersZone1 = (
 const filtersZone2 = (
     formatMessage,
     defineMessages,
-) => (
-    [
+    resultValue,
+) => {
+    const years = getYears(10);
+    return [
         {
             name: 'results',
             urlKey: 'results',
@@ -130,6 +133,26 @@ const filtersZone2 = (
             label: {
                 id: 'management.village.label.results',
                 defaultMessage: 'Cass',
+            },
+            type: 'select',
+        },
+        {
+            isDisabled: !resultValue,
+            name: 'years',
+            urlKey: 'years',
+            isMultiSelect: true,
+            isClearable: true,
+            options: years.map(y => ({
+                label: y,
+                value: y,
+            })),
+            placeholder: {
+                id: 'main.label.all',
+                defaultMessage: 'All',
+            },
+            label: {
+                id: 'main.label.years',
+                defaultMessage: 'Years',
             },
             type: 'select',
         },
@@ -158,8 +181,8 @@ const filtersZone2 = (
             },
             type: 'select',
         },
-    ]
-);
+    ];
+};
 
 const filtersSearch = (
     formatMessage,
@@ -283,4 +306,3 @@ export {
     filtersSearch,
     filtersGeo,
 };
-

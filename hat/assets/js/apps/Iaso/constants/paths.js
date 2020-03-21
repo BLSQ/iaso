@@ -75,6 +75,20 @@ export const instancesPath = getPath({
             isRequired: false,
             key: 'tab',
         },
+        {
+            isRequired: false,
+            key: 'columns',
+        },
+    ],
+});
+
+export const instanceDetailPath = getPath({
+    baseUrl: 'instance',
+    params: [
+        {
+            isRequired: true,
+            key: 'instanceId',
+        },
     ],
 });
 

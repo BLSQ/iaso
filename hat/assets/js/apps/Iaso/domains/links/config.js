@@ -11,6 +11,7 @@ import getDisplayName from '../../utils/usersUtils';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
+import { textPlaceholder } from '../../constants/uiConstants';
 
 export const linksTableColumns = (formatMessage, component, classes) => (
     [
@@ -116,7 +117,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
             }),
             accessor: 'validator',
             Cell: settings => (
-                settings.original.validator ? getDisplayName(settings.original.validator) : '/'
+                settings.original.validator ? getDisplayName(settings.original.validator) : textPlaceholder
             ),
         },
         {
@@ -210,7 +211,7 @@ export const runsTableColumns = (formatMessage, component) => (
             accessor: 'launcher',
             Cell: settings => (
                 <span>
-                    {settings.original.launcher ? getDisplayName(settings.original.launcher) : '/'}
+                    {settings.original.launcher ? getDisplayName(settings.original.launcher) : textPlaceholder}
                 </span>
             ),
         },
@@ -225,7 +226,7 @@ export const runsTableColumns = (formatMessage, component) => (
                 <span>
                     {
                         settings.original.links_count === 0
-                        && '/'
+                        && textPlaceholder
                     }
                     {
                         settings.original.links_count > 0

@@ -34,7 +34,7 @@ import {
     fetchGroups,
     fetchSources,
 } from '../../utils/requests';
-import { getAliasesArrayFromString, getOrgUnitsTree } from '../orgUnits/utils';
+import { getAliasesArrayFromString, getOrgUnitsTree } from './utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import OrgUnitInfos from './components/OrgUnitInfosComponent';

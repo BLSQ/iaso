@@ -8,8 +8,9 @@ import {
 } from '@material-ui/core';
 
 import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
-import MESSAGES from '../../../messages/forms';
+import MESSAGES from '../../forms/messages';
 
 const styles = theme => ({
     cell: {
@@ -42,10 +43,9 @@ const ignoredKeys = [
     'source_ref',
 ];
 
-const placeholder = '--';
 
 const renderValue = (linkKey, value, classes) => {
-    if (!value || value.toString().length === 0) return placeholder;
+    if (!value || value.toString().length === 0) return textPlaceholder;
     switch (linkKey) {
         case 'geo_json': {
             return <div className={classes.cellMap}><GeoJsonMap geoJson={value} /></div>;

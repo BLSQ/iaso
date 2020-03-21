@@ -1,3 +1,5 @@
+import { textPlaceholder } from '../../constants/uiConstants';
+
 export const getPolygonPositionsFromSimplifiedGeom = (field) => {
     const positionsArrays = field.split('((')[1].replace('))', '').replace(/, /gi, ',').split(',');
     const polygonPositions = [];
@@ -20,7 +22,6 @@ export const fetchLatestOrgUnitLevelId = (levels) => {
 
 export const getOrgUnitsTree = (orgUnit) => {
     let tree = [orgUnit];
-
     const orgUnitLoop = (parent, tempTree) => {
         let treeCopy = [
             parent,
@@ -48,4 +49,16 @@ export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => 
         }
     });
     return sources;
+};
+
+
+export const getOrgunitMessage = (orgUnit, withType) => {
+    let message = textPlaceholder;
+    if (orgUnit) {
+        message = orgUnit.name;
+        if (orgUnit.org_unit_type_name && withType) {
+            message += `(${orgUnit.org_unit_type_name})`;
+        }
+    }
+    return message;
 };

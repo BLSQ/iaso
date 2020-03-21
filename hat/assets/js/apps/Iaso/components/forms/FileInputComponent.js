@@ -5,7 +5,7 @@ import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import FormControlComponent from './FormControlComponent';
 import InputLabelComponent from './InputLabelComponent';
-import MESSAGES from '../../messages/forms';
+import MESSAGES from '../../domains/forms/messages';
 
 function FileInputComponent({
     intl, keyValue, label, labelString, disabled, onChange, required, errors,

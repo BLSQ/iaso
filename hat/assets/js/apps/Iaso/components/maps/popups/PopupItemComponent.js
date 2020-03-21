@@ -8,8 +8,7 @@ import {
 import PropTypes from 'prop-types';
 
 import mapPopupStyles from '../../../styles/mapPopup';
-
-const placeHolder = '/';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 const styles = theme => ({
     ...mapPopupStyles(theme),
@@ -28,7 +27,7 @@ const PopupItemComponent = (props) => {
                 :
             </Grid>
             <Grid item xs={8} className={classes.popuplistItem}>
-                {value || placeHolder}
+                {value || textPlaceholder}
             </Grid>
         </Grid>
     );

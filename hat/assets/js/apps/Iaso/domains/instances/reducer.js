@@ -3,6 +3,8 @@ import {
     SET_INSTANCES_SMALL_DICT,
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
+    SET_INSTANCE_CURRENT_FORM,
+    RESET_INSTANCES,
 } from './actions';
 
 export const instancesInitialState = {
@@ -16,6 +18,7 @@ export const instancesInitialState = {
         pages: 0,
     },
     current: null,
+    currentForm: null,
 };
 
 export const instancesReducer = (state = instancesInitialState, action = {}) => {
@@ -49,6 +52,15 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
         case SET_CURRENT_INSTANCE: {
             const current = action.payload;
             return { ...state, current };
+        }
+
+        case SET_INSTANCE_CURRENT_FORM: {
+            const currentForm = action.payload;
+            return { ...state, currentForm };
+        }
+    
+        case RESET_INSTANCES: {
+            return instancesInitialState;
         }
 
         default:

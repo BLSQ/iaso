@@ -1,5 +1,4 @@
 import React from 'react';
-import moment from 'moment';
 
 import {
     withStyles,
@@ -17,6 +16,7 @@ import TxtSvg from '../svg/TxtSvgComponent';
 import WordSvg from '../svg/WordSvgComponent';
 import ExcellSvg from '../svg/ExcellSvgComponent';
 import CsvSvg from '../svg/CsvSvgComponent';
+import { displayDateFromTimestamp } from '../../utils/intlUtil';
 
 const styles = theme => ({
     paper: {
@@ -97,7 +97,7 @@ function DocumentsItemComponent(props) {
             <Paper className={classes.paper}>
                 {renderIcon(file, classes)}
                 <span className={classes.fileInfo}>
-                    {moment.unix(file.createdAt).format('DD/MM/YYYY HH:mm')}
+                    {displayDateFromTimestamp(file.createdAt)}
                 </span>
                 <span className={classes.fileInfo}>
                     {`${fileName.name}.${fileName.extension}`}

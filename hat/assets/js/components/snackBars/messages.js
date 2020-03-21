@@ -123,6 +123,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchCompletenessError',
         defaultMessage: 'An error occured while fetching completness',
     },
+    noInstancesOnMap: {
+        defaultMessage: 'Cannot find an instance with geolocation',
+        id: 'iaso.instance.missingGeolocation',
+    },
 };
 
 export default MESSAGES;

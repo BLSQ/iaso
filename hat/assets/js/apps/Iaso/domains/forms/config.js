@@ -8,6 +8,7 @@ import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
+import { textPlaceholder } from '../../constants/uiConstants';
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -26,7 +27,7 @@ const formsTableColumns = (formatMessage, component) => (
             Cell: (settings) => {
                 const dateText = settings.original.instance_updated_at
                     ? moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')
-                    : '/';
+                    : textPlaceholder;
 
                 return <ColumnTextComponent text={dateText} />;
             },
@@ -105,7 +106,7 @@ const formsTableColumns = (formatMessage, component) => (
         {
             Header: formatMessage({
                 defaultMessage: 'Action(s)',
-                id: 'iaso.forms.actions',
+                id: 'iaso.labels.actions',
             }),
             resizable: false,
             sortable: false,

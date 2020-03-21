@@ -76,9 +76,6 @@ table {
 th {
     @include table-cell-styles;
     border: 1px solid $mid-mid-gray;
-    &:first-child {
-        border: 1px solid $mid-mid-gray;
-    }
     background: $light-gray;
     &.main {
         border-bottom: 1px solid $light-gray;

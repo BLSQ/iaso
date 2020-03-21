@@ -57,5 +57,5 @@ export const INSTANCE_METAS_FIELDS = [
         render: value => Period.getPrettyPeriod(value),
         tableOrder: 3,
         type: 'info',
-    },
+    }
 ];

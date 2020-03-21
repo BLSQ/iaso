@@ -69,7 +69,7 @@ export const getColumns = (
                             role="button"
                             tabIndex="0"
                             className={`${classes.cell} ${value ? classes[status] : ''}`}
-                            onClick={() => onSelect(settings.original, status)}
+                            onClick={() => onSelect(settings.original, status, settings.original.months[month].period)}
                         >
                             {value || '-'}
                         </span>

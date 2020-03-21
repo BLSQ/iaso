@@ -129,6 +129,7 @@ class Instances extends Component {
             tableColumns,
         } = this.state;
         if (params.pageSize !== prevProps.params.pageSize
+            || params.params !== prevProps.params.params
             || params.formId !== prevProps.params.formId
             || params.order !== prevProps.params.order
             || params.page !== prevProps.params.page) {
@@ -148,6 +149,22 @@ class Instances extends Component {
         }
     }
 
+    getFilters(){
+        const {
+            params,
+        } = this.props;
+        return {
+            form_id: params.formId,
+            withLocation: params.withLocation,
+            orgUnitTypeId: params.orgUnitTypeId,
+            deviceId: params.deviceId,
+            periods: params.periods,
+            status: params.status,
+            deviceOwnershipId: params.deviceOwnershipId,
+            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels)
+        }
+    }
+
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
         const {
             params,
@@ -156,15 +173,8 @@ class Instances extends Component {
             limit: params.pageSize ? params.pageSize : 20,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
-            form_id: params.formId,
-            withLocation: params.withLocation,
-            orgUnitTypeId: params.orgUnitTypeId,
-            deviceId: params.deviceId,
-            periods: params.periods,
-            status: params.status,
-            deviceOwnershipId: params.deviceOwnershipId,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
             asSmallDict: true,
+            ...this.getFilters()
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }

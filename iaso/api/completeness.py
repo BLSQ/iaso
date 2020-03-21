@@ -14,7 +14,7 @@ def to_completeness(count):
         "form": {
             "id": count["form_id"],
             "name": count["form__name"],
-            "period_type": "MONTH",
+            "period_type": "QUARTER" if "Q" in count["period"] else "MONTH",
         },
         "counts": {
             "total": count["total_count"],

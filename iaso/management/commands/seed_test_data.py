@@ -3,6 +3,7 @@ from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
+from uuid import uuid4
 from iaso.models import (
     User,
     Instance,
@@ -312,6 +313,8 @@ class Command(BaseCommand):
                     instance.created_at = parse_datetime("2018-02-16T11:00:00+00")
                     instance.org_unit = org_unit
                     instance.period = period
+                    instance.file_name = "fake_it_until_you_make_it.xml"
+                    instance.uuid = str(uuid4())
                     if with_location:
                         instance.location = Point(
                             -11.7868289 + (2 * random()), 8.4494988 + (2 * random())

@@ -48,7 +48,6 @@ class CompletenessPeriodComponent extends Component {
     }
 
     onSelectCell(form, status, period) {
-        debugger
         this.props.redirectTo('instances', {
             formId: form.id,
             periods: period.asPeriodType(form.period_type).periodString,

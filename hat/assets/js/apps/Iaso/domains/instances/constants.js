@@ -4,6 +4,7 @@ import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import OrgUnitDisplay from '../orgUnits/components/OrgUnitDisplay';
 import { Period } from '../periods/models';
 import { getOrgunitMessage } from '../orgUnits/utils';
+import { FormattedMessage } from 'react-intl';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -56,6 +57,12 @@ export const INSTANCE_METAS_FIELDS = [
         key: 'period',
         render: value => Period.getPrettyPeriod(value),
         tableOrder: 3,
+        type: 'info',
+    },
+    {
+        key: 'status',
+        render: value => value ? <FormattedMessage id={"iaso.label.instanceStatus."+value.toLowerCase()+"Single"} defaultMessage={value} /> : "-",
+        tableOrder: 5,
         type: 'info',
     }
 ];

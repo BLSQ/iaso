@@ -135,7 +135,6 @@ class Instances extends Component {
             tableColumns,
         } = this.state;
         if (params.pageSize !== prevProps.params.pageSize
-            || params.params !== prevProps.params.params
             || params.formId !== prevProps.params.formId
             || params.order !== prevProps.params.order
             || params.page !== prevProps.params.page) {

@@ -1,7 +1,7 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets
 from rest_framework.response import Response
-
+from django.http import Http404
 from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, DeviceOwnership, Form, Project
@@ -271,7 +271,10 @@ class InstancesViewSet(viewsets.ViewSet):
             return Response({"result": "ok"})
 
     def retrieve(self, request, pk=None):
-        instance = get_object_or_404(Instance, pk=pk)
+        try:
+            instance = Instance.objects.with_status().get(pk=pk)
+        except:
+            raise Http404
         check_access(instance, request.user)
         res = instance.as_full_model()
         return Response(res)

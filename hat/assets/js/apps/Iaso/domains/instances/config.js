@@ -1,81 +1,45 @@
 /* globals window */
 import React from 'react';
-import moment from 'moment';
-import Link from '@material-ui/core/Link';
+import orderBy from 'lodash/orderBy';
 
-import { Period } from '../periods/models';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
+import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import XmlButton from '../../components/buttons/XmlButtonComponent';
 
-const instancesTableColumns = formatMessage => (
-    [
+import { INSTANCE_METAS_FIELDS } from './constants';
+import MESSAGES from './messages';
+
+const instancesTableColumns = (formatMessage = () => ({}), component) => {
+    const columns = [
         {
-            Header: formatMessage({
-                defaultMessage: 'Updated at',
-                id: 'iaso.instance.updated_at',
-            }),
-            accessor: 'updated_at',
-            Cell: settings => (
-                <span>
-                    {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
-                </span>
-            ),
-        }, {
-            Header: formatMessage({
-                defaultMessage: 'Org unit',
-                id: 'iaso.instance.org_unit',
-            }),
-            accessor: 'org_unit__name',
-            Cell: settings => (
-                <ColumnTextComponent text={settings.original.org_unit
-                    ? `${settings.original.org_unit.name} (${settings.original.org_unit.org_unit_type_name})`
-                    : '/'}
-                />
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Period',
-                id: 'iaso.instance.period',
-            }),
-            accessor: 'period',
-            Cell: settings => (
-                <span>
-                    {settings.original.period
-                        ? `${Period.getPrettyPeriod(settings.original.period)}`
-                        : '/'}
-                </span>
-            ),
-        },
-        {
-            Header: formatMessage({
-                defaultMessage: 'File',
-                id: 'iaso.instance.file',
-            }),
+            Header: formatMessage(MESSAGES.actions),
+            accessor: 'actions',
+            resizable: false,
             sortable: false,
-            accessor: 'file_url',
+            width: 150,
             Cell: settings => (
-                <span>
-                    <Link
+                <section>
+                    <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
+                    <XmlButton
                         onClick={() => window.open(settings.original.file_url, '_blank')}
-                        size="small"
-                    >
-                        XML
-                    </Link>
-                </span>
+                    />
+                </section>
             ),
         },
-        {
-            Header: formatMessage({
-                defaultMessage: 'Created at',
-                id: 'iaso.instance.created_at',
-            }),
-            accessor: 'created_at',
-            Cell: settings => (
-                <span>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
-                </span>
-            ),
-        },
-    ]
-);
+    ];
+    let metaFields = INSTANCE_METAS_FIELDS.filter(f => Boolean(f.tableOrder));
+    metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
+    metaFields.forEach(f => columns.push({
+        Header: formatMessage(MESSAGES[f.key]),
+        accessor: f.accessor || f.key,
+        Cell: settings => (
+            <ColumnTextComponent
+                title={f.title ? f.title(settings.original[f.key]) : null}
+                text={f.render ? f.render(settings.original[f.key]) : settings.original[f.key]}
+            />
+        ),
+    }));
+    return columns;
+};
+
 export default instancesTableColumns;

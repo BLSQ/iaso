@@ -1,3 +1,5 @@
+
+import moment from 'moment';
 /**
  * Accept options either with a string label or an intl MessageDescriptor label
  * and translate if needed
@@ -7,15 +9,23 @@
  * @return {Array}
  */
 
-export function translateOptions(options, formatMessage) {
-    return options.map((option) => {
-        if (typeof option.label === 'object' && 'id' in option.label) {
-            return {
-                ...option,
-                label: formatMessage(option.label),
-            };
-        }
+export const translateOptions = (options, formatMessage) => options.map((option) => {
+    if (typeof option.label === 'object' && 'id' in option.label) {
+        return {
+            ...option,
+            label: formatMessage(option.label),
+        };
+    }
 
-        return option;
-    });
-}
+    return option;
+});
+
+
+/**
+ * Receive a timestamp and displays it as a human readable date
+ * TO-DO: display date regarding the locale
+ *
+ * @param {Number} timestamp
+ */
+
+export const displayDateFromTimestamp = timestamp => moment.unix(timestamp).format('DD/MM/YYYY HH:mm');

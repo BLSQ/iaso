@@ -2,6 +2,7 @@ import _ from 'lodash/fp';
 import {
     PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR,
 } from './constants';
+import { textPlaceholder } from '../../constants/uiConstants';
 
 export class Period {
     constructor(periodString) {
@@ -130,6 +131,7 @@ export class Period {
     }
 
     static getPrettyPeriod(period) {
+        if (!period) return textPlaceholder;
         if (period.length === 4) {
             return period;
         }

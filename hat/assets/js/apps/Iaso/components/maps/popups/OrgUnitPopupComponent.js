@@ -24,6 +24,7 @@ import PopupItemComponent from './PopupItemComponent';
 import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
@@ -155,7 +156,7 @@ class OrgUnitPopupComponent extends Component {
                                 />
                                 <PopupItemComponent
                                     label={formatMessage(MESSAGES.parent)}
-                                    value={currentOrgUnit.parent ? currentOrgUnit.parent.name : '/'}
+                                    value={currentOrgUnit.parent ? currentOrgUnit.parent.name : textPlaceholder}
                                 />
                                 {
                                     !currentOrgUnit.has_geo_json && (

@@ -43,13 +43,14 @@ const MESSAGES = {
     },
 };
 
-const styles = () => ({
+const styles = theme => ({
     root: {
         position: 'relative',
     },
     images: {
         height: 'auto',
         width: '100%',
+        marginTop: theme.spacing(2),
     },
     hiddenImages: {
         width: '100%',
@@ -57,10 +58,12 @@ const styles = () => ({
         overflow: 'hidden',
         position: 'absolute',
         zIndex: '-1',
+        marginTop: theme.spacing(2),
     },
     tabContainer: {
         minHeight: minTabHeight,
         backgroundColor: 'white',
+        marginTop: theme.spacing(2),
     },
 });
 
@@ -71,7 +74,7 @@ class InstancesFilesList extends Component {
             currentImageIndex: 0,
             viewerIsOpen: false,
             sortedFiles: sortFilesType(props.files),
-            instanceDetail: null,
+            instanceDetail: props.instanceDetail,
             tab: 'images',
         };
     }
@@ -94,21 +97,24 @@ class InstancesFilesList extends Component {
     setCurrentIndex(fileIndex, fileTypeKey) {
         const {
             dispatch,
+            fetchDetails,
         } = this.props;
         const {
             sortedFiles,
         } = this.state;
         if (fileIndex >= 0) {
             const file = sortedFiles[fileTypeKey][fileIndex];
-            this.setState({
-                instanceDetail: null,
-            });
-            if (file) {
-                fetchInstanceDetail(dispatch, file.itemId).then((instanceDetail) => {
-                    this.setState({
-                        instanceDetail,
-                    });
+            if (fetchDetails) {
+                this.setState({
+                    instanceDetail: null,
                 });
+                if (file) {
+                    fetchInstanceDetail(dispatch, file.itemId).then((instanceDetail) => {
+                        this.setState({
+                            instanceDetail,
+                        });
+                    });
+                }
             }
         }
         this.setState({
@@ -124,10 +130,14 @@ class InstancesFilesList extends Component {
     }
 
     closeLightbox() {
+        const {
+            fetchDetails,
+            instanceDetail,
+        } = this.props;
         this.setCurrentIndex(-1, 'images');
         this.setState({
             viewerIsOpen: false,
-            instanceDetail: null,
+            instanceDetail: fetchDetails ? null : instanceDetail,
         });
     }
 
@@ -145,6 +155,7 @@ class InstancesFilesList extends Component {
             intl: {
                 formatMessage,
             },
+            fetchDetails,
         } = this.props;
 
         const {
@@ -251,6 +262,10 @@ class InstancesFilesList extends Component {
     }
 }
 
+InstancesFilesList.defaultProps = {
+    fetchDetails: true,
+    instanceDetail: null,
+};
 
 InstancesFilesList.propTypes = {
     files: PropTypes.array.isRequired,
@@ -258,6 +273,8 @@ InstancesFilesList.propTypes = {
     intl: intlShape.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
+    fetchDetails: PropTypes.bool,
+    instanceDetail: PropTypes.object,
 };
 
 const MapStateToProps = state => ({

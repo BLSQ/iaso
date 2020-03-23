@@ -132,13 +132,15 @@ TileSwitchComponent.propTypes = {
     classes: PropTypes.object.isRequired,
 };
 
-const MapStateToProps = state => ({
-    currentTile: state.map.currentTile,
+const MapStateToProps = (state, props) => ({
+    currentTile: props.currentTile || state.map.currentTile,
 });
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = (dispatch, props) => ({
     dispatch,
-    setCurrentTile: currentTile => dispatch(setCurrentTile(currentTile)),
+    setCurrentTile: currentTile => (
+        props.setCurrentTile
+            ? props.setCurrentTile(currentTile) : dispatch(setCurrentTile(currentTile))),
 });
 
 export default withStyles(styles)(

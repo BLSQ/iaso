@@ -9,7 +9,7 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import Info from '@material-ui/icons/InfoOutlined';
 
-import MESSAGES from '../../../messages/instances';
+import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';

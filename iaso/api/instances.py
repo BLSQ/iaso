@@ -103,7 +103,6 @@ class InstancesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        status = request.GET.get("status", None)
 
         filters = parse_instance_filters(request.GET)
 
@@ -127,13 +126,6 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
 
         queryset = queryset.for_filters(**filters)
-
-        if status:
-            statuses = [
-                Instance.STATUS_DUPLICATED if s == "ERROR" else s
-                for s in status.split(",")
-            ]
-            queryset = queryset.filter(status__in=statuses)
 
         if csv_format is None and xlsx_format is None:
 

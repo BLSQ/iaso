@@ -872,12 +872,15 @@ class InstanceQuerySet(models.QuerySet):
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
-
         # add status annotation
         queryset = queryset.with_status()
 
         if status:
-            queryset = queryset.filter(status=status)
+            statuses = [
+                Instance.STATUS_DUPLICATED if s == "ERROR" else s
+                for s in status.split(",")
+            ]
+            queryset = queryset.filter(status__in=statuses)
 
         return queryset
 

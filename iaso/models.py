@@ -1166,21 +1166,6 @@ class ExportRequest(models.Model):
     # backend ended processing the export
     ended_at = models.DateTimeField(null=True, blank=True)
 
-    def as_dict(self):
-        return {
-            "id": self.id,
-            "finished": self.finished,
-            "status": self.status,
-            "last_error_message": self.last_error_message,
-            "params": self.params,
-            "launcher": self.launcher.iaso_profile.as_dict(),
-            "stats": {
-                "instance_count": self.instance_count,
-                "exported_count": self.exported_count,
-                "errored_count": self.errored_count,
-            },
-        }
-
 
 class ExportLog(models.Model):
     id = models.BigAutoField(

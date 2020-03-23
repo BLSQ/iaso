@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-// import ReactDOM from 'react-dom';
+import isEqual from 'lodash/isEqual';
+
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { formatThousand, deepEqual } from '../../../utils';
+import { formatThousand } from '../../../utils';
 
 import {
     reorder,
@@ -21,17 +22,16 @@ class RouteSchedule extends Component {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if ((!nextProps.load.loading) &&
-            (!deepEqual(nextProps.assignations, this.props.assignations, true))) {
-            this.setState({
-                assignations: filterAssignations(nextProps.assignations),
-            });
+    componentDidUpdate(prevProps) {
+        if ((!this.props.load.loading)
+            && (!isEqual(prevProps.assignations, this.props.assignations))) {
+            this.setAssignations();
         }
     }
 
     onDragEnd(result) {
         const { source, destination } = result;
+        const { assignations } = this.state;
         if (!destination) {
             return;
         }
@@ -39,26 +39,25 @@ class RouteSchedule extends Component {
         let tempAssignations = [];
         if (source.droppableId === destination.droppableId) {
             items = reorder(
-                this.state.assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
                 source.index,
                 destination.index,
             );
-            this.state.assignations.map((a) => {
+            assignations.forEach((a) => {
                 const tempA = a;
                 if (tempA.key === destination.droppableId) {
                     tempA.data = items;
                 }
                 tempAssignations.push(tempA);
-                return true;
             });
         } else {
             items = move(
-                this.state.assignations.filter(assignation => (assignation.key === source.droppableId))[0].data,
-                this.state.assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === source.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
                 source,
                 destination,
             );
-            this.state.assignations.map((a) => {
+            assignations.forEach((a) => {
                 const tempA = a;
                 if (tempA.key === source.droppableId) {
                     tempA.data = items[source.droppableId];
@@ -67,7 +66,6 @@ class RouteSchedule extends Component {
                     tempA.data = items[destination.droppableId];
                 }
                 tempAssignations.push(tempA);
-                return true;
             });
         }
         tempAssignations = reIndex(tempAssignations);
@@ -81,14 +79,22 @@ class RouteSchedule extends Component {
         this.props.updateAssignation(updatedAssignation.index, updatedMonth.id, result.draggableId);
     }
 
+    setAssignations() {
+        this.setState({
+            assignations: filterAssignations(this.props.assignations),
+        });
+    }
+
+
     render() {
+        const { assignations } = this.state;
         return (
             <div className="route-schedule">
                 <DragDropContext onDragEnd={result => this.onDragEnd(result)}>
-                    {this.state.assignations.map((assignation, assIndex) => (
+                    {assignations.map((assignation, assIndex) => (
                         <Droppable
-                            droppableId={this.state.assignations[assIndex].key}
-                            key={this.state.assignations[assIndex].key}
+                            droppableId={assignations[assIndex].key}
+                            key={assignations[assIndex].key}
                         >
                             {(drop, snapshot) => (
                                 <section className="dnd-container">
@@ -98,21 +104,27 @@ class RouteSchedule extends Component {
                                         tabIndex={0}
                                         onClick={() => this.props.selectMonth(assIndex + 1)}
                                     >
-                                        {this.state.assignations[assIndex].label}
-                                        <span>({formatThousand(this.state.assignations[assIndex].population)})</span>
+                                        {assignations[assIndex].label}
+                                        <span>
+                                        (
+                                            {formatThousand(assignations[assIndex].population)}
+                                        )
+                                        </span>
                                     </div>
                                     <ul
                                         ref={drop.innerRef}
                                         className={`${snapshot.isDraggingOver ? 'is-draging-over' : ''}`}
-                                        id={this.state.assignations[assIndex].key}
+                                        id={assignations[assIndex].key}
                                     >
                                         {
-                                            this.state.assignations[assIndex].data.length === 0 &&
-                                            <li className="no-assignation-text">
-                                                <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
-                                            </li>
+                                            assignations[assIndex].data.length === 0
+                                            && (
+                                                <li className="no-assignation-text">
+                                                    <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
+                                                </li>
+                                            )
                                         }
-                                        {this.state.assignations[assIndex]
+                                        {assignations[assIndex]
                                             .data.map((a, index) => (
                                                 <Draggable
                                                     key={a.id}
@@ -130,13 +142,25 @@ class RouteSchedule extends Component {
                                                             )}
                                                         >
                                                             <span>
-                                                                {index + 1} - {a.name} ({formatThousand(a.population)})
+                                                                {index + 1}
+                                                                {' '}
+-
+                                                                {a.name}
+                                                                {' '}
+(
+                                                                {formatThousand(a.population)}
+)
                                                                 {
-                                                                    a.tests_count > 0 &&
-                                                                    <span className="visited-village">
-                                                                        <i className="fa fa-check-circle" aria-hidden="true" />
-                                                                        <span>{a.tests_count}<FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" /></span>
-                                                                    </span>
+                                                                    a.tests_count > 0
+                                                                    && (
+                                                                        <span className="visited-village">
+                                                                            <i className="fa fa-check-circle" aria-hidden="true" />
+                                                                            <span>
+                                                                                {a.tests_count}
+                                                                                <FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" />
+                                                                            </span>
+                                                                        </span>
+                                                                    )
                                                                 }
                                                             </span>
                                                             <i className="fa fa-bars" aria-hidden="true" />

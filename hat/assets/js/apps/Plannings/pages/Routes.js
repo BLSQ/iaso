@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import isEqual from 'lodash/isEqual';
 
 import LoadingSpinner from '../../../components/loading-spinner';
 
@@ -29,7 +30,7 @@ class Routes extends React.Component {
         };
     }
 
-    componentWillMount() {
+    componentDidMount() {
         this.props.fetchPlannings();
         this.props.fetchTeams();
         if (this.props.params && (this.props.params.planning_id || this.props.params.team_id)) {
@@ -37,16 +38,29 @@ class Routes extends React.Component {
         }
     }
 
-    componentWillReceiveProps(nextProps) {
-        if ((nextProps.params.team_id !== this.props.params.team_id)
-            || (nextProps.params.planning_id !== this.props.params.planning_id)) {
-            this.props.fetchAssignations(nextProps.params);
+    componentDidUpdate(prevProps) {
+        if ((prevProps.params.team_id !== this.props.params.team_id)
+            || (prevProps.params.planning_id !== this.props.params.planning_id)) {
+            this.props.fetchAssignations(this.props.params);
         }
-        const selectedMonth = parseInt(nextProps.params.month_id, 10);
+        if (
+            !isEqual(prevProps.assignations, this.props.assignations)
+            || prevProps.params.month_id !== this.props.params.month_id
+        ) {
+            this.setAssignations();
+        }
+    }
+
+    setAssignations() {
+        const {
+            params,
+            assignations,
+        } = this.props;
+        const selectedMonth = parseInt(params.month_id, 10);
         this.setState({
             selectedMonth,
-            selectedAssignations: nextProps.assignations.filter(a => a.month === selectedMonth),
-            notSelectedAssignations: nextProps.assignations.filter(a => a.month !== selectedMonth),
+            selectedAssignations: assignations.filter(a => a.month === selectedMonth),
+            notSelectedAssignations: assignations.filter(a => a.month !== selectedMonth),
         });
     }
 
@@ -90,83 +104,93 @@ class Routes extends React.Component {
 
 
                 {
-                    teamId &&
-                    <div className="widget__container">
-                        <div className="widget__content--tier">
-                            <div className="map__option">
-                                <span className="map__option__header">
-                                    <FormattedMessage id="microplanning.legend.key" defaultMessage="Legend" />
-                                </span>
-                                <form>
-                                    <ul className="map__option__list legend">
-                                        <li className="map__option__list__item">
-                                            <i className="map__option__icon--route-with-positive-cases" />
-                                            <FormattedMessage id="microplanning.legend.highlight" defaultMessage="Endemic villages" />
-                                        </li>
-                                        <li className="map__option__list__item">
-                                            <i className="map__option__icon--route-assigned" />
-                                            <FormattedMessage id="microplanning.legend.assigned" defaultMessage="Village(s) assigned to the month of" />
-                                            <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
-                                        </li>
-                                        <li className="map__option__list__item">
-                                            <i className="map__option__icon--route-not-assigned" />
-                                            <FormattedMessage id="microplanning.legend.notAssigned" defaultMessage="Village(s) not assinged to the month of" />
-                                            <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
-                                        </li>
-                                    </ul>
-                                </form>
-                            </div>
-                            <div>
-                                <LayersComponent
-                                    base={baseLayer}
-                                    change={(type, key) => this.props.changeLayer(type, key)}
-                                />
+                    teamId
+                    && (
+                        <div className="widget__container">
+                            <div className="widget__content--tier">
+                                <div className="map__option">
+                                    <span className="map__option__header">
+                                        <FormattedMessage id="microplanning.legend.key" defaultMessage="Legend" />
+                                    </span>
+                                    <form>
+                                        <ul className="map__option__list legend">
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--route-with-positive-cases" />
+                                                <FormattedMessage id="microplanning.legend.highlight" defaultMessage="Endemic villages" />
+                                            </li>
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--route-assigned" />
+                                                <FormattedMessage id="microplanning.legend.assigned" defaultMessage="Village(s) assigned to the month of" />
+                                                <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
+                                            </li>
+                                            <li className="map__option__list__item">
+                                                <i className="map__option__icon--route-not-assigned" />
+                                                <FormattedMessage id="microplanning.legend.notAssigned" defaultMessage="Village(s) not assinged to the month of" />
+                                                <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
+                                            </li>
+                                        </ul>
+                                    </form>
+                                </div>
+                                <div>
+                                    <LayersComponent
+                                        base={baseLayer}
+                                        change={(type, key) => this.props.changeLayer(type, key)}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    )
                 }
                 <div className="widget__container">
                     <section>
                         <div className="widget__content--tier">
                             {
-                                loading &&
-                                <LoadingSpinner message={formatMessage({
-                                    defaultMessage: 'Loading',
-                                    id: 'main.label.loading',
-                                })}
-                                />
-                            }
-                            {
-                                this.props.assignations.length > 0 &&
-                                teamId &&
-                                <RouteSchedule
-                                    selectedMonth={this.state.selectedMonth}
-                                    selectMonth={monthId => this.selectMonth(monthId)}
-                                    load={this.props.load}
-                                    assignations={this.props.assignations}
-                                    params={this.props.params}
-                                    redirect={params => this.props.redirect(params)}
-                                    updateAssignation={(index, month, assignationId) => this.updateAssignation(index, month, assignationId)}
-                                />
-                            }
-                            {
-                                this.props.assignations.length === 0 &&
-                                teamId &&
-                                <div>
-                                    <FormattedMessage id="table.noResult" defaultMessage="Aucun résultat" />
-                                </div>
-                            }
-                            {
-                                teamId &&
-                                <div className={`route-map ${this.props.assignations.length === 0 ? 'hidden' : ''}`}>
-                                    <RouteMap
-                                        baseLayer={baseLayer}
-                                        overlays={{ labels: false }}
-                                        villages={this.state.selectedAssignations}
-                                        notSelectedVillages={this.state.notSelectedAssignations}
-                                        getShape={type => this.props.getShape(type)}
+                                loading
+                                && (
+                                    <LoadingSpinner message={formatMessage({
+                                        defaultMessage: 'Loading',
+                                        id: 'main.label.loading',
+                                    })}
                                     />
-                                </div>
+                                )
+                            }
+                            {
+                                this.props.assignations.length > 0
+                                && teamId
+                                && (
+                                    <RouteSchedule
+                                        selectedMonth={this.state.selectedMonth}
+                                        selectMonth={monthId => this.selectMonth(monthId)}
+                                        load={this.props.load}
+                                        assignations={this.props.assignations}
+                                        params={this.props.params}
+                                        redirect={params => this.props.redirect(params)}
+                                        updateAssignation={(index, month, assignationId) => this.updateAssignation(index, month, assignationId)}
+                                    />
+                                )
+                            }
+                            {
+                                this.props.assignations.length === 0
+                                && teamId
+                                && (
+                                    <div>
+                                        <FormattedMessage id="table.noResult" defaultMessage="Aucun résultat" />
+                                    </div>
+                                )
+                            }
+                            {
+                                teamId
+                                && (
+                                    <div className={`route-map ${this.props.assignations.length === 0 ? 'hidden' : ''}`}>
+                                        <RouteMap
+                                            baseLayer={baseLayer}
+                                            overlays={{ labels: false }}
+                                            villages={this.state.selectedAssignations}
+                                            notSelectedVillages={this.state.notSelectedAssignations}
+                                            getShape={type => this.props.getShape(type)}
+                                        />
+                                    </div>
+                                )
                             }
                         </div>
                     </section>

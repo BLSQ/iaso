@@ -18,19 +18,17 @@ const reorder = (list, startIndex, endIndex) => {
 const reIndex = (list) => {
     const tempList = [];
     let tempIndex = 0;
-    list.map((item) => {
+    list.forEach((item) => {
         const tempItem = item;
         const tempData = [];
-        item.data.map((a) => {
+        item.data.forEach((a) => {
             const tempA = a;
             tempA.index = tempIndex;
             tempData.push(tempA);
             tempIndex += 1;
-            return true;
         });
         tempItem.data = tempData;
         tempList.push(tempItem);
-        return true;
     });
     return tempList;
 };

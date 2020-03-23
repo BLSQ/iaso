@@ -11,7 +11,7 @@ import App from '../App';
 
 import Plannings from './Plannings';
 import MicroplanningContainerPage from './MicroplanningContainer';
-import RoutesPage from './pages/Route';
+import RoutesPage from './pages/Routes';
 import MacroplanningPage from './pages/Macroplanning';
 import { planningReducer } from './redux/planning';
 import { teamReducer } from './redux/team';

@@ -51,6 +51,12 @@ import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
 
+const asBackendStatus = status => {
+    if (status) {
+        return status.split(',').map(s => s == "ERROR" ? "DUPLICATED" : s).join(",")
+    }
+    return status
+}
 
 const baseUrl = 'instances';
 
@@ -159,7 +165,7 @@ class Instances extends Component {
             orgUnitTypeId: params.orgUnitTypeId,
             deviceId: params.deviceId,
             periods: params.periods,
-            status: params.status,
+            status: asBackendStatus(params.status),
             deviceOwnershipId: params.deviceOwnershipId,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels)
         }

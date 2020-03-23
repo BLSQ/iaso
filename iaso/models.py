@@ -876,10 +876,7 @@ class InstanceQuerySet(models.QuerySet):
         queryset = queryset.with_status()
 
         if status:
-            statuses = [
-                Instance.STATUS_DUPLICATED if s == "ERROR" else s
-                for s in status.split(",")
-            ]
+            statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
 
         return queryset

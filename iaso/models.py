@@ -807,6 +807,7 @@ class InstanceQuerySet(models.QuerySet):
                     "id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)
                 )
             )
+            .exclude(period=None)
             .order_by("period", "form__name")
         )
 

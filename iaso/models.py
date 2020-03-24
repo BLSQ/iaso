@@ -807,6 +807,7 @@ class InstanceQuerySet(models.QuerySet):
                     "id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)
                 )
             )
+            .exclude(period=None)
             .order_by("period", "form__name")
         )
 
@@ -872,12 +873,12 @@ class InstanceQuerySet(models.QuerySet):
 
         if form_ids:
             queryset = queryset.filter(form_id__in=form_ids.split(","))
-
         # add status annotation
         queryset = queryset.with_status()
 
         if status:
-            queryset = queryset.filter(status=status)
+            statuses = status.split(",")
+            queryset = queryset.filter(status__in=statuses)
 
         return queryset
 

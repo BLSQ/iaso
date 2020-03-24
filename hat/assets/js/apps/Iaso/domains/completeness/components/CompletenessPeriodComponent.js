@@ -49,10 +49,9 @@ class CompletenessPeriodComponent extends Component {
 
     onSelectCell(form, status, period) {
         this.props.redirectTo('instances', {
-            // TODO: activate when API is ready
-            // status,
             formId: form.id,
             periods: period.asPeriodType(form.period_type).periodString,
+            status: status.toUpperCase(),
         });
     }
 
@@ -93,7 +92,7 @@ class CompletenessPeriodComponent extends Component {
                             period.monthRange,
                             classes,
                             activeInstanceStatuses,
-                            (form, status) => this.onSelectCell(form, status, period),
+                            (form, status, p) => this.onSelectCell(form, status, p),
                             activePeriodType,
                         )}
                         data={forms}

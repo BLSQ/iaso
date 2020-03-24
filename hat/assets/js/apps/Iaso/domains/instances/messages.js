@@ -80,6 +80,10 @@ const MESSAGES = {
         defaultMessage: 'Uuid',
         id: 'iaso.label.uuid',
     },
+    status: {
+        defaultMessage: 'status',
+        id: 'iaso.label.instanceStatus'
+    }
 };
 
 export default MESSAGES;

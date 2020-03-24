@@ -1,11 +1,10 @@
 import React, { Component } from "react";
 import { injectIntl } from "react-intl";
 import { bindActionCreators } from "redux";
-import _ from "lodash";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import { Grid } from "@material-ui/core";
 
+import InputComponent from "../../../components/forms/InputComponent";
 import ExportButtonComponent from "../../../components/buttons/ExportButtonComponent";
 import ConfirmCancelDialogComponent from "../../../components/dialogs/ConfirmCancelDialogComponent";
 import { createExportRequest as createExportRequestAction } from "../actions";
@@ -15,11 +14,17 @@ const ExportInstancesDialogComponent = ({
   getFilters,
   createExportRequest
 }) => {
+  const [forceExport, setForceExport] = React.useState(false);
   const onConfirm = closeDialog => {
     const filterParams = getFilters();
-    createExportRequest(filterParams).then(() => closeDialog());
+    createExportRequest({ forceExport, ...filterParams }).then(() =>
+      closeDialog()
+    );
   };
-  const onClosed = () => {};
+  const onClosed = () => {
+    setForceExport(false);
+  };
+
   return (
     <ConfirmCancelDialogComponent
       renderTrigger={({ openDialog }) => (
@@ -36,6 +41,17 @@ const ExportInstancesDialogComponent = ({
       maxWidth="xs"
     >
       <p></p>
+      <InputComponent
+        clearable
+        keyValue="algoId"
+        onChange={(key, value) => setForceExport(!forceExport)}
+        value={forceExport}
+        type="checkbox"
+        label={{
+          id: "iaso.label.forceExport",
+          defaultMessage: "Force Export"
+        }}
+      />
     </ConfirmCancelDialogComponent>
   );
 };

@@ -37,12 +37,15 @@ class ExportRequestSerializer(serializers.ModelSerializer):
     def create(self, validated_data: typing.MutableMapping):
         try:
             user = self.context["request"].user
+            force_export = self.context["request"].data.get("forceExport", False)
+
             print("ExportRequest to create", user, validated_data)
 
             return ExportRequestBuilder().build_export_request(
-                filters=validated_data, launcher=user
+                filters=validated_data, launcher=user, force_export=force_export
             )
         except Exception as e:
+            # warn the client will use this as part of the translation key
             raise serializers.ValidationError(
                 {"code": type(e).__name__, "message": str(e)}
             )

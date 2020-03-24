@@ -19,17 +19,15 @@ import {
     device,
     deviceOwnership,
     periods,
-    // instanceStatus,
+    instanceStatus,
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { createUrl } from '../../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 
-// import { INSTANCE_STATUSES } from '../../domains/instances/constants';
+ import { INSTANCE_STATUSES } from '../constants';
 
-// TODO: use config file
-// TODO: activate when API is ready
-/* export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
+export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
     {
         value: instanceStatus,
         label: {
@@ -37,7 +35,7 @@ import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLe
             defaultMessage: instanceStatus,
         },
     }
-)); */
+));
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -107,8 +105,7 @@ class InstancesFiltersComponent extends Component {
                             baseUrl={baseUrl}
                             onFilterChanged={() => this.onFilterChanged()}
                             filters={[
-                                // TODO: activate when API is ready
-                                // instanceStatus(instanceStatusOptions),
+                                instanceStatus(instanceStatusOptions),
                                 device(devices),
                                 deviceOwnership(devicesOwnerships),
                             ]}

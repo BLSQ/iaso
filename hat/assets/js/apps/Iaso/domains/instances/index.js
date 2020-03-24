@@ -51,6 +51,12 @@ import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
 
+const asBackendStatus = status => {
+    if (status) {
+        return status.split(',').map(s => s == "ERROR" ? "DUPLICATED" : s).join(",")
+    }
+    return status
+}
 
 const baseUrl = 'instances';
 
@@ -148,6 +154,22 @@ class Instances extends Component {
         }
     }
 
+    getFilters(){
+        const {
+            params,
+        } = this.props;
+        return {
+            form_id: params.formId,
+            withLocation: params.withLocation,
+            orgUnitTypeId: params.orgUnitTypeId,
+            deviceId: params.deviceId,
+            periods: params.periods,
+            status: asBackendStatus(params.status),
+            deviceOwnershipId: params.deviceOwnershipId,
+            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels)
+        }
+    }
+
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
         const {
             params,
@@ -156,15 +178,8 @@ class Instances extends Component {
             limit: params.pageSize ? params.pageSize : 20,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
-            form_id: params.formId,
-            withLocation: params.withLocation,
-            orgUnitTypeId: params.orgUnitTypeId,
-            deviceId: params.deviceId,
-            periods: params.periods,
-            status: params.status,
-            deviceOwnershipId: params.deviceOwnershipId,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
             asSmallDict: true,
+            ...this.getFilters()
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }

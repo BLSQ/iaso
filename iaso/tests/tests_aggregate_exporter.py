@@ -1,5 +1,6 @@
 import json
 import responses
+from django.core.files.uploadedfile import UploadedFile
 from collections import namedtuple
 from django.test import TestCase
 from iaso.models import (
@@ -17,6 +18,8 @@ from iaso.models import (
     ExportLog,
     ExportRequest,
     ExportStatus,
+    Profile,
+    Project,
 )
 
 import os
@@ -77,7 +80,11 @@ class AggregateExporterTests(TestCase):
                 "version": self.form_quality_version.version_id,
             }
 
+        instance.file = UploadedFile(
+            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+        )
         instance.form = form
+        instance.project = self.project
         instance.save()
         # force to past creation date
         # looks the the first save don't take it
@@ -130,7 +137,8 @@ class AggregateExporterTests(TestCase):
             username="Test User Name", email="testemail@bluesquarehub.com"
         )
         self.user = user
-
+        p = Profile(user=user, account=account)
+        p.save()
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
             url="https://dhis2.com",
@@ -147,6 +155,13 @@ class AggregateExporterTests(TestCase):
             number=1, data_source=datasource
         )
         self.source_version = source_version
+
+        self.project = Project(
+            name="Hyrule", app_id="magic.countries.hyrule.collect", account=account
+        )
+        self.project.save()
+
+        datasource.projects.add(self.project)
 
         org_unit = OrgUnit()
         org_unit.validated = True
@@ -394,7 +409,12 @@ class AggregateExporterTests(TestCase):
         instance = self.build_instance(self.form)
 
         export_request = ExportRequestBuilder().build_export_request(
-            ["201801"], [self.form.id], [instance.org_unit.id], self.user
+            filters={
+                "period_ids": "201801",
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
         )
         # mock expected calls
 
@@ -447,10 +467,12 @@ class AggregateExporterTests(TestCase):
         instance_quality = self.build_instance(self.form_quality)
 
         export_request = ExportRequestBuilder().build_export_request(
-            ["201801", "2018Q1"],
-            [self.form.id, self.form_quality.id],
-            [instance.org_unit.id],
-            self.user,
+            filters={
+                "period_ids": ",".join(["201801", "2018Q1"]),
+                "form_ids": ",".join([str(self.form.id), str(self.form_quality.id)]),
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
         )
 
         # mock expected calls
@@ -502,7 +524,12 @@ class AggregateExporterTests(TestCase):
             )
 
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
             AggregateExporter().export_instances(export_request, True)
 
@@ -535,7 +562,12 @@ class AggregateExporterTests(TestCase):
 
         with self.assertRaises(InstanceExportError) as context:
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
 
             AggregateExporter().export_instances(export_request, True)
@@ -570,7 +602,12 @@ class AggregateExporterTests(TestCase):
             )
 
             export_request = ExportRequestBuilder().build_export_request(
-                ["201801"], [self.form.id], [instance.org_unit.id], self.user
+                filters={
+                    "period_ids": ",".join(["201801"]),
+                    "form_id": self.form.id,
+                    "org_unit_id": instance.org_unit.id,
+                },
+                launcher=self.user,
             )
             AggregateExporter().export_instances(export_request, True)
 

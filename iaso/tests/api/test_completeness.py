@@ -61,10 +61,6 @@ class ProjectsAPITestCase(APITestCase):
         instance.form = self.form
         instance.project = self.project
         instance.save()
-        # force to past creation date
-        # looks the the first save don't take it
-
-        instance.save()
         return instance
 
     def uuid(self, number):
@@ -122,23 +118,6 @@ class ProjectsAPITestCase(APITestCase):
                     "period_type": "MONTH",
                 },
                 "counts": {"total": 2, "error": 0, "exported": 1, "ready": 1},
-            },
-        ]
-        current = [
-            {
-                "period": "201901",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 3, "error": 2, "exported": 2, "ready": 1},
-            },
-            {
-                "period": "201902",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 2},
-            },
-            {
-                "period": "201903",
-                "form": {"id": 17, "name": "Quantity FORM", "period_type": "MONTH"},
-                "counts": {"total": 2, "error": 0, "exported": 0, "ready": 1},
             },
         ]
 

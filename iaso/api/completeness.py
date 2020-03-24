@@ -6,6 +6,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.models import Instance
+import iaso.periods as periods
 
 
 def to_completeness(count):
@@ -14,7 +15,7 @@ def to_completeness(count):
         "form": {
             "id": count["form_id"],
             "name": count["form__name"],
-            "period_type": "MONTH",
+            "period_type": periods.detect(count["period"]),
         },
         "counts": {
             "total": count["total_count"],

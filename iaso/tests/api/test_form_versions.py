@@ -19,25 +19,37 @@ class FormsVersionAPITestCase(APITestCase):
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
         cls.batman = cls.create_user_with_profile(username="batman", account=dc)
 
-        cls.sith_council = m.OrgUnitType.objects.create(name="Sith Council", short_name="Cnc")
+        cls.sith_council = m.OrgUnitType.objects.create(
+            name="Sith Council", short_name="Cnc"
+        )
 
-        cls.project = m.Project.objects.create(name="Hydroponic gardens",
-                                               app_id="stars.empire.agriculture.hydroponics", account=star_wars)
+        cls.project = m.Project.objects.create(
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
+        )
         cls.project.unit_types.add(cls.sith_council)
 
-        cls.form_1 = m.Form.objects.create(name="New Land Speeder concept",  # no form_id yet (no version)
-                                           period_type="QUARTER", single_per_period=True)
+        cls.form_1 = m.Form.objects.create(
+            name="New Land Speeder concept",  # no form_id yet (no version)
+            period_type="QUARTER",
+            single_per_period=True,
+        )
         cls.form_1.org_unit_types.add(cls.sith_council)
         cls.form_1.save()
         cls.project.forms.add(cls.form_1)
         cls.project.save()
 
-        cls.form_2 = m.Form.objects.create(name="Death Start survey", form_id="sample2",
-                                           period_type="MONTH", single_per_period=False)
+        cls.form_2 = m.Form.objects.create(
+            name="Death Start survey",
+            form_id="sample2",
+            period_type="MONTH",
+            single_per_period=False,
+        )
         cls.form_2.org_unit_types.add(cls.sith_council)
         cls.form_1.save()
         form_2_file_mock = mock.MagicMock(spec=File)
-        form_2_file_mock.name = 'test.xml'
+        form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.project.forms.add(cls.form_2)
 
@@ -45,26 +57,28 @@ class FormsVersionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_form_versions_list(self):
-        """GET /formversions/: not authorized for now"""
+        """GET /formversions/: allowed"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get('/api/formversions/')
-        self.assertJSONResponse(response, 405)
+        response = self.client.get("/api/formversions/")
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        self.assertNotLoadedDescriptor(json_response["form_versions"][0]["descriptor"])
 
     @tag("iaso_only")
     def test_form_versions_retrieve(self):
         """GET /formversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f'/api/formversions/33/')
-        self.assertJSONResponse(response, 405)
+        response = self.client.get(f"/api/formversions/44")
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_form_versions_update(self):
         """PUT /formversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(f'/api/formversions/33/', data={})
+        response = self.client.put(f"/api/formversions/33/", data={})
         self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")
@@ -72,30 +86,39 @@ class FormsVersionAPITestCase(APITestCase):
         """DELETE /formversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.delete(f'/api/formversions/33/')
+        response = self.client.delete(f"/api/formversions/33/")
         self.assertJSONResponse(response, 405)
 
     def test_form_versions_create_ok_first_version(self):
         """POST /form-versions/ happy path (first version)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_1.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidFormVersionData(response_data)
 
-        created_version = m.FormVersion.objects.get(pk=response_data['id'])
+        created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022401")
         self.assertIsInstance(created_version.file, File)
         self.assertGreater(created_version.file.size, 100)
-        self.assertEqual(created_version.file.name, "forms/new_land_speeder_concept_2020022401.xml")
+        self.assertEqual(
+            created_version.file.name, "forms/new_land_speeder_concept_2020022401.xml"
+        )
         self.assertIsInstance(created_version.xls_file, File)
         self.assertGreater(created_version.xls_file.size, 100)
-        self.assertEqual(created_version.xls_file.name, "forms/new_land_speeder_concept_2020022401.xls")
+        self.assertEqual(
+            created_version.xls_file.name,
+            "forms/new_land_speeder_concept_2020022401.xls",
+        )
 
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)
@@ -104,88 +127,127 @@ class FormsVersionAPITestCase(APITestCase):
         """POST /form-versions/ happy path (second version)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_2.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidFormVersionData(response_data)
 
-        created_version = m.FormVersion.objects.get(pk=response_data['id'])
+        created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
 
     def test_form_versions_create_invalid_xls_form_id_1(self):
         """POST /form-versions/ with a form_id that already exists within the account (for a different form)"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022401.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_1.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample2_2020022401.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), 'xls_file',
-                            "The form_id is already used in another form.")
+        self.assertHasError(
+            response.json(), "xls_file", "The form_id is already used in another form."
+        )
 
     def test_form_versions_create_invalid_xls_form_id_2(self):
         """POST /form-versions/ attempt to create a second version with a different form_id"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022402.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_2.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample1_2020022402.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), 'xls_file',
-                            "Form id should stay constant across form versions.")
+        self.assertHasError(
+            response.json(),
+            "xls_file",
+            "Form id should stay constant across form versions.",
+        )
 
     def test_form_versions_create_invalid_xls_version(self):
         """POST /form-versions/ attempt to create a second version with a version inferior to the previous one"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_valid_sample2_2020022301.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_2.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample2_2020022301.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), 'xls_file',
-                            "Invalid XLS file: Parsed version should be greater than previous version.")
+        self.assertHasError(
+            response.json(),
+            "xls_file",
+            "Invalid XLS file: Parsed version should be greater than previous version.",
+        )
 
     def test_form_versions_create_invalid_xls_file(self):
         """POST /form-versions/ with invalid XLS file"""
 
         self.client.force_authenticate(self.yoda)
-        with open("iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_1.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_blatantly_invalid.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), 'xls_file',
-                            "Invalid XLS file: The survey sheet is either empty or missing important column headers.")
+        self.assertHasError(
+            response.json(),
+            "xls_file",
+            "Invalid XLS file: The survey sheet is either empty or missing important column headers.",
+        )
 
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(f'/api/formversions/', data={}, format='multipart', HTTP_ACCEPT='application/json')
+        response = self.client.post(
+            f"/api/formversions/",
+            data={},
+            format="multipart",
+            HTTP_ACCEPT="application/json",
+        )
         self.assertJSONResponse(response, 400)
         response_data = response.json()
-        self.assertHasError(response_data, 'form_id')
-        self.assertHasError(response_data, 'xls_file')
+        self.assertHasError(response_data, "form_id")
+        self.assertHasError(response_data, "xls_file")
 
     def test_form_versions_create_no_auth(self):
         """POST /form-versions/ , without auth -> we expect a 403 error"""
 
-        with open("iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb") as xls_file:
-            response = self.client.post(f'/api/formversions/', data={
-                "form_id": self.form_1.id,
-                "xls_file": xls_file,
-            }, format='multipart', HTTP_ACCEPT='application/json')
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
         self.assertJSONResponse(response, 403)
 
     def test_form_versions_create_wrong_form(self):
@@ -193,18 +255,31 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.batman)
         form_file_mock = mock.MagicMock(spec=File)
-        form_file_mock.name = 'test_batman.xml'
-        response = self.client.post(f'/api/formversions/', data={
-            "form_id": self.form_1.id,
-            "version_id": "february_2020",
-            "file": form_file_mock,
-        }, format='multipart')
+        form_file_mock.name = "test_batman.xml"
+        response = self.client.post(
+            f"/api/formversions/",
+            data={
+                "form_id": self.form_1.id,
+                "version_id": "february_2020",
+                "file": form_file_mock,
+            },
+            format="multipart",
+        )
         self.assertJSONResponse(response, 400)
 
-    def assertValidFormVersionData(self, form_version_data: typing.Mapping):  # TODO: check for other fields
+    def assertValidFormVersionData(
+        self, form_version_data: typing.Mapping
+    ):  # TODO: check for other fields
         self.assertHasField(form_version_data, "id", int)
         self.assertHasField(form_version_data, "file", str)
         self.assertHasField(form_version_data, "xls_file", str)
         self.assertHasField(form_version_data, "version_id", str)
         self.assertHasField(form_version_data, "created_at", float)
         self.assertHasField(form_version_data, "updated_at", float)
+
+    def assertNotLoadedDescriptor(self, descriptor):
+
+        self.assertEquals(
+            descritor,
+            {"warning": "not loaded try with ?fields=descriptor", "loaded": False},
+        )

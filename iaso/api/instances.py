@@ -1,7 +1,7 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets
 from rest_framework.response import Response
-
+from django.http import Http404
 from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, DeviceOwnership, Form, Project
@@ -22,6 +22,8 @@ from iaso.utils import timestamp_to_datetime
 from .auth.authentication import CsrfExemptSessionAuthentication
 from time import gmtime, strftime
 import ntpath
+
+from .instance_filters import parse_instance_filters
 
 
 def check_access(instance, user):
@@ -99,17 +101,14 @@ class InstancesViewSet(viewsets.ViewSet):
         as_small_dict = request.GET.get("asSmallDict", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "updated_at").split(",")
-        form_id = request.GET.get("form_id", None)
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-        with_location = request.GET.get("withLocation", None)
-        org_unit_type_id = request.GET.get("orgUnitTypeId", None)
-        device_id = request.GET.get("deviceId", None)
-        device_ownership_id = request.GET.get("deviceOwnershipId", None)
-        org_unit_parent_id = request.GET.get("orgUnitParentId", None)
-        org_unit_id = request.GET.get("orgUnitId", None)
-        period_ids = request.GET.get("periods", None)
-        status = request.GET.get("status", None)
+
+        filters = parse_instance_filters(request.GET)
+
+        form_id = filters["form_id"]
+        if form_id:
+            form = Form.objects.get(pk=form_id)
 
         queryset = Instance.objects.order_by("-id")
         if not request.user.is_anonymous:
@@ -126,57 +125,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
 
-        if period_ids:
-            queryset = queryset.filter(period__in=period_ids.split(","))
-        if org_unit_type_id:
-            queryset = queryset.filter(
-                org_unit__org_unit_type__in=org_unit_type_id.split(",")
-            )
-        if org_unit_id:
-            queryset = queryset.filter(org_unit_id=org_unit_id)
-
-        if org_unit_parent_id:
-            queryset = queryset.filter(
-                Q(org_unit__id=org_unit_parent_id)
-                | Q(org_unit__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
-                | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-            )
-
-        if with_location == "true":
-            queryset = queryset.filter(location__isnull=False)
-
-        if with_location == "false":
-            queryset = queryset.filter(location__isnull=True)
-
-        if device_id:
-            queryset = queryset.filter(device__id=device_id)
-
-        if device_ownership_id:
-            device_ownership = get_object_or_404(
-                DeviceOwnership, pk=device_ownership_id
-            )
-            queryset = queryset.filter(device__id=device_ownership.device.id)
-
-        if form_id:
-            form = Form.objects.get(pk=form_id)
-            queryset = queryset.filter(form_id=form_id)
-
-        # add status annotation
-        queryset = queryset.with_status()
-
-        if status:
-            queryset = queryset.filter(status=status)
+        queryset = queryset.for_filters(**filters)
 
         if csv_format is None and xlsx_format is None:
 
@@ -322,7 +271,10 @@ class InstancesViewSet(viewsets.ViewSet):
             return Response({"result": "ok"})
 
     def retrieve(self, request, pk=None):
-        instance = get_object_or_404(Instance, pk=pk)
+        try:
+            instance = Instance.objects.with_status().get(pk=pk)
+        except:
+            raise Http404
         check_access(instance, request.user)
         res = instance.as_full_model()
         return Response(res)

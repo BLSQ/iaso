@@ -18,6 +18,7 @@ from .api.algorithms_runs import AlgorithmsRunsViewSet
 from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
+from .api.export_requests import ExportRequestsViewSet
 from iaso.models import MatchingAlgorithm
 from iaso import matching
 import pkgutil
@@ -45,16 +46,25 @@ router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsruns")
 router.register(r"groups", GroupsViewSet, base_name="groups")
 router.register(r"completeness", CompletenessViewSet, base_name="completeness")
+router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
+
 urlpatterns = [url(r"^", include(router.urls))]
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########
-import importlib
+try:
+    import importlib
 
-for pkg in pkgutil.iter_modules(matching.__path__):
-    full_name = "iaso.matching." + pkg.name
-    algo_module = importlib.import_module(full_name)
-    algo = algo_module.Algorithm()
-    MatchingAlgorithm.objects.get_or_create(
-        name=full_name, defaults={"description": algo.description}
+    for pkg in pkgutil.iter_modules(matching.__path__):
+        full_name = "iaso.matching." + pkg.name
+        algo_module = importlib.import_module(full_name)
+        algo = algo_module.Algorithm()
+        MatchingAlgorithm.objects.get_or_create(
+            name=full_name, defaults={"description": algo.description}
+        )
+
+except Exception as e:
+    print(
+        "!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate",
+        e,
     )

@@ -140,6 +140,7 @@
     "iaso.instance.missingGeolocation": "Aucune instance trouvée avec une localisation",
     "iaso.instance.missingFile": "Aucune fichier trouvé",
     "iaso.instances.export": "Exporter vers dhis2",
+    "iaso.instances.forceExport": "Forcer l'export des instances déjà exportées",
     "iaso.label.algorithm": "Algorithme",
     "iaso.label.algorithms": "Algorithmes",
     "iaso.label.projects": "Projects",

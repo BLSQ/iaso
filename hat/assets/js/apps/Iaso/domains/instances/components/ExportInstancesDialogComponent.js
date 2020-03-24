@@ -48,7 +48,7 @@ const ExportInstancesDialogComponent = ({
         value={forceExport}
         type="checkbox"
         label={{
-          id: "iaso.label.forceExport",
+          id: "iaso.instances.forceExport",
           defaultMessage: "Force Export"
         }}
       />

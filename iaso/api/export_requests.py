@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet, TimestampField
 from .instance_filters import parse_instance_filters
+from iaso.dhis2.aggregate_exporter import AggregateExporter
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):
@@ -30,7 +31,8 @@ class ExportRequestSerializer(serializers.ModelSerializer):
         }
 
     def validate(self, data: typing.MutableMapping):
-        return parse_instance_filters(self.context["request"].POST)
+
+        return parse_instance_filters(self.context["request"].data)
 
     def create(self, validated_data: typing.MutableMapping):
         try:
@@ -41,7 +43,15 @@ class ExportRequestSerializer(serializers.ModelSerializer):
                 filters=validated_data, launcher=user
             )
         except Exception as e:
-            raise serializers.ValidationError({"params": str(e)})
+            raise serializers.ValidationError(
+                {"code": type(e).__name__, "message": str(e)}
+            )
+
+    def update(self, export_request, validated_data):
+        AggregateExporter().export_instances(export_request, True)
+        # this has a highly probable chance to timeout but the export will continue to be processed
+        # still return the export request
+        return export_request
 
 
 class ExportRequestsViewSet(ModelViewSet):
@@ -54,7 +64,7 @@ class ExportRequestsViewSet(ModelViewSet):
     serializer_class = ExportRequestSerializer
     results_key = "export_requests"
     queryset = ExportRequest.objects.all()
-    http_method_names = ("get", "post")
+    http_method_names = ("get", "post", "put")
 
     def get_queryset(self):
         queryset = ExportRequest.objects.all()

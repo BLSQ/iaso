@@ -46,6 +46,7 @@ import InstancesFilesList from './components/InstancesFilesListComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -392,6 +393,7 @@ class Instances extends Component {
                             <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
                                 <Grid xs={12} item className={classes.textAlignRight}>
                                     <div className={classes.paddingBottomBig}>
+                                        <ExportInstancesDialogComponent getFilters={() =>  this.getFilters()}/>
                                         <DownloadButtonsComponent
                                             csvUrl={this.getEndpointUrl(true, 'csv')}
                                             xlsxUrl={this.getEndpointUrl(true, 'xlsx')}

@@ -25,7 +25,8 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { createUrl } from '../../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 
- import { INSTANCE_STATUSES } from '../constants';
+import { INSTANCE_STATUSES } from '../constants';
+import { setInstancesFilterUpdated as setInstancesFilterAction } from "../actions";
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
     {
@@ -42,24 +43,16 @@ const styles = theme => ({
 });
 
 class InstancesFiltersComponent extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            filtersUpdated: false,
-        };
-    }
 
-    onFilterChanged() {
-        this.setState({
-            filtersUpdated: true,
-        });
-    }
 
     onSearch() {
-        if (this.state.filtersUpdated) {
-            this.setState({
-                filtersUpdated: false,
-            });
+        const {
+            isInstancesFilterUpdated,
+            setInstancesFilterUpdated,
+        } = this.props;
+
+        if (isInstancesFilterUpdated) {
+            setInstancesFilterUpdated(false)
             const tempParams = {
                 ...this.props.params,
             };
@@ -81,8 +74,10 @@ class InstancesFiltersComponent extends Component {
             devices,
             devicesOwnerships,
             periodsList,
+            isInstancesFilterUpdated,
+            setInstancesFilterUpdated,
         } = this.props;
-        const { filtersUpdated } = this.state;
+
 
         return (
             <div className={classes.marginBottomBig}>
@@ -91,7 +86,7 @@ class InstancesFiltersComponent extends Component {
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
+                            onFilterChanged={() => setInstancesFilterUpdated(true)}
                             filters={[
                                 periods(periodsList),
                                 location(formatMessage),
@@ -103,7 +98,7 @@ class InstancesFiltersComponent extends Component {
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
-                            onFilterChanged={() => this.onFilterChanged()}
+                            onFilterChanged={() => setInstancesFilterUpdated(true)}
                             filters={[
                                 instanceStatus(instanceStatusOptions),
                                 device(devices),
@@ -113,7 +108,7 @@ class InstancesFiltersComponent extends Component {
                     </Grid>
                     <Grid item xs={4}>
                         <OrgUnitsLevelsFiltersComponent
-                            onLatestIdChanged={() => this.onFilterChanged()}
+                            onLatestIdChanged={() => setInstancesFilterUpdated(true)}
                             params={params}
                             baseUrl={baseUrl}
                         />
@@ -122,7 +117,7 @@ class InstancesFiltersComponent extends Component {
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
                         <Button
-                            disabled={!filtersUpdated}
+                            disabled={!isInstancesFilterUpdated}
                             variant="contained"
                             className={classes.button}
                             color="primary"
@@ -152,6 +147,8 @@ InstancesFiltersComponent.propTypes = {
     devicesOwnerships: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
     periodsList: PropTypes.array.isRequired,
+    isInstancesFilterUpdated: PropTypes.bool.isRequired,
+    setInstancesFilterUpdated: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -159,11 +156,13 @@ const MapStateToProps = state => ({
     devices: state.devices.list,
     devicesOwnerships: state.devices.ownershipList,
     periodsList: state.periods.list,
+    isInstancesFilterUpdated: state.instances.isInstancesFilterUpdated
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setInstancesFilterUpdated: isInstancesFilterUpdated => dispatch(setInstancesFilterAction(isInstancesFilterUpdated))
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(InstancesFiltersComponent)));

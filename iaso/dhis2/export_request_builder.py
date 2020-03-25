@@ -3,6 +3,18 @@ from iaso.models import Instance, ExportRequest, ExportStatus
 from django.core.paginator import Paginator
 
 
+class NothingToExportError(Exception):
+    pass
+
+
+class NoVersionError(Exception):
+    pass
+
+
+class NoFormMappingError(Exception):
+    pass
+
+
 class ExportRequestBuilder:
     def __init__(self):
         self.form_mappings_cache = {}
@@ -30,7 +42,7 @@ class ExportRequestBuilder:
         params = {"filters": filters, "force_export": force_export}
 
         if instances.count() == 0:
-            raise Exception("no instance to export for " + str(params))
+            raise NothingToExportError("no instance to export for " + str(params))
 
         export_request = ExportRequest()
         export_request.params = params
@@ -62,7 +74,7 @@ class ExportRequestBuilder:
     def get_form_mapping_versions(self, instance):
         ona_version = instance.json.get("_version") or instance.json.get("version")
         if ona_version is None:
-            raise Exception(
+            raise NoVersionError(
                 "No version specified (_version or version) in instance json : "
                 + str(instance.id)
                 + " "
@@ -82,7 +94,7 @@ class ExportRequestBuilder:
                     mappings.append(form_mapping_version)
 
         if len(mappings) == 0:
-            raise Exception(
+            raise NoFormMappingError(
                 "No form mapping version for the form version '"
                 + instance.form.name
                 + "' for version '"

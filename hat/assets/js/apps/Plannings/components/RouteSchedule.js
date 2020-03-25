@@ -1,5 +1,4 @@
 import React, { Component } from 'react';
-import isEqual from 'lodash/isEqual';
 
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
@@ -14,6 +13,7 @@ import {
     reIndex,
 } from '../utils/routeUtils';
 
+
 class RouteSchedule extends Component {
     constructor(props) {
         super(props);
@@ -22,16 +22,10 @@ class RouteSchedule extends Component {
         };
     }
 
-    componentDidUpdate(prevProps) {
-        if ((!this.props.load.loading)
-            && (!isEqual(prevProps.assignations, this.props.assignations))) {
-            this.setAssignations();
-        }
-    }
-
     onDragEnd(result) {
         const { source, destination } = result;
         const { assignations } = this.state;
+        const { updateAssignation } = this.props;
         if (!destination) {
             return;
         }
@@ -71,12 +65,10 @@ class RouteSchedule extends Component {
         tempAssignations = reIndex(tempAssignations);
         const updatedMonth = tempAssignations
             .filter(assignationList => (assignationList.key === destination.droppableId))[0];
-        const updatedAssignation = updatedMonth.data
-            .filter(assignation => (assignation.id === result.draggableId))[0];
         this.setState({
             assignations: tempAssignations,
         });
-        this.props.updateAssignation(updatedAssignation.index, updatedMonth.id, result.draggableId);
+        updateAssignation(updatedMonth.id, tempAssignations);
     }
 
     setAssignations() {
@@ -106,7 +98,7 @@ class RouteSchedule extends Component {
                                     >
                                         {assignations[assIndex].label}
                                         <span>
-                                        (
+                                            (
                                             {formatThousand(assignations[assIndex].population)}
                                         )
                                         </span>
@@ -144,12 +136,12 @@ class RouteSchedule extends Component {
                                                             <span>
                                                                 {index + 1}
                                                                 {' '}
--
+                                                                -
                                                                 {a.name}
                                                                 {' '}
-(
+                                                                (
                                                                 {formatThousand(a.population)}
-)
+                                                                )
                                                                 {
                                                                     a.tests_count > 0
                                                                     && (
@@ -188,10 +180,10 @@ RouteSchedule.propTypes = {
     params: PropTypes.object,
     redirect: PropTypes.func.isRequired,
     assignations: PropTypes.array.isRequired,
-    updateAssignation: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     selectedMonth: PropTypes.number.isRequired,
     selectMonth: PropTypes.func.isRequired,
+    updateAssignation: PropTypes.func.isRequired,
 };
 
 export default injectIntl(RouteSchedule);

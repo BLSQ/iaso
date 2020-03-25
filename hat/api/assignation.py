@@ -258,3 +258,16 @@ class AssignationViewSet(viewsets.ViewSet):
             res.append(assignation_dict)
 
         return Response(res)
+
+    def put(self, request, pk=None):
+        assignations = request.data
+        for assignation in assignations:
+            new_assignation = get_object_or_404(Assignation, pk=assignation.get("id"))
+            new_assignation.month = assignation.get("month")
+            new_assignation.index = assignation.get("index")
+            new_assignation.save()
+            print ('')
+            print (assignation)
+
+
+        return Response(assignations)

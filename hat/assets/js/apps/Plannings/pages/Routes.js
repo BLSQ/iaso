@@ -1,9 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import isEqual from 'lodash/isEqual';
+import orderBy from 'lodash/orderBy';
+
 
 import LoadingSpinner from '../../../components/loading-spinner';
 
@@ -11,19 +14,27 @@ import PlanningTeamSelection from '../components/PlanningTeamSelection';
 import LayersComponent from '../../../components/LayersComponent';
 import RouteSchedule from '../components/RouteSchedule';
 import RouteMap from '../components/RouteMap';
-import { planningActions } from '../redux/planning';
-import { assignationActions } from '../redux/assignation';
+
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import { teamActions } from '../redux/team';
 import { clone } from '../../../utils';
-import { mapActions } from '../redux/map';
 import { getMonthName } from '../utils/routeUtils';
+import { warningSnackBar } from '../../../utils/constants/snackBars';
+import { putRequest } from '../../../utils/requests';
+
+import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
+import { planningActions } from '../redux/planning';
+import { assignationActions } from '../redux/assignation';
+import { mapActions } from '../redux/map';
+import { saveAssignations } from '../redux/microplanning';
 
 class Routes extends React.Component {
     constructor(props) {
         super(props);
         const selectedMonth = 1;
         this.state = {
+            isModified: false,
+            modifiedAssignations: null,
             selectedMonth,
             selectedAssignations: props.assignations.filter(a => a.month === selectedMonth),
             notSelectedAssignations: props.assignations.filter(a => a.month !== selectedMonth),
@@ -51,12 +62,32 @@ class Routes extends React.Component {
         }
     }
 
-    setAssignations() {
+    onSave() {
         const {
-            params,
-            assignations,
+            dispatch,
         } = this.props;
-        const selectedMonth = parseInt(params.month_id, 10);
+        const {
+            modifiedAssignations,
+        } = this.state;
+
+        this.props.putRequest(
+            '/api/assignations/',
+            modifiedAssignations,
+            saveAssignations,
+        ).then(() => {
+            dispatch(closeFixedSnackbar('saveWarning'));
+            this.setState({
+                isModified: false,
+                modifiedAssignations: null,
+            });
+        });
+    }
+
+
+    setAssignations(
+        assignations = this.props.assignations,
+        selectedMonth = parseInt(this.props.params.month_id, 10),
+    ) {
         this.setState({
             selectedMonth,
             selectedAssignations: assignations.filter(a => a.month === selectedMonth),
@@ -73,9 +104,33 @@ class Routes extends React.Component {
         });
     }
 
-    updateAssignation(index, month, assignationId) {
-        this.selectMonth(month);
-        this.props.updateAssignation(index, month, assignationId);
+    updateAssignation(monthId, monthlyAssignations) {
+        let modifiedAssignations = [...this.props.assignations];
+        monthlyAssignations.forEach((month) => {
+            month.data.forEach((a) => {
+                const assignationIndex = modifiedAssignations.findIndex(ass => ass.id === a.id);
+                modifiedAssignations[assignationIndex].month = month.id;
+                modifiedAssignations[assignationIndex].index = a.index;
+            });
+        });
+        modifiedAssignations = orderBy(modifiedAssignations, [item => item.index], ['asc']);
+        this.setAssignations(modifiedAssignations, monthId);
+        const {
+            dispatch,
+        } = this.props;
+        if (!this.state.isModified) {
+            dispatch(enqueueSnackbar(warningSnackBar(
+                'saveWarning',
+                {
+                    id: 'routes.label.save.needToSave',
+                    defaultMessage: 'Planning modified but not saved',
+                },
+            )));
+        }
+        this.setState({
+            isModified: true,
+            modifiedAssignations,
+        });
     }
 
     render() {
@@ -83,6 +138,9 @@ class Routes extends React.Component {
         const { loading } = this.props.load;
         const teamId = this.props.params.team_id ? this.props.params.team_id : undefined;
         const { formatMessage } = this.props.intl;
+        const {
+            isModified,
+        } = this.state;
         return (
             <section className="route-container ">
                 <div className="widget__container">
@@ -165,7 +223,7 @@ class Routes extends React.Component {
                                         assignations={this.props.assignations}
                                         params={this.props.params}
                                         redirect={params => this.props.redirect(params)}
-                                        updateAssignation={(index, month, assignationId) => this.updateAssignation(index, month, assignationId)}
+                                        updateAssignation={(month, assignations) => this.updateAssignation(month, assignations)}
                                     />
                                 )
                             }
@@ -194,6 +252,18 @@ class Routes extends React.Component {
                             }
                         </div>
                     </section>
+
+                    <div className="align-right margin">
+                        <button
+                            disabled={!isModified}
+                            className="button"
+                            onClick={() => this.onSave()}
+                        >
+                            <i className="fa fa-save" />
+                            <FormattedMessage id="main.label.save" defaultMessage="Save" />
+                        </button>
+
+                    </div>
                 </div>
             </section>
         );
@@ -221,6 +291,8 @@ Routes.propTypes = {
     getShape: PropTypes.func.isRequired,
     map: PropTypes.object.isRequired,
     changeLayer: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
+    putRequest: PropTypes.func.isRequired,
 };
 
 const RoutesIntl = injectIntl(Routes);
@@ -235,6 +307,7 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
+    dispatch,
     redirect: params => dispatch(push(createUrl(params, 'routes'))),
     fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch, true)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
@@ -242,6 +315,9 @@ const MapDispatchToProps = dispatch => ({
     updateAssignation: (index, month, assignationId) => dispatch(assignationActions.updateAssignation(index, month, assignationId, dispatch, true)),
     getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
+    ...bindActionCreators({
+        putRequest,
+    }, dispatch),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(RoutesIntl);

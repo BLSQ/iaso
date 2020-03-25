@@ -1,6 +1,7 @@
 import { loadActions } from '../../../redux/load';
 
 export const SHOW_ASSIGNATIONS = 'hat/microplanning/assignation/SHOW_ASSIGNATIONS';
+export const SAVE_ASSIGNATIONS = 'hat/microplanning/assignation/SAVE_ASSIGNATIONS';
 export const FETCH_ASSIGNATIONS = 'hat/microplanning/assignation/FETCH_ASSIGNATIONS';
 export const UPDATE_ASSIGNATIONS = 'hat/microplanning/assignation/UPDATE_ASSIGNATIONS';
 
@@ -9,6 +10,15 @@ const req = require('superagent');
 export const showAssignations = assignations => ({
     type: SHOW_ASSIGNATIONS,
     payload: assignations,
+});
+
+export const saveAssignations = assignations => ({
+    type: SAVE_ASSIGNATIONS,
+    payload: assignations,
+    errorMessage: {
+        id: 'main.snackBar.errors.saveAssignations',
+        defaultMessage: 'An error occurred while saving assignations',
+    },
 });
 
 export const fetchAssignations = (params, dispatch, withTestsCount = false) => {
@@ -83,6 +93,10 @@ export const assignationReducer = (state = {}, action = {}) => {
             return state;
         }
 
+        case SAVE_ASSIGNATIONS: {
+            const list = action.payload;
+            return { ...state, list };
+        }
         default:
             return state;
     }

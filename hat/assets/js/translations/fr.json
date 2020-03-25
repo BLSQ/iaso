@@ -912,6 +912,7 @@
     "quality.main.otherParasites": "Autre parasite",
     "quality.main.search": "Recherche parasite au bon endroit",
     "report.title": "Rapport",
+    "routes.label.save.needToSave": "Itinéraire modifié mais non sauvegardé",
     "search.placeholder.all": "Taper ici pour chercher dans la liste de tous les villages",
     "search.result": "resultat(s)",
     "search.result.asLabel": "As",

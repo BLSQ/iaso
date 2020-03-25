@@ -6,14 +6,23 @@ from rest_framework.authentication import BasicAuthentication
 
 from iaso.models import Form, FormVersion
 from iaso.odk import parsing
-from .common import ModelViewSet, TimestampField
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from .auth.authentication import CsrfExemptSessionAuthentication
 from .forms import HasFormPermission
 
 
-class FormVersionSerializer(serializers.ModelSerializer):
+class FormVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = FormVersion
+        default_fields = [
+            "id",
+            "version_id",
+            "form_id",
+            "xls_file",
+            "file",
+            "created_at",
+            "updated_at",
+        ]
         fields = [
             "id",
             "version_id",
@@ -34,7 +43,7 @@ class FormVersionSerializer(serializers.ModelSerializer):
         ]
 
     form_id = serializers.PrimaryKeyRelatedField(
-        source="form", write_only=True, queryset=Form.objects.all()
+        source="form", queryset=Form.objects.all()
     )
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
@@ -44,16 +53,8 @@ class FormVersionSerializer(serializers.ModelSerializer):
     descriptor = serializers.SerializerMethodField()
 
     def get_descriptor(self, form_version):
-        condition = self.context["request"].GET.get("fields", "")
-        if "descriptor" in condition:
-            json_survey = parsing.to_json_dict(form_version)
-            json_survey["loaded"] = True
-            return json_survey
-        else:
-            return {
-                "warning": "not loaded try with ?fields=descriptor",
-                "loaded": False,
-            }
+        json_survey = parsing.to_json_dict(form_version)
+        return json_survey
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]

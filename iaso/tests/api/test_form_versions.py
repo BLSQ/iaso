@@ -63,15 +63,25 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.get("/api/formversions/")
         self.assertJSONResponse(response, 200)
         json_response = response.json()
-        self.assertNotLoadedDescriptor(json_response["form_versions"][0]["descriptor"])
+        formversion = json_response["form_versions"][0]
+        self.assertValidFormVersionDataExceptXlsFile(formversion)
+        self.assertTrue("descriptor" not in formversion)
 
     @tag("iaso_only")
     def test_form_versions_retrieve(self):
-        """GET /formversions/<form_id>: not authorized for now"""
+        """GET /formversions/<form_id>: allowed"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.get(f"/api/formversions/44")
-        self.assertJSONResponse(response, 404)
+        response = self.client.get(
+            f"/api/formversions/"
+            + str(self.form_2.form_versions.all()[0].id)
+            + "/?fields=:all"
+        )
+        self.assertJSONResponse(response, 200)
+        json_response = response.json()
+        formversion = json_response
+        self.assertTrue("descriptor" in formversion)
+        self.assertValidFormVersionDataExceptXlsFile(formversion)
 
     @tag("iaso_only")
     def test_form_versions_update(self):
@@ -273,6 +283,15 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasField(form_version_data, "id", int)
         self.assertHasField(form_version_data, "file", str)
         self.assertHasField(form_version_data, "xls_file", str)
+        self.assertHasField(form_version_data, "version_id", str)
+        self.assertHasField(form_version_data, "created_at", float)
+        self.assertHasField(form_version_data, "updated_at", float)
+
+    def assertValidFormVersionDataExceptXlsFile(
+        self, form_version_data: typing.Mapping
+    ):  # TODO: check for other fields
+        self.assertHasField(form_version_data, "id", int)
+        self.assertHasField(form_version_data, "file", str)
         self.assertHasField(form_version_data, "version_id", str)
         self.assertHasField(form_version_data, "created_at", float)
         self.assertHasField(form_version_data, "updated_at", float)

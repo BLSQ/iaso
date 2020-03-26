@@ -19,6 +19,7 @@ from .models import (
     Group,
     Profile,
     ExternalCredentials,
+    Mapping,
     MappingVersion,
 )
 
@@ -60,6 +61,14 @@ class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
 
 
+class MappingAdmin(admin.GeoModelAdmin):
+    list_filter = ("form_id",)
+
+
+class MappingVersionAdmin(admin.GeoModelAdmin):
+    list_filter = ("form_version_id",)
+
+
 admin.site.register(Link, LinkAdmin)
 
 admin.site.register(Form, FormAdmin)
@@ -76,7 +85,8 @@ admin.site.register(AlgorithmRun)
 admin.site.register(FormVersion)
 admin.site.register(Profile)
 admin.site.register(ExternalCredentials)
-admin.site.register(MappingVersion)
+admin.site.register(Mapping, MappingAdmin)
+admin.site.register(MappingVersion, MappingVersionAdmin)
 
 
 class GroupAdmin(admin.GeoModelAdmin):

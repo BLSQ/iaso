@@ -75,6 +75,26 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchInstanceError',
         defaultMessage: 'An error occurred while fetching instance detail',
     },
+    createExportRequestErrorNothingToExportError: {
+        id: 'iaso.snackBar.createExportRequestErrorNothingToExportError',
+        defaultMessage: 'We found nothing to export, change your filter or force the re-export'
+    },
+    createExportRequestErrorNoVersionError: {
+        id: 'iaso.snackBar.createExportRequestErrorNoVersionError',
+        defaultMessage: 'One of the instance had no version specified'
+    },
+    createExportRequestErrorNoFormMappingError: {
+        id: 'iaso.snackBar.createExportRequestErrorNoFormMappingError',
+        defaultMessage: "The form doesn't a form mapping to export to dhis2"
+    },
+    createExportRequestError: {
+        id: 'iaso.snackBar.createExportRequestError',
+        defaultMessage: 'An error occured while creating export request'
+    },
+    createExportRequestSuccess: {
+        id: 'iaso.snackBar.createExportRequestSuccess',
+        defaultMessage: 'Export request queued'
+    },
     saveLinkError: {
         id: 'iaso.snackBar.saveLinkError',
         defaultMessage: 'An error occurred while saving link',

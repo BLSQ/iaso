@@ -163,7 +163,8 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(
             response_data,
             {
-                "params": "no instance to export for {'filters': {'form_id': None, 'with_location': None, 'org_unit_type_id': None, 'device_id': None, 'device_ownership_id': None, 'org_unit_parent_id': None, 'org_unit_id': None, 'period_ids': '204112', 'status': None}, 'force_export': False}"
+                "code": "NothingToExportError",
+                "message": "no instance to export for {'filters': {'form_id': None, 'with_location': None, 'org_unit_type_id': None, 'device_id': None, 'device_ownership_id': None, 'org_unit_parent_id': None, 'org_unit_id': None, 'period_ids': '204112', 'status': None}, 'force_export': False}",
             },
         )
 
@@ -184,8 +185,9 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(
             response_data,
             {
-                "params": "No version specified (_version or version) in instance json : "
+                "code": "NoVersionError",
+                "message": "No version specified (_version or version) in instance json : "
                 + str(instance.id)
-                + " {'demo': 'noversion'}"
+                + " {'demo': 'noversion'}",
             },
         )

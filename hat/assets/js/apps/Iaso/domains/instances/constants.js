@@ -1,10 +1,11 @@
 import React from 'react';
 
+import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import OrgUnitDisplay from '../orgUnits/components/OrgUnitDisplay';
 import { Period } from '../periods/models';
 import { getOrgunitMessage } from '../orgUnits/utils';
-import { FormattedMessage } from 'react-intl';
+import MESSAGES from './messages';
 
 export const INSTANCE_STATUS_READY = 'READY';
 export const INSTANCE_STATUS_ERROR = 'ERROR';
@@ -61,8 +62,8 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'status',
-        render: value => value ? <FormattedMessage id={"iaso.label.instanceStatus."+value.toLowerCase()+"Single"} defaultMessage={value} /> : "-",
+        render: value => (value ? <FormattedMessage {...MESSAGES[value.toLowerCase()]} /> : '-'),
         tableOrder: 5,
         type: 'info',
-    }
+    },
 ];

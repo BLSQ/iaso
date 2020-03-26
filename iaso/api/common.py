@@ -5,6 +5,43 @@ from rest_framework import serializers, pagination, exceptions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
+from django.core.exceptions import SuspiciousOperation
+
+
+class DynamicFieldsModelSerializer(serializers.ModelSerializer):
+    """
+    A ModelSerializer that takes an additional `fields` argument that
+    controls which fields should be displayed.
+    """
+
+    def __init__(self, *args, **kwargs):
+        # Don't pass the 'fields' arg up to the superclass
+        fields = kwargs.pop("fields", self.Meta.default_fields)
+        requested_fields = kwargs["context"]["request"].GET.get("fields")
+        if requested_fields == ":all":
+            fields = self.Meta.fields
+        elif requested_fields:
+            fields = requested_fields.split(",")
+            for field in fields:
+                if not field in self.Meta.fields:
+                    raise serializers.ValidationError(
+                        {
+                            "fields": "field unknown '"
+                            + field
+                            + "', known fields :"
+                            + ", ".join(self.Meta.fields)
+                        }
+                    )
+
+        # Instantiate the superclass normally
+        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+
+        if fields is not None:
+            # Drop any fields that are not specified in the `fields` argument.
+            allowed = set(fields)
+            existing = set(self.fields)
+            for field_name in existing - allowed:
+                self.fields.pop(field_name)
 
 
 class TimestampField(serializers.Field):
@@ -22,15 +59,17 @@ class Paginator(pagination.PageNumberPagination):
         self.results_key = results_key
 
     def get_paginated_response(self, data):
-        return Response({
-            "count": self.page.paginator.count,
-            self.results_key: data,
-            "has_next": self.page.has_next(),
-            "has_previous": self.page.has_previous(),
-            "page": self.page.number,
-            "pages": self.page.paginator.num_pages,
-            "limit": self.page.paginator.per_page
-        })
+        return Response(
+            {
+                "count": self.page.paginator.count,
+                self.results_key: data,
+                "has_next": self.page.has_next(),
+                "has_previous": self.page.has_previous(),
+                "page": self.page.number,
+                "pages": self.page.paginator.num_pages,
+                "limit": self.page.paginator.per_page,
+            }
+        )
 
 
 class ModelViewSet(BaseModelViewSet):
@@ -52,9 +91,8 @@ class ModelViewSet(BaseModelViewSet):
         }
         """
         assert self.results_key is not None, (
-                "'%s' should either include a `results_key` attribute, "
-                "or override the `get_result_key()` method."
-                % self.__class__.__name__
+            "'%s' should either include a `results_key` attribute, "
+            "or override the `get_result_key()` method." % self.__class__.__name__
         )
 
         return self.results_key
@@ -83,5 +121,5 @@ class ModelViewSet(BaseModelViewSet):
 
             raise exceptions.MethodNotAllowed(
                 self.request.method,
-                f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s"
+                f"Cannot delete {instance_model_name} as it is linked to one or more {linked_model_name}s",
             )

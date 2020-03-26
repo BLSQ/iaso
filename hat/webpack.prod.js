@@ -19,7 +19,7 @@ module.exports = {
     'styles': './assets/css/index.scss',
     'plannings': './assets/js/apps/Plannings/index',
     'stats': './assets/js/apps/Stats/index',
-    'management': './assets/js/apps/management/index',
+    'management': './assets/js/apps/Management/index',
     'locator': './assets/js/apps/Locator/index',
     'quality_control': './assets/js/apps/QualityControl/index',
     'vector': './assets/js/apps/Vector/index',

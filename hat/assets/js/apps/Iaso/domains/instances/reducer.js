@@ -4,6 +4,7 @@ import {
     SET_INSTANCES_FETCHING,
     SET_CURRENT_INSTANCE,
     SET_INSTANCE_CURRENT_FORM,
+    SET_INSTANCES_FILTER_UDPATED,
     RESET_INSTANCES,
 } from './actions';
 
@@ -19,6 +20,7 @@ export const instancesInitialState = {
     },
     current: null,
     currentForm: null,
+    isInstancesFilterUpdated: false
 };
 
 export const instancesReducer = (state = instancesInitialState, action = {}) => {
@@ -58,7 +60,12 @@ export const instancesReducer = (state = instancesInitialState, action = {}) => 
             const currentForm = action.payload;
             return { ...state, currentForm };
         }
-    
+
+        case SET_INSTANCES_FILTER_UDPATED: {
+            const isInstancesFilterUpdated = action.payload;
+            return { ...state, isInstancesFilterUpdated };
+        }
+
         case RESET_INSTANCES: {
             return instancesInitialState;
         }

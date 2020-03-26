@@ -1,5 +1,8 @@
 
-const MESSAGES = {
+
+import { defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
     type: {
         id: 'iaso.label.type',
         defaultMessage: 'Type',
@@ -82,8 +85,20 @@ const MESSAGES = {
     },
     status: {
         defaultMessage: 'status',
-        id: 'iaso.label.instanceStatus'
-    }
-};
+        id: 'iaso.label.instanceStatus',
+    },
+    ready: {
+        defaultMessage: 'ready',
+        id: 'iaso.label.instanceStatus.readySingle',
+    },
+    error: {
+        defaultMessage: 'error',
+        id: 'iaso.label.instanceStatus.errorSingle',
+    },
+    duplicated: {
+        defaultMessage: 'duplicated',
+        id: 'iaso.label.instanceStatus.duplicatedSingle',
+    },
+});
 
 export default MESSAGES;

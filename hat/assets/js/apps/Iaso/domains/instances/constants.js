@@ -61,7 +61,7 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'status',
-        render: value => value ? <FormattedMessage id={"iaso.label.instanceStatus."+value.toLowerCase()+"Single"} defaultMessage={value} /> : "-",
+        render: value => value || '-',
         tableOrder: 5,
         type: 'info',
     }

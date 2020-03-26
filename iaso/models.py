@@ -683,6 +683,9 @@ class Mapping(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    def __str__(self):
+        return "%s %s" % (self.form, self.mapping_type)
+
 
 class MappingVersion(models.Model):
     form_version = models.ForeignKey(

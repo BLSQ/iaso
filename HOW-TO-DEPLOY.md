@@ -44,7 +44,6 @@ Troubleshooting :
 
  - you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/logs?applicationName=Iaso&environmentId=e-rmmcdsjkkr)
 
-TODO martin is there any sanity check ?
 
 # 2. Deploy to production
 
@@ -67,4 +66,19 @@ Troubleshooting :
 
  - you might need to dig in the [eb activity logs](https://eu-central-1.console.aws.amazon.com/elasticbeanstalk/home?region=eu-central-1#/environment/dashboard?applicationName=Iaso&environmentId=e-esgyumhrjp)
 
-TODO martin what about iaso-playground and notebooks ?
+# 2. Deploy to playground
+
+For the Playground, deploy as for staging and prod for the web server, but you also need to update the 
+jupyter server (using the pem file you can find on 1password)
+
+```
+ssh -i lightsail.pem ubuntu@18.196.197.98
+cd sense-hat
+git pull 
+source bin/activate
+pip install -r requirements.txt
+killall python
+nohup ./run.sh &
+```
+
+Obviously, a more stable playground setup would be welcome. 

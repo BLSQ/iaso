@@ -279,8 +279,24 @@
     width: 650px;
 }
 
-.modal-content {
+.small-modal-content {
+    width: 300;
+}
+
+
+.modal-content,
+.small-modal-content {
     padding: 0 $padding-unit / 4 $padding-unit / 4 $padding-unit / 4;
+
+    .label {
+        color: $mid-gray;
+
+        &>input,
+        &>span {
+            display: inline-block;
+            margin-left: 8px;
+        }
+    }
 }
 
 .large-modal-content {
@@ -294,6 +310,7 @@
 .extra-large-modal-content,
 .large-modal-content,
 .modal-content,
+.small-modal-content,
 .medium-modal-content {
     .inline-infos {
         position: relative;
@@ -698,7 +715,7 @@
     >div,
     >section>div {
         label {
-            width: 110px;
+            width: 100px;
             height: 45px;
             box-sizing: border-box;
             padding-top: 5px;

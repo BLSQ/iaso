@@ -105,12 +105,17 @@ class Routes extends React.Component {
     }
 
     updateAssignation(monthId, monthlyAssignations) {
-        let modifiedAssignations = [...this.props.assignations];
+        const { assignations } = this.props;
+        let modifiedAssignations = [];
         monthlyAssignations.forEach((month) => {
             month.data.forEach((a) => {
-                const assignationIndex = modifiedAssignations.findIndex(ass => ass.id === a.id);
-                modifiedAssignations[assignationIndex].month = month.id;
-                modifiedAssignations[assignationIndex].index = a.index;
+                const newAssignation = assignations.find(ass => ass.id === a.id);
+                modifiedAssignations.push({
+                    ...newAssignation,
+                    month: month.id,
+                    index: a.index,
+                    splitted: a.splitted,
+                });
             });
         });
         modifiedAssignations = orderBy(modifiedAssignations, [item => item.index], ['asc']);
@@ -122,7 +127,7 @@ class Routes extends React.Component {
             dispatch(enqueueSnackbar(warningSnackBar(
                 'saveWarning',
                 {
-                    id: 'routes.label.save.needToSave',
+                    id: 'microplanning.route.needToSave',
                     defaultMessage: 'Planning modified but not saved',
                 },
             )));
@@ -283,7 +288,6 @@ Routes.propTypes = {
     fetchPlannings: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchAssignations: PropTypes.func.isRequired,
-    updateAssignation: PropTypes.func.isRequired,
     redirect: PropTypes.func.isRequired,
     plannings: PropTypes.array,
     teams: PropTypes.array,
@@ -312,7 +316,6 @@ const MapDispatchToProps = dispatch => ({
     fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch, true)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchTeams: () => dispatch(teamActions.fetchTeams(dispatch)),
-    updateAssignation: (index, month, assignationId) => dispatch(assignationActions.updateAssignation(index, month, assignationId, dispatch, true)),
     getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
     ...bindActionCreators({

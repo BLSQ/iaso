@@ -43,6 +43,7 @@ const formatAssignations = (assignations) => {
         longitude: a.longitude,
         case_count: a.case_count,
         tests_count: a.tests_count,
+        splitted: a.splitted,
     }));
     return tempAssignations;
 };

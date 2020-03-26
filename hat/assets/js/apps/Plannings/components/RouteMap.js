@@ -98,6 +98,18 @@ class RouteMap extends Component {
         const { villages, notSelectedVillages } = this.props;
         this.villageGroup.clearLayers();
         this.unselectedVillageGroup.clearLayers();
+        if (notSelectedVillages) {
+            notSelectedVillages.map((village) => {
+                const villageCircle = L.circle([village.latitude, village.longitude], {
+                    radius: 500,
+                    pane: 'custom-pane-markers',
+                    className: `routeCircle not-selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
+                })
+                    .bindTooltip(`${village.village_name} - M.${village.month}`);
+                villageCircle.addTo(this.unselectedVillageGroup);
+                return true;
+            });
+        }
         if (villages) {
             let previousVillage = null;
             villages.map((village, index) => {
@@ -107,7 +119,7 @@ class RouteMap extends Component {
                     className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                 })
                     .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
-                    .bindTooltip(`${index + 1}`, { permanent: true });
+                    .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
                 villageCircle.addTo(this.villageGroup);
 
                 if (previousVillage) {
@@ -128,18 +140,6 @@ class RouteMap extends Component {
             });
 
             this.fitToBounds();
-        }
-        if (notSelectedVillages) {
-            notSelectedVillages.map((village) => {
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                    className: `routeCircle not-selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
-                })
-                    .bindTooltip(`${village.village_name} - ${getMonthName(village.month)}`);
-                villageCircle.addTo(this.unselectedVillageGroup);
-                return true;
-            });
         }
     }
 

@@ -3,6 +3,8 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
+import FileCopy from '@material-ui/icons/FileCopyOutlined';
+
 import { formatThousand } from '../../../utils';
 
 import {
@@ -12,6 +14,8 @@ import {
     filterAssignations,
     reIndex,
 } from '../utils/routeUtils';
+
+import SplitRoutesModal from './SplitRoutesModalComponent';
 
 
 class RouteSchedule extends Component {
@@ -77,6 +81,30 @@ class RouteSchedule extends Component {
         });
     }
 
+    handleSplit(split, index, monthId) {
+        const { assignations } = this.state;
+        const { updateAssignation } = this.props;
+
+        let tempAssignations = [...assignations];
+        const assignationClone = {
+            ...tempAssignations[monthId].data[index],
+            population: split.part2,
+            splitted: true,
+        };
+        tempAssignations[monthId].data[index] = {
+            ...tempAssignations[monthId].data[index],
+            population: split.part1,
+            splitted: true,
+        };
+        tempAssignations[monthId].data[index].population = split.part1;
+        tempAssignations[monthId].data.splice(index, 0, assignationClone);
+        tempAssignations = reIndex(tempAssignations);
+        this.setState({
+            assignations: tempAssignations,
+        });
+        updateAssignation(monthId + 1, tempAssignations);
+    }
+
 
     render() {
         const { assignations } = this.state;
@@ -119,8 +147,8 @@ class RouteSchedule extends Component {
                                         {assignations[assIndex]
                                             .data.map((a, index) => (
                                                 <Draggable
-                                                    key={a.id}
-                                                    draggableId={a.id}
+                                                    key={`${assignations[assIndex].key}-${a.index}-${a.id}`}
+                                                    draggableId={`${a.id}-${a.index}`}
                                                     index={index}
                                                 >
                                                     {(drag, dragSnapshot) => (
@@ -137,6 +165,13 @@ class RouteSchedule extends Component {
                                                                 {index + 1}
                                                                 {' '}
                                                                 -
+                                                                {a.splitted ? (
+                                                                    <span>
+                                                                        <FileCopy fontSize="small" className="copy-icon" />
+                                                                        {' '}
+                                                                        -
+                                                                    </span>
+                                                                ) : null}
                                                                 {a.name}
                                                                 {' '}
                                                                 (
@@ -155,6 +190,12 @@ class RouteSchedule extends Component {
                                                                     )
                                                                 }
                                                             </span>
+                                                            <div className="routes-split-button-container">
+                                                                <SplitRoutesModal
+                                                                    currentVillage={a}
+                                                                    handleSplit={split => this.handleSplit(split, index, assIndex)}
+                                                                />
+                                                            </div>
                                                             <i className="fa fa-bars" aria-hidden="true" />
                                                         </li>
                                                     )}

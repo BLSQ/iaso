@@ -78,12 +78,13 @@ class Assignation(models.Model):
     month = models.IntegerField(null=True, blank=True)
     index = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    population_splitted = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return "%s - % s - %s" % (self.planning, self.village, self.team)
 
     class Meta:
-        unique_together = (('planning', 'village'),)
+        unique_together = (('planning', 'village', 'month'),)
 
     def as_dict(self):
         return {
@@ -95,7 +96,9 @@ class Assignation(models.Model):
             'team_id': self.team_id,
             'id': self.id,
             'month': self.month,
-            'index': self.index
+            'index': self.index,
+            'splitted': self.population_splitted is not None,
+            'population_splitted': self.population_splitted
         }
 
 

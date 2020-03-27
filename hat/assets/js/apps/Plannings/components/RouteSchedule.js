@@ -4,6 +4,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
 import FileCopy from '@material-ui/icons/FileCopyOutlined';
+import isEqual from 'lodash/isEqual';
 
 import { formatThousand } from '../../../utils';
 
@@ -24,6 +25,14 @@ class RouteSchedule extends Component {
         this.state = {
             assignations: filterAssignations(props.assignations),
         };
+    }
+
+    componentDidUpdate(prevProps) {
+        if (
+            !isEqual(prevProps.assignations, this.props.assignations)
+        ) {
+            this.setAssignations(this.props.assignations);
+        }
     }
 
     onDragEnd(result) {
@@ -88,16 +97,17 @@ class RouteSchedule extends Component {
         let tempAssignations = [...assignations];
         const assignationClone = {
             ...tempAssignations[monthId].data[index],
-            population: split.part2,
+            population_splitted: split.part2,
             splitted: true,
+            clone: true,
         };
         tempAssignations[monthId].data[index] = {
             ...tempAssignations[monthId].data[index],
-            population: split.part1,
+            population_splitted: split.part1,
             splitted: true,
         };
         tempAssignations[monthId].data[index].population = split.part1;
-        tempAssignations[monthId].data.splice(index, 0, assignationClone);
+        tempAssignations[monthId].data.splice(index + 1, 0, assignationClone);
         tempAssignations = reIndex(tempAssignations);
         this.setState({
             assignations: tempAssignations,
@@ -128,7 +138,7 @@ class RouteSchedule extends Component {
                                         <span>
                                             (
                                             {formatThousand(assignations[assIndex].population)}
-                                        )
+                                            )
                                         </span>
                                     </div>
                                     <ul
@@ -174,8 +184,11 @@ class RouteSchedule extends Component {
                                                                 ) : null}
                                                                 {a.name}
                                                                 {' '}
+
                                                                 (
-                                                                {formatThousand(a.population)}
+                                                                {a.population_splitted
+                                                                    ? formatThousand(a.population_splitted)
+                                                                    : formatThousand(a.population)}
                                                                 )
                                                                 {
                                                                     a.tests_count > 0

@@ -18,7 +18,7 @@ import RouteMap from '../components/RouteMap';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import { teamActions } from '../redux/team';
 import { clone } from '../../../utils';
-import { getMonthName } from '../utils/routeUtils';
+import { getMonthName, hasSameVillageInAMonth } from '../utils/routeUtils';
 import { warningSnackBar } from '../../../utils/constants/snackBars';
 import { putRequest } from '../../../utils/requests';
 
@@ -35,7 +35,9 @@ class Routes extends React.Component {
         this.state = {
             isModified: false,
             modifiedAssignations: null,
+            hasSplitError: false,
             selectedMonth,
+            showSplitError: false,
             selectedAssignations: props.assignations.filter(a => a.month === selectedMonth),
             notSelectedAssignations: props.assignations.filter(a => a.month !== selectedMonth),
         };
@@ -50,15 +52,41 @@ class Routes extends React.Component {
     }
 
     componentDidUpdate(prevProps) {
+        const {
+            dispatch,
+        } = this.props;
         if ((prevProps.params.team_id !== this.props.params.team_id)
             || (prevProps.params.planning_id !== this.props.params.planning_id)) {
             this.props.fetchAssignations(this.props.params);
         }
         if (
             !isEqual(prevProps.assignations, this.props.assignations)
-            || prevProps.params.month_id !== this.props.params.month_id
         ) {
-            this.setAssignations();
+            this.setAssignations(this.props.assignations);
+        }
+        if (
+            prevProps.params.month_id !== this.props.params.month_id
+        ) {
+            this.setAssignations(this.state.modifiedAssignations || this.props.assignations);
+        }
+
+        const {
+            hasSplitError,
+            showSplitError,
+        } = this.state;
+        if (hasSplitError && !showSplitError) {
+            dispatch(enqueueSnackbar(warningSnackBar(
+                'splitWarning',
+                {
+                    id: 'microplanning.route.splitError',
+                    defaultMessage: 'A village is visited twice in a month',
+                },
+            )));
+            this.setShowSplitError(true);
+        }
+        if (!hasSplitError && showSplitError) {
+            dispatch(closeFixedSnackbar('splitWarning'));
+            this.setShowSplitError(false);
         }
     }
 
@@ -80,6 +108,8 @@ class Routes extends React.Component {
                 isModified: false,
                 modifiedAssignations: null,
             });
+
+            this.props.fetchAssignations(this.props.params);
         });
     }
 
@@ -92,6 +122,12 @@ class Routes extends React.Component {
             selectedMonth,
             selectedAssignations: assignations.filter(a => a.month === selectedMonth),
             notSelectedAssignations: assignations.filter(a => a.month !== selectedMonth),
+        });
+    }
+
+    setShowSplitError(showSplitError) {
+        this.setState({
+            showSplitError,
         });
     }
 
@@ -115,11 +151,14 @@ class Routes extends React.Component {
                     month: month.id,
                     index: a.index,
                     splitted: a.splitted,
+                    clone: a.clone,
+                    population_splitted: a.population_splitted,
                 });
             });
         });
         modifiedAssignations = orderBy(modifiedAssignations, [item => item.index], ['asc']);
         this.setAssignations(modifiedAssignations, monthId);
+        this.selectMonth(monthId);
         const {
             dispatch,
         } = this.props;
@@ -135,6 +174,7 @@ class Routes extends React.Component {
         this.setState({
             isModified: true,
             modifiedAssignations,
+            hasSplitError: hasSameVillageInAMonth(modifiedAssignations),
         });
     }
 
@@ -145,6 +185,7 @@ class Routes extends React.Component {
         const { formatMessage } = this.props.intl;
         const {
             isModified,
+            hasSplitError,
         } = this.state;
         return (
             <section className="route-container ">
@@ -260,7 +301,7 @@ class Routes extends React.Component {
 
                     <div className="align-right margin">
                         <button
-                            disabled={!isModified}
+                            disabled={!isModified || hasSplitError}
                             className="button"
                             onClick={() => this.onSave()}
                         >

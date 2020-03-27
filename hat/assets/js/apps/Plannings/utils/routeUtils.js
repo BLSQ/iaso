@@ -44,6 +44,7 @@ const formatAssignations = (assignations) => {
         case_count: a.case_count,
         tests_count: a.tests_count,
         splitted: a.splitted,
+        population_splitted: a.population_splitted,
     }));
     return tempAssignations;
 };
@@ -75,7 +76,7 @@ const filterAssignations = (assignationsList) => {
         tempAssignation.population = 0;
         tempAssignation.data = formatAssignations(assignationsList.filter((village) => {
             if ((village.month === m.id) || (!village.month && m.key === 'not-assigned')) {
-                tempAssignation.population += village.village_population;
+                tempAssignation.population += village.population_splitted || village.village_population;
                 return village;
             }
             return null;
@@ -86,6 +87,8 @@ const filterAssignations = (assignationsList) => {
     return tempMonthList;
 };
 
+const hasSameVillageInAMonth = assignationsList => assignationsList.some(a => assignationsList.filter(as => as.village_id === a.village_id && as.month === a.month).length > 1);
+
 export {
     move,
     getItemStyle,
@@ -94,4 +97,5 @@ export {
     reIndex,
     filterAssignations,
     getMonthName,
+    hasSameVillageInAMonth,
 };

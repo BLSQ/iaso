@@ -823,6 +823,7 @@
     "microplanning.route.tests-done": "test(s) effectué(s)",
     "microplanning.route.title": "Itinéraires",
     "microplanning.route.part": "Partie",
+    "microplanning.route.splitError": "Un village est visité deux fois au courant du même mois",
     "microplanning.route.needToSave": "Itinéraire modifié mais non sauvegardé",
     "microplanning.selected.assignedPopulation": "Population assignée",
     "microplanning.selected.empty": "Rien n'a encore été sélectionné.",

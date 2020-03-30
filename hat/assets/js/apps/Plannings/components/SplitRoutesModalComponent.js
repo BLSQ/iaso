@@ -11,26 +11,27 @@ import {
     Divider,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
+import { formatThousand } from '../../../utils';
 
 const SplitRoutesModalComponent = (
     {
         handleSplit,
-        currentVillage,
+        currentAssignation,
     },
 ) => {
-    if (!currentVillage) return null;
+    if (!currentAssignation) return null;
     const [open, setOpen] = useState(false);
     const [split, setSplit] = useState({
         part1: 0,
         part2: 0,
     });
-
+    const population = currentAssignation.population_split || currentAssignation.population;
     const isSplitValid = () => (
         (split.part1
             && split.part2
-            && split.part1 < currentVillage.population
-            && split.part2 < currentVillage.population
-            && split.part1 + split.part2 === currentVillage.population)
+            && split.part1 < population
+            && split.part2 < population
+            && split.part1 + split.part2 === population)
     );
 
     const onValidate = () => {
@@ -43,10 +44,10 @@ const SplitRoutesModalComponent = (
         const value = parseInt(event.currentTarget.value, 10);
         newSplit[key] = value;
         if (key === 'part1') {
-            newSplit.part2 = currentVillage.population - value;
+            newSplit.part2 = population - value;
         }
         if (key === 'part2') {
-            newSplit.part1 = currentVillage.population - value;
+            newSplit.part1 = population - value;
         }
         setSplit(newSplit);
     };
@@ -76,11 +77,11 @@ const SplitRoutesModalComponent = (
                 <DialogTitle>
                     <FormattedMessage id="microplanning.route.split" defaultMessage="Divide" />
                     {
-                        ` ${currentVillage.name} - `
+                        ` ${currentAssignation.name} - `
                     }
                     <FormattedMessage id="main.label.total_population" defaultMessage="population" />
                     {
-                        `: ${currentVillage.population}`
+                        `: ${formatThousand(population)}`
                     }
                 </DialogTitle>
                 <Divider />
@@ -106,7 +107,7 @@ const SplitRoutesModalComponent = (
                                         id="part-1"
                                         type="number"
                                         min={0}
-                                        max={currentVillage.population}
+                                        max={population}
                                         value={split.part1}
                                         onChange={event => onChangeSplit('part1', event)}
                                     />
@@ -144,7 +145,7 @@ const SplitRoutesModalComponent = (
                                         id="part-2"
                                         type="number"
                                         min={0}
-                                        max={currentVillage.population}
+                                        max={population}
                                         value={split.part2}
                                         onChange={event => onChangeSplit('part2', event)}
                                     />
@@ -177,11 +178,11 @@ const SplitRoutesModalComponent = (
     );
 };
 SplitRoutesModalComponent.defaultProps = {
-    currentVillage: null,
+    currentAssignation: null,
 };
 
 SplitRoutesModalComponent.propTypes = {
-    currentVillage: PropTypes.object,
+    currentAssignation: PropTypes.object,
     handleSplit: PropTypes.func.isRequired,
 };
 

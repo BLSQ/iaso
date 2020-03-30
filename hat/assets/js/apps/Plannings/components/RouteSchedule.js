@@ -14,9 +14,11 @@ import {
     move,
     filterAssignations,
     reIndex,
+    getCloneAssignations,
 } from '../utils/routeUtils';
 
 import SplitRoutesModal from './SplitRoutesModalComponent';
+import DeleteSplitRoute from './DeleteSplitRouteComponent';
 
 
 class RouteSchedule extends Component {
@@ -97,14 +99,14 @@ class RouteSchedule extends Component {
         let tempAssignations = [...assignations];
         const assignationClone = {
             ...tempAssignations[monthId].data[index],
-            population_splitted: split.part2,
-            splitted: true,
+            population_split: split.part2,
+            split: true,
             clone: true,
         };
         tempAssignations[monthId].data[index] = {
             ...tempAssignations[monthId].data[index],
-            population_splitted: split.part1,
-            splitted: true,
+            population_split: split.part1,
+            split: true,
         };
         tempAssignations[monthId].data[index].population = split.part1;
         tempAssignations[monthId].data.splice(index + 1, 0, assignationClone);
@@ -113,6 +115,32 @@ class RouteSchedule extends Component {
             assignations: tempAssignations,
         });
         updateAssignation(monthId + 1, tempAssignations);
+    }
+
+    handleDelete(target, origin) {
+        const { assignations } = this.state;
+        const { updateAssignation } = this.props;
+        let tempAssignations = [...assignations];
+        const targetAssignation = tempAssignations[target.month - 1].data.find(a => a.index === target.index);
+        const originAssignation = tempAssignations[origin.month - 1].data.find(a => a.index === origin.index);
+        const popTotal = targetAssignation.population_split + originAssignation.population_split;
+        if (popTotal === targetAssignation.population) {
+            delete targetAssignation.population_split;
+            delete targetAssignation.split;
+        } else {
+            targetAssignation.population_split = popTotal;
+        }
+        if (targetAssignation.id === originAssignation.id) {
+            const originIndex = tempAssignations[origin.month - 1].data.findIndex(a => a.index === origin.index);
+            tempAssignations[origin.month - 1].data.splice(originIndex, 1);
+        } else {
+            originAssignation.deleted = true;
+        }
+        tempAssignations = reIndex(tempAssignations);
+        this.setState({
+            assignations: tempAssignations,
+        });
+        updateAssignation(target.month, tempAssignations);
     }
 
 
@@ -175,7 +203,7 @@ class RouteSchedule extends Component {
                                                                 {index + 1}
                                                                 {' '}
                                                                 -
-                                                                {a.splitted ? (
+                                                                {a.split ? (
                                                                     <span>
                                                                         <FileCopy fontSize="small" className="copy-icon" />
                                                                         {' '}
@@ -186,8 +214,8 @@ class RouteSchedule extends Component {
                                                                 {' '}
 
                                                                 (
-                                                                {a.population_splitted
-                                                                    ? formatThousand(a.population_splitted)
+                                                                {a.population_split
+                                                                    ? formatThousand(a.population_split)
                                                                     : formatThousand(a.population)}
                                                                 )
                                                                 {
@@ -204,8 +232,21 @@ class RouteSchedule extends Component {
                                                                 }
                                                             </span>
                                                             <div className="routes-split-button-container">
+                                                                {
+                                                                    a.split
+                                                                    && (
+                                                                        <DeleteSplitRoute
+                                                                            currentAssignation={a}
+                                                                            assignations={getCloneAssignations(assignations, assIndex + 1, a.village_id)}
+                                                                            handleDelete={target => this.handleDelete(target, {
+                                                                                index: a.index,
+                                                                                month: assIndex + 1,
+                                                                            })}
+                                                                        />
+                                                                    )
+                                                                }
                                                                 <SplitRoutesModal
-                                                                    currentVillage={a}
+                                                                    currentAssignation={a}
                                                                     handleSplit={split => this.handleSplit(split, index, assIndex)}
                                                                 />
                                                             </div>

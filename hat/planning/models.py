@@ -78,7 +78,7 @@ class Assignation(models.Model):
     month = models.IntegerField(null=True, blank=True)
     index = models.IntegerField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    population_splitted = models.PositiveIntegerField(null=True)
+    population_split = models.PositiveIntegerField(null=True)
 
     def __str__(self):
         return "%s - % s - %s" % (self.planning, self.village, self.team)
@@ -97,8 +97,8 @@ class Assignation(models.Model):
             'id': self.id,
             'month': self.month,
             'index': self.index,
-            'splitted': self.population_splitted is not None,
-            'population_splitted': self.population_splitted
+            'split': self.population_split is not None,
+            'population_split': self.population_split
         }
 
 

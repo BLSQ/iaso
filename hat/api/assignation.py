@@ -269,16 +269,20 @@ class AssignationViewSet(viewsets.ViewSet):
                 new_assignation = Assignation()
                 new_assignation.month = assignation.get("month")
                 new_assignation.index = assignation.get("index")
-                new_assignation.population_splitted = assignation.get("population_splitted", None)
+                new_assignation.population_split = assignation.get("population_split", None)
                 new_assignation.planning = original_assignation.planning
                 new_assignation.team = original_assignation.team
                 new_assignation.village = original_assignation.village
                 new_assignation.save()
             else:
-                original_assignation.month = assignation.get("month")
-                original_assignation.index = assignation.get("index")
-                original_assignation.population_splitted = assignation.get("population_splitted", None)
-                original_assignation.save()
+                is_deleted = assignation.get("deleted", False)
+                if is_deleted:
+                    original_assignation.delete()
+                else:
+                    original_assignation.month = assignation.get("month")
+                    original_assignation.index = assignation.get("index")
+                    original_assignation.population_split = assignation.get("population_split", None)
+                    original_assignation.save()
 
 
         return Response(assignations)

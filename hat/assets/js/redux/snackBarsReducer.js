@@ -41,8 +41,8 @@ export const snackBarsReducer = (state = snackBarsInitialState, action = {}) => 
             return {
                 ...state,
                 notifications: state.notifications.filter(
-                    notification => notification.options.pesist
-                        && (!notification.type || notification.type !== action.key),
+                    notification => notification.options.persist
+                        && (!notification.messageKey || notification.messageKey !== action.key),
                 ),
             };
 

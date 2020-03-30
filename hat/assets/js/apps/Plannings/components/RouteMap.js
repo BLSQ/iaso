@@ -113,29 +113,31 @@ class RouteMap extends Component {
         if (villages) {
             let previousVillage = null;
             villages.map((village, index) => {
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                    className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
-                })
-                    .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
-                    .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
-                villageCircle.addTo(this.villageGroup);
-
-                if (previousVillage) {
-                    const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
-                    const villageB = new L.LatLng(village.latitude, village.longitude);
-                    const pointList = [villageA, villageB];
-                    const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
-                    const polyLine = new L.Polyline(pointList, {
-                        smoothFactor: 10,
-                        className: 'routeLine',
+                if (!village.deleted) {
+                    const villageCircle = L.circle([village.latitude, village.longitude], {
+                        radius: 500,
+                        pane: 'custom-pane-markers',
+                        className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                     })
-                        .bindTooltip(distance);
-                    polyLine
-                        .addTo(this.villageGroup);
+                        .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
+                        .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
+                    villageCircle.addTo(this.villageGroup);
+
+                    if (previousVillage) {
+                        const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
+                        const villageB = new L.LatLng(village.latitude, village.longitude);
+                        const pointList = [villageA, villageB];
+                        const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
+                        const polyLine = new L.Polyline(pointList, {
+                            smoothFactor: 10,
+                            className: 'routeLine',
+                        })
+                            .bindTooltip(distance);
+                        polyLine
+                            .addTo(this.villageGroup);
+                    }
+                    previousVillage = village;
                 }
-                previousVillage = village;
                 return true;
             });
 

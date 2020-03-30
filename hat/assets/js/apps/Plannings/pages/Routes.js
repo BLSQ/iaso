@@ -34,7 +34,6 @@ class Routes extends React.Component {
         const selectedMonth = 1;
         this.state = {
             isModified: false,
-            modifiedAssignations: null,
             hasSplitError: false,
             selectedMonth,
             showSplitError: false,
@@ -54,6 +53,7 @@ class Routes extends React.Component {
     componentDidUpdate(prevProps) {
         const {
             dispatch,
+            modifiedAssignations,
         } = this.props;
         if ((prevProps.params.team_id !== this.props.params.team_id)
             || (prevProps.params.planning_id !== this.props.params.planning_id)) {
@@ -67,7 +67,7 @@ class Routes extends React.Component {
         if (
             prevProps.params.month_id !== this.props.params.month_id
         ) {
-            this.setAssignations(this.state.modifiedAssignations || this.props.assignations);
+            this.setAssignations(modifiedAssignations || this.props.assignations);
         }
 
         const {
@@ -93,10 +93,8 @@ class Routes extends React.Component {
     onSave() {
         const {
             dispatch,
-        } = this.props;
-        const {
             modifiedAssignations,
-        } = this.state;
+        } = this.props;
 
         this.props.putRequest(
             '/api/assignations/',
@@ -106,7 +104,6 @@ class Routes extends React.Component {
             dispatch(closeFixedSnackbar('saveWarning'));
             this.setState({
                 isModified: false,
-                modifiedAssignations: null,
             });
 
             this.props.fetchAssignations(this.props.params);
@@ -141,7 +138,7 @@ class Routes extends React.Component {
     }
 
     updateAssignation(monthId, monthlyAssignations) {
-        const { assignations } = this.props;
+        const { assignations, setModifiedAssignations } = this.props;
         let modifiedAssignations = [];
         monthlyAssignations.forEach((month) => {
             month.data.forEach((a) => {
@@ -150,9 +147,10 @@ class Routes extends React.Component {
                     ...newAssignation,
                     month: month.id,
                     index: a.index,
-                    splitted: a.splitted,
+                    split: a.split,
                     clone: a.clone,
-                    population_splitted: a.population_splitted,
+                    population_split: a.population_split,
+                    deleted: a.deleted,
                 });
             });
         });
@@ -171,9 +169,9 @@ class Routes extends React.Component {
                 },
             )));
         }
+        setModifiedAssignations(modifiedAssignations);
         this.setState({
             isModified: true,
-            modifiedAssignations,
             hasSplitError: hasSameVillageInAMonth(modifiedAssignations),
         });
     }
@@ -266,7 +264,7 @@ class Routes extends React.Component {
                                         selectedMonth={this.state.selectedMonth}
                                         selectMonth={monthId => this.selectMonth(monthId)}
                                         load={this.props.load}
-                                        assignations={this.props.assignations}
+                                        assignations={this.props.modifiedAssignations || this.props.assignations}
                                         params={this.props.params}
                                         redirect={params => this.props.redirect(params)}
                                         updateAssignation={(month, assignations) => this.updateAssignation(month, assignations)}
@@ -320,6 +318,7 @@ Routes.defaultProps = {
     plannings: [],
     teams: [],
     assignations: [],
+    modifiedAssignations: null,
 };
 
 Routes.propTypes = {
@@ -338,6 +337,8 @@ Routes.propTypes = {
     changeLayer: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     putRequest: PropTypes.func.isRequired,
+    setModifiedAssignations: PropTypes.func.isRequired,
+    modifiedAssignations: PropTypes.any,
 };
 
 const RoutesIntl = injectIntl(Routes);
@@ -349,12 +350,14 @@ const MapStateToProps = state => ({
     teams: state.teams.list,
     assignations: state.assignations.list,
     map: state.map,
+    modifiedAssignations: state.assignations.modifiedAssignations,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirect: params => dispatch(push(createUrl(params, 'routes'))),
     fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch, true)),
+    setModifiedAssignations: assingations => dispatch(assignationActions.setModifiedAssignations(assingations)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchTeams: () => dispatch(teamActions.fetchTeams(dispatch)),
     getShape: url => getRequest(url, dispatch, null, false),

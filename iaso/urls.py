@@ -20,6 +20,7 @@ from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
 from iaso.models import MatchingAlgorithm
+from .api.dhis2_resources import DataElementsViewSet, DataSetsViewSet, ProgramsViewSet
 from iaso import matching
 import pkgutil
 
@@ -48,7 +49,30 @@ router.register(r"groups", GroupsViewSet, base_name="groups")
 router.register(r"completeness", CompletenessViewSet, base_name="completeness")
 router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
 
+
+def append_dhis2_resource(viewset, resource_name, urlpatterns):
+    urlpatterns.append(
+        url(
+            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"/$",
+            view=viewset.as_view({"get": "list"}),
+            name=resource_name,
+        )
+    )
+    urlpatterns.append(
+        url(
+            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/"
+            + resource_name
+            + r"\.(?P<format>[a-z0-9]+)/?$",
+            view=viewset.as_view({"get": "list"}),
+            name=resource_name,
+        )
+    )
+
+
 urlpatterns = [url(r"^", include(router.urls))]
+
+for dhis2_resource in (DataElementsViewSet, DataSetsViewSet, ProgramsViewSet):
+    append_dhis2_resource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########

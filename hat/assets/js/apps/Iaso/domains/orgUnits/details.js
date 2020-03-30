@@ -44,7 +44,7 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import commonStyles from '../../styles/common';
 
-import chipColors from '../../constants/chipColors';
+import { getChipColors } from '../../constants/chipColors';
 
 const baseUrl = 'orgunits/detail';
 
@@ -91,7 +91,7 @@ class OrgUnitDetail extends Component {
                     data.forEach((s, i) => {
                         sources.push({
                             ...s,
-                            color: chipColors[i],
+                            color: getChipColors(i),
                         });
                     });
                     this.props.setSources(sources);
@@ -109,7 +109,7 @@ class OrgUnitDetail extends Component {
                 data.forEach((s, i) => {
                     sources.push({
                         ...s,
-                        color: chipColors[i],
+                        color: getChipColors(i),
                     });
                 });
                 this.props.setSources(sources);
@@ -176,11 +176,10 @@ class OrgUnitDetail extends Component {
                     fetchForms(this.props.dispatch, `/api/forms/?orgUnitTypeId=${orgUnit.org_unit_type_id}`)
                         .then((data) => {
                             const forms = [];
-                            const formsColors = [...chipColors].reverse();
                             data.forms.forEach((f, i) => {
                                 forms.push({
                                     ...f,
-                                    color: formsColors[i],
+                                    color: getChipColors(i, true),
                                 });
                             });
                             this.props.setCurrentForms(forms);

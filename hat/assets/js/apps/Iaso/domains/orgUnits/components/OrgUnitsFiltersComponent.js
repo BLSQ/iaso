@@ -13,7 +13,7 @@ import Button from '@material-ui/core/Button';
 import Search from '@material-ui/icons/Search';
 
 import commonStyles from '../../../styles/common';
-import chipColors from '../../../constants/chipColors';
+import { getChipColors, chipColors } from '../../../constants/chipColors';
 
 import {
     search,
@@ -128,7 +128,7 @@ class OrgUnitsFiltersComponent extends Component {
         if (currentTab === 'map') {
             filters.push(extendFilter(searchParams, locationsLimit(), (value, urlKey) => this.onChange(value, urlKey), searchIndex));
         }
-        const currentColor = searchParams.color ? `#${searchParams.color}` : chipColors[0];
+        const currentColor = searchParams.color ? `#${searchParams.color}` : getChipColors(0);
         return (
             <div className={classes.root}>
                 <Grid container spacing={4}>

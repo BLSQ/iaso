@@ -20,7 +20,7 @@ from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
 from iaso.models import MatchingAlgorithm
-from .api.dhis2_resources import DataElementsViewSet, DataSetsViewSet, ProgramsViewSet
+from .api.dhis2_resources import DHIS2_VIEWSETS
 from iaso import matching
 import pkgutil
 
@@ -71,7 +71,7 @@ def append_dhis2_resource(viewset, resource_name, urlpatterns):
 
 urlpatterns = [url(r"^", include(router.urls))]
 
-for dhis2_resource in (DataElementsViewSet, DataSetsViewSet, ProgramsViewSet):
+for dhis2_resource in DHIS2_VIEWSETS:
     append_dhis2_resource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
 

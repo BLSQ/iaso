@@ -1,5 +1,5 @@
 from time import process_time
-
+from rest_framework import status
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.authentication import BasicAuthentication
@@ -31,11 +31,18 @@ class Dhis2ViewSet(viewsets.ViewSet):
 
         credentials = data_source.credentials
 
+        if not credentials:
+            return Response(
+                {"error": "no credentials configured"},
+                status=status.HTTP_501_NOT_IMPLEMENTED,
+            )
+
         t1_start = process_time()
         api = Api(credentials.url, credentials.login, credentials.password)
         params = {
             "fields": request.GET.get("fields", "id,displayName"),
             "pageSize": request.GET.get("pageSize", 50),
+            "filter": request.GET.get("filter", None),
         }
         resp = api.get(self.resource, params=params).json()
         t1_stop = process_time()
@@ -58,3 +65,6 @@ class DataSetsViewSet(Dhis2ViewSet):
 
 class ProgramsViewSet(Dhis2ViewSet):
     resource = "programs"
+
+
+DHIS2_VIEWSETS = (DataElementsViewSet, DataSetsViewSet, ProgramsViewSet)

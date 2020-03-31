@@ -27,17 +27,18 @@ def get_children_tree(el):
 
 
 def parse_xml_file(file):
-    soup = Soup(file.read(), features="html.parser")
+    soup = Soup(file.read(), "xml")
     return get_children_tree(soup)
 
 
 def flat_parse_xml_file(file):
-    soup = Soup(file.read(), features="html.parser")
+    soup = Soup(file.read(), "xml")
     flat_xml_dict = {}
     get_flat_children_tree(soup, flat_xml_dict)
     children = [c for c in soup.children]
-    if len(children) > 1:
-        root_element = children[1]
+
+    if len(children) == 1:
+        root_element = children[0]
         if "version" in root_element.attrs:
             flat_xml_dict["_version"] = root_element.attrs["version"]
     return flat_xml_dict

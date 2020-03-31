@@ -30,7 +30,7 @@ import { linksInitialState, linksReducer } from './domains/links/reducer';
 import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
-import chipColors from './constants/chipColors';
+import { getChipColors } from './constants/chipColors';
 
 import App from '../App';
 
@@ -136,7 +136,7 @@ export default function iasoApp(element, baseUrl) {
         />,
         <Redirect path="/" to="/forms" />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
-        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${chipColors[0].replace('#', '')}"}]`} />,
+        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
     ];
 

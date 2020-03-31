@@ -47,7 +47,7 @@ import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
 
 import commonStyles from '../../styles/common';
-import chipColors from '../../constants/chipColors';
+import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../../../utils/constants/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
@@ -132,7 +132,7 @@ class OrgUnits extends Component {
                 data.forEach((s, i) => {
                     sources.push({
                         ...s,
-                        color: chipColors[i],
+                        color: getChipColors(i),
                     });
                 });
                 this.props.setSources(sources);
@@ -340,7 +340,7 @@ class OrgUnits extends Component {
                             id: 'iaso.label.search',
                         })}
                         params={params}
-                        defaultItem={{ validated: 'both', color: chipColors[0].replace('#', '') }}
+                        defaultItem={{ validated: 'both', color: getChipColors(0).replace('#', '') }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}

@@ -18,7 +18,7 @@ import { fetchSubOrgUnitsByType } from '../../../utils/requests';
 
 import InputComponent from '../../../components/forms/InputComponent';
 
-import { otChipColors } from '../../../constants/chipColors';
+import { getOtChipColors } from '../../../constants/chipColors';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -74,7 +74,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             }
         });
         orgUnitTypesSelected.forEach((ot, index) => {
-            orgUnitTypesSelected[index].color = otChipColors[index];
+            orgUnitTypesSelected[index].color = getOtChipColors(index);
             orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
         });
         this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
@@ -106,7 +106,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         newOrgUnitTypesSelected.push(newOrgUnit);
 
         newOrgUnitTypesSelected.forEach((ot, index) => {
-            newOrgUnitTypesSelected[index].color = otChipColors[index];
+            newOrgUnitTypesSelected[index].color = getOtChipColors(index);
         });
         this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({
@@ -133,7 +133,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         newOrgUnitTypesList.push(deletedOrgUnit);
 
         newOrgUnitTypesSelected.forEach((ot, index) => {
-            newOrgUnitTypesSelected[index].color = otChipColors[index];
+            newOrgUnitTypesSelected[index].color = getOtChipColors(index);
         });
         this.updateOrgUnitTypesSelected(newOrgUnitTypesSelected);
         this.setState({

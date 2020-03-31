@@ -39,7 +39,7 @@ import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { fetchOrgUnitDetail } from '../../../utils/requests';
-import chipColors from '../../../constants/chipColors';
+import { getChipColors } from '../../../constants/chipColors';
 import commonStyles from '../../../styles/common';
 
 const boundsOptions = {
@@ -138,7 +138,7 @@ class OrgunitsMap extends Component {
             currentColor = currentSearch.color;
         }
         if (!currentColor) {
-            [currentColor] = chipColors;
+            [currentColor] = getChipColors(0);
         } else {
             currentColor = `#${currentColor}`;
         }

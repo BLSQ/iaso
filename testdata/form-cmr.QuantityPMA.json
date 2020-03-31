@@ -1,0 +1,517 @@
+{
+  "type": "aggregate",
+  "data_set_id": "QWoOnLKW1xf",
+  "data_set_name": "Quantity- PMA",
+  "question_mappings": {
+    "I961i90uUz1": {
+      "code": "1.1 Declared- Consultation externe nvx - infirmier",
+      "name": "1.1 Declared- Consultation externe nvx - infirmier",
+      "id": "I961i90uUz1",
+      "valueType": "NUMBER"
+    },
+    "FwBl7khxY1h": {
+      "code": "1,1 Verified- Consultation externe nvx - infirmier",
+      "name": "1,1 Verified- Consultation externe nvx - infirmier",
+      "id": "FwBl7khxY1h",
+      "valueType": "NUMBER"
+    },
+    "r6NG3gn0suZ": {
+      "code": "1.2 Declared- Cons externe nvv - médecin",
+      "name": "1.2 Declared- Cons externe nvv - médecin",
+      "id": "r6NG3gn0suZ",
+      "valueType": "NUMBER"
+    },
+    "XfzKkEhrjAX": {
+      "code": "1,2 Verified- Cons externe nvv - médecin",
+      "name": "1,2 Verified- Cons externe nvv - médecin",
+      "id": "XfzKkEhrjAX",
+      "valueType": "NUMBER"
+    },
+    "ruIasl6zphN": {
+      "code": "1.3 Declared- Cons externe nv - indigent- épidémie",
+      "name": "1.3 Declared- Cons externe nv - indigent- épidémie/Crise humanitaire",
+      "id": "ruIasl6zphN",
+      "valueType": "NUMBER"
+    },
+    "ZVdBYablBlX": {
+      "code": "1,3 Verified- Cons externe nv - indigent- épidémie",
+      "name": "1,3 Verified- Cons externe nv - indigent- épidémie/Crise humanitaire",
+      "id": "ZVdBYablBlX",
+      "valueType": "NUMBER"
+    },
+    "LrVuWmabWat": {
+      "code": "2.1 Declared- Journée d'hospitalisation",
+      "name": "2.1 Declared- Journée d'hospitalisation",
+      "id": "LrVuWmabWat",
+      "valueType": "NUMBER"
+    },
+    "fmbxJN7I6Gd": {
+      "code": "2,1 Verified- Journée d'hospitalisation",
+      "name": "2,1 Verified- Journée d'hospitalisation",
+      "id": "fmbxJN7I6Gd",
+      "valueType": "NUMBER"
+    },
+    "l3o58RDuZzC": {
+      "code": "2.2 Declared- Journée hospitalisation-indigent- ép",
+      "name": "2.2 Declared- Journée hospitalisation-indigent- épidémie-crise humanitaire",
+      "id": "l3o58RDuZzC",
+      "valueType": "NUMBER"
+    },
+    "ciKTwhqSQmc": {
+      "code": "2,2 Verified- Journée hospitalisation-indigent- ép",
+      "name": "2,2 Verified- Journée hospitalisation-indigent- épidémie-crise humanitaire",
+      "id": "ciKTwhqSQmc",
+      "valueType": "NUMBER"
+    },
+    "JjXmbxgIGoi": {
+      "code": "3.1 Declared- Petite chirurgie",
+      "name": "3.1 Declared- Petite chirurgie",
+      "id": "JjXmbxgIGoi",
+      "valueType": "NUMBER"
+    },
+    "kkanscjGYYe": {
+      "code": "3,1 Verified- Petite chirurgie",
+      "name": "3,1 Verified- Petite chirurgie",
+      "id": "kkanscjGYYe",
+      "valueType": "NUMBER"
+    },
+    "MI81fnsHqzb": {
+      "code": "3.2 Declared- Petite chirurgie - indigent",
+      "name": "3.2 Declared- Petite chirurgie - indigent",
+      "id": "MI81fnsHqzb",
+      "valueType": "NUMBER"
+    },
+    "tjd10veh8Ve": {
+      "code": "3,2 Verified- Petite chirurgie - indigent",
+      "name": "3,2 Verified- Petite chirurgie - indigent",
+      "id": "tjd10veh8Ve",
+      "valueType": "NUMBER"
+    },
+    "tcZMCN0evf6": {
+      "code": "4.1 Declared- Références arrivées à l'hôpital",
+      "name": "4.1 Declared- Références arrivées à l'hôpital",
+      "id": "tcZMCN0evf6",
+      "valueType": "NUMBER"
+    },
+    "dSLDSPw5DSC": {
+      "code": "4,1 Verified- Références arrivées à l'hôpital",
+      "name": "4,1 Verified- Références arrivées à l'hôpital",
+      "id": "dSLDSPw5DSC",
+      "valueType": "NUMBER"
+    },
+    "ZzvPeVHAW8r": {
+      "code": "5.1 Declared- Cas IST traité selon le protocole",
+      "name": "5.1 Declared- Cas IST traité selon le protocole",
+      "id": "ZzvPeVHAW8r",
+      "valueType": "NUMBER"
+    },
+    "YtrcJfMKQlJ": {
+      "code": "5,1 Verified- Cas IST traité selon le protocole",
+      "name": "5,1 Verified- Cas IST traité selon le protocole",
+      "id": "YtrcJfMKQlJ",
+      "valueType": "NUMBER"
+    },
+    "ntiCVvaK9vf": {
+      "code": "6.1 Declared- Enfants complètements vaccinés dans ",
+      "name": "6.1 Declared- Enfants complètements vaccinés dans la même FOSA avant son 1er anniversaire",
+      "id": "ntiCVvaK9vf",
+      "valueType": "NUMBER"
+    },
+    "YjiSf512AT6": {
+      "code": "6,1 Verified- Enfants complètements vaccinés dans ",
+      "name": "6,1 Verified- Enfants complètements vaccinés dans la même FOSA avant son 1er anniversaire",
+      "id": "YjiSf512AT6",
+      "valueType": "NUMBER"
+    },
+    "jRyJZZ7QHJP": {
+      "code": "9.1 Declared- Distribution VIT A",
+      "name": "9.1 Declared- Distribution VIT A",
+      "id": "jRyJZZ7QHJP",
+      "valueType": "NUMBER"
+    },
+    "imRzE5nOnrP": {
+      "code": "9,1 Verified- Distribution VIT A",
+      "name": "9,1 Verified- Distribution VIT A",
+      "id": "imRzE5nOnrP",
+      "valueType": "NUMBER"
+    },
+    "GaZmjaDVSJu": {
+      "code": "9.2 Declared Déparasitage des enfants de 6 à 59",
+      "name": "9.2 Declared Déparasitage des enfants de 6 à 59 mois",
+      "id": "GaZmjaDVSJu",
+      "valueType": "NUMBER"
+    },
+    "faBmjaKISJu": {
+      "code": "9.2 Validated  Déparasitage Enfants de 6 à 59 mois",
+      "name": "9.2 Validated Déparasitage des enfants de 6 à 59 mois",
+      "id": "MartWsMiOmn",
+      "valueType": "NUMBER"
+    },
+    "hGnW1ltJaS6": {
+      "code": "20.1 Declared- Dépistage des cas TBC positifs par ",
+      "name": "20.1 Declared- Dépistage des cas TBC positifs par mois",
+      "id": "hGnW1ltJaS6",
+      "valueType": "NUMBER"
+    },
+    "IA5uKOjI9F2": {
+      "code": "20,1 Verified- Dépistage des cas TBC positifs par ",
+      "name": "20,1 Verified- Dépistage des cas TBC positifs par mois",
+      "id": "IA5uKOjI9F2",
+      "valueType": "NUMBER"
+    },
+    "kRhs5zFrcGK": {
+      "code": "21.1 Declared- Cas TBC traités et guéris",
+      "name": "21.1 Declared- Cas TBC traités et guéris",
+      "id": "kRhs5zFrcGK",
+      "valueType": "NUMBER"
+    },
+    "M1fe7D3GdFB": {
+      "code": "21,1 Verified- Cas TBC traités et guéris",
+      "name": "21,1 Verified- Cas TBC traités et guéris",
+      "id": "M1fe7D3GdFB",
+      "valueType": "NUMBER"
+    },
+    "NpV1ek5asMh": {
+      "code": "22.1 Declared- Visite à domicile selon protocole",
+      "name": "22.1 Declared- Visite à domicile selon protocole",
+      "id": "NpV1ek5asMh",
+      "valueType": "NUMBER"
+    },
+    "Oprm8IBzzZv": {
+      "code": "22,1 Verified- Visite à domicile selon protocole",
+      "name": "22,1 Verified- Visite à domicile selon protocole",
+      "id": "Oprm8IBzzZv",
+      "valueType": "NUMBER"
+    },
+    "u9CvRPjdC69": {
+      "code": "23.1 Declared- Cas référés relais communautaire et",
+      "name": "23.1 Declared- Cas référés relais communautaire et arrivé (plafond 5Percent des CE)",
+      "id": "u9CvRPjdC69",
+      "valueType": "NUMBER"
+    },
+    "SEOSbjfYQKr": {
+      "code": "23,1 Verified- Cas référés relais communautaire et",
+      "name": "23,1 Verified- Cas référés relais communautaire et arrivé (plafond 5Percent des CE)",
+      "id": "SEOSbjfYQKr",
+      "valueType": "NUMBER"
+    },
+    "SVh2i9rKa00": {
+      "code": "24.1 Declared- Cas abandon récupérés relais commun",
+      "name": "24.1 Declared- Cas abandon récupérés relais communautaires (plafond 2Percent CE)",
+      "id": "SVh2i9rKa00",
+      "valueType": "NUMBER"
+    },
+    "fy41vyAEsb0": {
+      "code": "24,1 Verified- Cas abandon récupérés relais commun",
+      "name": "24,1 Verified- Cas abandon récupérés relais communautaires (plafond 2Percent CE)",
+      "id": "fy41vyAEsb0",
+      "valueType": "NUMBER"
+    },
+    "dMBQ02gak2v": {
+      "code": "29,1 Verified- Bonus d'Amélioration de Qualité (BA",
+      "name": "29,1 Verified- Bonus d'Amélioration de Qualité (BAQ)",
+      "id": "dMBQ02gak2v",
+      "valueType": "NUMBER"
+    },
+    "mkv1L7Rx2SG": {
+      "code": "17.1 Declared- Dépistage volontaire VIH/SIDA y com",
+      "name": "17.1 Declared- Dépistage volontaire VIH/SIDA y compris femmes enceintes",
+      "id": "mkv1L7Rx2SG",
+      "valueType": "NUMBER"
+    },
+    "F69Ld79A6lV": {
+      "code": "17,1 Verified- Dépistage volontaire VIH/SIDA y com",
+      "name": "17,1 Verified- Dépistage volontaire VIH/SIDA y compris femmes enceintes",
+      "id": "F69Ld79A6lV",
+      "valueType": "NUMBER"
+    },
+    "AKD3DOSqWw5": {
+      "code": "18.1 Declared Nouveaux cas de VIH mis sous ARV",
+      "name": "18.1 Declared Nouveaux cas de VIH mis sous ARV y compris les femmes enceintes",
+      "id": "AKD3DOSqWw5",
+      "valueType": "NUMBER"
+    },
+    "HmESaHzwEZT": {
+      "code": "18.1 Validated Nouveaux cas de VIH mis sous ARV",
+      "name": "18.1 Validated Nouveaux cas de VIH mis sous ARV y compris les femmes enceintes",
+      "id": "HmESaHzwEZT",
+      "valueType": "NUMBER"
+    },
+    "yrWYPjAEDrF": {
+      "code": "18.2 Declared Patients sous ARV suivis...",
+      "name": "18.2 Declared Patients sous ARV suivis pendant les 6 premiers mois après initiation",
+      "id": "yrWYPjAEDrF",
+      "valueType": "NUMBER"
+    },
+    "nFXnPzQhFzk": {
+      "code": "18.2 Validated Patients sous ARV suivis...",
+      "name": "18.2 Validated Patients sous ARV suivis pendant les 6 premiers mois après initiation",
+      "id": "nFXnPzQhFzk",
+      "valueType": "NUMBER"
+    },
+    "x9C7rNvTVU5": {
+      "code": "18.3 Declared Patients sous ARV suivis les 12...",
+      "name": "18.3 Declared Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable",
+      "id": "x9C7rNvTVU5",
+      "valueType": "NUMBER"
+    },
+    "SNa1S8Apa5t": {
+      "code": "18.3 Validated Patients sous ARV suivis  les 12...",
+      "name": "18.3 Validated Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable",
+      "id": "SNa1S8Apa5t",
+      "valueType": "NUMBER"
+    },
+    "g4c7sByj2vP": {
+      "code": "19.1 Declared Prise en charge du nouveau né",
+      "name": "19.1 Declared Prise en charge du nouveau né d'une femme VIH+ y compris le dépistage précoce à la PCR",
+      "id": "g4c7sByj2vP",
+      "valueType": "NUMBER"
+    },
+    "di70edcYLlZ": {
+      "code": "19.1 DValidated Prise en charge du nouveau né",
+      "name": "19.1 Validated Prise en charge du nouveau né d'une femme VIH+ y compris le dépistage précoce à la PCR",
+      "id": "di70edcYLlZ",
+      "valueType": "NUMBER"
+    },
+    "u31Mr8cDKAR": {
+      "code": "1.4 Declared- Nouveaux cas de malnutrition",
+      "name": "1.4 Declared- Consultation externe, nouveaux cas de malnutrition aigüe sévère MAS",
+      "id": "u31Mr8cDKAR",
+      "valueType": "NUMBER"
+    },
+    "rcqrbJeYwci": {
+      "code": "1,4 Verified- Nouveaux cas de malnutrition",
+      "name": "1,4 Verified- Consultation externe, nouveaux cas de malnutrition aigüe sévère MAS",
+      "id": "rcqrbJeYwci",
+      "valueType": "NUMBER"
+    },
+    "oJHArZ2Fu7O": {
+      "code": "4.2 Declared- Références arrivées- cas de MAS",
+      "name": "4.2 Declared- Références arrivées à l’hôpital cas de MAS",
+      "id": "oJHArZ2Fu7O",
+      "valueType": "NUMBER"
+    },
+    "OMRSAZ2RL4g": {
+      "code": "4,2 Verified- Références arrivées- cas de MAS",
+      "name": "4,2 Verified- Références arrivées à l’hôpital cas de MAS",
+      "id": "OMRSAZ2RL4g",
+      "valueType": "NUMBER"
+    },
+    "NtlBqnN61aO": {
+      "code": "24.2 Declared - Cas d’abandon de MAS récupérée",
+      "name": "24.2 Declared - Cas d’abandon de MAS récupérée (plafond 2 percent CE)",
+      "id": "NtlBqnN61aO",
+      "valueType": "NUMBER"
+    },
+    "LijGCzQpxvB": {
+      "code": "24,2 Verified - Cas d’abandon de MAS récupérée",
+      "name": "24,2 Verified - Cas d’abandon de MAS récupérée (plafond 2 percent CE)",
+      "id": "LijGCzQpxvB",
+      "valueType": "NUMBER"
+    },
+    "R1t4iuusQe3": {
+      "code": "26.0 Declared Enfants de 6-59 mois dépistés ...",
+      "name": "26.0 Declared Enfants de 6-59 mois dépistés pour malnutrition aigue modérée ou sévère",
+      "id": "R1t4iuusQe3",
+      "valueType": "NUMBER"
+    },
+    "THfrecfsQe4": {
+      "code": "26.0 Validated Enfants de 6-59 mois dépistés ...",
+      "name": "26.0 Validated Enfants de 6-59 mois dépistés pour malnutrition aigue modérée ou sévère",
+      "id": "hiGZzNVWV5e",
+      "valueType": "NUMBER"
+    },
+    "zPLPrRRzFte": {
+      "code": "26.1 Declared- Enfant 6-59 mois PEC ",
+      "name": "26.1 Declared- Enfant 6-59 mois PEC malnutrition aigüe sévère (MAS) traité et guéri",
+      "id": "zPLPrRRzFte",
+      "valueType": "NUMBER"
+    },
+    "Sd9yAMPJDmQ": {
+      "code": "26,1 Verified- Enfant 6-59 mois PEC malnutrition a",
+      "name": "26.1 Verified- Enfant 6-59 mois PEC malnutrition aigüe sévère (MAS) traité et guéri",
+      "id": "Sd9yAMPJDmQ",
+      "valueType": "NUMBER"
+    },
+    "DkpoYp11Gmv": {
+      "code": "25.1 Declared- Enfant 6-59 mois PEC pour malnutrit",
+      "name": "25.1 Declared- Enfant 6-59 mois PEC pour malnutrition aigüe modérée (MAM) traité et guéri",
+      "id": "DkpoYp11Gmv",
+      "valueType": "NUMBER"
+    },
+    "GjL2sn7q1hW": {
+      "code": "25,1 Verified- Enfant 6-59 mois PEC pour malnutrit",
+      "name": "25.1 Verified- Enfant 6-59 mois PEC pour malnutrition aigüe modérée (MAM) traité et guéri",
+      "id": "GjL2sn7q1hW",
+      "valueType": "NUMBER"
+    },
+    "BhOm84HRWTJ": {
+      "code": "27.1 Declared- Suivi de la croissance",
+      "name": "27.1 Declared- Suivi de la croissance des enfants de 0 à 24 mois",
+      "id": "BhOm84HRWTJ",
+      "valueType": "NUMBER"
+    },
+    "RVAFAEOZnKj": {
+      "code": "27.1 Verified- Suivi de la croissance",
+      "name": "27.1 Verified- Suivi de la croissance des enfants de 0 à 24 mois",
+      "id": "RVAFAEOZnKj",
+      "valueType": "NUMBER"
+    },
+    "i9jileBYh4y": {
+      "code": "6.2 Declared TD2 ou TD3 ou TD4 ou TD5 ",
+      "name": "6.2 Declared TD2 ou TD3 ou TD4 ou TD5 ",
+      "id": "i9jileBYh4y",
+      "valueType": "NUMBER"
+    },
+    "kdgBYho9m": {
+      "code": "6.2 Validated TD2 ou TD3 ou TD4 ou TD5 ",
+      "name": "6.2 Validated TD2 ou TD3 ou TD4 ou TD5 ",
+      "id": "q4HuF1HNsCs",
+      "valueType": "NUMBER"
+    },
+    "tc8TyEkf8TA": {
+      "code": "7.1 Declared TPI1 ou TPI 2 ou TPI3 ou TPI4",
+      "name": "7.1 Declared TPI1 ou TPI 2 ou TPI3 ou TPI4",
+      "id": "tc8TyEkf8TA",
+      "valueType": "NUMBER"
+    },
+    "fi7PQd0NsAu": {
+      "code": "7.1 Validated TPI1 ou TPI 2 ou TPI3 ou TPI4",
+      "name": "7.1 Validated TPI1 ou TPI 2 ou TPI3 ou TPI4",
+      "id": "fi7PQd0NsAu",
+      "valueType": "NUMBER"
+    },
+    "aPrKzZir9sh": {
+      "code": "10.1 Declared CPN 1 à CPN 8",
+      "name": "10.1 Declared CPN 1 à CPN 8",
+      "id": "aPrKzZir9sh",
+      "valueType": "NUMBER"
+    },
+    "hdfr854djfgg": {
+      "code": "10.1 Validated CPN 1 à CPN 8",
+      "name": "10.1 Validated CPN 1 à CPN 8",
+      "id": "IrkNBz42hND",
+      "valueType": "NUMBER"
+    },
+    "sk0qaGG7Xuz": {
+      "code": "11.0 Declared Cheques santé vendu",
+      "name": "11.0 Declared Cheques santé vendu",
+      "id": "sk0qaGG7Xuz",
+      "valueType": "NUMBER"
+    },
+    "hdgfgr85dlIkfM": {
+      "code": "11.0 Validated Cheques santé vendu",
+      "name": "11.0 Validated Cheques santé vendu",
+      "id": "cPQs0K96TfA",
+      "valueType": "NUMBER"
+    },
+    "pzWtrJXrYYI": {
+      "code": "11.1 Declared- Accouchement eutociques",
+      "name": "11.1 Declared- Accouchement eutociques",
+      "id": "pzWtrJXrYYI",
+      "valueType": "NUMBER"
+    },
+    "SbhKv1FFN2S": {
+      "code": "11,1 Verified- Accouchement eutociques",
+      "name": "11,1 Verified- Accouchement eutociques",
+      "id": "SbhKv1FFN2S",
+      "valueType": "NUMBER"
+    },
+    "KTjB9kegMwy": {
+      "code": "11.2 Declared- Accouchement eutociques - indigent",
+      "name": "11.2 Declared- Accouchement eutociques - indigent",
+      "id": "KTjB9kegMwy",
+      "valueType": "NUMBER"
+    },
+    "pjagAx2ZbPH": {
+      "code": "11,2 Verified- Accouchement eutociques - indigent",
+      "name": "11,2 Verified- Accouchement eutociques - indigent",
+      "id": "pjagAx2ZbPH",
+      "valueType": "NUMBER"
+    },
+    "CZxmsKDkVJc": {
+      "code": "12.1 Declared- Accouchement dystociques",
+      "name": "12.1 Declared- Accouchement dystociques",
+      "id": "CZxmsKDkVJc",
+      "valueType": "NUMBER"
+    },
+    "b2BMjHV3ibG": {
+      "code": "12,1 Verified- Accouchement dystociques",
+      "name": "12,1 Verified- Accouchement dystociques",
+      "id": "b2BMjHV3ibG",
+      "valueType": "NUMBER"
+    },
+    "LLc78x5o4Xw": {
+      "code": "12.2 Declared- Accouchement dystociques - indigent",
+      "name": "12.2 Declared- Accouchement dystociques - indigent",
+      "id": "LLc78x5o4Xw",
+      "valueType": "NUMBER"
+    },
+    "K37g4ivKZFt": {
+      "code": "12,2 Verified- Accouchement dystociques - indigent",
+      "name": "12,2 Verified- Accouchement dystociques - indigent",
+      "id": "K37g4ivKZFt",
+      "valueType": "NUMBER"
+    },
+    "p0GuGW2NNL5": {
+      "code": "13.1 Declared Soins après avortement",
+      "name": "13.1 Declared Soins après avortement spontané",
+      "id": "p0GuGW2NNL5",
+      "valueType": "NUMBER"
+    },
+    "E2Snr6kwFeq": {
+      "code": "13.1 Validated  Soins après avortement",
+      "name": "13.1 Validated Soins après avortement spontané",
+      "id": "E2Snr6kwFeq",
+      "valueType": "NUMBER"
+    },
+    "BUwdXNNcDQh": {
+      "code": "14.1 Declared CPost Mere et Enfant",
+      "name": "14.1 Declared Consultation Postnatale Mere et Enfant",
+      "id": "BUwdXNNcDQh",
+      "valueType": "NUMBER"
+    },
+    "YHdgdj85LmnO": {
+      "code": "14.1 Validated CPost Mere et Enfant",
+      "name": "14.1 Validated Consultation Postnatale Mere et Enfant",
+      "id": "S70Fr8MYELP",
+      "valueType": "NUMBER"
+    },
+    "o3eVfwlwT12": {
+      "code": "15.1 Declared- PF: Nouvelles ou ancienne acceptant",
+      "name": "15.1 Declared- PF: Nouvelles ou ancienne acceptantes pilules ou injectables",
+      "id": "o3eVfwlwT12",
+      "valueType": "NUMBER"
+    },
+    "RRdUDNXHdL8": {
+      "code": "15,1 Verified- PF: Nouvelles ou ancienne acceptant",
+      "name": "15,1 Verified- PF: Nouvelles ou ancienne acceptantes pilules ou injectables",
+      "id": "RRdUDNXHdL8",
+      "valueType": "NUMBER"
+    },
+    "PNlIvVdaT3Y": {
+      "code": "16.1 Declared- PF: implants ou DIU",
+      "name": "16.1 Declared- PF: implants ou DIU",
+      "id": "PNlIvVdaT3Y",
+      "valueType": "NUMBER"
+    },
+    "ZLazfwgskO6": {
+      "code": "16,1 Verified- PF: implants ou DIU",
+      "name": "16,1 Verified- PF: implants ou DIU",
+      "id": "ZLazfwgskO6",
+      "valueType": "NUMBER"
+    },
+    "sFz30WEsnd6": {
+      "code": "23.2 Declared - Réf - fistules obstétricales",
+      "name": "23.2 Declared - Références communautaires des cas de fistules obstétricales arrivés à l'hôpital de District",
+      "id": "sFz30WEsnd6",
+      "valueType": "NUMBER"
+    },
+    "kzW3SqskXT5": {
+     "code": "23,2 Verified - Réf - fistules obstétricales",
+      "name": "23,2 Verified - Références communautaires des cas de fistules obstétricales arrivés à l'hôpital de District",
+      "id": "kzW3SqskXT5",
+      "valueType": "NUMBER"
+    }
+  }
+}

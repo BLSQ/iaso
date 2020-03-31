@@ -1,5 +1,5 @@
 {
-  "type": "simple_event",
+  "type": "aggregate",
   "data_set_id": "IFnt9efNlOt",
   "data_set_name": "Quantity- PCA",
   "question_mappings": {

@@ -34,8 +34,11 @@ const returnSuccess = (
     return result.body;
 };
 
-const returnError = (dispatch, err, action) => {
+const returnError = (dispatch, err, action, toggleLoad = true) => {
     let message = MESSAGES.error;
+    if (toggleLoad) {
+        dispatch(loadActions.errorLoading(err));
+    }
     const reduxAction = action(null);
     if (reduxAction.errorMessage) {
         message = reduxAction.errorMessage;
@@ -67,7 +70,7 @@ export const fetchRequest = (
     return req
         .get(url)
         .then(result => returnSuccess(dispatch, result, setAction, toggleLoad, false))
-        .catch(err => returnError(dispatch, err, setAction));
+        .catch(err => returnError(dispatch, err, setAction, toggleLoad));
 };
 
 /**
@@ -121,7 +124,7 @@ export const putRequest = (
         .set('Content-Type', 'application/json')
         .send(data)
         .then(result => returnSuccess(dispatch, result, putAction, toggleLoad, true))
-        .catch(err => returnError(dispatch, err, putAction));
+        .catch(err => returnError(dispatch, err, putAction, toggleLoad));
 };
 
 
@@ -149,7 +152,7 @@ export const postRequest = (
         .set('Content-Type', 'application/json')
         .send(data)
         .then(result => returnSuccess(dispatch, result, postAction, toggleLoad, true))
-        .catch(err => returnError(dispatch, err, postAction));
+        .catch(err => returnError(dispatch, err, postAction, toggleLoad));
 };
 
 
@@ -177,5 +180,5 @@ export const patchRequest = (
         .set('Content-Type', 'application/json')
         .send(data)
         .then(result => returnSuccess(dispatch, result, patchAction, toggleLoad, true))
-        .catch(err => returnError(dispatch, err, patchAction));
+        .catch(err => returnError(dispatch, err, patchAction, toggleLoad));
 };

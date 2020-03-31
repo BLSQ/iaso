@@ -1,9 +1,12 @@
 import React, { Component } from 'react';
-// import ReactDOM from 'react-dom';
+
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import { DragDropContext, Droppable, Draggable } from 'react-beautiful-dnd';
-import { formatThousand, deepEqual } from '../../../utils';
+import FileCopy from '@material-ui/icons/FileCopyOutlined';
+import isEqual from 'lodash/isEqual';
+
+import { formatThousand } from '../../../utils';
 
 import {
     reorder,
@@ -11,7 +14,12 @@ import {
     move,
     filterAssignations,
     reIndex,
+    getCloneAssignations,
 } from '../utils/routeUtils';
+
+import SplitRoutesModal from './SplitRoutesModalComponent';
+import DeleteSplitRoute from './DeleteSplitRouteComponent';
+
 
 class RouteSchedule extends Component {
     constructor(props) {
@@ -21,17 +29,18 @@ class RouteSchedule extends Component {
         };
     }
 
-    componentWillReceiveProps(nextProps) {
-        if ((!nextProps.load.loading) &&
-            (!deepEqual(nextProps.assignations, this.props.assignations, true))) {
-            this.setState({
-                assignations: filterAssignations(nextProps.assignations),
-            });
+    componentDidUpdate(prevProps) {
+        if (
+            !isEqual(prevProps.assignations, this.props.assignations)
+        ) {
+            this.setAssignations(this.props.assignations);
         }
     }
 
     onDragEnd(result) {
         const { source, destination } = result;
+        const { assignations } = this.state;
+        const { updateAssignation } = this.props;
         if (!destination) {
             return;
         }
@@ -39,26 +48,25 @@ class RouteSchedule extends Component {
         let tempAssignations = [];
         if (source.droppableId === destination.droppableId) {
             items = reorder(
-                this.state.assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
                 source.index,
                 destination.index,
             );
-            this.state.assignations.map((a) => {
+            assignations.forEach((a) => {
                 const tempA = a;
                 if (tempA.key === destination.droppableId) {
                     tempA.data = items;
                 }
                 tempAssignations.push(tempA);
-                return true;
             });
         } else {
             items = move(
-                this.state.assignations.filter(assignation => (assignation.key === source.droppableId))[0].data,
-                this.state.assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === source.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
                 source,
                 destination,
             );
-            this.state.assignations.map((a) => {
+            assignations.forEach((a) => {
                 const tempA = a;
                 if (tempA.key === source.droppableId) {
                     tempA.data = items[source.droppableId];
@@ -67,28 +75,84 @@ class RouteSchedule extends Component {
                     tempA.data = items[destination.droppableId];
                 }
                 tempAssignations.push(tempA);
-                return true;
             });
         }
         tempAssignations = reIndex(tempAssignations);
         const updatedMonth = tempAssignations
             .filter(assignationList => (assignationList.key === destination.droppableId))[0];
-        const updatedAssignation = updatedMonth.data
-            .filter(assignation => (assignation.id === result.draggableId))[0];
         this.setState({
             assignations: tempAssignations,
         });
-        this.props.updateAssignation(updatedAssignation.index, updatedMonth.id, result.draggableId);
+        updateAssignation(updatedMonth.id, tempAssignations);
     }
 
+    setAssignations() {
+        this.setState({
+            assignations: filterAssignations(this.props.assignations),
+        });
+    }
+
+    handleSplit(split, index, monthId) {
+        const { assignations } = this.state;
+        const { updateAssignation } = this.props;
+
+        let tempAssignations = [...assignations];
+        const assignationClone = {
+            ...tempAssignations[monthId].data[index],
+            population_split: split.part2,
+            split: true,
+            clone: true,
+        };
+        tempAssignations[monthId].data[index] = {
+            ...tempAssignations[monthId].data[index],
+            population_split: split.part1,
+            split: true,
+        };
+        tempAssignations[monthId].data[index].population = split.part1;
+        tempAssignations[monthId].data.splice(index + 1, 0, assignationClone);
+        tempAssignations = reIndex(tempAssignations);
+        this.setState({
+            assignations: tempAssignations,
+        });
+        updateAssignation(monthId + 1, tempAssignations);
+    }
+
+    handleDelete(target, origin) {
+        const { assignations } = this.state;
+        const { updateAssignation } = this.props;
+        let tempAssignations = [...assignations];
+        const targetAssignation = tempAssignations[target.month - 1].data.find(a => a.index === target.index);
+        const originAssignation = tempAssignations[origin.month - 1].data.find(a => a.index === origin.index);
+        const popTotal = targetAssignation.population_split + originAssignation.population_split;
+        if (popTotal === targetAssignation.population) {
+            delete targetAssignation.population_split;
+            delete targetAssignation.split;
+        } else {
+            targetAssignation.population_split = popTotal;
+        }
+        if (targetAssignation.id === originAssignation.id) {
+            const originIndex = tempAssignations[origin.month - 1].data.findIndex(a => a.index === origin.index);
+            tempAssignations[origin.month - 1].data.splice(originIndex, 1);
+        } else {
+            originAssignation.deleted = true;
+        }
+        tempAssignations = reIndex(tempAssignations);
+        this.setState({
+            assignations: tempAssignations,
+        });
+        updateAssignation(target.month, tempAssignations);
+    }
+
+
     render() {
+        const { assignations } = this.state;
         return (
             <div className="route-schedule">
                 <DragDropContext onDragEnd={result => this.onDragEnd(result)}>
-                    {this.state.assignations.map((assignation, assIndex) => (
+                    {assignations.map((assignation, assIndex) => (
                         <Droppable
-                            droppableId={this.state.assignations[assIndex].key}
-                            key={this.state.assignations[assIndex].key}
+                            droppableId={assignations[assIndex].key}
+                            key={assignations[assIndex].key}
                         >
                             {(drop, snapshot) => (
                                 <section className="dnd-container">
@@ -98,25 +162,31 @@ class RouteSchedule extends Component {
                                         tabIndex={0}
                                         onClick={() => this.props.selectMonth(assIndex + 1)}
                                     >
-                                        {this.state.assignations[assIndex].label}
-                                        <span>({formatThousand(this.state.assignations[assIndex].population)})</span>
+                                        {assignations[assIndex].label}
+                                        <span>
+                                            (
+                                            {formatThousand(assignations[assIndex].population)}
+                                            )
+                                        </span>
                                     </div>
                                     <ul
                                         ref={drop.innerRef}
                                         className={`${snapshot.isDraggingOver ? 'is-draging-over' : ''}`}
-                                        id={this.state.assignations[assIndex].key}
+                                        id={assignations[assIndex].key}
                                     >
                                         {
-                                            this.state.assignations[assIndex].data.length === 0 &&
-                                            <li className="no-assignation-text">
-                                                <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
-                                            </li>
+                                            assignations[assIndex].data.length === 0
+                                            && (
+                                                <li className="no-assignation-text">
+                                                    <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
+                                                </li>
+                                            )
                                         }
-                                        {this.state.assignations[assIndex]
+                                        {assignations[assIndex]
                                             .data.map((a, index) => (
                                                 <Draggable
-                                                    key={a.id}
-                                                    draggableId={a.id}
+                                                    key={`${assignations[assIndex].key}-${a.index}-${a.id}`}
+                                                    draggableId={`${a.id}-${a.index}`}
                                                     index={index}
                                                 >
                                                     {(drag, dragSnapshot) => (
@@ -130,15 +200,56 @@ class RouteSchedule extends Component {
                                                             )}
                                                         >
                                                             <span>
-                                                                {index + 1} - {a.name} ({formatThousand(a.population)})
-                                                                {
-                                                                    a.tests_count > 0 &&
-                                                                    <span className="visited-village">
-                                                                        <i className="fa fa-check-circle" aria-hidden="true" />
-                                                                        <span>{a.tests_count}<FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" /></span>
+                                                                {index + 1}
+                                                                {' '}
+                                                                -
+                                                                {a.split ? (
+                                                                    <span>
+                                                                        <FileCopy fontSize="small" className="copy-icon" />
+                                                                        {' '}
+                                                                        -
                                                                     </span>
+                                                                ) : null}
+                                                                {a.name}
+                                                                {' '}
+
+                                                                (
+                                                                {a.population_split
+                                                                    ? formatThousand(a.population_split)
+                                                                    : formatThousand(a.population)}
+                                                                )
+                                                                {
+                                                                    a.tests_count > 0
+                                                                    && (
+                                                                        <span className="visited-village">
+                                                                            <i className="fa fa-check-circle" aria-hidden="true" />
+                                                                            <span>
+                                                                                {a.tests_count}
+                                                                                <FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" />
+                                                                            </span>
+                                                                        </span>
+                                                                    )
                                                                 }
                                                             </span>
+                                                            <div className="routes-split-button-container">
+                                                                {
+                                                                    a.split
+                                                                    && (
+                                                                        <DeleteSplitRoute
+                                                                            currentAssignation={a}
+                                                                            assignations={getCloneAssignations(assignations, assIndex + 1, a.village_id)}
+                                                                            handleDelete={target => this.handleDelete(target, {
+                                                                                index: a.index,
+                                                                                month: assIndex + 1,
+                                                                            })}
+                                                                        />
+                                                                    )
+                                                                }
+                                                                <SplitRoutesModal
+                                                                    currentAssignation={a}
+                                                                    handleSplit={split => this.handleSplit(split, index, assIndex)}
+                                                                />
+                                                            </div>
                                                             <i className="fa fa-bars" aria-hidden="true" />
                                                         </li>
                                                     )}
@@ -164,10 +275,10 @@ RouteSchedule.propTypes = {
     params: PropTypes.object,
     redirect: PropTypes.func.isRequired,
     assignations: PropTypes.array.isRequired,
-    updateAssignation: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
     selectedMonth: PropTypes.number.isRequired,
     selectMonth: PropTypes.func.isRequired,
+    updateAssignation: PropTypes.func.isRequired,
 };
 
 export default injectIntl(RouteSchedule);

@@ -258,3 +258,31 @@ class AssignationViewSet(viewsets.ViewSet):
             res.append(assignation_dict)
 
         return Response(res)
+
+    def put(self, request, pk=None):
+        assignations = request.data
+        for assignation in assignations:
+            original_assignation = get_object_or_404(Assignation, pk=assignation.get("id"))
+
+            is_assignation_clone = assignation.get("clone", False)
+            if  is_assignation_clone:
+                new_assignation = Assignation()
+                new_assignation.month = assignation.get("month")
+                new_assignation.index = assignation.get("index")
+                new_assignation.population_split = assignation.get("population_split", None)
+                new_assignation.planning = original_assignation.planning
+                new_assignation.team = original_assignation.team
+                new_assignation.village = original_assignation.village
+                new_assignation.save()
+            else:
+                is_deleted = assignation.get("deleted", False)
+                if is_deleted:
+                    original_assignation.delete()
+                else:
+                    original_assignation.month = assignation.get("month")
+                    original_assignation.index = assignation.get("index")
+                    original_assignation.population_split = assignation.get("population_split", None)
+                    original_assignation.save()
+
+
+        return Response(assignations)

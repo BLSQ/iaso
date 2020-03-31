@@ -20,7 +20,7 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils//map/mapUtils';
+} from '../../../utils/map/mapUtils';
 
 
 let exportControl;
@@ -98,37 +98,6 @@ class RouteMap extends Component {
         const { villages, notSelectedVillages } = this.props;
         this.villageGroup.clearLayers();
         this.unselectedVillageGroup.clearLayers();
-        if (villages) {
-            let previousVillage = null;
-            villages.map((village, index) => {
-                const villageCircle = L.circle([village.latitude, village.longitude], {
-                    radius: 500,
-                    pane: 'custom-pane-markers',
-                    className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
-                })
-                    .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
-                    .bindTooltip(`${index + 1}`, { permanent: true });
-                villageCircle.addTo(this.villageGroup);
-
-                if (previousVillage) {
-                    const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
-                    const villageB = new L.LatLng(village.latitude, village.longitude);
-                    const pointList = [villageA, villageB];
-                    const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
-                    const polyLine = new L.Polyline(pointList, {
-                        smoothFactor: 10,
-                        className: 'routeLine',
-                    })
-                        .bindTooltip(distance);
-                    polyLine
-                        .addTo(this.villageGroup);
-                }
-                previousVillage = village;
-                return true;
-            });
-
-            this.fitToBounds();
-        }
         if (notSelectedVillages) {
             notSelectedVillages.map((village) => {
                 const villageCircle = L.circle([village.latitude, village.longitude], {
@@ -136,10 +105,43 @@ class RouteMap extends Component {
                     pane: 'custom-pane-markers',
                     className: `routeCircle not-selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
                 })
-                    .bindTooltip(`${village.village_name} - ${getMonthName(village.month)}`);
+                    .bindTooltip(`${village.village_name} - M.${village.month}`);
                 villageCircle.addTo(this.unselectedVillageGroup);
                 return true;
             });
+        }
+        if (villages) {
+            let previousVillage = null;
+            villages.map((village, index) => {
+                if (!village.deleted) {
+                    const villageCircle = L.circle([village.latitude, village.longitude], {
+                        radius: 500,
+                        pane: 'custom-pane-markers',
+                        className: `routeCircle selected-villages ${village.case_count > 0 ? 'with-cases' : ''}`,
+                    })
+                        .on('mouseover', () => this.updateTooltipSmall({ name: village.village_name }))
+                        .bindTooltip(`${index + 1} - ${village.village_name}`, { permanent: true });
+                    villageCircle.addTo(this.villageGroup);
+
+                    if (previousVillage) {
+                        const villageA = new L.LatLng(previousVillage.latitude, previousVillage.longitude);
+                        const villageB = new L.LatLng(village.latitude, village.longitude);
+                        const pointList = [villageA, villageB];
+                        const distance = `${(villageB.distanceTo(villageA) / 1000).toFixed(2).toString()}km`;
+                        const polyLine = new L.Polyline(pointList, {
+                            smoothFactor: 10,
+                            className: 'routeLine',
+                        })
+                            .bindTooltip(distance);
+                        polyLine
+                            .addTo(this.villageGroup);
+                    }
+                    previousVillage = village;
+                }
+                return true;
+            });
+
+            this.fitToBounds();
         }
     }
 
@@ -196,8 +198,8 @@ class RouteMap extends Component {
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container" />
                     {
-                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
-                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area)
+                        && <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
                     }
                 </section>
             </ReactResizeDetector>

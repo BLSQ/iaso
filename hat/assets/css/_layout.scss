@@ -391,12 +391,12 @@ $directions: left right top bottom;
 
 .error-text {
     background: transparent;
-    color: red;
+    color: red !important;
 }
 
 .success-text {
     background: transparent;
-    color: green;
+    color: green !important;
 }
 
 .error-icon {

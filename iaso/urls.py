@@ -19,6 +19,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.mappings import MappingsViewSet
 from iaso.models import MatchingAlgorithm
 from iaso import matching
 import pkgutil
@@ -47,6 +48,7 @@ router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsr
 router.register(r"groups", GroupsViewSet, base_name="groups")
 router.register(r"completeness", CompletenessViewSet, base_name="completeness")
 router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
+router.register(r"mappings", MappingsViewSet, base_name="mappings")
 
 urlpatterns = [url(r"^", include(router.urls))]
 

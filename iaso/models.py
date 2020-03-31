@@ -686,6 +686,17 @@ class Mapping(models.Model):
     def __str__(self):
         return "%s %s" % (self.form, self.mapping_type)
 
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "data_source": self.data_source.as_dict(),
+            "form": self.form.as_dict(),
+            "mapping_type": self.mapping_type,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+        }
+
 
 class MappingVersion(models.Model):
     form_version = models.ForeignKey(

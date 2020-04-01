@@ -58,14 +58,10 @@ Troubleshooting :
 
 # 2. Deploy to production
 
-Merge development in master, and deploy master in production
+Technically : we should merge development in master, and deploy master in production
+but for the momenent use "just deploy" to developement to prod
 
 ```
-git checkout master
-git pull
-git merge development
-git push
-
 eb use Iaso-env
 eb deploy
 ```
@@ -80,10 +76,12 @@ Troubleshooting :
 # 2. Deploy to playground
 
 For the Playground, deploy as for staging and prod for the web server, but you also need to update the
-jupyter server (using the pem file you can find on 1password)
+jupyter server (using the pem file you can find on [1password](https://bluesquare.1password.com/vaults/all/allitems/6r37xbjuhzdpdeyb4ip6m53gu4))
+
+Note jupyter is currently using the development branch too.
 
 ```
-ssh -i lightsail.pem ubuntu@18.196.197.98
+ssh -i ~/.ssh/lightsail.pem ubuntu@18.196.197.98
 cd sense-hat
 git pull
 source bin/activate
@@ -93,3 +91,7 @@ nohup ./run.sh &
 ```
 
 Obviously, a more stable playground setup would be welcome.
+
+Troubleshooting :
+
+  - UNPROTECTED PRIVATE KEY FILE! : `chmod 600  ~/.ssh/lightsail.pem`

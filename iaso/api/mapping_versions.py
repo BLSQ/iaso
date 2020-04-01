@@ -1,6 +1,7 @@
 import typing
 from django.db import transaction
 from django.core.files.uploadedfile import SimpleUploadedFile
+from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, permissions, parsers
 from rest_framework.authentication import BasicAuthentication
 import iaso.models as m
@@ -51,13 +52,29 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
     # {'formversion': {'id': 638}, 'mapping': {'type': 'AGGREGATE', 'datasource': {'id': 710}}}
     def validate(self, unuseddata: typing.MutableMapping):
         if self.context["request"].method == "POST":
-            # TODO filter on account
+            profile = self.context["request"].user.iaso_profile
+
             data = self.context["request"].data
-            print(data)
-            form_version = m.FormVersion.objects.get(pk=data["form_version"]["id"])
-            datasource = m.DataSource.objects.get(
-                pk=data["mapping"]["datasource"]["id"]
-            )
+            form_version = None
+            try:
+                form_version = m.FormVersion.objects.filter(
+                    form__projects__account=profile.account
+                ).get(pk=data["form_version"]["id"])
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError(
+                    {"form_version": "object doesn't exist"}
+                )
+
+            datasource = None
+            try:
+                datasource = m.DataSource.objects.filter(
+                    projects__account=profile.account
+                ).get(pk=data["mapping"]["datasource"]["id"])
+            except ObjectDoesNotExist:
+                raise serializers.ValidationError(
+                    {"mapping.datasource": "object doesn't exist"}
+                )
+
             mapping_type = data["mapping"]["type"]
 
             return {
@@ -82,6 +99,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         return mapping_version
 
     def update(self, instance, validated_data):
+        # partial update only question mappings
         for question_name, dataelement in validated_data["question_mappings"].items():
             instance.json["question_mappings"][question_name] = dataelement
 

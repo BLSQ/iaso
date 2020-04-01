@@ -15,6 +15,11 @@ class FormsVersionAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
         dc = m.Account.objects.create(name="DC Comics")
+        dc_source = m.DataSource.objects.create(name="Batcave")
+        cls.dc_source = dc_source
+        dc_version = m.SourceVersion.objects.create(data_source=dc_source, number=1)
+        dc.default_version = dc_version
+        dc.save()
 
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
@@ -34,6 +39,7 @@ class FormsVersionAPITestCase(APITestCase):
             account=star_wars,
         )
         cls.project.unit_types.add(cls.sith_council)
+        sw_source.projects.add(cls.project)
 
         cls.form_1 = m.Form.objects.create(
             name="New Land Speeder concept",  # no form_id yet (no version)
@@ -144,4 +150,61 @@ class FormsVersionAPITestCase(APITestCase):
                 "name": "dataelement name",
                 "code": "dataelement code",
             },
+        )
+
+    @tag("iaso_only")
+    def test_mappingversions_create_ko_non_allowed_datasource(self):
+        """POST /mappingversions/ mapping """
+
+        self.client.force_authenticate(self.yoda)
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb"
+        ) as xls_file:
+            self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
+
+        formversion = m.FormVersion.objects.all()[0]
+
+        create_response = self.client.post(
+            f"/api/mappingversions/",
+            data={
+                "form_version": {"id": formversion.id},
+                "mapping": {
+                    "type": "AGGREGATE",
+                    "datasource": {"id": self.dc_source.id},
+                },
+            },
+            format="json",
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertEqual(
+            create_response.json(), {"mapping.datasource": ["object doesn't exist"]}
+        )
+
+    @tag("iaso_only")
+    def test_mappingversions_create_ko_non_existing_form_version(self):
+        """POST /mappingversions/ mapping """
+
+        self.client.force_authenticate(self.yoda)
+
+        create_response = self.client.post(
+            f"/api/mappingversions/",
+            data={
+                "form_version": {"id": 10000},
+                "mapping": {
+                    "type": "AGGREGATE",
+                    "datasource": {"id": self.dc_source.id},
+                },
+            },
+            format="json",
+            HTTP_ACCEPT="application/json",
+        )
+
+        self.assertEqual(
+            create_response.json(), {"form_version": ["object doesn't exist"]}
         )

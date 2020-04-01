@@ -4,6 +4,17 @@
 - run the tests
 - check with team mates
 
+For IASO deployment make sure you ran eb init with following info
+
+
+```
+eb init
+Select a default region
+5) eu-central-1 : EU (Frankfurt)
+Select an application to use
+4) Iaso
+Do you wish to continue with CodeCommit? (y/N) (default is n): n
+```
 # 1. Prepare assets
 
 To avoid long/failing deployment, we commit the production assets in the repository
@@ -68,17 +79,17 @@ Troubleshooting :
 
 # 2. Deploy to playground
 
-For the Playground, deploy as for staging and prod for the web server, but you also need to update the 
+For the Playground, deploy as for staging and prod for the web server, but you also need to update the
 jupyter server (using the pem file you can find on 1password)
 
 ```
 ssh -i lightsail.pem ubuntu@18.196.197.98
 cd sense-hat
-git pull 
+git pull
 source bin/activate
 pip install -r requirements.txt
 killall python
 nohup ./run.sh &
 ```
 
-Obviously, a more stable playground setup would be welcome. 
+Obviously, a more stable playground setup would be welcome.

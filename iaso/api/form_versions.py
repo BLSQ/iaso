@@ -137,5 +137,8 @@ class FormVersionsViewSet(ModelViewSet):
     http_method_names = ("post", "get")
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
-        return FormVersion.objects.filter(form__projects__account=profile.account)
+        if self.request.user and not self.request.user.is_anonymous:
+            profile = self.request.user.iaso_profile
+            return FormVersion.objects.filter(form__projects__account=profile.account)
+        else:
+            raise PermissionDenied()

@@ -1,4 +1,4 @@
-const chipColors = [
+export const chipColors = [
     '#4dd0e1',
     '#01579b',
     '#607d8b',
@@ -9,6 +9,11 @@ const chipColors = [
     '#2196f3',
     '#009688',
 ];
+
+export const getChipColors = (i, reverse = false) => {
+    const colors = reverse ? chipColors.reverse() : chipColors;
+    return colors[i % colors.length];
+};
 
 export const otChipColors = [
     '#e91e63',
@@ -21,5 +26,5 @@ export const otChipColors = [
     '#9E9D24',
     '#9c27b0',
 ];
+export const getOtChipColors = i => otChipColors[i % otChipColors.length];
 
-export default chipColors;

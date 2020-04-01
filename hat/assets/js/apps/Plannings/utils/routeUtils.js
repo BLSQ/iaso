@@ -18,19 +18,17 @@ const reorder = (list, startIndex, endIndex) => {
 const reIndex = (list) => {
     const tempList = [];
     let tempIndex = 0;
-    list.map((item) => {
+    list.forEach((item) => {
         const tempItem = item;
         const tempData = [];
-        item.data.map((a) => {
+        item.data.forEach((a) => {
             const tempA = a;
             tempA.index = tempIndex;
             tempData.push(tempA);
             tempIndex += 1;
-            return true;
         });
         tempItem.data = tempData;
         tempList.push(tempItem);
-        return true;
     });
     return tempList;
 };
@@ -38,6 +36,7 @@ const reIndex = (list) => {
 const formatAssignations = (assignations) => {
     const tempAssignations = assignations.map(a => ({
         id: a.id,
+        village_id: a.village_id,
         name: a.village_name,
         index: a.index,
         population: a.village_population,
@@ -45,6 +44,10 @@ const formatAssignations = (assignations) => {
         longitude: a.longitude,
         case_count: a.case_count,
         tests_count: a.tests_count,
+        split: a.split,
+        population_split: a.population_split,
+        deleted: a.deleted,
+        clone: a.clone,
     }));
     return tempAssignations;
 };
@@ -71,20 +74,35 @@ const move = (source, destination, droppableSource, droppableDestination) => {
 
 const filterAssignations = (assignationsList) => {
     const tempMonthList = [];
-    monthList.map((m) => {
+    monthList.forEach((m) => {
         const tempAssignation = m;
         tempAssignation.population = 0;
         tempAssignation.data = formatAssignations(assignationsList.filter((village) => {
-            if ((village.month === m.id) || (!village.month && m.key === 'not-assigned')) {
-                tempAssignation.population += village.village_population;
+            if ((!village.deleted) && ((village.month === m.id) || (!village.month && m.key === 'not-assigned'))) {
+                tempAssignation.population += village.population_split || village.village_population;
                 return village;
             }
             return null;
         }));
         tempMonthList.push(tempAssignation);
-        return true;
     });
     return tempMonthList;
+};
+
+const hasSameVillageInAMonth = assignationsList => assignationsList.some(a => assignationsList.filter(as => as.village_id === a.village_id && as.month === a.month).length > 1);
+
+const getCloneAssignations = (monthlyAssignations, monthId, villageId) => {
+    let assignations = [];
+    monthlyAssignations.forEach((month) => {
+        if (monthId !== month.id) {
+            const monthAssignation = month.data.filter(as => as.village_id === villageId).map(a => ({
+                ...a,
+                month: month.id,
+            }));
+            assignations = assignations.concat(monthAssignation);
+        }
+    });
+    return assignations;
 };
 
 export {
@@ -95,4 +113,6 @@ export {
     reIndex,
     filterAssignations,
     getMonthName,
+    hasSameVillageInAMonth,
+    getCloneAssignations,
 };

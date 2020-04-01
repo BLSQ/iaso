@@ -30,7 +30,7 @@ if settings.FLAVOR == "trypelim":
         ),
         url(r"^maintenance/", include("hat.maintenance.urls")),
         url(r"^quality/", include("hat.quality.urls")),
-        url(r"^rq/", include("django_rq.urls")),
+        #url(r"^rq/", include("django_rq.urls")),
         url(r"^sync/", include("hat.sync.urls")),
         url(r"^vector/", include("hat.vector_control.urls")),
     ]

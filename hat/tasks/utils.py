@@ -3,7 +3,6 @@ import logging
 from typing import Any
 from django.contrib.auth.models import User
 from django.core.exceptions import PermissionDenied
-from django_rq import get_connection
 from rq import Connection
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
@@ -50,13 +49,13 @@ def get_task_status(id: str, user: User=None) -> str:
     - started
     - deferred
     '''
-    with Connection(get_connection()) as conn:
-        try:
-            job = Job.fetch(id, conn)
-            raise_on_permission(job, user)
-        except NoSuchJobError:
-            return 'notfound'
-        return job.status
+
+    try:
+        job = Job.fetch(id, conn)
+        raise_on_permission(job, user)
+    except NoSuchJobError:
+        return 'notfound'
+    return job.status
 
 
 def get_task_result(id: str, user: User=None) -> Any:

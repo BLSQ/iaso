@@ -1,55 +1,73 @@
 $container-height: 720;
 $padding: 32;
-.route-container, {
+
+.route-container,
+    {
     .map__option__list {
         padding-top: 10px;
+
         &.legend {
             padding-top: 5px;
         }
+
         .month-name {
             display: inline-block;
             padding-left: 3px;
         }
     }
+
     .route-schedule {
         height: $container-height+px;
         overflow: auto;
         padding-right: 10px;
         flex-basis: 31%;
     }
+
     .route-map,
     .widget__content--tier>div.route-map {
         flex-basis: 69%;
         padding: 0;
         height: $container-height+px;
+
         &.hidden {
             display: none;
         }
+
         .not-selected-villages {
             fill: yellow;
             stroke: orange;
             stroke-width: 3px !important;
             fill-opacity: 0.8;
+
             &.with-cases {
                 stroke: red;
             }
         }
+
         .selected-villages {
             fill: blue;
             stroke: blue;
             fill-opacity: 0.5;
             stroke-width: 3px !important;
+
             &.with-cases {
                 stroke: red;
             }
         }
+
         .routeLine {
             opacity: 0.5;
             stroke: blue;
             stroke-width: 5px !important;
         }
     }
+
     .widget__content--double>div {
         padding-right: 0;
+    }
+
+    .copy-icon {
+        position: relative;
+        top: 2px;
     }
 }

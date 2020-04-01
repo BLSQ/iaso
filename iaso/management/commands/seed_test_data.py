@@ -39,7 +39,7 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-
+        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default= "2.31.8")
         parser.add_argument(
             "-f",
             "--force",
@@ -48,7 +48,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        dhis2_version = "2.31.7"
+        dhis2_version = options.get("dhis2version")
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(
@@ -264,6 +264,10 @@ class Command(BaseCommand):
             # TODO: use better fixture
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")
         )
+        form_version.xls_file = UploadedFile(
+           open("testdata/seed-data-command-form.xlsx","rb+")
+        )
+
         form_version.save()
         mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
         mapping_version_name = "aggregate" if form.single_per_period else "derived"

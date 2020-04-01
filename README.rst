@@ -186,6 +186,12 @@ The following are some examples:
 | Show ORM migrations                 | ``docker-compose run hat manage showmigrations``         |
 +-------------------------------------+----------------------------------------------------------+
 
+To seed data coming from play.dhis2.org, since the previous commands doesn't run
+in the same container, you need to do a run a docker exec command
+
+`
+docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
+`
 
 Containers and services
 =======================

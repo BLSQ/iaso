@@ -24,6 +24,16 @@ export const setCurrentMappingVersion = mapping => ({
     payload: mapping,
 });
 
+export const fetchMappingVersionDetail = params => (dispatch) => {
+    dispatch(fetchingMappingVersions(true));
+    return getRequest(`/api/mappingversions/${params}.json?fields=:all`)
+        .then(res => dispatch(setCurrentMappingVersion(res)))
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError'))))
+        .then(() => {
+            dispatch(fetchingMappingVersions(false));
+        });
+};
+
 export const fetchMappingVersions = params => (dispatch) => {
     dispatch(fetchingMappingVersions(true));
     return getRequest(`/api/mappingversions/?order=${params.order}&limit=${params.pageSize}&page=${params.page}`)

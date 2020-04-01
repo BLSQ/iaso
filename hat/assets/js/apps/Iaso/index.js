@@ -44,10 +44,12 @@ import Completeness from './domains/completeness';
 import Instances from './domains/instances';
 import InstanceDetail from './domains/instances/details';
 import Mappings from './domains/mappings';
+import MappingDetails from './domains/mappings/details'
 
 import {
     formsPath,
     mappingsPath,
+    mappingDetailPath,
     instancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
@@ -80,6 +82,15 @@ export default function iasoApp(element, baseUrl) {
                 <Fragment>
                     <SidebarMenu {...props} />
                     <Mappings {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={mappingDetailPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <MappingDetails {...props} />
                 </Fragment>
             )}
         />,
@@ -146,6 +157,7 @@ export default function iasoApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
+
         <Redirect path="/" to="/forms" />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,

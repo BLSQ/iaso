@@ -1,151 +1,166 @@
-import React, { Component } from 'react';
-import { connect } from 'react-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
-import { withStyles, Box } from '@material-ui/core';
-import PropTypes from 'prop-types';
-import ReactTable, { ReactTableDefaults } from 'react-table';
-import isEqual from 'lodash/isEqual';
+import React, { Component } from "react";
+import { connect } from "react-redux";
+import { injectIntl, FormattedMessage } from "react-intl";
+import { withStyles, Box } from "@material-ui/core";
+import PropTypes from "prop-types";
+import ReactTable, { ReactTableDefaults } from "react-table";
+import isEqual from "lodash/isEqual";
 
-import { bindActionCreators } from 'redux';
-import { redirectTo as redirectToAction } from '../../routing/actions';
-import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
+import { bindActionCreators } from "redux";
+import { redirectTo as redirectToAction } from "../../routing/actions";
+import { fetchMappingVersions as fetchMappingVersionsAction } from "./actions";
 
-import TopBar from '../../components/nav/TopBarComponent';
-import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import TopBar from "../../components/nav/TopBarComponent";
+import LoadingSpinner from "../../components/LoadingSpinnerComponent";
 
-import mappingsTableColumns from './config';
-import { getSort } from './utils';
+import mappingsTableColumns from "./config";
+import { getSort } from "./utils";
 
-import { formatThousand } from '../../../../utils';
-import commonStyles from '../../styles/common';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
+import { formatThousand } from "../../../../utils";
+import commonStyles from "../../styles/common";
+import customTableTranslations from "../../../../utils/constants/customTableTranslations";
 
-const baseUrl = 'settings/mappings';
+const baseUrl = "settings/mappings";
 
 const styles = theme => ({
-    ...commonStyles(theme),
-    reactTable: {
-        ...commonStyles(theme).reactTable,
-        marginTop: theme.spacing(4),
-    },
+  ...commonStyles(theme),
+  reactTable: {
+    ...commonStyles(theme).reactTable,
+    marginTop: theme.spacing(4)
+  }
 });
 
 class Mappings extends Component {
-    componentDidMount() {
-        const { intl: { formatMessage }, fetchMappingVersions, params } = this.props;
-        fetchMappingVersions(params);
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
-    }
+  componentDidMount() {
+    const {
+      intl: { formatMessage },
+      fetchMappingVersions,
+      params
+    } = this.props;
+    fetchMappingVersions(params);
+    Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+  }
 
-    componentDidUpdate(prevProps) {
-        const { params, fetchMappingVersions } = this.props;
-        if (!isEqual(prevProps.params, params)) {
-            fetchMappingVersions(params);
-        }
+  componentDidUpdate(prevProps) {
+    const { params, fetchMappingVersions } = this.props;
+    if (!isEqual(prevProps.params, params)) {
+      fetchMappingVersions(params);
     }
+  }
 
-    onTableParamsChange(key, value) {
-        const { params, redirectTo } = this.props;
-        redirectTo(baseUrl, {
-            ...params,
-            [key]: key !== 'order' ? value : getSort(value),
+  onTableParamsChange(key, value) {
+    const { params, redirectTo } = this.props;
+    redirectTo(baseUrl, {
+      ...params,
+      [key]: key !== "order" ? value : getSort(value)
+    });
+  }
+
+  onRowClicked(state, rowInfo) {
+    const { redirectTo } = this.props;
+    return {
+      onClick: e => {
+        e.preventDefault();
+        redirectTo("settings/mapping", {
+          mappingVersionId: rowInfo.original.id
         });
-    }
+      }
+    };
+  }
 
-
-    render() {
-        const {
-            classes,
-            params,
-            intl: {
-                formatMessage,
-            },
-            mappingVersions,
-            fetching,
-            count,
-            pages,
-        } = this.props;
-        const pageSize = parseInt(params.pageSize, 10) < mappingVersions.length ? params.pageSize : mappingVersions.length;
-        return (
-            <>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
-                <TopBar title={formatMessage({
-                    defaultMessage: 'DHIS mappings',
-                    id: 'iaso.label.dhis2Mappings',
-                })}
-                />
-                <Box className={classes.containerFullHeightNoTabPadded}>
-                    <div className={classes.reactTable}>
-                        <div className="count-container">
-                            {count > 0
-                                && (
-                                    <div>
-                                        {`${formatThousand(count)} `}
-                                        <FormattedMessage
-                                            id="table.results_"
-                                            defaultMessage="résultat(s)"
-                                        />
-                                    </div>
-                                )
-                            }
-                        </div>
-                        <ReactTable
-                            showPagination={parseInt(params.pageSize, 10) < count}
-                            multiSort
-                            manual
-                            columns={mappingsTableColumns(formatMessage)}
-                            data={mappingVersions}
-                            pages={pages}
-                            className="-striped -highlight"
-                            defaultSorted={[{ id: 'updated_at', desc: false }]}
-                            pageSize={pageSize}
-                            page={params.page - 1}
-                            onPageChange={page => this.onTableParamsChange('page', page + 1)}
-                            onPageSizeChange={newPageSize => this.onTableParamsChange('pageSize', newPageSize)}
-                            onSortedChange={order => this.onTableParamsChange('order', order)}
-                        />
-                    </div>
-                </Box>
-            </>
-        );
-    }
+  render() {
+    const {
+      classes,
+      params,
+      intl: { formatMessage },
+      mappingVersions,
+      fetching,
+      count,
+      pages
+    } = this.props;
+    const pageSize =
+      parseInt(params.pageSize, 10) < mappingVersions.length
+        ? params.pageSize
+        : mappingVersions.length;
+    return (
+      <>
+        {fetching && <LoadingSpinner />}
+        <TopBar
+          title={formatMessage({
+            defaultMessage: "DHIS mappings",
+            id: "iaso.label.dhis2Mappings"
+          })}
+        />
+        <Box className={classes.containerFullHeightNoTabPadded}>
+          <div className={classes.reactTable}>
+            <div className="count-container">
+              {count > 0 && (
+                <div>
+                  {`${formatThousand(count)} `}
+                  <FormattedMessage
+                    id="table.results_"
+                    defaultMessage="résultat(s)"
+                  />
+                </div>
+              )}
+            </div>
+            <ReactTable
+              showPagination={parseInt(params.pageSize, 10) < count}
+              multiSort
+              manual
+              columns={mappingsTableColumns(formatMessage)}
+              data={mappingVersions}
+              pages={pages}
+              className="-striped -highlight"
+              defaultSorted={[{ id: "updated_at", desc: false }]}
+              pageSize={pageSize}
+              page={params.page - 1}
+              onPageChange={page => this.onTableParamsChange("page", page + 1)}
+              onPageSizeChange={newPageSize =>
+                this.onTableParamsChange("pageSize", newPageSize)
+              }
+              onSortedChange={order => this.onTableParamsChange("order", order)}
+              getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
+            />
+          </div>
+        </Box>
+      </>
+    );
+  }
 }
 Mappings.defaultProps = {
-    count: 0,
+  count: 0
 };
 
 Mappings.propTypes = {
-    classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    fetchMappingVersions: PropTypes.func.isRequired,
-    mappingVersions: PropTypes.array.isRequired,
-    count: PropTypes.number,
-    fetching: PropTypes.bool.isRequired,
-    pages: PropTypes.number.isRequired,
+  classes: PropTypes.object.isRequired,
+  intl: PropTypes.object.isRequired,
+  params: PropTypes.object.isRequired,
+  redirectTo: PropTypes.func.isRequired,
+  fetchMappingVersions: PropTypes.func.isRequired,
+  mappingVersions: PropTypes.array.isRequired,
+  count: PropTypes.number,
+  fetching: PropTypes.bool.isRequired,
+  pages: PropTypes.number.isRequired
 };
 
 const MapStateToProps = state => ({
-    mappingVersions: state.mappings.mappingVersions,
-    count: state.mappings.count,
-    pages: state.mappings.pages,
-    fetching: state.mappings.fetching,
+  mappingVersions: state.mappings.mappingVersions,
+  count: state.mappings.count,
+  pages: state.mappings.pages,
+  fetching: state.mappings.fetching
 });
 
-const MapDispatchToProps = dispatch => (
-
+const MapDispatchToProps = dispatch => ({
+  ...bindActionCreators(
     {
-        ...bindActionCreators({
-            fetchMappingVersions: fetchMappingVersionsAction,
-            redirectTo: redirectToAction,
-        }, dispatch),
-    }
-);
+      fetchMappingVersions: fetchMappingVersionsAction,
+      redirectTo: redirectToAction
+    },
+    dispatch
+  )
+});
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Mappings)),
+  connect(MapStateToProps, MapDispatchToProps)(injectIntl(Mappings))
 );

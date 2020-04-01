@@ -44,6 +44,17 @@ export const mappingsPath = getPath({
     ],
 });
 
+export const mappingDetailPath = getPath({
+    baseUrl: 'settings/mapping',
+    params: [
+        {
+            isRequired: true,
+            key: 'mappingVersionId',
+        },
+    ],
+});
+
+
 export const instancesPath = getPath({
     baseUrl: 'instances',
     params: [

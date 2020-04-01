@@ -50,40 +50,41 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         }
 
     # {'formversion': {'id': 638}, 'mapping': {'type': 'AGGREGATE', 'datasource': {'id': 710}}}
-    def validate(self, unuseddata: typing.MutableMapping):
+    def validate(self, _unuseddata: typing.MutableMapping):
+        data = self.context["request"].data
         if self.context["request"].method == "POST":
-            profile = self.context["request"].user.iaso_profile
-
-            data = self.context["request"].data
-            form_version = None
-            try:
-                form_version = m.FormVersion.objects.filter(
-                    form__projects__account=profile.account
-                ).get(pk=data["form_version"]["id"])
-            except ObjectDoesNotExist:
-                raise serializers.ValidationError(
-                    {"form_version": "object doesn't exist"}
-                )
-
-            datasource = None
-            try:
-                datasource = m.DataSource.objects.filter(
-                    projects__account=profile.account
-                ).get(pk=data["mapping"]["datasource"]["id"])
-            except ObjectDoesNotExist:
-                raise serializers.ValidationError(
-                    {"mapping.datasource": "object doesn't exist"}
-                )
-
-            mapping_type = data["mapping"]["type"]
-
-            return {
-                "form_version": form_version,
-                "datasource": datasource,
-                "mapping_type": mapping_type,
-            }
+            return self.validate_create(data)
         else:
-            return self.context["request"].data
+            return data
+
+    def validate_create(self, data):
+        profile = self.context["request"].user.iaso_profile
+
+        form_version = None
+        try:
+            form_version = m.FormVersion.objects.filter(
+                form__projects__account=profile.account
+            ).get(pk=data["form_version"]["id"])
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError({"form_version": "object doesn't exist"})
+
+        datasource = None
+        try:
+            datasource = m.DataSource.objects.filter(
+                projects__account=profile.account
+            ).get(pk=data["mapping"]["datasource"]["id"])
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError(
+                {"mapping.datasource": "object doesn't exist"}
+            )
+
+        mapping_type = data["mapping"]["type"]
+
+        return {
+            "form_version": form_version,
+            "datasource": datasource,
+            "mapping_type": mapping_type,
+        }
 
     def create(self, validated_data: typing.MutableMapping):
         form_version = validated_data["form_version"]

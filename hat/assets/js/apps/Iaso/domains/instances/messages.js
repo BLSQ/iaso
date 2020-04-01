@@ -99,6 +99,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'duplicated',
         id: 'iaso.label.instanceStatus.duplicatedSingle',
     },
+    exported: {
+        defaultMessage: 'exported',
+        id: 'iaso.label.instanceStatus.exportedSingle',
+    },
 });
 
 export default MESSAGES;

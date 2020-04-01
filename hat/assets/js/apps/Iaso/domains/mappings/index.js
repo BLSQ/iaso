@@ -8,7 +8,7 @@ import isEqual from 'lodash/isEqual';
 
 import { bindActionCreators } from 'redux';
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import { fetchMappings as fetchMappingsAction } from './actions';
+import { fetchMappingVersions as fetchMappingVersionsAction } from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
@@ -32,15 +32,15 @@ const styles = theme => ({
 
 class Mappings extends Component {
     componentDidMount() {
-        const { intl: { formatMessage }, fetchMappings, params } = this.props;
-        fetchMappings(params);
+        const { intl: { formatMessage }, fetchMappingVersions, params } = this.props;
+        fetchMappingVersions(params);
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidUpdate(prevProps) {
-        const { params, fetchMappings } = this.props;
+        const { params, fetchMappingVersions } = this.props;
         if (!isEqual(prevProps.params, params)) {
-            fetchMappings(params);
+            fetchMappingVersions(params);
         }
     }
 
@@ -60,12 +60,12 @@ class Mappings extends Component {
             intl: {
                 formatMessage,
             },
-            mappings,
+            mappingVersions,
             fetching,
             count,
             pages,
         } = this.props;
-        const pageSize = parseInt(params.pageSize, 10) < mappings.length ? params.pageSize : mappings.length;
+        const pageSize = parseInt(params.pageSize, 10) < mappingVersions.length ? params.pageSize : mappingVersions.length;
         return (
             <>
                 {
@@ -97,7 +97,7 @@ class Mappings extends Component {
                             multiSort
                             manual
                             columns={mappingsTableColumns(formatMessage)}
-                            data={mappings}
+                            data={mappingVersions}
                             pages={pages}
                             className="-striped -highlight"
                             defaultSorted={[{ id: 'updated_at', desc: false }]}
@@ -122,15 +122,15 @@ Mappings.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    fetchMappings: PropTypes.func.isRequired,
-    mappings: PropTypes.array.isRequired,
+    fetchMappingVersions: PropTypes.func.isRequired,
+    mappingVersions: PropTypes.array.isRequired,
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
     pages: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
-    mappings: state.mappings.mappings,
+    mappingVersions: state.mappings.mappingVersions,
     count: state.mappings.count,
     pages: state.mappings.pages,
     fetching: state.mappings.fetching,
@@ -140,7 +140,7 @@ const MapDispatchToProps = dispatch => (
 
     {
         ...bindActionCreators({
-            fetchMappings: fetchMappingsAction,
+            fetchMappingVersions: fetchMappingVersionsAction,
             redirectTo: redirectToAction,
         }, dispatch),
     }

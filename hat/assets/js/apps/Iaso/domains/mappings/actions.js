@@ -40,9 +40,9 @@ export const fetchFormVersionDetail = id => dispatch => {
 export const fetchMappingVersionDetail = params => dispatch => {
   dispatch(fetchingMappingVersions(true));
   return getRequest(`/api/mappingversions/${params}.json?fields=:all`)
-    .then(res => {
-      dispatch(fetchFormVersionDetail(res.form_version.id));
-      return dispatch(setCurrentMappingVersion(res));
+    .then(detail => {
+      dispatch(fetchFormVersionDetail(detail.form_version.id));
+      return dispatch(setCurrentMappingVersion(detail));
     })
     .catch(() => dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError"))))
     .then(() => {

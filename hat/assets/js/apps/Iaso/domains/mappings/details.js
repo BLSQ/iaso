@@ -40,10 +40,10 @@ class MappingDetails extends Component {
 
   componentDidMount() {
     const {
-      params: { mappingVersionId },
+      params: { mappingVersionId, questionName },
       fetchMappingVersionDetail
     } = this.props;
-    fetchMappingVersionDetail(mappingVersionId);
+    fetchMappingVersionDetail(mappingVersionId, questionName);
   }
 
   render() {
@@ -62,6 +62,10 @@ class MappingDetails extends Component {
 
     const onQuestionSelected = node => {
       setCurrentQuestion(node);
+      redirectToReplace("/settings/mapping", {
+        mappingVersionId: currentFormVersion.id,
+        questionName: node.name
+      });
     };
 
     return (
@@ -79,12 +83,10 @@ class MappingDetails extends Component {
           }
           displayBackButton
           goBack={() => {
-            if (prevPathname || !currentInstance) {
+            if (prevPathname || !currentMappingVersion) {
               router.goBack();
             } else {
-              redirectToReplace("instances", {
-                formId: currentInstance.form_id
-              });
+              redirectToReplace("/settings/mappings", {});
             }
           }}
         />

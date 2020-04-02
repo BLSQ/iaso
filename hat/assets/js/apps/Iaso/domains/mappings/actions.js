@@ -43,9 +43,9 @@ export const fetchFormVersionDetail = id => dispatch => {
   ).then(formVersion => dispatch(setCurrentFormVersion(formVersion)));
 };
 
-export const fetchMappingVersionDetail = params => dispatch => {
+export const fetchMappingVersionDetail = mappingVersionId => dispatch => {
   dispatch(fetchingMappingVersions(true));
-  return getRequest(`/api/mappingversions/${params}.json?fields=:all`)
+  return getRequest(`/api/mappingversions/${mappingVersionId}.json?fields=:all`)
     .then(detail => {
       dispatch(fetchFormVersionDetail(detail.form_version.id));
       return dispatch(setCurrentMappingVersion(detail));

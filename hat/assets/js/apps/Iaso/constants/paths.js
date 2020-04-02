@@ -51,6 +51,10 @@ export const mappingDetailPath = getPath({
             isRequired: true,
             key: 'mappingVersionId',
         },
+        {
+            isRequired: false,
+            key: 'questionName',
+        },
     ],
 });
 

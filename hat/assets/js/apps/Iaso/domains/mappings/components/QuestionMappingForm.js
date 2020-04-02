@@ -70,7 +70,7 @@ const QuestionMappingForm = ({ mapping, question, mappingVersion, onConfirmedQue
       </pre>
       <br></br>
       <button
-        class="button"
+        className="button"
         disabled={newQuestionMapping ? false : true}
         onClick={() => onConfirmedQuestionMapping(newQuestionMapping)}
       >

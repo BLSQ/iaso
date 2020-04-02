@@ -10,7 +10,8 @@ import PropTypes from "prop-types";
 import {
   setCurrentMappingVersion as setCurrentMappingVersionAction,
   fetchMappingVersionDetail as fetchMappingVersionDetailAction,
-  setCurrentQuestion as setCurrentQuestionAction
+  setCurrentQuestion as setCurrentQuestionAction,
+  applyPartialUpdate as applyPartialUpdateAction
 } from "./actions";
 
 import { redirectToReplace as redirectToReplaceAction } from "../../routing/actions";
@@ -54,6 +55,7 @@ class MappingDetails extends Component {
       currentFormVersion,
       currentQuestion,
       setCurrentQuestion,
+      applyPartialUpdate,
       intl: { formatMessage },
       router,
       prevPathname,
@@ -69,8 +71,13 @@ class MappingDetails extends Component {
     };
 
     const onConfirmedQuestionMapping = questionMapping => {
-      console.log(currentQuestion.name,  questionMapping)
-    }
+      console.log(currentQuestion.name, questionMapping);
+      applyPartialUpdate(
+        currentMappingVersion.id,
+        currentQuestion.name,
+        questionMapping
+      );
+    };
 
     return (
       <section className={classes.relativeContainer}>
@@ -144,7 +151,8 @@ MappingDetails.propTypes = {
   currentMappingVersion: PropTypes.object,
   currentFormVersion: PropTypes.object,
   fetchMappingVersionDetail: PropTypes.func.isRequired,
-  setCurrentMappingVersion: PropTypes.func.isRequired
+  setCurrentMappingVersion: PropTypes.func.isRequired,
+  applyPartialUpdate: PropTypes.func.isRequired
 };
 
 const MapStateToProps = state => ({
@@ -161,7 +169,8 @@ const MapDispatchToProps = dispatch => ({
       fetchMappingVersionDetail: fetchMappingVersionDetailAction,
       redirectToReplace: redirectToReplaceAction,
       setCurrentMappingVersion: setCurrentMappingVersionAction,
-      setCurrentQuestion: setCurrentQuestionAction
+      setCurrentQuestion: setCurrentQuestionAction,
+      applyPartialUpdate: applyPartialUpdateAction
     },
     dispatch
   )

@@ -1,0 +1,121 @@
+import React from "react";
+
+import TextField from "@material-ui/core/TextField";
+
+import Autocomplete from "@material-ui/lab/Autocomplete";
+
+import throttle from "lodash/throttle";
+
+const Dhis2Search = props => {
+  const {
+    dataSourceId,
+    resourceName,
+    fields,
+    style,
+    name,
+    label,
+    onChange,
+    filter,
+    pageSize,
+    defaultValue,
+    mapOptions
+  } = props;
+  const [inputValue, setInputValue] = React.useState(defaultValue);
+
+  const [options, setOptions] = React.useState([]);
+  const [selectedOption, setSelectedOption] = React.useState([]);
+  const handleChange = event => {
+    setInputValue(event.target.value);
+  };
+
+  const fetchMemo = React.useMemo(
+    () =>
+      throttle((input, callback) => {
+        Promise.all([
+          fetch(
+            `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${
+              input.input
+            }&fields=${fields || "id,name"}${
+              filter ? "&filter=" + filter : ""
+            }&pageSize=${pageSize || 10}`
+          ).then(resp => resp.json()),
+          fetch(
+            `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${
+              input.input
+            }&fields=${fields || "id,name"}${
+              filter ? "&filter=" + filter : ""
+            }&pageSize=${pageSize || 10}`
+          ).then(resp => resp.json()),
+          fetch(
+            `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${
+              input.input
+            }&fields=${fields || "id,name"}${
+              filter ? "&filter=" + filter : ""
+            }&pageSize=${pageSize || 10}`
+          ).then(resp => resp.json())
+        ]).then(f => {
+          const union = f.flatMap(r => r[resourceName]);
+          const finalOptions = mapOptions ? mapOptions(union) : union;
+          setOptions(finalOptions);
+        });
+      }, 200),
+    []
+  );
+  React.useEffect(() => {
+    console.log("defaultValue", defaultValue, inputValue);
+    setInputValue(defaultValue);
+  }, [setInputValue]);
+  React.useEffect(() => {
+    let active = true;
+    if (inputValue === "") {
+      setOptions([]);
+      return undefined;
+    }
+
+    fetchMemo({ input: inputValue }, results => {
+      if (active) {
+        setOptions(results || []);
+      }
+    });
+
+    return () => {
+      active = false;
+    };
+  }, [inputValue, fetchMemo]);
+
+  const onSearchChange = (evt, value) => {
+    onChange(name, value, resourceName);
+    setSelectedOption(value);
+  };
+
+  return (
+    <Autocomplete
+      style={style}
+      getOptionLabel={option =>
+        typeof option === "string" ? option : option.displayName || option.name
+      }
+      filterOptions={x => x}
+      options={options}
+      onChange={onSearchChange}
+      autoComplete
+      includeInputInList
+      freeSolo
+      searchText={defaultValue}
+      defaultValue={defaultValue}
+      renderInput={params => (
+        <TextField
+          {...params}
+          name={name}
+          label={label}
+          fullWidth
+          onChange={handleChange}
+          value={inputValue}
+        />
+      )}
+      renderOption={option => {
+        return <span name={name}>{option.displayName || option.name}</span>;
+      }}
+    />
+  );
+};
+export default Dhis2Search;

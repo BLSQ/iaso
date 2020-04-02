@@ -1,7 +1,7 @@
 import { getRequest } from "../../libs/Api";
 import { enqueueSnackbar } from "../../../../redux/snackBarsReducer";
 import { errorSnackBar } from "../../../../utils/constants/snackBars";
-
+import Descriptor from "./descriptor"
 export const SET_MAPPING_VERSIONS = "SET_MAPPING_VERSIONS";
 export const SET_CURRENT_MAPPING_VERSION = "SET_CURRENT_MAPPING_VERSION";
 export const SET_CURRENT_FORM_VERSION = "SET_CURRENT_FORM_VERSION";
@@ -37,17 +37,23 @@ export const setCurrentQuestion = question => ({
   payload: question
 });
 
-export const fetchFormVersionDetail = id => dispatch => {
-  return getRequest(
-    `/api/formversions/${id}.json?fields=:all`
-  ).then(formVersion => dispatch(setCurrentFormVersion(formVersion)));
+export const fetchFormVersionDetail = (id, questionName) => dispatch => {
+  return getRequest(`/api/formversions/${id}.json?fields=:all`)
+    .then(formVersion => {
+      dispatch(setCurrentFormVersion(formVersion))
+      const indexedQuestions = Descriptor.indexQuestions(formVersion.descriptor)
+      return dispatch(setCurrentQuestion(indexedQuestions[questionName]));
+    });
 };
 
-export const fetchMappingVersionDetail = mappingVersionId => dispatch => {
+export const fetchMappingVersionDetail = (
+  mappingVersionId,
+  questionName
+) => dispatch => {
   dispatch(fetchingMappingVersions(true));
   return getRequest(`/api/mappingversions/${mappingVersionId}.json?fields=:all`)
     .then(detail => {
-      dispatch(fetchFormVersionDetail(detail.form_version.id));
+      dispatch(fetchFormVersionDetail(detail.form_version.id, questionName));
       return dispatch(setCurrentMappingVersion(detail));
     })
     .catch(() => dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError"))))

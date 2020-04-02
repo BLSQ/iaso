@@ -8,6 +8,8 @@ import {
 
 export const mappingsInitialState = {
   current: null,
+  currentFormVersion: null,
+  currentQuestion: null,
   mappingVersions: [],
   fetching: false,
   count: 0,

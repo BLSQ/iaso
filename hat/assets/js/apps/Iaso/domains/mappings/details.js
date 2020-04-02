@@ -4,7 +4,7 @@ import { injectIntl } from "react-intl";
 import { bindActionCreators } from "redux";
 
 import { withStyles } from "@material-ui/core";
-import { Grid } from "@material-ui/core";
+import { Grid, Box } from "@material-ui/core";
 import PropTypes from "prop-types";
 
 import {
@@ -63,7 +63,7 @@ class MappingDetails extends Component {
     const onQuestionSelected = node => {
       setCurrentQuestion(node);
       redirectToReplace("/settings/mapping", {
-        mappingVersionId: currentFormVersion.id,
+        mappingVersionId: currentMappingVersion.id,
         questionName: node.name
       });
     };
@@ -92,28 +92,32 @@ class MappingDetails extends Component {
         />
         {fetching && <LoadingSpinner />}
         {currentMappingVersion && (
-          <Grid container>
-            {currentFormVersion && currentMappingVersion && (
-              <Grid item>
-                <RecursiveTreeView
-                  formVersion={currentFormVersion}
-                  mappingVersion={currentMappingVersion}
-                  onQuestionSelected={onQuestionSelected}
-                ></RecursiveTreeView>
-              </Grid>
-            )}
-            <Grid item>
-              {currentQuestion && (
-                <>
-                  <QuestionInfos question={currentQuestion}></QuestionInfos>
-                  <QuestionMappingForm
-                    mapping={currentMappingVersion}
-                    question={currentQuestion}
-                  ></QuestionMappingForm>
-                </>
+          <Box className={classes.containerFullHeightNoTabPadded}>
+            <Grid container spacing={4}>
+              {currentFormVersion && currentMappingVersion && (
+                <Grid item>
+                  <RecursiveTreeView
+                    formVersion={currentFormVersion}
+                    mappingVersion={currentMappingVersion}
+                    onQuestionSelected={onQuestionSelected}
+                  ></RecursiveTreeView>
+                </Grid>
               )}
+              <Grid item>
+                {currentQuestion && (
+                  <>
+                    <QuestionInfos question={currentQuestion}></QuestionInfos>
+                    <br />
+                    <QuestionMappingForm
+                      mapping={currentMappingVersion}
+                      question={currentQuestion}
+                      mappingVersion={currentMappingVersion}
+                    ></QuestionMappingForm>
+                  </>
+                )}
+              </Grid>
             </Grid>
-          </Grid>
+          </Box>
         )}
       </section>
     );

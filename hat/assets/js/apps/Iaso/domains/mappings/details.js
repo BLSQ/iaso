@@ -16,14 +16,10 @@ import { redirectToReplace as redirectToReplaceAction } from "../../routing/acti
 
 import TopBar from "../../components/nav/TopBarComponent";
 import LoadingSpinner from "../../components/LoadingSpinnerComponent";
-
+import RecursiveTreeView from "./components/RecursiveTreeView"
 import commonStyles from "../../styles/common";
 
-import { makeStyles } from "@material-ui/core/styles";
-import TreeView from "@material-ui/lab/TreeView";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import TreeItem from "@material-ui/lab/TreeItem";
+
 
 const styles = theme => ({
   ...commonStyles(theme),
@@ -35,42 +31,6 @@ const styles = theme => ({
   }
 });
 
-const useStyles = makeStyles({
-  root: {
-    height: 110,
-    flexGrow: 1,
-    maxWidth: 600,
-    maxHeight: 500
-  }
-});
-
-
-
-const RecursiveTreeView = props => {
-  const classes = useStyles();
-  const { currentFormVersion } = props;
-
-  const descriptor = currentFormVersion.descriptor
-
-  const renderTree = node => (
-    <TreeItem key={node.name} nodeId={node.name} label={node.title || node.label}>
-      {Array.isArray(node.children)
-        ? node.children.map(node => renderTree(node))
-        : null}
-    </TreeItem>
-  );
-
-  return (
-    <TreeView
-      className={classes.root}
-      defaultCollapseIcon={<ExpandMoreIcon />}
-      defaultExpanded={[descriptor.title]}
-      defaultExpandIcon={<ChevronRightIcon />}
-    >
-      {renderTree(descriptor)}
-    </TreeView>
-  );
-};
 
 class MappingDetails extends Component {
   constructor(props) {
@@ -97,10 +57,24 @@ class MappingDetails extends Component {
       prevPathname,
       redirectToReplace
     } = this.props;
+
+    const onQuestionSelected = node => {
+      alert("question selected " + node);
+    };
+
     return (
       <section className={classes.relativeContainer}>
         <TopBar
-          title={currentMappingVersion ? currentMappingVersion.form_version.name : "loading"}
+          title={
+            currentMappingVersion
+              ? "Mapping : " +
+                currentMappingVersion.form_version.form.name +
+                ",  " +
+                currentMappingVersion.form_version.version_id +
+                " - " +
+                currentMappingVersion.mapping.mapping_type
+              : "loading"
+          }
           displayBackButton
           goBack={() => {
             if (prevPathname || !currentInstance) {
@@ -116,16 +90,13 @@ class MappingDetails extends Component {
         {currentMappingVersion && (
           <div>
             <h1>Hello</h1>
-            {currentFormVersion && (
+            {currentFormVersion && currentMappingVersion && (
               <RecursiveTreeView
-                currentFormVersion={currentFormVersion}
+                formVersion={currentFormVersion}
+                mappingVersion={currentMappingVersion}
+                onQuestionSelected={onQuestionSelected}
               ></RecursiveTreeView>
             )}
-            {/*
-            <pre>{JSON.stringify(currentFormVersion)}</pre>
-            <pre>{JSON.stringify(currentMappingVersion, null, 2)}</pre>
-            */
-          }
           </div>
         )}
       </section>

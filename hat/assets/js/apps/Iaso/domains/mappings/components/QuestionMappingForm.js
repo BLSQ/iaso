@@ -1,6 +1,35 @@
 import React from "react";
 
 import Dhis2SearchComponent from "./Dhis2SearchComponent";
+import HesabuHint from "./HesabuHint";
+import ObjectDumper from "./ObjectDumper";
+import Alert from "@material-ui/lab/Alert";
+
+const DuplicateHint = ({ mapping, mappingVersion }) => {
+  if (mapping == undefined) {
+    return <></>;
+  }
+  const duplicates = [];
+  Object.keys(mappingVersion.question_mappings).forEach(question_name => {
+    const qmap = mappingVersion.question_mappings[question_name];
+    if (qmap) {
+      if (
+        mapping.id == qmap.id &&
+        mapping.categoryOptionCombo == qmap.categoryOptionCombo
+      ) {
+        duplicates.push(question_name);
+      }
+    }
+  });
+  if (duplicates.length <= 1) {
+    return <></>;
+  }
+  return (
+    <Alert severity="error">
+      Duplicate mapping ! will be used in both {duplicates.join(" , ")}
+    </Alert>
+  );
+};
 
 const QuestionMappingForm = ({
   mapping,
@@ -48,12 +77,13 @@ const QuestionMappingForm = ({
       {questionMapping.id && (
         <>
           <h3>Current Mapping</h3>
-          <p>Id: {questionMapping.id}</p>
-          <p>valueType: {questionMapping.valueType}</p>
-          <p>categoryOptionCombo: {questionMapping.categoryOptionCombo}</p>
-          <p>{JSON.stringify(questionMapping)}</p>
+          <ObjectDumper object={questionMapping} />
         </>
       )}
+      <DuplicateHint
+        mapping={questionMapping}
+        mappingVersion={mappingVersion}
+      />
       <br />
       <h3>Change the mapping to existing one :</h3>
       <Dhis2SearchComponent
@@ -70,9 +100,20 @@ const QuestionMappingForm = ({
         }
         mapOptions={mapToMapping}
       ></Dhis2SearchComponent>
-      <pre>
-        {newQuestionMapping && JSON.stringify(newQuestionMapping, undefined, 2)}
-      </pre>
+      {newQuestionMapping && (
+        <>
+          <br></br>
+          <h3>Proposed new one :</h3>
+          <br></br>
+          <ObjectDumper object={newQuestionMapping} />
+        </>
+      )}
+
+      <HesabuHint mapping={newQuestionMapping} />
+      <DuplicateHint
+        mapping={newQuestionMapping}
+        mappingVersion={mappingVersion}
+      />
       <br></br>
       <button
         className="button"

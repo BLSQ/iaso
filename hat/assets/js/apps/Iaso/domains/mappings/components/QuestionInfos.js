@@ -1,19 +1,19 @@
 import React from "react";
 import Descriptor from "../descriptor";
+import ObjectDumper from "./ObjectDumper";
+import Typography from "@material-ui/core/Typography";
+import _ from "lodash";
+
 const QuestionInfos = ({ question }) => {
   const label = Descriptor.getHumanLabel(question);
   return (
     <div>
-      <h2>{label + " - " + question.name}</h2>
-      Name : {question.name} <br />
-      Label : {label} <br />
-      Hint : {question.hint} <br />
-      Type : {question.type} <br />
-      {question.type == "select one" && (
-        <>
-          List name : {question.list_name} <br />
-        </>
-      )}
+      <Typography variant="h3" component="h3">
+        {_.truncate(label) + " - " + question.name}
+      </Typography>
+      <br></br>
+      <br></br>
+      <ObjectDumper object={question} />
       {question.bind && question.bind.calculate && (
         <span>Calculate : {question.bind.calculate}</span>
       )}

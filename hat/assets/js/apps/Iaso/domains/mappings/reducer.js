@@ -2,6 +2,7 @@ import {
   SET_MAPPING_VERSIONS,
   SET_CURRENT_MAPPING_VERSION,
   SET_CURRENT_FORM_VERSION,
+  SET_CURRENT_QUESTION,
   FETCHING_MAPPING_VERSIONS
 } from "./actions";
 
@@ -38,6 +39,11 @@ export const mappingReducer = (state = mappingsInitialState, action = {}) => {
     case SET_CURRENT_FORM_VERSION: {
       const currentFormVersion = action.payload;
       return { ...state, currentFormVersion };
+    }
+
+    case SET_CURRENT_QUESTION: {
+      const currentQuestion = action.payload;
+      return { ...state, currentQuestion };
     }
     default:
       return state;

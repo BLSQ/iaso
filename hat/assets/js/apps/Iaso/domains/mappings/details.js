@@ -4,22 +4,23 @@ import { injectIntl } from "react-intl";
 import { bindActionCreators } from "redux";
 
 import { withStyles } from "@material-ui/core";
-
+import { Grid } from "@material-ui/core";
 import PropTypes from "prop-types";
 
 import {
   setCurrentMappingVersion as setCurrentMappingVersionAction,
-  fetchMappingVersionDetail as fetchMappingVersionDetailAction
+  fetchMappingVersionDetail as fetchMappingVersionDetailAction,
+  setCurrentQuestion as setCurrentQuestionAction
 } from "./actions";
 
 import { redirectToReplace as redirectToReplaceAction } from "../../routing/actions";
 
 import TopBar from "../../components/nav/TopBarComponent";
 import LoadingSpinner from "../../components/LoadingSpinnerComponent";
-import RecursiveTreeView from "./components/RecursiveTreeView"
+import RecursiveTreeView from "./components/RecursiveTreeView";
+import QuestionInfos from "./components/QuestionInfos";
+import QuestionMappingForm from "./components/QuestionMappingForm";
 import commonStyles from "../../styles/common";
-
-
 
 const styles = theme => ({
   ...commonStyles(theme),
@@ -30,7 +31,6 @@ const styles = theme => ({
     cursor: "pointer"
   }
 });
-
 
 class MappingDetails extends Component {
   constructor(props) {
@@ -52,6 +52,8 @@ class MappingDetails extends Component {
       fetching,
       currentMappingVersion,
       currentFormVersion,
+      currentQuestion,
+      setCurrentQuestion,
       intl: { formatMessage },
       router,
       prevPathname,
@@ -59,7 +61,7 @@ class MappingDetails extends Component {
     } = this.props;
 
     const onQuestionSelected = node => {
-      alert("question selected " + node);
+      setCurrentQuestion(node);
     };
 
     return (
@@ -88,16 +90,28 @@ class MappingDetails extends Component {
         />
         {fetching && <LoadingSpinner />}
         {currentMappingVersion && (
-          <div>
-            <h1>Hello</h1>
+          <Grid container>
             {currentFormVersion && currentMappingVersion && (
-              <RecursiveTreeView
-                formVersion={currentFormVersion}
-                mappingVersion={currentMappingVersion}
-                onQuestionSelected={onQuestionSelected}
-              ></RecursiveTreeView>
+              <Grid item>
+                <RecursiveTreeView
+                  formVersion={currentFormVersion}
+                  mappingVersion={currentMappingVersion}
+                  onQuestionSelected={onQuestionSelected}
+                ></RecursiveTreeView>
+              </Grid>
             )}
-          </div>
+            <Grid item>
+              {currentQuestion && (
+                <>
+                  <QuestionInfos question={currentQuestion}></QuestionInfos>
+                  <QuestionMappingForm
+                    mapping={currentMappingVersion}
+                    question={currentQuestion}
+                  ></QuestionMappingForm>
+                </>
+              )}
+            </Grid>
+          </Grid>
         )}
       </section>
     );
@@ -126,6 +140,7 @@ const MapStateToProps = state => ({
   fetching: state.mappings.fetching,
   currentMappingVersion: state.mappings.current,
   currentFormVersion: state.mappings.currentFormVersion,
+  currentQuestion: state.mappings.currentQuestion,
   prevPathname: state.routerCustom.prevPathname
 });
 
@@ -134,7 +149,8 @@ const MapDispatchToProps = dispatch => ({
     {
       fetchMappingVersionDetail: fetchMappingVersionDetailAction,
       redirectToReplace: redirectToReplaceAction,
-      setCurrentMappingVersion: setCurrentMappingVersionAction
+      setCurrentMappingVersion: setCurrentMappingVersionAction,
+      setCurrentQuestion: setCurrentQuestionAction
     },
     dispatch
   )

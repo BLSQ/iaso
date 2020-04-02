@@ -68,6 +68,10 @@ class MappingDetails extends Component {
       });
     };
 
+    const onConfirmedQuestionMapping = questionMapping => {
+      console.log(currentQuestion.name,  questionMapping)
+    }
+
     return (
       <section className={classes.relativeContainer}>
         <TopBar
@@ -112,6 +116,7 @@ class MappingDetails extends Component {
                       mapping={currentMappingVersion}
                       question={currentQuestion}
                       mappingVersion={currentMappingVersion}
+                      onConfirmedQuestionMapping={onConfirmedQuestionMapping}
                     ></QuestionMappingForm>
                   </>
                 )}

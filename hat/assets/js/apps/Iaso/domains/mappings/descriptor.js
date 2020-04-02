@@ -7,8 +7,21 @@ class Descriptor {
     );
   }
 
-  getHumanLabel(node) {
-    return node.title || node.label || node.hint || node.name;
+  getLabel(node, language){
+    if (language == undefined) {
+      language = "French"
+    }
+    if (node == undefined || node.label == undefined) {
+      return undefined
+    }
+    return node.label instanceof String ? node.label : node.label[language]
+  }
+
+  getHumanLabel(node, language="French") {
+    if (node==undefined) {
+      return undefined
+    }
+    return node.title || this.getLabel(node, language) || node.hint || node.name;
   }
 
   recursiveIndex(node, acc) {

@@ -39,7 +39,13 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default= "2.31.8")
+        parser.add_argument(
+            "--dhis2version",
+            type=str,
+            help="seed or export",
+            required=True,
+            default="2.31.8",
+        )
         parser.add_argument(
             "-f",
             "--force",
@@ -115,7 +121,12 @@ class Command(BaseCommand):
         )
         quality_form.org_unit_types.add(orgunit_type)
         project.forms.add(quality_form)
-        quality_form_version = self.seed_form(quality_form, datasource, credentials)
+        quality_form_version = self.seed_form(
+            quality_form,
+            datasource,
+            credentials,
+            xls_file="testdata/seed-data-command-form-i18n.xlsx",
+        )
         project.save()
 
         self.quantity_form = quantity_form
@@ -255,6 +266,7 @@ class Command(BaseCommand):
         datasource,
         credentials,
         mapping_file="./testdata/seed-data-command-form-mapping.json",
+        xls_file="testdata/seed-data-command-form.xlsx",
     ):
         form_version, created = FormVersion.objects.get_or_create(
             form=form, version_id=1
@@ -264,9 +276,7 @@ class Command(BaseCommand):
             # TODO: use better fixture
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")
         )
-        form_version.xls_file = UploadedFile(
-           open("testdata/seed-data-command-form.xlsx","rb+")
-        )
+        form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
         form_version.save()
         mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"

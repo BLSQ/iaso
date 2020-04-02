@@ -5,6 +5,7 @@ import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import TreeItem from "@material-ui/lab/TreeItem";
 import Descriptor from "../descriptor";
+import _ from "lodash";
 
 const useStyles = makeStyles({
   root: {
@@ -48,13 +49,14 @@ const RecursiveTreeView = props => {
         key={node.name}
         nodeId={node.name}
         label={
-          Descriptor.getHumanLabel(node) +
+          _.truncate((Descriptor.getHumanLabel(node))) +
           " (" +
           (Descriptor.hasChildren(node)
             ? " " + coverage.join(" / ")
             : node.type) +
           ")"
         }
+
         className={className}
       >
         {Descriptor.hasChildren(node) ? node.children.map(node => renderTree(node)) : null}

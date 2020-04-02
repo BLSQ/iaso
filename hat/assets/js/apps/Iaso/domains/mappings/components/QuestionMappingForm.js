@@ -2,7 +2,12 @@ import React from "react";
 
 import Dhis2SearchComponent from "./Dhis2SearchComponent";
 
-const QuestionMappingForm = ({ mapping, question, mappingVersion, onConfirmedQuestionMapping }) => {
+const QuestionMappingForm = ({
+  mapping,
+  question,
+  mappingVersion,
+  onConfirmedQuestionMapping
+}) => {
   const questionMapping = mapping.question_mappings[question.name] || {};
   const [newQuestionMapping, setNewQuestionMapping] = React.useState();
   const onChange = (name, value) => {

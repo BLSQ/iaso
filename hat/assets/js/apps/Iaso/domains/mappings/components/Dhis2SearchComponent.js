@@ -100,7 +100,6 @@ const Dhis2Search = props => {
       autoComplete
       includeInputInList
       freeSolo
-      searchText={defaultValue}
       defaultValue={defaultValue}
       renderInput={params => (
         <TextField

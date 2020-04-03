@@ -1,19 +1,14 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import { isCaseLocalised } from '../../../utils/index';
-
-const gotoLocator = caseId => window.open(`/dashboard/locator/case_id/${caseId}`, '_blank');
 
 
 class CaseInfoLocation extends React.Component {
     render() {
         const {
             currentCase,
-            intl: {
-                formatMessage,
-            },
             toggleModal,
             canEditPatientInfos,
         } = this.props;
@@ -26,44 +21,18 @@ class CaseInfoLocation extends React.Component {
 
                 <table
                     key={currentCase.id}
-                    className={!isLocalised ? 'error-table' : ''}
                 >
                     <thead className="custom-head">
-                        <tr
-                            className={!isLocalised ? 'error' : ''}
-                        >
+                        <tr>
                             <th colSpan="2">
-                                {
-                                    !isLocalised
-                                    && (
-                                        <div>
-                                            <i className="fa fa-warning" />
-                                            {'  '}
-                                            <strong><FormattedMessage id="patientsCasesLocation.villageNotFound" defaultMessage="Location not found" /></strong>
-                                            <button
-                                                className="button--tiny"
-                                                onClick={() => gotoLocator(currentCase.id)}
-                                            >
-                                                <i className="fa fa-thumb-tack" />
-                                                {formatMessage({
-                                                    defaultMessage: 'Localiser',
-                                                    id: 'main.label.locateCase',
-                                                })}
-                                            </button>
-                                        </div>
-                                    )
-                                }
-                                {
-                                    isLocalised
-                                    && <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
-                                }
+                                <strong><FormattedMessage id="main.label.location" defaultMessage="Localisation" /></strong>
                                 {
                                     canEditPatientInfos
                                     && (
                                         <span
                                             tabIndex={0}
                                             role="button"
-                                            className={`edit-button ${!isLocalised ? 'not-localised' : ''}`}
+                                            className="edit-button"
                                             onClick={() => toggleModal()}
                                         >
                                             <i className="fa fa-edit" />
@@ -165,11 +134,8 @@ CaseInfoLocation.defaultProps = {
 
 CaseInfoLocation.propTypes = {
     currentCase: PropTypes.object,
-    intl: PropTypes.object.isRequired,
     toggleModal: PropTypes.func.isRequired,
     canEditPatientInfos: PropTypes.bool.isRequired,
 };
 
-const CaseInfoLocationWithIntl = injectIntl(CaseInfoLocation);
-
-export default CaseInfoLocationWithIntl;
+export default CaseInfoLocation;

@@ -14,6 +14,7 @@ class CaseInfectionLocationComponent extends Component {
             currentCase,
             selectProvince,
         } = this.props;
+        selectProvince(null);
         if (currentCase.infection_location) {
             selectProvince(
                 currentCase.infection_location.province_id,

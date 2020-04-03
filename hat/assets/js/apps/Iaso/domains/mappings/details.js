@@ -54,6 +54,7 @@ class MappingDetails extends Component {
       currentMappingVersion,
       currentFormVersion,
       currentQuestion,
+      hesabuDescriptor,
       setCurrentQuestion,
       applyPartialUpdate,
       intl: { formatMessage },
@@ -124,6 +125,7 @@ class MappingDetails extends Component {
                       question={currentQuestion}
                       mappingVersion={currentMappingVersion}
                       onConfirmedQuestionMapping={onConfirmedQuestionMapping}
+                      hesabuDescriptor={hesabuDescriptor}
                     ></QuestionMappingForm>
                   </>
                 )}
@@ -160,6 +162,7 @@ const MapStateToProps = state => ({
   currentMappingVersion: state.mappings.current,
   currentFormVersion: state.mappings.currentFormVersion,
   currentQuestion: state.mappings.currentQuestion,
+  hesabuDescriptor: state.mappings.hesabuDescriptor,
   prevPathname: state.routerCustom.prevPathname
 });
 

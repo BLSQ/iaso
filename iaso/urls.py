@@ -22,6 +22,7 @@ from .api.export_requests import ExportRequestsViewSet
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
+from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from iaso import matching
 import pkgutil
@@ -54,7 +55,7 @@ router.register(r"mappings", MappingsViewSet, base_name="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, base_name="mappingversions")
 
 
-def append_dhis2_resource(viewset, resource_name, urlpatterns):
+def append_datasources_subresource(viewset, resource_name, urlpatterns):
     urlpatterns.append(
         url(
             r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"/$",
@@ -76,7 +77,9 @@ def append_dhis2_resource(viewset, resource_name, urlpatterns):
 urlpatterns = [url(r"^", include(router.urls))]
 
 for dhis2_resource in DHIS2_VIEWSETS:
-    append_dhis2_resource(dhis2_resource, dhis2_resource.resource, urlpatterns)
+    append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
+
+append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########

@@ -1,10 +1,9 @@
 import React from "react";
 import ObjectDumper from "./ObjectDumper";
-import projectDescriptor from "./cmr.json";
 // https://dhis2.fbrcameroun.org/api/indicators.json?fields=id%2Ccode%2Cnumerator%2Cdenominator&paging=false&filter=id:in:[fFd5hGDroLk,d5Ngfxa7lQ2,tMLFyuggLmB,mJubyzLqUjO]
 import indicators from "./cmr_indicators.json";
 
-function fetcthDataElementUsedBy() {
+function fetcthDataElementUsedBy(projectDescriptor) {
   const dataElementsUsedByHesabu = [];
   const indicatorsById = {};
 
@@ -14,7 +13,6 @@ function fetcthDataElementUsedBy() {
     const paymentRule = projectDescriptor.payment_rules[paymentRuleCode];
     Object.keys(paymentRule.packages).forEach(packageCode => {
       const orbfPackage = paymentRule.packages[packageCode];
-
       Object.keys(orbfPackage.activities).forEach(activityCode => {
         const activity = orbfPackage.activities[activityCode];
         Object.keys(activity).forEach(state => {
@@ -97,18 +95,20 @@ function fetcthDataElementUsedBy() {
   return dataElementsUsedByHesabu;
 }
 
-const HesabuHint = ({ mapping }) => {
-  if (mapping == undefined) {
+const HesabuHint = ({ mapping, hesabuDescriptor }) => {
+  if (mapping == undefined || hesabuDescriptor == undefined ) {
     return <></>;
   }
-  const usedBy = fetcthDataElementUsedBy().filter(de => de.id == mapping.id);
+  const usedBy = fetcthDataElementUsedBy(hesabuDescriptor[0]).filter(
+    de => de.id == mapping.id
+  );
   if (usedBy.length == 0) {
     return <></>;
   }
 
   return (
     <>
-      <h3>Hesabu hint, used by </h3>
+      <h3>Hesabu hint, this element is used by </h3>
       <br></br>
       {usedBy.map((obj, index) => (
         <>

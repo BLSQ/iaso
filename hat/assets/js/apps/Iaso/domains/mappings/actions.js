@@ -6,6 +6,7 @@ export const SET_MAPPING_VERSIONS = "SET_MAPPING_VERSIONS";
 export const SET_CURRENT_MAPPING_VERSION = "SET_CURRENT_MAPPING_VERSION";
 export const SET_CURRENT_FORM_VERSION = "SET_CURRENT_FORM_VERSION";
 export const SET_CURRENT_QUESTION = "SET_CURRENT_QUESTION";
+export const SET_HESABU_DESCRIPTOR = "SET_HESABU_DESCRIPTOR";
 export const FETCHING_MAPPING_VERSIONS = "FETCHING_MAPPING_VERSIONS";
 
 export const fetchingMappingVersions = fetching => ({
@@ -35,6 +36,11 @@ export const setCurrentFormVersion = formVersion => ({
 export const setCurrentQuestion = question => ({
   type: SET_CURRENT_QUESTION,
   payload: question
+});
+
+export const setHesabuDescriptor = descriptor => ({
+  type: SET_HESABU_DESCRIPTOR,
+  payload: descriptor
 });
 
 export const applyPartialUpdate = (
@@ -69,6 +75,14 @@ export const fetchFormVersionDetail = (id, questionName) => dispatch => {
   );
 };
 
+export const fetchHesabuDescriptor = dataSourceId => dispatch => {
+  return getRequest(
+    `/api/datasources/${dataSourceId}/hesabudescriptors.json?fields=:all`
+  ).then(answer => {
+    dispatch(setHesabuDescriptor(answer.hesabudescriptors));
+  });
+};
+
 export const fetchMappingVersionDetail = (
   mappingVersionId,
   questionName
@@ -77,6 +91,7 @@ export const fetchMappingVersionDetail = (
   return getRequest(`/api/mappingversions/${mappingVersionId}.json?fields=:all`)
     .then(detail => {
       dispatch(fetchFormVersionDetail(detail.form_version.id, questionName));
+      dispatch(fetchHesabuDescriptor(detail.mapping.data_source.id));
       return dispatch(setCurrentMappingVersion(detail));
     })
     .catch(() => dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError"))))

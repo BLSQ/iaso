@@ -35,7 +35,8 @@ const QuestionMappingForm = ({
   mapping,
   question,
   mappingVersion,
-  onConfirmedQuestionMapping
+  onConfirmedQuestionMapping,
+  hesabuDescriptor
 }) => {
   const questionMapping = mapping.question_mappings[question.name] || {};
   const [newQuestionMapping, setNewQuestionMapping] = React.useState();
@@ -84,6 +85,7 @@ const QuestionMappingForm = ({
         mapping={questionMapping}
         mappingVersion={mappingVersion}
       />
+      <HesabuHint mapping={questionMapping} hesabuDescriptor = {hesabuDescriptor}/>
       <br />
       <h3>Change the mapping to existing one :</h3>
       <Dhis2SearchComponent
@@ -109,7 +111,7 @@ const QuestionMappingForm = ({
         </>
       )}
 
-      <HesabuHint mapping={newQuestionMapping} />
+      <HesabuHint mapping={newQuestionMapping} hesabuDescriptor = {hesabuDescriptor}/>
       <DuplicateHint
         mapping={newQuestionMapping}
         mappingVersion={mappingVersion}

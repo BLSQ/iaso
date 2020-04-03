@@ -3,6 +3,7 @@ import {
   SET_CURRENT_MAPPING_VERSION,
   SET_CURRENT_FORM_VERSION,
   SET_CURRENT_QUESTION,
+  SET_HESABU_DESCRIPTOR,
   FETCHING_MAPPING_VERSIONS
 } from "./actions";
 
@@ -47,6 +48,12 @@ export const mappingReducer = (state = mappingsInitialState, action = {}) => {
       const currentQuestion = action.payload;
       return { ...state, currentQuestion };
     }
+
+    case SET_HESABU_DESCRIPTOR: {
+      const hesabuDescriptor = action.payload;
+      return {... state, hesabuDescriptor}
+    }
+
     default:
       return state;
   }

@@ -113,7 +113,7 @@ class CaseAbstract(models.Model):
             - **pv**            -- Pharmacovigilance
 
     :ivar datetime document_date:   Document date.
-    :ivar text     document_id:     Unique hash that identifies the case.
+    :ivar text     document_id:     Hash that used to uniquely identify a "case" but is now obsolete.
 
     :ivar text     hat_id:          HAT Case id.
     :ivar datetime entry_date:      Entry form: Date.
@@ -271,8 +271,9 @@ class CaseAbstract(models.Model):
     )
 
     document_date = models.DateTimeField("Date document", db_index=True, null=True)
-    # The id is currently a hash over the row to be able to catch duplicates
-    document_id = models.TextField(unique=True)
+    # The id is currently a hash over the row to be able to catch duplicates, the unicity is not enforced now
+    # that we are considering cases as sessions
+    document_id = models.TextField()
     hat_id = models.TextField()
     entry_date = models.DateTimeField("Date de collection", null=True)
     entry_name = models.TextField("Nom d'entrée", null=True)

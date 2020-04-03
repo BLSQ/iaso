@@ -85,12 +85,15 @@ const QuestionMappingForm = ({
         mapping={questionMapping}
         mappingVersion={mappingVersion}
       />
-      <HesabuHint mapping={questionMapping} hesabuDescriptor = {hesabuDescriptor}/>
+      <HesabuHint
+        mapping={questionMapping}
+        hesabuDescriptor={hesabuDescriptor}
+      />
       <br />
       <h3>Change the mapping to existing one :</h3>
       <Dhis2SearchComponent
         resourceName="dataElements"
-        dataSourceId={3}
+        dataSourceId={mapping.mapping.data_source.id}
         label={"Search for data element (and combo) by name, code or id"}
         filter={
           // TODO not working endpoint send the first filter
@@ -111,7 +114,10 @@ const QuestionMappingForm = ({
         </>
       )}
 
-      <HesabuHint mapping={newQuestionMapping} hesabuDescriptor = {hesabuDescriptor}/>
+      <HesabuHint
+        mapping={newQuestionMapping}
+        hesabuDescriptor={hesabuDescriptor}
+      />
       <DuplicateHint
         mapping={newQuestionMapping}
         mappingVersion={mappingVersion}

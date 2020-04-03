@@ -328,6 +328,24 @@ Here is an example of pre-commit-config.yaml:
 ..
 
 
+React Intl
+===============
+
+if often block the deployment.
+
+you can test the default message extraction with
+
+.. code:: shell
+
+# make sure you commit everything
+
+npm run webpack-prod
+
+git clean -n
+
+git clean -f
+..
+
 Jupyter Notebook
 =================
 

@@ -234,6 +234,7 @@
     "iaso.map.marker.delete": "Effacer le marqueur",
     "iaso.map.catchment": "Rayon d'action",
     "iaso.map.location": "Localisation",
+    "iaso.mappings.create": "Ajouter une correspondance",
     "iaso.label.stopEdit": "Arrêter l'édition",
     "iaso.label.add": "Ajouter",
     "iaso.orgUnits.addForm": "Ajouter un Formulaire",

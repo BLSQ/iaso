@@ -4,6 +4,7 @@ import { injectIntl, FormattedMessage } from "react-intl";
 import { withStyles, Box } from "@material-ui/core";
 import PropTypes from "prop-types";
 import ReactTable, { ReactTableDefaults } from "react-table";
+import Grid from "@material-ui/core/Grid";
 import isEqual from "lodash/isEqual";
 
 import { bindActionCreators } from "redux";
@@ -19,6 +20,7 @@ import { getSort } from "./utils";
 import { formatThousand } from "../../../../utils";
 import commonStyles from "../../styles/common";
 import customTableTranslations from "../../../../utils/constants/customTableTranslations";
+import CreateMappingVersionDialogComponent from "./components/CreateMappingVersionDialogComponent";
 
 const baseUrl = "settings/mappings";
 
@@ -123,6 +125,15 @@ class Mappings extends Component {
               getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
             />
           </div>
+          <Grid
+            container
+            spacing={0}
+            justify="flex-end"
+            alignItems="center"
+            className={classes.marginTop}
+          >
+            <CreateMappingVersionDialogComponent></CreateMappingVersionDialogComponent>
+          </Grid>
         </Box>
       </>
     );

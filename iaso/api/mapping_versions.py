@@ -16,10 +16,12 @@ from .forms import HasFormPermission
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MappingVersion
-        default_fields = ["id", "form_version", "mapping"]
-        fields = ["id", "form_version", "mapping", "dataset", "question_mappings"]
-        read_only_fields = ["id", "form_version"]
+        default_fields = ["id", "form_version", "mapping","created_at", "updated_at"]
+        fields = ["id", "form_version", "mapping", "dataset", "question_mappings","created_at", "updated_at"]
+        read_only_fields = ["id", "form_version","created_at", "updated_at"]
 
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
     question_mappings = serializers.SerializerMethodField()
     form_version = serializers.SerializerMethodField()
     mapping = serializers.SerializerMethodField()

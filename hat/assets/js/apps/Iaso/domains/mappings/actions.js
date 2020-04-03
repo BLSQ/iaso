@@ -136,7 +136,6 @@ export const createMappingRequest = params => dispatch => {
       return res;
     })
     .catch(e => {
-      debugger;
       dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError")));
     })
     .then(res => {

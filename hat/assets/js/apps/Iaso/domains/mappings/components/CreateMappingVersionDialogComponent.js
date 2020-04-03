@@ -46,8 +46,6 @@ const CreateMappingVersionDialogComponent = ({
       dataset: dataset
     };
     createMappingRequest(payload).then(complete => {
-      debugger;
-      console.log(complete);
       closeDialog();
     });
   };
@@ -70,7 +68,7 @@ const CreateMappingVersionDialogComponent = ({
       cancelMessage={{ id: "iaso.label.cancel", defaultMessage: "Cancel" }}
       maxWidth="md"
     >
-      <Grid container spacing={24} xs={12} direction="column">
+      <Grid container spacing={1} direction="column">
         <InputComponent
           keyValue="mapping_type"
           onChange={(key, value) => setMappingType(value)}
@@ -83,7 +81,7 @@ const CreateMappingVersionDialogComponent = ({
           }}
         />
         {mappingSources && (
-          <Grid md>
+          <Grid>
             <TextField
               style={{ marginTop: "30px" }}
               select
@@ -100,7 +98,7 @@ const CreateMappingVersionDialogComponent = ({
             </TextField>
           </Grid>
         )}
-        <Grid md>
+        <Grid>
           <IasoSearchComponent
             resourceName="formversions"
             collectionName="form_versions"
@@ -118,7 +116,7 @@ const CreateMappingVersionDialogComponent = ({
             }}
           />
         </Grid>
-        <Grid md>
+        <Grid>
           <Dhis2Search
             key={mappingType + " " + source}
             resourceName={mappingType == "AGGREGATE" ? "dataSets" : "programs"}

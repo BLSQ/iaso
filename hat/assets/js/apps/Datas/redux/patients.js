@@ -292,7 +292,7 @@ export const saveAndMergePatient = (dispatch, patient, duplicateId, targetId, el
     });
 };
 
-export const savePatient = (dispatch, patient, params, redirectTo, baseUrl) => {
+export const savePatient = (dispatch, patient, params, redirectTo, baseUrl, component) => {
     dispatch(loadActions.startLoading());
     if (patient.id) {
         req
@@ -300,6 +300,7 @@ export const savePatient = (dispatch, patient, params, redirectTo, baseUrl) => {
             .set('Content-Type', 'application/json')
             .send(patient)
             .then((result) => {
+                component.toggleEdit();
                 dispatch(emptyPatientList());
                 dispatch(enqueueSnackbar(succesfullSnackBar()));
                 dispatch(loadCurrentDetail(result.body));
@@ -325,6 +326,7 @@ export const savePatient = (dispatch, patient, params, redirectTo, baseUrl) => {
                 };
                 newParams.patient_id = result.body.id;
                 redirectTo(baseUrl, newParams);
+                component.toggleEdit();
             })
             .catch((err) => {
                 dispatch(enqueueSnackbar(errorSnackBar()));

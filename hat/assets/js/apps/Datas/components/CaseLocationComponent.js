@@ -13,6 +13,7 @@ class CaseLocationComponent extends Component {
             currentCase,
             selectProvince,
         } = this.props;
+        selectProvince(null);
         if (currentCase.location.normalized && currentCase.location.normalized.as) {
             const currentAs = currentCase.location.normalized.as;
             selectProvince(

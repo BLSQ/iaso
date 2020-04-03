@@ -220,8 +220,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             for permission_id in permissions:
                 permission = get_object_or_404(Permission, pk=permission_id)
                 user.user_permissions.add(permission)
-        if tester_type:
-            profile.tester_type = tester_type
+        profile.tester_type = tester_type
         if screening_type:
             if screening_type not in [x[0] for x in SCREENING_TYPE_CHOICES]:
                 return Response(

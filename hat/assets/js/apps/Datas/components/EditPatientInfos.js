@@ -33,30 +33,21 @@ class EditPatientInfos extends React.Component {
         };
     }
 
-    componentWillReceiveProps(newProps) {
-        const patient = {
-            ...this.state.patient,
-            province_id: newProps.params.prov_id,
-            ZS_id: newProps.params.ZS_id,
-            AS_id: newProps.params.AS_id,
-            village_id: newProps.params.vil_id,
-        };
+    // componentWillReceiveProps(newProps) {
+    //     const patient = {
+    //         ...this.state.patient,
+    //         province_id: newProps.params.prov_id,
+    //         ZS_id: newProps.params.ZS_id,
+    //         AS_id: newProps.params.AS_id,
+    //         village_id: newProps.params.vil_id,
+    //     };
 
-        const state = {
-            ...this.state,
-            patient,
-        };
-
-        if (newProps.isUpdated) {
-            state.isModified = false;
-        } else if ((newProps.params.prov_id !== this.props.params.prov_id)
-            || (newProps.params.ZS_id !== this.props.params.ZS_id)
-            || (newProps.params.AS_id !== this.props.params.AS_id)
-            || (newProps.params.vil_id !== this.props.params.vil_id)) {
-            state.isModified = true;
-        }
-        this.setState(state);
-    }
+    //     const state = {
+    //         ...this.state,
+    //         patient,
+    //     };
+    //     this.setState(state);
+    // }
 
     updatePatientGeoField(key, value) {
         const { params, redirectTo, baseUrl } = this.props;
@@ -76,6 +67,17 @@ class EditPatientInfos extends React.Component {
         if (key === 'AS_id') {
             delete newParams.vil_id;
         }
+        const patient = {
+            ...this.state.patient,
+            province_id: newParams.prov_id,
+            ZS_id: newParams.ZS_id,
+            AS_id: newParams.AS_id,
+            village_id: newParams.vil_id,
+        };
+        this.setState({
+            isModified: true,
+            patient,
+        });
         redirectTo(baseUrl, newParams);
     }
 

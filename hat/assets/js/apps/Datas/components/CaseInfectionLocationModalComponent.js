@@ -140,6 +140,7 @@ class CaseInfectionLocationModalComponent extends Component {
                                 )}
                                 fieldComponent={(
                                     <Select
+                                        className={!currentCase.infection_location_type ? 'form-error' : null}
                                         multi={false}
                                         clearable
                                         simpleValue

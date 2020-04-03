@@ -232,9 +232,9 @@ export const scrollToTop = () => {
 };
 
 export const isCaseLocalised = kase => (
-    kase.location.normalized &&
-    kase.location.normalized.as !== undefined &&
-    kase.location.normalized.village !== undefined
+    kase.location.normalized
+    && kase.location.normalized.as !== undefined
+    && kase.location.normalized.village !== undefined
 );
 
 export const userHasPermission = (
@@ -245,16 +245,16 @@ export const userHasPermission = (
 ) => {
     let hasPermission = false;
     if (
-        currentUser &&
-        permissions &&
-        Object.getOwnPropertyNames(currentUser).length !== 0 &&
-        permissions.length > 0
+        currentUser
+        && permissions
+        && Object.getOwnPropertyNames(currentUser).length !== 0
+        && permissions.length > 0
     ) {
         const currentPermission = permissions.find(p => p.codename === permissionKey);
         // TODO: the API is now filtering the user permissions list so the second .find below is unnecessary
         if (
-            (currentUser.is_superuser && allowSuperUser) ||
-            (currentPermission && currentUser.permissions.find(p => p === currentPermission.id))
+            (currentUser.is_superuser && allowSuperUser)
+            || (currentPermission && currentUser.permissions.find(p => p === currentPermission.id))
         ) {
             hasPermission = true;
         }
@@ -271,32 +271,44 @@ export const renderCountCell = (total, value, formatMessage) => {
     const pourcentage = getPourcentage(total, value);
     return (
         <span>
-            {formatThousand(total)}{' '}
+            {formatThousand(total)}
+            {' '}
             {
-                pourcentage !== 0 &&
-                total !== 0 &&
-                <span>
-                    <br />
-                    <span style={{ fontSize: '85%' }}>
-                    ({parseFloat(pourcentage).toFixed(2)}% {formatMessage({
-                            defaultMessage: 'positives',
-                            id: 'monitoring.label.positive',
-                        })})
+                pourcentage !== 0
+                && total !== 0
+                && (
+                    <span>
+                        <br />
+                        <span style={{ fontSize: '85%' }}>
+                    (
+                            {parseFloat(pourcentage).toFixed(2)}
+%
+                            {' '}
+                            {formatMessage({
+                                defaultMessage: 'positives',
+                                id: 'monitoring.label.positive',
+                            })}
+)
+                        </span>
                     </span>
-                </span>
+                )
             }
             {
-                pourcentage === 0 &&
-                total !== 0 &&
-                <span>
-                    <br />
-                    <span style={{ fontSize: '85%' }}>
-                    ({formatMessage({
-                            defaultMessage: '0 positive',
-                            id: 'monitoring.label.no_positve',
-                        })})
+                pourcentage === 0
+                && total !== 0
+                && (
+                    <span>
+                        <br />
+                        <span style={{ fontSize: '85%' }}>
+                    (
+                            {formatMessage({
+                                defaultMessage: '0 positive',
+                                id: 'monitoring.label.no_positve',
+                            })}
+)
+                        </span>
                     </span>
-                </span>
+                )
             }
         </span>
     );

@@ -10,7 +10,6 @@ import {
     Grid,
 } from '@material-ui/core';
 
-import { currentUserActions } from '../../../redux/currentUserReducer';
 import { profileActions } from '../../../redux/profilesReducer';
 import { testActions } from '../redux/testReducer';
 import { filterActions } from '../../../redux/filtersRedux';
@@ -28,11 +27,8 @@ const getPlStage = (plResult, whiteCount) => {
 };
 
 
-const getStateTest = (currentTest, currentCase, currentUser) => {
-    let tester = currentTest.tester ? currentTest.tester.id : null;
-    if (!tester) {
-        tester = currentUser && Boolean(currentUser.tester_type) ? currentUser.id : null;
-    }
+const getStateTest = (currentTest, currentCase) => {
+    const tester = currentTest.tester ? currentTest.tester.id : null;
     return (
         {
             ...currentTest,
@@ -48,16 +44,13 @@ class TestModalComponent extends Component {
         super(props);
         moment.locale('fr');
         this.state = {
-            currentTest: getStateTest(props.currentTest, props.currentCase, props.currentUser),
+            currentTest: getStateTest(props.currentTest, props.currentCase),
             currentCase: props.currentCase,
         };
     }
 
     componentWillMount() {
         ReactModal.setAppElement('.container--main');
-        if (!this.props.currentUser) {
-            this.props.fetchCurrentUserInfos();
-        }
         if (this.props.profiles.length === 0) {
             this.props.fetchProfiles();
         }
@@ -78,7 +71,7 @@ class TestModalComponent extends Component {
     componentWillReceiveProps(nextProps) {
         if (!isEqual(this.props.currentTest, nextProps.currentTest)) {
             this.setState({
-                currentTest: getStateTest(nextProps.currentTest, nextProps.currentCase, nextProps.currentUser),
+                currentTest: getStateTest(nextProps.currentTest, nextProps.currentCase),
             });
         }
         if (!isEqual(this.props.currentCase, nextProps.currentCase)) {
@@ -158,7 +151,7 @@ class TestModalComponent extends Component {
         } = this.state;
         const isNewTest = currentTest.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase)
-        && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase, this.props.currentUser));
+        && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase));
         const isValid = (
             Boolean(currentTest.type)
             && Boolean(currentTest.type !== 'CATT'
@@ -264,11 +257,9 @@ TestModalComponent.propTypes = {
     toggleModal: PropTypes.func.isRequired,
     currentCase: PropTypes.object.isRequired,
     currentTest: PropTypes.object,
-    fetchCurrentUserInfos: PropTypes.func.isRequired,
     fetchProfiles: PropTypes.func.isRequired,
     updateTest: PropTypes.func.isRequired,
     createTest: PropTypes.func.isRequired,
-    currentUser: PropTypes.object.isRequired,
     profiles: PropTypes.array.isRequired,
     patientId: PropTypes.number.isRequired,
     selectTestProvince: PropTypes.func.isRequired,
@@ -278,14 +269,12 @@ const MapStateToProps = state => ({
     load: state.load,
     deleteResult: state.cases.deleteResult,
     deleteError: state.cases.deleteError,
-    currentUser: state.currentUser.user,
     profiles: state.profiles.list,
     testLocationFilters: state.testLocationFilters,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     fetchProfiles: () => dispatch(profileActions.fetchProfiles(dispatch)),
     updateTest: (test, patientId, toggleModal) => dispatch(testActions.updateTest(dispatch, test, patientId, toggleModal)),
     createTest: (test, patientId, toggleModal) => dispatch(testActions.createTest(dispatch, test, patientId, toggleModal)),

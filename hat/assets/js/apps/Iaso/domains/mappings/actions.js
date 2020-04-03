@@ -1,6 +1,7 @@
 import { getRequest, patchRequest, postRequest } from "../../libs/Api";
 import { enqueueSnackbar } from "../../../../redux/snackBarsReducer";
 import { errorSnackBar } from "../../../../utils/constants/snackBars";
+import { redirectTo } from "../../routing/actions";
 import Descriptor from "./descriptor";
 
 export const FETCHING_MAPPING_VERSIONS = "FETCHING_MAPPING_VERSIONS";
@@ -38,7 +39,6 @@ export const setMappingSources = sources => ({
   type: SET_MAPPING_SOURCES,
   payload: sources
 });
-
 
 export const setCurrentFormVersion = formVersion => ({
   type: SET_CURRENT_FORM_VERSION,
@@ -127,10 +127,21 @@ export const fetchMappingVersions = params => dispatch => {
 export const createMappingRequest = params => dispatch => {
   dispatch(fetchingMappingVersions(true));
   return postRequest(`/api/mappingversions/`, params)
-    .then(res => dispatch(setMappingVersions(res)))
-    .catch(() => dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError"))))
-    .then(() => {
+    .then(res => {
+      dispatch(
+        redirectTo("/settings/mapping", {
+          mappingVersionId: res.id
+        })
+      );
+      return res;
+    })
+    .catch(e => {
+      debugger;
+      dispatch(enqueueSnackbar(errorSnackBar("fetchMappingsError")));
+    })
+    .then(res => {
       dispatch(fetchingMappingVersions(false));
+      return res;
     });
 };
 

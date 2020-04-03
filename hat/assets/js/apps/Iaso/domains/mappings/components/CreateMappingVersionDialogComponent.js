@@ -3,9 +3,9 @@ import { injectIntl } from "react-intl";
 import { bindActionCreators } from "redux";
 import PropTypes from "prop-types";
 import { connect } from "react-redux";
-import Select from "@material-ui/core/Select";
+import TextField from "@material-ui/core/TextField";
 import MenuItem from "@material-ui/core/MenuItem";
-import FormControl from "@material-ui/core/FormControl";
+import Grid from "@material-ui/core/Grid";
 import InputComponent from "../../../components/forms/InputComponent";
 import AddButtonComponent from "../../../components/buttons/AddButtonComponent";
 import ConfirmCancelDialogComponent from "../../../components/dialogs/ConfirmCancelDialogComponent";
@@ -33,16 +33,23 @@ const CreateMappingVersionDialogComponent = ({
   const [mappingType, setMappingType] = React.useState("AGGREGATE");
   const [source, setSource] = React.useState(0);
   const [formVersion, setFormVersion] = React.useState(0);
+  const [dataset, setDataset] = React.useState(0);
 
   React.useEffect(() => {
     fetchSources();
   }, []);
 
   const onConfirm = closeDialog => {
-    createMappingRequest({
+    const payload = {
       form_version: { id: formVersion },
-      mapping: { type: mappingType, datasource: { id: source } }
-    }).then(() => closeDialog());
+      mapping: { type: mappingType, datasource: { id: source } },
+      dataset: dataset
+    };
+    createMappingRequest(payload).then(complete => {
+      debugger;
+      console.log(complete);
+      closeDialog();
+    });
   };
   const onClosed = () => {
     setFormVersion(null);
@@ -63,57 +70,72 @@ const CreateMappingVersionDialogComponent = ({
       cancelMessage={{ id: "iaso.label.cancel", defaultMessage: "Cancel" }}
       maxWidth="md"
     >
-      <InputComponent
-        keyValue="mapping_type"
-        onChange={(key, value) => setMappingType(value)}
-        value={mappingType}
-        type="select"
-        options={mappingTypeOptions}
-        label={{
-          id: "iaso.mapping.mappingType",
-          defaultMessage: "Mapping type"
-        }}
-      />
-
-      {mappingSources && (
-        <FormControl>
-          <Select
-            placeholder="Pick a source"
-            onChange={event => {
-              setSource(event.target.value);
-            }}
-          >
-            {mappingSources.map(source => {
-              return <MenuItem value={source.id}>{source.name}</MenuItem>;
-            })}
-          </Select>
-        </FormControl>
-      )}
-      <IasoSearchComponent
-        resourceName="formversions"
-        collectionName="form_versions"
-        mapOptions={options => {
-          return options.map(o => {
-            return { name: [o.form_name, o.version_id].join(" - "), id: o.id };
-          });
-        }}
-        onChange={(name, val) => {
-          setFormVersion(val.id);
-        }}
-      />
-      {source !== 0 && (
-        <Dhis2Search
-          key={mappingType + " " + source}
-          resourceName={mappingType == "AGGREGATE" ? "dataSets" : "programs"}
-          fields={"id,name,periodType"}
-          mapOptions={options => {
-            return options.map(o => {
-              return { name: o.name + " (" + o.periodType + ")", id: o.id };
-            });
+      <Grid container spacing={24} xs={12} direction="column">
+        <InputComponent
+          keyValue="mapping_type"
+          onChange={(key, value) => setMappingType(value)}
+          value={mappingType}
+          type="select"
+          options={mappingTypeOptions}
+          label={{
+            id: "iaso.mapping.mappingType",
+            defaultMessage: "Mapping type"
           }}
-          dataSourceId={source}
-        ></Dhis2Search>
-      )}
+        />
+        {mappingSources && (
+          <Grid md>
+            <TextField
+              style={{ marginTop: "30px" }}
+              select
+              fullWidth
+              label="Source"
+              variant="outlined"
+              onChange={event => {
+                setSource(event.target.value);
+              }}
+            >
+              {mappingSources.map(source => {
+                return <MenuItem value={source.id}>{source.name}</MenuItem>;
+              })}
+            </TextField>
+          </Grid>
+        )}
+        <Grid md>
+          <IasoSearchComponent
+            resourceName="formversions"
+            collectionName="form_versions"
+            label="Form version"
+            mapOptions={options => {
+              return options.map(o => {
+                return {
+                  name: [o.form_name, o.version_id].join(" - "),
+                  id: o.id
+                };
+              });
+            }}
+            onChange={(name, val) => {
+              setFormVersion(val.id);
+            }}
+          />
+        </Grid>
+        <Grid md>
+          <Dhis2Search
+            key={mappingType + " " + source}
+            resourceName={mappingType == "AGGREGATE" ? "dataSets" : "programs"}
+            fields={"id,name,periodType"}
+            label={mappingType == "AGGREGATE" ? "dataSet" : "program"}
+            mapOptions={options => {
+              return options.map(o => {
+                return { name: o.name + " (" + o.periodType + ")", id: o.id };
+              });
+            }}
+            dataSourceId={source}
+            onChange={(name, val) => {
+              setDataset(val);
+            }}
+          ></Dhis2Search>
+        </Grid>
+      </Grid>
     </ConfirmCancelDialogComponent>
   );
 };

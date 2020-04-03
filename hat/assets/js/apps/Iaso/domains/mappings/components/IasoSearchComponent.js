@@ -5,19 +5,14 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import throttle from "lodash/throttle";
-
 const IasoSearchComponent = props => {
   const {
-    dataSourceId,
     resourceName,
     collectionName,
-    fields,
     style,
     name,
     label,
     onChange,
-    filter,
-    pageSize,
     defaultValue,
     mapOptions
   } = props;
@@ -85,8 +80,10 @@ const IasoSearchComponent = props => {
       renderInput={params => (
         <TextField
           {...params}
+          style={{marginTop: "30px"}}
           name={name}
           label={label}
+          variant="outlined"
           fullWidth
           onChange={handleChange}
           value={inputValue}

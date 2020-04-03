@@ -104,11 +104,13 @@ const Dhis2Search = props => {
       renderInput={params => (
         <TextField
           {...params}
+          style={{marginTop: "30px"}}
           name={name}
-          label={label}
+          label={label || resourceName}
           fullWidth
           onChange={handleChange}
           value={inputValue}
+          variant="outlined"
         />
       )}
       renderOption={option => {

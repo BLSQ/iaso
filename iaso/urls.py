@@ -19,6 +19,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.enketo import EnketoViewSet
 from iaso.models import MatchingAlgorithm
 from iaso import matching
 import pkgutil
@@ -48,7 +49,40 @@ router.register(r"groups", GroupsViewSet, base_name="groups")
 router.register(r"completeness", CompletenessViewSet, base_name="completeness")
 router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
 
-urlpatterns = [url(r"^", include(router.urls))]
+
+urlpatterns = [
+    url(r"^", include(router.urls)),
+    url(
+        r"^enketo/formList$",
+        view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
+        name="enketo-formlist",
+    ),
+    url(
+        r"^enketo/formList/$",
+        view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
+        name="enketo-formlist",
+    ),
+    url(
+        r"^enketo/forms/34369/form.xml$",
+        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
+        name="enketo-formlist",
+    ),
+    url(
+        r"^enketo/forms/34369/form.xml/$",
+        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
+        name="enketo-formlist",
+    ),
+    url(
+        r"^enketo/submission/$",
+        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
+        name="enketo-formlist",
+    ),
+    url(
+        r"^enketo/submission$",
+        view=EnketoViewSet.as_view({"post": "getsubmission", "head": "getsubmission"}),
+        name="enketo-submission",
+    ),
+]
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########

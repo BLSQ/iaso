@@ -1,0 +1,391 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>qlty_pca_04_partie_financier</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="French">
+          <text id="/data/start:label">
+            <value> Survey start time: <output value=" /data/start "/> </value></text>
+          <text id="/data/end:label">
+            <value> Survey end time: <output value=" /data/end "/> </value></text>
+          <text id="/data/today:label">
+            <value> Today: <output value=" /data/today "/> </value></text>
+          <text id="/data/deviceid:label">
+            <value> deviceid: <output value=" /data/deviceid "/> </value></text>
+          <text id="/data/subscriberid:label">
+            <value> subscriberid <output value=" /data/subscriberid "/> </value></text>
+          <text id="/data/imei:label">
+            <value> imei: <output value=" /data/imei "/> </value></text>
+          <text id="/data/simserial:label">
+            <value> simserial: <output value=" /data/simserial "/> </value></text>
+          <text id="/data/phonenumber:label">
+            <value> phone: <output value=" /data/phonenumber "/> </value></text>
+          <text id="/data/PBF_PCA_qlt_begin_v4:label">
+            <value>4. PARTIE FINANCIERE, RECETTES, DEPENSES DE FONCTIONNEMENT, PRIME PERFORMANCE – INDICE</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1:label">
+            <value>4.1. Documents financiers et comptables disponibles et bien tenus</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1:label">
+            <value>4.2. Estimation trimestrielle des dépenses approuvée par le Titulaire et le Promoteur/Président du Comité de Gestion /Conseil d'administration</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1:label">
+            <value>4.3. Système mensuel établi dans lequel les recettes, dépenses de fonctionnement &amp; investissements et l'enveloppe variable pour la prime de performance sont calculées correctement</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1:label">
+            <value>4.4. Le salaire fixe + prime de performance n'est pas supérieure à 60% du TOTAL des recettes de la FS :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1:label">
+            <value>4.5. Système établi du calcul mensuel des primes de performance (+ des primes de base) et connu par le personnel</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_vol_4:label">
+            <value> PARTIE FINANCIERE, RECETTES, DEPENSES DE
+FONCTIONNEMENT, PRIME PERFORMANCE – INDICE : <output value=" /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_v4 "/> / <output value=" /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_max_point_v4 "/> point(s) </value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa:label">
+            <value>Nom et signature des responsables enquêteurs</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label">
+            <value>Nom évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label">
+            <value>Qualification évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label">
+            <value>Structure évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label">
+            <value>N° Tel :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur:label">
+            <value>INFORMATIONS DE L'EVALUATEUR</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label">
+            <value>Problèmes prioritaires identifiés :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label">
+            <value>Actions urgentes d'amélioration proposées :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label">
+            <value>Nom évéluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label">
+            <value>Qualification évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label">
+            <value>Structure évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label">
+            <value>Signature :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa:label">
+            <value>INFORMATIONS DU RESPONSABLE DE LA FORMATION SANITAIRE</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label">
+            <value>Nom du responsable :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature :</value>
+          </text>
+        </translation>
+        <translation lang="English">
+          <text id="/data/start:label">
+            <value> Survey start time: <output value=" /data/start "/> </value></text>
+          <text id="/data/end:label">
+            <value> Survey end time: <output value=" /data/end "/> </value></text>
+          <text id="/data/today:label">
+            <value> Today: <output value=" /data/today "/> </value></text>
+          <text id="/data/deviceid:label">
+            <value> deviceid: <output value=" /data/deviceid "/> </value></text>
+          <text id="/data/subscriberid:label">
+            <value> subscriberid <output value=" /data/subscriberid "/> </value></text>
+          <text id="/data/imei:label">
+            <value> imei: <output value=" /data/imei "/> </value></text>
+          <text id="/data/simserial:label">
+            <value> simserial: <output value=" /data/simserial "/> </value></text>
+          <text id="/data/phonenumber:label">
+            <value> phone: <output value=" /data/phonenumber "/> </value></text>
+          <text id="/data/PBF_PCA_qlt_begin_v4:label">
+            <value>4. FINANCIAL PART, REVENUES, OPERATING EXPENSES, PERFORMANCE PREMIUM - INDEX</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1:label">
+            <value>4.1. Financial and accounting documents available and well maintained</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1:label">
+            <value>4.2. Quarterly estimate of expenditure approved by the Holder and the Promoter / Chairman of the Management Committee / Board of Directors</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1:label">
+            <value>4.3. Established monthly system in which revenue, operating expenses &amp; investments and the variable envelope for the performance bonus are calculated correctly</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1:label">
+            <value>4.4. The fixed salary + performance bonus is not more than 60% of the TOTAL FS revenue:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1:label">
+            <value>4.5. Established system for calculating monthly performance bonuses (+ base bonuses) and known to staff</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_vol_4:label">
+            <value> FINANCIAL PART, REVENUES, OPERATING EXPENSES, PERFORMANCE PREMIUM - INDEX : <output value=" /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_v4 "/> / <output value=" /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_max_point_v4 "/> point(s) </value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa:label">
+            <value>Name and signature of investigating officers</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label">
+            <value>Name of assessor:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label">
+            <value>Evaluator qualification:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label">
+            <value>Evaluator structure:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Appraiser's signature:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label">
+            <value>Call number</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur:label">
+            <value>EVALUATOR INFORMATION</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label">
+            <value>Priority problems identified:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label">
+            <value>Urgent improvement actions proposed:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label">
+            <value>Name of developer:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label">
+            <value>Evaluator qualification:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label">
+            <value>Evaluator structure:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label">
+            <value>Signature:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa:label">
+            <value>INFORMATION OF THE HEALTH FACILITY MANAGER</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label">
+            <value>Name of the responsible :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature :</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="qlty_pca_fosa_financial" version="2020030401">
+          <start/>
+          <end/>
+          <today/>
+          <deviceid/>
+          <subscriberid/>
+          <imei/>
+          <simserial/>
+          <phonenumber/>
+          <PBF_PCA_qlt_begin_v4>
+            <PBF_PCA_qlt_4_1_1/>
+            <PBF_PCA_qlt_4_1/>
+            <PBF_PCA_qlt_4_2_1/>
+            <PBF_PCA_qlt_4_2/>
+            <PBF_PCA_qlt_4_3_1/>
+            <PBF_PCA_qlt_4_3/>
+            <PBF_PCA_qlt_4_4_1/>
+            <PBF_PCA_qlt_4_4/>
+            <PBF_PCA_qlt_4_5_1/>
+            <PBF_PCA_qlt_4_5/>
+            <PBF_PCA_qlt_point_v4/>
+            <PBF_PCA_qlt_max_point_v4/>
+            <PBF_PCA_qlt_point_vol_4/>
+          </PBF_PCA_qlt_begin_v4>
+          <PBF_PCA_qlte_fosa>
+            <PBF_PCA_qlte_nom_enqueteur/>
+            <PBF_PCA_qlte_qualif_enqueteur/>
+            <PBF_PCA_qlte_struct_enqueteur/>
+            <PBF_PCA_qlte_signature_respo_fosa/>
+            <PBF_PCA_qlte_tel_enqueteur/>
+          </PBF_PCA_qlte_fosa>
+          <PBF_PCA_qlte_infos_evaluateur>
+            <PBF_PCA_qlte_problem_ident/>
+            <PBF_PCA_qlte_action_urgent/>
+            <PBF_PCA_qlte_nom_evalu/>
+            <PBF_PCA_qlte_qualification_eval/>
+            <PBF_PCA_qlte_struct_eval/>
+            <PBF_PCA_qlte_signature_eval/>
+          </PBF_PCA_qlte_infos_evaluateur>
+          <PBF_PCA_qlte_infos_respo_fosa>
+            <PBF_PCA_qlte_nom_respo_fosa/>
+            <PBF_PCA_qlte_signature_respo_fosa/>
+          </PBF_PCA_qlte_infos_respo_fosa>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/data/subscriberid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/imei" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/data/simserial" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1 =1,2,0)" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1 =1,2,0)" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1 =1,3,0)" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1 =1,2,0)" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1 =1,3,0)" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5" type="string"/>
+      <bind calculate=" /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1 + /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2 + /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3 + /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4 + /data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5 " nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_v4" type="string"/>
+      <bind calculate="12" nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_max_point_v4" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_vol_4" readonly="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa" type="binary"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval" type="binary"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa" type="binary"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlt_begin_v4">
+      <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4:label')"/>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_1_1:label')"/>
+        <hint>Rapport mensuel de trésorerie disponible et correctement rempli et ressortant le résultat du mois
+- Solde théorique du livre de caisse conforme à la liquidité en caisse</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_2_1:label')"/>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_3_1:label')"/>
+        <hint>Responsable garantit les dépenses de fonctionnement :
+= prime de base fixe, achat ME &amp; équipements, les sous-contrats, 
+fonctionnement, relais communautaire, maintenance et réhabilitations.
+-Responsable calcule l'enveloppe pour la prime de perf. selon la formule Prime de perf. = recettes du mois – les dépenses de fonctionnement</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_4_1:label')"/>
+        <hint>Le vérificateur fait la somme des primes fixes, prime de performance et les salaires de l'Etat (si applicable) et les comparent avec les recettes</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_4_5_1:label')"/>
+        <hint>Critères pour le calcul de la prime de performance établie calculé à travers :
+(a) indice de base de performance + (b) ancienneté + (c) responsabilité + (d)
+heures supplémentaires / perdues + (e) évaluation trimestrielle de performance).
+(au moins 3 critères. Interroger 2 personnes choisies au hasard)</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <input ref="/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_vol_4">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v4/PBF_PCA_qlt_point_vol_4:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_fosa">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_fosa:label')"/>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label')"/>
+      </upload>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_infos_evaluateur">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur:label')"/>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label')"/>
+      </upload>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_infos_respo_fosa">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa:label')"/>
+      <input ref="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label')"/>
+      </upload>
+    </group>
+  </h:body>
+</h:html>

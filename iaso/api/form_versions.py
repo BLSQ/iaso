@@ -18,6 +18,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "id",
             "version_id",
             "form_id",
+            "form_name",
             "xls_file",
             "file",
             "created_at",
@@ -27,6 +28,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "id",
             "version_id",
             "form_id",
+            "form_name",
             "xls_file",
             "file",
             "created_at",
@@ -35,6 +37,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "form_name",
             "version_id",
             "file",
             "created_at",
@@ -45,12 +48,16 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     form_id = serializers.PrimaryKeyRelatedField(
         source="form", queryset=Form.objects.all()
     )
+    form_name = serializers.SerializerMethodField()
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
     )  # field is not required in model
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
+
+    def get_form_name(self, form_version):
+        return form_version.form.name
 
     def get_descriptor(self, form_version):
         json_survey = parsing.to_json_dict(form_version)
@@ -137,8 +144,17 @@ class FormVersionsViewSet(ModelViewSet):
     http_method_names = ("post", "get")
 
     def get_queryset(self):
+        queryset = None
         if self.request.user and not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
-            return FormVersion.objects.filter(form__projects__account=profile.account)
+            queryset = FormVersion.objects.filter(
+                form__projects__account=profile.account
+            )
         else:
             raise PermissionDenied()
+
+        search_name = self.request.GET.get("search_name", None)
+        if search_name:
+            queryset = queryset.filter(form__name__icontains=search_name)
+
+        return queryset

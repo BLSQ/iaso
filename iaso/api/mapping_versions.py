@@ -16,10 +16,20 @@ from .forms import HasFormPermission
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MappingVersion
-        default_fields = ["id", "form_version", "mapping"]
-        fields = ["id", "form_version", "mapping", "dataset", "question_mappings"]
-        read_only_fields = ["id", "form_version"]
+        default_fields = ["id", "form_version", "mapping", "created_at", "updated_at"]
+        fields = [
+            "id",
+            "form_version",
+            "mapping",
+            "dataset",
+            "question_mappings",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["id", "form_version", "created_at", "updated_at"]
 
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
     question_mappings = serializers.SerializerMethodField()
     form_version = serializers.SerializerMethodField()
     mapping = serializers.SerializerMethodField()
@@ -80,24 +90,41 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
         mapping_type = data["mapping"]["type"]
 
-        return {
+        validated_data = {
             "form_version": form_version,
             "datasource": datasource,
             "mapping_type": mapping_type,
         }
+        validated_data["json"] = {"question_mappings": {}}
+
+        if mapping_type == "AGGREGATE":
+            validated_data["json"]["data_set_id"] = data["dataset"]["id"]
+            validated_data["json"]["data_set_name"] = data["dataset"]["name"]
+        else:
+            validated_data["json"]["program_id"] = data["program"]["id"]
+            validated_data["json"]["program_name"] = data["program"]["name"]
+
+        return validated_data
 
     def create(self, validated_data: typing.MutableMapping):
         form_version = validated_data["form_version"]
         datasource = validated_data["datasource"]
         mapping_type = validated_data["mapping_type"]
+
         mapping, created = m.Mapping.objects.get_or_create(
             form=form_version.form, data_source=datasource, mapping_type=mapping_type
         )
 
-        mapping_version = m.MappingVersion.objects.create(
-            mapping=mapping, form_version=form_version, json={"question_mappings": {}}
-        )
-        return mapping_version
+        existing_mapping_version = m.MappingVersion.objects.filter(
+            mapping=mapping, form_version=form_version
+        ).first()
+        if existing_mapping_version:
+            # be idempotent return existing
+            return existing_mapping_version
+        else:
+            return m.MappingVersion.objects.create(
+                mapping=mapping, form_version=form_version, json=validated_data["json"]
+            )
 
     def update(self, instance, validated_data):
         # partial update only question mappings

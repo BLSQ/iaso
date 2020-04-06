@@ -186,6 +186,12 @@ The following are some examples:
 | Show ORM migrations                 | ``docker-compose run hat manage showmigrations``         |
 +-------------------------------------+----------------------------------------------------------+
 
+To seed data coming from play.dhis2.org, since the previous commands doesn't run
+in the same container, you need to do a run a docker exec command
+
+`
+docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
+`
 
 Containers and services
 =======================
@@ -321,6 +327,24 @@ Here is an example of pre-commit-config.yaml:
 
 ..
 
+
+React Intl
+===============
+
+if often block the deployment.
+
+you can test the default message extraction with
+
+.. code:: shell
+
+# make sure you commit everything
+
+npm run webpack-prod
+
+git clean -n
+
+git clean -f
+..
 
 Jupyter Notebook
 =================

@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
   "devDependencies": {
+    "@material-ui/lab": "^4.0.0-alpha.47",
     "leaflet-draw": "^1.0.4",
     "react-beautiful-dnd": "^11.0.4",
     "react-color": "^2.17.3",

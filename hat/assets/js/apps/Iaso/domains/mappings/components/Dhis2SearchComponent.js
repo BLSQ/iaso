@@ -62,7 +62,6 @@ const Dhis2Search = props => {
     []
   );
   React.useEffect(() => {
-    console.log("defaultValue", defaultValue, inputValue);
     setInputValue(defaultValue);
   }, [setInputValue]);
   React.useEffect(() => {
@@ -97,6 +96,7 @@ const Dhis2Search = props => {
       filterOptions={x => x}
       options={options}
       onChange={onSearchChange}
+      openOnFocus= {options.length > 0}
       autoComplete
       includeInputInList
       freeSolo

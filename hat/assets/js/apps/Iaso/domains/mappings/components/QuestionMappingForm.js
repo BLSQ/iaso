@@ -67,7 +67,8 @@ const QuestionMappingForm = ({
             domainType: dataElement.domainType,
             categoryOptionCombo: coc.id,
             categoryOptionComboName: coc.name,
-            optionSet: dataElement.optionSet
+            optionSet: dataElement.optionSet,
+            dataSetElements: dataElement.dataSetElements
           });
         });
       });
@@ -94,6 +95,7 @@ const QuestionMappingForm = ({
       <Dhis2SearchComponent
         resourceName="dataElements"
         dataSourceId={mapping.mapping.data_source.id}
+        defaultValue={Object.keys(questionMapping).length == 0 ? question.name : undefined}
         label={"Search for data element (and combo) by name, code or id"}
         filter={
           // TODO not working endpoint send the first filter
@@ -101,7 +103,7 @@ const QuestionMappingForm = ({
         }
         onChange={onChange}
         fields={
-          "id,name,valueType,domainType,optionSet[options[id,name]],categoryCombo[id,name,categoryOptionCombos[id,name]]"
+          "id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
         }
         mapOptions={mapToMapping}
       ></Dhis2SearchComponent>

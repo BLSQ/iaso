@@ -235,6 +235,9 @@ def normalize_location(
         if is_int(case_village):
             try:
                 db_village = Village.objects.get(id=int(case_village))
+                if db_village.merged_to is not None:
+                    # merged_to is supposed to point directly at the correct village
+                    db_village = db_village.merged_to
                 return db_village.AS, db_village
             except Village.DoesNotExist:
                 # We have a numeric village but it doesn't exist, strange but leave as is.
@@ -245,6 +248,7 @@ def normalize_location(
                 )
                 return None, None
         else:
+            # ZS/AS are numeric but village is not (likely created from a device)
             db_as = None
             try:
                 db_as = AS.objects.get(id=int(case_area), ZS_id=int(case_zone))
@@ -258,16 +262,19 @@ def normalize_location(
 
             # The village could be in full text because it is a new one or it was created by a previous record but the
             # app doesn't know its ID yet. So let's attempt to find it first
-            try:
-                village = Village.objects.get(
-                    Q(
-                        # Q(village_official='YES') &  # Can't use official=Y here because we're creating them in "OTHER"
-                        Q(AS_id=case_area)
-                        & Q(Q(name=case_village) | Q(aliases__contains=[case_village]))
-                    )
-                )
+            # First check for an exact name match, then check aliases and follow the merged_to if set
+            village_base_qs = Village.objects.filter(AS_id=case_area)
+            village_qs = village_base_qs.filter(name=case_village)
+            village = village_qs.first()
+            if village is None:
+                village_qs = village_base_qs.filter(aliases__contains=[case_village])
+                village = village_qs.first()
+            if village and village.merged_to is not None:
+                village = village.merged_to
+
+            if village_qs.count() == 1:
                 return db_as, village
-            except Village.DoesNotExist:
+            elif village_qs.count() == 0:
                 if device_id is not None:
                     try:
                         devicedb = DeviceDB.objects.get(device_id=device_id)
@@ -286,8 +293,8 @@ def normalize_location(
                         village.gps_source = "case_geoloc"
                     village.save()
                     return village.AS, village
-            except MultipleObjectsReturned as exc:
-                print(
+            else:
+                logger.error(
                     "Multiple villages found where only zero or one was expected. Village:",
                     case_zone,
                     case_area,
@@ -309,8 +316,8 @@ def normalize_location(
                     ),
                 )
                 raise Exception(
-                    f"Multiple villages found where one expected {case_village}"
-                ) from exc
+                    f"Multiple villages found where one expected {case_village} {case_area}"
+                )
             return db_as, None
     else:
         return get_single_as_and_village(case_zone, case_area, case_village)

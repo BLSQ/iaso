@@ -7,27 +7,31 @@ class Descriptor {
     );
   }
 
-  getLabel(node, language){
+  getLabel(node, language) {
     if (language == undefined) {
-      language = "French"
+      language = "French";
     }
     if (node == undefined || node.label == undefined) {
-      return undefined
+      return undefined;
     }
-    return node.label instanceof String ? node.label : node.label[language]
+    return node.label instanceof String || typeof node.label === "string"
+      ? node.label
+      : node.label[language];
   }
 
-  getHumanLabel(node, language="French") {
-    if (node==undefined) {
-      return undefined
+  getHumanLabel(node, language = "French") {
+    if (node == undefined) {
+      return undefined;
     }
-    return node.title || this.getLabel(node, language) || node.hint || node.name;
+    return (
+      node.title || this.getLabel(node, language) || node.hint || node.name
+    );
   }
 
   recursiveIndex(node, acc) {
     acc[node.name] = node;
     if (this.hasChildren(node)) {
-      node.children.forEach(child => {
+      node.children.forEach((child) => {
         child.parent_name = node.name;
         this.recursiveIndex(child, acc);
       });
@@ -35,25 +39,25 @@ class Descriptor {
   }
   indexQuestions(descriptor) {
     const acc = {};
-    descriptor.children.forEach(child => this.recursiveIndex(child, acc));
+    descriptor.children.forEach((child) => this.recursiveIndex(child, acc));
     return acc;
   }
 
   getCoverage(indexedQuestions, mappingVersion, node) {
     let questions = [];
     if (node.type == "survey") {
-      const childrenNames = node.children.map(c => c.name);
-      questions = Object.values(indexedQuestions).filter(q =>
+      const childrenNames = node.children.map((c) => c.name);
+      questions = Object.values(indexedQuestions).filter((q) =>
         childrenNames.includes(q.parent_name)
       );
     } else {
       questions = Object.values(indexedQuestions).filter(
-        q => q.parent_name == node.name
+        (q) => q.parent_name == node.name
       );
     }
 
     const mappedQuestions = questions.filter(
-      q => mappingVersion.question_mappings[q.name]
+      (q) => mappingVersion.question_mappings[q.name]
     );
     return [mappedQuestions.length, questions.length];
   }

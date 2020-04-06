@@ -34,6 +34,31 @@ export const formsPath = getPath({
     ],
 });
 
+export const mappingsPath = getPath({
+    baseUrl: 'settings/mappings',
+    params: [
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+});
+
+export const mappingDetailPath = getPath({
+    baseUrl: 'settings/mapping',
+    params: [
+        {
+            isRequired: true,
+            key: 'mappingVersionId',
+        },
+        {
+            isRequired: false,
+            key: 'questionName',
+        },
+    ],
+});
+
+
 export const instancesPath = getPath({
     baseUrl: 'instances',
     params: [

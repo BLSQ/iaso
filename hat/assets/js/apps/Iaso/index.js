@@ -21,6 +21,7 @@ import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reduce
 import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
+import { mappingReducer, mappingsInitialState } from './domains/mappings/reducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
@@ -42,9 +43,13 @@ import OrgUnitDetail from './domains/orgUnits/details';
 import Completeness from './domains/completeness';
 import Instances from './domains/instances';
 import InstanceDetail from './domains/instances/details';
+import Mappings from './domains/mappings';
+import MappingDetails from './domains/mappings/details'
 
 import {
     formsPath,
+    mappingsPath,
+    mappingDetailPath,
     instancesPath,
     orgUnitsPath,
     orgUnitsDetailsPath,
@@ -68,6 +73,24 @@ export default function iasoApp(element, baseUrl) {
                 <Fragment>
                     <SidebarMenu {...props} />
                     <Forms {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={mappingsPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <Mappings {...props} />
+                </Fragment>
+            )}
+        />,
+        <Route
+            path={mappingDetailPath}
+            component={props => (
+                <Fragment>
+                    <SidebarMenu {...props} />
+                    <MappingDetails {...props} />
                 </Fragment>
             )}
         />,
@@ -134,10 +157,12 @@ export default function iasoApp(element, baseUrl) {
                 </Fragment>
             )}
         />,
+
         <Redirect path="/" to="/forms" />,
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
+        <Redirect path="/settings/mappings" to="/settings/mappings/order/updated_at/pageSize/20/page/1" />,
     ];
 
     let history = useRouterHistory(createHistory)({
@@ -160,6 +185,7 @@ export default function iasoApp(element, baseUrl) {
         periods: periodsInitialState,
         completeness: completenessInitialState,
         projects: projectsInitialState,
+        mappings: mappingsInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -177,6 +203,7 @@ export default function iasoApp(element, baseUrl) {
         periods: periodsReducer,
         completeness: completenessReducer,
         projects: projectsReducer,
+        mappings: mappingReducer,
     }, [
         routerMiddleware(history),
         thunk,

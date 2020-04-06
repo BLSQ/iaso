@@ -153,6 +153,18 @@ class FormsVersionAPITestCase(APITestCase):
         )
 
     @tag("iaso_only")
+    def test_mappingversions_create_ok_first_version(self):
+        """POST /mappingversions/ happy path (first version)"""
+
+        self.client.force_authenticate(self.yoda)
+        form_version = self.create_form_version()
+
+        mapping_version1 = self.create_mapping_version(form_version, self.sw_source)
+
+        mapping_version2 = self.create_mapping_version(form_version, self.sw_source)
+        self.assertEqual(mapping_version2["id"], mapping_version1["id"])
+
+    @tag("iaso_only")
     def test_mappingversions_create_ko_non_allowed_datasource(self):
         """POST /mappingversions/ mapping """
 
@@ -167,6 +179,7 @@ class FormsVersionAPITestCase(APITestCase):
                     "type": "AGGREGATE",
                     "datasource": {"id": self.dc_source.id},
                 },
+                "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
             HTTP_ACCEPT="application/json",
@@ -190,6 +203,7 @@ class FormsVersionAPITestCase(APITestCase):
                     "type": "AGGREGATE",
                     "datasource": {"id": self.dc_source.id},
                 },
+                "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
             HTTP_ACCEPT="application/json",
@@ -271,6 +285,7 @@ class FormsVersionAPITestCase(APITestCase):
             data={
                 "form_version": {"id": form_version.id},
                 "mapping": {"type": "AGGREGATE", "datasource": {"id": source.id}},
+                "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
             HTTP_ACCEPT="application/json",

@@ -20,7 +20,7 @@ const Dhis2Search = props => {
     defaultValue,
     mapOptions
   } = props;
-  const [inputValue, setInputValue] = React.useState(defaultValue);
+  const [inputValue, setInputValue] = React.useState(defaultValue || "");
 
   const [options, setOptions] = React.useState([]);
   const [selectedOption, setSelectedOption] = React.useState([]);

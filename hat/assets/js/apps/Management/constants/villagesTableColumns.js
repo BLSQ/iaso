@@ -132,8 +132,7 @@ const villagesTableColumns = (
                 <section>
                     <button
                         className="button--edit--tiny  margin-right"
-                        onClick={() =>
-                            component.props.selectVillage(settings.original)}
+                        onClick={() => component.selectVillage(settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
                         {
@@ -145,11 +144,10 @@ const villagesTableColumns = (
                     </button>
                     <button
                         className="button--delete--tiny"
-                        onClick={() =>
-                            component.setState({
-                                showDeleteModale: true,
-                                dataDeleted: settings.original,
-                            })}
+                        onClick={() => component.setState({
+                            showDeleteModale: true,
+                            dataDeleted: settings.original,
+                        })}
                     >
                         <i className="fa fa-trash" />
                         {

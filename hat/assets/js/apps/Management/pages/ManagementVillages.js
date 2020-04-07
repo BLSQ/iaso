@@ -35,9 +35,9 @@ const baseUrl = 'villages';
 class ManagementVillages extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
+        const { intl: { formatMessage }, params } = props;
         this.state = {
-            tableColumns: villagesTableColumns(formatMessage, this),
+            tableColumns: villagesTableColumns(formatMessage, this, params.includeMerged),
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -97,8 +97,10 @@ class ManagementVillages extends React.Component {
     }
 
     onSearch() {
+        const { intl: { formatMessage }, params } = this.props;
         this.setState({
             tableUrl: this.getEndpointUrl(),
+            tableColumns: villagesTableColumns(formatMessage, this, params.includeMerged),
         });
     }
 
@@ -120,6 +122,7 @@ class ManagementVillages extends React.Component {
             village_source: params.village_source,
             as_list: true,
             years: params.years,
+            include_merged: params.includeMerged ? 'True' : 'False',
         };
 
         if (toExport) {

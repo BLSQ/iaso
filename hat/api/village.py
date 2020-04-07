@@ -246,6 +246,8 @@ class VillageViewSet(viewsets.ViewSet):
                     "village_source",
                     "gps_source",
                     "is_erased",
+                    "merged_to",
+                    "merged_to__name",
                 )
                 paginator = Paginator(queryset.values(*values), limit)
                 res = {"count": paginator.count}

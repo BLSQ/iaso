@@ -24,12 +24,12 @@ import CreateMappingVersionDialogComponent from "./components/CreateMappingVersi
 
 const baseUrl = "settings/mappings";
 
-const styles = theme => ({
+const styles = (theme) => ({
   ...commonStyles(theme),
   reactTable: {
     ...commonStyles(theme).reactTable,
-    marginTop: theme.spacing(4)
-  }
+    marginTop: theme.spacing(4),
+  },
 });
 
 class Mappings extends Component {
@@ -37,7 +37,7 @@ class Mappings extends Component {
     const {
       intl: { formatMessage },
       fetchMappingVersions,
-      params
+      params,
     } = this.props;
     fetchMappingVersions(params);
     Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
@@ -54,20 +54,15 @@ class Mappings extends Component {
     const { params, redirectTo } = this.props;
     redirectTo(baseUrl, {
       ...params,
-      [key]: key !== "order" ? value : getSort(value)
+      [key]: key !== "order" ? value : getSort(value),
     });
   }
 
-  onRowClicked(state, rowInfo) {
+  selectInstance(mappingversion) {
     const { redirectTo } = this.props;
-    return {
-      onClick: e => {
-        e.preventDefault();
-        redirectTo("settings/mapping", {
-          mappingVersionId: rowInfo.original.id
-        });
-      }
-    };
+    redirectTo("settings/mapping", {
+      mappingVersionId: mappingversion.id,
+    });
   }
 
   render() {
@@ -78,7 +73,7 @@ class Mappings extends Component {
       mappingVersions,
       fetching,
       count,
-      pages
+      pages,
     } = this.props;
     const pageSize =
       parseInt(params.pageSize, 10) < mappingVersions.length
@@ -90,7 +85,7 @@ class Mappings extends Component {
         <TopBar
           title={formatMessage({
             defaultMessage: "DHIS mappings",
-            id: "iaso.label.dhis2Mappings"
+            id: "iaso.label.dhis2Mappings",
           })}
         />
         <Box className={classes.containerFullHeightNoTabPadded}>
@@ -110,19 +105,26 @@ class Mappings extends Component {
               showPagination={parseInt(params.pageSize, 10) < count}
               multiSort
               manual
-              columns={mappingsTableColumns(formatMessage)}
+              columns={mappingsTableColumns(formatMessage, this)}
               data={mappingVersions}
               pages={pages}
               className="-striped -highlight"
-              defaultSorted={[{ id: "updated_at", desc: false }]}
+              defaultSorted={[
+                { id: "form_version__form__name", desc: true },
+                { id: "form_version__version_id", desc: true },
+                { id: "mapping__mapping_type", desc: true },
+              ]}
               pageSize={pageSize}
               page={params.page - 1}
-              onPageChange={page => this.onTableParamsChange("page", page + 1)}
-              onPageSizeChange={newPageSize =>
+              onPageChange={(page) =>
+                this.onTableParamsChange("page", page + 1)
+              }
+              onPageSizeChange={(newPageSize) =>
                 this.onTableParamsChange("pageSize", newPageSize)
               }
-              onSortedChange={order => this.onTableParamsChange("order", order)}
-              getTdProps={(state, rowInfo) => this.onRowClicked(state, rowInfo)}
+              onSortedChange={(order) =>
+                this.onTableParamsChange("order", order)
+              }
             />
           </div>
           <Grid
@@ -140,7 +142,7 @@ class Mappings extends Component {
   }
 }
 Mappings.defaultProps = {
-  count: 0
+  count: 0,
 };
 
 Mappings.propTypes = {
@@ -152,24 +154,24 @@ Mappings.propTypes = {
   mappingVersions: PropTypes.array.isRequired,
   count: PropTypes.number,
   fetching: PropTypes.bool.isRequired,
-  pages: PropTypes.number.isRequired
+  pages: PropTypes.number.isRequired,
 };
 
-const MapStateToProps = state => ({
+const MapStateToProps = (state) => ({
   mappingVersions: state.mappings.mappingVersions,
   count: state.mappings.count,
   pages: state.mappings.pages,
-  fetching: state.mappings.fetching
+  fetching: state.mappings.fetching,
 });
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = (dispatch) => ({
   ...bindActionCreators(
     {
       fetchMappingVersions: fetchMappingVersionsAction,
-      redirectTo: redirectToAction
+      redirectTo: redirectToAction,
     },
     dispatch
-  )
+  ),
 });
 
 export default withStyles(styles)(

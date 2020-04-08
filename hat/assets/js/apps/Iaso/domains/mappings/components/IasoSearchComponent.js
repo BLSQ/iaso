@@ -5,31 +5,36 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 
 import throttle from "lodash/throttle";
-const IasoSearchComponent = props => {
+const IasoSearchComponent = (props) => {
   const {
     resourceName,
     collectionName,
+    fields,
     style,
     name,
     label,
     onChange,
     defaultValue,
-    mapOptions
+    mapOptions,
   } = props;
-  const [inputValue, setInputValue] = React.useState(defaultValue);
+  const [inputValue, setInputValue] = React.useState(defaultValue || "");
 
   const [options, setOptions] = React.useState([]);
   const [selectedOption, setSelectedOption] = React.useState([]);
-  const handleChange = event => {
+  const handleChange = (event) => {
     setInputValue(event.target.value);
   };
 
   const fetchMemo = React.useMemo(
     () =>
       throttle((input, callback) => {
-        return fetch(`/api/${resourceName}.json?search_name=${input.input}`)
-          .then(resp => resp.json())
-          .then(f => {
+        return fetch(
+          `/api/${resourceName}.json?search_name=${input.input}${
+            fields ? "&fields=" + fields : ""
+          }`
+        )
+          .then((resp) => resp.json())
+          .then((f) => {
             const union = f[collectionName || resourceName];
             const finalOptions = mapOptions ? mapOptions(union) : union;
             setOptions(finalOptions);
@@ -38,7 +43,6 @@ const IasoSearchComponent = props => {
     []
   );
   React.useEffect(() => {
-    console.log("defaultValue", defaultValue, inputValue);
     setInputValue(defaultValue);
   }, [setInputValue]);
   React.useEffect(() => {
@@ -48,7 +52,7 @@ const IasoSearchComponent = props => {
       return undefined;
     }
 
-    fetchMemo({ input: inputValue }, results => {
+    fetchMemo({ input: inputValue }, (results) => {
       if (active) {
         setOptions(results || []);
       }
@@ -67,20 +71,20 @@ const IasoSearchComponent = props => {
   return (
     <Autocomplete
       style={style}
-      getOptionLabel={option =>
+      getOptionLabel={(option) =>
         typeof option === "string" ? option : option.displayName || option.name
       }
-      filterOptions={x => x}
+      filterOptions={(x) => x}
       options={options}
       onChange={onSearchChange}
       autoComplete
       includeInputInList
       freeSolo
       defaultValue={defaultValue}
-      renderInput={params => (
+      renderInput={(params) => (
         <TextField
           {...params}
-          style={{marginTop: "30px"}}
+          style={{ marginTop: "30px" }}
           name={name}
           label={label}
           variant="outlined"
@@ -89,7 +93,7 @@ const IasoSearchComponent = props => {
           value={inputValue}
         />
       )}
-      renderOption={option => {
+      renderOption={(option) => {
         return <span name={name}>{option.displayName || option.name}</span>;
       }}
     />

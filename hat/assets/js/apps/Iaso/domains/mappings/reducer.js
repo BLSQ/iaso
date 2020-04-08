@@ -15,7 +15,7 @@ export const mappingsInitialState = {
   mappingVersions: [],
   fetching: false,
   count: 0,
-  pages: 1
+  pages: 1,
 };
 
 export const mappingReducer = (state = mappingsInitialState, action = {}) => {

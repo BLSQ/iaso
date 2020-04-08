@@ -1,5 +1,6 @@
 import React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
@@ -12,8 +13,11 @@ import MacroMap from '../components/MacroMap';
 import { planningActions } from '../redux/planning';
 import { createUrl } from '../../../utils/fetchData';
 import { coordinationActions } from '../redux/coordination';
-import { getZsName, getWorkZoneName, formatThousand } from '../../../utils';
+import {
+    getZsName, getWorkZoneName, formatThousand, getYears,
+} from '../../../utils';
 import AssingAsModale from '../components/AssingAsModale';
+import { fetchRequest } from '../../../utils/requests';
 
 const MESSAGES = defineMessages({
     capacity: {
@@ -64,8 +68,26 @@ class Macroplanning extends React.Component {
         };
     }
 
-    componentWillMount() {
-        this.props.fetchPlannings();
+    componentDidMount() {
+        const {
+            showPlannings,
+            params,
+            redirect,
+        } = this.props;
+        this.props.fetchRequest('/api/plannings/', showPlannings, false).then((plannings) => {
+            if (params.planning_id && !params.years) {
+                const currentPlanning = plannings.find(p => p.id === parseInt(params.planning_id, 10));
+                let years = getYears(3);
+                if (currentPlanning && currentPlanning.years_coverage) {
+                    years = currentPlanning.years_coverage.join(',');
+                }
+
+                redirect({
+                    ...params,
+                    years,
+                });
+            }
+        });
         this.props.fetchCoordinations();
         if (this.props.params && (this.props.params.planning_id && this.props.params.coordination_id)) {
             this.props.fetchCoordinationsDetails(this.props.params.planning_id, this.props.params.coordination_id, this.props.params.as_id, this.props.params.years);
@@ -82,6 +104,25 @@ class Macroplanning extends React.Component {
                 workzoneId: undefined,
             });
             this.props.fetchCoordinationsDetails(nextProps.params.planning_id, nextProps.params.coordination_id, nextProps.params.as_id, nextProps.params.years);
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        const {
+            params,
+            plannings,
+            redirect,
+        } = this.props;
+        if (prevProps.params.planning_id !== params.planning_id && plannings.length > 0) {
+            const currentPlanning = plannings.find(p => p.id === parseInt(params.planning_id, 10));
+            let years = getYears(3);
+            if (currentPlanning && currentPlanning.years_coverage) {
+                years = currentPlanning.years_coverage.join(',');
+            }
+            redirect({
+                ...params,
+                years,
+            });
         }
     }
 
@@ -320,7 +361,8 @@ Macroplanning.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    fetchPlannings: PropTypes.func.isRequired,
+    fetchRequest: PropTypes.func.isRequired,
+    showPlannings: PropTypes.func.isRequired,
     fetchCoordinations: PropTypes.func.isRequired,
     fetchCoordinationsDetails: PropTypes.func.isRequired,
     redirect: PropTypes.func.isRequired,
@@ -353,10 +395,14 @@ const MapDispatchToProps = dispatch => ({
     redirect: (params, baseUrl = 'macro') => dispatch(push(createUrl(params, baseUrl))),
     fetchCoordinationsDetails: (planningId, coordinationId, areaId, years) => dispatch(coordinationActions.fetchCoordinationsDetails(dispatch, planningId, coordinationId, areaId, years)),
     fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
+    showPlannings: plannings => dispatch(planningActions.showPlannings(plannings)),
     fetchCoordinations: () => dispatch(coordinationActions.fetchCoordinations(dispatch)),
     selectArea: area => dispatch(coordinationActions.selectArea(area)),
     selectWorkzone: (planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination) => dispatch(coordinationActions.selectWorkzone(dispatch, planningId, coordinationId, coordination, workzoneId, areaId, zoneId, action, years, currentCoordination)),
     saveWorkZoneColor: (color, workzoneId, currentWorkZones) => dispatch(coordinationActions.saveWorkZoneColor(dispatch, color, workzoneId, currentWorkZones)),
+    ...bindActionCreators({
+        fetchRequest,
+    }, dispatch),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(MacroplanningIntl);

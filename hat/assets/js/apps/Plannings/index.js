@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import { Route, Redirect, useRouterHistory } from 'react-router';
+import { Route, useRouterHistory } from 'react-router';
 import thunk from 'redux-thunk';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import { createHistory } from 'history';
@@ -25,17 +25,13 @@ import { currentUserReducer, currentUserInitialState } from '../../redux/current
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
 
 export default function microplanningApp(element, baseUrl) {
-    const currentYear = new Date().getFullYear();
-    const years = [1, 2, 3].map(i => currentYear - i);
-    const defaultPath = `/macro/years/${years.join(',')}`;
-    const defaultPathMicro = `/micro/years/${years.join(',')}`;
     const routes = [
         <Route
             path="list(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={Plannings}
         />,
         <Route
-            path="micro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
+            path="micro(/years/:years)(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"
             component={MicroplanningContainerPage}
         />,
         <Route
@@ -43,12 +39,9 @@ export default function microplanningApp(element, baseUrl) {
             component={RoutesPage}
         />,
         <Route
-            path="macro/years/:years(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
+            path="macro(/years/:years)(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/as_id/:as_id)"
             component={MacroplanningPage}
         />,
-        <Redirect path="/macro" to={defaultPath} />,
-        <Redirect path="/micro" to={defaultPathMicro} />,
-        <Redirect path="/routes" to={defaultPath} />,
     ];
 
     let history = useRouterHistory(createHistory)({

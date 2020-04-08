@@ -60,8 +60,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         return form_version.form.name
 
     def get_descriptor(self, form_version):
-        json_survey = parsing.to_json_dict(form_version)
-        return json_survey
+        return form_version.get_or_save_form_descriptor()
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]

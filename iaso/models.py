@@ -11,6 +11,8 @@ from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
 from django.db.models import Q, Count
 
+from iaso.odk import parsing
+
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -651,16 +653,29 @@ class FormVersion(models.Model):
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
     )
+    # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
     xls_file = models.FileField(
         upload_to=_form_version_upload_to, null=True, blank=True
     )
+    form_descriptor = JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+
+    def get_or_save_form_descriptor(self):
+        if self.form_descriptor:
+            json_survey = self.form_descriptor
+        elif self.xls_file:
+            json_survey = parsing.to_json_dict(self)
+            self.form_descriptor = json_survey
+            self.save()
+        else:
+            json_survey = {}
+        return json_survey
 
     def as_dict(self):
         return {

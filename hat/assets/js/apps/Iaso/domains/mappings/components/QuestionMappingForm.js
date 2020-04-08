@@ -93,6 +93,7 @@ const QuestionMappingForm = ({
       <br />
       <h3>Change the mapping to existing one :</h3>
       <Dhis2SearchComponent
+        key={question.name}
         resourceName="dataElements"
         dataSourceId={mapping.mapping.data_source.id}
         defaultValue={Object.keys(questionMapping).length == 0 ? question.name : undefined}

@@ -121,6 +121,7 @@ class MappingDetails extends Component {
                     <QuestionInfos question={currentQuestion}></QuestionInfos>
                     <br />
                     <QuestionMappingForm
+                      key={currentQuestion.name}
                       mapping={currentMappingVersion}
                       question={currentQuestion}
                       mappingVersion={currentMappingVersion}

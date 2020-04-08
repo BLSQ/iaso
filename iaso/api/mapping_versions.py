@@ -2,6 +2,11 @@ import typing
 from django.db import transaction
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ObjectDoesNotExist
+from django.db.models.functions import Concat
+from django.db.models import Value, Count
+from django.db.models import BooleanField
+from django.db.models.expressions import Case, When
+
 from rest_framework import serializers, permissions, parsers
 from rest_framework.authentication import BasicAuthentication
 import iaso.models as m
@@ -16,17 +21,31 @@ from .forms import HasFormPermission
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
     class Meta:
         model = MappingVersion
-        default_fields = ["id", "form_version", "mapping", "created_at", "updated_at"]
+        default_fields = [
+            "id",
+            "form_version",
+            "mapping",
+            "mapped_questions",
+            "created_at",
+            "updated_at",
+        ]
         fields = [
             "id",
             "form_version",
             "mapping",
             "dataset",
             "question_mappings",
+            "mapped_questions",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "form_version", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "form_version",
+            "mapped_questions",
+            "created_at",
+            "updated_at",
+        ]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -34,6 +53,10 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
     form_version = serializers.SerializerMethodField()
     mapping = serializers.SerializerMethodField()
     dataset = serializers.SerializerMethodField()
+    mapped_questions = serializers.SerializerMethodField()
+
+    def get_mapped_questions(self, mapping_version):
+        return len(mapping_version.json.get("question_mappings", {}))
 
     def get_question_mappings(self, mapping_version):
         return mapping_version.json.get("question_mappings", {})
@@ -49,7 +72,11 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         v = mapping_version.form_version
         return {
             "id": v.id,
-            "form": {"id": v.form.id, "name": v.form.name},
+            "form": {
+                "id": v.form.id,
+                "name": v.form.name,
+                "periodType": v.form.period_type,
+            },
             "version_id": v.version_id,
         }
 
@@ -156,9 +183,15 @@ class MappingVersionsViewSet(ModelViewSet):
     http_method_names = ("get", "post", "patch")
 
     def get_queryset(self):
+        orders = self.request.GET.get("order", "form_version__full_name").split(",")
+
         profile = self.request.user.iaso_profile
-        return MappingVersion.objects.filter(
+        queryset = MappingVersion.objects.filter(
             form_version_id__in=FormVersion.objects.filter(
                 form__projects__account=profile.account
             )
         )
+
+        queryset = queryset.order_by(*orders)
+
+        return queryset

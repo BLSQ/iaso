@@ -162,7 +162,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
-        <Redirect path="/settings/mappings" to="/settings/mappings/order/updated_at/pageSize/20/page/1" />,
+        <Redirect path="/settings/mappings" to="/settings/mappings/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1" />,
     ];
 
     let history = useRouterHistory(createHistory)({

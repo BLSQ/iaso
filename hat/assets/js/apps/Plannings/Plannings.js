@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
-import moment from 'moment';
 
 import LoadingSpinner from '../../components/loading-spinner';
 import CustomTableComponent from '../../components/CustomTableComponent';
@@ -11,6 +10,8 @@ import { createUrl } from '../../utils/fetchData';
 import PlanningModaleComponent from '../Management/components/PlanningModaleComponent';
 import DeleteModaleComponent from '../../components/DeleteModaleComponent';
 import { saveFull, deleteFull, saveDuplicatePlanning } from '../../utils/saveData';
+
+import { planningTableColumns } from './constants/planningTableColumns';
 
 const baseApiUrl = '/api/plannings/?with_template=True';
 
@@ -20,99 +21,7 @@ class Plannings extends React.Component {
         super(props);
         const { formatMessage } = props.intl;
         this.state = {
-            tableColumns: [
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Name',
-                        id: 'main.label.name',
-                    }),
-                    accessor: 'name',
-                    Cell: settings => (
-                        <span
-                            className={`${settings.original.is_template ? 'template' : ''}`}
-                        >
-                            <span>
-                                {`${settings.original.is_template ? `${formatMessage({
-                                    defaultMessage: 'Template',
-                                    id: 'main.label.template',
-                                })}: ` : ''}`}
-                                {settings.original.name}
-                            </span>
-                        </span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Year',
-                        id: 'main.label.year',
-                    }),
-                    accessor: 'year',
-                    Cell: settings => (
-                        <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{!settings.original.is_template ? settings.original.year : '--'}</span></span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Update date',
-                        id: 'main.label.updateDate',
-                    }),
-                    accessor: 'updated_at',
-                    Cell: settings => (
-                        <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{moment(settings.original.updated_at).format('YYYY-MM-DD HH:mm')}</span></span>
-                    ),
-                },
-                {
-                    Header: formatMessage({
-                        defaultMessage: 'Actions',
-                        id: 'main.label.actions',
-                    }),
-                    sortable: false,
-                    resizable: false,
-                    Cell: settings => (
-                        <section className={`${settings.original.is_template ? 'template' : ''}`}>
-                            <span>
-                                <button
-                                    className="button--edit--tiny margin-right"
-                                    onClick={() => this.editPlanning(settings.original, true)}
-                                >
-                                    <i className="fa fa-files-o" />
-                                    <FormattedMessage id="main.label.duplicate" defaultMessage="Copy" />
-                                </button>
-                                {
-                                    (!settings.original.is_template
-                                    || (settings.original.is_template && this.state.canMakeTemplate))
-                                    && (
-                                        <span>
-                                            <button
-                                                className="button--edit--tiny margin-right"
-                                                onClick={() => this.editPlanning(settings.original)}
-                                            >
-                                                <i className="fa fa-pencil-square-o" />
-                                                <FormattedMessage id="main.label.edit" defaultMessage="Edit" />
-                                            </button>
-                                        </span>
-                                    )
-                                }
-                                {
-                                    (!settings.original.is_template
-                                    || (settings.original.is_template && this.state.canMakeTemplate))
-                                    && (
-                                        <span>
-                                            <button
-                                                className="button--delete--tiny"
-                                                onClick={() => this.showDelete(settings.original)}
-                                            >
-                                                <i className="fa fa-trash" />
-                                                <FormattedMessage id="main.label.delete" defaultMessage="Delete" />
-                                            </button>
-                                        </span>
-                                    )
-                                }
-                            </span>
-                        </section>
-                    ),
-                },
-            ],
+            tableColumns: planningTableColumns(formatMessage, this),
             tableUrl: baseApiUrl,
             showEditModale: false,
             showDeleteModale: false,
@@ -197,6 +106,7 @@ class Plannings extends React.Component {
             planning_to_copy: newPlanning.id,
             name: newPlanning.name,
             year: newPlanning.year,
+            years_coverage: newPlanning.years_coverage,
         };
         this.setState({
             isUpdating: true,

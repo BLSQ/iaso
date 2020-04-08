@@ -57,9 +57,9 @@ class PlanningViewSet(viewsets.ViewSet):
         queryset = Planning.objects.all()
         if not with_template :
             queryset = queryset.filter(is_template=False)
-            return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template').order_by(*orders))
+            return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders))
         else :
-            res = {"datas": queryset.values('name', 'id', 'year', 'updated_at', 'is_template').order_by(*orders)}
+            res = {"datas": queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders)}
             if request.user.has_perm('menupermissions.x_management_plannings_template'):
                 res['can_make_template'] = True
             else :
@@ -117,6 +117,7 @@ class PlanningViewSet(viewsets.ViewSet):
 
         planning.is_template = is_template
 
+        planning.years_coverage = request.data.get('years_coverage', None)
         if is_template and not request.user.has_perm('menupermissions.x_management_plannings_template'):
             return Response('Unauthorized', status=401)
         else:

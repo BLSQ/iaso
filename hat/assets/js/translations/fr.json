@@ -685,6 +685,8 @@
     "main.label.zoneSelect": "Sélectionner une zone de santé",
     "main.label.zoneUpdated": "Zone de santé sauvegardée",
     "main.management.planning.duplicate": "Copie du planning",
+    "main.management.planning.yearOfApplication": "Année d'application",
+    "main.management.planning.yearsCoverage": "Années couvertes",
     "main.screening.result": "Résultat test dépistage",
     "main.snackBar.error": "Une erreur est survenue",
     "main.snackBar.errors.getVillageDetail": "Une erreur est survenue en cherchant le detail d'un village",

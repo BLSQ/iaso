@@ -1,8 +1,10 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
+import Select from 'react-select';
 import ReactModal from 'react-modal';
 import CheckBox from '../../../components/CheckBoxComponent';
+import { getYears } from '../../../utils';
 
 class PlanningModale extends Component {
     constructor(props) {
@@ -43,6 +45,12 @@ class PlanningModale extends Component {
     }
 
     render() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        const possibleYears = getYears(10);
         return (
             <ReactModal
                 isOpen={this.state.showModale}
@@ -51,11 +59,15 @@ class PlanningModale extends Component {
             >
                 <section className="edit-modal">
                     {
-                        this.props.isDuplicate &&
-                        <div className="subtitle">
-                            <FormattedMessage id="main.management.planning.duplicate" defaultMessage="Copy of planning" />:
-                            {' '}{this.state.duplicateName}
-                        </div>
+                        this.props.isDuplicate
+                        && (
+                            <div className="subtitle">
+                                <FormattedMessage id="main.management.planning.duplicate" defaultMessage="Copy of planning" />
+:
+                                {' '}
+                                {this.state.duplicateName}
+                            </div>
+                        )
                     }
                     <div>
                         <label
@@ -65,7 +77,8 @@ class PlanningModale extends Component {
                             <FormattedMessage
                                 id="main.label.name"
                                 defaultMessage="Name"
-                            />:
+                            />
+:
                         </label>
                         <input
                             type="text"
@@ -79,12 +92,13 @@ class PlanningModale extends Component {
                     <div>
                         <label
                             htmlFor={`year-${this.state.planning.id}`}
-                            className="filter__container__select__label"
+                            className="filter__container__select__label line-height"
                         >
                             <FormattedMessage
-                                id="main.label.year"
-                                defaultMessage="Année"
-                            />:
+                                id="main.management.planning.yearOfApplication"
+                                defaultMessage="Year of application"
+                            />
+:
                         </label>
                         <input
                             disabled={this.state.planning.is_template && !this.props.isDuplicate}
@@ -96,12 +110,41 @@ class PlanningModale extends Component {
                             onChange={event => this.updatePlanningField('year', event.currentTarget.value)}
                         />
                     </div>
+                    <div>
+                        <label
+                            htmlFor={`year-coverage-${this.state.planning.id}`}
+                            className="filter__container__select__label line-height"
+                        >
+                            <FormattedMessage
+                                id="main.management.planning.yearsCoverage"
+                                defaultMessage="Years coverage"
+                            />
+:
+                        </label>
+                        <Select
+                            disabled={this.state.planning.is_template && !this.props.isDuplicate}
+                            multi
+                            className="resize-select"
+                            clearable={false}
+                            simpleValue
+                            autosize={false}
+                            name="years-coverage"
+                            id={`years-coverage-${this.state.planning.id}`}
+                            value={this.state.planning.years_coverage}
+                            placeholder={formatMessage({
+                                defaultMessage: 'Select years',
+                                id: 'microplanning.labels.years.select',
+                            })}
+                            options={possibleYears.map(year => ({ label: year, value: year }))}
+                            onChange={yearsList => this.updatePlanningField('years_coverage', yearsList.split(','))}
+                        />
+                    </div>
                     {
                         this.props.canMakeTemplate && !this.props.isDuplicate
                         && (
                             <div>
                                 <CheckBox
-                                    isChecked={this.state.planning.is_template ? 'checked' : ''}
+                                    isChecked={this.state.planning.is_template}
                                     keyValue="make-template"
                                     labelClassName="filter__container__select__label"
                                     labelObj={{
@@ -124,9 +167,9 @@ class PlanningModale extends Component {
                         </button>
                         <button
                             disabled={
-                                (this.state.planning.name === '' ||
-                                    this.state.planning.year === '' ||
-                                    (!this.state.isChanged && this.state.planning.id !== 0))
+                                (this.state.planning.name === ''
+                                    || this.state.planning.year === ''
+                                    || (!this.state.isChanged && this.state.planning.id !== 0))
                             }
                             className="button--save"
                             onClick={() => (this.props.isDuplicate ? this.props.duplicatePlanning(this.state.planning) : this.props.savePlanning(this.state.planning))}
@@ -157,6 +200,7 @@ PlanningModale.propTypes = {
     isUpdating: PropTypes.bool.isRequired,
     isDuplicate: PropTypes.bool.isRequired,
     canMakeTemplate: PropTypes.bool,
+    intl: PropTypes.object.isRequired,
 };
 
 export default injectIntl(PlanningModale);

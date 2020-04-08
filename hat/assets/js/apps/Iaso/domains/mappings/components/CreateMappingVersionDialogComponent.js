@@ -93,7 +93,7 @@ const CreateMappingVersionDialogComponent = ({
               }}
             >
               {mappingSources.map(source => {
-                return <MenuItem value={source.id}>{source.name}</MenuItem>;
+                return <MenuItem key={source.id} value={source.id}>{source.name}</MenuItem>;
               })}
             </TextField>
           </Grid>

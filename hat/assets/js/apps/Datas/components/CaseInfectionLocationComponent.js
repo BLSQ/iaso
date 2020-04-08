@@ -42,7 +42,7 @@ class CaseInfectionLocationComponent extends Component {
                 );
                 onChange(currentPatient.village_id);
             }
-            if (currentCase.infection_location_type === 'test' && currentCase.location && currentCase.location.normalized) {
+            if (currentCase.infection_location_type === 'test' && currentCase.location && currentCase.location.normalized && currentCase.location.normalized.as) {
                 selectProvince(
                     currentCase.location.normalized.as.province_id,
                     currentCase.location.normalized.as.zs_id,

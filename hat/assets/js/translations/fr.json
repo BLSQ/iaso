@@ -224,7 +224,7 @@
     "iaso.logs.noDifference": "Aucune différence entre les révisions",
     "iaso.logs.seeChanges": "Voir uniquement les changements",
     "iaso.logs.seeAll": "Voir tous les champs",
-    "iaso.matching.title": "Correspondances",
+    "iaso.matching.title": "Correspondances sources",
     "iaso.map.locationLimit": "Nombre max de résultats",
     "iaso.map.title.markerClustering": "Regroupement",
     "iaso.map.shape.edit": "Editer la forme",

@@ -51,14 +51,6 @@ const menuItems = [
         },
         key: 'orgunits',
         icon: props => <OrgUnitSvg {...props} />,
-    },
-    {
-        label: {
-            defaultMessage: 'Matching',
-            id: 'iaso.matching.title',
-        },
-        key: 'links',
-        icon: props => <Link {...props} />,
         subMenu: [
             {
                 label: {
@@ -70,44 +62,50 @@ const menuItems = [
             },
             {
                 label: {
-                    defaultMessage: 'Algorithms runs',
-                    id: 'iaso.label.algorithmsRuns',
+                    defaultMessage: 'Matching',
+                    id: 'iaso.matching.title',
                 },
-                key: 'runs',
-                icon: props => <CompareArrows {...props} />,
+                key: 'links',
+                icon: props => <Link {...props} />,
+                subMenu: [
+                    {
+                        label: {
+                            defaultMessage: 'List',
+                            id: 'iaso.label.list',
+                        },
+                        key: 'list',
+                        icon: props => <FormatListBulleted {...props} />,
+                    },
+                    {
+                        label: {
+                            defaultMessage: 'Algorithms runs',
+                            id: 'iaso.label.algorithmsRuns',
+                        },
+                        key: 'runs',
+                        icon: props => <CompareArrows {...props} />,
+                    },
+                ],
             },
         ],
     },
-    {
-        label: {
-            defaultMessage: 'Configuration',
-            id: 'iaso.label.config',
-        },
-        key: 'settings',
-        icon: props => <Settings {...props} />,
-        subMenu: [
-            {
-                label: {
-                    defaultMessage: 'DHIS mappings',
-                    id: 'iaso.label.dhis2Mappings',
-                },
-                key: 'mappings',
-                icon: props => <DHIS2Svg {...props} />,
-            },
-        ],
-    },
+    // {
+    //     label: {
+    //         defaultMessage: 'Configuration',
+    //         id: 'iaso.label.config',
+    //     },
+    //     key: 'settings',
+    //     icon: props => <Settings {...props} />,
+    //     subMenu: [
+    //         {
+    //             label: {
+    //                 defaultMessage: 'DHIS mappings',
+    //                 id: 'iaso.label.dhis2Mappings',
+    //             },
+    //             key: 'mappings',
+    //             icon: props => <DHIS2Svg {...props} />,
+    //         },
+    //     ],
+    // },
 ];
-if (window.location.href.indexOf('/completeness') !== -1) {
-    menuItems.push(
-        {
-            label: {
-                defaultMessage: 'Completeness',
-                id: 'iaso.completeness.title',
-            },
-            key: 'completeness',
-            icon: props => <DoneAll {...props} />,
-        },
-    );
-}
 
 export default menuItems;

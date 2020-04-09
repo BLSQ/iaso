@@ -9,6 +9,7 @@ import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getColumns } from '../config';
 import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
+import { instancesPath } from '../../../constants/paths';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -48,7 +49,7 @@ class CompletenessPeriodComponent extends Component {
     }
 
     onSelectCell(form, status, period) {
-        this.props.redirectTo('instances', {
+        this.props.redirectTo(instancesPath.baseUrl, {
             formId: form.id,
             periods: period.asPeriodType(form.period_type).periodString,
             status: status.toUpperCase(),

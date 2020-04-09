@@ -48,7 +48,9 @@ import LinksDetails from './components/LinksDetailsComponent';
 
 import commonStyles from '../../styles/common';
 
-const baseUrl = 'links/list';
+import { linksPath } from '../../constants/paths';
+
+const { baseUrl } = linksPath;
 
 const styles = theme => ({
     ...commonStyles(theme),

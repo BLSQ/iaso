@@ -22,6 +22,7 @@ import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import commonStyles from '../../styles/common';
+import { mappingDetailPath, mappingsPath } from '../../constants/paths';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -65,7 +66,7 @@ class MappingDetails extends Component {
 
         const onQuestionSelected = (node) => {
             setCurrentQuestion(node);
-            redirectToReplace('/settings/mapping', {
+            redirectToReplace(mappingDetailPath.baseUrl, {
                 mappingVersionId: currentMappingVersion.id,
                 questionName: node.name,
             });
@@ -113,7 +114,7 @@ class MappingDetails extends Component {
                         if (prevPathname || !currentMappingVersion) {
                             router.goBack();
                         } else {
-                            redirectToReplace('/settings/mappings', {});
+                            redirectToReplace(mappingsPath.baseUrl, {});
                         }
                     }}
                 />

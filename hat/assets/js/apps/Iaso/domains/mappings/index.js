@@ -22,7 +22,9 @@ import commonStyles from "../../styles/common";
 import customTableTranslations from "../../../../utils/constants/customTableTranslations";
 import CreateMappingVersionDialogComponent from "./components/CreateMappingVersionDialogComponent";
 
-const baseUrl = "settings/mappings";
+import { mappingsPath } from '../../constants/paths';
+
+const { baseUrl } = mappingsPath;
 
 const styles = (theme) => ({
   ...commonStyles(theme),
@@ -60,7 +62,7 @@ class Mappings extends Component {
 
   selectInstance(mappingversion) {
     const { redirectTo } = this.props;
-    redirectTo("settings/mapping", {
+    redirectTo("forms/mapping", {
       mappingVersionId: mappingversion.id,
     });
   }

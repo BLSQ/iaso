@@ -14,7 +14,7 @@ const paginationPathParams = [
 ];
 
 
-const getPath = (path) => {
+export const getPath = (path) => {
     let url = `/${path.baseUrl}`;
     path.params.forEach((p) => {
         if (p.isRequired) {
@@ -27,14 +27,14 @@ const getPath = (path) => {
 };
 
 
-export const formsPath = getPath({
+export const formsPath = {
     baseUrl: 'forms/list',
     params: [
         ...paginationPathParams,
     ],
-});
+};
 
-export const mappingsPath = getPath({
+export const mappingsPath = {
     baseUrl: 'forms/mappings',
     params: [
         ...paginationPathParams.map(p => ({
@@ -42,10 +42,10 @@ export const mappingsPath = getPath({
             isRequired: true,
         })),
     ],
-});
+};
 
-export const mappingDetailPath = getPath({
-    baseUrl: 'settings/mapping',
+export const mappingDetailPath = {
+    baseUrl: 'forms/mapping',
     params: [
         {
             isRequired: true,
@@ -56,10 +56,10 @@ export const mappingDetailPath = getPath({
             key: 'questionName',
         },
     ],
-});
+};
 
 
-export const instancesPath = getPath({
+export const instancesPath = {
     baseUrl: 'instances',
     params: [
         {
@@ -104,9 +104,9 @@ export const instancesPath = getPath({
             key: 'columns',
         },
     ],
-});
+};
 
-export const instanceDetailPath = getPath({
+export const instanceDetailPath = {
     baseUrl: 'instance',
     params: [
         {
@@ -114,10 +114,10 @@ export const instanceDetailPath = getPath({
             key: 'instanceId',
         },
     ],
-});
+};
 
-export const orgUnitsPath = getPath({
-    baseUrl: 'orgunits',
+export const orgUnitsPath = {
+    baseUrl: 'orgunits/list',
     params: [
         {
             isRequired: true,
@@ -141,9 +141,9 @@ export const orgUnitsPath = getPath({
         },
         ...paginationPathParams,
     ],
-});
+};
 
-export const orgUnitsDetailsPath = getPath({
+export const orgUnitsDetailsPath = {
     baseUrl: 'orgunits/detail',
     params: [
         {
@@ -164,10 +164,10 @@ export const orgUnitsDetailsPath = getPath({
             key: 'tab',
         },
     ],
-});
+};
 
-export const linksPath = getPath({
-    baseUrl: 'links/list',
+export const linksPath = {
+    baseUrl: 'orgunits/links/list',
     params: [
         {
             isRequired: false,
@@ -219,11 +219,11 @@ export const linksPath = getPath({
             key: 'searchActive',
         },
     ],
-});
+};
 
 
-export const algosPath = getPath({
-    baseUrl: 'links/runs',
+export const algosPath = {
+    baseUrl: 'orgunits/links/runs',
     params: [
         {
             isRequired: false,
@@ -255,4 +255,4 @@ export const algosPath = getPath({
             key: 'searchActive',
         },
     ],
-});
+};

@@ -27,7 +27,9 @@ import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
-const baseUrl = 'forms';
+import { formsPath, instancesPath } from '../../constants/paths';
+
+const { baseUrl } = formsPath;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -85,7 +87,7 @@ class Forms extends Component {
         const newParams = {
             formId: form.id,
         };
-        redirectTo('instances', newParams);
+        redirectTo(instancesPath.baseUrl, newParams);
     }
 
     deleteForm(form) {

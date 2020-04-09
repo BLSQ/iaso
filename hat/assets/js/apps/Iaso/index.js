@@ -56,6 +56,7 @@ import {
     linksPath,
     algosPath,
     instanceDetailPath,
+    getPath,
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
@@ -68,7 +69,7 @@ export default function iasoApp(element, baseUrl) {
     console.log(formsPath);
     const routes = [
         <Route
-            path={formsPath}
+            path={getPath(formsPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -77,7 +78,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={mappingsPath}
+            path={getPath(mappingsPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -86,7 +87,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={mappingDetailPath}
+            path={getPath(mappingDetailPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -95,7 +96,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={instancesPath}
+            path={getPath(instancesPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -104,7 +105,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={instanceDetailPath}
+            path={getPath(instanceDetailPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -113,7 +114,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={orgUnitsPath}
+            path={getPath(orgUnitsPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -122,7 +123,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={orgUnitsDetailsPath}
+            path={getPath(orgUnitsDetailsPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -131,7 +132,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={linksPath}
+            path={getPath(linksPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -140,7 +141,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path={algosPath}
+            path={getPath(algosPath)}
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -159,9 +160,8 @@ export default function iasoApp(element, baseUrl) {
         />,
 
         <Redirect path="/" to={formsPath.baseUrl} />,
-        <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
-        <Redirect path="/links/list" to="/links/list" />,
-        <Redirect path="/settings/mappings" to="/settings/mappings/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1" />,
+        <Redirect path={orgUnitsPath.baseUrl} to={`${orgUnitsPath.baseUrl}/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
+        <Redirect path={mappingsPath.baseUrl} to={`${mappingsPath.baseUrl}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
     ];
 
     let history = useRouterHistory(createHistory)({

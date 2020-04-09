@@ -9,7 +9,7 @@ import Descriptor from '../descriptor';
 
 import { isMapped, isNeverMapped } from '../question_mappings';
 
-const useStyles = makeStyles({
+const useStyles = makeStyles(theme => ({
     root: {
         height: 110,
         flexGrow: 1,
@@ -21,9 +21,9 @@ const useStyles = makeStyles({
         color: 'green',
     },
     neverMapped: {
-        color: 'grey',
+        color: theme.palette.gray.main,
     },
-});
+}));
 
 const RecursiveTreeView = (props) => {
     const classes = useStyles();

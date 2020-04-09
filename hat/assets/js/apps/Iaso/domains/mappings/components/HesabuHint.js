@@ -97,7 +97,7 @@ function fetcthDataElementUsedBy(projectDescriptor) {
 }
 
 const HesabuHint = ({ mapping, hesabuDescriptor }) => {
-    if (mapping === undefined || hesabuDescriptor.length === 0) {
+    if (mapping === undefined || hesabuDescriptor === null || hesabuDescriptor.length === 0) {
         return null;
     }
     const usedBy = fetcthDataElementUsedBy(hesabuDescriptor[0]).filter(

@@ -316,7 +316,7 @@ class Command(BaseCommand):
     the transaction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
     """
 
-    @transaction.atomic
+#    @transaction.atomic
     def handle(self, *args, **options):
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger

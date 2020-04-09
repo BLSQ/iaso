@@ -20,10 +20,10 @@ class Descriptor {
         let questions = [];
         if (node.type === 'survey') {
             const childrenNames = node.children.map(c => c.name);
-            questions = Object.values(indexedQuestions).filter(q => childrenNames.includes(q.parent_name));
+            questions = Object.values(indexedQuestions).filter(q => childrenNames.includes(q.parentName));
         } else {
             questions = Object.values(indexedQuestions).filter(
-                q => q.parent_name === node.name,
+                q => q.parentName === node.name,
             );
         }
 
@@ -33,7 +33,7 @@ class Descriptor {
         return [mappedQuestions.length, questions.length];
     }
 
-    getHumanLabel(node, language = 'French') {
+    static getHumanLabel(node, language = 'French') {
         if (node === undefined) {
             return undefined;
         }
@@ -42,26 +42,24 @@ class Descriptor {
         );
     }
 
-    recursiveIndex(node, acc) {
+    static recursiveIndex(node, acc) {
         acc[node.name] = node;
         if (this.hasChildren(node)) {
             node.children.forEach((child) => {
-                const newChild = {
-                    ...child,
-                    parent_name: node.name,
-                };
-                this.recursiveIndex(newChild, acc);
+                const val = child;
+                val.parentName = node.name;
+                this.recursiveIndex(child, acc);
             });
         }
     }
 
-    indexQuestions(descriptor) {
+    static indexQuestions(descriptor) {
         const acc = {};
-        if (descriptor && descriptor.chldren) {
+        if (descriptor && descriptor.children) {
             descriptor.children.forEach(child => this.recursiveIndex(child, acc));
         }
         return acc;
     }
 }
 
-export default new Descriptor();
+export default Descriptor;

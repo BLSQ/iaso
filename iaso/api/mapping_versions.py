@@ -163,18 +163,18 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         # partial update only question mappings
-        for question_name, dataelement in validated_data["question_mappings"].items():
+        for question_name, data_element in validated_data["question_mappings"].items():
             path = "question_mappings." + question_name
-            if dataelement and dataelement.get("type") != "multiple":
-                if dataelement.get("id") == None:
+            if data_element and data_element.get("type") != "multiple":
+                if data_element.get("id") is None:
                     raise serializers.ValidationError(
                         {path: "should have a least an data element id"}
                     )
 
-                if dataelement.get("valueType") == None:
+                if data_element.get("valueType") is None:
                     raise serializers.ValidationError({path: "should have a valueType"})
 
-            instance.json["question_mappings"][question_name] = dataelement
+            instance.json["question_mappings"][question_name] = data_element
 
         instance.save()
         return instance

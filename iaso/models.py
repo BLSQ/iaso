@@ -714,7 +714,7 @@ class Mapping(models.Model):
 
 
 class MappingVersion(models.Model):
-    QUESTION_MAPPING_NEVER_MAPPED = "nevermapped"
+    QUESTION_MAPPING_NEVER_MAPPED = "neverMapped"
     QUESTION_MAPPING_MULTIPLE = "multiple"
 
     form_version = models.ForeignKey(

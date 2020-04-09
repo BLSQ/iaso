@@ -29,8 +29,8 @@ const RecursiveTreeView = (props) => {
     const classes = useStyles();
     const { formVersion, mappingVersion, onQuestionSelected } = props;
 
-    const descriptor = formVersion.descriptor;
-    const indexedQuestions = Descriptor.indexQuestions(formVersion.descriptor);
+    const { descriptor } = formVersion;
+    const indexedQuestions = Descriptor.indexQuestions(descriptor);
 
     const onNodeSelected = (event, value) => {
         const val = indexedQuestions[value];
@@ -71,7 +71,7 @@ const RecursiveTreeView = (props) => {
 
                 className={className}
             >
-                {Descriptor.hasChildren(node) ? node.children.map(node => renderTree(node)) : null}
+                {Descriptor.hasChildren(node) ? node.children.map(n => renderTree(n)) : null}
             </TreeItem>
         );
     };

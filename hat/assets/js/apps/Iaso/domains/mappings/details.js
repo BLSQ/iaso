@@ -1,10 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 
-import { withStyles } from '@material-ui/core';
-import { Grid, Box } from '@material-ui/core';
+import { Grid, Box, withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 
 import {
@@ -58,7 +56,6 @@ class MappingDetails extends Component {
             hesabuDescriptor,
             setCurrentQuestion,
             applyPartialUpdate,
-            intl: { formatMessage },
             router,
             prevPathname,
             redirectToReplace,
@@ -80,7 +77,7 @@ class MappingDetails extends Component {
             );
         };
 
-        const onUnmapQuestionMapping = (questionMapping) => {
+        const onUnmapQuestionMapping = () => {
             applyPartialUpdate(
                 currentMappingVersion.id,
                 currentQuestion.name,
@@ -88,7 +85,7 @@ class MappingDetails extends Component {
             );
         };
 
-        const onNeverMapQuestionMapping = (questionMapping) => {
+        const onNeverMapQuestionMapping = () => {
             applyPartialUpdate(
                 currentMappingVersion.id,
                 currentQuestion.name,
@@ -158,12 +155,14 @@ class MappingDetails extends Component {
 }
 MappingDetails.defaultProps = {
     prevPathname: null,
-    currentInstance: null,
+    currentQuestion: null,
+    currentMappingVersion: null,
+    currentFormVersion: null,
+    hesabuDescriptor: null,
 };
 
 MappingDetails.propTypes = {
     classes: PropTypes.object.isRequired,
-    intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetching: PropTypes.bool.isRequired,
     router: PropTypes.object.isRequired,
@@ -174,6 +173,9 @@ MappingDetails.propTypes = {
     fetchMappingVersionDetail: PropTypes.func.isRequired,
     setCurrentMappingVersion: PropTypes.func.isRequired,
     applyPartialUpdate: PropTypes.func.isRequired,
+    setCurrentQuestion: PropTypes.func.isRequired,
+    currentQuestion: PropTypes.object,
+    hesabuDescriptor: PropTypes.any,
 };
 
 const MapStateToProps = state => ({
@@ -199,5 +201,5 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(MappingDetails)),
+    connect(MapStateToProps, MapDispatchToProps)(MappingDetails),
 );

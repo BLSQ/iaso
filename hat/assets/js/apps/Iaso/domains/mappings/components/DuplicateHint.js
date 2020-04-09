@@ -4,16 +4,16 @@ import Alert from '@material-ui/lab/Alert';
 import { isNeverMapped } from '../question_mappings';
 
 export const DuplicateHint = ({ mapping, mappingVersion }) => {
-    if (isNeverMapped(mapping) || Object.keys(mapping).length == 0) {
+    if (isNeverMapped(mapping) || Object.keys(mapping).length === 0) {
         return null;
     }
     const duplicates = [];
-    Object.keys(mappingVersion.question_mappings).forEach((question_name) => {
-        const qmap = mappingVersion.question_mappings[question_name];
+    Object.keys(mappingVersion.question_mappings).forEach((questionName) => {
+        const qmap = mappingVersion.question_mappings[questionName];
         if (qmap) {
-            if (mapping.id == qmap.id
-                && mapping.categoryOptionCombo == qmap.categoryOptionCombo) {
-                duplicates.push(question_name);
+            if (mapping.id === qmap.id
+                && mapping.categoryOptionCombo === qmap.categoryOptionCombo) {
+                duplicates.push(questionName);
             }
         }
     });

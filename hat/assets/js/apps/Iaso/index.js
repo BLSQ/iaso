@@ -4,7 +4,6 @@ import { Route, Redirect, useRouterHistory } from 'react-router';
 import { syncHistoryWithStore, routerMiddleware } from 'react-router-redux';
 import thunk from 'redux-thunk';
 import { createHistory } from 'history';
-import moment from 'moment';
 
 
 import { MuiThemeProvider } from '@material-ui/core/styles';
@@ -44,7 +43,7 @@ import Completeness from './domains/completeness';
 import Instances from './domains/instances';
 import InstanceDetail from './domains/instances/details';
 import Mappings from './domains/mappings';
-import MappingDetails from './domains/mappings/details'
+import MappingDetails from './domains/mappings/details';
 
 import {
     formsPath,
@@ -64,9 +63,6 @@ import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - 
 
 
 export default function iasoApp(element, baseUrl) {
-    const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
-    const dateTo = moment().format('YYYY-MM-DD');
-    console.log(formsPath);
     const routes = [
         <Route
             path={getPath(formsPath)}

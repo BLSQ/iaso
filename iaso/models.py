@@ -714,6 +714,9 @@ class Mapping(models.Model):
 
 
 class MappingVersion(models.Model):
+    QUESTION_MAPPING_NEVER_MAPPED = "neverMapped"
+    QUESTION_MAPPING_MULTIPLE = "multiple"
+
     form_version = models.ForeignKey(
         FormVersion, on_delete=models.CASCADE, related_name="mapping_versions"
     )

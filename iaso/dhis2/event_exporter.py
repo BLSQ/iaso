@@ -3,6 +3,7 @@ from dhis2 import RequestException
 from .value_formatter import format_value
 import json
 from requests.structures import CaseInsensitiveDict
+from iaso.models import MappingVersion
 
 
 def uniquify(seq, idfun=None):
@@ -77,10 +78,15 @@ def map_to_event(instance, form_mapping):
         if question_key in question_mappings:
             try:
                 data_element = question_mappings[question_key]
+                if (
+                    data_element.get("type")
+                    == MappingVersion.QUESTION_MAPPING_NEVER_MAPPED
+                ):
+                    continue
                 data_element["question_key"] = question_key
                 raw_value = instance.json[question_key]
 
-                if data_element.get("type") == "multiple":
+                if data_element.get("type") == MappingVersion.QUESTION_MAPPING_MULTIPLE:
                     raw_values = raw_value.split(" ")
 
                     for value in data_element["values"]:

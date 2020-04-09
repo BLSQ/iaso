@@ -165,8 +165,16 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         # partial update only question mappings
         for question_name, data_element in validated_data["question_mappings"].items():
             path = "question_mappings." + question_name
-            if data_element and data_element.get("type") != "multiple":
-                if data_element.get("id") is None:
+
+            if data_element and data_element.get("action") == "unmap":
+                instance.json["question_mappings"].pop(question_name, None)
+                continue
+
+            if data_element and data_element.get("type") not in (
+                MappingVersion.QUESTION_MAPPING_MULTIPLE,
+                MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
+            ):
+                if data_element.get("id") == None:
                     raise serializers.ValidationError(
                         {path: "should have a least an data element id"}
                     )
@@ -177,6 +185,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             instance.json["question_mappings"][question_name] = data_element
 
         instance.save()
+
         return instance
 
 

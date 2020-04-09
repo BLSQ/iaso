@@ -6,35 +6,7 @@ import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
 
 import { isMapped, isNeverMapped } from '../question_mappings';
-
-const DuplicateHint = ({ mapping, mappingVersion }) => {
-    if (mapping == undefined || isNeverMapped(mapping) || Object.keys(mapping).length == 0) {
-        return <></>;
-    }
-    const duplicates = [];
-    Object.keys(mappingVersion.question_mappings).forEach((question_name) => {
-        const qmap = mappingVersion.question_mappings[question_name];
-        if (qmap) {
-            if (
-                mapping.id == qmap.id
-        && mapping.categoryOptionCombo == qmap.categoryOptionCombo
-
-            ) {
-                duplicates.push(question_name);
-            }
-        }
-    });
-    if (duplicates.length <= 1) {
-        return <></>;
-    }
-    return (
-        <Alert severity="error">
-      Duplicate mapping ! will be used in both
-            {' '}
-            {duplicates.join(' , ')}
-        </Alert>
-    );
-};
+import { DuplicateHint } from './DuplicateHint';
 
 const QuestionMappingForm = ({
     mapping,
@@ -85,23 +57,27 @@ const QuestionMappingForm = ({
                 <ObjectDumper object={questionMapping} />
             </>
             )}
-            <DuplicateHint
-                mapping={questionMapping}
-                mappingVersion={mappingVersion}
-            />
-            <HesabuHint
-                mapping={questionMapping}
-                hesabuDescriptor={hesabuDescriptor}
-            />
-            <br />
+
             {isMapped(questionMapping) && (
-                <button
-                    className="button"
-                    onClick={() => onUnmapQuestionMapping(questionMapping)}
-                >
+                <>
+                    <DuplicateHint
+                        mapping={questionMapping}
+                        mappingVersion={mappingVersion}
+                    />
+                    <HesabuHint
+                        mapping={questionMapping}
+                        hesabuDescriptor={hesabuDescriptor}
+                    />
+                    <br />
+                    <button
+                        className="button"
+                        onClick={() => onUnmapQuestionMapping(questionMapping)}
+                    >
           Remove mapping
-                </button>
-            )}
+                    </button>
+                </>
+            )
+            }
             {!isMapped(questionMapping) && !isNeverMapped(questionMapping) && (
                 <button
                     className="button"
@@ -141,31 +117,32 @@ const QuestionMappingForm = ({
                 <h3>Proposed new one :</h3>
                 <br />
                 <ObjectDumper object={newQuestionMapping} />
+                <HesabuHint
+                    mapping={newQuestionMapping}
+                    hesabuDescriptor={hesabuDescriptor}
+                />
+                <DuplicateHint
+                    mapping={newQuestionMapping}
+                    mappingVersion={mappingVersion}
+                />
+                <br />
+                <button
+                    className="button"
+                    disabled={!newQuestionMapping}
+                    onClick={() => onConfirmedQuestionMapping(newQuestionMapping)}
+                >
+        Confirm
+                </button>
             </>
             )}
 
-            <HesabuHint
-                mapping={newQuestionMapping}
-                hesabuDescriptor={hesabuDescriptor}
-            />
-            <DuplicateHint
-                mapping={newQuestionMapping}
-                mappingVersion={mappingVersion}
-            />
-            <br />
-            <button
-                className="button"
-                disabled={!newQuestionMapping}
-                onClick={() => onConfirmedQuestionMapping(newQuestionMapping)}
-            >
-        Confirm
-            </button>
+
         </>
     );
 };
 
 QuestionMappingForm.defaultProps = {
-    hesabuDescriptor: undefined,
+    hesabuDescriptor: [],
 };
 
 QuestionMappingForm.propTypes = {

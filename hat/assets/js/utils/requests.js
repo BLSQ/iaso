@@ -95,8 +95,9 @@ export const fetchMutliRequests = requestsList => (dispatch) => {
         );
     });
     dispatch(loadActions.startLoading());
-    return Promise.all(promisesArray).then(() => {
+    return Promise.all(promisesArray).then((res) => {
         dispatch(loadActions.successLoadingNoData());
+        return res;
     });
 };
 

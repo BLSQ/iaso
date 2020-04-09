@@ -35,7 +35,7 @@ django-webpack-loader==0.6.0
 # importing tools
 jsonschema==2.6.0
 simpledbf==0.2.6
-xlrd==1.0.0
+
 
 # exporting tools
 xlsxwriter==1.1.5
@@ -71,3 +71,5 @@ pre-commit==1.14.4
 jupyter==1.0.0
 ipython==6.2.1
 django-extensions==2.2.5
+lxml==4.5.0
+xlrd==1.2.0

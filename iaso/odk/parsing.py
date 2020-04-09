@@ -40,6 +40,23 @@ def to_json_dict(form_version):
     return None
 
 
+def visit(node, questions_by_name):
+    parent = node["type"] == "survey" or node["type"] == "group"
+    if parent:
+        for child in node["children"]:
+            visit(child, questions_by_name)
+    else:
+        questions_by_name[node["name"]] = node
+
+
+def to_questions_by_name(form_descriptor):
+    questions_by_name = {}
+    if not form_descriptor or len(form_descriptor) == 0:
+        return questions_by_name
+    visit(form_descriptor, questions_by_name)
+    return questions_by_name
+
+
 def parse_xls_form(
     xls_file: typing.BinaryIO, *, previous_version: str = None
 ) -> XMLForm:

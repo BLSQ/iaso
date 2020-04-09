@@ -42,7 +42,8 @@ def build_form_mapping():
     return {
         "data_set_id": "DATASET_DHIS2_ID",
         "question_mappings": {
-            "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"}
+            "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"},
+            "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
         },
     }
 
@@ -51,7 +52,8 @@ def build_form_mapping_quality():
     return {
         "data_set_id": "DATASET_QUALITY_DHIS2_ID",
         "question_mappings": {
-            "question1_quality": {"id": "DE_QUALITY_DHIS2_ID", "valueType": "NUMBER"}
+            "question1_quality": {"id": "DE_QUALITY_DHIS2_ID", "valueType": "NUMBER"},
+            "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
         },
     }
 

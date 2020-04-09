@@ -13,22 +13,22 @@ import IasoSearchComponent from "./IasoSearchComponent";
 import Dhis2Search from "./Dhis2SearchComponent";
 import {
   createMappingRequest as createMappingRequestAction,
-  fetchSources as fetchSourcesAction
+  fetchSources as fetchSourcesAction,
 } from "../actions";
 
-const mappingTypeOptions = ["AGGREGATE", "EVENT"].map(mappingType => ({
+const mappingTypeOptions = ["AGGREGATE", "EVENT"].map((mappingType) => ({
   value: mappingType,
   label: {
     id: `iaso.label.mappingType.${mappingType.toLowerCase()}`,
-    defaultMessage: mappingType.toLowerCase()
-  }
+    defaultMessage: mappingType.toLowerCase(),
+  },
 }));
 
 const CreateMappingVersionDialogComponent = ({
   createMappingRequest,
   fetchSources,
   mappingSources,
-  intl
+  intl,
 }) => {
   const [mappingType, setMappingType] = React.useState("AGGREGATE");
   const [source, setSource] = React.useState(0);
@@ -39,13 +39,13 @@ const CreateMappingVersionDialogComponent = ({
     fetchSources();
   }, []);
 
-  const onConfirm = closeDialog => {
+  const onConfirm = (closeDialog) => {
     const payload = {
       form_version: { id: formVersion },
       mapping: { type: mappingType, datasource: { id: source } },
-      dataset: dataset
+      dataset: dataset,
     };
-    createMappingRequest(payload).then(complete => {
+    createMappingRequest(payload).then((complete) => {
       closeDialog();
     });
   };
@@ -60,7 +60,7 @@ const CreateMappingVersionDialogComponent = ({
       )}
       titleMessage={{
         id: "iaso.mappings.create",
-        defaultMessage: "Create Mapping"
+        defaultMessage: "Create Mapping",
       }}
       onConfirm={onConfirm}
       confirmMessage={{ id: "iaso.label.add", defaultMessage: "Add" }}
@@ -77,7 +77,7 @@ const CreateMappingVersionDialogComponent = ({
           options={mappingTypeOptions}
           label={{
             id: "iaso.mapping.mappingType",
-            defaultMessage: "Mapping type"
+            defaultMessage: "Mapping type",
           }}
         />
         {mappingSources && (
@@ -88,12 +88,16 @@ const CreateMappingVersionDialogComponent = ({
               fullWidth
               label="Source"
               variant="outlined"
-              onChange={event => {
+              onChange={(event) => {
                 setSource(event.target.value);
               }}
             >
-              {mappingSources.map(source => {
-                return <MenuItem value={source.id}>{source.name}</MenuItem>;
+              {mappingSources.map((source) => {
+                return (
+                  <MenuItem key={source.id} value={source.id}>
+                    {source.name}
+                  </MenuItem>
+                );
               })}
             </TextField>
           </Grid>
@@ -103,11 +107,16 @@ const CreateMappingVersionDialogComponent = ({
             resourceName="formversions"
             collectionName="form_versions"
             label="Form version"
-            mapOptions={options => {
-              return options.map(o => {
+            fields="id,form_name,version_id,mapped"
+            mapOptions={(options) => {
+              return options.map((o) => {
                 return {
-                  name: [o.form_name, o.version_id].join(" - "),
-                  id: o.id
+                  name: [
+                    o.form_name,
+                    o.version_id,
+                    o.mapped == true ? "at least a mapping" : "no mapping",
+                  ].join(" - "),
+                  id: o.id,
                 };
               });
             }}
@@ -122,9 +131,12 @@ const CreateMappingVersionDialogComponent = ({
             resourceName={mappingType == "AGGREGATE" ? "dataSets" : "programs"}
             fields={"id,name,periodType"}
             label={mappingType == "AGGREGATE" ? "dataSet" : "program"}
-            mapOptions={options => {
-              return options.map(o => {
-                return { name: o.name + " (" + o.periodType + ")", id: o.id };
+            mapOptions={(options) => {
+              return options.map((o) => {
+                return {
+                  name: o.name + " (" + o.periodType + " " + o.id + ")",
+                  id: o.id,
+                };
               });
             }}
             dataSourceId={source}
@@ -139,22 +151,22 @@ const CreateMappingVersionDialogComponent = ({
 };
 
 CreateMappingVersionDialogComponent.propTypes = {
-  createMappingRequest: PropTypes.func.isRequired
+  createMappingRequest: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
-  mappingSources: state.mappings.mappingSources
+const MapStateToProps = (state) => ({
+  mappingSources: state.mappings.mappingSources,
 });
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = (dispatch) => ({
   dispatch,
   ...bindActionCreators(
     {
       createMappingRequest: createMappingRequestAction,
-      fetchSources: fetchSourcesAction
+      fetchSources: fetchSourcesAction,
     },
     dispatch
-  )
+  ),
 });
 
 export default connect(

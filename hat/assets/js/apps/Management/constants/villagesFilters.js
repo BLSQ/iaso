@@ -233,6 +233,15 @@ const filtersSearch = (
             },
             type: 'select',
         },
+        {
+            name: 'includeMerged',
+            urlKey: 'includeMerged',
+            label: {
+                id: 'main.label.showMerged',
+                defaultMessage: 'Show merged villages',
+            },
+            type: 'checkbox',
+        },
     ]
 );
 

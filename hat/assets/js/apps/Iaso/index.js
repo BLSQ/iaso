@@ -65,7 +65,7 @@ import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - 
 export default function iasoApp(element, baseUrl) {
     const dateFrom = moment().startOf('year').format('YYYY-MM-DD');
     const dateTo = moment().format('YYYY-MM-DD');
-
+    console.log(formsPath);
     const routes = [
         <Route
             path={formsPath}
@@ -149,7 +149,7 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
         <Route
-            path="completeness"
+            path="/forms/completeness"
             component={props => (
                 <Fragment>
                     <SidebarMenu {...props} />
@@ -158,11 +158,10 @@ export default function iasoApp(element, baseUrl) {
             )}
         />,
 
-        <Redirect path="/" to="/forms" />,
-        <Redirect path="/instances" to={`/forms/date_from/${dateFrom}/date_to/${dateTo}`} />,
+        <Redirect path="/" to={formsPath.baseUrl} />,
         <Redirect path="/orgunits" to={`/orgunits/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path="/links/list" to="/links/list" />,
-        <Redirect path="/settings/mappings" to="/settings/mappings/order/updated_at/pageSize/20/page/1" />,
+        <Redirect path={mappingsPath.baseUrl} to={`${mappingsPath.baseUrl}/order/updated_at/pageSize/20/page/1`} />,
     ];
 
     let history = useRouterHistory(createHistory)({

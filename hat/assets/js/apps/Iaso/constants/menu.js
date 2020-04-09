@@ -17,6 +17,32 @@ const menuItems = [
         },
         key: 'forms',
         icon: props => <DataSourceIcon {...props} />,
+        subMenu: [
+            {
+                label: {
+                    defaultMessage: 'List',
+                    id: 'iaso.label.list',
+                },
+                key: 'list',
+                icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: {
+                    defaultMessage: 'DHIS mappings',
+                    id: 'iaso.label.dhis2Mappings',
+                },
+                key: 'mappings',
+                icon: props => <DHIS2Svg {...props} />,
+            },
+            {
+                label: {
+                    defaultMessage: 'Completeness',
+                    id: 'iaso.completeness.title',
+                },
+                key: 'completeness',
+                icon: props => <DoneAll {...props} />,
+            },
+        ],
     },
     {
         label: {

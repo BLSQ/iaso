@@ -28,14 +28,14 @@ const getPath = (path) => {
 
 
 export const formsPath = getPath({
-    baseUrl: 'forms',
+    baseUrl: 'forms/list',
     params: [
         ...paginationPathParams,
     ],
 });
 
 export const mappingsPath = getPath({
-    baseUrl: 'settings/mappings',
+    baseUrl: 'forms/mappings',
     params: [
         ...paginationPathParams.map(p => ({
             ...p,

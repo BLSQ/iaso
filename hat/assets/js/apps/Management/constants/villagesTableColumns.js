@@ -1,30 +1,12 @@
 import React from 'react';
 import { formatThousand } from '../../../utils';
 
-const MESSAGES = {
-    YES: {
-        defaultMessage: 'Officiel',
-        id: 'main.label.positive',
-    },
-    NO: {
-        defaultMessage: 'Non officiel',
-        id: 'main.label.NO',
-    },
-    OTHER: {
-        defaultMessage: 'Campagne',
-        id: 'main.label.OTHER',
-    },
-    NA: {
-        defaultMessage: 'Satellite',
-        id: 'main.label.NA',
-    },
-};
-
 const villagesTableColumns = (
     formatMessage,
     component,
-) => (
-    [
+    includeMerged,
+) => {
+    const columns = [
         {
             Header: formatMessage({
                 defaultMessage: 'Name',
@@ -103,7 +85,7 @@ const villagesTableColumns = (
             accessor: 'village_official',
             Cell: settings => (
                 <section>
-                    {settings.original.village_official !== '' ? settings.original.village_official : '' }
+                    {settings.original.village_official !== '' ? settings.original.village_official : '--' }
                 </section>
             ),
         },
@@ -116,10 +98,27 @@ const villagesTableColumns = (
             accessor: 'village_source',
             Cell: settings => (
                 <section>
-                    {settings.original.village_source !== '' ? settings.original.village_source : '' }
+                    {settings.original.village_source && settings.original.village_source !== '' ? settings.original.village_source : '--' }
                 </section>
             ),
         },
+    ];
+    if (includeMerged) {
+        columns.push({
+            Header: formatMessage({
+                defaultMessage: 'Merged into',
+                id: 'main.label.mergedInto',
+            }),
+            className: 'small',
+            accessor: 'merged_to__name',
+            Cell: settings => (
+                <span>
+                    {settings.original.merged_to__name ? `${settings.original.merged_to__name} - id: ${settings.original.merged_to}` : '--' }
+                </span>
+            ),
+        });
+    }
+    columns.push(
         {
             Header: formatMessage({
                 defaultMessage: 'Actions',
@@ -132,8 +131,7 @@ const villagesTableColumns = (
                 <section>
                     <button
                         className="button--edit--tiny  margin-right"
-                        onClick={() =>
-                            component.props.selectVillage(settings.original)}
+                        onClick={() => component.selectVillage(settings.original)}
                     >
                         <i className="fa fa-pencil-square-o" />
                         {
@@ -145,11 +143,10 @@ const villagesTableColumns = (
                     </button>
                     <button
                         className="button--delete--tiny"
-                        onClick={() =>
-                            component.setState({
-                                showDeleteModale: true,
-                                dataDeleted: settings.original,
-                            })}
+                        onClick={() => component.setState({
+                            showDeleteModale: true,
+                            dataDeleted: settings.original,
+                        })}
                     >
                         <i className="fa fa-trash" />
                         {
@@ -162,6 +159,7 @@ const villagesTableColumns = (
                 </section>
             ),
         },
-    ]
-);
+    );
+    return columns;
+};
 export default villagesTableColumns;

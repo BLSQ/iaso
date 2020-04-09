@@ -1,9 +1,17 @@
 import React from "react";
 import { displayDateFromTimestamp } from "../../utils/intlUtil";
-import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
-import MESSAGES from './messages';
+import ViewRowButtonComponent from "../../components/buttons/ViewRowButtonComponent";
+import MESSAGES from "./messages";
 
-const mappingsTableColumns = (formatMessage, component)  => [
+const safePercent = (a, b) => {
+  if (b == 0) {
+    return "-";
+  } else {
+    return (100 * (a / b)).toFixed(2);
+  }
+};
+
+const mappingsTableColumns = (formatMessage, component) => [
   {
     Header: formatMessage(MESSAGES.actions),
     accessor: "actions",
@@ -12,8 +20,9 @@ const mappingsTableColumns = (formatMessage, component)  => [
     width: 150,
     Cell: (settings) => (
       <section>
-        <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
-
+        <ViewRowButtonComponent
+          onClick={() => component.selectInstance(settings.original)}
+        />
       </section>
     ),
   },
@@ -23,6 +32,7 @@ const mappingsTableColumns = (formatMessage, component)  => [
       id: "iaso.label.name",
     }),
     accessor: "form_version__form__name",
+    style: { justifyContent: "left" },
     Cell: (settings) => <span>{settings.original.form_version.form.name}</span>,
   },
   {
@@ -35,6 +45,7 @@ const mappingsTableColumns = (formatMessage, component)  => [
       <span>{settings.original.form_version.version_id}</span>
     ),
   },
+
   {
     Header: formatMessage({
       defaultMessage: "Type",
@@ -46,11 +57,35 @@ const mappingsTableColumns = (formatMessage, component)  => [
   {
     Header: formatMessage({
       defaultMessage: "Mapped questions",
-      id: "iaso.label.mapped_questions",
+      id: "iaso.mappings.mapped_questions",
     }),
     accessor: "mapped_questions",
     Cell: (settings) => <span>{settings.original.mapped_questions}</span>,
   },
+  {
+    Header: formatMessage({
+      defaultMessage: "Total questions",
+      id: "iaso.mappings.total_questions",
+    }),
+    accessor: "total_questions",
+    Cell: (settings) => <span>{settings.original.total_questions}</span>,
+  },
+  {
+    Header: formatMessage({
+      defaultMessage: "Coverage",
+      id: "iaso.mappings.coverage",
+    }),
+    accessor: "coverage",
+    Cell: (settings) => (
+      <span>
+        {safePercent(
+          settings.original.mapped_questions,
+          settings.original.total_questions
+        )}
+      </span>
+    ),
+  },
+
   {
     Header: formatMessage({
       defaultMessage: "Updated at",

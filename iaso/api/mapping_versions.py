@@ -25,6 +25,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             "id",
             "form_version",
             "mapping",
+            "total_questions",
             "mapped_questions",
             "created_at",
             "updated_at",
@@ -35,6 +36,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             "mapping",
             "dataset",
             "question_mappings",
+            "total_questions",
             "mapped_questions",
             "created_at",
             "updated_at",
@@ -54,9 +56,15 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
     mapping = serializers.SerializerMethodField()
     dataset = serializers.SerializerMethodField()
     mapped_questions = serializers.SerializerMethodField()
+    total_questions = serializers.SerializerMethodField()
 
     def get_mapped_questions(self, mapping_version):
         return len(mapping_version.json.get("question_mappings", {}))
+
+    def get_total_questions(self, mapping_version):
+        descriptor = mapping_version.form_version.get_or_save_form_descriptor()
+        questions_by_name = parsing.to_questions_by_name(descriptor)
+        return len(questions_by_name)
 
     def get_question_mappings(self, mapping_version):
         return mapping_version.json.get("question_mappings", {})
@@ -155,20 +163,29 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
     def update(self, instance, validated_data):
         # partial update only question mappings
-        for question_name, dataelement in validated_data["question_mappings"].items():
+        for question_name, data_element in validated_data["question_mappings"].items():
             path = "question_mappings." + question_name
-            if dataelement and dataelement.get("type") != "multiple":
-                if dataelement.get("id") == None:
+
+            if data_element and data_element.get("action") == "unmap":
+                instance.json["question_mappings"].pop(question_name, None)
+                continue
+
+            if data_element and data_element.get("type") not in (
+                MappingVersion.QUESTION_MAPPING_MULTIPLE,
+                MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
+            ):
+                if data_element.get("id") == None:
                     raise serializers.ValidationError(
                         {path: "should have a least an data element id"}
                     )
 
-                if dataelement.get("valueType") == None:
+                if data_element.get("valueType") is None:
                     raise serializers.ValidationError({path: "should have a valueType"})
 
-            instance.json["question_mappings"][question_name] = dataelement
+            instance.json["question_mappings"][question_name] = data_element
 
         instance.save()
+
         return instance
 
 
@@ -183,7 +200,10 @@ class MappingVersionsViewSet(ModelViewSet):
     http_method_names = ("get", "post", "patch")
 
     def get_queryset(self):
-        orders = self.request.GET.get("order", "form_version__full_name").split(",")
+        orders = self.request.GET.get(
+            "order",
+            "form_version__form__name,form_version__version_id,mapping__mapping_type",
+        ).split(",")
 
         profile = self.request.user.iaso_profile
         queryset = MappingVersion.objects.filter(

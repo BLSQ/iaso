@@ -429,6 +429,8 @@ class VillageViewSet(viewsets.ViewSet):
                         "You can't merge a village into itself",
                         status=status.HTTP_400_BAD_REQUEST,
                     )
+
+                # TODO move this to a service
                 # Merging the village into another one.
                 # 1 This has several steps: update existing data to the new village
                 # 2 Update existing villages to merge into the new one
@@ -458,6 +460,21 @@ class VillageViewSet(viewsets.ViewSet):
                         assignation.village = merged_to
                         assignation.save()
                         assignations_updated += 1
+
+                # Update the PTR to the merged_to village
+                updated_pop_nb = village.populationdata_set.update(
+                    village_id=merged_to_id
+                )
+                if updated_pop_nb:
+                    latest_pop_data = merged_to.populationdata_set.order_by(
+                        "-report_date"
+                    ).first()
+                    if latest_pop_data:
+                        merged_to.population_source = latest_pop_data.source
+                        merged_to.population_year = latest_pop_data.population_year
+                        merged_to.population = latest_pop_data.population
+                        merged_to.save()
+
                 villages_updated = Village.objects.filter(merged_to=pk).update(
                     merged_to=merged_to
                 )

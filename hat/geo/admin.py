@@ -32,7 +32,7 @@ admin.site.register(AS, ASAdmin)
 class VillageAdmin(admin.ModelAdmin):
     list_filter = ('village_type', 'village_official', 'gps_source')
     search_fields = ('name',)
-    raw_id_fields = ('AS',)
+    raw_id_fields = ('AS', 'merged_to')
 
 
 admin.site.register(Village, VillageAdmin)

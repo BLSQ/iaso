@@ -423,6 +423,11 @@
 .edit-modal {
     width: 470px;
 
+    .resize-select {
+        width: calc(100% - 133px) !important;
+        margin-right: 25px !important;
+    }
+
     .location-container {
         width: 100%;
 

@@ -6,17 +6,22 @@ from django.db.models import Q
 from django.db.models.expressions import RawSQL
 from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, VILLAGE_API
-from hat.cases.models import RES_POSITIVE
+from hat.cases.models import RES_POSITIVE, Case
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
+from ..patient.models import Test, Patient
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -83,6 +88,7 @@ class VillageViewSet(viewsets.ViewSet):
         page_offset = request.GET.get("page", None)
         orders = request.GET.get("order", "name").split(",")
         include_unlocated = request.GET.get("include_unlocated", None)
+        include_merged = request.GET.get("include_merged", "False") == "True"
         unlocated = request.GET.get("unlocated", None)
         population = request.GET.get("population", None)
         is_erased = request.GET.get("is_erased", False)
@@ -162,6 +168,9 @@ class VillageViewSet(viewsets.ViewSet):
         if not include_unlocated:
             queryset = queryset.filter(latitude__isnull=False, longitude__isnull=False)
 
+        if not include_merged:
+            queryset = queryset.filter(merged_to__isnull=True)
+
         if population:
             if population == "populationOk":
                 queryset = queryset.filter(Q(population__gt=0))
@@ -237,6 +246,8 @@ class VillageViewSet(viewsets.ViewSet):
                     "village_source",
                     "gps_source",
                     "is_erased",
+                    "merged_to",
+                    "merged_to__name",
                 )
                 paginator = Paginator(queryset.values(*values), limit)
                 res = {"count": paginator.count}
@@ -350,6 +361,7 @@ class VillageViewSet(viewsets.ViewSet):
                 "population": village.population,
                 "population_year": village.population_year,
                 "population_source": village.population_source,
+                "merged_to": village.merged_to_id,
             }
             planning_id = request.GET.get("planning_id", None)
             if planning_id:
@@ -379,24 +391,106 @@ class VillageViewSet(viewsets.ViewSet):
         )
         if is_authorized:
             original_village = copy(village)
-            village.name = request.data.get("name", "")
-            village.population = request.data.get("population", 0)
-            village.population_source = request.data.get("population_source", "")
-            village.population_year = request.data.get("population_year", 0)
-            village.village_official = request.data.get("village_official", None)
-            village.latitude = request.data.get("latitude", 0)
-            village.longitude = request.data.get("longitude", 0)
-            village.is_erased = request.data.get("is_erased", False)
-            village.village_type = request.data.get("village_type", "")
-            village.village_source = request.data.get("village_source", None)
-            village.gps_source = request.data.get("gps_source", "")
-            village.aliases = request.data.get("aliases", "")
-            AS_id = request.data.get("AS_id", None)
+            if "name" in request.data:
+                village.name = request.data.get("name", "")
+            if "population" in request.data:
+                village.population = request.data.get("population", 0)
+            if "population_source" in request.data:
+                village.population_source = request.data.get("population_source", "")
+            if "population_year" in request.data:
+                village.population_year = request.data.get("population_year", 0)
+            if "village_official" in request.data:
+                village.village_official = request.data.get("village_official", None)
+            if "latitude" in request.data:
+                village.latitude = request.data.get("latitude", 0)
+            if "longitude" in request.data:
+                village.longitude = request.data.get("longitude", 0)
+            if "is_erased" in request.data:
+                village.is_erased = request.data.get("is_erased", False)
+            if "village_type" in request.data:
+                village.village_type = request.data.get("village_type", "")
+            if "village_source" in request.data:
+                village.village_source = request.data.get("village_source", None)
+            if "gps_source" in request.data:
+                village.gps_source = request.data.get("gps_source", "")
+            if "aliases" in request.data:
+                village.aliases = request.data.get("aliases", "")
+            if "AS_id" in request.data:
+                as_id = request.data.get("AS_id", None)
+                if as_id:
+                    new_as = get_object_or_404(AS, pk=as_id)
+                    village.AS = new_as
+            if "merged_to" in request.data:
+                merged_to_id = request.data.get("merged_to", None)
+                logger.info("Merging Village %s into %s", pk, merged_to_id)
+                merged_to = get_object_or_404(Village, pk=merged_to_id)
+                if merged_to.id == pk:
+                    return Response(
+                        "You can't merge a village into itself",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
 
-            if AS_id:
-                newAs = get_object_or_404(AS, pk=AS_id)
-                village.AS = newAs
+                # TODO move this to a service
+                # Merging the village into another one.
+                # 1 This has several steps: update existing data to the new village
+                # 2 Update existing villages to merge into the new one
+                # 3 Set the merged_to on this village
+                cases_updated = Case.objects.filter(normalized_village=pk).update(
+                    normalized_village=merged_to
+                )
+                tests_updated = Test.objects.filter(village=pk).update(
+                    village=merged_to
+                )
+                patients_updated = Patient.objects.filter(origin_village=pk).update(
+                    origin_village=merged_to
+                )
+                assignations_deleted = 0
+                assignations_updated = 0
+                for assignation in Assignation.objects.filter(village=pk):
+                    if (
+                        Assignation.objects.filter(planning=assignation.planning)
+                        .filter(team=assignation.team)
+                        .filter(village=merged_to)
+                        .filter(month=assignation.month)
+                        .exists()
+                    ):
+                        assignation.delete()
+                        assignations_deleted += 1
+                    else:
+                        assignation.village = merged_to
+                        assignation.save()
+                        assignations_updated += 1
 
+                # Update the PTR to the merged_to village
+                updated_pop_nb = village.populationdata_set.update(
+                    village_id=merged_to_id
+                )
+                if updated_pop_nb:
+                    latest_pop_data = merged_to.populationdata_set.order_by(
+                        "-report_date"
+                    ).first()
+                    if latest_pop_data:
+                        merged_to.population_source = latest_pop_data.source
+                        merged_to.population_year = latest_pop_data.population_year
+                        merged_to.population = latest_pop_data.population
+                        merged_to.save()
+
+                villages_updated = Village.objects.filter(merged_to=pk).update(
+                    merged_to=merged_to
+                )
+                village.merged_to = merged_to
+                logger.info(
+                    "Merged successfully %s into %s, updated cases %s, tests %s, patients %s, villages %s,"
+                    " assignations deleted %s, updated %s",
+                    pk,
+                    merged_to_id,
+                    cases_updated,
+                    tests_updated,
+                    patients_updated,
+                    villages_updated,
+                    assignations_deleted,
+                    assignations_updated,
+                )
             village.save()
             log_modification(original_village, village, VILLAGE_API, request.user)
             return Response(village.as_dict())

@@ -35,9 +35,9 @@ const baseUrl = 'villages';
 class ManagementVillages extends React.Component {
     constructor(props) {
         super(props);
-        const { formatMessage } = props.intl;
+        const { intl: { formatMessage }, params } = props;
         this.state = {
-            tableColumns: villagesTableColumns(formatMessage, this),
+            tableColumns: villagesTableColumns(formatMessage, this, params.includeMerged),
             showEditModale: false,
             showDeleteModale: false,
             dataDeleted: undefined,
@@ -97,8 +97,10 @@ class ManagementVillages extends React.Component {
     }
 
     onSearch() {
+        const { intl: { formatMessage }, params } = this.props;
         this.setState({
             tableUrl: this.getEndpointUrl(),
+            tableColumns: villagesTableColumns(formatMessage, this, params.includeMerged),
         });
     }
 
@@ -120,6 +122,7 @@ class ManagementVillages extends React.Component {
             village_source: params.village_source,
             as_list: true,
             years: params.years,
+            include_merged: params.includeMerged ? 'True' : 'False',
         };
 
         if (toExport) {
@@ -140,6 +143,9 @@ class ManagementVillages extends React.Component {
         this.setState({
             showEditModale,
         });
+        if (!showEditModale) {
+            this.props.selectVillage(null);
+        }
     }
 
 
@@ -160,6 +166,11 @@ class ManagementVillages extends React.Component {
         }
     }
 
+    selectVillage(village) {
+        this.toggleEditModale(true);
+        this.props.selectVillage(village);
+    }
+
     deleteData(element) {
         const { dispatch } = this.props;
         this.setState({
@@ -175,7 +186,6 @@ class ManagementVillages extends React.Component {
         const {
             isUpdated,
             load,
-            selectVillage,
             geoProvinces,
             geoFilters: {
                 provinces,
@@ -183,6 +193,7 @@ class ManagementVillages extends React.Component {
                 areas,
                 villageSources,
             },
+            selectedVillage,
             params,
         } = this.props;
         const filters1 = filtersZone1(formatMessage, defineMessages, villageSources);
@@ -199,10 +210,11 @@ class ManagementVillages extends React.Component {
             <section>
                 {
                     this.state.showEditModale
+                    && selectedVillage
                     && (
                         <VillageModaleComponent
                             showModale={this.state.showEditModale}
-                            closeModal={() => selectVillage(null)}
+                            closeModal={() => this.toggleEditModale(false)}
                             saveVillage={newVillage => this.saveData(newVillage)}
                             isUpdated={isUpdated}
                             error={load.error}

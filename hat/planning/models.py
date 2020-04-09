@@ -5,6 +5,7 @@ from django.db.models import Sum
 import random
 from hat.users.middleware import get_current_user
 from hat.users.models import get_user_geo_list
+from django.contrib.postgres.fields import ArrayField, CITextField
 
 
 class Planning(models.Model):
@@ -14,6 +15,11 @@ class Planning(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     is_template = models.BooleanField(default=False)
+
+    years_coverage = ArrayField(
+        CITextField(max_length=255, blank=True), size=100, null=True, blank=True
+    )
+
 
     def __str__(self):
         return "%s - % s" % (self.year, self.name)
@@ -27,7 +33,8 @@ class Planning(models.Model):
             'id': self.id,
             'year': self.year,
             'name': self.name,
-            'assignations': assignations
+            'assignations': assignations,
+            'years_coverage': self.years_coverage,
         }
 
     def copy(self, new_name):

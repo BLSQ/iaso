@@ -187,6 +187,9 @@ class Village(models.Model):
     population_source = models.TextField(null=True)
     population_year = models.PositiveIntegerField(null=True)
     is_erased = models.BooleanField(default=False)
+    merged_to = models.ForeignKey(
+        to="geo.Village", null=True, blank=True, on_delete=models.SET_NULL
+    )
 
     def __str__(self):
         return self.name
@@ -212,6 +215,7 @@ class Village(models.Model):
             "gps_source": self.gps_source,
             "is_erased": self.is_erased,
             "aliases": self.aliases,
+            "merged_to": self.merged_to_id,
         }
 
     def as_short_dict(self):
@@ -228,6 +232,7 @@ class Village(models.Model):
             "village_official": self.village_official,
             "village_source": self.village_source,
         }
+
 
 class ZSASMappingImport(models.Model):
     file_name = models.TextField()

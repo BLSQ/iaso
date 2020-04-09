@@ -140,20 +140,40 @@ class FormsVersionAPITestCase(APITestCase):
                 },
             },
         }
-        self.client.patch(
+        patch_resp = self.client.patch(
             f"/api/mappingversions/" + mappingversionid + "/",
-            data={"question_mappings": {"question2": data_element_2}},
+            data={"question_mappings": {"question_2": data_element_2}},
             format="json",
             HTTP_ACCEPT="application/json",
         )
+
+        mapping_version = self.client.get(
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
+            format="json",
+            HTTP_ACCEPT="application/json",
+        )
+        self.assertEqual(
+            mapping_version.json()["question_mappings"]["question_2"], data_element_2
+        )
+        self.client.patch(
+            f"/api/mappingversions/" + mappingversionid + "/",
+            data={"question_mappings": {"question_2": {"action": "unmap"}}},
+            format="json",
+            HTTP_ACCEPT="application/json",
+        )
+
         mapping_version = self.client.get(
             f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
             format="json",
             HTTP_ACCEPT="application/json",
         )
 
+        self.assertEqual(
+            list(mapping_version.json()["question_mappings"].keys()), ["question_1"]
+        )
+
     @tag("iaso_only")
-    def test_mappingversions_create_ok_first_version(self):
+    def test_mappingversions_create_ok_idempotent_version(self):
         """POST /mappingversions/ happy path (first version)"""
 
         self.client.force_authenticate(self.yoda)

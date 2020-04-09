@@ -82,6 +82,9 @@ def map_to_aggregate(instance, form_mapping):
         if question_key in question_mappings:
             try:
                 data_element = question_mappings[question_key]
+                if data_element.get("type") == "nevermapped":
+                    continue
+
                 data_element["question_key"] = question_key
                 raw_value = instance.json[question_key]
                 data_value = {

@@ -2,7 +2,7 @@ import json
 import responses
 
 from django.test import TestCase
-from iaso.models import Instance, OrgUnit
+from iaso.models import Instance, OrgUnit, MappingVersion
 from django.contrib.gis.geos import Point
 from dhis2 import Api
 from datetime import datetime, date
@@ -47,6 +47,7 @@ def build_form_mapping():
                     "3": {"id": "DE_DHIS2_ID_BOOL3", "valueType": "BOOLEAN"},
                 },
             },
+            "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
         },
     }
 

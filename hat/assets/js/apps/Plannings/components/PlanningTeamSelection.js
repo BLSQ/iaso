@@ -120,7 +120,7 @@ const PlanningTeamSelection = ({
                                 simpleValue
                                 autosize={false}
                                 name="years"
-                                className={params.years.split(',').length === 1 ? 'only-one' : ''}
+                                className={params.years && params.years.split(',').length === 1 ? 'only-one' : ''}
                                 value={params.years || ''}
                                 placeholder={formatMessage(MESSAGES['years-select'])}
                                 options={possibleYears.map(year => ({ label: year, value: year }))}

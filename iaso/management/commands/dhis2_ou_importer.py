@@ -84,6 +84,11 @@ class Command(BaseCommand):
             action="store_true",
             help="Mark all the newly imported units as validated",
         )
+        parser.add_argument(
+            "--continue_on_error",
+            action="store_true",
+            help="Continue import even if an error occurred for one org unit",
+        )
 
     def get_group(self, dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
@@ -322,7 +327,7 @@ class Command(BaseCommand):
         version_number = options.get("version_number")
         force = options.get("force")
         validate = options.get("validate")
-
+        continue_on_error = options.get("continue_on_error")
         source, _created = DataSource.objects.get_or_create(name=source_name)
 
         url = (options.get("dhis2_url"),)
@@ -405,7 +410,8 @@ class Command(BaseCommand):
                 unit_dict[org_unit.source_ref] = org_unit
             except Exception as e:
                 iaso_logger.error("Error %s for row %d" % (e, index), row)
-                raise e
+                if not continue_on_error:
+                    raise e
             index += 1
 
         iaso_logger.ok("created orgunits", index)

@@ -701,6 +701,9 @@ class Mapping(models.Model):
     def __str__(self):
         return "%s %s" % (self.form, self.mapping_type)
 
+    def is_aggregate(self):
+        return self.mapping_type == AGGREGATE
+
     def as_dict(self):
         return {
             "id": self.id,

@@ -420,7 +420,10 @@ class VillageViewSet(viewsets.ViewSet):
                 if as_id:
                     new_as = get_object_or_404(AS, pk=as_id)
                     village.AS = new_as
-            if "merged_to" in request.data:
+            if (
+                "merged_to" in request.data
+                and request.data.get("merged_to", None) is not None
+            ):
                 merged_to_id = request.data.get("merged_to", None)
                 logger.info("Merging Village %s into %s", pk, merged_to_id)
                 merged_to = get_object_or_404(Village, pk=merged_to_id)
@@ -481,7 +484,7 @@ class VillageViewSet(viewsets.ViewSet):
                 village.merged_to = merged_to
                 logger.info(
                     "Merged successfully %s into %s, updated cases %s, tests %s, patients %s, villages %s,"
-                    " assignations deleted %s, updated %s",
+                    " assignations deleted %s, updated %s, population records %s",
                     pk,
                     merged_to_id,
                     cases_updated,
@@ -490,6 +493,7 @@ class VillageViewSet(viewsets.ViewSet):
                     villages_updated,
                     assignations_deleted,
                     assignations_updated,
+                    updated_pop_nb,
                 )
             village.save()
             log_modification(original_village, village, VILLAGE_API, request.user)

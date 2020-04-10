@@ -1,6 +1,5 @@
 var path = require('path')
 var webpack = require('webpack')
-var BundleTracker = require('webpack-bundle-tracker')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 // Switch here for french
 // remember to switch in webpack.dev.js and
@@ -52,10 +51,6 @@ module.exports = {
       /^__intl\/messages\/fr$/,
       '../translations/fr.json'
     ),
-    new BundleTracker({
-      path: __dirname,
-      filename: './assets/webpack/webpack-stats-prod.json'
-    }),
     new MiniCssExtractPlugin({filename: '[name]-[chunkhash].css'}),
     new webpack.DefinePlugin({
       'process.env': {

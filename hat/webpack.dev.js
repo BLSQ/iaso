@@ -1,6 +1,5 @@
 var path = require('path')
 var webpack = require('webpack')
-var BundleTracker = require('webpack-bundle-tracker')
 // Switch here for french. This is set to 'en' in dev to not get react-intl warnings
 // remember to switch in webpack.prod.js and
 // django settings as well
@@ -82,10 +81,6 @@ module.exports = {
       '../translations/fr.json'
     ),
     new webpack.NoEmitOnErrorsPlugin(), // don't reload if there is an error
-    new BundleTracker({
-      path: __dirname,
-      filename: './assets/webpack/webpack-stats.json'
-    }),
     new webpack.DefinePlugin({
       '__LOCALE': JSON.stringify(LOCALE)
     }),

@@ -346,6 +346,22 @@ git clean -n
 git clean -f
 ..
 
+
+Analysing webpack bundle size
+=============================
+
+The following commands will respectively:
+
+1. Generate the assets bundles for production with profiling enabled
+2. Run a dev server with webpack-bundle-analyzer to display bundle stats
+
+.. code:: bash
+
+    npm run webpack-prod-profile
+    npm run webpack-analyzer
+
+..
+
 Jupyter Notebook
 =================
 

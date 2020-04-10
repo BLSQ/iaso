@@ -13,6 +13,8 @@
     "build": "npm run webpack",
     "webpack": "webpack --config ./hat/webpack.dev.js",
     "webpack-prod": "webpack --config ./hat/webpack.prod.js",
+    "webpack-prod-profile": "webpack --config ./hat/webpack.prod.js --profile --json > hat/assets/webpack/webpack-stats-prod.json",
+    "webpack-analyzer": "webpack-bundle-analyzer hat/assets/webpack/webpack-stats-prod.json",
     "extract-strings": "node ./build_scripts/merge-js-transifex.js",
     "webpack-server": "node ./hat/webpack.server.js"
   },
@@ -29,6 +31,7 @@
     "leaflet-draw": "^1.0.4",
     "react-beautiful-dnd": "^11.0.4",
     "react-color": "^2.17.3",
+    "webpack-bundle-analyzer": "^3.6.1",
     "webpack-cli": "^3.3.5"
   },
   "standard": {
@@ -108,7 +111,6 @@
     "vega-lite": "^3.0.0",
     "video.js": "^7.5.5",
     "webpack": "^4.41.6",
-    "webpack-bundle-tracker": "^0.4.3",
     "webpack-dev-server": "^3.10.3",
     "xlsx": "^0.14.3"
   }

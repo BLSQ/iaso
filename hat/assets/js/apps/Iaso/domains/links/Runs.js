@@ -45,7 +45,9 @@ import AddRunDialogComponent from '../../components/dialogs/AddRunDialogComponen
 
 import commonStyles from '../../styles/common';
 
-const baseUrl = 'links/runs';
+import { algosPath, linksPath } from '../../constants/paths';
+
+const { baseUrl } = algosPath;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -93,7 +95,7 @@ class Runs extends Component {
             algorithmRunId: runItem.id,
             searchActive: true,
         };
-        this.props.redirectTo('links/list', params);
+        this.props.redirectTo(linksPath.baseUrl, params);
     }
 
     onSearch() {

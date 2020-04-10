@@ -184,7 +184,7 @@ class AggregateExporter:
         try:
             # print(prefix, "POSTING to dataValueSets {} ".format(request))
             batched_start = timer()
-            print(request)
+
             resp = api.post("dataValueSets", request).json()
 
             exception = handle_exception({"response": resp}, "transient")

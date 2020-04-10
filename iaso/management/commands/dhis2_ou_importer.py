@@ -174,9 +174,14 @@ class Command(BaseCommand):
                 try:
                     tuple = json.loads(coordinates)
                     pnt = Point((float(tuple[0]), float(tuple[1])))
-                    org_unit.location = pnt
-                    org_unit.longitude = pnt.x
-                    org_unit.latitude = pnt.y
+                    if abs(pnt.x) < 180 and abs(pnt.y) < 90:
+                        org_unit.location = pnt
+                        org_unit.longitude = pnt.x
+                        org_unit.latitude = pnt.y
+                    else:
+                        self.iaso_logger.error(
+                            "Invalid coordinates found in row", coordinates, row
+                        )
                 except Exception as bad_coord:
                     self.iaso_logger.error(
                         "failed at importing POINT", coordinates, bad_coord, row
@@ -316,7 +321,7 @@ class Command(BaseCommand):
     the transaction prevent tons of small commits, and improve performancefrom 34 seconds to 8 seconds on play.dhis2.org dataset
     """
 
-#    @transaction.atomic
+    @transaction.atomic
     def handle(self, *args, **options):
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger

@@ -151,7 +151,7 @@ class AggregateExporter:
                 skipped.append((instance.id, "no data json"))
                 continue
 
-            if not form_mapping or form_mapping.name != "aggregate":
+            if not form_mapping or not form_mapping.mapping.is_aggregate():
                 skipped.append((instance.id, "no aggregate mapping"))
                 continue
             (aggreg, map_errors) = map_to_aggregate(instance, form_mapping.json)

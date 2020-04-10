@@ -173,7 +173,7 @@ class AggregateExporterTests(TestCase):
 
         self.org_unit = org_unit
 
-        mapping = Mapping(form=form, data_source=datasource)
+        mapping = Mapping(form=form, data_source=datasource, mapping_type="AGGREGATE")
         mapping.save()
         self.mapping = mapping
 

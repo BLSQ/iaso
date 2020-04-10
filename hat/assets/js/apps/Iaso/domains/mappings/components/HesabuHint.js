@@ -8,7 +8,7 @@ function fetcthDataElementUsedBy(projectDescriptor) {
     const dataElementsUsedByHesabu = [];
     const indicatorsById = {};
 
-    indicators.indicators.forEach(indic => (indicatorsById[indic.id] = indic));
+    indicators.indicators.forEach((indic) => { indicatorsById[indic.id] = indic; });
 
     Object.keys(projectDescriptor.payment_rules).forEach((paymentRuleCode) => {
         const paymentRule = projectDescriptor.payment_rules[paymentRuleCode];
@@ -97,13 +97,13 @@ function fetcthDataElementUsedBy(projectDescriptor) {
 }
 
 const HesabuHint = ({ mapping, hesabuDescriptor }) => {
-    if (mapping == undefined || hesabuDescriptor.length == 0) {
+    if (mapping === undefined || hesabuDescriptor === null || hesabuDescriptor.length === 0) {
         return null;
     }
     const usedBy = fetcthDataElementUsedBy(hesabuDescriptor[0]).filter(
-        de => de.id == mapping.id,
+        de => de.id === mapping.id,
     );
-    if (usedBy.length == 0) {
+    if (usedBy.length === 0) {
         return <></>;
     }
 
@@ -126,7 +126,7 @@ HesabuHint.defaultProps = {
 };
 
 HesabuHint.propTypes = {
-    mapping: PropTypes.object.isRequired,
+    mapping: PropTypes.object,
     hesabuDescriptor: PropTypes.array.isRequired,
 };
 

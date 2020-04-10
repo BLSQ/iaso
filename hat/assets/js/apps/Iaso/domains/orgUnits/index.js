@@ -54,7 +54,9 @@ import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBars
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
-const baseUrl = 'orgunits';
+import { orgUnitsPath, orgUnitsDetailsPath } from '../../constants/paths';
+
+const { baseUrl } = orgUnitsPath;
 let warningDisplayed = false;
 export const locationLimitMax = 3000;
 
@@ -241,7 +243,7 @@ class OrgUnits extends Component {
             orgUnitId: orgUnit.id,
             tab,
         };
-        redirectTo('orgunits/detail', newParams);
+        redirectTo(orgUnitsDetailsPath.baseUrl, newParams);
     }
 
     fetchOrgUnitsLocations() {

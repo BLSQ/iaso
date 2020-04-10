@@ -26,7 +26,7 @@ const QuestionMappingForm = ({
     const mapToMapping = (options) => {
         const results = [];
         options
-            .filter(de => (mappingVersion.mapping.mapping_type == 'AGGREGATE'
+            .filter(de => (mappingVersion.mapping.mapping_type === 'AGGREGATE'
                 ? de.domainType !== 'TRACKER'
                 : de.domainType !== 'AGGREGATE'))
             .forEach((dataElement) => {
@@ -35,7 +35,7 @@ const QuestionMappingForm = ({
                         id: dataElement.id,
                         name: dataElement.name,
                         displayName:
-              dataElement.categoryCombo.name == 'default'
+              dataElement.categoryCombo.name === 'default'
                   ? dataElement.name
                   : `${dataElement.name} - ${coc.name}`,
                         valueType: dataElement.valueType,

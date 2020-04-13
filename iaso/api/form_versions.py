@@ -15,6 +15,7 @@ from iaso.odk import parsing
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 from .auth.authentication import CsrfExemptSessionAuthentication
 from .forms import HasFormPermission
+from iaso.dhis2.form_mapping import copy_mappings_from_previous_version
 
 
 class FormVersionSerializer(DynamicFieldsModelSerializer):
@@ -145,6 +146,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             form = version.form
             form.form_id = form_form_id
             form.save()
+
+        copy_mappings_from_previous_version(version)
 
         return version
 

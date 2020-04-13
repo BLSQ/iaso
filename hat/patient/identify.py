@@ -1,5 +1,7 @@
 import ntpath
 import re
+import logging
+
 from collections import defaultdict
 from datetime import timedelta
 
@@ -18,6 +20,8 @@ from hat.users.models import Profile
 """
 This file provides the tools to identify patients and tests from Case data
 """
+
+logger = logging.getLogger(__name__)
 
 
 def name_normalize(name):
@@ -141,7 +145,7 @@ def get_devicedb_info_cached(device_id, cache):
             device_last_profile_id = profile.id if profile else None
             cache[device_id] = (devicedb_id, team_id, device_last_profile_id)
         except DeviceDB.DoesNotExist:
-            print("Could not find device ID", device_id, "skipping")
+            logger.warning("Could not find device ID", device_id, "skipping")
             return None, None, None
     return devicedb_id, team_id, device_last_profile_id
 
@@ -168,6 +172,7 @@ def create_test_data(case: Case, patient_area, raw):
         CLINICAL_SICKNESS: "test_clinical_sickness",
         LNP: "test_lymph_node_puncture",
         PARASIT: "test_parasit",
+        RESEARCH_PL: "test_research_pl",
     }
     for test_type, test_field in test_types.items():
         test_result = getattr(raw, test_field, None)
@@ -194,6 +199,7 @@ def create_test_data(case: Case, patient_area, raw):
                 tester_id=device_last_profile_id,
                 level=get_case_level(case, test_type, test_field),  # CATT level or PL stage
                 index=getattr(case, f"{test_field}_index", None),  # CATT only
+                comment=getattr(raw, f"{test_field}_comment", None),
             )
             if test_created:
                 tests_created += 1
@@ -214,9 +220,9 @@ def get_case_level(case, test_type, test_field):
     return level
 
 
-def get_or_create_test(case, test_type, result, note=None, image=None, video=None, index=None, traveller_area=None,
+def get_or_create_test(case, test_type, result, image=None, video=None, index=None, traveller_area=None,
                        test_date=None, hidden=False, devicedb_id=None, device_id=None, location=None, latitude=None,
-                       longitude=None, team_id=None, tester_id=None, level=None):
+                       longitude=None, team_id=None, tester_id=None, level=None, comment=None):
     if test_date:
         test_date = dateutil.parser.parse(test_date)
     else:
@@ -243,6 +249,7 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
                                                         'location': location,
                                                         'team_id': team_id,
                                                         'level': level,
+                                                        'comment': comment,
                                                     })
 
     if test_created:
@@ -250,7 +257,7 @@ def get_or_create_test(case, test_type, result, note=None, image=None, video=Non
             # Use an update to avoid interfering with a .save() of the whole object.
             Case.objects.filter(id=test.form_id).update(latest_test_date=test.date)
         test.result = result
-        test.note = note
+        test.comment = comment
         test.tester_id = tester_id
         if image:
             db_image = find_image_by_test(filepath=image, test_type=test_type)

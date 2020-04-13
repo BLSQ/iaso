@@ -12,6 +12,7 @@ from hat.import_export.utils import replace_in_dict_recursive
 from hat.sync.models import DeviceDB
 from hat.sync.tests import clean_couch
 from ..import_synced import import_synced_devices
+from ...constants import RESEARCH_PL
 
 
 def load_document(filename, username=None, device_db_name=None):
@@ -719,6 +720,35 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNone(case.normalized_patient.origin_area)
         self.assertIsNone(case.normalized_patient.origin_raw_AS)
         self.assertEquals(case.normalized_patient.origin_country, "Rwanda")
+
+    def test_import_research_pl(self):
+        json_doc, device_db = load_document("regular_research_pl.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc['_id'], p1['id'])
+
+        stats = import_synced_devices()[0]['stats']
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, '0')
+        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertIsNotNone(case)
+        rpl_test = case.test_set.filter(type=RESEARCH_PL).first()
+        self.assertIsNotNone(rpl_test)
+        self.assertEquals(rpl_test.result, RES_POSITIVE)
+        # TODO tester, comment, device
+        self.assertEquals(str(rpl_test.date), "2020-04-11 13:45:41.666000+00:00")
+        self.assertEquals(str(rpl_test.location), "SRID=4326;POINT (5.9569289 51.6813679)")
+        self.assertEquals(rpl_test.comment, "J'ai une intuition")
+        self.assertEquals(rpl_test.device, device_db)
+        self.assertEquals(rpl_test.tester, device_db.last_user.profile)
 
     def test_import_catt_2steps(self):
         json_doc, device_db = load_document("test_catt_override_1.json", "supervisor")

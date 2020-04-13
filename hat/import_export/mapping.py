@@ -1111,7 +1111,14 @@ MAPPING: List[JsonType] = [
         "field": "test_research_pl_comment",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {"mobile": {"field": ("main", "participant.screenings.research_pl.confirmationMissingReason")}},
+        "sources": {
+            "mobile": {
+                "field": (
+                    "main",
+                    "participant.screenings.research_pl.confirmationMissingReason",
+                )
+            }
+        },
         "test_type": CONFIRMATION_TEST,
     },
     {
@@ -1749,7 +1756,9 @@ MAPPING: List[JsonType] = [
         "field": "test_research_pl_test_device",
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
-        "sources": {"mobile": {"field": ("main", "participant.screenings.research_pl.device")}},
+        "sources": {
+            "mobile": {"field": ("main", "participant.screenings.research_pl.device")}
+        },
     },
     {
         "field": "test_pg_test_device",
@@ -1863,7 +1872,10 @@ MAPPING: List[JsonType] = [
         "export_levels": [Export.full, Export.anon],
         "sources": {
             "mobile": {
-                "field": ("main", "participant.screenings.research_pl.position.longitude")
+                "field": (
+                    "main",
+                    "participant.screenings.research_pl.position.longitude",
+                )
             }
         },
     },
@@ -1872,7 +1884,12 @@ MAPPING: List[JsonType] = [
         "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
-            "mobile": {"field": ("main", "participant.screenings.research_pl.position.latitude")}
+            "mobile": {
+                "field": (
+                    "main",
+                    "participant.screenings.research_pl.position.latitude",
+                )
+            }
         },
     },
     {

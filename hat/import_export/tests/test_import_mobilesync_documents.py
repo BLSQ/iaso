@@ -18,15 +18,21 @@ from ...constants import RESEARCH_PL
 def load_document(filename, username=None, device_db_name=None):
     user = User.objects.get(username=username) if username else None
     if device_db_name:
-        device_db = DeviceDB.objects.get(device_id=device_db_name, creator=user, last_user=user)
+        device_db = DeviceDB.objects.get(
+            device_id=device_db_name, creator=user, last_user=user
+        )
     else:
         device_db_name = filename + str(uuid.uuid4())
-        device_db = DeviceDB.objects.create(device_id=device_db_name, creator=user, last_user=user)
+        device_db = DeviceDB.objects.create(
+            device_id=device_db_name, creator=user, last_user=user
+        )
 
-    with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
+    with open(
+        os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8"
+    ) as f:
         document = json.load(f)
-        document['_id'] = str(uuid.uuid4())  # Avoid updates in couch
-        document['deviceId'] = device_db_name
+        document["_id"] = str(uuid.uuid4())  # Avoid updates in couch
+        document["deviceId"] = device_db_name
         # update the device_id everywhere in the document
         document = replace_in_dict_recursive(document, "device", device_db_name)
         return document, device_db
@@ -34,7 +40,7 @@ def load_document(filename, username=None, device_db_name=None):
 
 # noinspection DuplicatedCode
 class ImportMobileSyncDocuments(TestCase):
-    fixtures = ['locations', 'users', 'teams']
+    fixtures = ["locations", "users", "teams"]
 
     def tearDown(self):
         super().tearDown()
@@ -42,23 +48,25 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains most of the general document assertions
     def test_import_regular_neg_rdt(self):
-        part_regular_neg_rdt, device_db = load_document("regular_neg_rdt.json", "supervisor")
+        part_regular_neg_rdt, device_db = load_document(
+            "regular_neg_rdt.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=part_regular_neg_rdt).json()
-        self.assertEqual(part_regular_neg_rdt['_id'], p1['id'])
+        self.assertEqual(part_regular_neg_rdt["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=part_regular_neg_rdt['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(device_id=part_regular_neg_rdt["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertEquals(case.year_of_birth, 1956)
@@ -87,88 +95,100 @@ class ImportMobileSyncDocuments(TestCase):
 
     # This test contains some alternate assertions (birth year 1900)
     def test_import_regular_neg_rdt(self):
-        part_regular_neg_rdt_alt, device_db = load_document("regular_neg_rdt_alternate.json", "supervisor")
+        part_regular_neg_rdt_alt, device_db = load_document(
+            "regular_neg_rdt_alternate.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=part_regular_neg_rdt_alt).json()
-        self.assertEqual(part_regular_neg_rdt_alt['_id'], p1['id'])
+        self.assertEqual(part_regular_neg_rdt_alt["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=part_regular_neg_rdt_alt['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(
+            device_id=part_regular_neg_rdt_alt["deviceId"]
+        )
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertIsNone(case.year_of_birth)
 
     # This test contains some tests for travelers rather than residents
     def test_import_traveler_neg_rdt(self):
-        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler.json", "supervisor")
+        part_traveler_neg_rdt, device_db = load_document(
+            "regular_neg_rdt_traveler.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=part_traveler_neg_rdt).json()
-        self.assertEqual(part_traveler_neg_rdt['_id'], p1['id'])
+        self.assertEqual(part_traveler_neg_rdt["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt["deviceId"])
         self.assertEqual(device_cases.count(), 1)
 
     # This test contains some tests for travelers rather than residents
     def test_import_traveler_neg_rdt_zone_only(self):
-        part_traveler_neg_rdt, device_db = load_document("regular_neg_rdt_traveler_zone_only.json", "supervisor")
+        part_traveler_neg_rdt, device_db = load_document(
+            "regular_neg_rdt_traveler_zone_only.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=part_traveler_neg_rdt).json()
-        self.assertEqual(part_traveler_neg_rdt['_id'], p1['id'])
+        self.assertEqual(part_traveler_neg_rdt["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(device_id=part_traveler_neg_rdt["deviceId"])
         self.assertEqual(device_cases.count(), 1)
 
     ####################
     # Dépistage passif #
     ####################
     def test_import_stfix_treatment_started(self):
-        stfix_treatment_started, device_db = load_document("stfix_treatment_started.json", "supervisor")
+        stfix_treatment_started, device_db = load_document(
+            "stfix_treatment_started.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_started).json()
-        self.assertEqual(stfix_treatment_started['_id'], p1['id'])
+        self.assertEqual(stfix_treatment_started["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=stfix_treatment_started['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(
+            device_id=stfix_treatment_started["deviceId"]
+        )
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertEquals(case.year_of_birth, 1933)
@@ -183,7 +203,9 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rdt_test.location, "SRID=4326;POINT (4.4009197 50.8367368)")
         self.assertEquals(ctcwoo_test.village.name, "Kisala")
         self.assertEquals(ctcwoo_test.result, RES_POSITIVE)
-        self.assertEquals(ctcwoo_test.location, "SRID=4326;POINT (4.4009259 50.8367405)")
+        self.assertEquals(
+            ctcwoo_test.location, "SRID=4326;POINT (4.4009259 50.8367405)"
+        )
         self.assertEquals(pl_test.village.name, "Kisala")
         self.assertEquals(pl_test.result, RES_POSITIVE)
         self.assertEquals(pl_test.location, "SRID=4326;POINT (4.4009168 50.8367359)")
@@ -215,21 +237,23 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNone(melarsoprol.end_date)
 
     def test_import_stfix_treatment_ended(self):
-        stfix_treatment_ended, device_db = load_document("stfix_treatment_ended.json", "supervisor")
+        stfix_treatment_ended, device_db = load_document(
+            "stfix_treatment_ended.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_ended).json()
-        self.assertEqual(stfix_treatment_ended['_id'], p1['id'])
+        self.assertEqual(stfix_treatment_ended["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=stfix_treatment_ended['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(device_id=stfix_treatment_ended["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertEquals(case.year_of_birth, 1933)
@@ -277,24 +301,26 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(str(melarsoprol.end_date), "2019-01-10")
 
     def test_import_stfix_treatment_dead(self):
-        stfix_treatment_dead, device_db = load_document("stfix_treatment_dead.json", "supervisor")
+        stfix_treatment_dead, device_db = load_document(
+            "stfix_treatment_dead.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=stfix_treatment_dead).json()
-        self.assertEqual(stfix_treatment_dead['_id'], p1['id'])
+        self.assertEqual(stfix_treatment_dead["_id"], p1["id"])
 
         response = import_synced_devices()
         self.assertEquals(len(response), 1)
-        self.assertTrue('stats' in response[0])
-        stats = response[0]['stats']
+        self.assertTrue("stats" in response[0])
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        device_cases = Case.objects.filter(device_id=stfix_treatment_dead['deviceId'])
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        device_cases = Case.objects.filter(device_id=stfix_treatment_dead["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
         self.assertIsNone(case.year_of_birth)
@@ -334,12 +360,31 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNotNone(pentamidine.location)
         self.assertEquals(pentamidine.index, 0)
         self.assertEquals(len(pentamidine.issues), 11)
-        self.assertEquals(pentamidine.issues, ["behaviour", "neuro", "convulsion", "acute respiratory failure",
-                                               "septicemy", "vomiting", "diarrhea", "obnubilation", "desorientation",
-                                               "coma", "other"])
-        self.assertEquals(pentamidine.other_issues, "Patient grew a third eye and started speaking Greek")
+        self.assertEquals(
+            pentamidine.issues,
+            [
+                "behaviour",
+                "neuro",
+                "convulsion",
+                "acute respiratory failure",
+                "septicemy",
+                "vomiting",
+                "diarrhea",
+                "obnubilation",
+                "desorientation",
+                "coma",
+                "other",
+            ],
+        )
+        self.assertEquals(
+            pentamidine.other_issues,
+            "Patient grew a third eye and started speaking Greek",
+        )
         self.assertEquals(len(pentamidine.incomplete_reasons), 3)
-        self.assertEquals(pentamidine.incomplete_reasons, ["patientincapacity", "abandon", "outofstock"])
+        self.assertEquals(
+            pentamidine.incomplete_reasons,
+            ["patientincapacity", "abandon", "outofstock"],
+        )
         self.assertFalse(pentamidine.dead)
         self.assertFalse(pentamidine.lost)
         self.assertFalse(pentamidine.adverse_effects)
@@ -388,28 +433,34 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(str(acoziborole.end_date), "2019-01-10")
 
     def test_import_screening(self):
-        regular_pos_rdt, device_db_scr = load_document("regular_pos_rdt.json", "supervisor")
+        regular_pos_rdt, device_db_scr = load_document(
+            "regular_pos_rdt.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db_scr.db_name, json=regular_pos_rdt).json()
-        self.assertEqual(regular_pos_rdt['_id'], p1['id'])
+        self.assertEqual(regular_pos_rdt["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db_scr.refresh_from_db()
 
-        regular_confirmation_pl, device_db_conf = load_document("regular_confirmation_pl.json")
+        regular_confirmation_pl, device_db_conf = load_document(
+            "regular_confirmation_pl.json"
+        )
         p1 = api.post(device_db_conf.db_name, json=regular_confirmation_pl).json()
-        self.assertEqual(regular_confirmation_pl['_id'], p1['id'])
+        self.assertEqual(regular_confirmation_pl["_id"], p1["id"])
 
         response = import_synced_devices()
-        grand_total = sum([item['stats'].total for item in response])
+        grand_total = sum([item["stats"].total for item in response])
         self.assertEqual(grand_total, 1)
 
         device_db_conf.refresh_from_db()
 
-        device_cases = Case.objects.filter(device_id=regular_confirmation_pl['deviceId'])
+        device_cases = Case.objects.filter(
+            device_id=regular_confirmation_pl["deviceId"]
+        )
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
 
@@ -420,84 +471,108 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertTrue(rdt_test.hidden)
         self.assertIsNone(rdt_test.level)
         self.assertFalse(pl_test.hidden)
-        self.assertEquals(pl_test.level, 2, "result is positive and white blood cells are > 5 => stage 2")
+        self.assertEquals(
+            pl_test.level,
+            2,
+            "result is positive and white blood cells are > 5 => stage 2",
+        )
 
     def test_import_pl_white_above5(self):
-        test_json, device_db = load_document("regular_confirmation_pl_white_above5_stage2.json", "supervisor")
+        test_json, device_db = load_document(
+            "regular_confirmation_pl_white_above5_stage2.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=test_json).json()
-        self.assertEqual(test_json['_id'], p1['id'])
+        self.assertEqual(test_json["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db.refresh_from_db()
 
-        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        device_cases = Case.objects.filter(device_id=test_json["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
 
         # Test
         pl_test = case.test_set.get(type="PL")
         self.assertEquals(pl_test.result, 1)
-        self.assertEquals(pl_test.level, 2, "result is negative but white blood cells are > 5 => stage 2")
+        self.assertEquals(
+            pl_test.level,
+            2,
+            "result is negative but white blood cells are > 5 => stage 2",
+        )
 
     def test_import_pl_white_under5(self):
-        test_json, device_db = load_document("regular_confirmation_pl_white_under5_stage1.json", "supervisor")
+        test_json, device_db = load_document(
+            "regular_confirmation_pl_white_under5_stage1.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=test_json).json()
-        self.assertEqual(test_json['_id'], p1['id'])
+        self.assertEqual(test_json["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db.refresh_from_db()
 
-        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        device_cases = Case.objects.filter(device_id=test_json["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
 
         # Test
         pl_test = case.test_set.get(type="PL")
         self.assertEquals(pl_test.result, 1)
-        self.assertEquals(pl_test.level, 1, "result is negative and white blood cells are < 5 => stage 1")
+        self.assertEquals(
+            pl_test.level,
+            1,
+            "result is negative and white blood cells are < 5 => stage 1",
+        )
 
     def test_import_pl_pos_stage2(self):
-        test_json, device_db = load_document("regular_confirmation_pl_pos_stage2.json", "supervisor")
+        test_json, device_db = load_document(
+            "regular_confirmation_pl_pos_stage2.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=test_json).json()
-        self.assertEqual(test_json['_id'], p1['id'])
+        self.assertEqual(test_json["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db.refresh_from_db()
 
-        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        device_cases = Case.objects.filter(device_id=test_json["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
 
         # Test
         pl_test = case.test_set.get(type="PL")
         self.assertEquals(pl_test.result, 2)
-        self.assertEquals(pl_test.level, 2, "result is positive and white blood cells are > 5 => stage 2")
+        self.assertEquals(
+            pl_test.level,
+            2,
+            "result is positive and white blood cells are > 5 => stage 2",
+        )
 
     def test_import_pl_stage_unk(self):
-        test_json, device_db = load_document("regular_confirmation_pl_stage_unk.json", "supervisor")
+        test_json, device_db = load_document(
+            "regular_confirmation_pl_stage_unk.json", "supervisor"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=test_json).json()
-        self.assertEqual(test_json['_id'], p1['id'])
+        self.assertEqual(test_json["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db.refresh_from_db()
 
-        device_cases = Case.objects.filter(device_id=test_json['deviceId'])
+        device_cases = Case.objects.filter(device_id=test_json["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
 
@@ -507,14 +582,16 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertIsNone(pl_test.level)
 
     def test_import_screening_catt(self):
-        regular_pos_catt, device_db_scr = load_document("regular_pos_catt.json", "passive")
+        regular_pos_catt, device_db_scr = load_document(
+            "regular_pos_catt.json", "passive"
+        )
 
         # create documents in device db and sync
         p1 = api.post(device_db_scr.db_name, json=regular_pos_catt).json()
-        self.assertEqual(regular_pos_catt['_id'], p1['id'])
+        self.assertEqual(regular_pos_catt["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db_scr.refresh_from_db()
 
@@ -533,10 +610,10 @@ class ImportMobileSyncDocuments(TestCase):
 
         # create documents in device db and sync
         p1 = api.post(device_db_1.db_name, json=doc_1).json()
-        self.assertEqual(doc_1['_id'], p1['id'])
+        self.assertEqual(doc_1["_id"], p1["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db_1.refresh_from_db()
 
@@ -547,14 +624,16 @@ class ImportMobileSyncDocuments(TestCase):
         # Test
         self.assertEquals(case.test_set.count(), 2, "There should be 2 tests")
 
-        doc_2, _ = load_document("sequence_test_2.json", "supervisor", device_db_name=device_db_1.device_id)
+        doc_2, _ = load_document(
+            "sequence_test_2.json", "supervisor", device_db_name=device_db_1.device_id
+        )
 
         # create documents in device db and sync
         p2 = api.post(device_db_1.db_name, json=doc_2).json()
-        self.assertEqual(doc_2['_id'], p2['id'])
+        self.assertEqual(doc_2["_id"], p2["id"])
 
         response = import_synced_devices()
-        stats = response[0]['stats']
+        stats = response[0]["stats"]
         self.assertEqual(stats.total, 1)
         device_db_1.refresh_from_db()
 
@@ -562,57 +641,67 @@ class ImportMobileSyncDocuments(TestCase):
 
         # create documents in device db and sync
         p3 = api.post(device_db_3.db_name, json=doc_3).json()
-        self.assertEqual(doc_3['_id'], p3['id'])
+        self.assertEqual(doc_3["_id"], p3["id"])
 
         response = import_synced_devices()
         device_db_3.refresh_from_db()
 
-        self.assertEquals(case.test_set.count(), 3, "There should be 3 tests after the third document")
+        self.assertEquals(
+            case.test_set.count(), 3, "There should be 3 tests after the third document"
+        )
         maect_test = case.test_set.get(type="MAECT")
         self.assertIsNotNone(maect_test)
 
     # This test contains some tests for travelers rather than residents
     def test_import_phone_infection_location1(self):
-        phone_infection_location1, device_db = load_document("phone_infection_location1.json", "supervisor")
+        phone_infection_location1, device_db = load_document(
+            "phone_infection_location1.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=phone_infection_location1).json()
-        self.assertEqual(phone_infection_location1['_id'], p1['id'])
+        self.assertEqual(phone_infection_location1["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=phone_infection_location1['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(
+            device_id=phone_infection_location1["deviceId"]
+        ).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.infection_location_type, "other")
         self.assertEquals(case.infection_location.id, 2111)
 
     # Traveler with "residenceLocation" which is in reality "testLocation" or "flottant" and so should be the test location
     def test_import_phone_infection_location_trav_resid(self):
-        phone_infection_location, device_db = load_document("phone_infection_location_trav_resid.json", "supervisor")
+        phone_infection_location, device_db = load_document(
+            "phone_infection_location_trav_resid.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=phone_infection_location).json()
-        self.assertEqual(phone_infection_location['_id'], p1['id'])
+        self.assertEqual(phone_infection_location["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(
+            device_id=phone_infection_location["deviceId"]
+        ).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.infection_location_type, "test")
         self.assertEquals(case.infection_location.id, 1111)
@@ -621,24 +710,27 @@ class ImportMobileSyncDocuments(TestCase):
 
     # Resident with infection location "flottant"
     def test_import_phone_infection_location_res_flott_no_tel(self):
-        phone_infection_location, device_db = load_document("phone_infection_location_flott_village_name.json",
-                                                            "supervisor")
+        phone_infection_location, device_db = load_document(
+            "phone_infection_location_flott_village_name.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=phone_infection_location).json()
-        self.assertEqual(phone_infection_location['_id'], p1['id'])
+        self.assertEqual(phone_infection_location["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(
+            device_id=phone_infection_location["deviceId"]
+        ).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.infection_location_type, "test")
         self.assertEquals(case.infection_location.id, 1111)
@@ -646,24 +738,27 @@ class ImportMobileSyncDocuments(TestCase):
 
     # Resident with infection location "flottant"
     def test_import_phone_infection_location_res_other_unk_village(self):
-        phone_infection_location, device_db = load_document("phone_infection_location_res_other_unk_village.json",
-                                                            "supervisor")
+        phone_infection_location, device_db = load_document(
+            "phone_infection_location_res_other_unk_village.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=phone_infection_location).json()
-        self.assertEqual(phone_infection_location['_id'], p1['id'])
+        self.assertEqual(phone_infection_location["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(
+            device_id=phone_infection_location["deviceId"]
+        ).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.infection_location_type, "other")
         self.assertEquals(case.infection_location.name, "Funnel")
@@ -672,24 +767,27 @@ class ImportMobileSyncDocuments(TestCase):
 
     # Resident with infection location "flottant" and existing patient
     def test_import_phone_infection_location_test_location(self):
-        phone_infection_location, device_db = load_document("phone_infection_location_test_location.json",
-                                                            "supervisor")
+        phone_infection_location, device_db = load_document(
+            "phone_infection_location_test_location.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=phone_infection_location).json()
-        self.assertEqual(phone_infection_location['_id'], p1['id'])
+        self.assertEqual(phone_infection_location["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=phone_infection_location['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(
+            device_id=phone_infection_location["deviceId"]
+        ).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.infection_location_type, "residence")
         self.assertEquals(case.infection_location.id, 1121)
@@ -697,23 +795,25 @@ class ImportMobileSyncDocuments(TestCase):
 
     # Resident with infection location "flottant" and existing patient
     def test_import_member_type_other_country(self):
-        json_doc, device_db = load_document("member_type_other_country.json", "supervisor")
+        json_doc, device_db = load_document(
+            "member_type_other_country.json", "supervisor"
+        )
         device_db.last_user = User.objects.get(username="hannibal")
         device_db.save()
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=json_doc).json()
-        self.assertEqual(json_doc['_id'], p1['id'])
+        self.assertEqual(json_doc["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.normalized_village_id, 1111)
         self.assertIsNone(case.normalized_patient.origin_village)
@@ -728,24 +828,26 @@ class ImportMobileSyncDocuments(TestCase):
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=json_doc).json()
-        self.assertEqual(json_doc['_id'], p1['id'])
+        self.assertEqual(json_doc["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
         self.assertIsNotNone(case)
         rpl_test = case.test_set.filter(type=RESEARCH_PL).first()
         self.assertIsNotNone(rpl_test)
         self.assertEquals(rpl_test.result, RES_POSITIVE)
         # TODO tester, comment, device
         self.assertEquals(str(rpl_test.date), "2020-04-11 13:45:41.666000+00:00")
-        self.assertEquals(str(rpl_test.location), "SRID=4326;POINT (5.9569289 51.6813679)")
+        self.assertEquals(
+            str(rpl_test.location), "SRID=4326;POINT (5.9569289 51.6813679)"
+        )
         self.assertEquals(rpl_test.comment, "J'ai une intuition")
         self.assertEquals(rpl_test.device, device_db)
         self.assertEquals(rpl_test.tester, device_db.last_user.profile)
@@ -757,32 +859,38 @@ class ImportMobileSyncDocuments(TestCase):
 
         # create documents in device db and sync
         p1 = api.post(device_db.db_name, json=json_doc).json()
-        self.assertEqual(json_doc['_id'], p1['id'])
+        self.assertEqual(json_doc["_id"], p1["id"])
 
-        stats = import_synced_devices()[0]['stats']
+        stats = import_synced_devices()[0]["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 1)
         self.assertEqual(stats.updated, 0)
         self.assertEqual(stats.deleted, 0)
 
         device_db.refresh_from_db()
-        self.assertNotEqual(device_db.last_synced_seq, '0')
-        case = Case.objects.filter(device_id=json_doc['deviceId']).first()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
         self.assertIsNotNone(case)
         self.assertEquals(case.normalized_village_id, 1111)
-        self.assertEquals(case.test_set.count(), 0, "The test is marked as not done, so is not created")
+        self.assertEquals(
+            case.test_set.count(),
+            0,
+            "The test is marked as not done, so is not created",
+        )
 
         # Import the second document from a different device
-        json_doc_2, device_db_2 = load_document("test_catt_override_2.json", "supervisor")
+        json_doc_2, device_db_2 = load_document(
+            "test_catt_override_2.json", "supervisor"
+        )
         device_db_2.last_user = User.objects.get(username="hannibal")
         device_db_2.save()
 
         # create documents in device db and sync
         p2 = api.post(device_db_2.db_name, json=json_doc_2).json()
-        self.assertEqual(json_doc_2['_id'], p2['id'])
+        self.assertEqual(json_doc_2["_id"], p2["id"])
 
         res = import_synced_devices()
-        stats = next(x for x in res if x['device_id'] == device_db_2.device_id)['stats']
+        stats = next(x for x in res if x["device_id"] == device_db_2.device_id)["stats"]
         self.assertEqual(stats.total, 1)
         self.assertEqual(stats.created, 0)
         self.assertEqual(stats.updated, 1)
@@ -795,4 +903,3 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(catt_test.type, "CATT")
         self.assertEquals(catt_test.result, 1)
         self.assertEquals(case.test_catt, 1)
-

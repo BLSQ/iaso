@@ -30,9 +30,7 @@ class JSONDocumentViewSet(viewsets.ViewSet):
             page_offset = paginator.num_pages
         page = paginator.page(page_offset)
 
-        res["cases"] = list(
-            map(lambda x: x.as_dict(full=full), page.object_list,)
-        )  # just the map breaks the tests
+        res["cases"] = (x.as_dict(full=full) for x in page.object_list)
         res["has_next"] = page.has_next()
         res["has_previous"] = page.has_previous()
         res["page"] = page_offset

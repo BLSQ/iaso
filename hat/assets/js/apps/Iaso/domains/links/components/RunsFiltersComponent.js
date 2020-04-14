@@ -234,7 +234,7 @@ const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     algorithms: state.links.algorithmsList,
     sources: state.orgUnits.sources,
-    profiles: state.profiles.list,
+    profiles: state.users.list,
 });
 
 

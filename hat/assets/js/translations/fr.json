@@ -285,6 +285,7 @@
     "iaso.snackBar.delete_successful": "Cette entrée à bien été effacée",
     "iaso.snackBar.fetchAlgorithmsError": "Une erreur est survenue en récupérant la liste des algorithmes",
     "iaso.snackBar.fetchCompletenessError": "Une erreur est survenue en récupérant la complétude des données",
+    "iaso.snackBar.fetchCurrentUser": "Une erreur est survenue en récupérant l'utilisateur",
     "iaso.snackBar.fetchLinkDetailError": "Une erreur est survenue en récupérant le detail d'une correspondance",
     "iaso.snackBar.fetchDevicesError": "Une erreur est survenue en récupérant la liste des appareils",
     "iaso.snackBar.fetchDevicesOwnershipError": "Une erreur est survenue en récupérant la liste des utilisateurs d'appareils",

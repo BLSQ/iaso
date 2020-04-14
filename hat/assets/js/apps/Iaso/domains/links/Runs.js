@@ -27,10 +27,6 @@ import {
     setSources,
 } from '../orgUnits/actions';
 
-import {
-    setProfiles,
-} from '../../redux/profilesReducer';
-
 import { runsTableColumns } from './config';
 
 import { createUrl } from '../../../../utils/fetchData';
@@ -76,8 +72,6 @@ class Runs extends Component {
             .then(sources => this.props.setSources(sources));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
-        fetchIasoProfiles(dispatch)
-            .then(profiles => this.props.setProfiles(profiles));
     }
 
     componentDidUpdate() {
@@ -236,7 +230,6 @@ Runs.propTypes = {
     setIsFetching: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
 };
 
@@ -252,7 +245,6 @@ const MapDispatchToProps = dispatch => ({
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setSources: sources => dispatch(setSources(sources)),
-    setProfiles: profiles => dispatch(setProfiles(profiles)),
 });
 
 export default withStyles(styles)(

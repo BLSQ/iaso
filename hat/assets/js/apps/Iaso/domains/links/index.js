@@ -13,7 +13,6 @@ import {
     fetchOrgUnitsTypes,
     saveLink,
     fetchSources,
-    fetchIasoProfiles,
     fetchAlgorithms,
     fetchAlgorithmRuns,
 } from '../../utils/requests';
@@ -29,9 +28,6 @@ import {
     setAlgorithms,
     setAlgorithmRuns,
 } from './actions';
-import {
-    setProfiles,
-} from '../../redux/profilesReducer';
 
 import { linksTableColumns } from './config';
 
@@ -79,8 +75,6 @@ class Links extends Component {
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchSources(dispatch)
             .then(sources => this.props.setSources(sources));
-        fetchIasoProfiles(dispatch)
-            .then(profiles => this.props.setProfiles(profiles));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
         fetchAlgorithmRuns(dispatch)
@@ -270,7 +264,6 @@ Links.propTypes = {
     setIsFetching: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     setSources: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setAlgorithmRuns: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
@@ -289,7 +282,6 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setSources: sources => dispatch(setSources(sources)),
-    setProfiles: profiles => dispatch(setProfiles(profiles)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
 });

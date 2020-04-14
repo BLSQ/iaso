@@ -27,7 +27,7 @@ import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
 import { linksInitialState, linksReducer } from './domains/links/reducer';
-import { profilesInitialState, profilesReducer } from './redux/profilesReducer';
+import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import { getChipColors } from './constants/chipColors';
@@ -59,6 +59,8 @@ import {
 } from './constants/paths';
 
 import SidebarMenu from './components/nav/SidebarMenuComponent';
+import AuthorizedUser from './domains/users/components/AuthorizedUser';
+
 import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 
@@ -67,91 +69,91 @@ export default function iasoApp(element, baseUrl) {
         <Route
             path={getPath(formsPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Forms {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(mappingsPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Mappings {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(mappingDetailPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <MappingDetails {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(instancesPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Instances {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(instanceDetailPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <InstanceDetail {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(orgUnitsPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <OrgUnits {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(orgUnitsDetailsPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <OrgUnitDetail {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(linksPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Links {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path={getPath(algosPath)}
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Runs {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
         <Route
             path="/forms/completeness"
             component={props => (
-                <Fragment>
+                <AuthorizedUser {...props}>
                     <SidebarMenu {...props} />
                     <Completeness {...props} />
-                </Fragment>
+                </AuthorizedUser>
             )}
         />,
 
@@ -176,7 +178,7 @@ export default function iasoApp(element, baseUrl) {
         orgUnitsLevels: orgUnitsLevelsInitialState,
         routerCustom: routerInitialState,
         links: linksInitialState,
-        profiles: profilesInitialState,
+        users: usersInitialState,
         periods: periodsInitialState,
         completeness: completenessInitialState,
         projects: projectsInitialState,
@@ -194,7 +196,7 @@ export default function iasoApp(element, baseUrl) {
         orgUnitsLevels: orgUnitsLevelsReducer,
         routerCustom: routerReducer,
         links: linksReducer,
-        profiles: profilesReducer,
+        users: usersReducer,
         periods: periodsReducer,
         completeness: completenessReducer,
         projects: projectsReducer,

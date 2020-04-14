@@ -25,6 +25,7 @@ from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 from dhis2 import Api
+
 import json
 
 """
@@ -133,7 +134,7 @@ class Command(BaseCommand):
 
         # cvs
         cvs_form, created = Form.objects.get_or_create(
-            form_id="css_" + dhis2_version,
+            form_id="cvs_" + dhis2_version,
             name="Community Verification Satisfaction form " + dhis2_version,
             period_type="QUARTER",
             single_per_period=False,
@@ -147,6 +148,26 @@ class Command(BaseCommand):
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
         )
         project.forms.add(cvs_form)
+
+        cvs_stat_form, created = Form.objects.get_or_create(
+            form_id="cvs_stat_" + dhis2_version,
+            name="CVS Stats " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=False,
+        )
+        cvs_stat_form.derived = True
+        cvs_stat_form.save()
+
+        cvs_stat_form.org_unit_types.add(orgunit_type)
+
+        cvs_stat_mapping_version = self.seed_form(
+            cvs_stat_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+        )
+
+        project.forms.add(cvs_stat_form)
 
         self.project = project
 
@@ -201,6 +222,25 @@ class Command(BaseCommand):
                 "generated",
                 quality_form.name,
                 quality_form.instances.count(),
+                "instances",
+            )
+
+        if mode == "derived":
+
+            period = "2018Q1"
+            for i in cvs_stat_form.instances.filter(period=period).all():
+                i.delete()
+
+            from iaso.dhis2.derived_instance_generator import generate_instances
+
+            generate_instances(
+                project, cvs_mapping_version, cvs_stat_mapping_version, period,
+            )
+
+            print(
+                "generated",
+                cvs_stat_form.name,
+                cvs_stat_form.instances.count(),
                 "instances",
             )
 
@@ -343,7 +383,7 @@ class Command(BaseCommand):
                     else:
                         # CVS
                         for key in mapping_version.json["aggregations"]:
-                            test_data[key["question_key"]] = randint(1, 100)
+                            test_data[key["questionName"]] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form

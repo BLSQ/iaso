@@ -677,6 +677,9 @@ class FormVersion(models.Model):
             json_survey = {}
         return json_survey
 
+    def questions_by_name(self):
+        return parsing.to_questions_by_name(self.get_or_save_form_descriptor())
+
     def as_dict(self):
         return {
             "id": self.id,

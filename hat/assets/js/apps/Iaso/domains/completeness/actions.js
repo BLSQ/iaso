@@ -1,6 +1,6 @@
-import { getRequest } from '../../libs/Api';
+import { getRequest, postRequest } from '../../libs/Api';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar } from '../../../../utils/constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
 
 export const START_FETCHING_COMPLETENESS = 'START_FETCHING_COMPLETENESS';
 export const STOP_FETCHING_COMPLETENESS = 'STOP_FETCHING_COMPLETENESS';
@@ -19,6 +19,16 @@ const setCompleteness = data => ({
     type: SET_COMPLETENESS,
     payload: data,
 });
+
+export const generateDerivedInstances = derivedrequest => (dispatch) => {
+    dispatch(startFetchingCompleteness());
+    postRequest('/api/derivedinstances/', derivedrequest)
+        .then(res => dispatch(enqueueSnackbar(succesfullSnackBar('generateDerivedRequestSuccess'))))
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('generateDerivedRequestError'))))
+        .then(() => {
+            dispatch(stopFetchingCompleteness());
+        });
+};
 
 export const fetchCompleteness = () => (dispatch) => {
     dispatch(startFetchingCompleteness());

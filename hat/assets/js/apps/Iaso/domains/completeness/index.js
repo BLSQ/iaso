@@ -4,7 +4,10 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
-import { fetchCompleteness as fetchCompletenessAction } from './actions';
+import {
+    fetchCompleteness as fetchCompletenessAction,
+    generateDerivedInstances as generateDerivedInstancesAction,
+} from './actions';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
@@ -24,6 +27,7 @@ class Completeness extends Component {
             },
             completeness,
             redirectTo,
+            onGenerateDerivedInstances,
         } = this.props;
 
         return (
@@ -43,6 +47,7 @@ class Completeness extends Component {
                     completenessList={completeness.list}
                     params={params}
                     redirectTo={redirectTo}
+                    onGenerateDerivedInstances={onGenerateDerivedInstances}
                 />
             </>
         );
@@ -55,6 +60,7 @@ Completeness.propTypes = {
     completeness: PropTypes.object.isRequired,
     fetchCompleteness: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -66,6 +72,7 @@ const mapDispatchToProps = dispatch => (
         ...bindActionCreators({
             fetchCompleteness: fetchCompletenessAction,
             redirectTo: redirectToAction,
+            onGenerateDerivedInstances: generateDerivedInstancesAction,
         }, dispatch),
     }
 );

@@ -35,8 +35,13 @@ PERIOD_TYPE_CHOICES = (
 
 AGGREGATE = "AGGREGATE"
 EVENT = "EVENT"
+DERIVED = "DERIVED"
 
-MAPPING_TYPE_CHOICES = ((AGGREGATE, _("Aggregate")), (EVENT, _("Event")))
+MAPPING_TYPE_CHOICES = (
+    (AGGREGATE, _("Aggregate")),
+    (EVENT, _("Event")),
+    (DERIVED, _("Derived")),
+)
 
 QUEUED = "QUEUED"
 
@@ -820,7 +825,7 @@ class InstanceQuerySet(models.QuerySet):
         )
 
     def counts_by_status(self):
-        grouping_fields = ["period", "form_id", "form__name"]
+        grouping_fields = ["period", "form_id", "form__name", "form__form_id"]
 
         return (
             self.values(*grouping_fields)

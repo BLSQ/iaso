@@ -41,24 +41,20 @@ def generate_instance_xml(instance, form_version):
 
 
 @transaction.atomic
-def generate_instances(project, cvs_mapping_version, cvs_stat_mapping_version, period):
+def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     batch_start = timer()
 
-    cvs_form = cvs_mapping_version.form_version.form
-    print(
-        "cvs_form",
-        cvs_form,
-        " stats form ",
-        cvs_mapping_version,
-        cvs_mapping_version.form_version.form,
-    )
     # build query set for aggregation
 
-    aggregations = cvs_mapping_version.json["aggregations"]
+    aggregations = cvs_stat_mapping_version.json["aggregations"]
 
-    queryset = cvs_form.instances.filter(form_id=cvs_form.id, period=period).values(
+    queryset = cvs_form.instances.filter(form=cvs_form, period=period).values(
         "period", "org_unit_id", "form_id"
     )
+    # don't aggregate deleted instances
+    queryset = queryset.filter(deleted=False)
+    # don't aggregate instances with json empty or test devices
+    queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
     for aggregation in aggregations:
 
@@ -81,6 +77,8 @@ def generate_instances(project, cvs_mapping_version, cvs_stat_mapping_version, p
 
     print("generate_instances : queryset", queryset.count())
     # generate "derived" instances
+
+    # TODO how to delete the non regenerated one ?
 
     page_size = 50
 

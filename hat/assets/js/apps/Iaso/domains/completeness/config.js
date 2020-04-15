@@ -2,6 +2,7 @@ import React from 'react';
 import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import GenerateDerivedInstancesRowButtonComponent from './components/GenerateDerivedInstancesRowButtonComponent';
 
 import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
@@ -31,6 +32,8 @@ const getBaseColumns = formatMessage => ([
         }),
         accessor: 'name',
         width: 300,
+        style: { justifyContent: 'left' },
+        resizable: true,
     },
 ]);
 
@@ -40,6 +43,7 @@ export const getColumns = (
     classes,
     activeInstanceStatuses,
     onSelect,
+    onGenerateDerivedInstances,
     activePeriodType,
 ) => {
     const columns = getBaseColumns(formatMessage);
@@ -85,6 +89,22 @@ export const getColumns = (
             })),
         };
         columns.push(monthColumn);
+    });
+
+    columns.push({
+        Header: (
+            <span className={classes.capitalize}>
+                {formatMessage({
+                    defaultMessage: 'Actions',
+                    id: 'iaso.labels.actions',
+                })}
+            </span>),
+        columns: [{
+            Header: '',
+            Cell: settings => (settings.original.generate_derived ? <GenerateDerivedInstancesRowButtonComponent onClick={() => (onGenerateDerivedInstances(settings.original))} /> : ''),
+
+        }],
+        resizable: true,
     });
 
     return columns;

@@ -23,9 +23,11 @@ const styles = theme => ({
     },
     error: {
         color: theme.palette.error.main,
+        fontWeight: 'bold',
     },
     ready: {
         color: theme.palette.success.main,
+        fontWeight: 'bold',
     },
     cell: {
         outline: 'none',
@@ -56,6 +58,12 @@ class CompletenessPeriodComponent extends Component {
         });
     }
 
+    onClick(form, onGenerateDerivedInstances) {
+        const periods = Array.from(new Set(Object.values(form.months).map(m => m.period.periodString)));
+        const derived = form.generate_derived;
+        onGenerateDerivedInstances({ periods, derived });
+    }
+
     render() {
         const {
             period,
@@ -66,6 +74,7 @@ class CompletenessPeriodComponent extends Component {
             intl: {
                 formatMessage,
             },
+            onGenerateDerivedInstances,
         } = this.props;
 
         return (
@@ -94,6 +103,7 @@ class CompletenessPeriodComponent extends Component {
                             classes,
                             activeInstanceStatuses,
                             (form, status, p) => this.onSelectCell(form, status, p),
+                            (arg => this.onClick(arg, onGenerateDerivedInstances)),
                             activePeriodType,
                         )}
                         data={forms}
@@ -117,5 +127,6 @@ CompletenessPeriodComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
 export default injectIntl(withStyles(styles)(CompletenessPeriodComponent));

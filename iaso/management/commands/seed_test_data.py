@@ -110,7 +110,10 @@ class Command(BaseCommand):
         project.forms.add(quantity_form)
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
-            quantity_form, datasource, credentials
+            quantity_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
         )
 
         # quality
@@ -126,6 +129,7 @@ class Command(BaseCommand):
             quality_form,
             datasource,
             credentials,
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
             xls_file="testdata/seed-data-command-form-i18n.xlsx",
         )
         project.save()
@@ -142,10 +146,7 @@ class Command(BaseCommand):
         cvs_form.org_unit_types.add(orgunit_type)
 
         cvs_mapping_version = self.seed_form(
-            cvs_form,
-            datasource,
-            credentials,
-            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+            cvs_form, datasource, credentials, mapping_file=None,
         )
         project.forms.add(cvs_form)
 
@@ -305,7 +306,7 @@ class Command(BaseCommand):
         form,
         datasource,
         credentials,
-        mapping_file="./testdata/seed-data-command-form-mapping.json",
+        mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
     ):
         form_version, created = FormVersion.objects.get_or_create(
@@ -319,6 +320,9 @@ class Command(BaseCommand):
         form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
         form_version.save()
+
+        if not mapping_file:
+            return
         mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
         mapping_version_name = "aggregate" if form.single_per_period else "derived"
 
@@ -376,14 +380,13 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    if "question_mappings" in mapping_version.json:
+                    if mapping_version and "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
                     else:
                         # CVS
-                        for key in mapping_version.json["aggregations"]:
-                            test_data[key["questionName"]] = randint(1, 100)
+                        test_data["cs_304"] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form

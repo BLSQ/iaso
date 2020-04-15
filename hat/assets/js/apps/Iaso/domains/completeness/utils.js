@@ -32,14 +32,14 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
         // create form group if not exist
         const formPath = `${periodPath}.forms.${dataEntry.form.id}`;
         if (!_.has(groupedCompletenessData, formPath)) {
-
             _.set(groupedCompletenessData, formPath, {
                 ...dataEntry.form,
                 months: Object.fromEntries(groupPeriod.monthRange.map(month => [month, {
                     ready: 0,
                     error: 0,
                     exported: 0,
-                    period: period
+                    period,
+                    form: dataEntry.form,
                 }])),
             });
         }
@@ -51,14 +51,15 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
         _.update(groupedCompletenessData, `${monthPath}.period`, p => period);
     });
 
-    return Object
+    const data = Object
         .values(groupedCompletenessData)
         .map(periodData => ({
             ...periodData,
-            forms: Object.values(periodData.forms),
+            forms: Object.values(periodData.forms).sort((f1, f2) => (f1.name < f2.name ? -1 : 1)),
         }))
         .sort((group1, group2) => (
             group1.period.periodString < group2.period.periodString ? -1 : 1
         ))
         .reverse();
+    return data;
 }

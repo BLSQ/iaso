@@ -35,6 +35,12 @@ EDIT_PATIENT = _("Edition d'un patient")
 DOWNLOAD_DATAS = _("Téléchargement de données")
 DUPLICATES = _("Doublons")
 
+FORMS = _("Formulaires")
+MAPPINGS = _("Correspondances avec DHIS2")
+COMPLETENESS = _("Complétude des données")
+ORG_UNITS = _("Unités d'organistations")
+LINKS = _("Correspondances sources")
+
 
 class CustomPermissionSupport(models.Model):
     class Meta:
@@ -76,4 +82,9 @@ class CustomPermissionSupport(models.Model):
             ('x_management_edit_areas', AREAS_EDIT),
             ('x_management_edit_shape_zones', ZONES_SHAPES_EDIT),
             ('x_management_edit_shape_areas', AREAS_SHAPES_EDIT),
+            ('iaso_forms', FORMS),
+            ('iaso_mappings', MAPPINGS),
+            ('iaso_completeness', COMPLETENESS),
+            ('iaso_org_units', ORG_UNITS),
+            ('iaso_links', LINKS),
         )

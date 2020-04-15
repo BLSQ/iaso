@@ -8,6 +8,7 @@ import Settings from '@material-ui/icons/Settings';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
+import * as paths from './paths';
 
 const menuItems = [
     {
@@ -16,6 +17,7 @@ const menuItems = [
             id: 'iaso.forms.title',
         },
         key: 'forms',
+        permission: paths.formsPath.permission,
         icon: props => <DataSourceIcon {...props} />,
         subMenu: [
             {
@@ -23,6 +25,7 @@ const menuItems = [
                     defaultMessage: 'List',
                     id: 'iaso.label.list',
                 },
+                permission: paths.formsPath.permission,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
@@ -31,6 +34,7 @@ const menuItems = [
                     defaultMessage: 'DHIS mappings',
                     id: 'iaso.label.dhis2Mappings',
                 },
+                permission: paths.mappingsPath.permission,
                 key: 'mappings',
                 icon: props => <DHIS2Svg {...props} />,
             },
@@ -39,6 +43,7 @@ const menuItems = [
                     defaultMessage: 'Completeness',
                     id: 'iaso.completeness.title',
                 },
+                permission: paths.completenessPath.permission,
                 key: 'completeness',
                 icon: props => <DoneAll {...props} />,
             },
@@ -49,6 +54,7 @@ const menuItems = [
             defaultMessage: 'Org units',
             id: 'iaso.orgUnits.title',
         },
+        permission: paths.orgUnitsPath.permission,
         key: 'orgunits',
         icon: props => <OrgUnitSvg {...props} />,
         subMenu: [
@@ -57,6 +63,7 @@ const menuItems = [
                     defaultMessage: 'List',
                     id: 'iaso.label.list',
                 },
+                permission: paths.orgUnitsPath.permission,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
             },
@@ -65,6 +72,7 @@ const menuItems = [
                     defaultMessage: 'Matching',
                     id: 'iaso.matching.title',
                 },
+                permission: paths.linksPath.permission,
                 key: 'links',
                 icon: props => <Link {...props} />,
                 subMenu: [
@@ -73,6 +81,7 @@ const menuItems = [
                             defaultMessage: 'List',
                             id: 'iaso.label.list',
                         },
+                        permission: paths.linksPath.permission,
                         key: 'list',
                         icon: props => <FormatListBulleted {...props} />,
                     },
@@ -81,6 +90,7 @@ const menuItems = [
                             defaultMessage: 'Algorithms runs',
                             id: 'iaso.label.algorithmsRuns',
                         },
+                        permission: paths.algosPath.permission,
                         key: 'runs',
                         icon: props => <CompareArrows {...props} />,
                     },

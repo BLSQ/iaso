@@ -26,6 +26,10 @@ import commonStyles from '../../styles/common';
 
 import menuItems from '../../constants/menu';
 
+import {
+    userHasPermission,
+} from '../../domains/users/utils';
+
 const styles = theme => ({
     ...commonStyles(theme),
     logo: {
@@ -71,6 +75,7 @@ class SidebarMenu extends PureComponent {
             isOpen,
             toggleSidebar,
             location,
+            currentUser,
         } = this.props;
         return (
             <Drawer
@@ -92,14 +97,20 @@ class SidebarMenu extends PureComponent {
                 <Divider />
                 <List className={classes.list}>
                     {
-                        menuItems.map(menuItem => (
-                            <MenuItem
-                                location={location}
-                                key={menuItem.key}
-                                menuItem={menuItem}
-                                onClick={path => this.onClick(path)}
-                            />
-                        ))
+                        menuItems.map((menuItem) => {
+                            if (userHasPermission(menuItem.permission, currentUser)) {
+                                return (
+                                    <MenuItem
+                                        location={location}
+                                        key={menuItem.key}
+                                        menuItem={menuItem}
+                                        onClick={path => this.onClick(path)}
+                                        currentUser={currentUser}
+                                    />
+                                );
+                            }
+                            return null;
+                        })
                     }
                 </List>
                 <Button
@@ -123,10 +134,12 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

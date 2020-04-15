@@ -16,6 +16,9 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 import muiTheme from '../../utils/theme';
+import {
+    userHasPermission,
+} from '../../domains/users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -33,6 +36,7 @@ function MenuItem(props) {
         intl,
         subMenuLevel,
         currentPath,
+        currentUser,
     } = props;
     const path = `${currentPath}/${menuItem.key}`;
     const baseUrl = location.pathname.split('/')[subMenuLevel];
@@ -70,18 +74,24 @@ function MenuItem(props) {
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {
-                                menuItem.subMenu.map(subMenu => (
-                                    <MenuItem
-                                        classes={classes}
-                                        intl={intl}
-                                        key={subMenu.key}
-                                        menuItem={subMenu}
-                                        onClick={subPath => onClick(subPath)}
-                                        subMenuLevel={subMenuLevel + 1}
-                                        location={location}
-                                        currentPath={path}
-                                    />
-                                ))
+                                menuItem.subMenu.map((subMenu) => {
+                                    if (userHasPermission(subMenu.permission, currentUser)) {
+                                        return (
+                                            <MenuItem
+                                                classes={classes}
+                                                intl={intl}
+                                                key={subMenu.key}
+                                                menuItem={subMenu}
+                                                onClick={subPath => onClick(subPath)}
+                                                subMenuLevel={subMenuLevel + 1}
+                                                location={location}
+                                                currentPath={path}
+                                                currentUser={currentUser}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })
                             }
                         </List>
                     </Collapse>
@@ -104,6 +114,7 @@ MenuItem.propTypes = {
     classes: PropTypes.object.isRequired,
     subMenuLevel: PropTypes.number,
     currentPath: PropTypes.string,
+    currentUser: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(MenuItem));

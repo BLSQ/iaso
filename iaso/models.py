@@ -1178,7 +1178,7 @@ class Profile(models.Model):
             "permissions": list(
                 self.user.user_permissions.filter(
                     codename__startswith="iaso_"
-                ).values_list("id", "name", "codename")
+                ).values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
         }

@@ -4,10 +4,18 @@ import { bindActionCreators } from 'redux';
 
 import PropTypes from 'prop-types';
 
+import SidebarMenu from '../../../components/nav/SidebarMenuComponent';
+
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
     fetchCurrentUser as fetchCurrentUserAction,
 } from '../actions';
+
+import {
+    userHasPermission,
+} from '../utils';
+
+import PageError from '../../../components/errors/PageError';
 
 
 class AuthorizedUser extends Component {
@@ -22,44 +30,52 @@ class AuthorizedUser extends Component {
 
     render() {
         const {
-            children,
-            fetching,
+            component,
+            currentUser,
+            permission,
         } = this.props;
-        const isAuthorized = true;
-        if (fetching) {
+        const clonedProps = {
+            ...this.props,
+        };
+        delete clonedProps.children;
+        const isAuthorized = userHasPermission(permission, currentUser);
+        if (!currentUser) {
             return null;
         }
         return (
             <>
+                <SidebarMenu {...clonedProps} />
                 {
                     isAuthorized
                     && (
-                        children
+                        component
                     )
                 }
                 {
                     !isAuthorized
                     && (
-                        'NOT AUTHORIZED'
+                        <PageError errorCode="401" />
                     )
                 }
             </>
         );
     }
 }
+AuthorizedUser.defaultProps = {
+    currentUser: null,
+};
 
 AuthorizedUser.propTypes = {
-    router: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
     fetchCurrentUser: PropTypes.func.isRequired,
-    fetching: PropTypes.bool.isRequired,
-    children: PropTypes.node.isRequired,
+    component: PropTypes.node.isRequired,
+    permission: PropTypes.string.isRequired,
+    currentUser: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.links.linksPage,
-    fetching: state.users.fetching,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

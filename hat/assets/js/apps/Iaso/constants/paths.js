@@ -26,9 +26,9 @@ export const getPath = (path) => {
     return url;
 };
 
-
 export const formsPath = {
     baseUrl: 'forms/list',
+    permission: 'iaso_forms',
     params: [
         ...paginationPathParams,
     ],
@@ -36,6 +36,7 @@ export const formsPath = {
 
 export const mappingsPath = {
     baseUrl: 'forms/mappings',
+    permission: 'iaso_mappings',
     params: [
         ...paginationPathParams.map(p => ({
             ...p,
@@ -46,6 +47,7 @@ export const mappingsPath = {
 
 export const mappingDetailPath = {
     baseUrl: 'forms/mapping',
+    permission: 'iaso_mappings',
     params: [
         {
             isRequired: true,
@@ -61,6 +63,7 @@ export const mappingDetailPath = {
 
 export const instancesPath = {
     baseUrl: 'instances',
+    permission: 'iaso_forms',
     params: [
         {
             isRequired: true,
@@ -108,6 +111,7 @@ export const instancesPath = {
 
 export const instanceDetailPath = {
     baseUrl: 'instance',
+    permission: 'iaso_forms',
     params: [
         {
             isRequired: true,
@@ -118,6 +122,7 @@ export const instanceDetailPath = {
 
 export const orgUnitsPath = {
     baseUrl: 'orgunits/list',
+    permission: 'iaso_org_units',
     params: [
         {
             isRequired: true,
@@ -145,6 +150,7 @@ export const orgUnitsPath = {
 
 export const orgUnitsDetailsPath = {
     baseUrl: 'orgunits/detail',
+    permission: 'iaso_org_units',
     params: [
         {
             isRequired: true,
@@ -168,6 +174,7 @@ export const orgUnitsDetailsPath = {
 
 export const linksPath = {
     baseUrl: 'orgunits/links/list',
+    permission: 'iaso_links',
     params: [
         {
             isRequired: false,
@@ -221,9 +228,9 @@ export const linksPath = {
     ],
 };
 
-
 export const algosPath = {
     baseUrl: 'orgunits/links/runs',
+    permission: 'iaso_links',
     params: [
         {
             isRequired: false,
@@ -256,3 +263,22 @@ export const algosPath = {
         },
     ],
 };
+
+export const completenessPath = {
+    baseUrl: 'forms/completeness',
+    permission: 'iaso_completeness',
+    params: [],
+};
+
+export const pathsList = [
+    formsPath,
+    mappingsPath,
+    mappingDetailPath,
+    instancesPath,
+    instanceDetailPath,
+    orgUnitsPath,
+    orgUnitsDetailsPath,
+    linksPath,
+    algosPath,
+    completenessPath,
+];

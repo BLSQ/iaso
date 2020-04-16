@@ -48,11 +48,11 @@ def import_synced_devices() -> List[ImportResult]:
     results = []
     for device in DeviceDB.objects.all():
         result: ImportResult = {
-            'device_id': device.device_id,
-            'device_user': device.last_user.username if device.last_user else None,
-            'typename': _('synced data'),
-            'error': None,
-            'stats': None
+            "device_id": device.device_id,
+            "device_user": device.last_user.username if device.last_user else None,
+            "typename": _("synced data"),
+            "error": None,
+            "stats": None,
         }
         try:
             data = fetch_db_docs(device.db_name, device.last_synced_seq)
@@ -62,21 +62,17 @@ def import_synced_devices() -> List[ImportResult]:
                 total_records=len(data),
                 last_synced_seq=device.last_synced_seq,
             ).save()
-            docs = data['docs']
+            docs = data["docs"]
             stats = import_synced_docs(docs, device.device_id)
             stats.ptr = import_synced_population(docs, device.device_id)
-            result['stats'] = stats
+            result["stats"] = stats
             results.append(result)
             if stats.total:
                 device.last_synced_date = timezone.now()
-                device.last_synced_log_status = 'success'
-                device.last_synced_seq = data['last_seq']
-                device.last_synced_log_message = '{} - {} - {} - {}, PTR {}'.format(
-                    stats.total,
-                    stats.created,
-                    stats.updated,
-                    stats.deleted,
-                    stats.ptr,
+                device.last_synced_log_status = "success"
+                device.last_synced_seq = data["last_seq"]
+                device.last_synced_log_message = "{} - {} - {} - {}, PTR {}".format(
+                    stats.total, stats.created, stats.updated, stats.deleted, stats.ptr,
                 )
                 device.save()
                 DeviceImportEvent(
@@ -90,11 +86,11 @@ def import_synced_devices() -> List[ImportResult]:
                     last_synced_seq=device.last_synced_seq,
                 ).save()
         except Exception as ex:
-            if hasattr(ex, 'response') and ex.response.status_code == 404:
+            if hasattr(ex, "response") and ex.response.status_code == 404:
                 logger.error("Could not find CouchDB for device " + device.device_id)
             else:
                 logger.exception(str(ex))
-                result['error'] = get_import_error(ex)
+                result["error"] = get_import_error(ex)
                 device.last_synced_log_status = str(ex)
                 DeviceImportEvent(
                     device=device,
@@ -110,26 +106,29 @@ def import_synced_devices() -> List[ImportResult]:
 
 def import_synced_docs(docs, device_id) -> EventStats:
     device = DeviceDB.objects.get(device_id=device_id)
-    patient_docs: List[dict] = [doc for doc in docs if 'type' in doc and doc['type'] == 'participant']
+    patient_docs: List[dict] = [
+        doc for doc in docs if "type" in doc and doc["type"] == "participant"
+    ]
     for doc in patient_docs:
         logger.error(json.dumps(doc))
 
-        revision = doc.get('_rev', None)
-        doc_id = doc.get('_id', None)
+        revision = doc.get("_rev", None)
+        doc_id = doc.get("_id", None)
 
         couch_document, document_created = JSONDocument.objects.get_or_create(
-            doc_id=doc_id, doc_revision=revision,
-            defaults={'doc': doc, 'device': device}
+            doc_id=doc_id,
+            doc_revision=revision,
+            defaults={"doc": doc, "device": device},
         )
 
         if couch_document.processed:
             patient_docs.remove(doc)
             continue
 
-        doc['json_document_id'] = couch_document.id
+        doc["json_document_id"] = couch_document.id
 
     extracted = prepare_mobile_data(patient_docs)
-    transformed = transform_source('sync', extracted)
+    transformed = transform_source("sync", extracted)
     stats = load_cases_into_db(transformed)
     return stats
 
@@ -137,26 +136,47 @@ def import_synced_docs(docs, device_id) -> EventStats:
 def import_synced_population(docs: JsonType, device_id: str):
     records_imported = 0
     device = DeviceDB.objects.get(device_id=device_id)
-    ptr_docs: List[dict] = [doc for doc in docs if 'ptr' in doc and doc['_id'].startswith('latest-ptr-village-')]
+    ptr_docs: List[dict] = [
+        doc
+        for doc in docs
+        if "ptr" in doc and doc["_id"].startswith("latest-ptr-village-")
+    ]
     for doc in ptr_docs:
-        revision = doc.get('_rev', None)
-        doc_id = doc.get('_id', None)
-        zone = doc.get('zone').get('id') if doc.get('zone').get('id') else doc.get('zone').get('name')
-        area = doc.get('area').get('id') if doc.get('area').get('id') else doc.get('area').get('name')
+        revision = doc.get("_rev", None)
+        doc_id = doc.get("_id", None)
+        zone = (
+            doc.get("zone").get("id")
+            if doc.get("zone").get("id")
+            else doc.get("zone").get("name")
+        )
+        area = (
+            doc.get("area").get("id")
+            if doc.get("area").get("id")
+            else doc.get("area").get("name")
+        )
         # TODO support case where the village id is None and its name is a number
-        village = doc.get('village').get('id') if doc.get('village').get('id') else doc.get('village').get('name')
+        village = (
+            doc.get("village").get("id")
+            if doc.get("village").get("id")
+            else doc.get("village").get("name")
+        )
 
         (_, normalized_village) = normalize_location(zone, area, village, device_id)
 
-        date_modified = dateutil.parser.parse(doc.get('dateModified'))
+        date_modified = dateutil.parser.parse(doc.get("dateModified"))
 
         couch_document, document_created = JSONDocument.objects.get_or_create(
-            doc_id=doc_id, doc_revision=revision, type='ptr',
-            defaults={'doc': doc, 'device': device, 'processed': False}
+            doc_id=doc_id,
+            doc_revision=revision,
+            type="ptr",
+            defaults={"doc": doc, "device": device, "processed": False},
         )
 
         if normalized_village is None:
-            logger.error("Received a PTR but couldn't normalize the location", str(couch_document.doc))
+            logger.error(
+                "Received a PTR but couldn't normalize the location",
+                str(couch_document.doc),
+            )
         else:
             if not couch_document.processed:
                 population, _ = PopulationData.objects.get_or_create(
@@ -166,16 +186,18 @@ def import_synced_population(docs: JsonType, device_id: str):
                     device=device,
                     population_year=date_modified.year,
                     village=normalized_village,
-                    population=int(doc.get('ptr')) % 2147483647,
-                    defaults={'report_date': date_modified},
+                    population=int(doc.get("ptr")) % 2147483647,
+                    defaults={"report_date": date_modified},
                 )
 
                 # Village contains denormalized data about population, we need to update it
-                if normalized_village.population_year != population.population_year \
-                        or normalized_village.population != population.population:
+                if (
+                    normalized_village.population_year != population.population_year
+                    or normalized_village.population != population.population
+                ):
                     normalized_village.population = population.population
                     normalized_village.population_year = population.population_year
-                    normalized_village.population_source = 'ptr'
+                    normalized_village.population_source = "ptr"
                     normalized_village.save()
 
                 couch_document.processed = True

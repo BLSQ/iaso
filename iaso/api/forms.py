@@ -41,20 +41,56 @@ class HasFormPermission(permissions.BasePermission):
 class FormSerializer(serializers.ModelSerializer):
     class Meta:
         model = Form
-        fields = ['id', 'name', 'form_id', 'device_field', 'location_field', 'org_unit_types', 'org_unit_type_ids',
-                  'projects', 'project_ids', 'period_type', 'single_per_period', 'periods_before_allowed',
-                  'periods_after_allowed', 'latest_form_version', 'instances_count', 'instance_updated_at',
-                  'created_at', 'updated_at']
-        read_only_fields = ['id', 'form_id', 'org_unit_types', 'projects', 'instances_count', 'instance_updated_at',
-                            'created_at', 'updated_at']
+        fields = [
+            "id",
+            "name",
+            "form_id",
+            "device_field",
+            "location_field",
+            "org_unit_types",
+            "org_unit_type_ids",
+            "projects",
+            "project_ids",
+            "period_type",
+            "single_per_period",
+            "periods_before_allowed",
+            "periods_after_allowed",
+            "latest_form_version",
+            "instances_count",
+            "instance_updated_at",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "form_id",
+            "org_unit_types",
+            "projects",
+            "instances_count",
+            "instance_updated_at",
+            "created_at",
+            "updated_at",
+        ]
 
     org_unit_types = serializers.SerializerMethodField()
-    org_unit_type_ids = serializers.PrimaryKeyRelatedField(source="org_unit_types", write_only=True, many=True,
-                                                           allow_empty=False, queryset=OrgUnitType.objects.all())
+    org_unit_type_ids = serializers.PrimaryKeyRelatedField(
+        source="org_unit_types",
+        write_only=True,
+        many=True,
+        allow_empty=False,
+        queryset=OrgUnitType.objects.all(),
+    )
     projects = ProjectSerializer(read_only=True, many=True)
-    project_ids = serializers.PrimaryKeyRelatedField(source="projects", write_only=True, many=True,
-                                                     allow_empty=False, queryset=Project.objects.all())
-    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
+    project_ids = serializers.PrimaryKeyRelatedField(
+        source="projects",
+        write_only=True,
+        many=True,
+        allow_empty=False,
+        queryset=Project.objects.all(),
+    )
+    latest_form_version = (
+        serializers.SerializerMethodField()
+    )  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -72,23 +108,31 @@ class FormSerializer(serializers.ModelSerializer):
         # validate projects (access check)
         permission_checker = HasProjectPermission()
         for project in data["projects"]:
-            if not permission_checker.has_object_permission(self.context["request"], self.context["view"], project):
-                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
+            if not permission_checker.has_object_permission(
+                self.context["request"], self.context["view"], project
+            ):
+                raise serializers.ValidationError(
+                    {"project_ids": "Invalid project ids"}
+                )
 
         # validate org_unit_types against projects
-        allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
+        allowed_org_unit_types = [
+            ut for p in data["projects"] for ut in p.unit_types.all()
+        ]
         if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
-            raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
+            raise serializers.ValidationError(
+                {"org_unit_type_ids": "Invalid org unit type ids"}
+            )
 
         # If the period type is None, some period-specific fields must have specific values
-        if data['period_type'] is None:
+        if data["period_type"] is None:
             tracker_errors = {}
-            if data['single_per_period'] is not False:
-                tracker_errors['single_per_period'] = "Should be false"
-            if data['periods_before_allowed'] != 0:
-                tracker_errors['periods_before_allowed'] = "Should be 0"
-            if data['periods_after_allowed'] != 0:
-                tracker_errors['periods_after_allowed'] = "Should be 0"
+            if data["single_per_period"] is not False:
+                tracker_errors["single_per_period"] = "Should be false"
+            if data["periods_before_allowed"] != 0:
+                tracker_errors["periods_before_allowed"] = "Should be 0"
+            if data["periods_after_allowed"] != 0:
+                tracker_errors["periods_after_allowed"] = "Should be 0"
             if tracker_errors:
                 raise serializers.ValidationError(tracker_errors)
 
@@ -133,6 +177,7 @@ class FormsViewSet(ModelViewSet):
         else:
             app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
             queryset = queryset.filter(projects__app_id=app_id)
+            queryset = queryset.exclude(derived=True)
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
@@ -176,19 +221,35 @@ class FormsViewSet(ModelViewSet):
 
     def list_to_csv(self):
         response = StreamingHttpResponse(
-            streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self.get_table_row)),
+            streaming_content=(
+                iter_items(
+                    self.get_queryset(),
+                    Echo(),
+                    self.EXPORT_TABLE_COLUMNS,
+                    self.get_table_row,
+                )
+            ),
             content_type="text/csv",
         )
-        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
+        response[
+            "Content-Disposition"
+        ] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
         return response
 
     def list_to_xlsx(self):
         response = HttpResponse(
-            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self.get_table_row),
+            generate_xlsx(
+                "Forms",
+                self.EXPORT_TABLE_COLUMNS,
+                self.get_queryset(),
+                self.get_table_row,
+            ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
+        response[
+            "Content-Disposition"
+        ] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
 
         return response
 

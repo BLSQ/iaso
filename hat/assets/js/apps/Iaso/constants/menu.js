@@ -3,6 +3,7 @@ import DataSourceIcon from '@material-ui/icons/ListAltTwoTone';
 import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import CompareArrows from '@material-ui/icons/CompareArrows';
+import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 
@@ -17,7 +18,6 @@ const menuItems = [
             id: 'iaso.forms.title',
         },
         key: 'forms',
-        permission: paths.formsPath.permission,
         icon: props => <DataSourceIcon {...props} />,
         subMenu: [
             {
@@ -54,7 +54,6 @@ const menuItems = [
             defaultMessage: 'Org units',
             id: 'iaso.orgUnits.title',
         },
-        permission: paths.orgUnitsPath.permission,
         key: 'orgunits',
         icon: props => <OrgUnitSvg {...props} />,
         subMenu: [
@@ -98,24 +97,25 @@ const menuItems = [
             },
         ],
     },
-    // {
-    //     label: {
-    //         defaultMessage: 'Configuration',
-    //         id: 'iaso.label.config',
-    //     },
-    //     key: 'settings',
-    //     icon: props => <Settings {...props} />,
-    //     subMenu: [
-    //         {
-    //             label: {
-    //                 defaultMessage: 'DHIS mappings',
-    //                 id: 'iaso.label.dhis2Mappings',
-    //             },
-    //             key: 'mappings',
-    //             icon: props => <DHIS2Svg {...props} />,
-    //         },
-    //     ],
-    // },
+    {
+        label: {
+            defaultMessage: 'Configuration',
+            id: 'iaso.label.config',
+        },
+        key: 'settings',
+        icon: props => <Settings {...props} />,
+        subMenu: [
+            {
+                label: {
+                    defaultMessage: 'Users',
+                    id: 'iaso.label.users',
+                },
+                key: 'users',
+                permission: paths.usersPath.permission,
+                icon: props => <SupervisorAccount {...props} />,
+            },
+        ],
+    },
 ];
 
 export default menuItems;

@@ -31,7 +31,6 @@ import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import { getChipColors } from './constants/chipColors';
-import PageError from './components/errors/PageError';
 
 import App from '../App';
 import { locationLimitMax } from './domains/orgUnits';
@@ -39,25 +38,13 @@ import { locationLimitMax } from './domains/orgUnits';
 import {
     pathsList,
     getPath,
-    formsPath,
-    mappingsPath,
-    orgUnitsPath,
 } from './constants/paths';
 
-import { routeMapping } from './constants/routesMappings';
+import { baseUrls } from './constants/routes';
 
 import AuthorizedUser from './domains/users/components/AuthorizedUser';
 
 import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
-
-const getRouteComponent = (baseUrl, props) => {
-    const routeMap = routeMapping.find(r => r.baseUrl === baseUrl);
-    if (routeMap) {
-        return routeMap.component(props);
-    }
-    return null;
-};
-
 
 export default function iasoApp(element, baseUrl) {
     let routes = pathsList.map(currentPath => (
@@ -67,34 +54,17 @@ export default function iasoApp(element, baseUrl) {
                 <AuthorizedUser
                     {...props}
                     permission={currentPath.permission}
-                    component={getRouteComponent(currentPath.baseUrl, props)}
+                    component={currentPath.component(props)}
                 />
             )}
         />
     ));
 
     routes = routes.concat([
-        <Route
-            path="/401"
-            component={props => (
-                <PageError {...props} errorCode="401" />
-            )}
-        />,
-        <Route
-            path="/404"
-            component={props => (
-                <PageError {...props} errorCode="404" />
-            )}
-        />,
-        <Route
-            path="/500"
-            component={props => (
-                <PageError {...props} errorCode="500" />
-            )}
-        />,
-        <Redirect path="/" to={formsPath.baseUrl} />,
-        <Redirect path={orgUnitsPath.baseUrl} to={`${orgUnitsPath.baseUrl}/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
-        <Redirect path={mappingsPath.baseUrl} to={`${mappingsPath.baseUrl}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
+        <Redirect path="/" to={baseUrls.forms} />,
+        <Redirect path={baseUrls.orgUnits} to={`${baseUrls.orgUnits}/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
+        <Redirect path={baseUrls.mappings} to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
+        <Redirect path={baseUrls.users} to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`} />,
     ]);
 
     let history = useRouterHistory(createHistory)({

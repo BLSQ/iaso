@@ -7,7 +7,6 @@ import PropTypes from 'prop-types';
 import SidebarMenu from '../../../components/nav/SidebarMenuComponent';
 
 import {
-    fetchUsersProfiles as fetchUsersProfilesAction,
     fetchCurrentUser as fetchCurrentUserAction,
 } from '../actions';
 
@@ -22,9 +21,7 @@ class AuthorizedUser extends Component {
     componentDidMount() {
         const {
             fetchCurrentUser,
-            fetchUsersProfiles,
         } = this.props;
-        fetchUsersProfiles();
         fetchCurrentUser();
     }
 
@@ -38,7 +35,7 @@ class AuthorizedUser extends Component {
             ...this.props,
         };
         delete clonedProps.children;
-        const isAuthorized = userHasPermission(permission, currentUser);
+        const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
         if (!currentUser) {
             return null;
         }
@@ -63,13 +60,13 @@ class AuthorizedUser extends Component {
 }
 AuthorizedUser.defaultProps = {
     currentUser: null,
+    permission: null,
 };
 
 AuthorizedUser.propTypes = {
-    fetchUsersProfiles: PropTypes.func.isRequired,
     fetchCurrentUser: PropTypes.func.isRequired,
     component: PropTypes.node.isRequired,
-    permission: PropTypes.string.isRequired,
+    permission: PropTypes.any,
     currentUser: PropTypes.object,
 };
 
@@ -80,7 +77,6 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators({
-        fetchUsersProfiles: fetchUsersProfilesAction,
         fetchCurrentUser: fetchCurrentUserAction,
     }, dispatch),
 });

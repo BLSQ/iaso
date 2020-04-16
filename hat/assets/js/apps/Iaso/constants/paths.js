@@ -1,3 +1,18 @@
+import React from 'react';
+import Forms from '../domains/forms';
+import OrgUnits from '../domains/orgUnits';
+import Links from '../domains/links';
+import Runs from '../domains/links/Runs';
+import OrgUnitDetail from '../domains/orgUnits/details';
+import Completeness from '../domains/completeness';
+import Instances from '../domains/instances';
+import InstanceDetail from '../domains/instances/details';
+import Mappings from '../domains/mappings';
+import MappingDetails from '../domains/mappings/details';
+import Users from '../domains/users';
+import PageError from '../components/errors/PageError';
+import { baseUrls } from './routes';
+
 const paginationPathParams = [
     {
         isRequired: false,
@@ -27,16 +42,18 @@ export const getPath = (path) => {
 };
 
 export const formsPath = {
-    baseUrl: 'forms/list',
+    baseUrl: baseUrls.forms,
     permission: 'iaso_forms',
     params: [
         ...paginationPathParams,
     ],
+    component: props => <Forms {...props} />,
 };
 
 export const mappingsPath = {
-    baseUrl: 'forms/mappings',
+    baseUrl: baseUrls.mappings,
     permission: 'iaso_mappings',
+    component: props => <Mappings {...props} />,
     params: [
         ...paginationPathParams.map(p => ({
             ...p,
@@ -46,8 +63,9 @@ export const mappingsPath = {
 };
 
 export const mappingDetailPath = {
-    baseUrl: 'forms/mapping',
+    baseUrl: baseUrls.mappingDetail,
     permission: 'iaso_mappings',
+    component: props => <MappingDetails {...props} />,
     params: [
         {
             isRequired: true,
@@ -62,8 +80,9 @@ export const mappingDetailPath = {
 
 
 export const instancesPath = {
-    baseUrl: 'instances',
+    baseUrl: baseUrls.instances,
     permission: 'iaso_forms',
+    component: props => <Instances {...props} />,
     params: [
         {
             isRequired: true,
@@ -110,8 +129,9 @@ export const instancesPath = {
 };
 
 export const instanceDetailPath = {
-    baseUrl: 'instance',
+    baseUrl: baseUrls.instanceDetail,
     permission: 'iaso_forms',
+    component: props => <InstanceDetail {...props} />,
     params: [
         {
             isRequired: true,
@@ -121,8 +141,9 @@ export const instanceDetailPath = {
 };
 
 export const orgUnitsPath = {
-    baseUrl: 'orgunits/list',
+    baseUrl: baseUrls.orgUnits,
     permission: 'iaso_org_units',
+    component: props => <OrgUnits {...props} />,
     params: [
         {
             isRequired: true,
@@ -149,8 +170,9 @@ export const orgUnitsPath = {
 };
 
 export const orgUnitsDetailsPath = {
-    baseUrl: 'orgunits/detail',
+    baseUrl: baseUrls.orgUnitDetails,
     permission: 'iaso_org_units',
+    component: props => <OrgUnitDetail {...props} />,
     params: [
         {
             isRequired: true,
@@ -173,8 +195,9 @@ export const orgUnitsDetailsPath = {
 };
 
 export const linksPath = {
-    baseUrl: 'orgunits/links/list',
+    baseUrl: baseUrls.links,
     permission: 'iaso_links',
+    component: props => <Links {...props} />,
     params: [
         {
             isRequired: false,
@@ -229,8 +252,9 @@ export const linksPath = {
 };
 
 export const algosPath = {
-    baseUrl: 'orgunits/links/runs',
+    baseUrl: baseUrls.algos,
     permission: 'iaso_links',
+    component: props => <Runs {...props} />,
     params: [
         {
             isRequired: false,
@@ -265,10 +289,43 @@ export const algosPath = {
 };
 
 export const completenessPath = {
-    baseUrl: 'forms/completeness',
+    baseUrl: baseUrls.completeness,
     permission: 'iaso_completeness',
+    component: props => <Completeness {...props} />,
     params: [],
 };
+
+export const usersPath = {
+    baseUrl: baseUrls.users,
+    permission: 'iaso_users',
+    component: props => <Users {...props} />,
+    params: [
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
+
+
+export const page401 = {
+    baseUrl: baseUrls.error401,
+    component: () => <PageError errorCode="401" />,
+    params: [],
+};
+
+export const page404 = {
+    baseUrl: baseUrls.error404,
+    component: () => <PageError errorCode="404" />,
+    params: [],
+};
+
+export const page500 = {
+    baseUrl: baseUrls.error500,
+    component: () => <PageError errorCode="500" />,
+    params: [],
+};
+
 
 export const pathsList = [
     formsPath,
@@ -281,4 +338,8 @@ export const pathsList = [
     linksPath,
     algosPath,
     completenessPath,
+    usersPath,
+    page401,
+    page404,
+    page500,
 ];

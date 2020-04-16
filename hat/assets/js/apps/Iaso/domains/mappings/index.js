@@ -15,16 +15,16 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import mappingsTableColumns from './config';
-import { getSort } from './utils';
+import { getSort } from '../../utils/tableUtils';
 
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 
-import { mappingsPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/routes';
 
-const { baseUrl } = mappingsPath;
+const baseUrl = baseUrls.mappings;
 
 const styles = theme => ({
     ...commonStyles(theme),

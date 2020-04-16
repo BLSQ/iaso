@@ -1184,7 +1184,13 @@ class Profile(models.Model):
         }
 
     def as_short_dict(self):
-        return self.as_dict()
+        return {
+            "id": self.id,
+            "first_name": self.user.first_name,
+            "user_name": self.user.username,
+            "last_name": self.user.last_name,
+            "email": self.user.email,
+        }
 
 
 class ExportRequest(models.Model):

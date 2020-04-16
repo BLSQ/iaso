@@ -17,7 +17,8 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PageError = ({ errorCode }) => {
+const PageError = (props) => {
+    const { errorCode } = props;
     const classes = useStyles();
     return (
         <>
@@ -56,8 +57,8 @@ const PageError = ({ errorCode }) => {
                                         <Box pt={2} pb={2}>
                                             <Typography variant="h5">
                                                 <FormattedMessage
-                                                    id="iaso.errors.label"
-                                                    defaultMessage="An error occured"
+                                                    id="iaso.errors.notFound"
+                                                    defaultMessage="Page not found"
                                                 />
                                             </Typography>
                                         </Box>

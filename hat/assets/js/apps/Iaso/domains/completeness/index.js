@@ -10,7 +10,6 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
-
 class Completeness extends Component {
     componentDidMount() {
         this.props.fetchCompleteness();

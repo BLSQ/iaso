@@ -3,7 +3,7 @@ import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../../utils/constants/snackBars';
 import { redirectTo } from '../../routing/actions';
 import Descriptor from './descriptor';
-import { mappingDetailPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/routes';
 
 export const FETCHING_MAPPING_VERSIONS = 'FETCHING_MAPPING_VERSIONS';
 
@@ -124,7 +124,7 @@ export const createMappingRequest = params => (dispatch) => {
     return postRequest('/api/mappingversions/', params)
         .then((res) => {
             dispatch(
-                redirectTo(mappingDetailPath.baseUrl, {
+                redirectTo(baseUrls.mappingDetail, {
                     mappingVersionId: res.id,
                 }),
             );

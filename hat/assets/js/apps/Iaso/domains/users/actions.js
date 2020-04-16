@@ -17,9 +17,15 @@ export const setCurrentUser = payload => ({
 });
 
 
-export const fetchUsersProfiles = () => dispatch => getRequest('/api/profiles')
-    .then(res => dispatch(setUsersProfiles(res.profiles)))
-    .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchProfilesError'))));
+export const fetchUsersProfiles = params => (dispatch) => {
+    let url = '/api/profiles';
+    if (params) {
+        url += `?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
+    }
+    return getRequest(url)
+        .then(res => dispatch(setUsersProfiles(res.profiles)))
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchProfilesError'))));
+};
 
 export const fetchCurrentUser = () => dispatch => getRequest('/api/profiles/me')
     .then(res => dispatch(setCurrentUser(res)))

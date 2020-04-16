@@ -40,6 +40,7 @@ MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organistations")
 LINKS = _("Correspondances sources")
+USERS = _("Utilisateurs")
 
 
 class CustomPermissionSupport(models.Model):
@@ -87,4 +88,5 @@ class CustomPermissionSupport(models.Model):
             ('iaso_completeness', COMPLETENESS),
             ('iaso_org_units', ORG_UNITS),
             ('iaso_links', LINKS),
+            ('iaso_users', USERS),
         )

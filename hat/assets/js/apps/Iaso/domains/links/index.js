@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
+import { bindActionCreators } from 'redux';
 
 import {
     withStyles, Grid, Box,
@@ -40,13 +41,16 @@ import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import LinksFiltersComponent from './components/LinksFiltersComponent';
 import LinksDetails from './components/LinksDetailsComponent';
+import {
+    fetchUsersProfiles as fetchUsersProfilesAction,
+} from '../users/actions';
 
 
 import commonStyles from '../../styles/common';
 
-import { linksPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/routes';
 
-const { baseUrl } = linksPath;
+const baseUrl = baseUrls.links;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -67,7 +71,8 @@ class Links extends Component {
     }
 
     componentWillMount() {
-        const { dispatch } = this.props;
+        const { dispatch, fetchUsersProfiles } = this.props;
+        fetchUsersProfiles();
         if (this.props.params.searchActive) {
             this.onSearch();
         }
@@ -267,6 +272,7 @@ Links.propTypes = {
     setAlgorithms: PropTypes.func.isRequired,
     setAlgorithmRuns: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
+    fetchUsersProfiles: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -284,6 +290,9 @@ const MapDispatchToProps = dispatch => ({
     setSources: sources => dispatch(setSources(sources)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
+    ...bindActionCreators({
+        fetchUsersProfiles: fetchUsersProfilesAction,
+    }, dispatch),
 });
 
 export default withStyles(styles)(

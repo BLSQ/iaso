@@ -28,6 +28,7 @@ import menuItems from '../../constants/menu';
 
 import {
     userHasPermission,
+    userHasOneOfPermissions,
 } from '../../domains/users/utils';
 
 const styles = theme => ({
@@ -98,7 +99,10 @@ class SidebarMenu extends PureComponent {
                 <List className={classes.list}>
                     {
                         menuItems.map((menuItem) => {
-                            if (userHasPermission(menuItem.permission, currentUser)) {
+                            if (
+                                (menuItem.permission && userHasPermission(menuItem.permission, currentUser))
+                                || (menuItem.subMenu && userHasOneOfPermissions(menuItem.subMenu.map(sm => sm.permission), currentUser))
+                            ) {
                                 return (
                                     <MenuItem
                                         location={location}

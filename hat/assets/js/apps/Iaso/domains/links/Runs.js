@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
+import { bindActionCreators } from 'redux';
 
 import {
     withStyles, Box, Grid,
@@ -14,7 +15,6 @@ import {
     deleteAlgorithmRun,
     runAlgorithm,
     fetchSources,
-    fetchIasoProfiles,
 } from '../../utils/requests';
 
 import {
@@ -38,12 +38,16 @@ import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RunsFiltersComponent from './components/RunsFiltersComponent';
 import AddRunDialogComponent from '../../components/dialogs/AddRunDialogComponent';
+import {
+    fetchUsersProfiles as fetchUsersProfilesAction,
+} from '../users/actions';
+
 
 import commonStyles from '../../styles/common';
 
-import { algosPath, linksPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/routes';
 
-const { baseUrl } = algosPath;
+const baseUrl = baseUrls.algos;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -64,7 +68,8 @@ class Runs extends Component {
     }
 
     componentWillMount() {
-        const { dispatch } = this.props;
+        const { dispatch, fetchUsersProfiles } = this.props;
+        fetchUsersProfiles();
         if (this.props.params.searchActive) {
             this.onSearch();
         }
@@ -89,7 +94,7 @@ class Runs extends Component {
             algorithmRunId: runItem.id,
             searchActive: true,
         };
-        this.props.redirectTo(linksPath.baseUrl, params);
+        this.props.redirectTo(baseUrls.links, params);
     }
 
     onSearch() {
@@ -231,6 +236,7 @@ Runs.propTypes = {
     fetching: PropTypes.bool.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
+    fetchUsersProfiles: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -245,6 +251,9 @@ const MapDispatchToProps = dispatch => ({
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setSources: sources => dispatch(setSources(sources)),
+    ...bindActionCreators({
+        fetchUsersProfiles: fetchUsersProfilesAction,
+    }, dispatch),
 });
 
 export default withStyles(styles)(

@@ -3,6 +3,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
+from django.core.paginator import Paginator
 
 from iaso.models import Profile
 
@@ -26,6 +27,9 @@ class ProfilesViewSet(viewsets.ViewSet):
     permission_classes = []
 
     def list(self, request):
+        limit = request.GET.get("limit", None)
+        page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "user__user_name").split(",")
 
         if request.user.is_anonymous:
             raise PermissionDenied("Please log in")
@@ -33,8 +37,25 @@ class ProfilesViewSet(viewsets.ViewSet):
         account = request.user.iaso_profile.account
         queryset = Profile.objects.filter(account=account)
 
-        return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+        if limit:
+            queryset = queryset.order_by(*orders)
+            limit = int(limit)
+            page_offset = int(page_offset)
+            paginator = Paginator(queryset, limit)
+            res = {"count": paginator.count}
+            if page_offset > paginator.num_pages:
+                page_offset = paginator.num_pages
+            page = paginator.page(page_offset)
 
+            res["profiles"] = map(lambda x: x.as_dict(), page.object_list)
+            res["has_next"] = page.has_next()
+            res["has_previous"] = page.has_previous()
+            res["page"] = page_offset
+            res["pages"] = paginator.num_pages
+            res["limit"] = limit
+            return Response(res)
+        else:
+            return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get('pk')

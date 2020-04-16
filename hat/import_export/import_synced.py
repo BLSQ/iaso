@@ -141,6 +141,7 @@ def import_synced_population(docs: JsonType, device_id: str):
         doc_id = doc.get('_id', None)
         zone = doc.get('zone').get('id') if doc.get('zone').get('id') else doc.get('zone').get('name')
         area = doc.get('area').get('id') if doc.get('area').get('id') else doc.get('area').get('name')
+        # TODO support case where the village id is None and its name is a number
         village = doc.get('village').get('id') if doc.get('village').get('id') else doc.get('village').get('name')
 
         (_, normalized_village) = normalize_location(zone, area, village, device_id)
@@ -152,27 +153,32 @@ def import_synced_population(docs: JsonType, device_id: str):
             defaults={'doc': doc, 'device': device, 'processed': False}
         )
 
-        if not couch_document.processed:
-            population, _ = PopulationData.objects.get_or_create(
-                report_date__date=date_modified,
-                source="device",
-                type="PTR",
-                device=device,
-                population_year=date_modified.year,
-                village=normalized_village,
-                population=int(doc.get('ptr')) % 2147483647,
-                defaults={'report_date': date_modified},
-            )
+        if normalized_village is None:
+            logger.error("Received a PTR but couldn't normalize the location", str(couch_document.doc))
+        else:
+            if not couch_document.processed:
+                population, _ = PopulationData.objects.get_or_create(
+                    report_date__date=date_modified,
+                    source="device",
+                    type="PTR",
+                    device=device,
+                    population_year=date_modified.year,
+                    village=normalized_village,
+                    population=int(doc.get('ptr')) % 2147483647,
+                    defaults={'report_date': date_modified},
+                )
 
-            # Village contains denormalized data about population, we need to update it
-            if normalized_village.population_year != population.population_year \
-                    or normalized_village.population != population.population:
-                normalized_village.population = population.population
-                normalized_village.population_year = population.population_year
-                normalized_village.population_source = 'ptr'
-                normalized_village.save()
+                # Village contains denormalized data about population, we need to update it
+                if normalized_village.population_year != population.population_year \
+                        or normalized_village.population != population.population:
+                    normalized_village.population = population.population
+                    normalized_village.population_year = population.population_year
+                    normalized_village.population_source = 'ptr'
+                    normalized_village.save()
 
-            couch_document.processed = True
-            couch_document.population = population
-            couch_document.save()
-            records_imported += 1
+                couch_document.processed = True
+                couch_document.population = population
+                couch_document.save()
+                records_imported += 1
+
+    return records_imported

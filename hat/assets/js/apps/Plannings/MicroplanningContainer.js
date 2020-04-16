@@ -73,16 +73,18 @@ export class MicroplanningContainer extends Component {
         const newParams = { ...params };
         this.props.fetchMutliRequests(getBaseUrls(params)).then((res) => {
             const plannings = res[1];
-            if (params.planning_id && !params.years) {
-                const currentPlanning = plannings.find(p => p.id === parseInt(params.planning_id, 10));
-                if (currentPlanning && currentPlanning.years_coverage) {
-                    newParams.years = currentPlanning.years_coverage.join(',');
-                } else {
-                    newParams.years = getYears(3);
-                }
-
-                redirect(newParams);
+            if (params.planning_id) {
                 this.props.fetchMutliRequests(getUrls(newParams));
+                if (!params.years) {
+                    const currentPlanning = plannings.find(p => p.id === parseInt(params.planning_id, 10));
+                    if (currentPlanning && currentPlanning.years_coverage) {
+                        newParams.years = currentPlanning.years_coverage.join(',');
+                    } else {
+                        newParams.years = getYears(3);
+                    }
+
+                    redirect(newParams);
+                }
             }
             if (params.workzone_id) {
                 this.getAdditionalSelectData();

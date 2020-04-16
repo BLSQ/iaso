@@ -55,14 +55,15 @@ class PlanningViewSet(viewsets.ViewSet):
         orders = ('-is_template,' + orders).split(',')
 
         queryset = Planning.objects.all()
-        if not with_template :
+        if not with_template:
             queryset = queryset.filter(is_template=False)
             return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders))
-        else :
-            res = {"datas": queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders)}
+        else:
+            res = {"datas": queryset.values(
+                'name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders)}
             if request.user.has_perm('menupermissions.x_management_plannings_template'):
                 res['can_make_template'] = True
-            else :
+            else:
                 res['can_make_template'] = False
             return Response(res)
 
@@ -75,6 +76,7 @@ class PlanningViewSet(viewsets.ViewSet):
         planning_to_copy_id = request.data.get('planning_to_copy', None)
         year = request.data.get('year', None)
         name = request.data.get('name', None)
+        years_coverage = request.data.get('years_coverage', None)
 
         if planning_to_copy_id:
             planning = get_object_or_404(Planning, pk=planning_to_copy_id)
@@ -89,7 +91,8 @@ class PlanningViewSet(viewsets.ViewSet):
 
         if name:
             new_planning.name = name
-
+        new_planning.years_coverage = years_coverage
+        new_planning.save()
         return Response(new_planning.as_dict())
 
     def update(self, request, pk=None):
@@ -109,7 +112,7 @@ class PlanningViewSet(viewsets.ViewSet):
                 assignation.save()
         newYear = request.data.get('year', '')
         if newYear != '':
-            planning.year = newYear #Bonne année !
+            planning.year = newYear  # Bonne année !
         newName = request.data.get('name', '')
         if newName != '':
             planning.name = newName
@@ -131,11 +134,12 @@ class PlanningViewSet(viewsets.ViewSet):
             return Response('Unauthorized', status=401)
         else:
             for obj in request.data:
-                Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
+                Assignation.objects.filter(
+                    planning=planning, village_id=obj['village_id']).delete()
                 if obj.get('team_id', 'none') != 'none':
                     Assignation.objects.get_or_create(planning=planning,
-                                                    village_id=obj['village_id'],
-                                                    team_id = obj['team_id'] )
+                                                      village_id=obj['village_id'],
+                                                      team_id=obj['team_id'])
             return Response(planning.as_dict())
 
     def delete(self, request, pk=None):

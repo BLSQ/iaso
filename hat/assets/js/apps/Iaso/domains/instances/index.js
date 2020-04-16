@@ -377,7 +377,8 @@ class Instances extends Component {
                         )
                     }
                     {
-                        tab === 'map' && (
+                        !fetching
+                        && tab === 'map' && (
                             <div className={classes.containerMarginNeg}>
                                 <InstancesMap instances={instancesSmall} />
                             </div>

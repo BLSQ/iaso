@@ -93,6 +93,21 @@ class FormsAPITestCase(APITestCase):
         self.assertValidFormListData(response.json(), 2)
 
     @tag("iaso_only")
+    def test_forms_list_ok_hide_derived_forms(self):
+        """GET /forms/ web app happy path: we expect 1 results if one of the form is marked as derived"""
+        
+        response = self.client.get(f'/api/forms/?app_id={self.project_1.app_id}')
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 2)
+
+        self.form_2.derived = True
+        self.form_2.save()
+
+        response = self.client.get(f'/api/forms/?app_id={self.project_1.app_id}')
+        self.assertJSONResponse(response, 200)
+        self.assertValidFormListData(response.json(), 1)
+
+    @tag("iaso_only")
     def test_forms_list_date_to_inclusive(self):
         """GET /forms/ web app happy path: to_date should be inclusive"""
 

@@ -56,6 +56,7 @@ Number errors:              {num_errors}
                                 ("created", res['stats'].created),
                                 ("updated", res['stats'].updated),
                                 ("deleted", res['stats'].deleted),
+                                ("PTR", res['stats'].ptr),
                             ] if v  # Only show stats that are != None and 0
                         ],
                     } for res in results if res['stats'].total > 0

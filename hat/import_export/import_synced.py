@@ -64,18 +64,19 @@ def import_synced_devices() -> List[ImportResult]:
             ).save()
             docs = data['docs']
             stats = import_synced_docs(docs, device.device_id)
-            import_synced_population(docs, device.device_id)
+            stats.ptr = import_synced_population(docs, device.device_id)
             result['stats'] = stats
             results.append(result)
             if stats.total:
                 device.last_synced_date = timezone.now()
                 device.last_synced_log_status = 'success'
                 device.last_synced_seq = data['last_seq']
-                device.last_synced_log_message = '{} - {} - {} - {}'.format(
+                device.last_synced_log_message = '{} - {} - {} - {}, PTR {}'.format(
                     stats.total,
                     stats.created,
                     stats.updated,
                     stats.deleted,
+                    stats.ptr,
                 )
                 device.save()
                 DeviceImportEvent(
@@ -85,6 +86,7 @@ def import_synced_devices() -> List[ImportResult]:
                     created_records=stats.created,
                     updated_records=stats.updated,
                     deleted_records=stats.deleted,
+                    ptr_records=stats.ptr,
                     last_synced_seq=device.last_synced_seq,
                 ).save()
         except Exception as ex:

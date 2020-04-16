@@ -124,6 +124,7 @@ class DeviceImportEvent(models.Model):
     created_records = models.IntegerField(null=True)
     updated_records = models.IntegerField(null=True)
     deleted_records = models.IntegerField(null=True)
+    ptr_records = models.IntegerField(null=True)
     errors = models.IntegerField(null=True)
     last_synced_seq = models.IntegerField(null=True)
     details = models.TextField(null=True)

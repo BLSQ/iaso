@@ -49,3 +49,8 @@ export const getSort = (sortList) => {
     });
     return orderTemp;
 };
+
+export const getOrderArray = orders => (orders.split(',').map(stringValue => ({
+    id: stringValue.replace('-', ''),
+    desc: stringValue.indexOf('-') !== -1,
+})));

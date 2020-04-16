@@ -4,31 +4,40 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import isEqual from 'lodash/isEqual';
-import ReactTable, { ReactTableDefaults } from 'react-table';
-import { getSort } from '../../utils/tableUtils';
+import { withStyles, Box } from '@material-ui/core';
 
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
 } from './actions';
 
+
 import { redirectTo as redirectToAction } from '../../routing/actions';
 import TopBar from '../../components/nav/TopBarComponent';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
-// import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
+import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/routes';
+import Table from '../../components/tables/TableComponent';
+
+import usersTableColumns from './config';
 
 const baseUrl = baseUrls.users;
+
+const styles = theme => ({
+    ...commonStyles(theme),
+    reactTable: {
+        ...commonStyles(theme).reactTable,
+        marginTop: theme.spacing(4),
+    },
+});
 
 class Users extends Component {
     componentDidMount() {
         const {
-            intl: { formatMessage },
             params,
             fetchUsersProfiles,
         } = this.props;
         fetchUsersProfiles(params);
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidUpdate(prevProps) {
@@ -38,19 +47,10 @@ class Users extends Component {
         }
     }
 
-    onTableParamsChange(key, value) {
-        const { params, redirectTo } = this.props;
-        redirectTo(baseUrl, {
-            ...params,
-            [key]: key !== 'order' ? value : getSort(value),
-        });
-    }
 
-    selectInstance(mappingversion) {
+    selectUser(user) {
         const { redirectTo } = this.props;
-        redirectTo('forms/mapping', {
-            mappingVersionId: mappingversion.id,
-        });
+        console.log(user);
     }
 
     render() {
@@ -59,17 +59,18 @@ class Users extends Component {
             intl: {
                 formatMessage,
             },
-            redirectTo,
             profiles,
+            count,
+            pages,
+            fetching,
+            classes,
         } = this.props;
-        console.log(profiles);
         return (
             <>
-                {/* {
-                    completeness.fetching
+                {
+                    fetching
                     && <LoadingSpinner />
-                } */}
-                {/* <LoadingSpinner /> */}
+                }
                 <TopBar
                     title={formatMessage({
                         defaultMessage: 'Users',
@@ -77,21 +78,45 @@ class Users extends Component {
                     })}
                     displayBackButton={false}
                 />
+                <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Table
+                        data={profiles}
+                        pages={pages}
+                        defaultSorted={[
+                            { id: 'user__username', desc: false },
+                        ]}
+                        columns={usersTableColumns(formatMessage, this)}
+                        count={count}
+                        baseUrl={baseUrl}
+                        params={params}
+                    />
+                </Box>
             </>
         );
     }
 }
 
+Users.defaultProps = {
+    count: 0,
+};
+
 Users.propTypes = {
+    classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
+    count: PropTypes.number,
+    fetching: PropTypes.bool.isRequired,
+    pages: PropTypes.number.isRequired,
 };
 
 const MapStateToProps = state => ({
     profiles: state.users.list,
+    count: state.users.count,
+    pages: state.users.pages,
+    fetching: state.users.fetching,
 });
 
 const mapDispatchToProps = dispatch => (
@@ -103,4 +128,4 @@ const mapDispatchToProps = dispatch => (
     }
 );
 
-export default connect(MapStateToProps, mapDispatchToProps)(injectIntl(Users));
+export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(Users)));

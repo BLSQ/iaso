@@ -9,7 +9,7 @@ from django.contrib.postgres.fields.jsonb import KeyTextTransform
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.core.paginator import Paginator
 from django.db import transaction
-from django.db.models import Avg, Count, FloatField, Sum
+from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef
 from django.db.models.functions import Cast
 from iaso.models import Instance
 
@@ -75,13 +75,15 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     print("generate_instances : queryset", queryset.count())
     # generate "derived" instances
 
-    # TODO how to delete or nullify the non regenerated one ?
+    import pdb
+
+    pdb.set_trace()
 
     page_size = 50
 
     paginator = Paginator(queryset, page_size)
 
-    progress = {"new": 0, "updated": 0, "skipped": 0}
+    progress = {"new": 0, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
 
     for page in range(1, paginator.num_pages + 1):
         process_page(
@@ -90,10 +92,22 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
 
     batch_end = timer()
     batch_time = batch_end - batch_start
+
+    nullify_stats_without_cvs(progress, cvs_form, cvs_stat_mapping_version, period)
+
     instances = Instance.objects.filter(
         period=period, form=cvs_stat_mapping_version.form_version.form, project=project
     )
-    print("took", batch_time, "to generate", instances.count(), "instances")
+    print(
+        "generate_instances :",
+        "took",
+        batch_time,
+        "to generate",
+        instances.count(),
+        "instances : ",
+        progress,
+    )
+    return progress
 
 
 @transaction.atomic
@@ -163,3 +177,32 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
         instance.file = file
 
         saved = instance.save()
+
+
+def nullify_stats_without_cvs(progress, cvs_form, cvs_stat_mapping_version, period):
+
+    stats_instances = cvs_stat_mapping_version.form_version.form.instances
+    subquery_cvs = (
+        cvs_form.instances.filter(period=period)
+        .filter(deleted=False)
+        .exclude(file="")
+        .exclude(device__test_device=True)
+    )
+    stats_instances = stats_instances.annotate(
+        cvs_exists=Exists(
+            subquery_cvs.filter(
+                period=OuterRef("period"), org_unit_id=OuterRef("org_unit_id")
+            )
+        )
+    ).filter(cvs_exists=False)
+    aggregations = cvs_stat_mapping_version.json["aggregations"]
+
+    for stat_instance in stats_instances:
+        if stat_instance.last_export_success_at:
+            for aggregation in aggregations:
+                stat_instance.json[aggregation["id"]] = None
+            stat_instance.save()
+            progress["nullified"] += 1
+        else:
+            stat_instance.delete()
+            progress["deleted"] += 1

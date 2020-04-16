@@ -1,7 +1,6 @@
 import typing
 
 from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator
 from rest_framework import parsers, permissions, serializers, viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
@@ -31,6 +30,11 @@ class DerivedInstancesViewSet(ModelViewSet):
             map(lambda f: f["form_version__form_id"], request.data["derived"])
         )
         forms = Form.objects.filter(pk__in=form_ids)
+        if self.request.user and not self.request.user.is_anonymous:
+            profile = self.request.user.iaso_profile
+            forms = forms.filter(projects__account=profile.account)
+        else:
+            raise PermissionDenied()
 
         for stat_form in forms:
             for period in periods:

@@ -1,18 +1,17 @@
-from django.db.models.expressions import RawSQL
-from django.db.models import Sum, FloatField, Avg, Count
-from django.db.models.functions import Cast
-from django.contrib.postgres.fields import JSONField
-from django.contrib.postgres.fields.jsonb import KeyTextTransform
-from django.core.paginator import Paginator
-from django.core.files.uploadedfile import InMemoryUploadedFile
-from django.db import transaction
-
-from lxml import etree
 from io import StringIO
+from timeit import default_timer as timer
 from uuid import uuid4
 
+from lxml import etree
+
+
+from django.contrib.postgres.fields.jsonb import KeyTextTransform
+from django.core.files.uploadedfile import InMemoryUploadedFile
+from django.core.paginator import Paginator
+from django.db import transaction
+from django.db.models import Avg, Count, FloatField, Sum
+from django.db.models.functions import Cast
 from iaso.models import Instance
-from timeit import default_timer as timer
 
 
 def generate_instance_xml(instance, form_version):
@@ -40,13 +39,10 @@ def generate_instance_xml(instance, form_version):
     return instance_xml
 
 
-@transaction.atomic
 def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     batch_start = timer()
 
     # build query set for aggregation
-
-    aggregations = cvs_stat_mapping_version.json["aggregations"]
 
     queryset = cvs_form.instances.filter(form=cvs_form, period=period).values(
         "period", "org_unit_id", "form_id"
@@ -56,6 +52,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     # don't aggregate instances with json empty or test devices
     queryset = queryset.exclude(file="").exclude(device__test_device=True)
 
+    aggregations = cvs_stat_mapping_version.json["aggregations"]
     for aggregation in aggregations:
 
         answer = Cast(
@@ -78,57 +75,18 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     print("generate_instances : queryset", queryset.count())
     # generate "derived" instances
 
-    # TODO how to delete the non regenerated one ?
+    # TODO how to delete or nullify the non regenerated one ?
 
     page_size = 50
 
     paginator = Paginator(queryset, page_size)
 
+    progress = {"new": 0, "updated": 0, "skipped": 0}
+
     for page in range(1, paginator.num_pages + 1):
-        page_start = timer()
-
-        counts = paginator.page(page).object_list
-        print("generate_instances : page : ", page)
-        instances = []
-
-        for record in counts:
-
-            instance, _created = Instance.objects.get_or_create(
-                org_unit_id=record["org_unit_id"],
-                period=record["period"],
-                form=cvs_stat_mapping_version.form_version.form,
-                project=project,
-            )
-
-            if instance.uuid == None:
-                instance.uuid = str(uuid4())
-
-            json_data = {"_version": cvs_stat_mapping_version.form_version.version_id}
-
-            for aggregation in aggregations:
-                json_data[aggregation["id"]] = record[aggregation["id"]]
-
-            instance.json = json_data
-            xml_string = generate_instance_xml(
-                instance, cvs_stat_mapping_version.form_version
-            )
-            buffer = StringIO(str(xml_string))
-            buffer.seek(
-                0, 2
-            )  # Seek to the end of the stream, so we can get its length with `buf.tell()`
-            instance.file_name = (
-                cvs_stat_mapping_version.form_version.form.form_id + "_" + instance.uuid
-            )
-            file = InMemoryUploadedFile(
-                buffer, "file", instance.file_name, None, buffer.tell(), None
-            )
-            instance.file = file
-
-            saved = instance.save()
-            instances.append(instance)
-
-        page_time = timer() - page_start
-        print("created or update", len(instances), "in", page_time, "seconds")
+        process_page(
+            paginator, page, project, cvs_stat_mapping_version, progress, aggregations
+        )
 
     batch_end = timer()
     batch_time = batch_end - batch_start
@@ -136,3 +94,72 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         period=period, form=cvs_stat_mapping_version.form_version.form, project=project
     )
     print("took", batch_time, "to generate", instances.count(), "instances")
+
+
+@transaction.atomic
+def process_page(
+    paginator, page, project, cvs_stat_mapping_version, progress, aggregations
+):
+    page_start = timer()
+
+    counts = paginator.page(page).object_list
+    print("generate_instances : page : ", page)
+
+    for record in counts:
+        instance = process_instance(
+            record, project, cvs_stat_mapping_version, progress, aggregations
+        )
+
+    page_time = timer() - page_start
+    print("generate_instances :", progress, "in", page_time, "seconds")
+
+
+def process_instance(record, project, cvs_stat_mapping_version, progress, aggregations):
+
+    instance, _created = Instance.objects.get_or_create(
+        org_unit_id=record["org_unit_id"],
+        period=record["period"],
+        form=cvs_stat_mapping_version.form_version.form,
+        project=project,
+    )
+    flagged_as_new = False
+    if instance.uuid == None:
+        instance.uuid = str(uuid4())
+        flagged_as_new = True
+
+    json_data = {"_version": cvs_stat_mapping_version.form_version.version_id}
+
+    for aggregation in aggregations:
+        json_data[aggregation["id"]] = record[aggregation["id"]]
+
+    if json_data == instance.json:
+        progress["skipped"] += 1
+    else:
+        if flagged_as_new:
+            progress["new"] += 1
+        else:
+            progress["updated"] += 1
+            # TODO do we "nullify last export success"
+
+        instance.json = json_data
+        xml_string = generate_instance_xml(
+            instance, cvs_stat_mapping_version.form_version
+        )
+        buffer = StringIO(str(xml_string))
+        buffer.seek(
+            0, 2
+        )  # Seek to the end of the stream, so we can get its length with `buf.tell()`
+        instance.file_name = (
+            cvs_stat_mapping_version.form_version.form.form_id + "_" + instance.uuid
+        )
+        file = InMemoryUploadedFile(
+            file=buffer,
+            field_name="file",
+            name=instance.file_name,
+            content_type="application/xml",
+            size=buffer.tell(),
+            charset="utf-8",
+        )
+        instance.file = file
+
+        saved = instance.save()

@@ -253,7 +253,7 @@ class LocationMap extends Component {
 
         const color = 'blue';
 
-        if (location && location.latitude !== 0 && location.longitude !== 0) {
+        if (location && location.latitude && location.longitude && location.latitude !== 0 && location.longitude !== 0) {
             if (this.state.isFirstLoad) {
                 this.villageMarker = L.circle([
                     location.latitude ? location.latitude : 0,

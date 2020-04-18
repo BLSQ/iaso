@@ -13,31 +13,40 @@ from .auth.authentication import CsrfExemptSessionAuthentication
 from .common import ModelViewSet, TimestampField
 from .instance_filters import parse_instance_filters
 from iaso.dhis2.derived_instance_generator import generate_instances
+from django.http.response import HttpResponse
 
 
-class DerivedInstancesViewSet(ModelViewSet):
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = None
-    results_key = "export_instances"
-    queryset = ExportRequest.objects.all()
-    http_method_names = "post"
+class DerivedInstanceSerializer(serializers.Serializer):
+    def validate(self, data: typing.Mapping):
+        data = self.context["request"].data
+        periods = data["periods"]
+        form_ids = list(map(lambda f: f["form_version__form_id"], data["derived"]))
 
-    def create(self, request):
+        return {"periods": periods, "form_ids": form_ids}
 
-        periods = request.data["periods"]
-        form_ids = list(
-            map(lambda f: f["form_version__form_id"], request.data["derived"])
-        )
-        forms = Form.objects.filter(pk__in=form_ids)
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
+    def create(self, validated_data):
+
+        forms = Form.objects.filter(pk__in=validated_data["form_ids"])
+        if (
+            self.context["request"].user
+            and not self.context["request"].user.is_anonymous
+        ):
+            profile = self.context["request"].user.iaso_profile
             forms = forms.filter(projects__account=profile.account)
         else:
             raise PermissionDenied()
+        stats = []
+
+        if forms.count() == 0:
+            raise serializers.ValidationError(
+                {
+                    "form_ids": "no form or allowed : "
+                    + (" ".join(list(map(str, validated_data["form_ids"]))))
+                }
+            )
 
         for stat_form in forms:
-            for period in periods:
+            for period in validated_data["periods"]:
 
                 cvs_stat_version = stat_form.latest_version
                 cvs_stat_mapping_version = cvs_stat_version.mapping_versions.filter(
@@ -47,11 +56,26 @@ class DerivedInstancesViewSet(ModelViewSet):
                     form_id=cvs_stat_mapping_version.json["formId"]
                 )
                 # TODO project ?
-                generate_instances(
-                    cvs_form.projects.first(),
-                    cvs_form,
-                    cvs_stat_mapping_version,
-                    period,
+                stats.append(
+                    generate_instances(
+                        cvs_form.projects.first(),
+                        cvs_form,
+                        cvs_stat_mapping_version,
+                        period,
+                    )
                 )
+        validated_data["stats"] = stats
+        return validated_data
 
-        return Response({"message": "ok"})
+    def to_representation(self, instance):
+        # hack to return stats on create
+        return instance
+
+
+class DerivedInstancesViewSet(ModelViewSet):
+    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_classes = [permissions.IsAuthenticated]
+    serializer_class = DerivedInstanceSerializer
+    results_key = "export_instances"
+    queryset = ExportRequest.objects.all()
+    http_method_names = "post"

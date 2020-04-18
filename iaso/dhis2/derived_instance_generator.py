@@ -75,10 +75,6 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     print("generate_instances : queryset", queryset.count())
     # generate "derived" instances
 
-    import pdb
-
-    pdb.set_trace()
-
     page_size = 50
 
     paginator = Paginator(queryset, page_size)
@@ -201,6 +197,7 @@ def nullify_stats_without_cvs(progress, cvs_form, cvs_stat_mapping_version, peri
         if stat_instance.last_export_success_at:
             for aggregation in aggregations:
                 stat_instance.json[aggregation["id"]] = None
+            stat_instance.last_export_success_at = None
             stat_instance.save()
             progress["nullified"] += 1
         else:

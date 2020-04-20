@@ -141,12 +141,12 @@ class Forms extends Component {
                             onSuccess={() => this.setState({ isUpdated: true })}
                         />
                         {reduxPage.list
-            && (
-                <DownloadButtonsComponent
-                    csvUrl={this.getExportUrl('csv')}
-                    xlsxUrl={this.getExportUrl('xlsx')}
-                />
-            )}
+                            && (
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getExportUrl('csv')}
+                                    xlsxUrl={this.getExportUrl('xlsx')}
+                                />
+                            )}
                     </Grid>
                 </Box>
             </section>

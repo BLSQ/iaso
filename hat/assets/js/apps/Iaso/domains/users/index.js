@@ -3,21 +3,21 @@ import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import isEqual from 'lodash/isEqual';
-import { withStyles, Box } from '@material-ui/core';
+import { withStyles, Box, Grid } from '@material-ui/core';
 
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
 } from './actions';
 
-
-import { redirectTo as redirectToAction } from '../../routing/actions';
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import Filters from './components/Filters';
+import Table from '../../components/tables/TableComponent';
+import UsersDialog from './components/UsersDialog';
+import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
 import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/routes';
-import Table from '../../components/tables/TableComponent';
 
 import usersTableColumns from './config';
 
@@ -42,15 +42,11 @@ class Users extends Component {
 
     componentDidUpdate(prevProps) {
         const { params, fetchUsersProfiles } = this.props;
-        if (!isEqual(prevProps.params, params)) {
+        if ((prevProps.params.pageSize !== params.pageSize)
+        || (prevProps.params.order !== params.order)
+        || (prevProps.params.page !== params.page)) {
             fetchUsersProfiles(params);
         }
-    }
-
-
-    selectUser(user) {
-        const { redirectTo } = this.props;
-        console.log(user);
     }
 
     render() {
@@ -64,6 +60,7 @@ class Users extends Component {
             pages,
             fetching,
             classes,
+            fetchUsersProfiles,
         } = this.props;
         return (
             <>
@@ -79,6 +76,11 @@ class Users extends Component {
                     displayBackButton={false}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
+                    <Filters
+                        baseUrl={baseUrl}
+                        params={params}
+                        onSearch={() => fetchUsersProfiles(params)}
+                    />
                     <Table
                         data={profiles}
                         pages={pages}
@@ -90,6 +92,13 @@ class Users extends Component {
                         baseUrl={baseUrl}
                         params={params}
                     />
+                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        <UsersDialog
+                            titleMessage={{ id: 'iaso.users.create', defaultMessage: 'Create user' }}
+                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            params={params}
+                        />
+                    </Grid>
                 </Box>
             </>
         );
@@ -104,7 +113,6 @@ Users.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
     count: PropTypes.number,
@@ -123,7 +131,6 @@ const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
             fetchUsersProfiles: fetchUsersProfilesAction,
-            redirectTo: redirectToAction,
         }, dispatch),
     }
 );

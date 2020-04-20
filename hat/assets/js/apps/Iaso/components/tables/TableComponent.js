@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { withStyles } from '@material-ui/core';
+import { withStyles, Grid } from '@material-ui/core';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
@@ -31,6 +31,11 @@ import customTableTranslations from '../../../../utils/constants/customTableTran
 
 const styles = theme => ({
     ...commonStyles(theme),
+    count: {
+        display: 'flex',
+        justifyContent: 'flex-end',
+        marginBottom: theme.spacing(2),
+    },
     reactTable: {
         ...commonStyles(theme).reactTable,
         marginTop: theme.spacing(4),
@@ -70,7 +75,7 @@ class Table extends Component {
         const order = params.order ? getOrderArray(params.order) : defaultSorted;
         return (
             <div className={classes.reactTable}>
-                <div className="count-container">
+                <div className={classes.count}>
                     {count > 0 && (
                         <div>
                             {`${formatThousand(count)} `}
@@ -121,12 +126,11 @@ Table.propTypes = {
     baseUrl: PropTypes.string,
 };
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = () => ({
     ...bindActionCreators(
         {
             redirectTo: redirectToAction,
         },
-        dispatch,
     ),
 });
 

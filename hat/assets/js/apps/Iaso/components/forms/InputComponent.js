@@ -181,7 +181,7 @@ class InputComponent extends Component {
             ? labelString
             : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
-        if (type === 'text' || type === 'number') {
+        if (type === 'text' || type === 'number' || type === 'email') {
             const inputValue = (value === null || typeof value === 'undefined')
                 ? ''
                 : value;
@@ -264,6 +264,8 @@ class InputComponent extends Component {
                         htmlFor={`search-${keyValue}`}
                         label={labelText}
                         required={required}
+                        shrink={value !== undefined && value !== null && value !== ''}
+                        isFocused={isFocused}
                     />
                     <OutlinedInput
                         disabled={disabled}

@@ -77,23 +77,23 @@ const MESSAGES = {
     },
     createExportRequestErrorNothingToExportError: {
         id: 'iaso.snackBar.createExportRequestErrorNothingToExportError',
-        defaultMessage: 'We found nothing to export, change your filter or force the re-export'
+        defaultMessage: 'We found nothing to export, change your filter or force the re-export',
     },
     createExportRequestErrorNoVersionError: {
         id: 'iaso.snackBar.createExportRequestErrorNoVersionError',
-        defaultMessage: 'One of the instance had no version specified'
+        defaultMessage: 'One of the instance had no version specified',
     },
     createExportRequestErrorNoFormMappingError: {
         id: 'iaso.snackBar.createExportRequestErrorNoFormMappingError',
-        defaultMessage: "The form doesn't a form mapping to export to dhis2"
+        defaultMessage: "The form doesn't a form mapping to export to dhis2",
     },
     createExportRequestError: {
         id: 'iaso.snackBar.createExportRequestError',
-        defaultMessage: 'An error occured while creating export request'
+        defaultMessage: 'An error occured while creating export request',
     },
     createExportRequestSuccess: {
         id: 'iaso.snackBar.createExportRequestSuccess',
-        defaultMessage: 'Export request queued'
+        defaultMessage: 'Export request queued',
     },
     saveLinkError: {
         id: 'iaso.snackBar.saveLinkError',
@@ -146,6 +146,18 @@ const MESSAGES = {
     noInstancesOnMap: {
         defaultMessage: 'Cannot find an instance with geolocation',
         id: 'iaso.instance.missingGeolocation',
+    },
+    fetchPermissions: {
+        defaultMessage: 'An error occurred while fetching permissions list',
+        id: 'iaso.snackBar.fetchPermissions',
+    },
+    saveUserSuccesfull: {
+        defaultMessage: 'User saved',
+        id: 'iaso.snackBar.saveUserSuccesfull',
+    },
+    saveUserError: {
+        defaultMessage: 'An error occurred while saving user profile',
+        id: 'iaso.snackBar.saveUserError',
     },
 };
 

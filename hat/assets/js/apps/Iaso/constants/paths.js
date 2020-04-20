@@ -300,6 +300,10 @@ export const usersPath = {
     permission: 'iaso_users',
     component: props => <Users {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

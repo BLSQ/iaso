@@ -122,7 +122,7 @@ class MappingDetails extends Component {
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <Grid container spacing={4}>
                             {currentFormVersion && currentMappingVersion && (
-                                <Grid item>
+                                <Grid item xs={4} md={3}>
                                     <RecursiveTreeView
                                         formVersion={currentFormVersion}
                                         mappingVersion={currentMappingVersion}
@@ -130,7 +130,7 @@ class MappingDetails extends Component {
                                     />
                                 </Grid>
                             )}
-                            <Grid item>
+                            <Grid item xs={8} md={9}>
                                 {currentQuestion && (
                                 <>
                                     <QuestionInfos question={currentQuestion} />

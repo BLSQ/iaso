@@ -48,13 +48,16 @@ export const postRequest = (url, data, fileData = {}) => {
 };
 
 
-export const patchRequest = (url, data) => req
+export const patchRequest = (url, data, withApiError = false) => req
     .patch(url)
     .set('Content-Type', 'application/json')
     .send(data)
     .then(result => result.body)
     .catch((error) => {
         console.error(`Error when patching ${url}: ${error}`);
+        if (withApiError) {
+            throw new ApiError(error.message, error.response);
+        }
         throw error;
     });
 

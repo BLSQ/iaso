@@ -126,12 +126,10 @@ Table.propTypes = {
     baseUrl: PropTypes.string,
 };
 
-const MapDispatchToProps = () => ({
-    ...bindActionCreators(
-        {
-            redirectTo: redirectToAction,
-        },
-    ),
+const MapDispatchToProps = dispatch => ({
+    ...bindActionCreators({
+        redirectTo: redirectToAction,
+    }, dispatch),
 });
 
 export default withStyles(styles)(

@@ -62,15 +62,15 @@ export const fetchPermissions = () => dispatch => getRequest('/api/permissions')
 
 export const saveUserProFile = profile => (dispatch) => {
     dispatch(setIsFetching(true));
-    return (patchRequest(`/api/profiles/${profile.id}/`, profile)
+    return (patchRequest(`/api/profiles/${profile.id}/`, profile, true)
         .then((res) => {
             dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccesfull')));
             return res;
         })
-        .catch(() => {
+        .catch((error, res) => {
             dispatch(enqueueSnackbar(errorSnackBar('saveUserError')));
             dispatch(setIsFetching(false));
-            return null;
+            throw error;
         }));
 };
 
@@ -81,9 +81,9 @@ export const createUserProFile = profile => (dispatch) => {
             dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccesfull')));
             return res;
         })
-        .catch(() => {
+        .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('saveUserError')));
             dispatch(setIsFetching(false));
-            return null;
+            throw error;
         }));
 };

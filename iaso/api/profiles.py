@@ -5,8 +5,9 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
+from django.http import JsonResponse
 
-from iaso.models import Profile
+from iaso.models import Profile, Account
 
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -78,10 +79,16 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         profile = get_object_or_404(Profile, id=pk)
+        username = request.data.get("user_name")
+        if not username:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+        existing_profile = User.objects.filter(username=username).first()
+        if existing_profile:
+            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur existant"}, status=400)
         user = profile.user
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
-        user.username = request.data.get("user_name", "")
+        user.username = username
         user.email = request.data.get("email", "")
         permissions = request.data.get("permissions", [])
         user.user_permissions.clear()
@@ -95,10 +102,10 @@ class ProfilesViewSet(viewsets.ViewSet):
     def create(self, request):
         username = request.data.get("user_name")
         if not username:
-            return return_error("Nom d'utilisateur requis", 400)
-        existing_profile = Profile.objects.filter(user__username=username).first()
+            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+        existing_profile = User.objects.filter(username=username).first()
         if existing_profile:
-            return return_error("Nom d'utilisateur existant", 400)
+            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur existant"}, status=400)
 
         user = User()
         user.first_name = request.data.get("first_name", "")
@@ -110,4 +117,13 @@ class ProfilesViewSet(viewsets.ViewSet):
             permission = get_object_or_404(Permission, codename=permission_codename)
             user.user_permissions.add(permission)
         user.save()
+        print(request.user.id)
+        current_profile_id = request.user.id
+        current_user_profile = get_object_or_404(Profile, id=current_profile_id)
+        account = get_object_or_404(Account, id=current_user_profile.account.id)
+        profile = Profile()
+        profile.account = account
+        profile.user = user
+        profile.save()
+
         return Response(user.profile.as_dict())

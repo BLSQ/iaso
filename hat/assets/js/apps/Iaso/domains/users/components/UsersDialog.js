@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
+import get from 'lodash/get';
+import isEqual from 'lodash/isEqual';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { Grid } from '@material-ui/core';
@@ -22,38 +23,51 @@ class UserDialogComponent extends Component {
         this.state = this.initialState();
     }
 
+    componentDidUpdate(prevProps) {
+        if (!isEqual(prevProps.initialData, this.props.initialData)) {
+            this.setInitialState();
+        }
+    }
+
     onConfirm(closeDialog) {
         const {
             params,
             fetchUsersProfiles,
             saveUserProFile,
             createUserProFile,
+            initialData,
         } = this.props;
         const currentUser = {};
         Object.keys(this.state).forEach((key) => {
             currentUser[key] = this.state[key].value;
         });
-        if (currentUser.id) {
-            saveUserProFile(currentUser).then((newProfile) => {
-                if (newProfile) {
-                    closeDialog();
-                    this.setState(this.initialState(newProfile));
-                    fetchUsersProfiles(params);
-                }
-            });
+
+        let saveUser;
+
+        if (initialData) {
+            saveUser = saveUserProFile(currentUser);
         } else {
-            createUserProFile(currentUser).then((newProfile) => {
-                if (newProfile) {
-                    closeDialog();
-                    this.setState(this.initialState(newProfile));
-                    fetchUsersProfiles(params);
+            saveUser = createUserProFile(currentUser);
+        }
+        saveUser.then((newProfile) => {
+            closeDialog();
+            this.setState(this.initialState(newProfile));
+            fetchUsersProfiles(params);
+        })
+            .catch((error) => {
+                console.log('error', error);
+                if (error.status === 400) {
+                    this.setFieldErrors(error.details.errorKey, error.details.errorMessage);
                 }
             });
-        }
     }
 
     setFieldValue(fieldName, fieldValue) {
         this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
+    }
+
+    setFieldErrors(fieldName, fieldError) {
+        this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: [fieldError] } });
     }
 
     setInitialState() {
@@ -66,12 +80,12 @@ class UserDialogComponent extends Component {
             initialData = profile;
         }
         return {
-            id: { value: _.get(initialData, 'id', null), errors: [] },
-            user_name: { value: _.get(initialData, 'user_name', ''), errors: [] },
-            first_name: { value: _.get(initialData, 'first_name', ''), errors: [] },
-            last_name: { value: _.get(initialData, 'last_name', ''), errors: [] },
-            email: { value: _.get(initialData, 'email', ''), errors: [] },
-            permissions: { value: _.get(initialData, 'permissions', []), errors: [] },
+            id: { value: get(initialData, 'id', null), errors: [] },
+            user_name: { value: get(initialData, 'user_name', ''), errors: [] },
+            first_name: { value: get(initialData, 'first_name', ''), errors: [] },
+            last_name: { value: get(initialData, 'last_name', ''), errors: [] },
+            email: { value: get(initialData, 'email', ''), errors: [] },
+            permissions: { value: get(initialData, 'permissions', []), errors: [] },
         };
     }
 

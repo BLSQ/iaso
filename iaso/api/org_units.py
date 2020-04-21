@@ -335,12 +335,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Source", "width": 20},
                 {"title": "Validé", "width": 15},
                 {"title": "Référence externe", "width": 17},
-                {"title": "parent1", "width": 20},
-                {"title": "parent2", "width": 20},
-                {"title": "parent3", "width": 20},
-                {"title": "parent4", "width": 20},
+                {"title": "parent 1", "width": 20},
+                {"title": "parent 2", "width": 20},
+                {"title": "parent 3", "width": 20},
+                {"title": "parent 4", "width": 20},
+                {"title": "Ref Ext parent 1", "width": 20},
+                {"title": "Ref Ext parent 2", "width": 20},
+                {"title": "Ref Ext parent 3", "width": 20},
+                {"title": "Ref Ext parent 4", "width": 20},
             ]
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
+            parent_field_names.append(["parent__" * i + "source_ref" for i in range(1, 5)])
             queryset = queryset.values(
                 "id",
                 "name",

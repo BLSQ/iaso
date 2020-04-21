@@ -345,7 +345,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 4", "width": 20},
             ]
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
-            parent_field_names.append(["parent__" * i + "source_ref" for i in range(1, 5)])
+            parent_field_names.extend(["parent__" * i + "source_ref" for i in range(1, 5)])
             queryset = queryset.values(
                 "id",
                 "name",

@@ -53,7 +53,10 @@ export const fetchUsersProfiles = params => (dispatch) => {
 };
 
 export const fetchCurrentUser = () => dispatch => getRequest('/api/profiles/me')
-    .then(res => dispatch(setCurrentUser(res)))
+    .then((res) => {
+        dispatch(setCurrentUser(res));
+        return res;
+    })
     .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchCurrentUser'))));
 
 export const fetchPermissions = () => dispatch => getRequest('/api/permissions')

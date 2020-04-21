@@ -48,6 +48,7 @@ export const formsPath = {
         ...paginationPathParams,
     ],
     component: props => <Forms {...props} />,
+    isRootUrl: true,
 };
 
 export const mappingsPath = {

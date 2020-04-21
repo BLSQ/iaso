@@ -1,3 +1,4 @@
+import { pathsList } from '../../constants/paths';
 /**
  * check if user has the permission
  *
@@ -33,4 +34,23 @@ export const userHasOneOfPermissions = (permissions, user) => {
         }
     });
     return isAuthorised;
+};
+
+
+/**
+ * get the first permission of an user, ignoring root url permission
+ *
+ * @param {String} rootPermission
+ * @param {Object} user
+ * @return {String}
+ */
+export const getFirstPermissionUrl = (rootPermission, user) => {
+    let newRoot;
+    user.permissions.forEach((p) => {
+        if (!newRoot && p !== rootPermission) {
+            newRoot = p;
+        }
+    });
+    const newPath = pathsList.find(p => p.permission === newRoot);
+    return newPath.baseUrl;
 };

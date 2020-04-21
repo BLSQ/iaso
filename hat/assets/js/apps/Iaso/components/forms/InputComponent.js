@@ -2,11 +2,11 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import Select from 'react-select';
-import { withStyles } from '@material-ui/core';
-import OutlinedInput from '@material-ui/core/OutlinedInput';
 import SearchIcon from '@material-ui/icons/Search';
-import FormControlLabel from '@material-ui/core/FormControlLabel';
-import Checkbox from '@material-ui/core/Checkbox';
+import Edit from '@material-ui/icons/Edit';
+import {
+    Checkbox, FormControlLabel, OutlinedInput, withStyles, Tooltip, IconButton,
+} from '@material-ui/core';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
 
@@ -124,6 +124,14 @@ const styles = theme => ({
         paddingRight: theme.spacing(7),
         width: '100%',
     },
+    displayPassword: {
+        position: 'absolute',
+        top: 4,
+        right: theme.spacing(2),
+    },
+    passwordInput: {
+        paddingRight: theme.spacing(8),
+    },
 });
 
 class InputComponent extends Component {
@@ -132,6 +140,7 @@ class InputComponent extends Component {
         this.state = {
             selectInputValue: '',
             isFocused: false,
+            displayPassword: false,
         };
     }
 
@@ -144,6 +153,12 @@ class InputComponent extends Component {
     toggleFocused(isFocused) {
         this.setState({
             isFocused,
+        });
+    }
+
+    toggleDisplayPassword() {
+        this.setState({
+            displayPassword: !this.state.displayPassword,
         });
     }
 
@@ -173,6 +188,7 @@ class InputComponent extends Component {
         const {
             selectInputValue,
             isFocused,
+            displayPassword,
         } = this.state;
 
         const hasErrors = errors.length > 0;
@@ -181,7 +197,7 @@ class InputComponent extends Component {
             ? labelString
             : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
-        if (type === 'text' || type === 'number' || type === 'email') {
+        if (type === 'text' || type === 'number' || type === 'email' || type === 'password') {
             const inputValue = (value === null || typeof value === 'undefined')
                 ? ''
                 : value;
@@ -193,16 +209,40 @@ class InputComponent extends Component {
                         label={labelText}
                         required={required}
                         error={hasErrors}
+                        shrink={value !== ''}
                     />
                     <OutlinedInput
                         size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
                         value={inputValue}
-                        type={type}
+                        type={type === 'password' && displayPassword ? 'text' : type}
                         onChange={event => onChange(keyValue, event.target.value)}
                         error={hasErrors}
+                        className={type === 'password' ? classes.passwordInput : ''}
                     />
+                    {
+                        type === 'password'
+                        && (
+                            <Tooltip
+                                className={classes.displayPassword}
+                                disableFocusListener={disabled}
+                                disableHoverListener={disabled}
+                                disableTouchListener={disabled}
+                                placement="bottom"
+                                title={formatMessage({
+                                    id: 'iaso.label.displayPassword',
+                                    defaultMessage: 'Display the pasword',
+                                })}
+                            >
+                                <span>
+                                    <IconButton color={displayPassword ? 'primary' : 'inherit'} onClick={() => this.toggleDisplayPassword()}>
+                                        <Edit />
+                                    </IconButton>
+                                </span>
+                            </Tooltip>
+                        )
+                    }
                 </FormControlComponent>
             );
         }

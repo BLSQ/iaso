@@ -85,6 +85,7 @@ class UserDialogComponent extends Component {
             first_name: { value: get(initialData, 'first_name', ''), errors: [] },
             last_name: { value: get(initialData, 'last_name', ''), errors: [] },
             email: { value: get(initialData, 'email', ''), errors: [] },
+            password: { value: '', errors: [] },
             permissions: { value: get(initialData, 'permissions', []), errors: [] },
         };
     }
@@ -150,9 +151,28 @@ class UserDialogComponent extends Component {
                                 id: 'iaso.label.email',
                             }}
                         />
+                        <InputComponent
+                            keyValue="password"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={this.state.password.value}
+                            errors={this.state.password.errors}
+                            type="password"
+                            label={initialData ? {
+                                defaultMessage: 'New password',
+                                id: 'iaso.users.newPassword',
+                            } : {
+                                defaultMessage: 'Password',
+                                id: 'iaso.users.password',
+                            }}
+                            required={!initialData}
+                        />
                     </Grid>
                     <Grid xs={6} item>
-                        <PermissionsSwitches isSuperUser={initialData && initialData.is_superuser} currentUser={this.state} handleChange={permissions => this.setFieldValue('permissions', permissions)} />
+                        <PermissionsSwitches
+                            isSuperUser={initialData && initialData.is_superuser}
+                            currentUser={this.state}
+                            handleChange={permissions => this.setFieldValue('permissions', permissions)}
+                        />
                     </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>

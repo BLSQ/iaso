@@ -55,6 +55,7 @@ export default function iasoApp(element, baseUrl) {
                     {...props}
                     permission={currentPath.permission}
                     component={currentPath.component(props)}
+                    isRootUrl={currentPath.isRootUrl}
                 />
             )}
         />

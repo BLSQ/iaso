@@ -9,9 +9,11 @@ import SidebarMenu from '../../../components/nav/SidebarMenuComponent';
 import {
     fetchCurrentUser as fetchCurrentUserAction,
 } from '../actions';
+import { redirectTo as redirectToAction } from '../../../routing/actions';
 
 import {
     userHasPermission,
+    getFirstPermissionUrl,
 } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
@@ -21,8 +23,19 @@ class AuthorizedUser extends Component {
     componentDidMount() {
         const {
             fetchCurrentUser,
+            isRootUrl,
+            permission,
+            redirectTo,
         } = this.props;
-        fetchCurrentUser();
+        fetchCurrentUser().then((currentUser) => {
+            const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
+            if (!isAuthorized && isRootUrl) {
+                const newBaseUrl = getFirstPermissionUrl(permission, currentUser);
+                if (newBaseUrl) {
+                    redirectTo(newBaseUrl, {});
+                }
+            }
+        });
     }
 
     render() {
@@ -61,13 +74,16 @@ class AuthorizedUser extends Component {
 AuthorizedUser.defaultProps = {
     currentUser: null,
     permission: null,
+    isRootUrl: false,
 };
 
 AuthorizedUser.propTypes = {
     fetchCurrentUser: PropTypes.func.isRequired,
+    redirectTo: PropTypes.func.isRequired,
     component: PropTypes.node.isRequired,
     permission: PropTypes.any,
     currentUser: PropTypes.object,
+    isRootUrl: PropTypes.bool,
 };
 
 const MapStateToProps = state => ({
@@ -78,6 +94,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators({
         fetchCurrentUser: fetchCurrentUserAction,
+        redirectTo: redirectToAction,
     }, dispatch),
 });
 

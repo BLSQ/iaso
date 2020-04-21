@@ -134,6 +134,7 @@ class FormDialogComponent extends Component {
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
             period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
+            derived: { value: _.get(initialData, 'derived', null), errors: [] },
             single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
@@ -230,6 +231,7 @@ class FormDialogComponent extends Component {
                                 />
                             </Grid>
                         </Grid>
+
                         <InputComponent
                             keyValue="single_per_period"
                             disabled={this.state.period_type.value === null}
@@ -300,6 +302,18 @@ class FormDialogComponent extends Component {
                             label={{
                                 id: 'iaso.label.locationField',
                                 defaultMessage: 'Location field',
+                            }}
+                        />
+                        <InputComponent
+                            keyValue="derived"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={this.state.derived.value}
+                            errors={this.state.derived.errors}
+                            type="checkbox"
+                            required
+                            label={{
+                                id: 'iaso.label.derived',
+                                defaultMessage: 'Deduced from another form',
                             }}
                         />
                     </Grid>

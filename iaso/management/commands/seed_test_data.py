@@ -166,6 +166,7 @@ class Command(BaseCommand):
             datasource,
             credentials,
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+            xls_file="./testdata/seed-data-command-form-cvs-stats.xls",
         )
 
         project.forms.add(cvs_stat_form)

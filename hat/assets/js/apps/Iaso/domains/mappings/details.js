@@ -19,8 +19,10 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
+import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import commonStyles from '../../styles/common';
 import { mappingDetailPath, mappingsPath } from '../../constants/paths';
+
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -92,7 +94,7 @@ class MappingDetails extends Component {
                 { type: 'neverMapped' },
             );
         };
-
+        const isDataElementMappable = currentMappingVersion && currentMappingVersion.mapping.mapping_type !== 'DERIVED';
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -133,16 +135,27 @@ class MappingDetails extends Component {
                                 <>
                                     <QuestionInfos question={currentQuestion} />
                                     <br />
-                                    <QuestionMappingForm
-                                        key={currentQuestion.name}
-                                        mapping={currentMappingVersion}
-                                        question={currentQuestion}
-                                        mappingVersion={currentMappingVersion}
-                                        onConfirmedQuestionMapping={onConfirmedQuestionMapping}
-                                        onUnmapQuestionMapping={onUnmapQuestionMapping}
-                                        onNeverMapQuestionMapping={onNeverMapQuestionMapping}
-                                        hesabuDescriptor={hesabuDescriptor}
-                                    />
+                                    { isDataElementMappable && (
+                                        <QuestionMappingForm
+                                            key={currentQuestion.name}
+                                            mapping={currentMappingVersion}
+                                            question={currentQuestion}
+                                            mappingVersion={currentMappingVersion}
+                                            onConfirmedQuestionMapping={onConfirmedQuestionMapping}
+                                            onUnmapQuestionMapping={onUnmapQuestionMapping}
+                                            onNeverMapQuestionMapping={onNeverMapQuestionMapping}
+                                            hesabuDescriptor={hesabuDescriptor}
+                                        />
+                                    )}
+                                    { !isDataElementMappable && (
+                                        <DerivedQuestionMappingForm
+                                            key={currentQuestion.name}
+                                            mapping={currentMappingVersion}
+                                            question={currentQuestion}
+                                            mappingVersion={currentMappingVersion}
+                                        />
+                                    )
+                                    }
                                 </>
                                 )}
                             </Grid>

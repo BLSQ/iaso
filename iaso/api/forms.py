@@ -60,6 +60,7 @@ class FormSerializer(serializers.ModelSerializer):
             "instance_updated_at",
             "created_at",
             "updated_at",
+            "derived",
         ]
         read_only_fields = [
             "id",

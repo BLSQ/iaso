@@ -5,21 +5,21 @@ from hat.patient.identify import get_or_create_patient_from_case, create_test_da
 
 
 class Command(BaseCommand):
-    help = 'Process cases_case to dispatch into patient_patient and patient_test'
+    help = "Process cases_case to dispatch into patient_patient and patient_test"
 
     def add_arguments(self, parser):
         parser.add_argument(
-            '--force',
-            action='store_true',
-            dest='force',
-            help='Force the processing of all data, not just unnormalized rows',
+            "--force",
+            action="store_true",
+            dest="force",
+            help="Force the processing of all data, not just unnormalized rows",
         )
 
         parser.add_argument(
-            '--verbose',
-            action='store_true',
-            dest='verbose',
-            help='Be verbose about what it is doing',
+            "--verbose",
+            action="store_true",
+            dest="verbose",
+            help="Be verbose about what it is doing",
         )
 
     def handle(self, *args, **options):
@@ -27,32 +27,39 @@ class Command(BaseCommand):
         print("-- NORMALIZING patient data --")
 
         all_cases = Case.objects
-        if not options['force']:
+        if not options["force"]:
             all_cases = all_cases.filter(normalized_patient_id=None)
         patient_created_count = 0
         for case in all_cases:
 
-            if options['verbose']:
-                print("Processing", case.prename, case.lastname, case.postname, case.mothers_surname, case.year_of_birth)
+            if options["verbose"]:
+                print(
+                    "Processing",
+                    case.prename,
+                    case.lastname,
+                    case.postname,
+                    case.mothers_surname,
+                    case.year_of_birth,
+                )
 
             try:
                 # Normalize the patient data
                 patient, patient_created = get_or_create_patient_from_case(case)
                 if patient_created:
                     patient_created_count += 1
-                    if options['verbose'] or patient_created_count % 100 == 0:
+                    if options["verbose"] or patient_created_count % 100 == 0:
                         print("New patient created count: ", patient_created_count)
 
                 case.normalized_patient = patient
 
                 # Normalize the test data
                 tests, tests_created = create_test_data(case, None, {})
-                if options['verbose']:
+                if options["verbose"]:
                     print("Created", tests_created, "tests")
                     print("Tests:", list(map(lambda x: x.type, tests)))
 
                 case.save()
-                if options['verbose']:
+                if options["verbose"]:
                     print("^^ Patient data saved ^^")
 
             except Exception as e:

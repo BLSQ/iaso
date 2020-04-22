@@ -559,6 +559,8 @@ class Form(models.Model):
     name = models.TextField()
     device_field = models.TextField(null=True, blank=True)
     location_field = models.TextField(null=True, blank=True)
+    correlation_field = models.TextField(null=True, blank=True)
+    correlatable = models.BooleanField(default=False)
     # Accumulated list of all the fields that were present at some point in a version of the form. This is used to
     # build a table view of the form answers without having to parse the xml files
     fields = JSONField(null=True, blank=True)
@@ -934,6 +936,7 @@ class Instance(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     uuid = models.TextField(null=True, blank=True)
     export_id = models.TextField(null=True, blank=True, default=generate_id_for_dhis_2)
+    correlation_id = models.IntegerField(null=True, blank=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
@@ -987,6 +990,16 @@ class Instance(models.Model):
                 self.save()
                 if self.project:
                     self.device.projects.add(self.project)
+
+    def convert_correlation(self):
+        if not self.correlation_id:
+            identifier = str(self.id)
+            if self.form.correlation_field is not None and self.json:
+                identifier += self.json.get(self.form.correlation_field, None)
+            identifier_value = int(identifier)
+            suffix = "{:02d}".format(identifier_value % 97)
+            self.correlation_id = identifier + suffix
+            self.save()
 
     def get_and_save_json_of_xml(self):
         if self.json:

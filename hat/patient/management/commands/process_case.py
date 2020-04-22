@@ -33,7 +33,7 @@ class Command(BaseCommand):
         for case in all_cases:
 
             if options['verbose']:
-                print("Processing", case.prename, case.lastname, case.name, case.mothers_surname, case.year_of_birth)
+                print("Processing", case.prename, case.lastname, case.postname, case.mothers_surname, case.year_of_birth)
 
             try:
                 # Normalize the patient data

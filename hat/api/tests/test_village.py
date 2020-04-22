@@ -21,7 +21,8 @@ class VillageTest(APITestCase):
             "gps_source": "PNLTHA-CTB",
             "population": 1004,
             "population_year": 2016,
-            "population_source": None
+            "population_source": None,
+            "merged_to": None
             }
 
     def clean_decimal(self, data):

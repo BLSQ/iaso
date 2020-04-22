@@ -762,11 +762,11 @@ MAPPING: List[JsonType] = [
         },
     },
     {
-        "field": "name",
+        "field": "postname",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {"field": ("tblFishedeDeclaration", "Nom")},
-            "historic": {"field": ("T_CARDS", "IM_NAME")},
+            "pv": {"field": ("tblFishedeDeclaration", "Postnom")},
+            "historic": {"field": ("T_CARDS", "IM_LASTNAME")},
             "mobile": {"field": ("main", "person.postname")},
         },
     },
@@ -774,8 +774,8 @@ MAPPING: List[JsonType] = [
         "field": "lastname",
         "export_levels": [Export.full, Export.suspects_full],
         "sources": {
-            "pv": {"field": ("tblFishedeDeclaration", "Postnom")},
-            "historic": {"field": ("T_CARDS", "IM_LASTNAME")},
+            "pv": {"field": ("tblFishedeDeclaration", "Nom")},
+            "historic": {"field": ("T_CARDS", "IM_NAME")},
             "mobile": {"field": ("main", "person.surname")},
         },
     },

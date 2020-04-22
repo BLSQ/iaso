@@ -68,7 +68,7 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
         coordination_id = request.GET.get("coordination_id", None)
         date_from = request.GET.get("date_from", None)
         date_to = request.GET.get("date_to", None)
-        search_name = request.GET.get("search_name", None)
+        search_postname = request.GET.get("search_postname", None)
         search_prename = request.GET.get("search_prename", None)
         search_lastname = request.GET.get("search_lastname", None)
         search_mother_name = request.GET.get("search_mother_name", None)
@@ -88,9 +88,9 @@ class PatientDuplicatesViewSet(viewsets.ViewSet):
 
         # conditions on the patient
         if not (request.user.has_perm("menupermissions.x_anonymous") and not request.user.is_superuser):
-            if search_name:
+            if search_postname:
                 queryset = queryset.filter(
-                    Q(patient1__post_name__contains=search_name) | Q(patient2__post_name__contains=search_name)
+                    Q(patient1__post_name__contains=search_postname) | Q(patient2__post_name__contains=search_postname)
                 )
             if search_prename:
                 queryset = queryset.filter(

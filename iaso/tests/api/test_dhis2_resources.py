@@ -57,17 +57,28 @@ class Dhis2APITestCase(APITestCase):
         self.assertEqual("application/json", response["Content-Type"])
 
     @tag("iaso_only")
-    def test_data_element_list_with_auth_but_non_configured(self):
-        """GET /dataElements/ with should return error"""
+    def test_data_element_list_with_auth_but_non_configured_credentials(self):
+        """GET /dataElements/ without credentials should return error"""
 
         self.client.force_authenticate(self.user)
 
         response = self.client.get(
             "/api/datasources/" + str(self.source.id) + "/dataElements/"
         )
-        self.assertEqual(501, response.status_code)
+        self.assertEqual(401, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
-        self.assertEqual({"error": "no credentials configured"}, response.json())
+        self.assertEqual({"error": "No credentials configured"}, response.json())
+
+    @tag("iaso_only")
+    def test_data_element_list_with_auth_but_non_configured_source(self):
+        """GET /dataElements/ without credentials should return error"""
+
+        self.client.force_authenticate(self.user)
+
+        response = self.client.get("/api/datasources/9999999/dataElements/")
+        self.assertEqual(404, response.status_code)
+        self.assertEqual("application/json", response["Content-Type"])
+        self.assertEqual({"error": "Data source not available"}, response.json())
 
     @tag("iaso_only")
     @responses.activate
@@ -98,12 +109,12 @@ class Dhis2APITestCase(APITestCase):
         )
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
-        respose_json = response.json()
+        response_json = response.json()
         # nextPage should have disappeared
-        self.assertEqual({"page": 1, "pageCount": 4}, respose_json["pager"])
+        self.assertEqual({"page": 1, "pageCount": 4}, response_json["pager"])
         self.assertEqual(
             [{"id": "aze4a65z", "displayName": "Hello data element"}],
-            respose_json["dataElements"],
+            response_json["dataElements"],
         )
 
     @tag("iaso_only")

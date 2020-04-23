@@ -12,12 +12,20 @@ class FormsAPITestCase(APITestCase):
     def setUpTestData(cls):
         cls.now = now()
 
-        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
-        cls.coruscant = m.OrgUnit.objects.create(name="coruscant", org_unit_type=cls.jedi_council)
+        cls.jedi_council = m.OrgUnitType.objects.create(
+            name="Jedi Council", short_name="Cnc"
+        )
+        cls.coruscant = m.OrgUnit.objects.create(
+            name="coruscant", org_unit_type=cls.jedi_council
+        )
 
         cls.form_1 = m.Form.objects.create(name="Land Speeder", form_id="sample1")
-        cls.form_2 = m.Form.objects.create(name="Hydroponic public survey", form_id="sample2", correlatable=True, correlation_field="service")
-
+        cls.form_2 = m.Form.objects.create(
+            name="Hydroponic public survey",
+            form_id="sample2",
+            correlatable=True,
+            correlation_field="service",
+        )
 
     @tag("iaso_only")
     def test_correlation_creation_without_correlation_field(self):
@@ -40,11 +48,13 @@ class FormsAPITestCase(APITestCase):
             }
         ]
 
-        response = self.client.post("/api/instances/", data=instance_body, format="json")
+        response = self.client.post(
+            "/api/instances/", data=instance_body, format="json"
+        )
         self.assertEqual(response.status_code, 200)
 
         with open("iaso/tests/fixtures/land_speeder.xml") as fp:
-            self.client.post('/sync/form_upload/', {'xml_submission_file': fp})
+            self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
         self.assertEqual(response.status_code, 200)
         instance = m.Instance.objects.get(uuid=uuid)
         self.assertTrue(str(instance.correlation_id).startswith(str(instance.id)))
@@ -53,7 +63,9 @@ class FormsAPITestCase(APITestCase):
         base = int(str(instance.correlation_id)[0:-2])
 
         self.assertEqual(base % 97, modulo)
-        self.assertEqual(len(str(instance.id))+3, len(str(instance.correlation_id))) #verify that one random number was added
+        self.assertEqual(
+            len(str(instance.id)) + 3, len(str(instance.correlation_id))
+        )  # verify that one random number was added
 
     @tag("iaso_only")
     def test_correlation_creation_with_correlation_field(self):
@@ -76,11 +88,13 @@ class FormsAPITestCase(APITestCase):
             }
         ]
 
-        response = self.client.post("/api/instances/", data=instance_body, format="json")
+        response = self.client.post(
+            "/api/instances/", data=instance_body, format="json"
+        )
         self.assertEqual(response.status_code, 200)
 
         with open("iaso/tests/fixtures/%s" % file_name) as fp:
-            self.client.post('/sync/form_upload/', {'xml_submission_file': fp})
+            self.client.post("/sync/form_upload/", {"xml_submission_file": fp})
 
         instance = m.Instance.objects.get(uuid=uuid)
 
@@ -90,4 +104,4 @@ class FormsAPITestCase(APITestCase):
 
         self.assertEqual(correlation_code, 123)
         self.assertEqual(base % 97, modulo)
-        self.assertEqual(len(str(instance.id))+6, len(str(instance.correlation_id)))
+        self.assertEqual(len(str(instance.id)) + 6, len(str(instance.correlation_id)))

@@ -1040,6 +1040,7 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
+            "correlation_id": self.correlation_id,
         }
 
     def as_dict_with_parents(self):
@@ -1060,6 +1061,7 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
+            "correlation_id": self.correlation_id,
         }
 
     def as_full_model(self):
@@ -1084,6 +1086,7 @@ class Instance(models.Model):
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
             "status": getattr(self, "status", None),
+            "correlation_id": self.correlation_id,
         }
 
     def as_small_dict(self):
@@ -1100,6 +1103,7 @@ class Instance(models.Model):
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],
             "status": getattr(self, "status", None),
+            "correlation_id": self.correlation_id,
         }
 
 

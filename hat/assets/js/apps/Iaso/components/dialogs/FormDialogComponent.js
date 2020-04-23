@@ -21,6 +21,7 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,
 } from '../../domains/periods/constants';
+import { setIsLoadingForm } from '../../domains/forms/actions';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
@@ -43,6 +44,7 @@ class FormDialogComponent extends Component {
         let isUpdate;
         let saveForm;
         let formData;
+        const { dispatch } = this.props;
         if (this.props.initialData === null) {
             isUpdate = false;
             formData = _.mapValues(_.omit(this.state, ['xls_file', 'form_id']), v => v.value);
@@ -52,7 +54,7 @@ class FormDialogComponent extends Component {
             formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
             saveForm = updateForm(this.props.dispatch, this.state.id.value, formData);
         }
-
+        dispatch(setIsLoadingForm(true));
         saveForm
             .then((savedFormData) => {
                 if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
@@ -86,6 +88,9 @@ class FormDialogComponent extends Component {
                         this.setFieldErrors(errorKey, errorMessages);
                     });
                 }
+            })
+            .then(() => {
+                dispatch(setIsLoadingForm(false));
             });
     }
 

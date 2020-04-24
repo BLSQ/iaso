@@ -25,6 +25,7 @@ from iaso.dhis2.aggregate_exporter import AggregateExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 from dhis2 import Api
+
 import json
 
 """
@@ -109,7 +110,10 @@ class Command(BaseCommand):
         project.forms.add(quantity_form)
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
-            quantity_form, datasource, credentials
+            quantity_form,
+            datasource,
+            credentials,
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
         )
 
         # quality
@@ -125,6 +129,7 @@ class Command(BaseCommand):
             quality_form,
             datasource,
             credentials,
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
             xls_file="testdata/seed-data-command-form-i18n.xlsx",
         )
         project.save()
@@ -133,7 +138,7 @@ class Command(BaseCommand):
 
         # cvs
         cvs_form, created = Form.objects.get_or_create(
-            form_id="css_" + dhis2_version,
+            form_id="cvs_" + dhis2_version,
             name="Community Verification Satisfaction form " + dhis2_version,
             period_type="QUARTER",
             single_per_period=False,
@@ -141,12 +146,30 @@ class Command(BaseCommand):
         cvs_form.org_unit_types.add(orgunit_type)
 
         cvs_mapping_version = self.seed_form(
-            cvs_form,
+            cvs_form, datasource, credentials, mapping_file=None,
+        )
+        project.forms.add(cvs_form)
+
+        cvs_stat_form, created = Form.objects.get_or_create(
+            form_id="cvs_stat_" + dhis2_version,
+            name="CVS Stats " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=False,
+        )
+        cvs_stat_form.derived = True
+        cvs_stat_form.save()
+
+        cvs_stat_form.org_unit_types.add(orgunit_type)
+
+        cvs_stat_mapping_version = self.seed_form(
+            cvs_stat_form,
             datasource,
             credentials,
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+            xls_file="./testdata/seed-data-command-form-cvs-stats.xls",
         )
-        project.forms.add(cvs_form)
+
+        project.forms.add(cvs_stat_form)
 
         self.project = project
 
@@ -201,6 +224,25 @@ class Command(BaseCommand):
                 "generated",
                 quality_form.name,
                 quality_form.instances.count(),
+                "instances",
+            )
+
+        if mode == "derived":
+
+            period = "2018Q1"
+            for i in cvs_stat_form.instances.filter(period=period).all():
+                i.delete()
+
+            from iaso.dhis2.derived_instance_generator import generate_instances
+
+            generate_instances(
+                project, cvs_mapping_version, cvs_stat_mapping_version, period,
+            )
+
+            print(
+                "generated",
+                cvs_stat_form.name,
+                cvs_stat_form.instances.count(),
                 "instances",
             )
 
@@ -265,7 +307,7 @@ class Command(BaseCommand):
         form,
         datasource,
         credentials,
-        mapping_file="./testdata/seed-data-command-form-mapping.json",
+        mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
     ):
         form_version, created = FormVersion.objects.get_or_create(
@@ -279,6 +321,9 @@ class Command(BaseCommand):
         form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
         form_version.save()
+
+        if not mapping_file:
+            return
         mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
         mapping_version_name = "aggregate" if form.single_per_period else "derived"
 
@@ -336,14 +381,13 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    if "question_mappings" in mapping_version.json:
+                    if mapping_version and "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
                     else:
                         # CVS
-                        for key in mapping_version.json["aggregations"]:
-                            test_data[key["question_key"]] = randint(1, 100)
+                        test_data["cs_304"] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form

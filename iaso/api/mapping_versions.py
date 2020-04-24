@@ -38,6 +38,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             "question_mappings",
             "total_questions",
             "mapped_questions",
+            "derivate_settings",
             "created_at",
             "updated_at",
         ]
@@ -57,6 +58,10 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
     dataset = serializers.SerializerMethodField()
     mapped_questions = serializers.SerializerMethodField()
     total_questions = serializers.SerializerMethodField()
+    derivate_settings = serializers.SerializerMethodField()
+
+    def get_derivate_settings(self, mapping_version):
+        return mapping_version.json
 
     def get_mapped_questions(self, mapping_version):
         return len(mapping_version.json.get("question_mappings", {}))

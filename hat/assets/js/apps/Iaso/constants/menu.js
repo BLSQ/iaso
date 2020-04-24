@@ -9,7 +9,7 @@ import Settings from '@material-ui/icons/Settings';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
-import * as paths from './paths';
+import * as paths from './routes';
 
 const menuItems = [
     {

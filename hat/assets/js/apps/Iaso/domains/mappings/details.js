@@ -20,7 +20,7 @@ import RecursiveTreeView from './components/RecursiveTreeView';
 import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import commonStyles from '../../styles/common';
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),

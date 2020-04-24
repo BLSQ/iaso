@@ -17,7 +17,7 @@ import UsersDialog from './components/UsersDialog';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
 import commonStyles from '../../styles/common';
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 import usersTableColumns from './config';
 

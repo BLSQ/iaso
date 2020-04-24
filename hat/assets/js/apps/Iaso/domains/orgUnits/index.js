@@ -54,7 +54,7 @@ import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBars
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;

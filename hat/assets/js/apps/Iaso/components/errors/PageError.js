@@ -5,7 +5,7 @@ import {
     Paper, Container, Box, Typography, makeStyles,
 } from '@material-ui/core';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
-import NotInterested from '@material-ui/icons/NotInterested';
+import NotAuthorized from '@material-ui/icons/NotInterested';
 import HelpOutline from '@material-ui/icons/HelpOutline';
 import TopBar from '../nav/TopBarComponent';
 
@@ -17,8 +17,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const PageError = (props) => {
-    const { errorCode } = props;
+const PageError = ({ errorCode }) => {
     const classes = useStyles();
     return (
         <>
@@ -41,12 +40,12 @@ const PageError = (props) => {
                                         <Box pt={2} pb={2}>
                                             <Typography variant="h5">
                                                 <FormattedMessage
-                                                    id="iaso.errors.notAuthorized"
-                                                    defaultMessage="You are not authorized to view this page"
+                                                    id="iaso.errors.notFound"
+                                                    defaultMessage="Page not found"
                                                 />
                                             </Typography>
                                         </Box>
-                                        <NotInterested className={classes.icon} />
+                                        <NotAuthorized className={classes.icon} />
                                     </>
                                 )
                             }

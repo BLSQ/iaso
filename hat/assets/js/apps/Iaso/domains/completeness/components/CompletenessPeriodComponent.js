@@ -9,7 +9,7 @@ import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getColumns } from '../config';
 import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
-import { baseUrls } from '../../../constants/routes';
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),

@@ -1,4 +1,4 @@
-import { pathsList } from '../../constants/paths';
+import { routeConfigs } from '../../constants/routes';
 /**
  * check if user has the permission
  *
@@ -44,13 +44,13 @@ export const userHasOneOfPermissions = (permissions, user) => {
  * @param {Object} user
  * @return {String}
  */
-export const getFirstPermissionUrl = (rootPermission, user) => {
+export const getFirstAllowedUrl = (rootPermission, user) => {
     let newRoot;
     user.permissions.forEach((p) => {
         if (!newRoot && p !== rootPermission) {
             newRoot = p;
         }
     });
-    const newPath = pathsList.find(p => p.permission === newRoot);
+    const newPath = routeConfigs.find(p => p.permission === newRoot);
     return newPath.baseUrl;
 };

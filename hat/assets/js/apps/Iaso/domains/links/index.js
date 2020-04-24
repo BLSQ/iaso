@@ -48,7 +48,7 @@ import {
 
 import commonStyles from '../../styles/common';
 
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.links;
 

@@ -14,7 +14,7 @@ import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.orgUnitDetails;
 

@@ -27,7 +27,7 @@ import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.forms;
 

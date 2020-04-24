@@ -36,26 +36,26 @@ import App from '../App';
 import { locationLimitMax } from './domains/orgUnits';
 
 import {
-    pathsList,
+    routeConfigs,
     getPath,
-} from './constants/paths';
+} from './constants/routes';
 
-import { baseUrls } from './constants/routes';
+import { baseUrls } from './constants/urls';
 
-import AuthorizedUser from './domains/users/components/AuthorizedUser';
+import ProtectedRoute from './domains/users/components/ProtectedRoute';
 
 import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 export default function iasoApp(element, baseUrl) {
-    let routes = pathsList.map(currentPath => (
+    let routes = routeConfigs.map(routeConfig => (
         <Route
-            path={getPath(currentPath)}
+            path={getPath(routeConfig)}
             component={props => (
-                <AuthorizedUser
+                <ProtectedRoute
                     {...props}
-                    permission={currentPath.permission}
-                    component={currentPath.component(props)}
-                    isRootUrl={currentPath.isRootUrl}
+                    permission={routeConfig.permission}
+                    component={routeConfig.component(props)}
+                    isRootUrl={routeConfig.isRootUrl}
                 />
             )}
         />

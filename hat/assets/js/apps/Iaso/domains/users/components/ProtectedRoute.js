@@ -13,13 +13,13 @@ import { redirectTo as redirectToAction } from '../../../routing/actions';
 
 import {
     userHasPermission,
-    getFirstPermissionUrl,
+    getFirstAllowedUrl,
 } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
 
 
-class AuthorizedUser extends Component {
+class ProtectedRoute extends Component {
     componentDidMount() {
         const {
             fetchCurrentUser,
@@ -30,7 +30,7 @@ class AuthorizedUser extends Component {
         fetchCurrentUser().then((currentUser) => {
             const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
             if (!isAuthorized && isRootUrl) {
-                const newBaseUrl = getFirstPermissionUrl(permission, currentUser);
+                const newBaseUrl = getFirstAllowedUrl(permission, currentUser);
                 if (newBaseUrl) {
                     redirectTo(newBaseUrl, {});
                 }
@@ -71,13 +71,13 @@ class AuthorizedUser extends Component {
         );
     }
 }
-AuthorizedUser.defaultProps = {
+ProtectedRoute.defaultProps = {
     currentUser: null,
     permission: null,
     isRootUrl: false,
 };
 
-AuthorizedUser.propTypes = {
+ProtectedRoute.propTypes = {
     fetchCurrentUser: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     component: PropTypes.node.isRequired,
@@ -98,4 +98,4 @@ const MapDispatchToProps = dispatch => ({
     }, dispatch),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(AuthorizedUser);
+export default connect(MapStateToProps, MapDispatchToProps)(ProtectedRoute);

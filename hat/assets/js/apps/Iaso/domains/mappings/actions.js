@@ -3,7 +3,7 @@ import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar } from '../../../../utils/constants/snackBars';
 import { redirectTo } from '../../routing/actions';
 import Descriptor from './descriptor';
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 export const FETCHING_MAPPING_VERSIONS = 'FETCHING_MAPPING_VERSIONS';
 

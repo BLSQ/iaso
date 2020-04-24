@@ -29,7 +29,7 @@ import { textPlaceholder } from '../../../constants/uiConstants';
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
 
-import { baseUrls } from '../../../constants/routes';
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),

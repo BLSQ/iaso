@@ -19,7 +19,7 @@ import commonStyles from '../../styles/common';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
 import Table from '../../components/tables/TableComponent';
 
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.mappings;
 

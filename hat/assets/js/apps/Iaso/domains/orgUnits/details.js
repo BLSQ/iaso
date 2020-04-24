@@ -46,7 +46,7 @@ import commonStyles from '../../styles/common';
 
 import { getChipColors } from '../../constants/chipColors';
 
-import { baseUrls } from '../../constants/routes';
+import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.orgUnitDetails;
 

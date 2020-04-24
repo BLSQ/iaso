@@ -6,11 +6,13 @@ import { push } from 'react-router-redux';
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
     withStyles,
+    Box,
     Button,
     IconButton,
     Drawer,
     List,
     Divider,
+    Typography,
 } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
@@ -57,6 +59,9 @@ const styles = theme => ({
         marginBottom: theme.spacing(3),
         marginLeft: theme.spacing(3),
         marginRight: theme.spacing(3),
+    },
+    userName: {
+        marginLeft: 5,
     },
 });
 
@@ -117,16 +122,24 @@ class SidebarMenu extends PureComponent {
                         })
                     }
                 </List>
-                <Button
-                    size="small"
-                    className={classes.logout}
-                    color="inherit"
-                    href="/logout-iaso"
-                    aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
-                >
-                    <ExitIcon className={classes.smallButtonIcon} />
-                    <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
-                </Button>
+                <Box className={classes.logout}>
+                    <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className={classes.userName}
+                    >
+                        {currentUser.user_name}
+                    </Typography>
+                    <Button
+                        size="small"
+                        color="inherit"
+                        href="/logout-iaso"
+                        aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                    >
+                        <ExitIcon className={classes.smallButtonIcon} />
+                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
+                    </Button>
+                </Box>
             </Drawer>
         );
     }

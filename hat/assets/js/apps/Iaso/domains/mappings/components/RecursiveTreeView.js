@@ -4,7 +4,7 @@ import TreeView from '@material-ui/lab/TreeView';
 import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
 import TreeItem from '@material-ui/lab/TreeItem';
-import _ from 'lodash';
+import truncate from 'lodash/truncate';
 import Descriptor from '../descriptor';
 
 import { isMapped, isNeverMapped } from '../question_mappings';
@@ -61,7 +61,7 @@ const RecursiveTreeView = (props) => {
                 key={node.name}
                 nodeId={node.name}
                 label={
-                    `${_.truncate((Descriptor.getHumanLabel(node)))
+                    `${truncate((Descriptor.getHumanLabel(node)))
                     } (${
                         Descriptor.hasChildren(node)
                             ? ` ${coverage.join(' / ')}`

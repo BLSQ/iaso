@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import Typography from '@material-ui/core/Typography';
-import _ from 'lodash';
+import truncate from 'lodash/truncate';
 import Descriptor from '../descriptor';
 import ObjectDumper from './ObjectDumper';
 
@@ -10,7 +10,7 @@ const QuestionInfos = ({ question }) => {
     return (
         <div>
             <Typography variant="h3" component="h3">
-                {`${_.truncate(label)} - ${question.name}`}
+                {`${truncate(label)} - ${question.name}`}
             </Typography>
             <br />
             <br />

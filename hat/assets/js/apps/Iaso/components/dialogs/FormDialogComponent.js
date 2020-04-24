@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import _ from 'lodash';
+import mapValues from 'lodash/mapValues';
+import omit from 'lodash/omit';
+import get from 'lodash/get';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
-
 
 import {
     createForm,
@@ -47,11 +48,11 @@ class FormDialogComponent extends Component {
         const { dispatch } = this.props;
         if (this.props.initialData === null) {
             isUpdate = false;
-            formData = _.mapValues(_.omit(this.state, ['xls_file', 'form_id']), v => v.value);
+            formData = mapValues(omit(this.state, ['xls_file', 'form_id']), v => v.value);
             saveForm = createForm(this.props.dispatch, formData);
         } else {
             isUpdate = true;
-            formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
+            formData = mapValues(omit(this.state, 'xls_file'), v => v.value);
             saveForm = updateForm(this.props.dispatch, this.state.id.value, formData);
         }
         dispatch(setIsLoadingForm(true));
@@ -129,21 +130,21 @@ class FormDialogComponent extends Component {
         // TODO: useFormState hook or something, this is going to happen often
         const initialData = this.props.initialData ? this.props.initialData : {};
 
-        const projectIds = _.get(initialData, 'projects', []).map(p => p.id);
-        const orgUnitTypeIds = _.get(initialData, 'org_unit_types', []).map(out => out.id);
+        const projectIds = get(initialData, 'projects', []).map(p => p.id);
+        const orgUnitTypeIds = get(initialData, 'org_unit_types', []).map(out => out.id);
 
         return {
-            id: { value: _.get(initialData, 'id', null), errors: [] },
-            name: { value: _.get(initialData, 'name', ''), errors: [] },
+            id: { value: get(initialData, 'id', null), errors: [] },
+            name: { value: get(initialData, 'name', ''), errors: [] },
             xls_file: { value: null, errors: [] },
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
-            period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
-            single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
-            periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
-            periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
-            device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
-            location_field: { value: _.get(initialData, 'location_field', ''), errors: [] },
+            period_type: { value: get(initialData, 'period_type', null), errors: [] },
+            single_per_period: { value: get(initialData, 'single_per_period', false), errors: [] },
+            periods_before_allowed: { value: get(initialData, 'periods_before_allowed', 0), errors: [] },
+            periods_after_allowed: { value: get(initialData, 'periods_after_allowed', 0), errors: [] },
+            device_field: { value: get(initialData, 'device_field', 'deviceid'), errors: [] },
+            location_field: { value: get(initialData, 'location_field', ''), errors: [] },
         };
     }
 

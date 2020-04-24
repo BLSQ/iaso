@@ -1,4 +1,4 @@
-import _ from 'lodash/fp';
+import range from 'lodash/fp/range';
 import {
     PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR,
 } from './constants';
@@ -43,11 +43,11 @@ export class Period {
             case PERIOD_TYPE_MONTH:
                 return [this.month];
             case PERIOD_TYPE_QUARTER:
-                return _.range(this.month - 2, this.month + 1);
+                return range(this.month - 2, this.month + 1);
             case PERIOD_TYPE_SIX_MONTH:
-                return _.range(this.month - 5, this.month + 1);
+                return range(this.month - 5, this.month + 1);
             case PERIOD_TYPE_YEAR:
-                return _.range(this.month - 11, this.month + 1);
+                return range(this.month - 11, this.month + 1);
             default:
                 throw new Error(`Invalid period type ${this.periodType}`);
         }

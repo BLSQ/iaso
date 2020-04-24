@@ -1,4 +1,6 @@
-import _ from 'lodash';
+import has from 'lodash/has';
+import set from 'lodash/set';
+import update from 'lodash/update';
 
 import { Period } from '../periods/models';
 import {
@@ -22,8 +24,8 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
 
         // create period group if not exist
         const periodPath = groupPeriod.periodString;
-        if (!_.has(groupedCompletenessData, periodPath)) {
-            _.set(groupedCompletenessData, periodPath, {
+        if (!has(groupedCompletenessData, periodPath)) {
+            set(groupedCompletenessData, periodPath, {
                 period: groupPeriod,
                 forms: {},
             });
@@ -31,24 +33,23 @@ export function groupCompletenessData(completenessData, periodType = PERIOD_TYPE
 
         // create form group if not exist
         const formPath = `${periodPath}.forms.${dataEntry.form.id}`;
-        if (!_.has(groupedCompletenessData, formPath)) {
-
-            _.set(groupedCompletenessData, formPath, {
+        if (!has(groupedCompletenessData, formPath)) {
+            set(groupedCompletenessData, formPath, {
                 ...dataEntry.form,
                 months: Object.fromEntries(groupPeriod.monthRange.map(month => [month, {
                     ready: 0,
                     error: 0,
                     exported: 0,
-                    period: period
+                    period,
                 }])),
             });
         }
 
         const monthPath = `${formPath}.months.${period.month}`;
-        _.update(groupedCompletenessData, `${monthPath}.ready`, ready => ready + dataEntry.counts.ready);
-        _.update(groupedCompletenessData, `${monthPath}.error`, error => error + dataEntry.counts.error);
-        _.update(groupedCompletenessData, `${monthPath}.exported`, exported => exported + dataEntry.counts.exported);
-        _.update(groupedCompletenessData, `${monthPath}.period`, p => period);
+        update(groupedCompletenessData, `${monthPath}.ready`, ready => ready + dataEntry.counts.ready);
+        update(groupedCompletenessData, `${monthPath}.error`, error => error + dataEntry.counts.error);
+        update(groupedCompletenessData, `${monthPath}.exported`, exported => exported + dataEntry.counts.exported);
+        update(groupedCompletenessData, `${monthPath}.period`, p => period);
     });
 
     return Object

@@ -116,10 +116,10 @@ class LocationMapComponent extends Component {
                             placeholder="0.00000"
                             id={`latitude-${location.id}`}
                             className={!location.latitude ? 'form-error' : ''}
-                            value={location.latitude ? location.latitude : 0}
+                            value={location.latitude}
                             onChange={event => this.updateVillage({
                                 ...location,
-                                latitude: parseFloat(event.currentTarget.value),
+                                latitude: event.currentTarget.value ? parseFloat(event.currentTarget.value) : '',
                             })}
                         />
                     </div>
@@ -140,11 +140,11 @@ class LocationMapComponent extends Component {
                             placeholder="0.00000"
                             name="longitude"
                             id={`longitude-${location.id}`}
-                            value={location.longitude ? location.longitude : 0}
+                            value={location.longitude}
                             className={!location.longitude ? 'form-error' : ''}
                             onChange={event => this.updateVillage({
                                 ...location,
-                                longitude: parseFloat(event.currentTarget.value),
+                                longitude: event.currentTarget.value ? parseFloat(event.currentTarget.value) : '',
                             })}
                         />
                     </div>

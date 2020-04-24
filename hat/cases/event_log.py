@@ -1,6 +1,8 @@
 from typing import NamedTuple, List, Union, Optional
 import json
 from enum import Enum
+
+from attr import dataclass, asdict
 from django.db import connection
 from collections import OrderedDict
 from snaql.convertors import guard_string
@@ -8,11 +10,13 @@ from hat.common.typing import JsonType
 from hat.queries import event_log_queries as queries
 
 
-class EventStats(NamedTuple):
+@dataclass
+class EventStats:
     total: int
     created: int
     updated: int
     deleted: int
+    ptr: int = 0
 
 
 class EventFile(NamedTuple):
@@ -104,7 +108,7 @@ def log_event(
     fields = ",".join(['"{}"'.format(k) for k in event_data.keys()])
     values = ",".join(event_data.values())
     sql = queries.insert_event(
-        **stats._asdict(),
+        **asdict(stats),
         details_table=event_table.value,
         details_fields=fields,
         details_values=values,

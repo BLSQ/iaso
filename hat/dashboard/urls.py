@@ -118,7 +118,6 @@ elif settings.FLAVOR == "iaso":
         url(r"^instance.*$", views.iaso, name="iaso_instance_detail"),
         url(r"^orgunits.*$", views.iaso, name="iaso_orgunits"),
         url(r"^orgunits/detail.*$", views.iaso, name="iaso_orgunits_details"),
-        url(r"^links.*$", views.iaso, name="iaso_links"),
         url(r"^completeness.*$", views.iaso, name="iaso_completeness"),
         url(r"^settings.*$", views.iaso, name="iaso_settings"),
     ]

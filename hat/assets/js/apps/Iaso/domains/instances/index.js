@@ -51,15 +51,17 @@ import ExportInstancesDialogComponent from './components/ExportInstancesDialogCo
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
+import { instancesPath, instanceDetailPath, formsPath } from '../../constants/paths';
 
-const asBackendStatus = status => {
+const { baseUrl } = instancesPath;
+
+const asBackendStatus = (status) => {
     if (status) {
-        return status.split(',').map(s => s == "ERROR" ? "DUPLICATED" : s).join(",")
+        return status.split(',').map(s => (s === 'ERROR' ? 'DUPLICATED' : s)).join(',');
     }
-    return status
-}
+    return status;
+};
 
-const baseUrl = 'instances';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -155,7 +157,7 @@ class Instances extends Component {
         }
     }
 
-    getFilters(){
+    getFilters() {
         const {
             params,
         } = this.props;
@@ -167,8 +169,8 @@ class Instances extends Component {
             periods: params.periods,
             status: asBackendStatus(params.status),
             deviceOwnershipId: params.deviceOwnershipId,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels)
-        }
+            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        };
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
@@ -180,7 +182,7 @@ class Instances extends Component {
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
             asSmallDict: true,
-            ...this.getFilters()
+            ...this.getFilters(),
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }
@@ -252,7 +254,7 @@ class Instances extends Component {
         const {
             redirectTo,
         } = this.props;
-        redirectTo('instance', {
+        redirectTo(instanceDetailPath.baseUrl, {
             instanceId: instance.id,
         });
     }
@@ -289,7 +291,7 @@ class Instances extends Component {
                         if (prevPathname) {
                             router.goBack();
                         } else {
-                            redirectTo('forms', {});
+                            redirectTo(formsPath.baseUrl, {});
                         }
                     }}
                 >
@@ -375,7 +377,8 @@ class Instances extends Component {
                         )
                     }
                     {
-                        tab === 'map' && (
+                        !fetching
+                        && tab === 'map' && (
                             <div className={classes.containerMarginNeg}>
                                 <InstancesMap instances={instancesSmall} />
                             </div>
@@ -393,7 +396,7 @@ class Instances extends Component {
                             <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
                                 <Grid xs={12} item className={classes.textAlignRight}>
                                     <div className={classes.paddingBottomBig}>
-                                        <ExportInstancesDialogComponent getFilters={() =>  this.getFilters()}/>
+                                        <ExportInstancesDialogComponent getFilters={() => this.getFilters()} />
                                         <DownloadButtonsComponent
                                             csvUrl={this.getEndpointUrl(true, 'csv')}
                                             xlsxUrl={this.getEndpointUrl(true, 'xlsx')}

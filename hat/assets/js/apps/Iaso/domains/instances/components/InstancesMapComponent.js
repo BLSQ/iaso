@@ -38,6 +38,16 @@ class InstancesMap extends Component {
         };
     }
 
+    componentDidMount() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
+        zoomBar.addTo(this.map.leafletElement);
+    }
+
     componentDidUpdate() {
         const {
             instances,
@@ -59,20 +69,6 @@ class InstancesMap extends Component {
 
     componentWillUnmount() {
         this.props.resetMapReducer();
-    }
-
-
-    onMapLoaded(ref) {
-        this.map = ref;
-        const {
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        if (this.map) {
-            zoomBar.addTo(this.map.leafletElement);
-        }
     }
 
     toggleWarning(warningDisplayed) {
@@ -125,7 +121,9 @@ class InstancesMap extends Component {
                     )}
                 >
                     <Map
-                        ref={ref => this.onMapLoaded(ref)}
+                        ref={(ref) => {
+                            this.map = ref;
+                        }}
                         scrollWheelZoom={false}
                         maxZoom={currentTile.maxZoom}
                         style={{ height: '100%' }}

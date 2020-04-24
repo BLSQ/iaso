@@ -16,12 +16,11 @@ import {
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
-import logoUrl from '../../images/iaso-logo.svg';
-
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../constants/uiConstants';
 
 import MenuItem from './MenuItemComponent';
+import LogoSvg from '../svg/LogoSvgComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -80,7 +79,7 @@ class SidebarMenu extends PureComponent {
                 onClose={toggleSidebar}
             >
                 <div className={classes.toolbar}>
-                    <img src={logoUrl} className={classes.logo} alt="logo" />
+                    <LogoSvg className={classes.logo} />
                     <IconButton
                         className={classes.menuButton}
                         color="inherit"

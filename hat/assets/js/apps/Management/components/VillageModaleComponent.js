@@ -121,6 +121,8 @@ class VillageModale extends Component {
             || !village.AS__ZS_id
             || !village.AS_id
             || !village.village_official
+            || !village.latitude
+            || !village.longitude
             || village.latitude === 0
             || village.longitude === 0
             || (!isChanged && village.id !== 0));

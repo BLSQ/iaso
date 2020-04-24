@@ -17,7 +17,6 @@ import traceback
 import dateutil
 import numpy
 import pandas
-from django.core.exceptions import MultipleObjectsReturned
 from django.db import transaction
 from django.db.models import Q
 from pandas import DataFrame, concat as pandasconcat
@@ -259,6 +258,17 @@ def normalize_location(
                         case_zone, case_area
                     )
                 )
+
+            if case_village is None:
+                # This should not happen but it did
+                logger.error(
+                    "Normalize location %s, %s, %s of device %s has no village name",
+                    case_zone,
+                    case_area,
+                    case_village,
+                    device_id,
+                )
+                return db_as, None
 
             # The village could be in full text because it is a new one or it was created by a previous record but the
             # app doesn't know its ID yet. So let's attempt to find it first

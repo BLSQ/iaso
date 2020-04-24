@@ -1,0 +1,59 @@
+{
+  "_id": "participant-b8da6e36ee184d808ba4628cd322ad63",
+  "_rev": "4-bfa929fe1897fc7f6bc7c98f99f62c5d",
+  "type": "participant",
+  "person": {
+    "gender": "Female",
+    "surname": "Redacted",
+    "forename": "Pelagie",
+    "location": {
+      "area": "111",
+      "zone": "11",
+      "origin": "selfPresenting",
+      "village": "444719",
+      "province": "1"
+    },
+    "postname": "Kadianga",
+    "birthYear": "1994",
+    "noBirthYear": false,
+    "mothersSurname": "Kanika"
+  },
+  "deviceId": "e12dde39e546f24a",
+  "appVersion": "2.0.50",
+  "dateCreated": "2020-02-18T11:00:00.000Z",
+  "participant": {
+    "hatId": "LUKACHF1994K",
+    "version": 5,
+    "screenings": {
+      "catt": {
+        "level": "-1",
+        "absent": true,
+        "device": "e12dde39e546f24a",
+        "result": "negative",
+        "position": {
+          "accuracy": 9,
+          "latitude": -4.77360703,
+          "longitude": 17.89970012,
+          "timestamp": 1582370715000
+        },
+        "testTime": "2020-02-22T11:24:26.710Z",
+        "absentReason": "Temporarily absent",
+        "creationTime": ""
+      }
+    },
+    "geoLocation": {
+      "accuracy": 3,
+      "latitude": -4.7735641,
+      "longitude": 17.89969671,
+      "timestamp": 1582105445000
+    },
+    "screeningLocation": {
+      "area": "111",
+      "zone": "11",
+      "origin": "selfPresenting",
+      "village": "444719",
+      "province": "1"
+    }
+  },
+  "dateModified": "2020-02-22T11:24:26.717Z"
+}

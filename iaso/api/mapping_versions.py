@@ -62,8 +62,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
         return len(mapping_version.json.get("question_mappings", {}))
 
     def get_total_questions(self, mapping_version):
-        descriptor = mapping_version.form_version.get_or_save_form_descriptor()
-        questions_by_name = parsing.to_questions_by_name(descriptor)
+        questions_by_name = mapping_version.form_version.questions_by_name()
         return len(questions_by_name)
 
     def get_question_mappings(self, mapping_version):

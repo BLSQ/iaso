@@ -55,7 +55,7 @@ class CasesViewSet(viewsets.ViewSet):
     Example:
         /api/cases/?limit=50&page=1&geo_search=zo
 
-    To retrieve aall details on a specific record (case):
+    To retrieve all details on a specific record (case):
         GET /api/cases/12345?full
     All information related to the record will be returned with normalized location, patient, tests, device...
     Note that 12345 is the ID of the record, not the document_id or hat_id

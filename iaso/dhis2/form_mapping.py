@@ -1,4 +1,4 @@
-import json
+from iaso.models import FormVersion
 
 
 def seed_event_mapping(api, program_id):
@@ -33,3 +33,35 @@ def seed_event_mapping(api, program_id):
     }
 
     return (mapping, missing_data_elements)
+
+
+def copy_mappings_from_previous_version(form_version):
+
+    try:
+        previous_form_version = (
+            FormVersion.objects.filter(form=form_version.form)
+            .exclude(pk=form_version.id)
+            .latest("created_at")
+        )
+    except FormVersion.DoesNotExist:
+        previous_form_version = None
+
+    if not previous_form_version:
+        return
+
+    for mapping_version in previous_form_version.mapping_versions.all():
+        # clone the mapping_version and assign it the new version
+        mapping_version.id = None
+        mapping_version.form_version = form_version
+
+        # preserve all question mappings except the questions that don't exist in the newer version
+        questions_by_name = form_version.questions_by_name()
+
+        filtered_question_mappings = {
+            k: v
+            for k, v in mapping_version.json["question_mappings"].items()
+            if k in questions_by_name
+        }
+
+        mapping_version.json["question_mappings"] = filtered_question_mappings
+        mapping_version.save()

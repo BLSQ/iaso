@@ -25,6 +25,7 @@ from iaso.models import MatchingAlgorithm
 from .api.derived_instances import DerivedInstancesViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
+from .api.permissions import PermissionsViewSet
 from iaso import matching
 import pkgutil
 
@@ -54,6 +55,7 @@ router.register(r"completeness", CompletenessViewSet, base_name="completeness")
 router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
 router.register(r"mappings", MappingsViewSet, base_name="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, base_name="mappingversions")
+router.register(r"permissions", PermissionsViewSet, base_name="permissions")
 router.register(
     r"derivedinstances", DerivedInstancesViewSet, base_name="derivedinstances"
 )

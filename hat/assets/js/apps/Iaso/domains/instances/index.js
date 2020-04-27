@@ -51,9 +51,9 @@ import ExportInstancesDialogComponent from './components/ExportInstancesDialogCo
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
-import { instancesPath, instanceDetailPath, formsPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
-const { baseUrl } = instancesPath;
+const baseUrl = baseUrls.instances;
 
 const asBackendStatus = (status) => {
     if (status) {
@@ -254,7 +254,7 @@ class Instances extends Component {
         const {
             redirectTo,
         } = this.props;
-        redirectTo(instanceDetailPath.baseUrl, {
+        redirectTo(baseUrls.instanceDetail, {
             instanceId: instance.id,
         });
     }
@@ -291,7 +291,7 @@ class Instances extends Component {
                         if (prevPathname) {
                             router.goBack();
                         } else {
-                            redirectTo(formsPath.baseUrl, {});
+                            redirectTo(baseUrls.forms, {});
                         }
                     }}
                 >

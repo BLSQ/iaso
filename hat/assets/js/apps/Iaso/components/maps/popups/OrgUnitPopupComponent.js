@@ -28,7 +28,8 @@ import { textPlaceholder } from '../../../constants/uiConstants';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
-import { orgUnitsDetailsPath } from '../../../constants/paths';
+
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -107,7 +108,7 @@ class OrgUnitPopupComponent extends Component {
             orgUnitId: currentOrgUnit.id,
             tab: 'infos',
         };
-        redirectTo(orgUnitsDetailsPath.baseUrl, newParams);
+        redirectTo(baseUrls.orgUnitDetails, newParams);
     }
 
     confirmDialog() {

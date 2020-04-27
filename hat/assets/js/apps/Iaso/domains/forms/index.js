@@ -28,9 +28,9 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
-import { formsPath, instancesPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
-const { baseUrl } = formsPath;
+const baseUrl = baseUrls.forms;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -88,7 +88,7 @@ class Forms extends Component {
         const newParams = {
             formId: form.id,
         };
-        redirectTo(instancesPath.baseUrl, newParams);
+        redirectTo(baseUrls.instances, newParams);
     }
 
     deleteForm(form) {

@@ -14,9 +14,9 @@ import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
-import { orgUnitsDetailsPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
-const { baseUrl } = orgUnitsDetailsPath;
+const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),

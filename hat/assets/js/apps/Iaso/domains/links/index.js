@@ -2,6 +2,7 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
+import { bindActionCreators } from 'redux';
 
 import {
     withStyles, Grid, Box,
@@ -13,7 +14,6 @@ import {
     fetchOrgUnitsTypes,
     saveLink,
     fetchSources,
-    fetchIasoProfiles,
     fetchAlgorithms,
     fetchAlgorithmRuns,
 } from '../../utils/requests';
@@ -29,9 +29,6 @@ import {
     setAlgorithms,
     setAlgorithmRuns,
 } from './actions';
-import {
-    setProfiles,
-} from '../../redux/profilesReducer';
 
 import { linksTableColumns } from './config';
 
@@ -44,13 +41,16 @@ import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import LinksFiltersComponent from './components/LinksFiltersComponent';
 import LinksDetails from './components/LinksDetailsComponent';
+import {
+    fetchUsersProfiles as fetchUsersProfilesAction,
+} from '../users/actions';
 
 
 import commonStyles from '../../styles/common';
 
-import { linksPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
-const { baseUrl } = linksPath;
+const baseUrl = baseUrls.links;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -71,7 +71,8 @@ class Links extends Component {
     }
 
     componentWillMount() {
-        const { dispatch } = this.props;
+        const { dispatch, fetchUsersProfiles } = this.props;
+        fetchUsersProfiles();
         if (this.props.params.searchActive) {
             this.onSearch();
         }
@@ -79,8 +80,6 @@ class Links extends Component {
             .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
         fetchSources(dispatch)
             .then(sources => this.props.setSources(sources));
-        fetchIasoProfiles(dispatch)
-            .then(profiles => this.props.setProfiles(profiles));
         fetchAlgorithms(dispatch)
             .then(algoList => this.props.setAlgorithms(algoList));
         fetchAlgorithmRuns(dispatch)
@@ -270,10 +269,10 @@ Links.propTypes = {
     setIsFetching: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     setSources: PropTypes.func.isRequired,
-    setProfiles: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setAlgorithmRuns: PropTypes.func.isRequired,
     prevPathname: PropTypes.any,
+    fetchUsersProfiles: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -289,9 +288,11 @@ const MapDispatchToProps = dispatch => ({
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setSources: sources => dispatch(setSources(sources)),
-    setProfiles: profiles => dispatch(setProfiles(profiles)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
+    ...bindActionCreators({
+        fetchUsersProfiles: fetchUsersProfilesAction,
+    }, dispatch),
 });
 
 export default withStyles(styles)(

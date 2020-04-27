@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { injectIntl } from 'react-intl';
 import { withStyles, Box } from '@material-ui/core';
 import PropTypes from 'prop-types';
-import ReactTable, { ReactTableDefaults } from 'react-table';
 import Grid from '@material-ui/core/Grid';
 import isEqual from 'lodash/isEqual';
 
@@ -15,16 +14,14 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import mappingsTableColumns from './config';
-import { getSort } from './utils';
 
-import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 import CreateMappingVersionDialogComponent from './components/CreateMappingVersionDialogComponent';
+import Table from '../../components/tables/TableComponent';
 
-import { mappingsPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
-const { baseUrl } = mappingsPath;
+const baseUrl = baseUrls.mappings;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -37,12 +34,10 @@ const styles = theme => ({
 class Mappings extends Component {
     componentDidMount() {
         const {
-            intl: { formatMessage },
             fetchMappingVersions,
             params,
         } = this.props;
         fetchMappingVersions(params);
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
     componentDidUpdate(prevProps) {
@@ -50,14 +45,6 @@ class Mappings extends Component {
         if (!isEqual(prevProps.params, params)) {
             fetchMappingVersions(params);
         }
-    }
-
-    onTableParamsChange(key, value) {
-        const { params, redirectTo } = this.props;
-        redirectTo(baseUrl, {
-            ...params,
-            [key]: key !== 'order' ? value : getSort(value),
-        });
     }
 
     selectInstance(mappingversion) {
@@ -90,41 +77,19 @@ class Mappings extends Component {
                     })}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <div className={classes.reactTable}>
-                        <div className="count-container">
-                            {count > 0 && (
-                                <div>
-                                    {`${formatThousand(count)} `}
-                                    <FormattedMessage
-                                        id="table.results_"
-                                        defaultMessage="résultat(s)"
-                                    />
-                                </div>
-                            )}
-                        </div>
-                        <ReactTable
-                            showPagination={parseInt(params.pageSize, 10) < count}
-                            multiSort
-                            manual
-                            columns={mappingsTableColumns(formatMessage, this)}
-                            data={mappingVersions}
-                            pages={pages}
-                            className="-striped -highlight"
-                            defaultSorted={[
-                                { id: 'form_version__form__name', desc: true },
-                                { id: 'form_version__version_id', desc: true },
-                                { id: 'mapping__mapping_type', desc: true },
-                            ]}
-                            pageSize={pageSize}
-                            page={params.page - 1}
-                            onPageChange={page => this.onTableParamsChange('page', page + 1)
-                            }
-                            onPageSizeChange={newPageSize => this.onTableParamsChange('pageSize', newPageSize)
-                            }
-                            onSortedChange={order => this.onTableParamsChange('order', order)
-                            }
-                        />
-                    </div>
+                    <Table
+                        data={mappingVersions}
+                        pages={pages}
+                        defaultSorted={[
+                            { id: 'form_version__form__name', desc: true },
+                            { id: 'form_version__version_id', desc: true },
+                            { id: 'mapping__mapping_type', desc: true },
+                        ]}
+                        columns={mappingsTableColumns(formatMessage, this)}
+                        count={count}
+                        baseUrl={baseUrl}
+                        params={params}
+                    />
                     <Grid
                         container
                         spacing={0}

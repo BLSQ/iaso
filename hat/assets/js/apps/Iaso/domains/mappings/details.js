@@ -21,7 +21,7 @@ import QuestionInfos from './components/QuestionInfos';
 import QuestionMappingForm from './components/QuestionMappingForm';
 import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm';
 import commonStyles from '../../styles/common';
-import { mappingDetailPath, mappingsPath } from '../../constants/paths';
+import { baseUrls } from '../../constants/urls';
 
 
 const styles = theme => ({
@@ -65,7 +65,7 @@ class MappingDetails extends Component {
 
         const onQuestionSelected = (node) => {
             setCurrentQuestion(node);
-            redirectToReplace(mappingDetailPath.baseUrl, {
+            redirectToReplace(baseUrls.mappingDetail, {
                 mappingVersionId: currentMappingVersion.id,
                 questionName: node.name,
             });
@@ -113,7 +113,7 @@ class MappingDetails extends Component {
                         if (prevPathname || !currentMappingVersion) {
                             router.goBack();
                         } else {
-                            redirectToReplace(mappingsPath.baseUrl, {});
+                            redirectToReplace(baseUrls.mappingsPath, {});
                         }
                     }}
                 />

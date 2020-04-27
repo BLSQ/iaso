@@ -10,6 +10,7 @@ from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
 from django.db.models import Q, Count
+from operator import itemgetter
 
 from iaso.odk import parsing
 
@@ -1181,10 +1182,22 @@ class Profile(models.Model):
             "last_name": self.user.last_name,
             "email": self.user.email,
             "account": self.account.as_dict(),
+            "permissions": list(
+                self.user.user_permissions.filter(
+                    codename__startswith="iaso_"
+                ).values_list("codename", flat=True)
+            ),
+            "is_superuser": self.user.is_superuser,
         }
 
     def as_short_dict(self):
-        return self.as_dict()
+        return {
+            "id": self.id,
+            "first_name": self.user.first_name,
+            "user_name": self.user.username,
+            "last_name": self.user.last_name,
+            "email": self.user.email,
+        }
 
 
 class ExportRequest(models.Model):

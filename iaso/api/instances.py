@@ -184,6 +184,8 @@ class InstancesViewSet(viewsets.ViewSet):
 
             if form:
                 filename = "%s-%s" % (filename, form.id)
+                if form.correlatable:
+                    columns.append({"title": "correlation id", "width": 20})
 
             if form and form.fields:
                 file_content_template = form.fields
@@ -212,6 +214,7 @@ class InstancesViewSet(viewsets.ViewSet):
                     org_unit.get("id") if org_unit else None,
                     org_unit.get("source_ref") if org_unit else None,
                 ]
+
                 parent = org_unit["parent"] if org_unit else None
                 for i in range(4):
                     if parent:
@@ -219,6 +222,8 @@ class InstancesViewSet(viewsets.ViewSet):
                         parent = parent["parent"]
                     else:
                         instance_values.append("")
+                if instance.form.correlatable:
+                    instance_values.append(instance.correlation_id)
 
                 for k in file_content_template:
                     instance_values.append(idict["file_content"].get(k, None))

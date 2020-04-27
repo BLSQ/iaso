@@ -104,3 +104,4 @@ class InstancesAPITestCase(APITestCase):
     def assertValidInstanceData(self, instance_data: typing.Mapping):
         self.assertHasField(instance_data, "id", int)
         self.assertHasField(instance_data, "status", str)
+        self.assertHasField(instance_data, "correlation_id", str, optional=True)

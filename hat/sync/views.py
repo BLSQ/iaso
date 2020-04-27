@@ -294,6 +294,7 @@ def form_upload(request: HttpRequest) -> HttpResponse:
         try:
             i.convert_location_from_field()
             i.convert_device()
+            i.convert_correlation()
         except ValueError as error:
             print(error)
     except:

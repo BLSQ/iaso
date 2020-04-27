@@ -24,6 +24,7 @@ import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsCo
 import CustomTableComponent from '../../../../components/CustomTableComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
@@ -104,6 +105,7 @@ class Forms extends Component {
             intl: {
                 formatMessage,
             },
+            isLoading,
         } = this.props;
         return (
             <section>
@@ -149,6 +151,10 @@ class Forms extends Component {
                             )}
                     </Grid>
                 </Box>
+                {
+                    isLoading
+                    && <LoadingSpinner />
+                }
             </section>
         );
     }
@@ -169,10 +175,12 @@ Forms.propTypes = {
     setProjects: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.forms.formsPage,
+    isLoading: state.forms.isLoading,
 });
 
 const MapDispatchToProps = dispatch => ({

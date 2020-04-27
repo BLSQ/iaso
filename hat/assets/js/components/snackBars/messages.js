@@ -143,6 +143,14 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchCompletenessError',
         defaultMessage: 'An error occured while fetching completness',
     },
+    generateDerivedRequestSuccess: {
+        id: 'iaso.snackBar.generateDerivedRequestSuccess',
+        defaultMessage: 'Generation scheduled',
+    },
+    generateDerivedRequestError: {
+        id: 'iaso.snackBar.generateDerivedRequestError',
+        defaultMessage: 'Generation failed',
+    },
     noInstancesOnMap: {
         defaultMessage: 'Cannot find an instance with geolocation',
         id: 'iaso.instance.missingGeolocation',

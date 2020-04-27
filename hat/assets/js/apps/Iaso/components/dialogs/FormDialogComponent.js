@@ -21,6 +21,7 @@ import {
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,
 } from '../../domains/periods/constants';
+import { setIsLoadingForm } from '../../domains/forms/actions';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
@@ -43,6 +44,7 @@ class FormDialogComponent extends Component {
         let isUpdate;
         let saveForm;
         let formData;
+        const { dispatch } = this.props;
         if (this.props.initialData === null) {
             isUpdate = false;
             formData = _.mapValues(_.omit(this.state, ['xls_file', 'form_id']), v => v.value);
@@ -52,7 +54,7 @@ class FormDialogComponent extends Component {
             formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
             saveForm = updateForm(this.props.dispatch, this.state.id.value, formData);
         }
-
+        dispatch(setIsLoadingForm(true));
         saveForm
             .then((savedFormData) => {
                 if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
@@ -86,6 +88,9 @@ class FormDialogComponent extends Component {
                         this.setFieldErrors(errorKey, errorMessages);
                     });
                 }
+            })
+            .then(() => {
+                dispatch(setIsLoadingForm(false));
             });
     }
 
@@ -134,6 +139,7 @@ class FormDialogComponent extends Component {
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
             period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
+            derived: { value: _.get(initialData, 'derived', null), errors: [] },
             single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
@@ -230,6 +236,7 @@ class FormDialogComponent extends Component {
                                 />
                             </Grid>
                         </Grid>
+
                         <InputComponent
                             keyValue="single_per_period"
                             disabled={this.state.period_type.value === null}
@@ -300,6 +307,18 @@ class FormDialogComponent extends Component {
                             label={{
                                 id: 'iaso.label.locationField',
                                 defaultMessage: 'Location field',
+                            }}
+                        />
+                        <InputComponent
+                            keyValue="derived"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={this.state.derived.value}
+                            errors={this.state.derived.errors}
+                            type="checkbox"
+                            required
+                            label={{
+                                id: 'iaso.label.derived',
+                                defaultMessage: 'Deduced from another form',
                             }}
                         />
                     </Grid>

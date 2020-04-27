@@ -843,7 +843,6 @@ class ImportMobileSyncDocuments(TestCase):
         rpl_test = case.test_set.filter(type=RESEARCH_PL).first()
         self.assertIsNotNone(rpl_test)
         self.assertEquals(rpl_test.result, RES_POSITIVE)
-        # TODO tester, comment, device
         self.assertEquals(str(rpl_test.date), "2020-04-11 13:45:41.666000+00:00")
         self.assertEquals(
             str(rpl_test.location), "SRID=4326;POINT (5.9569289 51.6813679)"
@@ -851,6 +850,56 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(rpl_test.comment, "J'ai une intuition")
         self.assertEquals(rpl_test.device, device_db)
         self.assertEquals(rpl_test.tester, device_db.last_user.profile)
+
+    def test_import_empty_village(self):
+        """ This is a strange case where a case had no village entry. It shouldn't be possible but it did happen """
+        json_doc, device_db = load_document("regular_empty_village.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc["_id"], p1["id"])
+
+        stats = import_synced_devices()[0]["stats"]
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
+        self.assertIsNotNone(case)
+        self.assertIsNone(case.normalized_village_id)
+        self.assertIsNotNone(case.normalized_AS_id)
+
+    def test_import_numeric_village(self):
+        """
+        When
+        """
+        json_doc, device_db = load_document(
+            "regular_cdtc_numeric_village.json", "supervisor"
+        )
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc["_id"], p1["id"])
+
+        stats = import_synced_devices()[0]["stats"]
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+        self.assertEqual(stats.ptr, 0)  # The record should not have been imported
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
+        self.assertIsNotNone(case)
+        self.assertIsNone(case.normalized_village)
 
     def test_import_catt_2steps(self):
         json_doc, device_db = load_document("test_catt_override_1.json", "supervisor")

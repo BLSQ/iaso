@@ -1,0 +1,79 @@
+{
+  "_id": "participant-700b35c7dacc4106875b67cf295d9e58",
+  "_rev": "8-784ace6ff5d9ab165b9330637443dba5",
+  "person": {
+    "surname": "Hhh",
+    "birthYear": "2000",
+    "noBirthYear": false,
+    "gender": "Male",
+    "mothersSurname": "Jjj",
+    "location": {
+      "province": "1",
+      "zone": "11",
+      "area": "111",
+      "ptr": "666"
+    }
+  },
+  "participant": {
+    "memberType": "resident",
+    "screenings": {
+      "catt": {
+        "screeningIndex": 1,
+        "group": "2020-04-09T08:31:16.194Z",
+        "result": "positive",
+        "level": "1",
+        "testTime": "2020-04-09T08:32:10.551Z",
+        "creationTime": "",
+        "position": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "device": "b5e98b1f1a6a6f35"
+      },
+      "pg": {
+        "result": "positive",
+        "creationTime": "2020-04-09T08:32:22.909Z",
+        "testTime": "2020-04-09T08:32:22.909Z",
+        "device": "b5e98b1f1a6a6f35",
+        "position": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "shouldAskMediaForNegative": false,
+        "shouldAskMedia": false
+      },
+      "pl": {
+        "result": "negative",
+        "whiteCount": "55",
+        "creationTime": "2020-04-09T08:32:32.981Z",
+        "testTime": "2020-04-09T08:32:32.981Z",
+        "device": "b5e98b1f1a6a6f35",
+        "position": {
+          "latitude": 0,
+          "longitude": 0
+        },
+        "shouldAskMediaForNegative": false,
+        "shouldAskMedia": false
+      }
+    },
+    "screeningLocation": {
+      "province": "1",
+      "zone": "11",
+      "area": "111",
+      "ptr": "666"
+    },
+    "hatId": "HHXXXXM2000J",
+    "version": 5,
+    "geoLocation": {
+      "latitude": 0,
+      "longitude": 0
+    },
+    "infection": {
+      "location": "residenceLocationNew"
+    }
+  },
+  "type": "participant",
+  "dateCreated": "2020-04-09T08:31:51.970Z",
+  "dateModified": "2020-04-09T08:32:39.696Z",
+  "deviceId": "b5e98b1f1a6a6f35"
+}

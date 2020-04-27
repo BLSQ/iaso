@@ -11,11 +11,9 @@ import { isMapped, isNeverMapped } from '../question_mappings';
 
 const useStyles = makeStyles(theme => ({
     root: {
-        height: 110,
+        height: 'calc(100vh - 64px)',
         flexGrow: 1,
-        minWidth: 500,
-        maxWidth: 600,
-        maxHeight: 500,
+        overflow: 'auto'
     },
     mapped: {
         color: 'green',

@@ -10,6 +10,7 @@ import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonCompon
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 
+
 const formsTableColumns = (formatMessage, component) => (
     [
         {
@@ -17,6 +18,7 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Name',
                 id: 'iaso.forms.name',
             }),
+            accessor: 'name',
             Cell: settings => <ColumnTextComponent text={settings.original.name} />,
         },
         {
@@ -24,6 +26,7 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Updated at',
                 id: 'iaso.forms.updated_at',
             }),
+            accessor: 'instance_updated_at',
             Cell: (settings) => {
                 const dateText = settings.original.instance_updated_at
                     ? moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')

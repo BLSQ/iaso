@@ -36,7 +36,7 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 import { orgUnitsTableColumns } from './config';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from './utils';
+import { fetchLatestOrgUnitLevelId, mapOrgUnitByLocation } from './utils';
 import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
@@ -80,31 +80,6 @@ const styles = theme => ({
         borderRadius: 15,
     },
 });
-
-const mapOrgUnitBySearch = (orgUnits, searches) => {
-    const mappedOrgunits = [];
-    searches.forEach((search, i) => {
-        mappedOrgunits[i] = orgUnits.filter(o => o.search_index === i);
-    });
-    return mappedOrgunits;
-};
-
-const mapOrgUnitByLocation = (orgUnits, searches) => {
-    const mappedOrgunits = {
-        shapes: [],
-        locations: [],
-    };
-    orgUnits.forEach((o) => {
-        if (o.latitude && o.longitude) {
-            mappedOrgunits.locations.push(o);
-        }
-        if (o.geo_json) {
-            mappedOrgunits.shapes.push(o);
-        }
-    });
-    mappedOrgunits.locations = mapOrgUnitBySearch(mappedOrgunits.locations, searches);
-    return mappedOrgunits;
-};
 
 class OrgUnits extends Component {
     constructor(props) {

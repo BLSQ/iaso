@@ -123,6 +123,7 @@ class OrgUnitType(models.Model):
             "short_name": self.short_name,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "depth": self.depth,
         }
         if sub_units:
             if not app_id:
@@ -377,6 +378,9 @@ class OrgUnit(models.Model):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_depth": self.org_unit_type.depth
+            if self.org_unit_type
+            else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }

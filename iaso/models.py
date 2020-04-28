@@ -1004,7 +1004,7 @@ class Instance(models.Model):
             identifier = str(self.id)
             if self.form.correlation_field is not None and self.json:
                 identifier += self.json.get(self.form.correlation_field, None)
-
+                identifier = identifier.zfill(3)
             random_number = random.choice("1234567890")
             value = int(identifier + random_number)
             suffix = "{:02d}".format(value % 97)

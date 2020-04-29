@@ -158,6 +158,7 @@ class FormVersionsViewSet(ModelViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FormVersionSerializer
+    permission_required = ["menupermissions.iaso_mappings"]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)

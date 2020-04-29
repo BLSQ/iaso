@@ -145,6 +145,10 @@ class FormsViewSet(ModelViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (HasFormPermission,)
+    permission_required = [
+        "menupermissions.iaso_forms",
+        "menupermissions.iaso_org_units",
+    ]
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()

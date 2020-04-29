@@ -34,6 +34,7 @@ class CompletenessViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [IsAuthenticated]
+    permission_required = ["menupermissions.iaso_completeness"]
 
     def list(self, request):
         profile = request.user.iaso_profile

@@ -95,6 +95,7 @@ def import_data(instances, api_import, app_id=None):
 class InstancesViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
+    permission_required = ["menupermissions.iaso_forms"]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

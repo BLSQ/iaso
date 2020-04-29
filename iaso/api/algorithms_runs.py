@@ -21,6 +21,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
+    permission_required = ["menupermissions.iaso_links"]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

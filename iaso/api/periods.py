@@ -21,6 +21,7 @@ class PeriodsViewSet(viewsets.ViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
+    permission_required = ["menupermissions.iaso_forms"]
 
     def list(self, request):
 

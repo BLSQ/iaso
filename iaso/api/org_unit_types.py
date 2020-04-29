@@ -11,6 +11,11 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
+    permission_required = [
+        "menupermissions.iaso_forms",
+        "menupermissions.iaso_org_units",
+        "menupermissions.iaso_links",
+    ]
     permission_classes = []
 
     def list(self, request):

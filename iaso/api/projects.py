@@ -41,6 +41,7 @@ class ProjectsViewSet(ModelViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (HasProjectPermission,)
+    permission_required = ["menupermissions.iaso_forms"]
     serializer_class = ProjectSerializer
     results_key = "projects"
 

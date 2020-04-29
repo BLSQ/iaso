@@ -198,6 +198,7 @@ class MappingVersionsViewSet(ModelViewSet):
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
+    permission_required = ["menupermissions.iaso_mappings"]
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()

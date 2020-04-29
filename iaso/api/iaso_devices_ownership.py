@@ -10,6 +10,7 @@ class IasoDevicesOwnershipViewSet(viewsets.ViewSet):
 
     authentication_classes = []
     permission_classes = []
+    permission_required = ["menupermissions.iaso_forms"]
 
     def list(self, request):
         queryset = DeviceOwnership.objects.all()

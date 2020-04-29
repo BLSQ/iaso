@@ -75,6 +75,7 @@ class DerivedInstanceSerializer(serializers.Serializer):
 class DerivedInstancesViewSet(ModelViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [permissions.IsAuthenticated]
+    permission_required = ["menupermissions.iaso_completeness"]
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()

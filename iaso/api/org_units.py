@@ -216,6 +216,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
+    permission_required = [
+        "menupermissions.iaso_forms",
+        "menupermissions.iaso_org_units",
+    ]
+
     def list(self, request):
         queryset = OrgUnit.objects.all()
         if not request.user.is_anonymous:

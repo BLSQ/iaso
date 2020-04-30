@@ -3,24 +3,55 @@ import get from 'lodash/get';
 import isEqual from 'lodash/isEqual';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
-import { Grid } from '@material-ui/core';
 import { bindActionCreators } from 'redux';
+import {
+    Tabs, Tab, withStyles,
+} from '@material-ui/core';
+import { injectIntl } from 'react-intl';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
-import InputComponent from '../../../components/forms/InputComponent';
-import PermissionsSwitches from './PermissionsSwitches';
 
+import UsersInfos from './UsersInfos';
 import {
     saveUserProFile as saveUserProFileAction,
     fetchUsersProfiles as fetchUsersProfilesAction,
     createUserProFile as createUserProFileAction,
 } from '../actions';
+import MESSAGES from '../messages';
+import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
+
+import PermissionsSwitches from './PermissionsSwitches';
+
+const styles = theme => ({
+    tabs: {
+        marginBottom: theme.spacing(4),
+    },
+    tab: {
+        padding: 0,
+        width: 'calc(100% / 3)',
+        minWidth: 0,
+    },
+    root: {
+        minHeight: 400,
+        position: 'relative',
+    },
+    hiddenOpacity: {
+        position: 'absolute',
+        top: 0,
+        left: -5000,
+        zIndex: -10,
+        opacity: 0,
+    },
+});
 
 class UserDialogComponent extends Component {
     constructor(props) {
         super(props);
 
-        this.state = this.initialState();
+        this.state = {
+            user: this.initialUser(),
+            tab: 'infos',
+        };
     }
 
     componentDidUpdate(prevProps) {
@@ -38,8 +69,8 @@ class UserDialogComponent extends Component {
             initialData,
         } = this.props;
         const currentUser = {};
-        Object.keys(this.state).forEach((key) => {
-            currentUser[key] = this.state[key].value;
+        Object.keys(this.state.user).forEach((key) => {
+            currentUser[key] = this.state.user[key].value;
         });
 
         let saveUser;
@@ -51,7 +82,9 @@ class UserDialogComponent extends Component {
         }
         saveUser.then((newProfile) => {
             closeDialog();
-            this.setState(this.initialState(newProfile));
+            this.setState({
+                user: this.initialUser(newProfile),
+            });
             fetchUsersProfiles(params);
         })
             .catch((error) => {
@@ -63,18 +96,38 @@ class UserDialogComponent extends Component {
     }
 
     setFieldValue(fieldName, fieldValue) {
-        this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
+        const { user } = this.state;
+        this.setState({
+            user: {
+                ...user,
+                [fieldName]: {
+                    value: fieldValue,
+                    errors: [],
+                },
+            },
+        });
     }
 
     setFieldErrors(fieldName, fieldError) {
-        this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: [fieldError] } });
+        const { user } = this.state;
+        this.setState({
+            user: {
+                ...user,
+                [fieldName]: {
+                    value: user[fieldName].value,
+                    errors: [fieldError],
+                },
+            },
+        });
     }
 
     setInitialState() {
-        this.setState(this.initialState());
+        this.setState({
+            user: this.initialUser(),
+        });
     }
 
-    initialState(profile) {
+    initialUser(profile) {
         let initialData = this.props.initialData ? this.props.initialData : {};
         if (profile) {
             initialData = profile;
@@ -90,91 +143,92 @@ class UserDialogComponent extends Component {
         };
     }
 
+    handleChangeTab(tab) {
+        this.setState({
+            tab,
+        });
+    }
+
     render() {
         const {
-            titleMessage, renderTrigger, initialData,
+            titleMessage,
+            renderTrigger,
+            initialData,
+            classes,
+            intl: { formatMessage },
         } = this.props;
+        const {
+            user,
+            tab,
+        } = this.state;
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
-                confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
-                onClosed={() => this.setState(this.initialState())}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
+                onClosed={() => this.setState({ user: this.initialUser() })}
                 renderTrigger={renderTrigger}
-                maxWidth="md"
+                maxWidth="xs"
+                dialogProps={{
+                    classNames: classes.dialog,
+                }}
             >
-                <Grid container spacing={4} justify="flex-start">
-                    <Grid xs={6} item>
-                        <InputComponent
-                            keyValue="user_name"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.user_name.value}
-                            errors={this.state.user_name.errors}
-                            type="text"
-                            label={{
-                                defaultMessage: 'User name',
-                                id: 'iaso.label.userName',
-                            }}
-                            required
+                <Tabs
+                    value={tab}
+                    classes={{
+                        root: classes.tabs,
+                    }}
+                    onChange={(event, newtab) => this.handleChangeTab(newtab)
+                    }
+                >
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="infos"
+                        label={formatMessage(MESSAGES.infos)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="permissions"
+                        label={formatMessage(MESSAGES.permissions)}
+                    />
+                    <Tab
+                        classes={{
+                            root: classes.tab,
+                        }}
+                        value="locations"
+                        label={formatMessage(MESSAGES.location)}
+                    />
+                </Tabs>
+                <div className={classes.root}>
+                    {
+                        tab === 'infos'
+                    && (
+                        <UsersInfos
+                            setFieldValue={(key, value) => this.setFieldValue(key, value)}
+                            initialData={initialData}
+                            currentUser={user}
                         />
-                        <InputComponent
-                            keyValue="first_name"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.first_name.value}
-                            errors={this.state.first_name.errors}
-                            type="text"
-                            label={{
-                                defaultMessage: 'First name',
-                                id: 'iaso.label.firstName',
-                            }}
-                        />
-                        <InputComponent
-                            keyValue="last_name"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.last_name.value}
-                            errors={this.state.last_name.errors}
-                            type="text"
-                            label={{
-                                defaultMessage: 'Last name',
-                                id: 'iaso.label.lastName',
-                            }}
-                        />
-                        <InputComponent
-                            keyValue="email"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.email.value}
-                            errors={this.state.email.errors}
-                            type="email"
-                            label={{
-                                defaultMessage: 'Email',
-                                id: 'iaso.label.email',
-                            }}
-                        />
-                        <InputComponent
-                            keyValue="password"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.password.value}
-                            errors={this.state.password.errors}
-                            type="password"
-                            label={initialData ? {
-                                defaultMessage: 'New password',
-                                id: 'iaso.users.newPassword',
-                            } : {
-                                defaultMessage: 'Password',
-                                id: 'iaso.users.password',
-                            }}
-                            required={!initialData}
-                        />
-                    </Grid>
-                    <Grid xs={6} item>
+                    )
+                    }
+                    <div className={tab === 'permissions' ? '' : classes.hiddenOpacity}>
                         <PermissionsSwitches
                             isSuperUser={initialData && initialData.is_superuser}
-                            currentUser={this.state}
+                            currentUser={user}
                             handleChange={permissions => this.setFieldValue('permissions', permissions)}
                         />
-                    </Grid>
-                </Grid>
+                    </div>
+                    {
+                        tab === 'locations'
+                    && (
+                        <OrgUnitSearch onSelectOrgUnit={ou => console.log(ou)} />
+                    )
+                    }
+                </div>
             </ConfirmCancelDialogComponent>
         );
     }
@@ -192,6 +246,8 @@ UserDialogComponent.propTypes = {
     saveUserProFile: PropTypes.func.isRequired,
     createUserProFile: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
+    classes: PropTypes.object.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 
@@ -211,4 +267,6 @@ const mapDispatchToProps = dispatch => (
         }, dispatch),
     }
 );
-export default connect(MapStateToProps, mapDispatchToProps)(UserDialogComponent);
+export default withStyles(styles)(
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(UserDialogComponent)),
+);

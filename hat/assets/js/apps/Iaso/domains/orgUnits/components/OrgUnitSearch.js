@@ -48,7 +48,7 @@ const styles = theme => ({
         overflow: 'hidden',
     },
     list: {
-        maxHeight: '60vh',
+        maxHeight: '50vh',
         overflow: 'auto',
     },
     noResult: {
@@ -105,7 +105,6 @@ const OrgUnitSearch = ({
     };
     const handleSearch = () => {
         if (searchValue !== '') {
-            console.log('resultsCount', resultsCount);
             const url = `/api/orgunits/?searches=[{"validated":"both","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&small_search=True`;
             seIsLoading(true);
             getRequest(url).then((res) => {

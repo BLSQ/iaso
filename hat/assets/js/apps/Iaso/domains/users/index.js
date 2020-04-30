@@ -20,6 +20,7 @@ import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import usersTableColumns from './config';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.users;
 
@@ -69,10 +70,7 @@ class Users extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar
-                    title={formatMessage({
-                        defaultMessage: 'Users',
-                        id: 'iaso.label.users',
-                    })}
+                    title={formatMessage(MESSAGES.users)}
                     displayBackButton={false}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
@@ -94,7 +92,7 @@ class Users extends Component {
                     />
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <UsersDialog
-                            titleMessage={{ id: 'iaso.users.create', defaultMessage: 'Create user' }}
+                            titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             params={params}
                         />

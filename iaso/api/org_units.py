@@ -59,7 +59,8 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
             if not parent_id:
-                parent_id = org_unit.get("parent_id", None) # there exist versions of the mobile app in the wild with both parentId and parent_id
+                # there exist versions of the mobile app in the wild with both parentId and parent_id
+                parent_id = org_unit.get("parent_id", None)
 
             if parent_id is not None:
                 if str.isdigit(parent_id):
@@ -68,7 +69,8 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
                     parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
                     org_unit_db.parent_id = parent_org_unit.id
 
-            org_unit_type_id =  org_unit.get("orgUnitTypeId", None) # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            org_unit_type_id = org_unit.get("orgUnitTypeId", None)
             if not org_unit_type_id:
                 org_unit_type_id = org_unit.get("org_unit_type_id", None)
             org_unit_db.org_unit_type_id = org_unit_type_id
@@ -243,6 +245,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
+        small_search = request.GET.get("smallSearch", None)
         app_id = request.GET.get("app_id", default_app_id)
         if app_id:
             queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
@@ -260,7 +263,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 else:
                     queryset = queryset.union(additional_queryset)
                 counts.append(
-                    {"index": search_index, "count": additional_queryset.count(),}
+                    {"index": search_index, "count": additional_queryset.count(), }
                 )
                 search_index += 1
         else:
@@ -278,7 +281,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-                res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+                if small_search:
+                    res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+                else:
+                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

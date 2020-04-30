@@ -111,11 +111,13 @@ const styles = theme => ({
         width: theme.spacing(7),
         height: '100%',
         position: 'absolute',
-        pointerEvents: 'none',
         right: 0,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
+        cursor: 'pointer',
+        outline: 'none',
+        boxShadow: 'none',
     },
     inputRoot: {
         color: 'inherit',
@@ -324,7 +326,12 @@ class InputComponent extends Component {
                         inputProps={{ 'aria-label': 'search' }}
                         onChange={event => onChange(keyValue, event.target.value)}
                     />
-                    <div className={classes.searchIcon}>
+                    <div
+                        tabIndex={0}
+                        role="button"
+                        className={classes.searchIcon}
+                        onClick={() => onEnterPressed()}
+                    >
                         <SearchIcon />
                     </div>
                 </FormControlComponent>
@@ -366,6 +373,7 @@ InputComponent.defaultProps = {
     isSearchable: true,
     multi: false,
     uid: null,
+    searchOnClickIcon: false,
 };
 InputComponent.propTypes = {
     classes: PropTypes.object.isRequired,

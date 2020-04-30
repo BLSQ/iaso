@@ -358,6 +358,18 @@ class OrgUnit(models.Model):
             "groups": [group.as_dict() for group in self.groups.all()],
         }
 
+    def as_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "parent_name": self.parent.name if self.parent else None,
+            "parent": self.parent.as_small_dict() if self.parent else None,
+            "org_unit_type_name": self.org_unit_type.name
+            if self.org_unit_type
+            else None,
+        }
+
     def as_dict_for_csv(self):
         return {
             "name": self.name,

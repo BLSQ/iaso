@@ -62,3 +62,20 @@ export const getOrgunitMessage = (orgUnit, withType) => {
     }
     return message;
 };
+
+export const getOrgUnitParents = (orgUnit, parents = []) => {
+    let parentsList = [...parents];
+    if (orgUnit.parent) {
+        parentsList.push(orgUnit);
+        if (orgUnit.parent.parent) {
+            parentsList = getOrgUnitParents(orgUnit.parent, parentsList);
+        }
+    }
+    return parentsList;
+};
+
+export const getOrgUnitParentsString = orgUnit => getOrgUnitParents(orgUnit)
+    .map(ou => (ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name)).reverse().join(' > ');
+
+export const getOrgUnitParentsIds = orgUnit => getOrgUnitParents(orgUnit)
+    .map(ou => (ou.parent_id)).reverse();

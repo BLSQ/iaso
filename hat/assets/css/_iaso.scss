@@ -6,6 +6,8 @@ $primary-color: #2372BA;
 
 .iaso {
     background-color: $background-gray !important;
+    height: 100vh;
+    overflow: hidden;
 
     .leaflet-container {
         height: 80vh;

@@ -1,5 +1,7 @@
 from iaso.models import FormVersion
 
+import uuid
+
 
 def seed_event_mapping(api, program_id):
     program = api.get(
@@ -52,16 +54,27 @@ def copy_mappings_from_previous_version(form_version):
     for mapping_version in previous_form_version.mapping_versions.all():
         # clone the mapping_version and assign it the new version
         mapping_version.id = None
+        mapping_version.name = uuid.uuid4()
         mapping_version.form_version = form_version
 
         # preserve all question mappings except the questions that don't exist in the newer version
         questions_by_name = form_version.questions_by_name()
 
-        filtered_question_mappings = {
-            k: v
-            for k, v in mapping_version.json["question_mappings"].items()
-            if k in questions_by_name
-        }
+        if "question_mappings" in mapping_version.json:
+            filtered_question_mappings = {
+                k: v
+                for k, v in mapping_version.json["question_mappings"].items()
+                if k in questions_by_name
+            }
 
-        mapping_version.json["question_mappings"] = filtered_question_mappings
+            mapping_version.json["question_mappings"] = filtered_question_mappings
+
+        if "aggregations" in mapping_version.json:
+            mapping_version.json["aggregations"] = [
+                agg
+                for agg in mapping_version.json["aggregations"]
+                if agg["id"] in questions_by_name
+            ]
+
         mapping_version.save()
+        print("cloned", mapping_version)

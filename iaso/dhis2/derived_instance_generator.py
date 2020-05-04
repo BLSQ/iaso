@@ -35,7 +35,7 @@ def generate_instance_xml(instance, form_version):
     instance_id.text = "uuid:" + instance.uuid
     meta.append(instance_id)
 
-    instance_xml = etree.tostring(root, pretty_print=True)
+    instance_xml = etree.tostring(root, pretty_print=True, encoding="UTF-8")
     return instance_xml
 
 

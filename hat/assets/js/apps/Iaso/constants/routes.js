@@ -10,6 +10,7 @@ import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
+import Groups from '../domains/orgUnits/groups';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 
@@ -312,6 +313,17 @@ export const usersPath = {
     ],
 };
 
+export const groupsPath = {
+    baseUrl: baseUrls.groups,
+    permission: 'iaso_org_units',
+    component: props => <Groups {...props} />,
+    params: [
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -344,6 +356,7 @@ export const routeConfigs = [
     algosPath,
     completenessPath,
     usersPath,
+    groupsPath,
     page401,
     page404,
     page500,

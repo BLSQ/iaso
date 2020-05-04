@@ -167,6 +167,14 @@ const MESSAGES = {
         defaultMessage: 'An error occurred while saving user profile',
         id: 'iaso.snackBar.saveUserError',
     },
+    saveGroupSuccesfull: {
+        defaultMessage: 'Group saved',
+        id: 'iaso.snackBar.saveGroupSuccesfull',
+    },
+    saveGroupError: {
+        defaultMessage: 'An error occurred while saving group',
+        id: 'iaso.snackBar.saveGroupError',
+    },
 };
 
 export default MESSAGES;

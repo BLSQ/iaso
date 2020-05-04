@@ -7,6 +7,7 @@ export const baseUrls = {
     instances: 'instances',
     instanceDetail: 'instance',
     orgUnits: 'orgunits/list',
+    groups: 'orgunits/groups',
     orgUnitDetails: 'orgunits/detail',
     links: 'orgunits/links/list',
     algos: 'orgunits/links/runs',

@@ -6,6 +6,7 @@ import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
+import GroupWork from '@material-ui/icons/GroupWork';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -65,6 +66,15 @@ const menuItems = [
                 permission: paths.orgUnitsPath.permission,
                 key: 'list',
                 icon: props => <FormatListBulleted {...props} />,
+            },
+            {
+                label: {
+                    defaultMessage: 'Groups',
+                    id: 'iaso.label.groups',
+                },
+                permission: paths.groupsPath.permission,
+                key: 'groups',
+                icon: props => <GroupWork {...props} />,
             },
             {
                 label: {

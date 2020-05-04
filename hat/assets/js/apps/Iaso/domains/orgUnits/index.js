@@ -55,6 +55,7 @@ import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBars
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
 import { baseUrls } from '../../constants/urls';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
@@ -331,16 +332,9 @@ class OrgUnits extends Component {
                     fetchingList
                     && <LoadingSpinner />
                 }
-                <TopBar title={formatMessage({
-                    defaultMessage: 'Org units',
-                    id: 'iaso.orgUnits.title',
-                })}
-                >
+                <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent
-                        baseLabel={formatMessage({
-                            defaultMessage: 'Search',
-                            id: 'iaso.label.search',
-                        })}
+                        baseLabel={formatMessage(MESSAGES.search)}
                         params={params}
                         defaultItem={{ validated: 'both', color: getChipColors(0).replace('#', '') }}
                         paramKey="searches"
@@ -389,17 +383,11 @@ class OrgUnits extends Component {
                                 >
                                     <Tab
                                         value="list"
-                                        label={formatMessage({
-                                            defaultMessage: 'List',
-                                            id: 'iaso.label.list',
-                                        })}
+                                        label={formatMessage(MESSAGES.list)}
                                     />
                                     <Tab
                                         value="map"
-                                        label={formatMessage({
-                                            defaultMessage: 'Map',
-                                            id: 'iaso.label.map',
-                                        })}
+                                        label={formatMessage(MESSAGES.map)}
                                     />
                                 </Tabs>
                                 {

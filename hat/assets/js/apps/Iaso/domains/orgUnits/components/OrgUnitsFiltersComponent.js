@@ -35,6 +35,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -145,7 +146,7 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                         <div className={classes.colorContainer}>
                             <FormLabel className={classes.marginBottom}>
-                                <FormattedMessage id="iaso.label.color" defaultMessage="Color" />
+                                <FormattedMessage {...MESSAGES.color} />
                                 :
                             </FormLabel>
                             <CirclePicker
@@ -195,7 +196,7 @@ class OrgUnitsFiltersComponent extends Component {
                             onClick={() => this.onSearch()}
                         >
                             <Search className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.search" defaultMessage="Search" />
+                            <FormattedMessage {...MESSAGES.search} />
                         </Button>
                     </Grid>
                 </Grid>

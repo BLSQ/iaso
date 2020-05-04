@@ -20,6 +20,7 @@ import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitTooltip from './OrgUnitTooltip';
 import { getRequest } from '../../../libs/Api';
 import { getOrgunitMessage } from '../utils';
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     root: {
@@ -165,7 +166,7 @@ const OrgUnitSearch = ({
                     && hasSearched
                     && (
                         <Typography variant="body2" align="center" className={classes.noResult}>
-                            <FormattedMessage id="iaso.label.noOptions" defaultMessage="No result found" />
+                            <FormattedMessage {...MESSAGES.noOptions} />
                         </Typography>
                     )
                     }
@@ -201,10 +202,7 @@ const OrgUnitSearch = ({
                             </List>
                             <Divider />
                             <Box className={classes.resultInfos}>
-                                <FormattedMessage
-                                    id="iaso.label.display"
-                                    defaultMessage="Display"
-                                />
+                                <FormattedMessage {...MESSAGES.display} />
                                 <div className={classes.countContainer}>
                                     <InputBase
                                         id="search-results-count"
@@ -228,10 +226,7 @@ const OrgUnitSearch = ({
                                         <CheckCircleOutlineIcon fontSize="small" color={resultsCountChanged ? 'primary' : 'inherit'} />
                                     </IconButton>
                                 </div>
-                                <FormattedMessage
-                                    id="iaso.label.resultsLower"
-                                    defaultMessage="result(s)"
-                                />
+                                <FormattedMessage {...MESSAGES.resultsLower} />
                             </Box>
                         </Box>
                     )
@@ -244,10 +239,7 @@ const OrgUnitSearch = ({
 
 OrgUnitSearch.defaultProps = {
     minResultCount: 50,
-    inputLabelObject: {
-        id: 'iaso.orgUnits.search',
-        defaultMessage: 'Search org unit',
-    },
+    inputLabelObject: MESSAGES.searchOrgUnit,
 };
 
 OrgUnitSearch.propTypes = {

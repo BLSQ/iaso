@@ -36,7 +36,8 @@ def generate_instance_xml(instance, form_version):
     meta.append(instance_id)
 
     instance_xml = etree.tostring(root, pretty_print=True, encoding="UTF-8")
-    return instance_xml
+
+    return instance_xml.decode("utf-8")
 
 
 def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
@@ -155,7 +156,7 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
         xml_string = generate_instance_xml(
             instance, cvs_stat_mapping_version.form_version
         )
-        buffer = StringIO(str(xml_string))
+        buffer = StringIO(xml_string)
         buffer.seek(
             0, 2
         )  # Seek to the end of the stream, so we can get its length with `buf.tell()`

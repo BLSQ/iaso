@@ -7,7 +7,7 @@ from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 
-from iaso.models import Profile, Account
+from iaso.models import Profile, Account, OrgUnit
 
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
@@ -104,7 +104,12 @@ class ProfilesViewSet(viewsets.ViewSet):
                 permission = get_object_or_404(Permission, codename=permission_codename)
                 user.user_permissions.add(permission)
             user.save()
-
+            org_units = request.data.get("org_units", [])
+            profile.org_units.clear()
+            for org_unit in org_units:
+                org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
+                profile.org_units.add(org_unit_item)
+            profile.save()
             return Response(profile.as_dict())
         else:
             return Response("Unauthorized", status=401)

@@ -1202,6 +1202,8 @@ class Profile(models.Model):
         User, on_delete=models.CASCADE, related_name="iaso_profile"
     )
 
+    org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="iaso_profile")
+
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
@@ -1219,6 +1221,7 @@ class Profile(models.Model):
                 ).values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
         }
 
     def as_short_dict(self):

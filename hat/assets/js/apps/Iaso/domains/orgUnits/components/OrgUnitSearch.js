@@ -7,18 +7,19 @@ import {
     ListItem,
     ListItemText,
     Typography,
-    Tooltip,
     IconButton,
     ClickAwayListener,
     InputBase,
+    Divider,
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import InputComponent from '../../../components/forms/InputComponent';
+import OrgUnitTooltip from './OrgUnitTooltip';
 import { getRequest } from '../../../libs/Api';
-import { getOrgUnitParentsString } from '../utils';
+import { getOrgunitMessage } from '../utils';
 
 const styles = theme => ({
     root: {
@@ -66,15 +67,22 @@ const styles = theme => ({
     resultInfos: {
         fontSize: 12,
         height: theme.spacing(6),
-        padding: theme.spacing(2, 4),
         display: 'flex',
         justifyContent: 'flex-end',
+        alignItems: 'center',
+        padding: theme.spacing(0, 4),
+    },
+    countContainer: {
+        border: `1px solid ${theme.palette.ligthGray.border}`,
+        borderRadius: theme.shape.borderRadius,
+        height: theme.spacing(4),
+        display: 'flex',
+        alignItems: 'center',
+        margin: theme.spacing(0, 1),
     },
     iconButton: {
         height: 25,
         marginLeft: theme.spacing(1),
-        position: 'relative',
-        top: -5,
     },
     resultsCountInput: {
         '&::-webkit-outer-spin-button, &::-webkit-inner-spin-button': {
@@ -90,6 +98,7 @@ const OrgUnitSearch = ({
     classes,
     onSelectOrgUnit,
     minResultCount,
+    inputLabelObject,
 }) => {
     const [searchValue, setSearchValue] = useState('');
     const [resultsCount, setResultsCount] = useState(minResultCount);
@@ -136,14 +145,12 @@ const OrgUnitSearch = ({
                     onFocus={() => setIsSearchActive(true)}
                 >
                     <InputComponent
+                        disabled={isLoading}
                         keyValue="orgUnitSearch"
                         onChange={(key, value) => onChangeSearch(value)}
                         value={searchValue}
                         type="search"
-                        label={{
-                            id: 'iaso.orgUnits.search',
-                            defaultMessage: 'Search org unit',
-                        }}
+                        label={inputLabelObject}
                         onEnterPressed={() => handleSearch()}
                     />
 
@@ -170,15 +177,12 @@ const OrgUnitSearch = ({
                             <List className={classes.list}>
                                 {
                                     searchResults.map(ou => (
-                                        <Tooltip
-                                            title={getOrgUnitParentsString(ou)}
+                                        <OrgUnitTooltip
                                             key={ou.id}
-                                            arrow
-                                            enterDelay={500}
-                                            enterNextDelay={500}
+                                            orgUnit={ou}
                                         >
+
                                             <ListItem
-                                                key={ou.id}
                                                 button
                                                 onClick={() => handleSelect(ou)}
                                                 className="org-unit-item"
@@ -186,46 +190,48 @@ const OrgUnitSearch = ({
                                                 <ListItemText
                                                     primary={(
                                                         <Typography type="body2">
-                                                            {ou.name}
-                                                            {` (${ou.org_unit_type_name})`}
+                                                            {getOrgunitMessage(ou, true)}
                                                         </Typography>
                                                     )}
                                                 />
                                             </ListItem>
-                                        </Tooltip>
+                                        </OrgUnitTooltip>
                                     ))
                                 }
                             </List>
+                            <Divider />
                             <Box className={classes.resultInfos}>
                                 <FormattedMessage
                                     id="iaso.label.display"
                                     defaultMessage="Display"
                                 />
-                                <InputBase
-                                    id="search-results-count"
-                                    value={resultsCount}
-                                    type="number"
-                                    min={minResultCount}
-                                    onChange={event => handleResultCountChange(event.target.value)}
-                                    inputProps={{
-                                        className: classes.resultsCountInput,
-                                        style: {
-                                            width: `${(resultsCount.toString().length * 10) + 10}px`,
-                                        },
-                                    }}
-                                />
+                                <div className={classes.countContainer}>
+                                    <InputBase
+                                        id="search-results-count"
+                                        value={resultsCount}
+                                        type="number"
+                                        min={minResultCount}
+                                        onChange={event => handleResultCountChange(event.target.value)}
+                                        inputProps={{
+                                            className: classes.resultsCountInput,
+                                            style: {
+                                                width: `${(resultsCount.toString().length * 10) + 10}px`,
+                                            },
+                                        }}
+                                    />
+                                    <IconButton
+                                        className={classes.iconButton}
+                                        size="small"
+                                        onClick={() => validateResultCountChange()}
+                                        disabled={!resultsCountChanged}
+                                    >
+                                        <CheckCircleOutlineIcon fontSize="small" color={resultsCountChanged ? 'primary' : 'inherit'} />
+                                    </IconButton>
+                                </div>
                                 <FormattedMessage
                                     id="iaso.label.resultsLower"
                                     defaultMessage="result(s)"
                                 />
-                                <IconButton
-                                    className={classes.iconButton}
-                                    size="small"
-                                    onClick={() => validateResultCountChange()}
-                                    disabled={!resultsCountChanged}
-                                >
-                                    <CheckCircleOutlineIcon fontSize="small" color={resultsCountChanged ? 'primary' : 'inherit'} />
-                                </IconButton>
                             </Box>
                         </Box>
                     )
@@ -238,12 +244,17 @@ const OrgUnitSearch = ({
 
 OrgUnitSearch.defaultProps = {
     minResultCount: 50,
+    inputLabelObject: {
+        id: 'iaso.orgUnits.search',
+        defaultMessage: 'Search org unit',
+    },
 };
 
 OrgUnitSearch.propTypes = {
     classes: PropTypes.object.isRequired,
     onSelectOrgUnit: PropTypes.func.isRequired,
     minResultCount: PropTypes.number,
+    inputLabelObject: PropTypes.object,
 };
 
 export default withStyles(styles)(OrgUnitSearch);

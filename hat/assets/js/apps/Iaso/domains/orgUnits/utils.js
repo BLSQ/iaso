@@ -57,7 +57,7 @@ export const getOrgunitMessage = (orgUnit, withType) => {
     if (orgUnit) {
         message = orgUnit.name;
         if (orgUnit.org_unit_type_name && withType) {
-            message += `(${orgUnit.org_unit_type_name})`;
+            message += ` (${orgUnit.org_unit_type_name})`;
         }
     }
     return message;

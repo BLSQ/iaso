@@ -43,6 +43,10 @@ const MESSAGES = {
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
+    addOrgnit: {
+        defaultMessage: 'Add org unit',
+        id: 'iaso.orgUnits.add',
+    },
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.orgUnits.infos',
@@ -58,6 +62,10 @@ const MESSAGES = {
     save: {
         id: 'iaso.label.save',
         defaultMessage: 'Save',
+    },
+    selectedOrgUnits: {
+        id: 'iaso.users.selectedOrgUnits',
+        defaultMessage: 'Org units selected',
     },
 };
 

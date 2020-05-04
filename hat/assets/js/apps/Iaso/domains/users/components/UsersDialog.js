@@ -18,7 +18,7 @@ import {
     createUserProFile as createUserProFileAction,
 } from '../actions';
 import MESSAGES from '../messages';
-import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
+import UsersLocations from './UsersLocations';
 
 import PermissionsSwitches from './PermissionsSwitches';
 
@@ -32,7 +32,7 @@ const styles = theme => ({
         minWidth: 0,
     },
     root: {
-        minHeight: 400,
+        minHeight: 365,
         position: 'relative',
     },
     hiddenOpacity: {
@@ -140,6 +140,7 @@ class UserDialogComponent extends Component {
             email: { value: get(initialData, 'email', ''), errors: [] },
             password: { value: '', errors: [] },
             permissions: { value: get(initialData, 'permissions', []), errors: [] },
+            org_units: { value: get(initialData, 'org_units', []), errors: [] },
         };
     }
 
@@ -225,7 +226,10 @@ class UserDialogComponent extends Component {
                     {
                         tab === 'locations'
                     && (
-                        <OrgUnitSearch onSelectOrgUnit={ou => console.log(ou)} />
+                        <UsersLocations
+                            handleChange={ouList => this.setFieldValue('org_units', ouList)}
+                            currentUser={user}
+                        />
                     )
                     }
                 </div>

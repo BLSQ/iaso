@@ -69,6 +69,10 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
 
 
+class ProfileAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("org_units",)
+
+
 admin.site.register(Link, LinkAdmin)
 
 admin.site.register(Form, FormAdmin)
@@ -83,7 +87,7 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(FormVersion)
-admin.site.register(Profile)
+admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)
 admin.site.register(MappingVersion, MappingVersionAdmin)

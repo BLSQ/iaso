@@ -151,3 +151,10 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response(user.profile.as_dict())
         else:
             return Response("Unauthorized", status=401)
+
+    def delete(self, request, pk=None):
+        profile = get_object_or_404(Profile, id=pk)
+        user = profile.user
+        user.delete()
+        profile.delete()
+        return Response(True)

@@ -167,6 +167,14 @@ const MESSAGES = {
         defaultMessage: 'An error occurred while saving user profile',
         id: 'iaso.snackBar.saveUserError',
     },
+    deleteUserSuccesfull: {
+        defaultMessage: 'User deleted',
+        id: 'iaso.snackBar.deleteUserSuccesfull',
+    },
+    deleteUserError: {
+        defaultMessage: 'An error occurred while deleting user profile',
+        id: 'iaso.snackBar.deleteUserError',
+    },
 };
 
 export default MESSAGES;

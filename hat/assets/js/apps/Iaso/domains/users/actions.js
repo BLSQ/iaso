@@ -1,4 +1,6 @@
-import { getRequest, patchRequest, postRequest } from '../../libs/Api';
+import {
+    getRequest, patchRequest, postRequest, deleteRequest,
+} from '../../libs/Api';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
 
@@ -86,6 +88,22 @@ export const createUserProFile = profile => (dispatch) => {
         })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar('saveUserError')));
+            dispatch(setIsFetching(false));
+            throw error;
+        }));
+};
+
+
+export const deleteUser = (profile, params) => (dispatch) => {
+    dispatch(setIsFetching(true));
+    return (deleteRequest(`/api/profiles/${profile.id}/`)
+        .then((res) => {
+            dispatch(enqueueSnackbar(succesfullSnackBar('deleteUserSuccesfull')));
+            dispatch(fetchUsersProfiles(params));
+            return res;
+        })
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('deleteUserError')));
             dispatch(setIsFetching(false));
             throw error;
         }));

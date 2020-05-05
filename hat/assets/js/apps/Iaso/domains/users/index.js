@@ -7,6 +7,7 @@ import { withStyles, Box, Grid } from '@material-ui/core';
 
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
+    deleteUser as deleteUserAction,
 } from './actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -48,6 +49,14 @@ class Users extends Component {
         || (prevProps.params.page !== params.page)) {
             fetchUsersProfiles(params);
         }
+    }
+
+    deleteUser(user) {
+        const {
+            params,
+            deleteUser,
+        } = this.props;
+        return deleteUser(user, params);
     }
 
     render() {
@@ -112,6 +121,7 @@ Users.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
+    deleteUser: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
@@ -129,6 +139,7 @@ const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
             fetchUsersProfiles: fetchUsersProfilesAction,
+            deleteUser: deleteUserAction,
         }, dispatch),
     }
 );

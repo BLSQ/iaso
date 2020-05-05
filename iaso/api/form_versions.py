@@ -1,7 +1,8 @@
 import typing
 from django.db import transaction
 from django.core.files.uploadedfile import SimpleUploadedFile
-from rest_framework import serializers, permissions, parsers
+from rest_framework import serializers, parsers
+from hat.api.authentication import UserAccessPermission
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -153,9 +154,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 class FormVersionsViewSet(ModelViewSet):
     """Form versions API: /api/formversions/"""
 
-    permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FormVersionSerializer
     permission_required = ["menupermissions.iaso_mappings"]
+    permission_classes = (UserAccessPermission)
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)

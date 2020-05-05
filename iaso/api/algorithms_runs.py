@@ -2,6 +2,7 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from hat.api.authentication import UserAccessPermission
 
 from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
 import importlib
@@ -17,8 +18,8 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
 
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_links"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

@@ -1,4 +1,5 @@
 from django.core.exceptions import PermissionDenied
+from hat.api.authentication import UserAccessPermission
 
 from rest_framework import viewsets
 from rest_framework.response import Response
@@ -16,8 +17,8 @@ class PeriodsViewSet(viewsets.ViewSet):
 
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_forms"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
 

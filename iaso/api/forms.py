@@ -10,6 +10,7 @@ from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from .projects import ProjectSerializer, HasProjectPermission
+from hat.api.authentication import UserAccessPermission
 
 
 class HasFormPermission(permissions.BasePermission):
@@ -140,11 +141,11 @@ class FormSerializer(serializers.ModelSerializer):
 class FormsViewSet(ModelViewSet):
     """Forms API: /api/forms/"""
 
-    permission_classes = (HasFormPermission,)
     permission_required = [
         "menupermissions.iaso_forms",
         "menupermissions.iaso_org_units",
     ]
+    permission_classes = [HasFormPermission, UserAccessPermission]
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()

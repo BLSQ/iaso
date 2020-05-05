@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from rest_framework.request import Request
 from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
+from hat.api.authentication import UserAccessPermission
 
 from iaso.models import Project
 from .common import TimestampField, ModelViewSet
@@ -46,8 +47,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 class ProjectsViewSet(ModelViewSet):
     """Projects API: /api/projects/"""
 
-    permission_classes = (HasProjectPermission,)
     permission_required = ["menupermissions.iaso_forms"]
+    permission_classes = [HasProjectPermission, UserAccessPermission]
     serializer_class = ProjectSerializer
     results_key = "projects"
 

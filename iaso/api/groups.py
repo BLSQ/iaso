@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import Group
 from django.core.paginator import Paginator
+from hat.api.authentication import UserAccessPermission
 
 
 class GroupsViewSet(viewsets.ViewSet):
@@ -10,8 +11,8 @@ class GroupsViewSet(viewsets.ViewSet):
     list devices:
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_org_units"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         if request.user.is_anonymous:

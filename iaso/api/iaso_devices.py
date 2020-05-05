@@ -2,6 +2,7 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import Device
+from hat.api.authentication import UserAccessPermission
 
 
 class IasoDevicesViewSet(viewsets.ViewSet):
@@ -9,8 +10,8 @@ class IasoDevicesViewSet(viewsets.ViewSet):
     list devices:
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_forms"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         if request.user.is_anonymous:

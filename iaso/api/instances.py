@@ -8,6 +8,7 @@ from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
+from hat.api.authentication import UserAccessPermission
 
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
@@ -100,8 +101,8 @@ def import_data(instances, api_import, app_id=None):
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    permission_classes = []
     permission_required = ["menupermissions.iaso_forms"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

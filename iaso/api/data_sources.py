@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import DataSource, OrgUnit
+from hat.api.authentication import UserAccessPermission
 
 
 class DataSourceViewSet(viewsets.ViewSet):
@@ -8,12 +9,12 @@ class DataSourceViewSet(viewsets.ViewSet):
     list:
     """
 
-    permission_classes = []
     permission_required = [
         "menupermissions.iaso_mappings",
         "menupermissions.iaso_org_units",
         "menupermissions.iaso_links",
     ]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         linked_to = request.GET.get("linkedTo", None)

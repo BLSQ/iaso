@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from rest_framework.permissions import IsAuthenticated
+from hat.api.authentication import UserAccessPermission
 
 from iaso.models import Instance, MappingVersion
 import iaso.periods as periods
@@ -30,8 +30,8 @@ class CompletenessViewSet(viewsets.ViewSet):
     list:
     """
 
-    permission_classes = [IsAuthenticated]
     permission_required = ["menupermissions.iaso_completeness"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         profile = request.user.iaso_profile

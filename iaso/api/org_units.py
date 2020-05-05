@@ -6,6 +6,7 @@ from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
+from hat.api.authentication import UserAccessPermission
 from hat.geo.geojson import geojson_queryset
 from django.db.models import Q
 from copy import deepcopy
@@ -222,12 +223,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
     list:
     """
 
-    permission_classes = []
-
     permission_required = [
         "menupermissions.iaso_forms",
         "menupermissions.iaso_org_units",
     ]
+
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         queryset = OrgUnit.objects.all()

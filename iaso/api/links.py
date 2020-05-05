@@ -10,6 +10,7 @@ from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.geo.geojson import geojson_queryset
+from hat.api.authentication import UserAccessPermission
 
 
 class LinkViewSet(viewsets.ViewSet):
@@ -17,8 +18,8 @@ class LinkViewSet(viewsets.ViewSet):
     list:
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_links"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

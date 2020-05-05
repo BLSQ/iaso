@@ -3,6 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import Mapping
 from django.core.paginator import Paginator
+from hat.api.authentication import UserAccessPermission
 
 
 class MappingsViewSet(viewsets.ViewSet):
@@ -10,8 +11,8 @@ class MappingsViewSet(viewsets.ViewSet):
     list mappings:
     """
 
-    permission_classes = []
     permission_required = ["menupermissions.iaso_mappings"]
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
         if request.user.is_anonymous:

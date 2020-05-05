@@ -1,6 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import OrgUnitType
+from hat.api.authentication import UserAccessPermission
 
 
 class OrgUnitTypeViewSet(viewsets.ViewSet):
@@ -13,7 +14,7 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
         "menupermissions.iaso_org_units",
         "menupermissions.iaso_links",
     ]
-    permission_classes = []
+    permission_classes = [UserAccessPermission]
 
     def list(self, request):
 

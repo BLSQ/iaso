@@ -148,3 +148,4 @@ class ProjectsAPITestCase(APITestCase):
         self.assertHasField(project_data, "name", str)
         self.assertHasField(project_data, "created_at", float)
         self.assertHasField(project_data, "updated_at", float)
+        self.assertHasField(project_data, "needs_authentication", bool)

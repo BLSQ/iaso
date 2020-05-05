@@ -153,11 +153,19 @@ class DerivedInstancesTests(APITestCase):
         self.trigger_generation_and_expect_stats(
             {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
         )
-        avg = self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        avg = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        )
         self.assertEqual(floor(avg), 54)
-        sum = self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        sum = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        )
         self.assertEqual(floor(sum), 216)
-        count = self.derived_form.instances.all().first().json.get("satisfaction_score_count")
+        count = (
+            self.derived_form.instances.all()
+            .first()
+            .json.get("satisfaction_score_count")
+        )
         self.assertEqual(floor(count), 4)
 
         # delete 2 submissions expect an update
@@ -168,11 +176,19 @@ class DerivedInstancesTests(APITestCase):
         self.trigger_generation_and_expect_stats(
             {"new": 0, "updated": 1, "skipped": 0, "nullified": 0, "deleted": 0}
         )
-        avg = self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        avg = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        )
         self.assertEqual(floor(avg), 86)
-        sum = self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        sum = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        )
         self.assertEqual(floor(sum), 173)
-        count = self.derived_form.instances.all().first().json.get("satisfaction_score_count")
+        count = (
+            self.derived_form.instances.all()
+            .first()
+            .json.get("satisfaction_score_count")
+        )
         self.assertEqual(count, 2)
 
     @tag("iaso_only")
@@ -239,11 +255,19 @@ class DerivedInstancesTests(APITestCase):
             {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
         )
 
-        avg = self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        avg = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        )
         self.assertEqual(floor(avg), 54)
-        sum = self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        sum = (
+            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
+        )
         self.assertEqual(floor(sum), 216)
-        count = self.derived_form.instances.all().first().json.get("satisfaction_score_count")
+        count = (
+            self.derived_form.instances.all()
+            .first()
+            .json.get("satisfaction_score_count")
+        )
         self.assertEqual(floor(count), 4)
 
     def setup_5_instances(self):

@@ -4,10 +4,8 @@ from rest_framework.response import Response
 from django.http import Http404
 from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
-from iaso.models import Instance, OrgUnit, DeviceOwnership, Form, Project
+from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
-from django.shortcuts import get_object_or_404
-from rest_framework.authentication import BasicAuthentication
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 
@@ -19,7 +17,7 @@ from hat.api.export_utils import (
     timestamp_to_utc_datetime,
 )
 from iaso.utils import timestamp_to_datetime
-from .auth.authentication import CsrfExemptSessionAuthentication
+
 from time import gmtime, strftime
 import ntpath
 
@@ -38,6 +36,15 @@ def import_data(instances, api_import, app_id=None):
         project = Project.objects.get(app_id=app_id)
     except Project.DoesNotExist:
         project = None
+
+    if project and project.needs_authentication:
+        user = api_import.user
+        if (
+            not user
+            or user.is_anonymous
+            or project.account.id != user.iaso_profile.account.id
+        ):
+            raise PermissionDenied("User permission problem")
 
     for instance in instances:
         file_name = ntpath.basename(instance.get("file", None))
@@ -93,7 +100,6 @@ def import_data(instances, api_import, app_id=None):
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
@@ -262,7 +268,6 @@ class InstancesViewSet(viewsets.ViewSet):
         if not request.user.is_anonymous:
             api_import.user = request.user
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-
         api_import.import_type = "instance"
         api_import.json_body = instances
         api_import.save()

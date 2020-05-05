@@ -1,8 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.models import Instance, MappingVersion
@@ -32,7 +30,6 @@ class CompletenessViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [IsAuthenticated]
 
     def list(self, request):

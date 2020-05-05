@@ -107,4 +107,6 @@ router.register(r"jsondocument", JSONDocumentViewSet, base_name="jsondocument")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")
-urlpatterns = [url(r"^", include(router.urls))]
+urlpatterns = [
+    url(r"^", include(router.urls))
+]

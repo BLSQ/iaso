@@ -94,6 +94,7 @@ class Project(models.Model):
         Account, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     app_id = models.TextField(null=True, blank=True)
+    needs_authentication = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -279,6 +280,7 @@ class OrgUnit(models.Model):
     location = PointField(srid=4326, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)

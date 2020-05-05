@@ -2,8 +2,6 @@ from rest_framework import viewsets, status
 from rest_framework.response import Response
 
 from iaso.models import MatchingAlgorithm
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 
 
 class AlgorithmsViewSet(viewsets.ViewSet):
@@ -16,7 +14,6 @@ class AlgorithmsViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):

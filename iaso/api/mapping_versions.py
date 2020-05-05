@@ -1,21 +1,11 @@
 import typing
-from django.db import transaction
-from django.core.files.uploadedfile import SimpleUploadedFile
 from django.core.exceptions import ObjectDoesNotExist
-from django.db.models.functions import Concat
-from django.db.models import Value, Count
-from django.db.models import BooleanField
-from django.db.models.expressions import Case, When
-
-from rest_framework import serializers, permissions, parsers
-from rest_framework.authentication import BasicAuthentication
+from rest_framework import serializers, permissions
 import iaso.models as m
 
-from iaso.models import Form, FormVersion, Mapping, MappingVersion
-from iaso.odk import parsing
+from iaso.models import FormVersion, MappingVersion
+
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
-from .auth.authentication import CsrfExemptSessionAuthentication
-from .forms import HasFormPermission
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
@@ -196,7 +186,6 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 class MappingVersionsViewSet(ModelViewSet):
     """Mapping versions API: /api/mappingversions/"""
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"

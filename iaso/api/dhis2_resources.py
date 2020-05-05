@@ -1,10 +1,8 @@
 from time import process_time
 from rest_framework import status
 from rest_framework.response import Response
-from rest_framework.authentication import BasicAuthentication
 from rest_framework import viewsets
 from django.core.exceptions import PermissionDenied
-from .auth.authentication import CsrfExemptSessionAuthentication
 
 from dhis2 import Api
 
@@ -12,7 +10,6 @@ from iaso.models import DataSource
 
 
 class Dhis2ViewSet(viewsets.ViewSet):
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request, datasource_id, format="json"):
@@ -28,8 +25,7 @@ class Dhis2ViewSet(viewsets.ViewSet):
 
         if data_source is None:
             return Response(
-                {"error": "Data source not available"},
-                status=status.HTTP_404_NOT_FOUND,
+                {"error": "Data source not available"}, status=status.HTTP_404_NOT_FOUND
             )
 
         if data_source.credentials is None:

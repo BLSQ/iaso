@@ -1,19 +1,14 @@
 import typing
 
 from django.core.exceptions import PermissionDenied
-from rest_framework import parsers, permissions, serializers, viewsets
+from rest_framework import permissions, serializers
 from rest_framework.authentication import BasicAuthentication
-from rest_framework.response import Response
 
-from iaso.dhis2.aggregate_exporter import AggregateExporter
-from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from iaso.models import ExportRequest, Form, MappingVersion, DERIVED
+from iaso.models import ExportRequest, Form, DERIVED
 
 from .auth.authentication import CsrfExemptSessionAuthentication
-from .common import ModelViewSet, TimestampField
-from .instance_filters import parse_instance_filters
+from .common import ModelViewSet
 from iaso.dhis2.derived_instance_generator import generate_instances
-from django.http.response import HttpResponse
 
 
 class DerivedInstanceSerializer(serializers.Serializer):
@@ -73,7 +68,6 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
 
 class DerivedInstancesViewSet(ModelViewSet):
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [permissions.IsAuthenticated]
     permission_required = ["menupermissions.iaso_completeness"]
     serializer_class = DerivedInstanceSerializer

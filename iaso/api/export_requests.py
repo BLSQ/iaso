@@ -1,15 +1,12 @@
 import typing
 from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
-from rest_framework.response import Response
 from iaso.models import ExportRequest
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework import serializers, permissions, parsers
 from rest_framework.authentication import BasicAuthentication
-from django.core.paginator import Paginator
 
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
-from .common import ModelViewSet, TimestampField
+from .common import ModelViewSet
 from .instance_filters import parse_instance_filters
 from iaso.dhis2.aggregate_exporter import AggregateExporter
 
@@ -62,7 +59,6 @@ class ExportRequestsViewSet(ModelViewSet):
     list export_requests:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ExportRequestSerializer
     results_key = "export_requests"

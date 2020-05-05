@@ -4,8 +4,6 @@ from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 
 from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 import importlib
 
 
@@ -19,7 +17,6 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
     permission_required = ["menupermissions.iaso_links"]
 

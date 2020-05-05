@@ -9,8 +9,6 @@ from django.http import JsonResponse
 
 from iaso.models import Profile, Account, OrgUnit
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from hat.dashboard.utils import return_error
@@ -28,7 +26,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
@@ -73,8 +70,8 @@ class ProfilesViewSet(viewsets.ViewSet):
             return Response("Unauthorized", status=401)
 
     def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        if pk == 'me':
+        pk = kwargs.get("pk")
+        if pk == "me":
             profile = get_object_or_404(Profile, user__id=request.user.id)
             return Response(profile.as_dict())
         else:

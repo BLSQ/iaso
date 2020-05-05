@@ -5,9 +5,6 @@ from rest_framework.response import Response
 
 from iaso.models import Instance
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-
 
 class PeriodsViewSet(viewsets.ViewSet):
     """
@@ -19,7 +16,6 @@ class PeriodsViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
     permission_required = ["menupermissions.iaso_forms"]
 
@@ -32,7 +28,7 @@ class PeriodsViewSet(viewsets.ViewSet):
         if not form_id:
             return Response({"res": "Problem: please provide a form id"})
         queryset = Instance.objects.filter(form__id=form_id)
-        queryset = queryset.filter(period__isnull=False).order_by('period')
-        res = queryset.values_list('period', flat=True).distinct()
+        queryset = queryset.filter(period__isnull=False).order_by("period")
+        res = queryset.values_list("period", flat=True).distinct()
 
         return Response({"periods": res})

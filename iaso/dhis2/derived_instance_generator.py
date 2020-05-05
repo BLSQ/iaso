@@ -1,4 +1,4 @@
-from io import StringIO
+from io import BytesIO
 from timeit import default_timer as timer
 from uuid import uuid4
 
@@ -35,7 +35,8 @@ def generate_instance_xml(instance, form_version):
     instance_id.text = "uuid:" + instance.uuid
     meta.append(instance_id)
 
-    instance_xml = etree.tostring(root, pretty_print=True)
+    instance_xml = etree.tostring(root, pretty_print=True, encoding="UTF-8")
+
     return instance_xml
 
 
@@ -155,7 +156,7 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
         xml_string = generate_instance_xml(
             instance, cvs_stat_mapping_version.form_version
         )
-        buffer = StringIO(str(xml_string))
+        buffer = BytesIO(xml_string)
         buffer.seek(
             0, 2
         )  # Seek to the end of the stream, so we can get its length with `buf.tell()`

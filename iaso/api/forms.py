@@ -5,13 +5,10 @@ from django.http import StreamingHttpResponse, HttpResponse
 from django.utils.dateparse import parse_date
 from rest_framework import serializers, permissions
 from rest_framework.request import Request
-from rest_framework.authentication import BasicAuthentication
-
 from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from .auth.authentication import CsrfExemptSessionAuthentication
 from .projects import ProjectSerializer, HasProjectPermission
 
 
@@ -143,7 +140,6 @@ class FormSerializer(serializers.ModelSerializer):
 class FormsViewSet(ModelViewSet):
     """Forms API: /api/forms/"""
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (HasFormPermission,)
     permission_required = [
         "menupermissions.iaso_forms",

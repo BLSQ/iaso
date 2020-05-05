@@ -2,16 +2,12 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import DataSource, OrgUnit
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
-
 
 class DataSourceViewSet(viewsets.ViewSet):
     """
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
     permission_required = [
         "menupermissions.iaso_mappings",

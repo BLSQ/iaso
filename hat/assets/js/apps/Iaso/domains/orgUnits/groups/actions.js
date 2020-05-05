@@ -1,4 +1,6 @@
-import { getRequest, patchRequest, postRequest } from '../../../libs/Api';
+import {
+    getRequest, patchRequest, postRequest, deleteRequest,
+} from '../../../libs/Api';
 import { enqueueSnackbar } from '../../../../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../../../../utils/constants/snackBars';
 
@@ -14,11 +16,6 @@ export const setGroups = (list, { count, pages }) => ({
         count,
         pages,
     },
-});
-
-export const setCurrentUser = payload => ({
-    type: SET_CURRENT_GROUP,
-    payload,
 });
 
 export const setIsFetching = fetching => ({
@@ -37,7 +34,7 @@ export const fetchGroups = params => (dispatch) => {
         dispatch(setIsFetching(true));
     }
     return getRequest(url)
-        .then(res => dispatch(setGroups(res.groups, params ? { count: res.count, pages: res.pages } : { count: res.profiles.length, pages: 1 })))
+        .then(res => dispatch(setGroups(res.groups, params ? { count: res.count, pages: res.pages } : { count: res.groups.length, pages: 1 })))
         .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchGroupsError'))))
         .then(() => {
             if (params) {
@@ -68,7 +65,22 @@ export const createGroup = group => (dispatch) => {
             return res;
         })
         .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveUsesaveGroupErrorrError')));
+            dispatch(enqueueSnackbar(errorSnackBar('saveGroupError')));
+            dispatch(setIsFetching(false));
+            throw error;
+        }));
+};
+
+export const deleteGroup = (group, params) => (dispatch) => {
+    dispatch(setIsFetching(true));
+    return (deleteRequest(`/api/groups/${group.id}/`)
+        .then((res) => {
+            dispatch(enqueueSnackbar(succesfullSnackBar('deleteGroupSuccesfull')));
+            dispatch(fetchGroups(params));
+            return res;
+        })
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('deleteGroupError')));
             dispatch(setIsFetching(false));
             throw error;
         }));

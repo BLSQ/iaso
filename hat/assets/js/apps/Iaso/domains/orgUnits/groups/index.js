@@ -7,6 +7,7 @@ import { withStyles, Box, Grid } from '@material-ui/core';
 
 import {
     fetchGroups as fetchGroupsAction,
+    deleteGroup as deleteGroupAction,
 } from './actions';
 
 import TopBar from '../../../components/nav/TopBarComponent';
@@ -20,6 +21,7 @@ import commonStyles from '../../../styles/common';
 import { baseUrls } from '../../../constants/urls';
 
 import tableColumns from './config';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.groups;
 
@@ -49,6 +51,14 @@ class Groups extends Component {
         }
     }
 
+    deleteGroup(group) {
+        const {
+            params,
+            deleteGroup,
+        } = this.props;
+        return deleteGroup(group, params);
+    }
+
     render() {
         const {
             params,
@@ -69,18 +79,15 @@ class Groups extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar
-                    title={formatMessage({
-                        defaultMessage: 'Groups',
-                        id: 'iaso.label.groups',
-                    })}
+                    title={formatMessage(MESSAGES.groups)}
                     displayBackButton={false}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    {/* <Filters
+                    <Filters
                         baseUrl={baseUrl}
                         params={params}
                         onSearch={() => fetchGroups(params)}
-                    /> */}
+                    />
                     <Table
                         data={groups}
                         pages={pages}
@@ -94,7 +101,7 @@ class Groups extends Component {
                     />
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <GroupsDialog
-                            titleMessage={{ id: 'iaso.groups.create', defaultMessage: 'Create group' }}
+                            titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             params={params}
                         />
@@ -114,6 +121,7 @@ Groups.propTypes = {
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetchGroups: PropTypes.func.isRequired,
+    deleteGroup: PropTypes.func.isRequired,
     groups: PropTypes.array.isRequired,
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
@@ -131,6 +139,7 @@ const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
             fetchGroups: fetchGroupsAction,
+            deleteGroup: deleteGroupAction,
         }, dispatch),
     }
 );

@@ -9,13 +9,15 @@ import { bindActionCreators } from 'redux';
 import ConfirmCancelDialogComponent from '../../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../../components/forms/InputComponent';
 
+import MESSAGES from '../messages';
+
 import {
     saveGroup as saveGroupAction,
     fetchGroups as fetchGroupsAction,
     createGroup as createGroupAction,
 } from '../actions';
 
-class UserDialogComponent extends Component {
+class GroupDialogComponent extends Component {
     constructor(props) {
         super(props);
 
@@ -86,30 +88,27 @@ class UserDialogComponent extends Component {
 
     render() {
         const {
-            titleMessage, renderTrigger, initialData,
+            titleMessage, renderTrigger,
         } = this.props;
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
-                confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
+                cancelMessage={MESSAGES.cancel}
+                confirmMessage={MESSAGES.save}
                 onClosed={() => this.setState(this.initialState())}
                 renderTrigger={renderTrigger}
-                maxWidth="md"
+                maxWidth="sm"
             >
                 <Grid container spacing={4} justify="flex-start">
-                    <Grid xs={6} item>
+                    <Grid xs={12} item>
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) => this.setFieldValue(key, value)}
                             value={this.state.name.value}
                             errors={this.state.name.errors}
                             type="text"
-                            label={{
-                                defaultMessage: 'Name',
-                                id: 'iaso.label.name',
-                            }}
+                            label={MESSAGES.name}
                             required
                         />
                     </Grid>
@@ -119,11 +118,11 @@ class UserDialogComponent extends Component {
     }
 }
 
-UserDialogComponent.defaultProps = {
+GroupDialogComponent.defaultProps = {
     initialData: null,
 };
 
-UserDialogComponent.propTypes = {
+GroupDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
@@ -150,4 +149,4 @@ const mapDispatchToProps = dispatch => (
         }, dispatch),
     }
 );
-export default connect(MapStateToProps, mapDispatchToProps)(UserDialogComponent);
+export default connect(MapStateToProps, mapDispatchToProps)(GroupDialogComponent);

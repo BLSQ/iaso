@@ -318,6 +318,10 @@ export const groupsPath = {
     permission: 'iaso_org_units',
     component: props => <Groups {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,

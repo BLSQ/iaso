@@ -5,56 +5,35 @@ import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
 import { formatThousand } from '../../../../../utils';
+import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [
     {
-        Header: formatMessage({
-            defaultMessage: 'Name',
-            id: 'iaso.label.name',
-        }),
+        Header: formatMessage(MESSAGES.name),
         accessor: 'name',
         style: { justifyContent: 'left' },
         Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Source version',
-            id: 'iaso.groups.sourceVersion',
-        }),
-        accessor: 'source_version',
-    },
-    {
-        Header: formatMessage({
-            defaultMessage: 'Source version',
-            id: 'iaso.groups.sourceRef',
-        }),
-        accessor: 'source_ref',
-    },
-    {
-        Header: formatMessage({
-            defaultMessage: 'Updated at',
-            id: 'iaso.forms.updated_at',
-        }),
-        accessor: 'instance_updated_at',
+        Header: formatMessage(MESSAGES.updatedAt),
+        accessor: 'updated_at',
         Cell: settings => (
             <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
         ),
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Org units',
-            id: 'iaso.label.orgUnit',
-        }),
+        Header: formatMessage(MESSAGES.sourceVersion),
+        accessor: 'source_version',
+    },
+    {
+        Header: formatMessage(MESSAGES.orgUnit),
         accessor: 'org_unit_count',
         Cell: settings => (
             <span>{formatThousand(settings.original.org_unit_count)}</span>
         ),
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Action(s)',
-            id: 'iaso.labels.actions',
-        }),
+        Header: formatMessage(MESSAGES.actions),
         resizable: false,
         sortable: false,
         Cell: settings => (
@@ -62,20 +41,14 @@ const TableColumns = (formatMessage, component) => [
                 <GroupsDialog
                     renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
                     initialData={settings.original}
-                    titleMessage={{ id: 'iaso.groups.update', defaultMessage: 'Update group' }}
+                    titleMessage={MESSAGES.update}
                     key={settings.original.updated_at}
                     params={component.props.params}
                 />
                 <DeleteDialog
                     disabled={settings.original.instances_count > 0}
-                    titleMessage={{
-                        id: 'iaso.groups.dialog.delete',
-                        defaultMessage: 'Are you sure you want to delete this group?',
-                    }}
-                    message={{
-                        id: 'iaso.users.dialog.deleteUserTitle',
-                        defaultMessage: 'This operation cannot be undone.',
-                    }}
+                    titleMessage={MESSAGES.delete}
+                    message={MESSAGES.deleteWarning}
                     onConfirm={closeDialog => component.deleteGroup(settings.original).then(closeDialog)}
                 />
             </section>

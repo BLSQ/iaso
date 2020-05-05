@@ -5,6 +5,9 @@ from iaso.models import Group
 from .auth.authentication import CsrfExemptSessionAuthentication
 from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
+from django.db.models import Count
+from django.shortcuts import get_object_or_404
+from django.http import JsonResponse
 
 
 class GroupsViewSet(viewsets.ViewSet):
@@ -27,8 +30,14 @@ class GroupsViewSet(viewsets.ViewSet):
         version = request.GET.get("version", None)
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
+        orders = request.GET.get("order", "name").split(",")
+        search = request.GET.get("search", None)
 
-        queryset = queryset.distinct().order_by("name")
+        queryset = queryset.distinct().annotate(org_unit_count=Count('org_units'))
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        queryset = queryset.order_by(*orders)
         if version:
             queryset = queryset.filter(source_version=version)
 
@@ -50,3 +59,36 @@ class GroupsViewSet(viewsets.ViewSet):
             res["pages"] = paginator.num_pages
             res["limit"] = limit
         return Response(res)
+
+    def retrieve(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        group = get_object_or_404(Group, pk=pk)
+        return Response(group.as_dict())
+
+    def partial_update(self, request, pk=None):
+        group = get_object_or_404(Group, pk=pk)
+        name = request.data.get("name")
+        if not name:
+            return JsonResponse({"errorKey": "name", "errorMessage": "Nom requis"}, status=400)
+        group.name = name
+        group.save()
+
+        return Response(group.as_dict())
+
+    def create(self, request):
+        group = Group()
+        name = request.data.get("name")
+        if not name:
+            return JsonResponse({"errorKey": "name", "errorMessage": "Nom requis"}, status=400)
+        group.name = name
+
+        profile = request.user.iaso_profile
+        version = profile.account.default_version
+        group.source_version = version
+        group.save()
+        return Response(group.as_dict())
+
+    def delete(self, request, pk=None):
+        group = get_object_or_404(Group, pk=pk)
+        group.delete()
+        return Response(True)

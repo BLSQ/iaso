@@ -19,9 +19,8 @@ const OrgUnitsSmallInfos = ({ orgUnit, intl: { formatMessage } }) => (
             orgUnit.parent
             && (
                 <OrgUnitsSmallInfosRow
-                    label={formatMessage(MESSAGES.parents)}
+                    label={formatMessage(MESSAGES.parentsMulti)}
                     value={getOrgUnitParentsString(orgUnit)}
-                    isLarge={!orgUnit.parent}
                 />
             )
         }
@@ -31,7 +30,25 @@ const OrgUnitsSmallInfos = ({ orgUnit, intl: { formatMessage } }) => (
                 <OrgUnitsSmallInfosRow
                     label={formatMessage(MESSAGES.type)}
                     value={orgUnit.org_unit_type_name}
-                    isLarge={!orgUnit.parent}
+                />
+            )
+        }
+        {
+            orgUnit.source
+            && (
+                <OrgUnitsSmallInfosRow
+                    label={formatMessage(MESSAGES.source)}
+                    value={orgUnit.source}
+                />
+            )
+        }
+        {
+
+            orgUnit.source_ref
+            && (
+                <OrgUnitsSmallInfosRow
+                    label={formatMessage(MESSAGES.sourceRef)}
+                    value={orgUnit.source_ref}
                 />
             )
         }

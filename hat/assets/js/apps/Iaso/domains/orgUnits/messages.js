@@ -27,6 +27,10 @@ const MESSAGES = {
         defaultMessage: 'Parents',
         id: 'iaso.orgUnits.parents',
     },
+    parentsMulti: {
+        defaultMessage: 'Parent(s)',
+        id: 'iaso.orgUnits.parentsMulti',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.orgUnits.type',
@@ -50,6 +54,10 @@ const MESSAGES = {
     source: {
         defaultMessage: 'Source',
         id: 'iaso.orgUnits.source',
+    },
+    sourceRef: {
+        defaultMessage: 'Source ref',
+        id: 'iaso.orgUnits.sourceRef',
     },
     updated_at: {
         defaultMessage: 'Updated at',

@@ -366,6 +366,8 @@ class OrgUnit(models.Model):
             "id": self.id,
             "parent_id": self.parent_id,
             "parent_name": self.parent.name if self.parent else None,
+            "source": self.version.data_source.name if self.version else None,
+            "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
             "org_unit_type_name": self.org_unit_type.name
             if self.org_unit_type

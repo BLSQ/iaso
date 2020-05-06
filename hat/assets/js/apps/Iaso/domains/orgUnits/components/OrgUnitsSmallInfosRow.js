@@ -13,11 +13,11 @@ const styles = theme => ({
     },
 });
 const OrgUnitsSmallInfosRow = ({
-    label, value, classes, isLarge,
+    label, value, classes,
 }) => (
     <Grid container spacing={0}>
         <Grid
-            xs={isLarge ? 5 : 3}
+            xs={5}
             item
             container
             justify="flex-end"
@@ -29,7 +29,7 @@ const OrgUnitsSmallInfosRow = ({
             </span>
         </Grid>
         <Grid
-            xs={isLarge ? 7 : 9}
+            xs={7}
             item
             container
             justify="flex-start"
@@ -40,15 +40,10 @@ const OrgUnitsSmallInfosRow = ({
     </Grid>
 );
 
-OrgUnitsSmallInfosRow.defaultProps = {
-    isLarge: false,
-};
-
 OrgUnitsSmallInfosRow.propTypes = {
     label: PropTypes.string.isRequired,
     value: PropTypes.string.isRequired,
     classes: PropTypes.object.isRequired,
-    isLarge: PropTypes.bool,
 };
 
 

@@ -55,6 +55,8 @@ import { baseUrls } from '../../constants/urls';
 
 const baseUrl = baseUrls.instances;
 
+const defaultOrder = 'updated_at';
+
 const asBackendStatus = (status) => {
     if (status) {
         return status.split(',').map(s => (s === 'ERROR' ? 'DUPLICATED' : s)).join(',');
@@ -153,7 +155,7 @@ class Instances extends Component {
                 && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)
             )
         ) {
-            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params.columns));
+            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params, defaultOrder));
         }
     }
 
@@ -179,7 +181,7 @@ class Instances extends Component {
         } = this.props;
         const urlParams = {
             limit: params.pageSize ? params.pageSize : 20,
-            order: params.order ? params.order : '-updated_at',
+            order: params.order ? params.order : `-${defaultOrder}`,
             page: params.page ? params.page : 1,
             asSmallDict: true,
             ...this.getFilters(),
@@ -364,7 +366,7 @@ class Instances extends Component {
                                     pageSize={20}
                                     showPagination
                                     columns={tableColumns}
-                                    defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                    defaultSorted={[{ id: defaultOrder, desc: false }]}
                                     params={params}
                                     defaultPath={baseUrl}
                                     dataKey="instances"

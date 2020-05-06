@@ -2,7 +2,10 @@ import React from 'react';
 import HourglassEmpty from '@material-ui/icons/HourglassEmpty';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
+import { Link } from 'react-router';
+
 import GenerateDerivedInstancesRowButtonComponent from './components/GenerateDerivedInstancesRowButtonComponent';
+import { baseUrls } from '../../constants/urls';
 
 import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
@@ -10,6 +13,7 @@ import {
 } from '../periods/constants';
 import { formatThousand } from '../../../../utils';
 import { INSTANCE_STATUSES } from '../instances/constants';
+import { textPlaceholder } from '../../constants/uiConstants';
 
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
@@ -36,6 +40,14 @@ const getBaseColumns = formatMessage => ([
         resizable: true,
     },
 ]);
+
+const getFormUrl = (form, status, period) => {
+    let url = baseUrls.instances;
+    url += `/formId/${form.id}`;
+    url += `/periods/${period.asPeriodType(form.period_type).periodString}`;
+    url += `/status/${status.toUpperCase()}`;
+    return url;
+};
 
 export const getColumns = (
     formatMessage,
@@ -68,15 +80,14 @@ export const getColumns = (
                 key: status.key,
                 Cell: (settings) => {
                     const value = settings.original.months[month][status];
+                    if (!value) return textPlaceholder;
                     return (
-                        <span
-                            role="button"
-                            tabIndex="0"
-                            className={`${classes.cell} ${value ? classes[status] : ''}`}
-                            onClick={() => onSelect(settings.original, status, settings.original.months[month].period)}
+                        <Link
+                            className={`${classes.linkButton} ${classes.cell} ${value ? classes[status] : ''}`}
+                            to={getFormUrl(settings.original, status, settings.original.months[month].period)}
                         >
                             {value || '-'}
-                        </span>
+                        </Link>
                     );
                 },
                 Footer: (info) => {

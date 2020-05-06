@@ -6,10 +6,14 @@ import {
     IconButton,
     Tooltip,
 } from '@material-ui/core';
+import {
+    Link,
+} from 'react-router';
 
 import commonStyles from '../../styles/common';
 
 const styles = theme => ({
+    ...commonStyles(theme),
     popperFixed: {
         ...commonStyles(theme).popperFixed,
         marginTop: theme.spacing(1),
@@ -17,7 +21,7 @@ const styles = theme => ({
 });
 
 function RowButtonComponent({
-    classes, children, tooltipMessage, disabled, onClick,
+    classes, children, tooltipMessage, disabled, onClick, asLink, url,
 }) {
     return (
         <Tooltip
@@ -30,7 +34,21 @@ function RowButtonComponent({
         >
             <span>
                 <IconButton disabled={disabled} onClick={onClick}>
-                    {children}
+                    {
+                        !asLink
+                        && children
+                    }
+                    {
+                        asLink
+                        && (
+                            <Link
+                                to={url}
+                                className={classes.linkButton}
+                            >
+                                {children}
+                            </Link>
+                        )
+                    }
                 </IconButton>
             </span>
         </Tooltip>
@@ -38,12 +56,17 @@ function RowButtonComponent({
 }
 RowButtonComponent.defaultProps = {
     disabled: false,
+    url: '',
+    asLink: false,
+    onClick: () => null,
 };
 RowButtonComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     children: PropTypes.node.isRequired,
     tooltipMessage: PropTypes.object.isRequired, // TODO: make a message prop type
     disabled: PropTypes.bool,
-    onClick: PropTypes.func.isRequired,
+    onClick: PropTypes.func,
+    url: PropTypes.string,
+    asLink: PropTypes.bool,
 };
 export default withStyles(styles)(RowButtonComponent);

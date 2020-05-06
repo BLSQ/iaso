@@ -9,6 +9,7 @@ import EditRowButtonComponent from '../../components/buttons/EditRowButtonCompon
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
+import { baseUrls } from '../../constants/urls';
 
 
 const formsTableColumns = (formatMessage, component) => (
@@ -118,7 +119,10 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         settings.original.instances_count > 0
                         && (
-                            <ViewRowButtonComponent onClick={() => component.selectForm(settings.original)} />
+                            <ViewRowButtonComponent
+                                url={`${baseUrls.instances}/formId/${settings.original.id}`}
+                                asLink
+                            />
                         )
                     }
                     <FormDialogComponent

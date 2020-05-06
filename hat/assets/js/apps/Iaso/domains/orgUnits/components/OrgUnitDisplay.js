@@ -6,6 +6,7 @@ import {
 } from '@material-ui/core';
 
 import { getOrgunitMessage } from '../utils';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 const styles = () => ({
     link: {
@@ -17,15 +18,20 @@ const OrgUnitDisplay = ({
     orgUnit,
     classes,
     withType,
-}) => (
-    <Link
-        target="_blank"
-        className={classes.link}
-        href={`/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`}
-    >
-        {getOrgunitMessage(orgUnit, withType)}
-    </Link>
-);
+}) => {
+    if (!orgUnit) {
+        return textPlaceholder;
+    }
+    return (
+        <Link
+            target="_blank"
+            className={classes.link}
+            href={`/dashboard/orgunits/detail/orgUnitId/${orgUnit.id}`}
+        >
+            {getOrgunitMessage(orgUnit, withType)}
+        </Link>
+    );
+};
 
 OrgUnitDisplay.defaultProps = {
     withType: true,

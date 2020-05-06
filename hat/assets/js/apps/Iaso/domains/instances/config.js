@@ -6,10 +6,11 @@ import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 import XmlButton from '../../components/buttons/XmlButtonComponent';
 
+import { baseUrls } from '../../constants/urls';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 
-const instancesTableColumns = (formatMessage = () => ({}), component) => {
+const instancesTableColumns = (formatMessage = () => ({})) => {
     const columns = [
         {
             Header: formatMessage(MESSAGES.actions),
@@ -19,7 +20,10 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => {
             width: 150,
             Cell: settings => (
                 <section>
-                    <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
+                    <ViewRowButtonComponent
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.original.id}`}
+                        asLink
+                    />
                     <XmlButton
                         onClick={() => window.open(settings.original.file_url, '_blank')}
                     />

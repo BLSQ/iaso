@@ -2,6 +2,7 @@ import React from 'react';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
 import MESSAGES from './messages';
+import { baseUrls } from '../../constants/urls';
 
 const safePercent = (a, b) => {
     if (b === 0) {
@@ -10,7 +11,7 @@ const safePercent = (a, b) => {
     return (100 * (a / b)).toFixed(2);
 };
 
-const mappingsTableColumns = (formatMessage, component) => [
+const mappingsTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
@@ -20,7 +21,8 @@ const mappingsTableColumns = (formatMessage, component) => [
         Cell: settings => (
             <section>
                 <ViewRowButtonComponent
-                    onClick={() => component.selectInstance(settings.original)}
+                    url={`${baseUrls.mappings}/mappingVersionId/${settings.original.id}`}
+                    asLink
                 />
             </section>
         ),

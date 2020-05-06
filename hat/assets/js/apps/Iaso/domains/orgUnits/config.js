@@ -1,7 +1,6 @@
 import React from 'react';
 import moment from 'moment';
-import { FormattedMessage } from 'react-intl';
-import { IconButton, Tooltip } from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
 import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
@@ -9,6 +8,8 @@ import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
+import { baseUrls } from '../../constants/urls';
+import RowButtonComponent from '../../components/buttons/RowButtonComponent';
 
 export const orgUnitsTableColumns = (
     formatMessage,
@@ -104,50 +105,34 @@ export const orgUnitsTableColumns = (
             width: 150,
             Cell: settings => (
                 <section>
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}
+                    <RowButtonComponent
+                        tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
+                        asLink
                     >
-                        <IconButton
-                            onClick={() => component.selectOrgUnit(settings.original)}
-                        >
-                            <RemoveRedEye />
-                        </IconButton>
-                    </Tooltip>
+                        <RemoveRedEye />
+                    </RowButtonComponent>
                     {
                         (settings.original.has_geo_json
-                            || (settings.original.latitude && settings.original.longitude))
+                            || (Boolean(settings.original.latitude && settings.original.longitude)))
                         && (
-
-                            <Tooltip
-                                classes={{
-                                    popper: classes.popperFixed,
-                                }}
-                                title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}
+                            <RowButtonComponent
+                                tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
+                                asLink
                             >
-                                <IconButton
-                                    onClick={() => component.selectOrgUnit(settings.original, 'map')}
-                                >
-                                    <Map />
-                                </IconButton>
-                            </Tooltip>
+                                <Map />
+                            </RowButtonComponent>
                         )
                     }
 
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}
+                    <RowButtonComponent
+                        tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
+                        asLink
                     >
-                        <IconButton
-                            onClick={() => component.selectOrgUnit(settings.original, 'history')}
-                        >
-                            <History />
-                        </IconButton>
-                    </Tooltip>
+                        <History />
+                    </RowButtonComponent>
                 </section>
             ),
         },

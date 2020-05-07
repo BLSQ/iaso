@@ -35,7 +35,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
-import { decodeSearch, encodeSearch } from '../utils';
+import { decodeSearch } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -71,7 +71,7 @@ class OrgUnitsFiltersComponent extends Component {
         searches.forEach((s, i) => {
             Object.keys(s).forEach((key) => {
                 const value = s[key];
-                searches[i][key] = encodeSearch(value);
+                searches[i][key] = encodeURIComponent(value);
             });
         });
         if (filtersUpdated) {
@@ -109,7 +109,7 @@ class OrgUnitsFiltersComponent extends Component {
         const searches = [...decodeSearch(params.searches)];
         searches[searchIndex] = {
             ...searches[searchIndex],
-            [urlKey]: encodeSearch(value),
+            [urlKey]: encodeURIComponent(value),
         };
         const tempParams = {
             ...params,

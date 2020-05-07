@@ -1,5 +1,4 @@
 import { textPlaceholder } from '../../constants/uiConstants';
-import specialChars from '../../constants/specialChars';
 
 export const getPolygonPositionsFromSimplifiedGeom = (field) => {
     const positionsArrays = field.split('((')[1].replace('))', '').replace(/, /gi, ',').split(',');
@@ -65,12 +64,3 @@ export const getOrgunitMessage = (orgUnit, withType) => {
 };
 
 export const decodeSearch = search => JSON.parse(search);
-export const encodeSearch = (search) => {
-    let newSearch = search;
-    specialChars.forEach((char) => {
-        const replaceWhat = char.value.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-        const re = new RegExp(replaceWhat, 'g');
-        newSearch = newSearch.replace(re, char.encoded);
-    });
-    return `${newSearch}`;
-};

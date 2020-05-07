@@ -8,7 +8,7 @@ import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../../utils/requests';
 import { createUrl } from '../../../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from '../utils';
+import { fetchLatestOrgUnitLevelId, decodeSearch } from '../utils';
 
 import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';
 
@@ -35,8 +35,8 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         let prevValidated = prevProps.params.validated;
         let newValidated = this.props.params.validated;
         if (searchIndex || searchIndex === 0) {
-            const searches = JSON.parse(this.props.params.searches);
-            const prevSearches = JSON.parse(prevProps.params.searches);
+            const searches = decodeSearch(this.props.params.searches);
+            const prevSearches = decodeSearch(prevProps.params.searches);
             levels = searches[searchIndex][this.props.paramKey];
             prevLevels = prevSearches[searchIndex][prevProps.paramKey];
             prevSource = prevSearches[searchIndex].source;
@@ -125,7 +125,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         } = this.props;
         let source;
         if (searchIndex || searchIndex === 0) {
-            const searches = JSON.parse(this.props.params.searches);
+            const searches = decodeSearch(this.props.params.searches);
             source = searches[searchIndex].source || this.props.source;
         } else {
             source = this.props.params.source || this.props.source;
@@ -150,7 +150,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         } = this.props;
         let levels;
         if (searchIndex || searchIndex === 0) {
-            const searches = JSON.parse(this.props.params.searches);
+            const searches = decodeSearch(this.props.params.searches);
             levels = searches[searchIndex][this.props.paramKey] ? searches[searchIndex][this.props.paramKey].split(',') : [];
         } else {
             levels = this.props.params[this.props.paramKey] ? this.props.params[this.props.paramKey].split(',') : [];

@@ -36,7 +36,7 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 import { orgUnitsTableColumns } from './config';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from './utils';
+import { fetchLatestOrgUnitLevelId, decodeSearch } from './utils';
 import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
@@ -194,8 +194,8 @@ class OrgUnits extends Component {
         const {
             params,
         } = this.props;
-
-        const searches = JSON.parse(params.searches);
+        console.log('params', params);
+        const searches = decodeSearch(params.searches);
         searches.forEach((s, i) => {
             searches[i].orgUnitParentId = searches[i].levels ? fetchLatestOrgUnitLevelId(searches[i].levels) : null;
         });
@@ -257,7 +257,7 @@ class OrgUnits extends Component {
             this.props.setOrgUnitsLocations(
                 mapOrgUnitByLocation(
                     orgUnits,
-                    JSON.parse(params.searches),
+                    decodeSearch(params.searches),
                 ),
             );
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -294,7 +294,7 @@ class OrgUnits extends Component {
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
                     data[1],
-                    JSON.parse(params.searches),
+                    decodeSearch(params.searches),
                 ));
             }
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -323,7 +323,7 @@ class OrgUnits extends Component {
             formatMessage,
             this,
             classes,
-            JSON.parse(params.searches),
+            decodeSearch(params.searches),
         );
         return (
             <Fragment>
@@ -356,7 +356,7 @@ class OrgUnits extends Component {
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
                     {
-                        JSON.parse(params.searches).map((s, searchIndex) => {
+                        decodeSearch(params.searches).map((s, searchIndex) => {
                             const currentSearchIndex = parseInt(params.searchTabIndex, 10);
                             return (
                                 <div key={searchIndex} className={searchIndex !== currentSearchIndex ? classes.hiddenOpacity : null}>

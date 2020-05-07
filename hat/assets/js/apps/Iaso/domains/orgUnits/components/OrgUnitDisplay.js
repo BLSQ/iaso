@@ -1,9 +1,9 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import {
-    Link,
     withStyles,
 } from '@material-ui/core';
+import { Link } from 'react-router';
 
 import { getOrgunitMessage } from '../utils';
 import { textPlaceholder } from '../../../constants/uiConstants';

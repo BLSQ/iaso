@@ -6,9 +6,7 @@ import {
     IconButton,
     Tooltip,
 } from '@material-ui/core';
-import {
-    Link,
-} from 'react-router';
+import { Link } from 'react-router';
 
 import commonStyles from '../../styles/common';
 

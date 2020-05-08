@@ -137,5 +137,5 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
-        print(response_data)
+
         self.assertEqual({"completeness": expected_counts}, response_data)

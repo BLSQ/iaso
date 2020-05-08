@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
-
+import Alert from '@material-ui/lab/Alert';
 import {
     withStyles,
     Box,
@@ -44,6 +44,9 @@ const styles = theme => ({
         height: 'auto',
         display: 'block',
         cursor: 'pointer',
+    },
+    alert: {
+        marginBottom: theme.spacing(4),
     },
 });
 
@@ -103,7 +106,18 @@ class InstanceDetails extends Component {
                     && (
                         <Box className={classes.containerFullHeightNoTabPadded}>
                             <Grid container spacing={4}>
+
                                 <Grid xs={12} md={5} item>
+                                    {currentInstance.deleted && (
+                                        <Alert severity="warning" className={classes.alert}>
+                                            {formatMessage(MESSAGES.warningSoftDeleted)}
+                                            <br />
+                                            {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                            <br />
+                                            {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                            <br />
+                                        </Alert>
+                                    )}
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.infos)}
                                         padded

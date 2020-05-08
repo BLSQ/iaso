@@ -930,6 +930,9 @@ class InstanceQuerySet(models.QuerySet):
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
 
+        # whatever don't show deleted submissions
+        queryset = queryset.exclude(deleted=True)
+
         return queryset
 
 
@@ -1097,6 +1100,7 @@ class Instance(models.Model):
             ],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "deleted": self.deleted,
         }
 
     def as_small_dict(self):

@@ -86,9 +86,14 @@ class ProjectsAPITestCase(APITestCase):
 
         self.build_instance(self.village_2, self.uuid(5), "201901")
         self.build_instance(self.village_2, self.uuid(6), "201902")
+
         exported_instance = self.build_instance(self.village_2, self.uuid(7), "201903")
         exported_instance.last_export_success_at = timezone.now()
         exported_instance.save()
+
+        deleted_instance = self.build_instance(self.village_1, self.uuid(8), "201903")
+        deleted_instance.deleted = True
+        deleted_instance.save()
 
         self.client.force_authenticate(self.user)
 
@@ -132,5 +137,5 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
-
+        print(response_data)
         self.assertEqual({"completeness": expected_counts}, response_data)

@@ -103,6 +103,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'exported',
         id: 'iaso.label.instanceStatus.exportedSingle',
     },
+    warningSoftDeleted: {
+        defaultMessage: 'This instance has been soft-deleted and won\'t appear in instance search or completeness counts.',
+        id: 'iaso.instance.warningSoftDeleted',
+    },
+    warningSoftDeletedExport: {
+        defaultMessage: 'If this instance was exported, this doesn\'t mean these data has been deleted from dhis2.',
+        id: 'iaso.instance.warningSoftDeletedExport',
+    },
+    warningSoftDeletedDerived: {
+        defaultMessage: 'If this form generates other derived instances, they might not be updated either.',
+        id: 'iaso.instance.warningSoftDeletedDerived',
+    },
 });
 
 export default MESSAGES;

@@ -15,6 +15,7 @@ import Edit from '@material-ui/icons/Edit';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 import XmlSvg from '../svg/XmlSvgComponent';
+import DHIS2Svg from '../svg/DHIS2SvgComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -24,9 +25,10 @@ const ICON_VARIANTS = {
     'call-merge': CallMerge,
     'remove-red-eye': RemoveRedEye,
     edit: Edit,
-    xml: XmlSvg,
     history: History,
     map: Map,
+    xml: XmlSvg,
+    dhis: DHIS2Svg,
 };
 
 const styles = theme => ({

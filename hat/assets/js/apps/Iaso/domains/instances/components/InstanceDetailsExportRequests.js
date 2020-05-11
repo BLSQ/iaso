@@ -6,7 +6,7 @@ import moment from 'moment';
 import MESSAGES from '../messages';
 
 import { textPlaceholder } from '../../../constants/uiConstants';
-import MappingsRowButtonComponent from '../../../components/buttons/MappingsRowButtonComponent';
+import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceDetailsField from './InstanceDetailsField';
 
@@ -21,12 +21,14 @@ const InstanceDetailsExportRequests = (props) => {
     return (
         <WidgetPaper
             title={formatMessage(MESSAGES.exportRequests)}
-            IconButton={MappingsRowButtonComponent}
+            IconButton={IconButtonComponent}
             iconButtonProps={{
-                formId: currentInstance.form_id,
-                iconProps: {
-                    className: classes.icon,
-                    color: 'secondary',
+                url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
+                color: 'secondary',
+                icon: 'dhis',
+                tooltipMessage: {
+                    id: 'iaso.label.dhis2Mappings',
+                    defaultMessage: 'DHIS mappings',
                 },
             }}
         >
@@ -74,6 +76,6 @@ InstanceDetailsField.propTypes = {
     classes: PropTypes.object.isRequired,
     currentInstance: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-}
+};
 
 export default injectIntl(InstanceDetailsExportRequests);

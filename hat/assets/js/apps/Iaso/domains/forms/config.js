@@ -6,7 +6,6 @@ import { Link } from 'react-router';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
-import MappingsRowButtonComponent from '../../components/buttons/MappingsRowButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
@@ -140,8 +139,14 @@ const formsTableColumns = (formatMessage, component) => (
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
                         key={settings.original.updated_at}
                     />
-                    <MappingsRowButtonComponent formId={ settings.original.id } />
-
+                    <IconButtonComponent
+                        url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                        icon="dhis"
+                        tooltipMessage={{
+                            id: 'iaso.label.dhis2Mappings',
+                            defaultMessage: 'DHIS mappings',
+                        }}
+                    />
                     {
                         // TODO: deactivated, hard delete is too dangerous - to discuss
                         false && (

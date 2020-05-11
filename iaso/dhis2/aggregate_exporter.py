@@ -5,6 +5,7 @@ from dhis2 import Api
 from .value_formatter import format_value
 import json
 from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog
+import iaso.models as models
 from timeit import default_timer as timer
 
 import logging
@@ -39,137 +40,118 @@ def uniquify(seq, idfun=None):
     return result
 
 
-def handle_exception(resp, message):
-    response = resp["response"]
-    counts = {}
-    descriptions = []
-    if "importCount" in response:
-        for count_type in ("imported", "updated", "deleted", "ignored"):
-            counts[count_type] = response["importCount"][count_type]
-    if response["status"] == "ERROR":
-        if "description" in response:
-            descriptions.append(response["description"])
-        if "message" in response:
-            descriptions.append(response["message"])
-    if "conflicts" in response:
-        descriptions = [m["value"] for m in response["conflicts"]]
-    descriptions = uniquify(descriptions)
-    if len(descriptions) > 0:
-        logger.warn(
-            "----------------------- aggregate EXPORT ERROR --------------------\n"
-            + "Failed to create dataValueSets got {} {} {}".format(
-                message, counts, descriptions
+class AggregateHandler:
+    def handle_exception(self, resp, message):
+        response = resp["response"]
+        counts = {}
+        descriptions = []
+        if "importCount" in response:
+            for count_type in ("imported", "updated", "deleted", "ignored"):
+                counts[count_type] = response["importCount"][count_type]
+        if response["status"] == "ERROR":
+            if "description" in response:
+                descriptions.append(response["description"])
+            if "message" in response:
+                descriptions.append(response["message"])
+        if "conflicts" in response:
+            descriptions = [m["value"] for m in response["conflicts"]]
+        descriptions = uniquify(descriptions)
+        if len(descriptions) > 0:
+            logger.warn(
+                "----------------------- aggregate EXPORT ERROR --------------------\n"
+                + "Failed to create dataValueSets got {} {} {}".format(
+                    message, counts, descriptions
+                )
             )
+            return InstanceExportError(message, counts, descriptions)
+
+        return None
+
+    def map_to_values(self, instance, form_mapping):
+        data_set_entry = {
+            "dataSet": form_mapping["data_set_id"],
+            "completeDate": instance.created_at.strftime("%Y-%m-%d"),
+            "period": instance.period,
+            "orgUnit": instance.org_unit.source_ref,
+            "dataValues": [],
+        }
+
+        errored = False
+        mapping_errors = []
+        question_mappings = form_mapping["question_mappings"]
+        for question_key in instance.json.keys():
+            if question_key in question_mappings:
+                try:
+                    data_element = question_mappings[question_key]
+                    if (
+                        data_element.get("type")
+                        == MappingVersion.QUESTION_MAPPING_NEVER_MAPPED
+                    ):
+                        continue
+
+                    data_element["question_key"] = question_key
+                    raw_value = instance.json[question_key]
+                    data_value = {
+                        "dataElement": data_element["id"],
+                        "value": format_value(data_element, raw_value),
+                        "comment": str(instance.id)
+                        + " "
+                        + str(raw_value)
+                        + " "
+                        + question_key,
+                    }
+                    if "categoryOptionCombo" in data_element:
+                        data_value["categoryOptionCombo"] = data_element[
+                            "categoryOptionCombo"
+                        ]
+
+                    if "attributeOptionCombo" in data_element:
+                        data_value["attributeOptionCombo"] = data_element[
+                            "attributeOptionCombo"
+                        ]
+                    data_set_entry["dataValues"].append(data_value)
+                except Exception as error:
+                    errored = True
+                    mapping_errors.append([question_key, error])
+                    logger.warn("ERROR Mapping {} {}".format(error, question_key))
+        if errored:
+            return (None, mapping_errors)
+        else:
+            return (data_set_entry, None)
+
+    def export_page(self, prefix, data, export_statuses, stats, api):
+        if len(data[models.AGGREGATE]) == 0:
+            stats["batched_time"] = 0
+            return []
+
+        export_log = self.export_page_values(prefix, data, export_statuses, stats, api)
+        export_log_complete_ds = self.mark_dataset_as_complete(
+            data[models.AGGREGATE], api
         )
-        return InstanceExportError(message, counts, descriptions)
+        return [export_log, export_log_complete_ds]
 
-    return None
+    def mark_dataset_as_complete(self, data, api):
+        def to_complete_data_set_registration(data_value_set):
+            return {
+                "period": data_value_set["period"],
+                "dataSet": data_value_set["dataSet"],
+                "organisationUnit": data_value_set["orgUnit"],
+                "date": data_value_set["completeDate"],
+            }
 
+        complete_data_set_registrations = list(
+            map(to_complete_data_set_registration, data)
+        )
+        request = {"completeDataSetRegistrations": complete_data_set_registrations}
+        resp_complete = api.post("completeDataSetRegistrations", request)
 
-def map_to_aggregate(instance, form_mapping):
-    data_set_entry = {
-        "dataSet": form_mapping["data_set_id"],
-        "completeDate": instance.created_at.strftime("%Y-%m-%d"),
-        "period": instance.period,
-        "orgUnit": instance.org_unit.source_ref,
-        "dataValues": [],
-    }
-
-    errored = False
-    mapping_errors = []
-    question_mappings = form_mapping["question_mappings"]
-    for question_key in instance.json.keys():
-        if question_key in question_mappings:
-            try:
-                data_element = question_mappings[question_key]
-                if (
-                    data_element.get("type")
-                    == MappingVersion.QUESTION_MAPPING_NEVER_MAPPED
-                ):
-                    continue
-
-                data_element["question_key"] = question_key
-                raw_value = instance.json[question_key]
-                data_value = {
-                    "dataElement": data_element["id"],
-                    "value": format_value(data_element, raw_value),
-                    "comment": str(instance.id)
-                    + " "
-                    + str(raw_value)
-                    + " "
-                    + question_key,
-                }
-                if "categoryOptionCombo" in data_element:
-                    data_value["categoryOptionCombo"] = data_element[
-                        "categoryOptionCombo"
-                    ]
-
-                if "attributeOptionCombo" in data_element:
-                    data_value["attributeOptionCombo"] = data_element[
-                        "attributeOptionCombo"
-                    ]
-                data_set_entry["dataValues"].append(data_value)
-            except Exception as error:
-                errored = True
-                mapping_errors.append([question_key, error])
-                logger.warn("ERROR Mapping {} {}".format(error, question_key))
-    if errored:
-        return (None, mapping_errors)
-    else:
-        return (data_set_entry, None)
-
-
-class AggregateExporter:
-    def __init__(self):
-        self.form_mappings_cache = {}
-        self.api_cache = {}
-
-    def get_api(self, mapping_version):
-
-        if not mapping_version.id in self.api_cache:
-            credentials = mapping_version.mapping.data_source.credentials
-            self.api_cache[mapping_version.id] = Api(
-                credentials.url, credentials.login, credentials.password
-            )
-        return self.api_cache[mapping_version.id]
-
-    def export_log_on(self, status, export_status, export_logs):
-        export_status.status = status
-        for export_log in export_logs:
-            export_status.export_logs.add(export_log)
-        export_status.save()
-
-    def map_page_to_data_values(self, prefix, export_statuses, skipped):
-        data = []
-
-        for export_status in export_statuses:
-            instance = export_status.instance
-
-            form_mapping = export_status.mapping_version
-
-            if not instance.json:
-                skipped.append((instance.id, "no data json"))
-                continue
-
-            if not form_mapping or not form_mapping.mapping.is_aggregate():
-                skipped.append((instance.id, "no aggregate mapping"))
-                continue
-            (aggreg, map_errors) = map_to_aggregate(instance, form_mapping.json)
-
-            if map_errors:
-                message = (
-                    "ERROR while processing "
-                    + prefix
-                    + ", instance_id %d" % (instance.id,)
-                )
-                exception = InstanceExportError(
-                    message, {}, list(map(lambda x: x[0] + " " + str(x[1]), map_errors))
-                )
-
-                raise exception
-            else:
-                data.append(aggreg)
-        return data
+        print("completeDataSetRegistrations response", resp_complete.json())
+        export_log = ExportLog()
+        export_log.sent = request
+        export_log.received = resp_complete.json()
+        export_log.url = api.base_url + "/completeDataSetRegistrations"
+        export_log.save()
+        return export_log
 
     def flatten(self, data):
         flattened = []
@@ -180,14 +162,21 @@ class AggregateExporter:
                 flattened.append(dv)
         return flattened
 
-    def export_page(self, prefix, request, export_statuses, stats, api):
+    def export_log_on(self, status, export_status, export_logs):
+        export_status.status = status
+        for export_log in export_logs:
+            export_status.export_logs.add(export_log)
+        export_status.save()
+
+    def export_page_values(self, prefix, data, export_statuses, stats, api):
         try:
             # print(prefix, "POSTING to dataValueSets {} ".format(request))
             batched_start = timer()
 
-            resp = api.post("dataValueSets", request).json()
+            request = {"dataValues": self.flatten(data[models.AGGREGATE])}
 
-            exception = handle_exception({"response": resp}, "transient")
+            resp = api.post("dataValueSets", request).json()
+            exception = self.handle_exception({"response": resp}, "transient")
             if exception:
                 # fake it to behave like a bad request
                 raise RequestException(
@@ -220,7 +209,7 @@ class AggregateExporter:
                     "description": "non json response return by server",
                 }
 
-            exception = handle_exception({"response": resp}, message)
+            exception = self.handle_exception({"response": resp}, message)
 
             export_log = ExportLog()
             export_log.sent = request
@@ -232,6 +221,70 @@ class AggregateExporter:
                 self.export_log_on("errored", export_status, [export_log])
 
             raise exception
+
+
+class EventHandler:
+    pass
+
+
+class AggregateExporter:
+    def __init__(self):
+        self.form_mappings_cache = {}
+        self.api_cache = {}
+        self.handlers = {
+            models.AGGREGATE: AggregateHandler(),
+            models.EVENT: EventHandler(),
+        }
+
+    def get_api(self, mapping_version):
+
+        if not mapping_version.id in self.api_cache:
+            credentials = mapping_version.mapping.data_source.credentials
+            self.api_cache[mapping_version.id] = Api(
+                credentials.url, credentials.login, credentials.password
+            )
+        return self.api_cache[mapping_version.id]
+
+    def export_log_on(self, status, export_status, export_logs):
+        export_status.status = status
+        for export_log in export_logs:
+            export_status.export_logs.add(export_log)
+        export_status.save()
+
+    def map_page_to_data_values(self, prefix, export_statuses, skipped):
+        data = {models.AGGREGATE: [], models.EVENT: []}
+
+        for export_status in export_statuses:
+            instance = export_status.instance
+
+            form_mapping = export_status.mapping_version
+
+            if not instance.json:
+                skipped.append((instance.id, "no data json"))
+                continue
+
+            if not form_mapping:
+                skipped.append((instance.id, "no mapping"))
+                continue
+
+            (values, map_errors) = self.handlers[
+                form_mapping.mapping.mapping_type
+            ].map_to_values(instance, form_mapping.json)
+
+            if map_errors:
+                message = (
+                    "ERROR while processing "
+                    + prefix
+                    + ", instance_id %d" % (instance.id,)
+                )
+                exception = InstanceExportError(
+                    message, {}, list(map(lambda x: x[0] + " " + str(x[1]), map_errors))
+                )
+
+                raise exception
+            else:
+                data[form_mapping.mapping.mapping_type].append(values)
+        return data
 
     def flag_as_errored(self, export_request, export_statuses, message, stats):
         for export_status in export_statuses:
@@ -263,29 +316,6 @@ class AggregateExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def mark_dataset_as_complete(self, data, api):
-        def to_complete_data_set_registration(data_value_set):
-            return {
-                "period": data_value_set["period"],
-                "dataSet": data_value_set["dataSet"],
-                "organisationUnit": data_value_set["orgUnit"],
-                "date": data_value_set["completeDate"],
-            }
-
-        complete_data_set_registrations = list(
-            map(to_complete_data_set_registration, data)
-        )
-        request = {"completeDataSetRegistrations": complete_data_set_registrations}
-        resp_complete = api.post("completeDataSetRegistrations", request)
-
-        print("completeDataSetRegistrations response", resp_complete.json())
-        export_log = ExportLog()
-        export_log.sent = request
-        export_log.received = resp_complete.json()
-        export_log.url = api.base_url + "/completeDataSetRegistrations"
-        export_log.save()
-        return export_log
-
     def export_instances(self, export_request, export, page_size=50):
         export_request.status = "running"
         export_request.started_at = timezone.now()
@@ -305,33 +335,17 @@ class AggregateExporter:
         for page in range(1, paginator.num_pages + 1):
             page_start = timer()
             prefix = "page %d/%d" % (page, paginator.num_pages)
-            export_statuses = paginator.page(page).object_list
             try:
+                export_statuses = paginator.page(page).object_list
                 data = self.map_page_to_data_values(prefix, export_statuses, skipped)
-                # TODO assuming a single dhis2
-                # ideally map_page_to_data_values should return a dictionary { server: mapped_values }
                 api = self.get_api(export_statuses[0].mapping_version)
 
-                # TODO uncomplete if necessary ?
-                # data_set_ids = list(set(map(lambda x: x["dataSet"],data)))
-                # periods = list(set(map(lambda x: x["period"],data)))
-                # org_unit_ids = list(set(map(lambda x: x["orgUnit"],data)))
-
-                export_log = self.export_page(
-                    prefix,
-                    {"dataValues": self.flatten(data)},
-                    export_statuses,
-                    stats,
-                    api,
+                export_logs = self.handlers[models.AGGREGATE].export_page(
+                    prefix, data, export_statuses, stats, api
                 )
 
-                export_log_complete_ds = self.mark_dataset_as_complete(data, api)
-
                 self.flag_as_exported(
-                    export_request,
-                    export_statuses,
-                    stats,
-                    [export_log, export_log_complete_ds],
+                    export_request, export_statuses, stats, export_logs
                 )
 
                 page_end = timer()

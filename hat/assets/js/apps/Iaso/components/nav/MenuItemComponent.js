@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
 import { injectIntl } from 'react-intl';
+import { Link } from 'react-router';
 
 import {
     withStyles,
@@ -53,21 +54,26 @@ function MenuItem(props) {
     };
     return (
         <Fragment>
-            <ListItem
-                style={itemStyle}
-                button
-                onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+            <Link
+                className={classes.linkButton}
+                to={path}
             >
-                <ListItemIcon className={classes.listItemIcon}>
-                    {menuItem.icon({ color })}
-                </ListItemIcon>
-                <ListItemText
-                    primary={<Typography type="body2" color={color}>{intl.formatMessage(menuItem.label)}</Typography>}
-                />
-                {
-                    hasSubMenu ? subMenuIcon : null
-                }
-            </ListItem>
+                <ListItem
+                    style={itemStyle}
+                    button
+                    onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+                >
+                    <ListItemIcon className={classes.listItemIcon}>
+                        {menuItem.icon({ color })}
+                    </ListItemIcon>
+                    <ListItemText
+                        primary={<Typography type="body2" color={color}>{intl.formatMessage(menuItem.label)}</Typography>}
+                    />
+                    {
+                        hasSubMenu ? subMenuIcon : null
+                    }
+                </ListItem>
+            </Link>
             {
                 hasSubMenu
                 && (

@@ -20,7 +20,7 @@ import { redirectToReplace as redirectToReplaceAction } from '../../routing/acti
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import XmlButton from '../../components/buttons/XmlButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -37,12 +37,6 @@ import commonStyles from '../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    icon: {
-        width: 30,
-        height: 'auto',
-        display: 'block',
-        cursor: 'pointer',
-    },
     alert: {
         marginBottom: theme.spacing(4),
     },
@@ -144,14 +138,14 @@ class InstanceDetails extends Component {
                                 <Grid xs={12} md={7} item>
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.form)}
-                                        IconButton={XmlButton}
+                                        IconButton={IconButtonComponent}
                                         iconButtonProps={{
                                             onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                            iconProps: {
-                                                className: classes.icon,
+                                            icon: 'xml',
                                                 color: 'secondary',
-                                            },
-                                        }}
+                                                tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
+                                            }
+                                        }
                                     >
                                         <InstanceFileContent
                                             fileContent={currentInstance.file_content}

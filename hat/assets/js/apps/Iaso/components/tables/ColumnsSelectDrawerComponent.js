@@ -15,11 +15,10 @@ import {
     InputBase,
     Tooltip,
 } from '@material-ui/core';
-import FilterList from '@material-ui/icons/FilterList';
 import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 
-import RowButtonComponent from '../buttons/RowButtonComponent';
+import IconButtonComponent from '../buttons/IconButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 const MESSAGES = {
@@ -53,9 +52,6 @@ const styles = theme => ({
     root: {
         width: 400,
         overflow: 'hidden',
-    },
-    colorPrimary: {
-        color: 'white',
     },
     toolbar: {
         ...theme.mixins.toolbar,
@@ -100,7 +96,6 @@ const styles = theme => ({
 const ColumnsSelectDrawerComponent = (
     {
         classes,
-        iconColor,
         options,
         setOptions,
         minColumns,
@@ -136,20 +131,15 @@ const ColumnsSelectDrawerComponent = (
     const displayedOptions = filterResults(state.searchString, options);
     return (
         <>
-            <RowButtonComponent
+            <IconButtonComponent
                 onClick={toggleDrawer(true)}
+                icon="filter-list"
+                color="white"
                 tooltipMessage={{
                     id: 'iaso.table.columnSelect.tooltip',
                     defaultMessage: 'Select visible columns',
                 }}
-            >
-                <FilterList
-                    color={iconColor}
-                    classes={{
-                        colorPrimary: classes.colorPrimary,
-                    }}
-                />
-            </RowButtonComponent>
+            />
             <Drawer anchor="right" open={state.open} onClose={toggleDrawer(false)}>
                 <div
                     className={classes.root}
@@ -237,13 +227,11 @@ const ColumnsSelectDrawerComponent = (
 
 
 ColumnsSelectDrawerComponent.defaultProps = {
-    iconColor: 'primary',
     minColumns: 2,
 };
 
 ColumnsSelectDrawerComponent.propTypes = {
     classes: PropTypes.object.isRequired,
-    iconColor: PropTypes.string,
     options: PropTypes.array.isRequired,
     setOptions: PropTypes.func.isRequired,
     minColumns: PropTypes.number,

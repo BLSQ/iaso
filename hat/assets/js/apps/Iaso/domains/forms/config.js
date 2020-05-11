@@ -7,6 +7,8 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
 import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import MappingsRowButtonComponent from '../../components/buttons/MappingsRowButtonComponent';
+
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 
@@ -121,6 +123,7 @@ const formsTableColumns = (formatMessage, component) => (
                             <ViewRowButtonComponent onClick={() => component.selectForm(settings.original)} />
                         )
                     }
+
                     <FormDialogComponent
                         renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
                         onSuccess={() => component.setState({ isUpdated: true })}
@@ -128,6 +131,8 @@ const formsTableColumns = (formatMessage, component) => (
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
                         key={settings.original.updated_at}
                     />
+                    <MappingsRowButtonComponent formId={ settings.original.id } />
+
                     {
                         // TODO: deactivated, hard delete is too dangerous - to discuss
                         false && (

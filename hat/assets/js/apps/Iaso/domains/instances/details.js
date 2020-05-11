@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
+
 import Alert from '@material-ui/lab/Alert';
 import {
     withStyles,
@@ -15,9 +16,7 @@ import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
 } from './actions';
-import {
-    redirectToReplace as redirectToReplaceAction,
-} from '../../routing/actions';
+import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
@@ -26,12 +25,11 @@ import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
+import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 
-import {
-    getInstancesFilesList,
-} from './utils';
+import { getInstancesFilesList } from './utils';
 
 import MESSAGES from './messages';
 
@@ -53,16 +51,13 @@ const styles = theme => ({
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
-        this.state = {
-        };
+        this.state = {};
         props.setCurrentInstance(null);
     }
 
     componentDidMount() {
         const {
-            params: {
-                instanceId,
-            },
+            params: { instanceId },
             fetchInstanceDetail,
         } = this.props;
         fetchInstanceDetail(instanceId);
@@ -73,9 +68,7 @@ class InstanceDetails extends Component {
             classes,
             fetching,
             currentInstance,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             router,
             prevPathname,
             redirectToReplace,
@@ -83,9 +76,13 @@ class InstanceDetails extends Component {
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={currentInstance
-                        ? `${currentInstance.form_name}: ${currentInstance.file_name.replace('.xml', '')}`
-                        : ''}
+                    title={
+                        currentInstance
+                            ? `${
+                                currentInstance.form_name
+                            }: ${currentInstance.file_name.replace('.xml', '')}`
+                            : ''
+                    }
                     displayBackButton
                     goBack={() => {
                         if (prevPathname || !currentInstance) {
@@ -129,44 +126,41 @@ class InstanceDetails extends Component {
                                     >
                                         <InstanceDetailsLocation currentInstance={currentInstance} />
                                     </WidgetPaper>
-                                    {
-                                        currentInstance.files.length > 0
-                                        && (
-                                            <WidgetPaper
-                                                title={formatMessage(MESSAGES.files)}
-                                                padded
-                                            >
-                                                <InstancesFilesList
-                                                    fetchDetails={false}
-                                                    instanceDetail={currentInstance}
-                                                    files={getInstancesFilesList([currentInstance])}
-                                                />
-                                            </WidgetPaper>
-                                        )
-                                    }
+                                    <InstanceDetailsExportRequests
+                                        currentInstance={currentInstance}
+                                        classes={classes}
+                                    />
+                                    {currentInstance.files.length > 0 && (
+                                        <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
+                                            <InstancesFilesList
+                                                fetchDetails={false}
+                                                instanceDetail={currentInstance}
+                                                files={getInstancesFilesList([currentInstance])}
+                                            />
+                                        </WidgetPaper>
+                                    )}
                                 </Grid>
 
                                 <Grid xs={12} md={7} item>
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.form)}
                                         IconButton={XmlButton}
-                                        iconButtonProps={
-                                            {
-                                                onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                                iconProps: {
-                                                    className: classes.icon,
-                                                    color: 'secondary',
-                                                },
-                                            }
-                                        }
+                                        iconButtonProps={{
+                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                            iconProps: {
+                                                className: classes.icon,
+                                                color: 'secondary',
+                                            },
+                                        }}
                                     >
-                                        <InstanceFileContent fileContent={currentInstance.file_content} />
+                                        <InstanceFileContent
+                                            fileContent={currentInstance.file_content}
+                                        />
                                     </WidgetPaper>
                                 </Grid>
                             </Grid>
                         </Box>
-                    )
-                }
+                    )}
             </section>
         );
     }
@@ -196,13 +190,15 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators({
-        fetchInstanceDetail: fetchInstanceDetailAction,
-        redirectToReplace: redirectToReplaceAction,
-        setCurrentInstance: setCurrentInstanceAction,
-    }, dispatch),
+    ...bindActionCreators(
+        {
+            fetchInstanceDetail: fetchInstanceDetailAction,
+            redirectToReplace: redirectToReplaceAction,
+            setCurrentInstance: setCurrentInstanceAction,
+        },
+        dispatch,
+    ),
 });
-
 
 export default withStyles(styles)(
     connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)),

@@ -79,6 +79,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Location',
         id: 'iaso.map.location',
     },
+    exportRequest: {
+        defaultMessage: 'Export requests',
+        id: 'iaso.label.exportRequests',
+    },
     uuid: {
         defaultMessage: 'Uuid',
         id: 'iaso.label.uuid',
@@ -102,6 +106,30 @@ const MESSAGES = defineMessages({
     exported: {
         defaultMessage: 'exported',
         id: 'iaso.label.instanceStatus.exportedSingle',
+    },
+    exportRequests: {
+        defaultMessage: 'Export requests',
+        id: 'iaso.label.exportRequests',
+    },
+    exportStatus: {
+        defaultMessage: 'Status',
+        id: 'iaso.exportRequest.Status',
+    },
+    lastExportSuccessAt: {
+        defaultMessage: 'Last export success at',
+        id: 'iaso.exportRequest.last_export_success_at',
+    },
+    launcher: {
+        defaultMessage: 'Exported by',
+        id: 'iaso.exportRequest.launcher',
+    },
+    lastErrorMessage: {
+        defaultMessage: 'Last error message',
+        id: 'iaso.exportRequest.last_error_message',
+    },
+    when: {
+        defaultMessage: 'When',
+        id: 'iaso.exporStatus.createdAt',
     },
     warningSoftDeleted: {
         defaultMessage: 'This instance has been soft-deleted and won\'t appear in instance search or completeness counts.',

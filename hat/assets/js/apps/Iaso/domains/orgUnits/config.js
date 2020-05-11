@@ -6,7 +6,7 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
 import { baseUrls } from '../../constants/urls';
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
 export const orgUnitsTableColumns = (
     formatMessage,
@@ -102,7 +102,7 @@ export const orgUnitsTableColumns = (
             width: 150,
             Cell: settings => (
                 <section>
-                    <RowButtonComponent
+                    <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
                         icon="remove-red-eye"
                         tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
@@ -111,7 +111,7 @@ export const orgUnitsTableColumns = (
                         (settings.original.has_geo_json
                             || (Boolean(settings.original.latitude && settings.original.longitude)))
                         && (
-                            <RowButtonComponent
+                            <IconButtonComponent
                                 url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
                                 icon="map"
                                 tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
@@ -119,7 +119,7 @@ export const orgUnitsTableColumns = (
                         )
                     }
 
-                    <RowButtonComponent
+                    <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
                         icon="history"
                         tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}

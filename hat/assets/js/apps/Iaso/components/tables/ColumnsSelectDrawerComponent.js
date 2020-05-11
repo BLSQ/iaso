@@ -18,7 +18,7 @@ import {
 import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 
-import RowButtonComponent from '../buttons/RowButtonComponent';
+import IconButtonComponent from '../buttons/IconButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 const MESSAGES = {
@@ -131,11 +131,7 @@ const ColumnsSelectDrawerComponent = (
     const displayedOptions = filterResults(state.searchString, options);
     return (
         <>
-            {
-                // TODO: Not a row button... use a different component or make
-                // TODO: RowButtonComponent more generic
-            }
-            <RowButtonComponent
+            <IconButtonComponent
                 onClick={toggleDrawer(true)}
                 icon="filter-list"
                 color="white"

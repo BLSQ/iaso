@@ -21,7 +21,7 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -127,13 +127,9 @@ class InstanceDetails extends Component {
                                 </Grid>
 
                                 <Grid xs={12} md={7} item>
-                                    {
-                                        // TODO: Not a row button... use a different component or make
-                                        // TODO: RowButtonComponent more generic
-                                    }
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.form)}
-                                        IconButton={RowButtonComponent}
+                                        IconButton={IconButtonComponent}
                                         iconButtonProps={
                                             {
                                                 onClick: () => window.open(currentInstance.file_url, '_blank'),

@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { DialogContentText } from '@material-ui/core';
 
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
-import RowButtonComponent from '../buttons/RowButtonComponent';
+import IconButtonComponent from '../buttons/IconButtonComponent';
 
 export default function DeleteDialog({
     titleMessage, message, onConfirm, disabled,
@@ -19,7 +19,7 @@ export default function DeleteDialog({
             titleMessage={titleMessage}
             onConfirm={closeThenOnConfirm}
             renderTrigger={({ openDialog }) => (
-                <RowButtonComponent
+                <IconButtonComponent
                     onClick={openDialog}
                     disabled={disabled}
                     icon="delete"

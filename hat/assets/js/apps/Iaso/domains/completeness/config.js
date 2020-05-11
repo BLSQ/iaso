@@ -4,7 +4,7 @@ import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import { Link } from 'react-router';
 
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import { baseUrls } from '../../constants/urls';
 
 import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
@@ -113,7 +113,7 @@ export const getColumns = (
         columns: [{
             Header: '',
             Cell: settings => (settings.original.generate_derived ? (
-                <RowButtonComponent
+                <IconButtonComponent
                     onClick={() => (onGenerateDerivedInstances(settings.original))}
                     icon="call-merge"
                     tooltipMessage={{

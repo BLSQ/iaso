@@ -1,6 +1,6 @@
 import React from 'react';
 import { textPlaceholder } from '../../constants/uiConstants';
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import UsersDialog from './components/UsersDialog';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 
@@ -49,7 +49,7 @@ const usersTableColumns = (formatMessage, component) => [
             <section>
                 <UsersDialog
                     renderTrigger={({ openDialog }) => (
-                        <RowButtonComponent
+                        <IconButtonComponent
                             onClick={openDialog}
                             icon="edit"
                             tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}

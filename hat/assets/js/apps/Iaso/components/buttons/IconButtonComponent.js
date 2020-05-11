@@ -40,7 +40,7 @@ const styles = theme => ({
     },
 });
 
-const RowButtonIcon = ({
+const ButtonIcon = ({
     icon: Icon, color, onClick,
 }) => {
     if (Icon === undefined) {
@@ -54,20 +54,20 @@ const RowButtonIcon = ({
 
     return <Icon {...iconProps} color={color === 'white' ? 'inherit' : color} style={iconStyles} />;
 };
-RowButtonIcon.defaultProps = {
+ButtonIcon.defaultProps = {
     onClick: null,
 };
-RowButtonIcon.propTypes = {
+ButtonIcon.propTypes = {
     onClick: PropTypes.func,
     icon: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
     color: PropTypes.string.isRequired,
 };
 
-function RowButtonComponent({
+function IconButtonComponent({
     classes, disabled, onClick, url, icon: iconName, tooltipMessage, color,
 }) {
     if ((onClick === null) === (url === null)) {
-        console.error('RowButtonComponent needs either the onClick or the url property');
+        console.error('IconButtonComponent needs either the onClick or the url property');
     }
     const icon = ICON_VARIANTS[iconName];
 
@@ -85,23 +85,23 @@ function RowButtonComponent({
                     {
                         url ? (
                             <Link to={url} className={classes.linkButton}>
-                                <RowButtonIcon icon={icon} color={color} />
+                                <ButtonIcon icon={icon} color={color} />
                             </Link>
                         )
-                            : <RowButtonIcon icon={icon} color={color} />
+                            : <ButtonIcon icon={icon} color={color} />
                     }
                 </IconButton>
             </span>
         </Tooltip>
     );
 }
-RowButtonComponent.defaultProps = {
+IconButtonComponent.defaultProps = {
     disabled: false,
     url: null,
     onClick: null,
     color: 'action',
 };
-RowButtonComponent.propTypes = {
+IconButtonComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     onClick: PropTypes.func,
     url: PropTypes.string,
@@ -110,4 +110,4 @@ RowButtonComponent.propTypes = {
     color: PropTypes.string,
     tooltipMessage: PropTypes.object.isRequired, // TODO: make a message prop type
 };
-export default withStyles(styles)(RowButtonComponent);
+export default withStyles(styles)(IconButtonComponent);

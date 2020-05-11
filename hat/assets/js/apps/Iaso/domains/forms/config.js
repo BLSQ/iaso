@@ -5,7 +5,7 @@ import { Link } from 'react-router';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
@@ -118,7 +118,7 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         settings.original.instances_count > 0
                         && (
-                            <RowButtonComponent
+                            <IconButtonComponent
                                 url={`${baseUrls.instances}/formId/${settings.original.id}`}
                                 icon="remove-red-eye"
                                 tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
@@ -127,7 +127,7 @@ const formsTableColumns = (formatMessage, component) => (
                     }
                     <FormDialogComponent
                         renderTrigger={({ openDialog }) => (
-                            <RowButtonComponent
+                            <IconButtonComponent
                                 onClick={openDialog}
                                 icon="edit"
                                 tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}

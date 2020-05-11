@@ -1,6 +1,6 @@
 import React from 'react';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
-import RowButtonComponent from '../../components/buttons/RowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import MESSAGES from './messages';
 import { baseUrls } from '../../constants/urls';
 
@@ -20,7 +20,7 @@ const mappingsTableColumns = formatMessage => [
         width: 150,
         Cell: settings => (
             <section>
-                <RowButtonComponent
+                <IconButtonComponent
                     url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.original.id}`}
                     icon="remove-red-eye"
                     tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}

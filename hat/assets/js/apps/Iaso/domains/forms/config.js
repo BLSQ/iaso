@@ -6,6 +6,7 @@ import { Link } from 'react-router';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import MappingsRowButtonComponent from '../../components/buttons/MappingsRowButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
@@ -125,6 +126,7 @@ const formsTableColumns = (formatMessage, component) => (
                             />
                         )
                     }
+
                     <FormDialogComponent
                         renderTrigger={({ openDialog }) => (
                             <IconButtonComponent
@@ -138,6 +140,8 @@ const formsTableColumns = (formatMessage, component) => (
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
                         key={settings.original.updated_at}
                     />
+                    <MappingsRowButtonComponent formId={ settings.original.id } />
+
                     {
                         // TODO: deactivated, hard delete is too dangerous - to discuss
                         false && (

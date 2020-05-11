@@ -7,20 +7,21 @@ import json
 from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, ExportLog
 import iaso.models as models
 from timeit import default_timer as timer
+import itertools
 
 import logging
 
 logger = logging.getLogger(__name__)
 
 
-class InstanceExportError(Exception):
+class InstanceExportError(BaseException):
     def __init__(self, *args):
         self.counts = args[1]
         self.descriptions = args[2]
         self.message = str(args[0]) + " : " + self.descriptions[0]
 
     def __str__(self):
-        return "AggregateExportError, {0} ".format(self.message)
+        return "InstanceExportError, {0} ".format(self.message)
 
 
 def uniquify(seq, idfun=None):
@@ -120,14 +121,12 @@ class AggregateHandler:
             return (data_set_entry, None)
 
     def export_page(self, prefix, data, export_statuses, stats, api):
-        if len(data[models.AGGREGATE]) == 0:
+        if len(data) == 0:
             stats["batched_time"] = 0
             return []
 
         export_log = self.export_page_values(prefix, data, export_statuses, stats, api)
-        export_log_complete_ds = self.mark_dataset_as_complete(
-            data[models.AGGREGATE], api
-        )
+        export_log_complete_ds = self.mark_dataset_as_complete(data, api)
         return [export_log, export_log_complete_ds]
 
     def mark_dataset_as_complete(self, data, api):
@@ -173,7 +172,7 @@ class AggregateHandler:
             # print(prefix, "POSTING to dataValueSets {} ".format(request))
             batched_start = timer()
 
-            request = {"dataValues": self.flatten(data[models.AGGREGATE])}
+            request = {"dataValues": self.flatten(data)}
 
             resp = api.post("dataValueSets", request).json()
             exception = self.handle_exception({"response": resp}, "transient")
@@ -224,7 +223,137 @@ class AggregateHandler:
 
 
 class EventHandler:
-    pass
+    def map_to_values(self, instance, form_mapping):
+
+        event = {
+            "program": form_mapping["program_id"],
+            "event": instance.export_id,
+            "orgUnit": instance.org_unit.source_ref,
+            "eventDate": instance.created_at.strftime("%Y-%m-%d"),
+            "status": "COMPLETED",
+            "dataValues": [],
+        }
+        if instance.location:
+            event["coordinate"] = {
+                "latitude": instance.location.y,
+                "longitude": instance.location.x,
+            }
+        errored = False
+        event_errors = []
+        question_mappings = form_mapping["question_mappings"]
+
+        if instance.org_unit.source_ref == "" or instance.org_unit.source_ref == None:
+            errored = True
+            event_errors.append(
+                [
+                    "orgUnit",
+                    Exception(
+                        "unknown orgunit in dhis2 : "
+                        + str(instance.org_unit.name)
+                        + "("
+                        + str(instance.org_unit.name)
+                        + ")"
+                    ),
+                ]
+            )
+            print(event_errors)
+
+        for question_key in instance.json.keys():
+            if question_key in question_mappings:
+                try:
+                    data_element = question_mappings[question_key]
+                    if (
+                        data_element.get("type")
+                        == MappingVersion.QUESTION_MAPPING_NEVER_MAPPED
+                    ):
+                        continue
+                    data_element["question_key"] = question_key
+                    raw_value = instance.json[question_key]
+
+                    if (
+                        data_element.get("type")
+                        == MappingVersion.QUESTION_MAPPING_MULTIPLE
+                    ):
+                        raw_values = raw_value.split(" ")
+
+                        for value in data_element["values"]:
+                            mapping_de = data_element["values"][value]
+                            boolval = "1" if (value in raw_values) else "0"
+                            data_value = {
+                                "dataElement": mapping_de["id"],
+                                "value": format_value(mapping_de, boolval)
+                                # "debug": str(raw_value) + " " + question_key,
+                            }
+                            event["dataValues"].append(data_value)
+                    else:
+                        data_value = {
+                            "dataElement": data_element["id"],
+                            "value": format_value(data_element, raw_value),
+                            # "debug": str(raw_value) + " " + question_key,
+                        }
+                        event["dataValues"].append(data_value)
+                except Exception as error:
+                    errored = True
+                    event_errors.append([question_key, error])
+                    print("ERROR Mapping", error, question_key)
+        if errored:
+            return (None, event_errors)
+        else:
+            return (event, None)
+
+    def export_page(self, prefix, data, export_statuses, stats, api):
+        if len(data) == 0:
+            stats["batched_time"] = 0
+            return []
+
+        try:
+            payload = {"events": data}
+            print(json.dumps(payload, indent=2))
+            resp = api.post("events", payload).json()
+            print(resp)
+
+            exception = self.handle_exception({"response": resp}, "transient")
+            if exception:
+                # fake it to behave like a bad request
+                raise RequestException(
+                    409, api.base_url + "/dataValueSets", json.dumps(resp)
+                )
+
+            export_log = ExportLog()
+            export_log.sent = payload
+            export_log.received = resp
+            export_log.url = api.base_url + "/events"
+            export_log.http_status = 200
+            export_log.save()
+
+            return [export_log]
+        except RequestException as dhis2_exception:
+            message = "ERROR while processing " + prefix
+            resp = json.loads(dhis2_exception.description)
+            exception = self.handle_exception(resp, message)
+            raise exception
+
+    def handle_exception(self, resp, message):
+        response = resp["response"]
+
+        if response["status"] == "ERROR":
+            counts = {}
+
+            for count_type in ("imported", "updated", "deleted", "ignored"):
+                counts[count_type] = response.get(count_type, 0)
+            import_summaries = (
+                response.get("importSummaries")
+                or response["response"]["importSummaries"]
+            )
+            descriptions = [
+                m["description"] for m in import_summaries if "description" in m
+            ]
+            conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
+            descriptions = uniquify(descriptions)
+            print("---------------------------------------------------------")
+            print("----------------------- EXPORT ERROR --------------------")
+            print("Failed to create events got", descriptions, conflicts, resp)
+            return InstanceExportError(message, counts, descriptions)
 
 
 class AggregateExporter:
@@ -340,10 +469,17 @@ class AggregateExporter:
                 data = self.map_page_to_data_values(prefix, export_statuses, skipped)
                 api = self.get_api(export_statuses[0].mapping_version)
 
-                export_logs = self.handlers[models.AGGREGATE].export_page(
-                    prefix, data, export_statuses, stats, api
+                export_logs_aggregate = self.handlers[models.AGGREGATE].export_page(
+                    prefix, data[models.AGGREGATE], export_statuses, stats, api
                 )
 
+                export_logs_event = self.handlers[models.EVENT].export_page(
+                    prefix, data[models.EVENT], export_statuses, stats, api
+                )
+
+                export_logs = list(
+                    itertools.chain(export_logs_aggregate, export_logs_event)
+                )
                 self.flag_as_exported(
                     export_request, export_statuses, stats, export_logs
                 )

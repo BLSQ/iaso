@@ -26,8 +26,6 @@ from iaso.models import (
 import os
 from datetime import datetime
 from ..dhis2.aggregate_exporter import (
-    handle_exception,
-    map_to_aggregate,
     AggregateExporter,
     InstanceExportError,
 )
@@ -41,7 +39,7 @@ def load_dhis2_fixture(mapping_file):
 
 def build_form_mapping():
     return {
-        "programId": "PROGRAM_DHIS2_ID",
+        "program_id": "PROGRAM_DHIS2_ID",
         "question_mappings": {
             "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"},
             "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
@@ -194,15 +192,8 @@ class AggregateExporterTests(TestCase):
 
         responses.add(
             responses.POST,
-            "https://dhis2.com/api/dataValueSets",
+            "https://dhis2.com/api/events",
             json=load_dhis2_fixture("datavalues-ok.json"),
-            status=200,
-        )
-
-        responses.add(
-            responses.POST,
-            "https://dhis2.com/api/completeDataSetRegistrations",
-            json={},
             status=200,
         )
 
@@ -214,3 +205,53 @@ class AggregateExporterTests(TestCase):
 
         instance.refresh_from_db()
         self.assertIsNotNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_handle_errors(self):
+
+        mapping_version = MappingVersion(
+            name="event",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(self.form)
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={
+                "period_ids": "201801",
+                "form_id": self.form.id,
+                "org_unit_id": instance.org_unit.id,
+            },
+            launcher=self.user,
+        )
+        # mock expected calls
+
+        responses.add(
+            responses.POST,
+            "https://dhis2.com/api/events",
+            json=load_dhis2_fixture("event-create-error-230-notassigned.json"),
+            status=200,
+        )
+
+        with self.assertRaises(InstanceExportError) as context:
+            # excercice
+            instances_qs = Instance.objects.order_by("id").all()
+
+            AggregateExporter().export_instances(export_request, True)
+            self.expect_logs("exported")
+
+            instance.refresh_from_db()
+            self.assertIsNotNone(instance.last_export_success_at)
+
+        self.expect_logs("errored")
+
+        self.assertEquals(
+            "ERROR while processing page 1/1 : Program is not assigned to this organisation unit: YuQRtpLP10I",
+            context.exception.message,
+        )
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)

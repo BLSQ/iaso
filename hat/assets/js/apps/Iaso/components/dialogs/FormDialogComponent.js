@@ -139,7 +139,7 @@ class FormDialogComponent extends Component {
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
             period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
-            derived: { value: _.get(initialData, 'derived', null), errors: [] },
+            derived: { value: _.get(initialData, 'derived', false), errors: [] },
             single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
             periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
             periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },

@@ -4,8 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { DialogContentText } from '@material-ui/core';
 
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
-import DeleteRowButtonComponent from '../buttons/DeleteRowButtonComponent';
-
+import RowButtonComponent from '../buttons/RowButtonComponent';
 
 export default function DeleteDialog({
     titleMessage, message, onConfirm, disabled,
@@ -19,7 +18,14 @@ export default function DeleteDialog({
         <ConfirmCancelDialogComponent
             titleMessage={titleMessage}
             onConfirm={closeThenOnConfirm}
-            renderTrigger={({ openDialog }) => <DeleteRowButtonComponent openDialog={openDialog} disabled={disabled} />}
+            renderTrigger={({ openDialog }) => (
+                <RowButtonComponent
+                    onClick={openDialog}
+                    disabled={disabled}
+                    icon="delete"
+                    tooltipMessage={{ id: 'iaso.label.delete', defaultMessage: 'Delete' }}
+                />
+            )}
         >
             <DialogContentText id="alert-dialog-description">
                 <FormattedMessage {...message} />

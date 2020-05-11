@@ -1,9 +1,6 @@
 import React from 'react';
 import moment from 'moment';
 import { Tooltip } from '@material-ui/core';
-import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
-import History from '@material-ui/icons/History';
-import Map from '@material-ui/icons/Map';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
@@ -106,33 +103,27 @@ export const orgUnitsTableColumns = (
             Cell: settings => (
                 <section>
                     <RowButtonComponent
-                        tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
-                        asLink
-                    >
-                        <RemoveRedEye />
-                    </RowButtonComponent>
+                        icon="remove-red-eye"
+                        tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
+                    />
                     {
                         (settings.original.has_geo_json
                             || (Boolean(settings.original.latitude && settings.original.longitude)))
                         && (
                             <RowButtonComponent
-                                tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
                                 url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
-                                asLink
-                            >
-                                <Map />
-                            </RowButtonComponent>
+                                icon="map"
+                                tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
+                            />
                         )
                     }
 
                     <RowButtonComponent
-                        tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
-                        asLink
-                    >
-                        <History />
-                    </RowButtonComponent>
+                        icon="history"
+                        tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}
+                    />
                 </section>
             ),
         },

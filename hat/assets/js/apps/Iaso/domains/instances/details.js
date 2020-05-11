@@ -21,7 +21,7 @@ import {
 
 import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import XmlButton from '../../components/buttons/XmlButtonComponent';
+import RowButtonComponent from '../../components/buttons/RowButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
@@ -133,16 +133,22 @@ class InstanceDetails extends Component {
                                 </Grid>
 
                                 <Grid xs={12} md={7} item>
+                                    {
+                                        // TODO: Not a row button... use a different component or make
+                                        // TODO: RowButtonComponent more generic
+                                    }
                                     <WidgetPaper
                                         title={formatMessage(MESSAGES.form)}
-                                        IconButton={XmlButton}
+                                        IconButton={RowButtonComponent}
                                         iconButtonProps={
                                             {
                                                 onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                                icon: 'xml',
                                                 iconProps: {
                                                     className: classes.icon,
                                                     color: 'secondary',
                                                 },
+                                                tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
                                             }
                                         }
                                     >

@@ -5,8 +5,7 @@ import { Link } from 'react-router';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
-import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
-import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import RowButtonComponent from '../../components/buttons/RowButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
@@ -119,14 +118,21 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         settings.original.instances_count > 0
                         && (
-                            <ViewRowButtonComponent
+                            <RowButtonComponent
                                 url={`${baseUrls.instances}/formId/${settings.original.id}`}
-                                asLink
+                                icon="remove-red-eye"
+                                tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
                             />
                         )
                     }
                     <FormDialogComponent
-                        renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
+                        renderTrigger={({ openDialog }) => (
+                            <RowButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}
+                            />
+                        )}
                         onSuccess={() => component.setState({ isUpdated: true })}
                         initialData={settings.original}
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}

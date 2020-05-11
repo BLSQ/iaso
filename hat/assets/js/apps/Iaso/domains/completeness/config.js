@@ -4,7 +4,7 @@ import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import CheckCircleOutline from '@material-ui/icons/CheckCircleOutline';
 import { Link } from 'react-router';
 
-import GenerateDerivedInstancesRowButtonComponent from './components/GenerateDerivedInstancesRowButtonComponent';
+import RowButtonComponent from '../../components/buttons/RowButtonComponent';
 import { baseUrls } from '../../constants/urls';
 
 import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
@@ -112,7 +112,16 @@ export const getColumns = (
             </span>),
         columns: [{
             Header: '',
-            Cell: settings => (settings.original.generate_derived ? <GenerateDerivedInstancesRowButtonComponent onClick={() => (onGenerateDerivedInstances(settings.original))} /> : ''),
+            Cell: settings => (settings.original.generate_derived ? (
+                <RowButtonComponent
+                    onClick={() => (onGenerateDerivedInstances(settings.original))}
+                    icon="call-merge"
+                    tooltipMessage={{
+                        id: 'iaso.completeness.generateDerivedInstances',
+                        defaultMessage: 'Generate derived instances',
+                    }}
+                />
+            ) : ''),
 
         }],
         resizable: true,

@@ -15,7 +15,6 @@ import {
     InputBase,
     Tooltip,
 } from '@material-ui/core';
-import FilterList from '@material-ui/icons/FilterList';
 import Close from '@material-ui/icons/Close';
 import ArrowBack from '@material-ui/icons/ArrowBack';
 
@@ -136,20 +135,24 @@ const ColumnsSelectDrawerComponent = (
     const displayedOptions = filterResults(state.searchString, options);
     return (
         <>
+            {
+                // TODO: Not a row button... use a different component or make
+                // TODO: RowButtonComponent more generic
+            }
             <RowButtonComponent
                 onClick={toggleDrawer(true)}
+                icon="filter-list"
+                iconProps={{
+                    color: iconColor,
+                    classes: {
+                        colorPrimary: classes.colorPrimary,
+                    },
+                }}
                 tooltipMessage={{
                     id: 'iaso.table.columnSelect.tooltip',
                     defaultMessage: 'Select visible columns',
                 }}
-            >
-                <FilterList
-                    color={iconColor}
-                    classes={{
-                        colorPrimary: classes.colorPrimary,
-                    }}
-                />
-            </RowButtonComponent>
+            />
             <Drawer anchor="right" open={state.open} onClose={toggleDrawer(false)}>
                 <div
                     className={classes.root}

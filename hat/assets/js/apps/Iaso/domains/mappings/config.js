@@ -1,7 +1,8 @@
 import React from 'react';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
-import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import MESSAGES from './messages';
+import { baseUrls } from '../../constants/urls';
 
 const safePercent = (a, b) => {
     if (b === 0) {
@@ -10,7 +11,7 @@ const safePercent = (a, b) => {
     return (100 * (a / b)).toFixed(2);
 };
 
-const mappingsTableColumns = (formatMessage, component) => [
+const mappingsTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.actions),
         accessor: 'actions',
@@ -19,8 +20,10 @@ const mappingsTableColumns = (formatMessage, component) => [
         width: 150,
         Cell: settings => (
             <section>
-                <ViewRowButtonComponent
-                    onClick={() => component.selectInstance(settings.original)}
+                <IconButtonComponent
+                    url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.original.id}`}
+                    icon="remove-red-eye"
+                    tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
                 />
             </section>
         ),

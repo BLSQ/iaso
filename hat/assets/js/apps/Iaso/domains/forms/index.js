@@ -82,15 +82,6 @@ class Forms extends Component {
         return url;
     }
 
-    selectForm(form) {
-        const { redirectTo } = this.props;
-        this.props.setCurrentForm(form);
-        const newParams = {
-            formId: form.id,
-        };
-        redirectTo(baseUrls.instances, newParams);
-    }
-
     deleteForm(form) {
         return deleteForm(this.props.dispatch, form.id)
             .then(() => this.setState({ isUpdated: true }))

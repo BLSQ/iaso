@@ -246,20 +246,12 @@ class Instances extends Component {
         };
         this.setState({
             visibleColumns,
-            tableColumns: getInstancesColumns(formatMessage, visibleColumns, this),
+            tableColumns: getInstancesColumns(formatMessage, visibleColumns),
         });
 
         redirectToReplace(baseUrl, newParams);
     }
 
-    selectInstance(instance) {
-        const {
-            redirectTo,
-        } = this.props;
-        redirectTo(baseUrls.instanceDetail, {
-            instanceId: instance.id,
-        });
-    }
 
     render() {
         const {

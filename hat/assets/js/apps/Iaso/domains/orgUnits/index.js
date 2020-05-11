@@ -237,15 +237,6 @@ class OrgUnits extends Component {
         this.setState(newState);
     }
 
-    selectOrgUnit(orgUnit, tab) {
-        const { redirectTo } = this.props;
-        const newParams = {
-            orgUnitId: orgUnit.id,
-            tab,
-        };
-        redirectTo(baseUrls.orgUnitDetails, newParams);
-    }
-
     fetchOrgUnitsLocations() {
         const {
             dispatch,

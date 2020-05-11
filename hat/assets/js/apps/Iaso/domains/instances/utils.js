@@ -1,8 +1,8 @@
 import React from 'react';
 import instancesTableColumns from './config';
 
-export const getInstancesColumns = (formatMessage, visibleColumns, component) => {
-    const metasColumns = [...instancesTableColumns(formatMessage, component)];
+export const getInstancesColumns = (formatMessage, visibleColumns) => {
+    const metasColumns = [...instancesTableColumns(formatMessage)];
     let tableColumns = [];
     metasColumns.forEach((c) => {
         const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);

@@ -90,7 +90,8 @@ function DocumentsItemComponent(props) {
     const fileName = getFileName(file.path);
     return (
         <Link
-            onClick={() => window.open(file.path, '_blank')}
+            to={file.path}
+            target="_blank"
             size="small"
             className={classes.link}
         >

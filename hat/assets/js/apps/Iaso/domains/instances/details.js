@@ -39,12 +39,6 @@ import commonStyles from '../../styles/common';
 
 const styles = theme => ({
     ...commonStyles(theme),
-    icon: {
-        width: 30,
-        height: 'auto',
-        display: 'block',
-        cursor: 'pointer',
-    },
 });
 
 class InstanceDetails extends Component {
@@ -144,10 +138,7 @@ class InstanceDetails extends Component {
                                             {
                                                 onClick: () => window.open(currentInstance.file_url, '_blank'),
                                                 icon: 'xml',
-                                                iconProps: {
-                                                    className: classes.icon,
-                                                    color: 'secondary',
-                                                },
+                                                color: 'secondary',
                                                 tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
                                             }
                                         }

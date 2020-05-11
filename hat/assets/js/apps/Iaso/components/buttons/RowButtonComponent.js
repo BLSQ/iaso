@@ -31,35 +31,40 @@ const ICON_VARIANTS = {
 
 const styles = theme => ({
     ...commonStyles(theme),
+    white: {
+        color: 'white',
+    },
     popperFixed: {
         ...commonStyles(theme).popperFixed,
         marginTop: theme.spacing(1),
     },
 });
 
-function RowButtonIcon({ icon: Icon, iconProps, onClick }) {
-    const allProps = { ...iconProps };
-    if (onClick !== null) {
-        allProps.onClick = onClick;
-    }
-
+const RowButtonIcon = ({
+    icon: Icon, color, onClick,
+}) => {
     if (Icon === undefined) {
         return 'wrong icon';
     }
 
-    return <Icon {...allProps} />;
-}
+    const iconProps = onClick !== null ? { onClick } : {};
+
+    // special override for white color, which is not a "theme" variant such as primary, secondary or action
+    const iconStyles = color === 'white' ? { color: 'white' } : {};
+
+    return <Icon {...iconProps} color={color === 'white' ? 'inherit' : color} style={iconStyles} />;
+};
 RowButtonIcon.defaultProps = {
     onClick: null,
 };
 RowButtonIcon.propTypes = {
     onClick: PropTypes.func,
-    icon: PropTypes.object.isRequired,
-    iconProps: PropTypes.objectOf(PropTypes.any).isRequired,
+    icon: PropTypes.oneOfType([PropTypes.object, PropTypes.func]).isRequired,
+    color: PropTypes.string.isRequired,
 };
 
 function RowButtonComponent({
-    classes, disabled, onClick, url, icon: iconName, iconProps, tooltipMessage,
+    classes, disabled, onClick, url, icon: iconName, tooltipMessage, color,
 }) {
     if ((onClick === null) === (url === null)) {
         console.error('RowButtonComponent needs either the onClick or the url property');
@@ -80,10 +85,10 @@ function RowButtonComponent({
                     {
                         url ? (
                             <Link to={url} className={classes.linkButton}>
-                                <RowButtonIcon icon={icon} iconProps={iconProps} />
+                                <RowButtonIcon icon={icon} color={color} />
                             </Link>
                         )
-                            : <RowButtonIcon icon={icon} iconProps={iconProps} />
+                            : <RowButtonIcon icon={icon} color={color} />
                     }
                 </IconButton>
             </span>
@@ -94,7 +99,7 @@ RowButtonComponent.defaultProps = {
     disabled: false,
     url: null,
     onClick: null,
-    iconProps: {},
+    color: 'action',
 };
 RowButtonComponent.propTypes = {
     classes: PropTypes.object.isRequired,
@@ -102,7 +107,7 @@ RowButtonComponent.propTypes = {
     url: PropTypes.string,
     disabled: PropTypes.bool,
     icon: PropTypes.oneOf(Object.keys(ICON_VARIANTS)).isRequired,
-    iconProps: PropTypes.objectOf(PropTypes.any),
+    color: PropTypes.string,
     tooltipMessage: PropTypes.object.isRequired, // TODO: make a message prop type
 };
 export default withStyles(styles)(RowButtonComponent);

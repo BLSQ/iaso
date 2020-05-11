@@ -53,9 +53,6 @@ const styles = theme => ({
         width: 400,
         overflow: 'hidden',
     },
-    colorPrimary: {
-        color: 'white',
-    },
     toolbar: {
         ...theme.mixins.toolbar,
         display: 'flex',
@@ -99,7 +96,6 @@ const styles = theme => ({
 const ColumnsSelectDrawerComponent = (
     {
         classes,
-        iconColor,
         options,
         setOptions,
         minColumns,
@@ -142,12 +138,7 @@ const ColumnsSelectDrawerComponent = (
             <RowButtonComponent
                 onClick={toggleDrawer(true)}
                 icon="filter-list"
-                iconProps={{
-                    color: iconColor,
-                    classes: {
-                        colorPrimary: classes.colorPrimary,
-                    },
-                }}
+                color="white"
                 tooltipMessage={{
                     id: 'iaso.table.columnSelect.tooltip',
                     defaultMessage: 'Select visible columns',
@@ -240,13 +231,11 @@ const ColumnsSelectDrawerComponent = (
 
 
 ColumnsSelectDrawerComponent.defaultProps = {
-    iconColor: 'primary',
     minColumns: 2,
 };
 
 ColumnsSelectDrawerComponent.propTypes = {
     classes: PropTypes.object.isRequired,
-    iconColor: PropTypes.string,
     options: PropTypes.array.isRequired,
     setOptions: PropTypes.func.isRequired,
     minColumns: PropTypes.number,

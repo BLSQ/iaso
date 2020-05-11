@@ -2,6 +2,7 @@ import random
 from urllib.request import urlopen
 import pathlib
 from django.db import models
+from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
@@ -94,6 +95,7 @@ class Project(models.Model):
         Account, on_delete=models.DO_NOTHING, null=True, blank=True
     )
     app_id = models.TextField(null=True, blank=True)
+    needs_authentication = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -279,6 +281,7 @@ class OrgUnit(models.Model):
     location = PointField(srid=4326, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
@@ -928,6 +931,9 @@ class InstanceQuerySet(models.QuerySet):
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
 
+        # whatever don't show deleted submissions
+        queryset = queryset.exclude(deleted=True)
+
         return queryset
 
 
@@ -1095,6 +1101,28 @@ class Instance(models.Model):
             ],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "last_export_success_at": self.last_export_success_at.timestamp()
+            if self.last_export_success_at
+            else None,
+            "export_statuses": [
+                {
+                    "status": export_status.status,
+                    "created_at": export_status.created_at.timestamp()
+                    if export_status.created_at
+                    else None,
+                    "export_request": {
+                        "launcher": {
+                            "full_name": export_status.export_request.launcher.get_full_name(),
+                            "email": export_status.export_request.launcher.email,
+                        },
+                        "last_error_message": export_status.export_request.last_error_message,
+                    },
+                }
+                for export_status in Paginator(
+                    self.exportstatus_set.order_by("-id"), 3
+                ).object_list
+            ],
+            "deleted": self.deleted,
         }
 
     def as_small_dict(self):

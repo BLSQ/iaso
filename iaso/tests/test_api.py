@@ -36,7 +36,7 @@ class BasicAPITestCase(TestCase):
         """Creating Org Units through the API"""
         c = APIClient()
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
-        uuid = "f6ec1671-aa59-4fb2-a4a0-4af80573e2ae"
+        uuid = "f6ec1672-ab58-4fb2-a4a0-4af80573e2ae"
         name = "Hopital Velpo"
         unit_body = {
             "id": uuid,
@@ -96,7 +96,7 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(len(json_response["orgUnits"]), 0)
 
         # inserting a child org_unit
-        uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f0"
+        uuid2 = "61e1dbfe-a1fc-4075-bfa2-5f3201c918f1"
         name2 = "Hopital Sous Fifre"
         unit_body_2 = {
             "id": uuid2,
@@ -123,7 +123,7 @@ class BasicAPITestCase(TestCase):
         """Creating Org Units through the API but using org_unit_type_id and parent_id instead of orgUnitTypeId and parentId """
         c = APIClient()
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
-        uuid = "r5dx2671-aa59-4fb2-a4a0-4af80573e2de"
+        uuid = "w5dg2671-aa59-4fb2-a4a0-4af80573e2de"
         name = "Hopital Saint-André"
         unit_body = {
             "id": uuid,
@@ -183,7 +183,7 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(len(json_response["orgUnits"]), 0)
 
         # inserting a child org_unit
-        uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f0"
+        uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
         name2 = "Hopital Sous Fifre"
         unit_body_2 = {
             "id": uuid2,

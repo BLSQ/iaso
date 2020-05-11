@@ -7,7 +7,7 @@ from iaso import models as m
 from iaso.test import APITestCase
 
 
-class FormsAPITestCase(APITestCase):
+class CorrelationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.now = now()

@@ -1,5 +1,9 @@
 from django.conf.urls import url, include
 from rest_framework import routers
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .api.org_units import OrgUnitViewSet
 
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -80,8 +84,12 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
     )
 
 
-urlpatterns = [url(r"^", include(router.urls))]
+urlpatterns = [
+    url('^token/$', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    url('^token/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
+    url(r"^", include(router.urls))
 
+]
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 

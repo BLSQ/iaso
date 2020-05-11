@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+from datetime import timedelta
 
 STAGING = os.environ.get("STAGING", "").lower() == "true"
 TESTING = os.environ.get("TESTING", "").lower() == "true"
@@ -151,7 +152,6 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "hat.users.middleware.ThreadLocalMiddleware",
 ]
-
 
 ROOT_URLCONF = "hat.urls"
 
@@ -298,10 +298,19 @@ WEBPACK_LOADER = {
 
 
 REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "iaso.api.auth.authentication.CsrfExemptSessionAuthentication",
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
     "DEFAULT_PERMISSION_CLASSES": ("hat.api.authentication.UserAccessPermission",),
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.LimitOffsetPagination",
     "PAGE_SIZE": None,
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
+}
+
+SIMPLE_JWT = {
+    'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=3651),
 }
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

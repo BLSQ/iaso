@@ -2,8 +2,6 @@ from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.response import Response
 from iaso.models import Group
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
@@ -15,7 +13,6 @@ class GroupsViewSet(viewsets.ViewSet):
     list devices:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):

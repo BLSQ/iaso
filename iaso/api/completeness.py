@@ -1,8 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from rest_framework.permissions import IsAuthenticated
 
 from iaso.models import Instance, MappingVersion
@@ -32,14 +30,15 @@ class CompletenessViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = [IsAuthenticated]
 
     def list(self, request):
         profile = request.user.iaso_profile
-        queryset = Instance.objects.filter(
-            project__account=profile.account
-        ).with_status()
+        queryset = (
+            Instance.objects.filter(project__account=profile.account)
+            .exclude(deleted=True)
+            .with_status()
+        )
         counts = [to_completeness(count) for count in queryset.counts_by_status()]
         form_ids = [count["form"]["form_id"] for count in counts]
 

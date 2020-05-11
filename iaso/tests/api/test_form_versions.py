@@ -167,12 +167,39 @@ class FormsVersionAPITestCase(APITestCase):
             form=self.form_2, mapping_type=m.AGGREGATE, data_source=self.sw_source
         )
         version_mapping = m.MappingVersion.objects.create(
+            mapping=form_mapping,
             form_version=self.form_2.form_versions.first(),
             json={
                 "question_mappings": {
                     "old_question": {"type": "neverMapped"},
                     "member": {"id": "dhis2_id", "valueType": "NUMBER"},
                 }
+            },
+        )
+
+        derived_form_mapping = m.Mapping.objects.create(
+            form=self.form_2,
+            mapping_type=m.DERIVED,
+            data_source=self.sw_source,
+            name="derived",
+        )
+        derived_version_mapping = m.MappingVersion.objects.create(
+            mapping=derived_form_mapping,
+            form_version=self.form_2.form_versions.first(),
+            name="derived",
+            json={
+                "aggregations": [
+                    {
+                        "id": "old_question",
+                        "questionName": "question_name_old",
+                        "aggregationType": "sum",
+                    },
+                    {
+                        "id": "member",
+                        "questionName": "question_name_member",
+                        "aggregationType": "sum",
+                    },
+                ]
             },
         )
 
@@ -191,8 +218,11 @@ class FormsVersionAPITestCase(APITestCase):
 
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
-
-        new_mapping = m.MappingVersion.objects.all().last()
+        new_mapping = (
+            m.MappingVersion.objects.all()
+            .filter(mapping__mapping_type=m.AGGREGATE)
+            .last()
+        )
         self.assertEqual(new_mapping.form_version_id, response_data["id"])
         self.assertEqual(
             new_mapping.json,
@@ -200,6 +230,26 @@ class FormsVersionAPITestCase(APITestCase):
                 "question_mappings": {
                     "member": {"id": "dhis2_id", "valueType": "NUMBER"}
                 }
+            },
+        )
+
+        new_mapping = (
+            m.MappingVersion.objects.all()
+            .filter(mapping__mapping_type=m.DERIVED)
+            .last()
+        )
+
+        self.assertEqual(new_mapping.form_version_id, response_data["id"])
+        self.assertEqual(
+            new_mapping.json,
+            {
+                "aggregations": [
+                    {
+                        "aggregationType": "sum",
+                        "id": "member",
+                        "questionName": "question_name_member",
+                    }
+                ]
             },
         )
 

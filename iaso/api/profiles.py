@@ -9,8 +9,6 @@ from django.http import JsonResponse
 
 from iaso.models import Profile, Account
 
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
 from hat.dashboard.utils import return_error
@@ -28,7 +26,6 @@ class ProfilesViewSet(viewsets.ViewSet):
 
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
@@ -67,11 +64,13 @@ class ProfilesViewSet(viewsets.ViewSet):
             res["limit"] = limit
             return Response(res)
         else:
-            return Response({"profiles": [profile.as_short_dict() for profile in queryset]})
+            return Response(
+                {"profiles": [profile.as_short_dict() for profile in queryset]}
+            )
 
     def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        if pk == 'me':
+        pk = kwargs.get("pk")
+        if pk == "me":
             profile = get_object_or_404(Profile, user__id=request.user.id)
         else:
             profile = get_object_or_404(Profile, pk=pk)
@@ -82,7 +81,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         username = request.data.get("user_name")
         password = request.data.get("password", "")
         if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+            return JsonResponse(
+                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"},
+                status=400,
+            )
         user = profile.user
         user.first_name = request.data.get("first_name", "")
         user.last_name = request.data.get("last_name", "")
@@ -103,12 +105,21 @@ class ProfilesViewSet(viewsets.ViewSet):
         username = request.data.get("user_name")
         password = request.data.get("password", "")
         if not username:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"}, status=400)
+            return JsonResponse(
+                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"},
+                status=400,
+            )
         if not password:
-            return JsonResponse({"errorKey": "password", "errorMessage": "Mot de passe requis"}, status=400)
+            return JsonResponse(
+                {"errorKey": "password", "errorMessage": "Mot de passe requis"},
+                status=400,
+            )
         existing_profile = User.objects.filter(username=username).first()
         if existing_profile:
-            return JsonResponse({"errorKey": "user_name", "errorMessage": "Nom d'utilisateur existant"}, status=400)
+            return JsonResponse(
+                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur existant"},
+                status=400,
+            )
 
         user = User()
         user.first_name = request.data.get("first_name", "")

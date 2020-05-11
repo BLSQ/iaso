@@ -1,8 +1,6 @@
 from rest_framework import viewsets
 from rest_framework.response import Response
-from iaso.models import OrgUnitType, Project
-from rest_framework.authentication import BasicAuthentication
-from .auth.authentication import CsrfExemptSessionAuthentication
+from iaso.models import OrgUnitType
 
 
 class OrgUnitTypeViewSet(viewsets.ViewSet):
@@ -10,7 +8,6 @@ class OrgUnitTypeViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):

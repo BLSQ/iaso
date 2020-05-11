@@ -1,14 +1,15 @@
 import React from 'react';
 import moment from 'moment';
 import Grid from '@material-ui/core/Grid';
-import Link from '@material-ui/core/Link';
+import { Link } from 'react-router';
 
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
-import EditRowButtonComponent from '../../components/buttons/EditRowButtonComponent';
-import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
+import { baseUrls } from '../../constants/urls';
+
 
 const formsTableColumns = (formatMessage, component) => (
     [
@@ -17,6 +18,7 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Name',
                 id: 'iaso.forms.name',
             }),
+            accessor: 'name',
             Cell: settings => <ColumnTextComponent text={settings.original.name} />,
         },
         {
@@ -24,6 +26,7 @@ const formsTableColumns = (formatMessage, component) => (
                 defaultMessage: 'Updated at',
                 id: 'iaso.forms.updated_at',
             }),
+            accessor: 'instance_updated_at',
             Cell: (settings) => {
                 const dateText = settings.original.instance_updated_at
                     ? moment.unix(settings.original.instance_updated_at).format('DD/MM/YYYY HH:mm')
@@ -115,15 +118,34 @@ const formsTableColumns = (formatMessage, component) => (
                     {
                         settings.original.instances_count > 0
                         && (
-                            <ViewRowButtonComponent onClick={() => component.selectForm(settings.original)} />
+                            <IconButtonComponent
+                                url={`${baseUrls.instances}/formId/${settings.original.id}`}
+                                icon="remove-red-eye"
+                                tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
+                            />
                         )
                     }
+
                     <FormDialogComponent
-                        renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}
+                            />
+                        )}
                         onSuccess={() => component.setState({ isUpdated: true })}
                         initialData={settings.original}
                         titleMessage={{ id: 'iaso.forms.update', defaultMessage: 'Update form' }}
                         key={settings.original.updated_at}
+                    />
+                    <IconButtonComponent
+                        url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                        icon="dhis"
+                        tooltipMessage={{
+                            id: 'iaso.label.dhis2Mappings',
+                            defaultMessage: 'DHIS mappings',
+                        }}
                     />
                     {
                         // TODO: deactivated, hard delete is too dangerous - to discuss

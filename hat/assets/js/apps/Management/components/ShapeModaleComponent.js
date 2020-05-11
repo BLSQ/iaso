@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import ReactModal from 'react-modal';
 
-import { mapActions } from '../redux/mapReducer';
+import { smallMapActions } from '../../../redux/smallMapReducer';
 
 import ShapeMap from './ShapeMap';
 
@@ -47,12 +47,7 @@ class ShapeModale extends Component {
             geoProvinces,
             geoZones,
             geoAreas,
-            map: {
-                baseLayer,
-            },
-            load: {
-                loading,
-            },
+            baseLayer,
             isLoadingShape,
         } = this.props;
         const { item } = this.state;
@@ -152,27 +147,26 @@ ShapeModale.propTypes = {
     item: PropTypes.object,
     isUpdated: PropTypes.bool.isRequired,
     saveShape: PropTypes.func.isRequired,
-    map: PropTypes.object.isRequired,
+    baseLayer: PropTypes.string.isRequired,
     geoProvinces: PropTypes.object.isRequired,
     geoZones: PropTypes.object.isRequired,
     geoAreas: PropTypes.object.isRequired,
     changeLayer: PropTypes.func.isRequired,
-    load: PropTypes.object.isRequired,
     isLoadingShape: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     map: state.smallMap,
+    baseLayer: state.smallMap.baseLayer,
     geoProvinces: state.smallMap.geoProvinces,
     geoZones: state.smallMap.geoZones,
     geoAreas: state.smallMap.geoAreas,
     isLoadingShape: state.smallMap.isLoadingShape,
-    load: state.load,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),
+    changeLayer: (type, key) => dispatch(smallMapActions.changeLayer(type, key)),
 });
 
 

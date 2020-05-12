@@ -33,28 +33,34 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
 
 export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
 
-export const getInstancesVisibleColumns = (formatMessage, instance, columnsParams = undefined) => {
+export const getInstancesVisibleColumns = (formatMessage, instance, {
+    columns = undefined,
+    order,
+}, defaultOrder) => {
+    const activeOrders = (order || defaultOrder).split(',');
     const metasColumns = [...instancesTableColumns(formatMessage).filter(c => c.accessor !== 'actions')];
-    const columns = metasColumns.map(c => (
+    const newColumns = metasColumns.map(c => (
         {
             key: c.accessor,
             label: c.Header,
-            active: columnsParams !== undefined && columnsParams.includes(c.accessor),
+            active: columns !== undefined && columns.includes(c.accessor),
             meta: true,
+            disabled: activeOrders.indexOf(c.accessor) !== -1 || activeOrders.indexOf(`-${c.accessor}`) !== -1,
         }
     ));
     if (instance) {
         Object.keys(instance.file_content).forEach((k) => {
             if (k !== 'meta' && k !== 'uuid') {
-                columns.push({
+                newColumns.push({
                     key: k,
                     label: k, // TO-DO: get field label from API
-                    active: columnsParams !== undefined && columnsParams.includes(k),
+                    active: columns !== undefined && columns.includes(k),
+                    disabled: false,
                 });
             }
         });
     }
-    return columns;
+    return newColumns;
 };
 
 

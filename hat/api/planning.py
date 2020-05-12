@@ -57,10 +57,10 @@ class PlanningViewSet(viewsets.ViewSet):
         queryset = Planning.objects.all()
         if not with_template:
             queryset = queryset.filter(is_template=False)
-            return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders))
+            return Response(queryset.values('name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage', 'months', 'month_start').order_by(*orders))
         else:
             res = {"datas": queryset.values(
-                'name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage').order_by(*orders)}
+                'name', 'id', 'year', 'updated_at', 'is_template', 'years_coverage', 'months', 'month_start').order_by(*orders)}
             if request.user.has_perm('menupermissions.x_management_plannings_template'):
                 res['can_make_template'] = True
             else:
@@ -77,6 +77,8 @@ class PlanningViewSet(viewsets.ViewSet):
         year = request.data.get('year', None)
         name = request.data.get('name', None)
         years_coverage = request.data.get('years_coverage', None)
+        months = request.data.get('months', None)  # defaults in Model
+        month_start = request.data.get('month_start', None)
 
         if planning_to_copy_id:
             planning = get_object_or_404(Planning, pk=planning_to_copy_id)
@@ -92,6 +94,8 @@ class PlanningViewSet(viewsets.ViewSet):
         if name:
             new_planning.name = name
         new_planning.years_coverage = years_coverage
+        new_planning.months = months
+        new_planning.month_start = month_start
         new_planning.save()
         return Response(new_planning.as_dict())
 
@@ -117,6 +121,12 @@ class PlanningViewSet(viewsets.ViewSet):
         if newName != '':
             planning.name = newName
         is_template = request.data.get('is_template', False)
+        newMonths = request.data.get("months", None)
+        if newMonths:
+            planning.months = newMonths
+        newMonthStart = request.data.get("month_start", None)
+        if newMonthStart:
+            planning.month_start = newMonthStart
 
         planning.is_template = is_template
 

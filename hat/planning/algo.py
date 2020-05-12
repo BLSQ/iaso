@@ -97,7 +97,7 @@ def assign(village_id_list, workzone_id, years=[]):
     return assignations, not_assigned
 
 
-def optimize_path(assignation_list):
+def optimize_path(assignation_list, nb_months):
     matrix = [[] for _ in assignation_list]
 
     village_ids = [obj["village_id"] for obj in assignation_list]
@@ -125,9 +125,9 @@ def optimize_path(assignation_list):
     for index in path:
         assignation_dict = assignation_list[index]
         current_population += villages[assignation_dict["village_id"]].population
-        if current_population > (total_population / 12.0) * current_month:
+        if current_population > (total_population / nb_months) * current_month:
             current_month += 1
-        assignation_dict["month"] = min(current_month, 12)
+        assignation_dict["month"] = min(current_month, nb_months)
         assignation_dict["index"] = i
         res.append(assignation_list[index])
         i += 1

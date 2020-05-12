@@ -15,11 +15,12 @@ class Planning(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     is_template = models.BooleanField(default=False)
+    months = models.IntegerField(default=12)
+    month_start = models.IntegerField(default=1)
 
     years_coverage = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
-
 
     def __str__(self):
         return "%s - % s" % (self.year, self.name)
@@ -35,6 +36,8 @@ class Planning(models.Model):
             'name': self.name,
             'assignations': assignations,
             'years_coverage': self.years_coverage,
+            "months": self.months,
+            "month_start": self.month_start,
         }
 
     def copy(self, new_name):

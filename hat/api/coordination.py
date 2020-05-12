@@ -128,7 +128,7 @@ class CoordinationViewSet(viewsets.ViewSet):
 
             for team_id in teams_dict:
                 assignation_list = teams_dict[team_id]
-                ordered = optimize_path(assignation_list)
+                ordered = optimize_path(assignation_list, planning.months)
                 for index, obj in enumerate(ordered):
                     Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
                     assignation = Assignation()

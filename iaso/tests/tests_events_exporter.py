@@ -210,6 +210,25 @@ class AggregateExporterTests(TestCase):
             event,
         )
 
+    def test_event_mapping_works_for_none(self):
+        instance = self.build_instance(self.form)
+        instance.json = {"question1": None}
+        instance.save()
+
+        event, errors = EventHandler().map_to_values(instance, build_form_mapping())
+        self.assertEquals(
+            {
+                "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": None}],
+                "event": "EVENT_DHIS2_UID",
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                "eventDate": "2018-02-16",
+                "orgUnit": "OU_DHIS2_ID",
+                "program": "PROGRAM_DHIS2_ID",
+                "status": "COMPLETED",
+            },
+            event,
+        )
+
     def test_event_maps_multi_select(self):
         instance = self.build_instance(self.form)
         instance.json = {"question2": "1 2"}

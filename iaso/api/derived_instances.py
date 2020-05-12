@@ -1,14 +1,10 @@
 import typing
-
 from django.core.exceptions import PermissionDenied
 from rest_framework import serializers
-from rest_framework.authentication import BasicAuthentication
-from hat.api.authentication import UserAccessPermission
 
-from iaso.models import ExportRequest, Form, DERIVED
-
-from .auth.authentication import CsrfExemptSessionAuthentication
 from .common import ModelViewSet
+from hat.api.authentication import UserAccessPermission
+from iaso.models import ExportRequest, Form, DERIVED
 from iaso.dhis2.derived_instance_generator import generate_instances
 
 
@@ -43,7 +39,6 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
         for stat_form in forms:
             for period in validated_data["periods"]:
-
                 cvs_stat_version = stat_form.latest_version
                 cvs_stat_mapping_version = cvs_stat_version.mapping_versions.filter(
                     form_version=cvs_stat_version, mapping__mapping_type=DERIVED

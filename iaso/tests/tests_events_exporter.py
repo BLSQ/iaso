@@ -3,6 +3,7 @@ import responses
 from django.core.files.uploadedfile import UploadedFile
 from collections import namedtuple
 from django.test import TestCase
+from django.contrib.gis.geos import Point
 from iaso.models import (
     User,
     Instance,
@@ -28,6 +29,7 @@ from datetime import datetime
 from ..dhis2.aggregate_exporter import (
     AggregateExporter,
     InstanceExportError,
+    EventHandler,
 )
 from ..dhis2.export_request_builder import ExportRequestBuilder
 
@@ -42,6 +44,14 @@ def build_form_mapping():
         "program_id": "PROGRAM_DHIS2_ID",
         "question_mappings": {
             "question1": {"id": "DE_DHIS2_ID", "valueType": "INTEGER"},
+            "question2": {
+                "type": "multiple",
+                "values": {
+                    "1": {"id": "DE_DHIS2_ID_BOOL1", "valueType": "BOOLEAN"},
+                    "2": {"id": "DE_DHIS2_ID_BOOL2", "valueType": "BOOLEAN"},
+                    "3": {"id": "DE_DHIS2_ID_BOOL3", "valueType": "BOOLEAN"},
+                },
+            },
             "question3": {"type": MappingVersion.QUESTION_MAPPING_NEVER_MAPPED},
         },
     }
@@ -57,6 +67,8 @@ class AggregateExporterTests(TestCase):
     def build_instance(self, form):
 
         instance = Instance()
+        instance.export_id = "EVENT_DHIS2_UID"
+
         instance.created_at = datetime.strptime(
             "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
         )
@@ -67,9 +79,11 @@ class AggregateExporterTests(TestCase):
         else:
             instance.period = "2018Q1"
             instance.json = {
-                "question1_quality": "1",
+                "question1": "1",
                 "version": self.form_quality_version.version_id,
             }
+
+        instance.location = Point(1.5, 7.3)
 
         instance.file = UploadedFile(
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")
@@ -165,6 +179,60 @@ class AggregateExporterTests(TestCase):
         mapping = Mapping(form=form, data_source=datasource, mapping_type=EVENT)
         mapping.save()
         self.mapping = mapping
+
+    def test_error_handling_support_various_versions(self):
+        versions = ("229", "230", "231", "232", "233")
+        testcases = ["event-create-error-" + version + ".json" for version in versions]
+
+        for testcase in testcases:
+
+            exception = EventHandler().handle_exception(
+                load_dhis2_fixture(testcase), "error"
+            )
+            self.assertIsNotNone(exception)
+
+    def test_event_mapping_works(self):
+
+        event, errors = EventHandler().map_to_values(
+            self.build_instance(self.form), build_form_mapping()
+        )
+
+        self.assertEquals(
+            {
+                "dataValues": [{"dataElement": "DE_DHIS2_ID", "value": 1}],
+                "event": "EVENT_DHIS2_UID",
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                "eventDate": "2018-02-16",
+                "orgUnit": "OU_DHIS2_ID",
+                "program": "PROGRAM_DHIS2_ID",
+                "status": "COMPLETED",
+            },
+            event,
+        )
+
+    def test_event_maps_multi_select(self):
+        instance = self.build_instance(self.form)
+        instance.json = {"question2": "1 2"}
+        instance.save()
+
+        event, errors = EventHandler().map_to_values(instance, build_form_mapping())
+
+        self.assertEquals(
+            event,
+            {
+                "program": "PROGRAM_DHIS2_ID",
+                "event": "EVENT_DHIS2_UID",
+                "orgUnit": "OU_DHIS2_ID",
+                "eventDate": "2018-02-16",
+                "status": "COMPLETED",
+                "dataValues": [
+                    {"dataElement": "DE_DHIS2_ID_BOOL1", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_BOOL2", "value": True},
+                    {"dataElement": "DE_DHIS2_ID_BOOL3", "value": False},
+                ],
+                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+            },
+        )
 
     @responses.activate
     def test_event_export_works(self):

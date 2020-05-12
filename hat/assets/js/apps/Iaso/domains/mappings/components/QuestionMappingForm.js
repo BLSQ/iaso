@@ -1,12 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import Alert from '@material-ui/lab/Alert';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
+import { DuplicateHint } from './DuplicateHint';
 import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
-
-import { isMapped, isNeverMapped } from '../question_mappings';
-import { DuplicateHint } from './DuplicateHint';
 
 const QuestionMappingForm = ({
     mapping,
@@ -49,6 +48,34 @@ const QuestionMappingForm = ({
             });
         return results;
     };
+
+    const mapToMappingProgramElements = (options, input) => {
+        const token = input ? input.toLowerCase() : ""
+        const results = [];
+        options.forEach((program) => {
+            program.programStages
+                .flatMap(ps => ps.programStageDataElements)
+                .forEach((programStageElement) => {
+                    const { dataElement } = programStageElement;
+                    if (dataElement.name.toLowerCase().includes(token) || (dataElement.code && dataElement.code.toLowerCase().includes(token))) {
+                        dataElement.categoryCombo.categoryOptionCombos.forEach((coc) => {
+                            results.push({
+                                id: dataElement.id,
+                                code: dataElement.code,
+                                name: dataElement.name,
+                                displayName: dataElement.name,
+                                valueType: dataElement.valueType,
+                                domainType: dataElement.domainType,
+                                categoryOptionCombo: coc.id,
+                                categoryOptionComboName: coc.name,
+                                optionSet: dataElement.optionSet,
+                            });
+                        });
+                    }
+                });
+        });
+        return results;
+    };
     return (
         <>
             {questionMapping.id && (
@@ -59,25 +86,24 @@ const QuestionMappingForm = ({
             )}
 
             {isMapped(questionMapping) && (
-                <>
-                    <DuplicateHint
-                        mapping={questionMapping}
-                        mappingVersion={mappingVersion}
-                    />
-                    <HesabuHint
-                        mapping={questionMapping}
-                        hesabuDescriptor={hesabuDescriptor}
-                    />
-                    <br />
-                    <button
-                        className="button"
-                        onClick={() => onUnmapQuestionMapping(questionMapping)}
-                    >
-          Remove mapping
-                    </button>
-                </>
-            )
-            }
+            <>
+                <DuplicateHint
+                    mapping={questionMapping}
+                    mappingVersion={mappingVersion}
+                />
+                <HesabuHint
+                    mapping={questionMapping}
+                    hesabuDescriptor={hesabuDescriptor}
+                />
+                <br />
+                <button
+                    className="button"
+                    onClick={() => onUnmapQuestionMapping(questionMapping)}
+                >
+            Remove mapping
+                </button>
+            </>
+            )}
             {!isMapped(questionMapping) && !isNeverMapped(questionMapping) && (
                 <button
                     className="button"
@@ -88,28 +114,66 @@ const QuestionMappingForm = ({
             )}
             {isNeverMapped(questionMapping) && (
                 <Alert severity="info">
-      This question is considered to be never mapped but you can change your mind
+          This question is considered to be never mapped but you can change your
+          mind
                 </Alert>
             )}
             <br />
             <br />
             <h3>Change the mapping to existing one :</h3>
-            <Dhis2SearchComponent
-                key={question.name}
-                resourceName="dataElements"
-                dataSourceId={mapping.mapping.data_source.id}
-                defaultValue={
-                    !isMapped(questionMapping) && !isNeverMapped(questionMapping) ? question.name : undefined
-                }
-                label="Search for data element (and combo) by name, code or id"
-                filter={
-                    // TODO not working endpoint send the first filter
-                    mapping.mapping_type === 'AGGREGATE' ? 'domainType:eq:AGGREGATE' : ''
-                }
-                onChange={onChange}
-                fields="id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
-                mapOptions={mapToMapping}
-            />
+            {mapping.mapping.mapping_type === 'AGGREGATE' && (
+                <Dhis2SearchComponent
+                    key={question.name}
+                    resourceName="dataElements"
+                    dataSourceId={mapping.mapping.data_source.id}
+                    defaultValue={
+                        !isMapped(questionMapping) && !isNeverMapped(questionMapping)
+                            ? question.name
+                            : undefined
+                    }
+                    label="Search for data element (and combo) by name, code or id"
+                    filter={
+                        // TODO not working endpoint send the first filter
+                        mapping.mapping_type === 'AGGREGATE'
+                            ? 'domainType:eq:AGGREGATE'
+                            : 'domainType:eq:TRACKER'
+                    }
+                    onChange={onChange}
+                    fields="id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
+                    mapOptions={mapToMapping}
+                />
+            )}
+
+            { /* there's no relation from data elements to programs, need to fetch program's stages data elements */
+                mapping.mapping.mapping_type === 'EVENT' && (
+                    <Dhis2SearchComponent
+                        key={question.name}
+                        resourceName="programs"
+                        dataSourceId={mapping.mapping.data_source.id}
+                        defaultValue={
+                            !isMapped(questionMapping) && !isNeverMapped(questionMapping)
+                                ? question.name
+                                : undefined
+                        }
+                        label="Search for data element (and combo) by name, code or id"
+                        onChange={onChange}
+                        fields="programStages[programStageDataElements[dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
+                        mapOptions={mapToMappingProgramElements}
+                        fetchFromPromise={(
+                            input,
+                            filter,
+                            pageSize,
+                            resourceName,
+                            dataSourceId,
+                            fields,
+                        ) => Promise.all([
+                            fetch(
+                                `/api/datasources/${dataSourceId}/programs.json?filter=id:eq:${mapping.derivate_settings.program_id}&fields=${fields}`,
+                            ).then(resp => resp.json()),
+                        ])
+                        }
+                    />
+                )}
 
             {newQuestionMapping && (
             <>
@@ -131,12 +195,10 @@ const QuestionMappingForm = ({
                     disabled={!newQuestionMapping}
                     onClick={() => onConfirmedQuestionMapping(newQuestionMapping)}
                 >
-        Confirm
+            Confirm
                 </button>
             </>
             )}
-
-
         </>
     );
 };

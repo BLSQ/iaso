@@ -1,5 +1,5 @@
 import React from 'react';
-import EditRowButtonComponent from '../../../components/buttons/EditRowButtonComponent';
+import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
@@ -39,7 +39,13 @@ const TableColumns = (formatMessage, component) => [
         Cell: settings => (
             <section>
                 <GroupsDialog
-                    renderTrigger={({ openDialog }) => <EditRowButtonComponent onClick={openDialog} />}
+                    renderTrigger={({ openDialog }) => (
+                        <IconButtonComponent
+                            onClick={openDialog}
+                            icon="edit"
+                            tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}
+                        />
+                    )}
                     initialData={settings.original}
                     titleMessage={MESSAGES.update}
                     key={settings.original.updated_at}

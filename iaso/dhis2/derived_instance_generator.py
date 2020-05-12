@@ -11,6 +11,7 @@ from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef
 from django.db.models.functions import Cast
+from django.db.models.expressions import RawSQL
 from iaso.models import Instance
 
 
@@ -59,13 +60,25 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
         answer = Cast(
             KeyTextTransform(aggregation["questionName"], "json"), FloatField()
         )
-
+        # Blanks are generally there because the "calculate" in the xlsform ended up to NaN
+        # because other dependencies where not 'relevant' or 'filled'
+        # for the moment excluding them looks better than considering them as 0
+        # this can be changed later and we consider make it configurable on the aggregation settings
+        # I couldn't manage to get query via KeyTextTransform so ended with RawSQL
+        # sql injection shouldn't be problematic since I'm using the params
+        filter_out_blanks = RawSQL("json ->> %s != ''", [aggregation["questionName"]])
         if aggregation["aggregationType"] == "sum":
-            queryset = queryset.annotate(**{aggregation["id"]: Sum(answer)})
+            queryset = queryset.annotate(
+                **{aggregation["id"]: Sum(answer, filter=filter_out_blanks)}
+            )
         elif aggregation["aggregationType"] == "avg":
-            queryset = queryset.annotate(**{aggregation["id"]: Avg(answer)})
+            queryset = queryset.annotate(
+                **{aggregation["id"]: Avg(answer, filter=filter_out_blanks)}
+            )
         elif aggregation["aggregationType"] == "count":
-            queryset = queryset.annotate(**{aggregation["id"]: Count(answer)})
+            queryset = queryset.annotate(
+                **{aggregation["id"]: Count(answer, filter=filter_out_blanks)}
+            )
         else:
             raise Exception(
                 "unsupported aggregationType : " + aggregation["aggregationType"]

@@ -109,9 +109,14 @@ export const applyPartialUpdate = (
 
 export const fetchMappingVersions = params => (dispatch) => {
     dispatch(fetchingMappingVersions(true));
-    return getRequest(
-        `/api/mappingversions/?order=${params.order}&limit=${params.pageSize}&page=${params.page}`,
-    )
+
+    let url = `/api/mappingversions/?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
+
+    if (params.formId) {
+        url += `&form_id=${params.formId}`;
+    }
+
+    return getRequest(url)
         .then(res => dispatch(setMappingVersions(res)))
         .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError'))))
         .then(() => {

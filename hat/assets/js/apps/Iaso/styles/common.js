@@ -115,6 +115,11 @@ const commonStyles = theme => ({
     popperFixed: {
         position: 'fixed !important',
     },
+    linkButton: {
+        color: 'inherit',
+        textDecoration: 'none',
+        display: 'flex',
+    },
     capitalize: {
         display: 'inline-block',
         '&:first-letter': {

@@ -1,3 +1,4 @@
+import orderBy from 'lodash/orderBy';
 import { textPlaceholder } from '../../constants/uiConstants';
 
 export const getPolygonPositionsFromSimplifiedGeom = (field) => {
@@ -61,6 +62,41 @@ export const getOrgunitMessage = (orgUnit, withType) => {
         }
     }
     return message;
+};
+
+
+const mapOrgUnitBySearch = (orgUnits, searches) => {
+    const mappedOrgunits = [];
+    searches.forEach((search, i) => {
+        mappedOrgunits[i] = orgUnits.filter(o => o.search_index === i);
+    });
+    return mappedOrgunits;
+};
+
+const orderOrgUnitsByDepthAndSearch = orgUnits => orderBy(
+    orgUnits,
+    [o => o.org_unit_type_depth],
+    [o => o.search_index],
+    ['asc', 'asc'],
+);
+
+export const mapOrgUnitByLocation = (orgUnits, searches) => {
+    let shapes = orgUnits.filter(o => Boolean(o.geo_json));
+    let locations = orgUnits.filter(o => Boolean(o.latitude && o.longitude));
+
+    shapes = orderOrgUnitsByDepthAndSearch(shapes);
+    locations = orderOrgUnitsByDepthAndSearch(locations);
+    const mappedOrgunits = {
+        shapes,
+        locations,
+    };
+    mappedOrgunits.locations = mapOrgUnitBySearch(mappedOrgunits.locations, searches);
+    return mappedOrgunits;
+};
+
+export const getColorsFromParams = (params) => {
+    const searches = JSON.parse(params.searches);
+    return searches.map(s => s.color);
 };
 
 export const getOrgUnitParents = (orgUnit, parents = []) => {

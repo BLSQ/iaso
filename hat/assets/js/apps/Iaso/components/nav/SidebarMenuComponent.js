@@ -66,13 +66,11 @@ const styles = theme => ({
 });
 
 class SidebarMenu extends PureComponent {
-    onClick(path) {
+    onClick() {
         const {
-            redirectTo,
             toggleSidebar,
         } = this.props;
         toggleSidebar();
-        redirectTo(path);
     }
 
     render() {

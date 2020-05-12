@@ -26,6 +26,9 @@ from .instance_filters import parse_instance_filters
 
 
 def check_access(instance, user):
+    if user.is_anonymous:
+        raise PermissionDenied("Please log in")
+
     user_account = user.iaso_profile.account
     instance_account = instance.project.account
     if instance_account.id != user_account.id:
@@ -122,6 +125,8 @@ class InstancesViewSet(viewsets.ViewSet):
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
             queryset = queryset.filter(project__account=profile.account)
+        else:
+            raise PermissionDenied("Please log in")
 
         queryset = (
             queryset.exclude(file="")
@@ -275,6 +280,7 @@ class InstancesViewSet(viewsets.ViewSet):
         api_import.save()
         try:
             import_data(instances, api_import, app_id)
+            print("imported")
             return Response({"res": "ok"})
         except Exception as e:
             print("exception", e)

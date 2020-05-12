@@ -36,19 +36,22 @@ def village_comparator(village_1, village_2):
 
 def sort_villages(id_list=[], years=[]):
 
-    queryset = Village.objects\
-        .filter(id__in=id_list) \
-        .filter(Q(village_official='YES') | Q(village_source='device')) \
-        .filter(population__isnull=False) \
+    queryset = (
+        Village.objects.filter(id__in=id_list)
+        .filter(Q(village_official="YES") | Q(village_source="device"))
+        .filter(population__isnull=False)
         .filter(merged_to__isnull=True)
+    )
 
-    nr_positive_cases = Count('infection_cases', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
+    nr_positive_cases = Count(
+        "infection_cases",
+        filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years),
+    )
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)
     return sorted(villages, key=cmp_to_key(village_comparator), reverse=True)
 
 
 class TempAssignation:
-
     def __init__(self):
         self.population_reached = 0
         self.villages = []
@@ -60,7 +63,7 @@ class TempAssignation:
 def assign(village_id_list, workzone_id, years=[]):
     village_list = sort_villages(village_id_list, years)
     workzone = WorkZone.objects.get(pk=workzone_id)
-    teams = list(workzone.teams.order_by('-UM', '-capacity'))
+    teams = list(workzone.teams.order_by("-UM", "-capacity"))
     assignations = {team.id: TempAssignation() for team in teams}
     # team_id -> (population_reached, assignations
     not_assigned = []
@@ -79,9 +82,11 @@ def assign(village_id_list, workzone_id, years=[]):
             if population is None:
                 population = 0
             if temp_assignation.population_reached + population < team.capacity:
-                #test if village in ZS/AS of team
+                # test if village in ZS/AS of team
 
-                if not village.assigned and village.AS in team.get_as(workzone.planning_id):
+                if not village.assigned and village.AS in team.get_as(
+                    workzone.planning_id
+                ):
                     temp_assignation.villages.append(village)
                     temp_assignation.population_reached += population
                     village.assigned = True
@@ -95,16 +100,16 @@ def assign(village_id_list, workzone_id, years=[]):
 def optimize_path(assignation_list):
     matrix = [[] for _ in assignation_list]
 
-    village_ids = [obj['village_id'] for obj in assignation_list]
+    village_ids = [obj["village_id"] for obj in assignation_list]
     village_queryset = Village.objects.filter(id__in=village_ids)
     villages = {v.id: v for v in village_queryset}
     total_population = sum([village.population for village in village_queryset])
     i = 0
     for assignation1 in assignation_list:
         j = 0
-        village_1 = villages[assignation1['village_id']]
+        village_1 = villages[assignation1["village_id"]]
         for assignation2 in assignation_list:
-            village_2 = villages[assignation2['village_id']]
+            village_2 = villages[assignation2["village_id"]]
             village_1_coordinates = (village_1.longitude, village_1.latitude)
             village_2_coordinates = (village_2.longitude, village_2.latitude)
             matrix[i].append(vincenty(village_1_coordinates, village_2_coordinates).km)
@@ -119,18 +124,12 @@ def optimize_path(assignation_list):
 
     for index in path:
         assignation_dict = assignation_list[index]
-        current_population += villages[assignation_dict['village_id']].population
+        current_population += villages[assignation_dict["village_id"]].population
         if current_population > (total_population / 12.0) * current_month:
             current_month += 1
-        assignation_dict['month'] = min(current_month, 12)
-        assignation_dict['index'] = i
+        assignation_dict["month"] = min(current_month, 12)
+        assignation_dict["index"] = i
         res.append(assignation_list[index])
         i += 1
 
     return res
-
-
-
-
-
-

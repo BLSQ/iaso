@@ -9,21 +9,21 @@ import throttle from 'lodash/throttle';
 const fetchFrom = (input, filter, pageSize, resourceName, dataSourceId, fields) => Promise.all([
     fetch(
         `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${
-            input.input
+            input
         }&fields=${fields || 'id,name'}${
             filter ? `&filter=${filter}` : ''
         }&pageSize=${pageSize || 10}`,
     ).then(resp => resp.json()),
     fetch(
         `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${
-            input.input
+            input
         }&fields=${fields || 'id,name'}${
             filter ? `&filter=${filter}` : ''
         }&pageSize=${pageSize || 10}`,
     ).then(resp => resp.json()),
     fetch(
         `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${
-            input.input
+            input
         }&fields=${fields || 'id,name'}${
             filter ? `&filter=${filter}` : ''
         }&pageSize=${pageSize || 10}`,
@@ -55,9 +55,9 @@ const Dhis2Search = (props) => {
 
     const fetchMemo = React.useMemo(
         () => throttle((input) => {
-            fetchData(input, filter, pageSize, resourceName, dataSourceId).then((f) => {
+            fetchData(input.input, filter, pageSize, resourceName, dataSourceId, fields).then((f) => {
                 const union = f.flatMap(r => r[resourceName]);
-                const finalOptions = mapOptions ? mapOptions(union) : union;
+                const finalOptions = mapOptions ? mapOptions(union, input.input) : union;
                 setOptions(finalOptions);
             });
         }, 200),

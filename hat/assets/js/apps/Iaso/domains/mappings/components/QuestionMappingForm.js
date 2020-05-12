@@ -1,12 +1,11 @@
-import React from 'react';
-import PropTypes from 'prop-types';
 import Alert from '@material-ui/lab/Alert';
+import PropTypes from 'prop-types';
+import React from 'react';
+import { isMapped, isNeverMapped } from '../question_mappings';
 import Dhis2SearchComponent from './Dhis2SearchComponent';
+import { DuplicateHint } from './DuplicateHint';
 import HesabuHint from './HesabuHint';
 import ObjectDumper from './ObjectDumper';
-
-import { isMapped, isNeverMapped } from '../question_mappings';
-import { DuplicateHint } from './DuplicateHint';
 
 const QuestionMappingForm = ({
     mapping,
@@ -50,19 +49,19 @@ const QuestionMappingForm = ({
         return results;
     };
 
-    const mapToMappingProgramElements = (options) => {
+    const mapToMappingProgramElements = (options, input) => {
+        const token = input ? input.toLowerCase() : ""
         const results = [];
-        options
-            .forEach((program) => {
-                program.programStages
-                    .flatMap(ps => ps.programStageDataElements)
-                    .forEach((programStageElement) => {
-                        if (programStageElement) {
-                            debugger;
-                            const dataElement = programStageElement.dataElement
+        options.forEach((program) => {
+            program.programStages
+                .flatMap(ps => ps.programStageDataElements)
+                .forEach((programStageElement) => {
+                    const { dataElement } = programStageElement;
+                    if (dataElement.name.toLowerCase().includes(token) || (dataElement.code && dataElement.code.toLowerCase().includes(token))) {
                         dataElement.categoryCombo.categoryOptionCombos.forEach((coc) => {
                             results.push({
                                 id: dataElement.id,
+                                code: dataElement.code,
                                 name: dataElement.name,
                                 displayName: dataElement.name,
                                 valueType: dataElement.valueType,
@@ -73,9 +72,8 @@ const QuestionMappingForm = ({
                             });
                         });
                     }
-                    });
-            });
-        debugger;
+                });
+        });
         return results;
     };
     return (
@@ -138,7 +136,7 @@ const QuestionMappingForm = ({
                         // TODO not working endpoint send the first filter
                         mapping.mapping_type === 'AGGREGATE'
                             ? 'domainType:eq:AGGREGATE'
-                            : ''
+                            : 'domainType:eq:TRACKER'
                     }
                     onChange={onChange}
                     fields="id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]],dataSetElements[dataSet[id,name,periodType]]"
@@ -146,30 +144,36 @@ const QuestionMappingForm = ({
                 />
             )}
 
-            {mapping.mapping.mapping_type === 'EVENT' && (
-                <Dhis2SearchComponent
-                    key={question.name}
-                    resourceName="programs"
-                    dataSourceId={mapping.mapping.data_source.id}
-                    defaultValue={undefined}
-                    label="Search for data element (and combo) by name, code or id"
-                    onChange={onChange}
-                    fields="programStages[programStageDataElements[dataElement[id,name,valueType,domainType,optionSet[options[id,name,code]]]]]"
-                    mapOptions={mapToMappingProgramElements}
-                    fetchFromPromise={(
-                        input,
-                        filter,
-                        pageSize,
-                        resourceName,
-                        dataSourceId,
-                    ) =>
-                    Promise.all([fetch(
-                            `/api/datasources/${dataSourceId}/programs.json?filter=id:eq:${mapping.derivate_settings.program_id}&fields=programStages[programStageDataElements[dataElement[id,name,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]`
-                        ).then(resp => resp.json())])
-
-                    }
-                />
-            )}
+            { /* there's no relation from data elements to programs, need to fetch program's stages data elements */
+                mapping.mapping.mapping_type === 'EVENT' && (
+                    <Dhis2SearchComponent
+                        key={question.name}
+                        resourceName="programs"
+                        dataSourceId={mapping.mapping.data_source.id}
+                        defaultValue={
+                            !isMapped(questionMapping) && !isNeverMapped(questionMapping)
+                                ? question.name
+                                : undefined
+                        }
+                        label="Search for data element (and combo) by name, code or id"
+                        onChange={onChange}
+                        fields="programStages[programStageDataElements[dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
+                        mapOptions={mapToMappingProgramElements}
+                        fetchFromPromise={(
+                            input,
+                            filter,
+                            pageSize,
+                            resourceName,
+                            dataSourceId,
+                            fields,
+                        ) => Promise.all([
+                            fetch(
+                                `/api/datasources/${dataSourceId}/programs.json?filter=id:eq:${mapping.derivate_settings.program_id}&fields=${fields}`,
+                            ).then(resp => resp.json()),
+                        ])
+                        }
+                    />
+                )}
 
             {newQuestionMapping && (
             <>

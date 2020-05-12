@@ -21,7 +21,9 @@ class InstancesAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         star_wars.save()
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_forms"]
+        )
 
         cls.jedi_council = m.OrgUnitType.objects.create(
             name="Jedi Council", short_name="Cnc"

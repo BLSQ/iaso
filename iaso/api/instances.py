@@ -1,5 +1,6 @@
 from django.contrib.gis.geos import Point
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
+from rest_framework.request import Request
 from rest_framework.response import Response
 from django.http import Http404
 from hat.common.utils import queryset_iterator
@@ -8,7 +9,6 @@ from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
-from hat.api.authentication import UserAccessPermission
 
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
@@ -25,14 +25,25 @@ import ntpath
 from .instance_filters import parse_instance_filters
 
 
-def check_access(instance, user):
-    if user.is_anonymous:
-        raise PermissionDenied("Please log in")
+class HasInstancePermission(permissions.BasePermission):
+    """Rules:
 
-    user_account = user.iaso_profile.account
-    instance_account = instance.project.account
-    if instance_account.id != user_account.id:
-        raise PermissionDenied("Your account does not have access to this instance")
+    - POSTing instances can be done anonymously
+    - Other methods require authentication
+    - Actions on specific instance can only be performed by users linked to an account associated with one of the form
+      projects
+    """
+
+    def has_permission(self, request: Request, view):
+        if request.method == "POST":  # Allow anonymous instance creation - mobile app
+            return True
+
+        return request.user.is_authenticated and request.user.has_perm(
+            "menupermissions.iaso_forms"
+        )
+
+    def has_object_permission(self, request: Request, view, obj: Instance):
+        return request.user.iaso_profile.account == obj.project.account
 
 
 def import_data(instances, api_import, app_id=None):
@@ -104,8 +115,7 @@ def import_data(instances, api_import, app_id=None):
 
 
 class InstancesViewSet(viewsets.ViewSet):
-    permission_required = ["menupermissions.iaso_forms"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [HasInstancePermission]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -288,11 +298,11 @@ class InstancesViewSet(viewsets.ViewSet):
             api_import.save()
             return Response({"result": "ok"})
 
-    def retrieve(self, request, pk=None):
+    def retrieve(self, _, pk=None):
         try:
             instance = Instance.objects.with_status().get(pk=pk)
         except:
             raise Http404
-        check_access(instance, request.user)
+
         res = instance.as_full_model()
         return Response(res)

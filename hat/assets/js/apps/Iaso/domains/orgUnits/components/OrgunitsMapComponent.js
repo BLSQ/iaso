@@ -6,6 +6,7 @@ import {
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { injectIntl, intlShape } from 'react-intl';
 import camelCase from 'lodash/camelCase';
+import isEqual from 'lodash/isEqual';
 
 import {
     Grid,
@@ -41,6 +42,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import commonStyles from '../../../styles/common';
+import { getColorsFromParams } from '../utils';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -102,6 +104,11 @@ class OrgunitsMap extends Component {
                 this.map.leafletElement.createPane(`custom-shape-pane-${otName}`);
             });
         }
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return !isEqual(nextProps.orgUnits, this.props.orgUnits)
+        || !isEqual(getColorsFromParams(nextProps.params, this.props.params));
     }
 
     componentDidUpdate() {
@@ -178,7 +185,6 @@ class OrgunitsMap extends Component {
         } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         const orgUnitsTotal = getFullOrgUnits(orgUnits.locations);
-
         if (!bounds && orgUnitsTotal.length > 0) {
             return (
                 <Grid container spacing={0}>
@@ -241,6 +247,23 @@ class OrgunitsMap extends Component {
                             url={currentTile.url}
                         />
                         {
+                            orgUnits.shapes.map(o => (
+                                <GeoJSON
+                                    pane={o.org_unit_type
+                                        ? `custom-shape-pane-${camelCase(o.org_unit_type)}`
+                                        : 'custom-shape-pane'}
+                                    key={o.id}
+                                    style={() => ({
+                                        color: this.getSearchColor(o.search_index),
+                                    })}
+                                    data={o.geo_json}
+                                    onClick={() => this.fetchDetail(o)}
+                                >
+                                    <OrgUnitPopupComponent />
+                                </GeoJSON>
+                            ))
+                        }
+                        {
                             isClusterActive
                             && (
                                 orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
@@ -285,23 +308,6 @@ class OrgunitsMap extends Component {
                                     />
                                 ))
                             )
-                        }
-                        {
-                            orgUnits.shapes.map(o => (
-                                <GeoJSON
-                                    pane={o.org_unit_type
-                                        ? `custom-shape-pane-${camelCase(o.org_unit_type)}`
-                                        : 'custom-shape-pane'}
-                                    key={o.id}
-                                    style={() => ({
-                                        color: this.getSearchColor(o.search_index),
-                                    })}
-                                    data={o.geo_json}
-                                    onClick={() => this.fetchDetail(o)}
-                                >
-                                    <OrgUnitPopupComponent />
-                                </GeoJSON>
-                            ))
                         }
                     </Map>
                 </InnerDrawer>

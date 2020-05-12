@@ -276,6 +276,7 @@ class DerivedInstancesTests(APITestCase):
         self.build_instance(self.survey_form, 73.4156)
         self.build_instance(self.survey_form, 100)
         self.build_instance(self.survey_form, None)
+        self.build_instance(self.survey_form, "")
 
     def trigger_generation_and_expect_stats(self, expected_stats):
 

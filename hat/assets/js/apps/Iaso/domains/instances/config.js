@@ -3,13 +3,13 @@ import React from 'react';
 import orderBy from 'lodash/orderBy';
 
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
-import ViewRowButtonComponent from '../../components/buttons/ViewRowButtonComponent';
-import XmlButton from '../../components/buttons/XmlButtonComponent';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
+import { baseUrls } from '../../constants/urls';
 import { INSTANCE_METAS_FIELDS } from './constants';
 import MESSAGES from './messages';
 
-const instancesTableColumns = (formatMessage = () => ({}), component) => {
+const instancesTableColumns = (formatMessage = () => ({})) => {
     const columns = [
         {
             Header: formatMessage(MESSAGES.actions),
@@ -19,9 +19,15 @@ const instancesTableColumns = (formatMessage = () => ({}), component) => {
             width: 150,
             Cell: settings => (
                 <section>
-                    <ViewRowButtonComponent onClick={() => component.selectInstance(settings.original)} />
-                    <XmlButton
+                    <IconButtonComponent
+                        url={`${baseUrls.instanceDetail}/instanceId/${settings.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
+                    />
+                    <IconButtonComponent
                         onClick={() => window.open(settings.original.file_url, '_blank')}
+                        icon="xml"
+                        tooltipMessage={{ id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' }}
                     />
                 </section>
             ),

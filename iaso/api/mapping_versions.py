@@ -125,7 +125,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             "mapping_type": mapping_type,
         }
         validated_data["json"] = {"question_mappings": {}}
-        print(data)
+
         if mapping_type == "AGGREGATE":
             validated_data["json"]["data_set_id"] = data["dataset"]["id"]
             validated_data["json"]["data_set_name"] = data["dataset"]["name"]

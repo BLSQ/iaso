@@ -35,7 +35,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
-import { decodeSearch } from '../utils';
+import { decodeSearch, encodeUriSearches } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -68,17 +68,11 @@ class OrgUnitsFiltersComponent extends Component {
             onSearch,
         } = this.props;
         const searches = [...decodeSearch(params.searches)];
-        searches.forEach((s, i) => {
-            Object.keys(s).forEach((key) => {
-                const value = s[key];
-                searches[i][key] = encodeURIComponent(value);
-            });
-        });
         if (filtersUpdated) {
             this.props.setFiltersUpdated(false);
             const tempParams = {
                 ...params,
-                searches: JSON.stringify(searches),
+                searches: encodeUriSearches(searches),
             };
             redirectTo(this.props.baseUrl, tempParams);
         }
@@ -109,11 +103,11 @@ class OrgUnitsFiltersComponent extends Component {
         const searches = [...decodeSearch(params.searches)];
         searches[searchIndex] = {
             ...searches[searchIndex],
-            [urlKey]: encodeURIComponent(value),
+            [urlKey]: value,
         };
         const tempParams = {
             ...params,
-            searches: JSON.stringify(searches),
+            searches: encodeUriSearches(searches),
         };
         this.props.redirectTo(this.props.baseUrl, tempParams);
     }

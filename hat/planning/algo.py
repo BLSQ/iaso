@@ -1,12 +1,13 @@
-from tsp_solver.greedy import solve_tsp
-from geopy.distance import vincenty
+import random
+from functools import cmp_to_key
+
 from django.db.models import Count
 from django.db.models import Q
+from geopy.distance import vincenty
+from tsp_solver.greedy import solve_tsp
 
-from functools import cmp_to_key
-import random
-from hat.planning.models import WorkZone
 from hat.geo.models import Village
+from hat.planning.models import WorkZone
 
 
 def village_comparator(village_1, village_2):
@@ -35,9 +36,13 @@ def village_comparator(village_1, village_2):
 
 def sort_villages(id_list=[], years=[]):
 
-    queryset = Village.objects.filter(id__in=id_list, village_official='YES', population__isnull=False)
+    queryset = Village.objects\
+        .filter(id__in=id_list) \
+        .filter(Q(village_official='YES') | Q(village_source='device')) \
+        .filter(population__isnull=False) \
+        .filter(merged_to__isnull=True)
 
-    nr_positive_cases = Count('caseview', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
+    nr_positive_cases = Count('infection_cases', filter=Q(caseview__confirmed_case=True, caseview__normalized_year__in=years))
     villages = queryset.annotate(nr_positive_cases=nr_positive_cases)
     return sorted(villages, key=cmp_to_key(village_comparator), reverse=True)
 

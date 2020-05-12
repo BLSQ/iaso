@@ -366,6 +366,13 @@ class CaseAbstract(models.Model):
         on_delete=models.SET_NULL,
         related_name="infection_cases",
     )
+    infection_location_as = models.ForeignKey(
+        "geo.AS",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="infection_cases",
+    )
 
     treatment_center = models.TextField("Centre de traitement", null=True, blank=True)
     treatment_start_date = models.DateTimeField(
@@ -732,6 +739,9 @@ class Case(CaseAbstract):
             "infection_location": self.infection_location.as_short_dict()
             if self.infection_location
             else None,
+            "infection_location_as": self.infection_location_as.as_short_dict()
+            if self.infection_location_as
+            else None,
             "infection_location_type_display": self.get_infection_location_type_display(),
             "infection_location_type": self.infection_location_type,
         }
@@ -818,6 +828,9 @@ class CaseView(CaseAbstract):
     # Avoid confusion with Case in reverse mapping
     infection_location = models.ForeignKey(
         Village, null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
+    )
+    infection_location_as = models.ForeignKey(
+        "geo.AS", null=True, blank=True, on_delete=models.SET_NULL, related_name="+"
     )
 
     # calculated fields

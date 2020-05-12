@@ -38,6 +38,7 @@ const MESSAGES = {
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];
+    displayedOptions = displayedOptions.map((o, i) => ({ ...o, index: i }));
     if (searchString !== '') {
         const search = searchString.toLowerCase();
         displayedOptions = displayedOptions.filter(
@@ -183,7 +184,7 @@ const ColumnsSelectDrawerComponent = (
 
                                     <InView key={o.key}>
                                         {({ inView, ref }) => (
-                                            <div ref={ref}>
+                                            <div ref={ref} id={o.key}>
                                                 <ListItem className={classes.listItem}>
                                                     {
                                                         inView
@@ -193,7 +194,7 @@ const ColumnsSelectDrawerComponent = (
                                                                     disabled={activeOptionsCount === minColumns && o.active}
                                                                     size="small"
                                                                     checked={o.active}
-                                                                    onChange={handleChangeOptions(i)}
+                                                                    onChange={handleChangeOptions(o.index)}
                                                                     color="primary"
                                                                     inputProps={{ 'aria-label': o.label }}
                                                                     className={classes.switch}

@@ -23,7 +23,7 @@ from iaso.models import (
 )
 from django.core import management
 
-from iaso.dhis2.aggregate_exporter import AggregateExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 from dhis2 import Api
@@ -280,7 +280,7 @@ class Command(BaseCommand):
             )
 
             print("exporting", export_request.exportstatus_set.count(), timezone.now())
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         if mode == "stats":
             for c in Instance.objects.with_status().counts_by_status():

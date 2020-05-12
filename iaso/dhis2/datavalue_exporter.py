@@ -356,7 +356,7 @@ class EventHandler:
             return InstanceExportError(message, counts, descriptions)
 
 
-class AggregateExporter:
+class DataValueExporter:
     def __init__(self):
         self.form_mappings_cache = {}
         self.api_cache = {}

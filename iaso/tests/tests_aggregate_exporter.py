@@ -25,9 +25,9 @@ from iaso.models import (
 
 import os
 from datetime import datetime
-from ..dhis2.aggregate_exporter import (
+from iaso.dhis2.datavalue_exporter import (
     AggregateHandler,
-    AggregateExporter,
+    DataValueExporter,
     InstanceExportError,
 )
 from ..dhis2.export_request_builder import ExportRequestBuilder
@@ -64,7 +64,7 @@ def dump_attributes(obj):
         print("\t", k, obj.__dict__[k])
 
 
-class AggregateExporterTests(TestCase):
+class DataValueExporterTests(TestCase):
     def build_instance(self, form):
 
         instance = Instance()
@@ -441,7 +441,7 @@ class AggregateExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        AggregateExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request, True)
         self.expect_logs("exported")
 
         instance.refresh_from_db()
@@ -499,7 +499,7 @@ class AggregateExporterTests(TestCase):
 
         # excercice
 
-        AggregateExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("exported")
 
@@ -537,7 +537,7 @@ class AggregateExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 
@@ -576,7 +576,7 @@ class AggregateExporterTests(TestCase):
                 launcher=self.user,
             )
 
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 
@@ -615,7 +615,7 @@ class AggregateExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 

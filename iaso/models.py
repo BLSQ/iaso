@@ -2,6 +2,7 @@ import random
 from urllib.request import urlopen
 import pathlib
 from django.db import models
+from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
@@ -1100,6 +1101,27 @@ class Instance(models.Model):
             ],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "last_export_success_at": self.last_export_success_at.timestamp()
+            if self.last_export_success_at
+            else None,
+            "export_statuses": [
+                {
+                    "status": export_status.status,
+                    "created_at": export_status.created_at.timestamp()
+                    if export_status.created_at
+                    else None,
+                    "export_request": {
+                        "launcher": {
+                            "full_name": export_status.export_request.launcher.get_full_name(),
+                            "email": export_status.export_request.launcher.email,
+                        },
+                        "last_error_message": export_status.export_request.last_error_message,
+                    },
+                }
+                for export_status in Paginator(
+                    self.exportstatus_set.order_by("-id"), 3
+                ).object_list
+            ],
             "deleted": self.deleted,
         }
 

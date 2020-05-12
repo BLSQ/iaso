@@ -4,6 +4,7 @@ from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from uuid import uuid4
+from django.contrib.auth.models import Permission
 from iaso.models import (
     User,
     Instance,
@@ -68,6 +69,9 @@ class Command(BaseCommand):
         )
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
+        user.user_permissions.clear()
+        for permission in Permission.objects.all():
+            user.user_permissions.add(permission)
         user.save()
         try:
             user.iaso_profile

@@ -1,14 +1,12 @@
 import React from 'react';
 import moment from 'moment';
-import { FormattedMessage } from 'react-intl';
-import { IconButton, Tooltip } from '@material-ui/core';
-import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
-import History from '@material-ui/icons/History';
-import Map from '@material-ui/icons/Map';
+import { Tooltip } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
 import Color from 'color';
+import { baseUrls } from '../../constants/urls';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 
 export const orgUnitsTableColumns = (
     formatMessage,
@@ -104,50 +102,28 @@ export const orgUnitsTableColumns = (
             width: 150,
             Cell: settings => (
                 <section>
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={<FormattedMessage id="iaso.label.details" defaultMessage="Details" />}
-                    >
-                        <IconButton
-                            onClick={() => component.selectOrgUnit(settings.original)}
-                        >
-                            <RemoveRedEye />
-                        </IconButton>
-                    </Tooltip>
+                    <IconButtonComponent
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
+                    />
                     {
                         (settings.original.has_geo_json
-                            || (settings.original.latitude && settings.original.longitude))
+                            || (Boolean(settings.original.latitude && settings.original.longitude)))
                         && (
-
-                            <Tooltip
-                                classes={{
-                                    popper: classes.popperFixed,
-                                }}
-                                title={<FormattedMessage id="iaso.label.map" defaultMessage="Map" />}
-                            >
-                                <IconButton
-                                    onClick={() => component.selectOrgUnit(settings.original, 'map')}
-                                >
-                                    <Map />
-                                </IconButton>
-                            </Tooltip>
+                            <IconButtonComponent
+                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
+                                icon="map"
+                                tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
+                            />
                         )
                     }
 
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={<FormattedMessage id="iaso.label.history" defaultMessage="History" />}
-                    >
-                        <IconButton
-                            onClick={() => component.selectOrgUnit(settings.original, 'history')}
-                        >
-                            <History />
-                        </IconButton>
-                    </Tooltip>
+                    <IconButtonComponent
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
+                        icon="history"
+                        tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}
+                    />
                 </section>
             ),
         },

@@ -205,6 +205,10 @@ class MappingVersionsViewSet(ModelViewSet):
             )
         )
 
+        form_id = self.request.GET.get("form_id")
+        if form_id:
+            queryset = queryset.filter(form_version__form_id=form_id)
+
         queryset = queryset.order_by(*orders)
 
         return queryset

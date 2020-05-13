@@ -41,8 +41,13 @@ const CreateMappingVersionDialogComponent = ({
         const payload = {
             form_version: { id: formVersion },
             mapping: { type: mappingType, datasource: { id: source } },
-            dataset,
         };
+        if (mappingType === 'AGGREGATE') {
+            payload.dataset = dataset;
+        } else if (mappingType === 'EVENT') {
+            payload.program = dataset;
+        }
+
         createMappingRequest(payload).then(() => {
             closeDialog();
         });

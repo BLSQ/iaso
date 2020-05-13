@@ -56,10 +56,15 @@ export const mappingsPath = {
     permission: 'iaso_mappings',
     component: props => <Mappings {...props} />,
     params: [
+        {
+            isRequired: false,
+            key: 'formId',
+        },
         ...paginationPathParams.map(p => ({
             ...p,
             isRequired: true,
         })),
+
     ],
 };
 

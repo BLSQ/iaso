@@ -25,10 +25,9 @@ from iaso.models import (
 
 import os
 from datetime import datetime
-from ..dhis2.aggregate_exporter import (
-    handle_exception,
-    map_to_aggregate,
-    AggregateExporter,
+from iaso.dhis2.datavalue_exporter import (
+    AggregateHandler,
+    DataValueExporter,
     InstanceExportError,
 )
 from ..dhis2.export_request_builder import ExportRequestBuilder
@@ -65,7 +64,7 @@ def dump_attributes(obj):
         print("\t", k, obj.__dict__[k])
 
 
-class AggregateExporterTests(TestCase):
+class DataValueExporterTests(TestCase):
     def build_instance(self, form):
 
         instance = Instance()
@@ -192,7 +191,9 @@ class AggregateExporterTests(TestCase):
         )
 
         self.form_quality_version = form_quality_version
-        mapping_quality = Mapping(form=form_quality, data_source=self.datasource)
+        mapping_quality = Mapping(
+            form=form_quality, data_source=self.datasource, mapping_type=AGGREGATE
+        )
         mapping_quality.save()
         self.mapping_quality = mapping_quality
 
@@ -256,7 +257,9 @@ class AggregateExporterTests(TestCase):
         ]
 
         for testcase in testcases:
-            error = handle_exception(load_dhis2_fixture(testcase.fixture), "error")
+            error = AggregateHandler().handle_exception(
+                load_dhis2_fixture(testcase.fixture), "error"
+            )
             self.assertEquals(testcase.expected_counts, error.counts)
             self.assertEquals(testcase.expected_messages, error.descriptions)
 
@@ -269,7 +272,7 @@ class AggregateExporterTests(TestCase):
                 "message": "JDBC begin transaction failed: ",
             }
         }
-        error = handle_exception(resp, "error")
+        error = AggregateHandler().handle_exception(resp, "error")
         self.assertEquals(error.message, "error : JDBC begin transaction failed: ")
 
     def test_handle_exception_real_life_error(self):
@@ -344,14 +347,14 @@ class AggregateExporterTests(TestCase):
                 ],
             }
         }
-        error = handle_exception(resp, "error")
+        error = AggregateHandler().handle_exception(resp, "error")
         self.assertEquals(
             error.message, "error : Category option combo not found or not accessible"
         )
 
     def test_aggregate_mapping_works(self):
         instance = self.build_instance(self.form)
-        event, errors = map_to_aggregate(instance, build_form_mapping())
+        event, errors = AggregateHandler().map_to_values(instance, build_form_mapping())
         self.assertIsNone(errors)
         self.assertEquals(
             event,
@@ -377,7 +380,7 @@ class AggregateExporterTests(TestCase):
         ] = "DHIS2_COC_ID"
         instance = self.build_instance(self.form)
 
-        event, errors = map_to_aggregate(instance, mapping)
+        event, errors = AggregateHandler().map_to_values(instance, mapping)
 
         self.assertEquals(
             event,
@@ -438,7 +441,7 @@ class AggregateExporterTests(TestCase):
         # excercice
         instances_qs = Instance.objects.order_by("id").all()
 
-        AggregateExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request, True)
         self.expect_logs("exported")
 
         instance.refresh_from_db()
@@ -496,7 +499,7 @@ class AggregateExporterTests(TestCase):
 
         # excercice
 
-        AggregateExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("exported")
 
@@ -534,7 +537,7 @@ class AggregateExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 
@@ -573,7 +576,7 @@ class AggregateExporterTests(TestCase):
                 launcher=self.user,
             )
 
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 
@@ -612,7 +615,7 @@ class AggregateExporterTests(TestCase):
                 },
                 launcher=self.user,
             )
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         self.expect_logs("errored")
 

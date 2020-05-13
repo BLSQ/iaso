@@ -2,6 +2,7 @@ import random
 from urllib.request import urlopen
 import pathlib
 from django.db import models
+from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
@@ -124,6 +125,7 @@ class OrgUnitType(models.Model):
             "short_name": self.short_name,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
+            "depth": self.depth,
         }
         if sub_units:
             if not app_id:
@@ -379,6 +381,9 @@ class OrgUnit(models.Model):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
+            "org_unit_type_depth": self.org_unit_type.depth
+            if self.org_unit_type
+            else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }
@@ -1100,6 +1105,27 @@ class Instance(models.Model):
             ],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
+            "last_export_success_at": self.last_export_success_at.timestamp()
+            if self.last_export_success_at
+            else None,
+            "export_statuses": [
+                {
+                    "status": export_status.status,
+                    "created_at": export_status.created_at.timestamp()
+                    if export_status.created_at
+                    else None,
+                    "export_request": {
+                        "launcher": {
+                            "full_name": export_status.export_request.launcher.get_full_name(),
+                            "email": export_status.export_request.launcher.email,
+                        },
+                        "last_error_message": export_status.export_request.last_error_message,
+                    },
+                }
+                for export_status in Paginator(
+                    self.exportstatus_set.order_by("-id"), 3
+                ).object_list
+            ],
             "deleted": self.deleted,
         }
 

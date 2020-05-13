@@ -1,9 +1,11 @@
 from random import randint, random
+from django.utils import timezone
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from uuid import uuid4
+from django.contrib.auth.models import Permission
 from iaso.models import (
     User,
     Instance,
@@ -21,7 +23,7 @@ from iaso.models import (
 )
 from django.core import management
 
-from iaso.dhis2.aggregate_exporter import AggregateExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 from dhis2 import Api
@@ -68,6 +70,9 @@ class Command(BaseCommand):
         )
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
+        user.user_permissions.clear()
+        for permission in Permission.objects.all():
+            user.user_permissions.add(permission)
         user.save()
         try:
             user.iaso_profile
@@ -113,6 +118,7 @@ class Command(BaseCommand):
             quantity_form,
             datasource,
             credentials,
+            mapping_type="AGGREGATE",
             mapping_file="./testdata/seed-data-command-form-mapping.json",
         )
 
@@ -129,6 +135,7 @@ class Command(BaseCommand):
             quality_form,
             datasource,
             credentials,
+            mapping_type="AGGREGATE",
             mapping_file="./testdata/seed-data-command-form-mapping.json",
             xls_file="testdata/seed-data-command-form-i18n.xlsx",
         )
@@ -146,7 +153,12 @@ class Command(BaseCommand):
         cvs_form.org_unit_types.add(orgunit_type)
 
         cvs_mapping_version = self.seed_form(
-            cvs_form, datasource, credentials, mapping_file=None,
+            cvs_form,
+            datasource,
+            credentials,
+            mapping_type="EVENT",
+            mapping_file="./testdata/seed-data-command-cvs_survey-mapping.json",
+            xls_file="./testdata/seed-data-command-cvs_survey.xls",
         )
         project.forms.add(cvs_form)
 
@@ -165,6 +177,7 @@ class Command(BaseCommand):
             cvs_stat_form,
             datasource,
             credentials,
+            mapping_type="DERIVED",
             mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
             xls_file="./testdata/seed-data-command-form-cvs-stats.xls",
         )
@@ -236,7 +249,7 @@ class Command(BaseCommand):
             from iaso.dhis2.derived_instance_generator import generate_instances
 
             generate_instances(
-                project, cvs_mapping_version, cvs_stat_mapping_version, period,
+                project, cvs_mapping_version, cvs_stat_mapping_version, period
             )
 
             print(
@@ -248,7 +261,6 @@ class Command(BaseCommand):
 
         if mode == "export":
             force = options.get("force")
-            from django.utils import timezone
 
             print("********* exporting")
             print("fixing categoryOptions sharing", timezone.now())
@@ -268,11 +280,27 @@ class Command(BaseCommand):
             )
 
             print("exporting", export_request.exportstatus_set.count(), timezone.now())
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         if mode == "stats":
             for c in Instance.objects.with_status().counts_by_status():
                 print(c)
+
+        if mode == "fix":
+            print("fixing assign all orgunits to program", timezone.now())
+            self.assign_orgunits_to_program(credentials)
+            print("fixing categoryOptions sharing", timezone.now())
+            self.make_category_options_public(credentials)
+
+    def assign_orgunits_to_program(self, credentials):
+        api = Api(credentials.url, credentials.login, credentials.password)
+        program_id = "eBAyeGv0exc"
+        orgunits = api.get(
+            "organisationUnits", params={"fields": "id", "paging": "false"}
+        ).json()["organisationUnits"]
+        program = api.get("programs/" + program_id, params={"fields": ":all"}).json()
+        program["organisationUnits"] = orgunits
+        api.put("programs/" + program_id, program)
 
     def make_category_options_public(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
@@ -307,6 +335,7 @@ class Command(BaseCommand):
         form,
         datasource,
         credentials,
+        mapping_type="AGGREGATE",
         mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
     ):
@@ -324,8 +353,8 @@ class Command(BaseCommand):
 
         if not mapping_file:
             return
-        mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
-        mapping_version_name = "aggregate" if form.single_per_period else "derived"
+
+        mapping_version_name = mapping_type
 
         mapping, _mapping_created = Mapping.objects.get_or_create(
             form=form, data_source=datasource, mapping_type=mapping_type

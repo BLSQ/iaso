@@ -47,13 +47,6 @@ class Mappings extends Component {
         }
     }
 
-    selectInstance(mappingversion) {
-        const { redirectTo } = this.props;
-        redirectTo('forms/mapping', {
-            mappingVersionId: mappingversion.id,
-        });
-    }
-
     render() {
         const {
             classes,
@@ -64,9 +57,6 @@ class Mappings extends Component {
             count,
             pages,
         } = this.props;
-        const pageSize = parseInt(params.pageSize, 10) < mappingVersions.length
-            ? params.pageSize
-            : mappingVersions.length;
         return (
             <>
                 {fetching && <LoadingSpinner />}
@@ -85,7 +75,7 @@ class Mappings extends Component {
                             { id: 'form_version__version_id', desc: true },
                             { id: 'mapping__mapping_type', desc: true },
                         ]}
-                        columns={mappingsTableColumns(formatMessage, this)}
+                        columns={mappingsTableColumns(formatMessage)}
                         count={count}
                         baseUrl={baseUrl}
                         params={params}

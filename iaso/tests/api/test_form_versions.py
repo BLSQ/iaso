@@ -105,6 +105,7 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.delete(f"/api/formversions/33/")
         self.assertJSONResponse(response, 405)
 
+    @tag("iaso_only")
     def test_form_versions_create_ok_first_version(self):
         """POST /form-versions/ happy path (first version)"""
 
@@ -139,6 +140,7 @@ class FormsVersionAPITestCase(APITestCase):
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)
 
+    @tag("iaso_only")
     def test_form_versions_create_ok_second_version(self):
         """POST /form-versions/ happy path (second version)"""
 
@@ -159,6 +161,7 @@ class FormsVersionAPITestCase(APITestCase):
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
 
+    @tag("iaso_only")
     def test_form_versions_create_ok_second_version_with_mappings(self):
         """POST /form-versions/ happy path (second version)"""
 
@@ -253,6 +256,7 @@ class FormsVersionAPITestCase(APITestCase):
             },
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_form_id_1(self):
         """POST /form-versions/ with a form_id that already exists within the account (for a different form)"""
 
@@ -271,6 +275,7 @@ class FormsVersionAPITestCase(APITestCase):
             response.json(), "xls_file", "The form_id is already used in another form."
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_form_id_2(self):
         """POST /form-versions/ attempt to create a second version with a different form_id"""
 
@@ -291,6 +296,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Form id should stay constant across form versions.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_version(self):
         """POST /form-versions/ attempt to create a second version with a version inferior to the previous one"""
 
@@ -311,6 +317,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Invalid XLS file: Parsed version should be greater than previous version.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_file(self):
         """POST /form-versions/ with invalid XLS file"""
 
@@ -331,6 +338,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Invalid XLS file: The survey sheet is either empty or missing important column headers.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
 
@@ -346,6 +354,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasError(response_data, "form_id")
         self.assertHasError(response_data, "xls_file")
 
+    @tag("iaso_only")
     def test_form_versions_create_no_auth(self):
         """POST /form-versions/ , without auth -> we expect a 403 error"""
 
@@ -360,6 +369,7 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 403)
 
+    @tag("iaso_only")
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""
 

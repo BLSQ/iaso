@@ -131,6 +131,7 @@ class ExportRequestsAPITestCase(APITestCase):
             "201901,201902",
         )
 
+    @tag("iaso_only")
     def test_exportrequests_create_works(self):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.build_instance(self.village_1, self.uuid(2), "201901")
@@ -149,6 +150,7 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(201, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
 
+    @tag("iaso_only")
     def test_exportrequests_create_ko_when_bad_filter(self):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.client.force_authenticate(self.user)
@@ -168,6 +170,7 @@ class ExportRequestsAPITestCase(APITestCase):
             },
         )
 
+    @tag("iaso_only")
     def test_exportrequests_create_ko_when_no_version(self):
         instance = self.build_instance(self.village_1, self.uuid(1), "201901")
         instance.json = {"demo": "noversion"}

@@ -93,9 +93,9 @@
          , COALESCE(v.name, village) as normalized_village_name
          , COALESCE(t.name, mobile_unit) as normalized_team_name
 
-         , COALESCE(cc.name, '') || ' ' ||
-           COALESCE(prename, '') || ' ' ||
-           COALESCE(lastname, '')                         AS full_name
+         , COALESCE(cc.lastname, '') || ' ' ||
+           COALESCE(cc.prename, '') || ' ' ||
+           COALESCE(cc.postname, '')                         AS full_name
 
          , CASE
 

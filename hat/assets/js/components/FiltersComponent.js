@@ -13,7 +13,7 @@ import CheckBox from './CheckBoxComponent';
 
 const anonymisedFilterArray = [
     'search_prename',
-    'search_name',
+    'search_postname',
     'search_lastname',
     'search_mother_name',
 ];

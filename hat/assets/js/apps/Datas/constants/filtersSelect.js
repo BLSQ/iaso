@@ -7,7 +7,7 @@ import {
     teams,
     located,
     searchLastname,
-    searchName,
+    searchPostName,
     searchPrename,
     provinces,
     zones,
@@ -125,7 +125,7 @@ const filtersPatientsDuplicates = (
 const filtersCasesSearch = (formatMessage, component) => (
     [
         searchLastname(component),
-        searchName(component),
+        searchPostName(component),
         searchPrename(component),
         searchMotherName(component),
         images(formatMessage),
@@ -136,7 +136,7 @@ const filtersCasesSearch = (formatMessage, component) => (
 const filtersPatientsSearch = (devices, component) => (
     [
         searchLastname(component),
-        searchName(component),
+        searchPostName(component),
         searchPrename(component),
         searchMotherName(component),
         device(devices),
@@ -145,7 +145,7 @@ const filtersPatientsSearch = (devices, component) => (
 const filtersDuplicatesPatientsSearch = component => (
     [
         searchLastname(component),
-        searchName(component),
+        searchPostName(component),
         searchPrename(component),
         searchMotherName(component),
     ]

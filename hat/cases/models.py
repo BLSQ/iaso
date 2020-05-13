@@ -123,7 +123,7 @@ class CaseAbstract(models.Model):
     :ivar integer  form_year:       Entry form: year.
     :ivar integer  form_month:      Entry form: month.
 
-    :ivar text     name:            Name.
+    :ivar text     postname:        Post name. "name" and "lastname" used to be mixed-up, this clears it up
     :ivar text     lastname:        Lastname/surname.
     :ivar text     prename:         Prename.
     :ivar text     mothers_surname: Mothers surname.
@@ -289,7 +289,7 @@ class CaseAbstract(models.Model):
         "Mois du formulaire", choices=MONTH_CHOICES, null=True, blank=True
     )
 
-    name = models.TextField("Postnom", null=True)
+    postname = models.TextField("Postnom", null=True)
     lastname = models.TextField("Nom de famille", null=True)
     prename = models.TextField("Prénom", null=True)
 
@@ -624,7 +624,7 @@ class CaseAbstract(models.Model):
             logger.warning(f"Unhandled test type {new_test.type}, ignoring")
 
     def __str__(self):
-        return "%s - %s - %s" % (self.lastname, self.name, self.prename)
+        return "%s - %s - %s" % (self.lastname, self.postname, self.prename)
 
 
 class Case(CaseAbstract):
@@ -800,7 +800,7 @@ class CaseView(CaseAbstract):
     :ivar integer document_month: Extracts **document_date** month.
     :ivar integer document_year:  Extracts **document_date** year.
 
-    :ivar text full_name:     Concats **name** **prename** **lastname**.
+    :ivar text full_name:     Concats **lastname** **prename** **postname**.
     :ivar text full_location: Concats **province** - **ZS** - **AS** - **village**.
 
     :ivar integer screening_result: Takes the most significant result of the

@@ -20,7 +20,8 @@ import {
     includeControlsInMap,
     genericMap,
     includeDefaultLayersInMap,
-} from '../../../utils//map/mapUtils';
+    renderVillagesPopup,
+} from '../../../utils/map/mapUtils';
 
 let exportControl;
 
@@ -113,7 +114,7 @@ class Map extends Component {
                     .addTo(this.villageGroup)
                     .on('click', (event) => {
                         const popUp = event.target.getPopup();
-                        popUp.setContent(this.renderVillagesPopup(village));
+                        popUp.setContent(renderVillagesPopup(village, this.props.intl.formatMessage));
                     })
                     .on('mouseover', () => {
                         this.updateTooltipSmall(village);
@@ -182,31 +183,6 @@ class Map extends Component {
         });
     }
 
-    renderVillagesPopup(village) {
-        const { formatMessage } = this.props.intl;
-        return `<section class="custom-popup-container">
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Nom', id: 'main.label.name' })}:
-                        <span>${village.name}</span>
-                    </div>
-                    <div>
-                        ${formatMessage({ defaultMessage: 'Jours', id: 'main.label.days' })}:
-                        <span>${moment(village.original.first_test_date).format('DD-MM-YYYY')} - ${moment(village.original.last_test_date).format('DD-MM-YYYY')}</span>
-                    </div>
-
-                    <table>
-                        <tbody>
-                            <tr><td>CATT</td><td>${village.original.catt_count}</td></tr>
-                            <tr><td>RDT</td><td>${village.original.rdt_count}</td></tr>
-                            <tr><td>PG</td><td>${village.original.pg_count}</td></tr>
-                            <tr><td>MAECT</td><td>${village.original.maect_count}</td></tr>
-                            <tr><td>PL</td><td>${village.original.pl_count}</td></tr>
-                            <tr><td>Total</td><td>${village.original.test_count}</td></tr>
-                        </tbody>
-                    </table>
-                </section>`;
-    }
-
     render() {
         const { formatMessage } = this.props.intl;
         return (
@@ -214,8 +190,8 @@ class Map extends Component {
                 <section className="map-parent-container">
                     <div ref={(node) => { this.mapNode = node; }} className="map-container" />
                     {
-                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area) &&
-                        <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
+                        (this.state.isLoadingShape.province || this.state.isLoadingShape.zone || this.state.isLoadingShape.area)
+                        && <span className="loading-small" title={formatMessage(MESSAGES['shape-loader'])} />
                     }
                 </section>
             </ReactResizeDetector>

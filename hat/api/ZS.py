@@ -9,7 +9,7 @@ from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import ZS, AS, Province
+from hat.geo.models import ZS, AS, Province, Village
 from django.db.models import Q
 from django.db.models import Count
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -203,6 +203,11 @@ class ZSViewSet(viewsets.ViewSet):
             res["geo_json"] = geojson_queryset(
                 queryset, geometry_field="simplified_geom"
             )
+
+        villages = Village.objects.filter(
+            Q(AS__ZS_id=pk) & Q(village_official="YES")
+        )
+        res["villages"] = [village.as_dict() for village in villages]
         if is_authorized:
             return Response(res)
         else:

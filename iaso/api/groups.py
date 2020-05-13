@@ -5,7 +5,6 @@ from iaso.models import Group
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
-from django.http import JsonResponse
 
 
 class GroupsViewSet(viewsets.ViewSet):
@@ -15,14 +14,21 @@ class GroupsViewSet(viewsets.ViewSet):
 
     permission_classes = []
 
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return Group.objects.none()
+
+        profile = self.request.user.iaso_profile
+
+        return Group.objects.filter(
+            source_version__data_source__projects__in=profile.account.project_set.all()
+        )
+
     def list(self, request):
         if request.user.is_anonymous:
             raise PermissionDenied("Please log in")
 
-        profile = request.user.iaso_profile
-        queryset = Group.objects.filter(
-            source_version__data_source__projects__in=profile.account.project_set.all()
-        )
+        queryset = self.get_queryset()
 
         version = request.GET.get("version", None)
         limit = request.GET.get("limit", None)
@@ -59,33 +65,41 @@ class GroupsViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         pk = kwargs.get('pk')
-        group = get_object_or_404(Group, pk=pk)
+        group = get_object_or_404(self.get_queryset(), pk=pk)
         return Response(group.as_dict())
 
     def partial_update(self, request, pk=None):
         group = get_object_or_404(Group, pk=pk)
         name = request.data.get("name")
         if not name:
-            return JsonResponse({"errorKey": "name", "errorMessage": "Nom requis"}, status=400)
+            return Response({"name", ["Nom requis"]}, status=400)
         group.name = name
         group.save()
 
         return Response(group.as_dict())
 
     def create(self, request):
-        group = Group()
-        name = request.data.get("name")
-        if not name:
-            return JsonResponse({"errorKey": "name", "errorMessage": "Nom requis"}, status=400)
-        group.name = name
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
 
         profile = request.user.iaso_profile
         version = profile.account.default_version
-        group.source_version = version
-        group.save()
-        return Response(group.as_dict())
+
+        if version is None:
+            return Response({"name": ["Compte sans version"]}, status=400)
+
+        name = request.data.get("name")
+        if not name:
+            return Response({"name": ["Nom requis"]}, status=400)
+
+        group = Group.objects.create(name=name, source_version=version)
+
+        return Response(group.as_dict(), status=201)
 
     def delete(self, request, pk=None):
-        group = get_object_or_404(Group, pk=pk)
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
+
+        group = get_object_or_404(self.get_queryset(), pk=pk)
         group.delete()
-        return Response(True)
+        return Response(status=204)

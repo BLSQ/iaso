@@ -56,9 +56,10 @@ class GroupDialogComponent extends Component {
             fetchGroups(params);
         })
             .catch((error) => {
-                console.log('error', error);
                 if (error.status === 400) {
-                    this.setFieldErrors(error.details.errorKey, error.details.errorMessage);
+                    Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
+                        this.setFieldErrors(errorKey, errorMessages);
+                    });
                 }
             });
     }
@@ -67,8 +68,8 @@ class GroupDialogComponent extends Component {
         this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
     }
 
-    setFieldErrors(fieldName, fieldError) {
-        this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: [fieldError] } });
+    setFieldErrors(fieldName, fieldErrors) {
+        this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: fieldErrors } });
     }
 
     setInitialState() {
@@ -90,6 +91,7 @@ class GroupDialogComponent extends Component {
         const {
             titleMessage, renderTrigger,
         } = this.props;
+
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}

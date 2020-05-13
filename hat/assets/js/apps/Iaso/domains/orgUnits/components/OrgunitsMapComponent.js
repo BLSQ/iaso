@@ -42,7 +42,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import commonStyles from '../../../styles/common';
-import { getColorsFromParams } from '../utils';
+import { getColorsFromParams, decodeSearch } from '../utils';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -138,7 +138,7 @@ class OrgunitsMap extends Component {
         const {
             params,
         } = this.props;
-        const searches = JSON.parse(params.searches);
+        const searches = decodeSearch(params.searches);
         const currentSearch = searches[currentSearchIndex];
         let currentColor;
         if (currentSearch) {

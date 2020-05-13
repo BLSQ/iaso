@@ -98,3 +98,25 @@ export const getColorsFromParams = (params) => {
     const searches = JSON.parse(params.searches);
     return searches.map(s => s.color);
 };
+
+export const decodeSearch = search => JSON.parse(search);
+
+export const encodeUriSearches = (searches) => {
+    const newSearches = [...searches];
+    newSearches.forEach((s, i) => {
+        Object.keys(s).forEach((key) => {
+            const value = s[key];
+            newSearches[i][key] = (key === 'search' ? encodeURIComponent(value) : value);
+        });
+    });
+    return JSON.stringify(newSearches);
+};
+
+export const encodeUriParams = (params) => {
+    const searches = encodeUriSearches([...decodeSearch(params.searches)]);
+    const newParams = {
+        ...params,
+        searches,
+    };
+    return newParams;
+};

@@ -1,0 +1,15 @@
+{
+  "program_id": "eBAyeGv0exc",
+  "program_name": "Inpatient morbidity and mortality (undefined eBAyeGv0exc)",
+  "question_mappings": {
+    "cs_304": {
+      "id": "vV9UWAZohSf",
+      "name": "Weight in kg",
+      "valueType": "INTEGER_POSITIVE",
+      "domainType": "TRACKER",
+      "displayName": "Weight in kg",
+      "categoryOptionCombo": "HllvX50cXC0",
+      "categoryOptionComboName": "default"
+    }
+  }
+}

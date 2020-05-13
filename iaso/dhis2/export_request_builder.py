@@ -1,5 +1,5 @@
 from django.db import transaction
-from iaso.models import Instance, ExportRequest, ExportStatus
+from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED
 from django.core.paginator import Paginator
 
 
@@ -86,7 +86,9 @@ class ExportRequestBuilder:
             return self.form_mappings_cache[key]
 
         mappings = []
-        for form_mapping in instance.form.mapping_set.all():
+        for form_mapping in instance.form.mapping_set.exclude(
+            mapping_type=DERIVED
+        ).all():
             for form_mapping_version in form_mapping.versions.all():
                 if str(form_mapping_version.form_version.version_id) == str(
                     ona_version

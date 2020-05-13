@@ -154,7 +154,13 @@ def process_instance(record, project, cvs_stat_mapping_version, progress, aggreg
     json_data = {"_version": cvs_stat_mapping_version.form_version.version_id}
 
     for aggregation in aggregations:
-        json_data[aggregation["id"]] = record[aggregation["id"]]
+        aggregation_field = aggregation["id"]
+        default_value = aggregation.get("defaultValue", None)
+        value = record[aggregation_field]
+        if value is None:
+            json_data[aggregation_field] = default_value
+        else:
+            json_data[aggregation_field] = value
 
     if json_data == instance.json:
         progress["skipped"] += 1

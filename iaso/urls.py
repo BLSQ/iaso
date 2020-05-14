@@ -1,9 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework import routers
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api.org_units import OrgUnitViewSet
 
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -69,6 +66,11 @@ router.register(
 urlpatterns = [
     url(r"^", include(router.urls)),
     url(
+        r"^enketo/edit/(?P<instance_id>[a-z0-9-]+)/$",
+        view=EnketoViewSet.as_view({"get": "edit_in_enketo"}),
+        name="enketo-formlist",
+    ),
+    url(
         r"^enketo/formList$",
         view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
         name="enketo-formlist",
@@ -76,16 +78,6 @@ urlpatterns = [
     url(
         r"^enketo/formList/$",
         view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
-        name="enketo-formlist",
-    ),
-    url(
-        r"^enketo/forms/34369/form.xml$",
-        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
-        name="enketo-formlist",
-    ),
-    url(
-        r"^enketo/forms/34369/form.xml/$",
-        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
         name="enketo-formlist",
     ),
     url(
@@ -120,7 +112,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
     )
 
 
-urlpatterns = [
+urlpatterns = urlpatterns + [
     url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
     url(r"^", include(router.urls)),

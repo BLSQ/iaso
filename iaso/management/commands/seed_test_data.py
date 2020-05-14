@@ -345,7 +345,7 @@ class Command(BaseCommand):
         # don't use uploadedFile in get_or_create, it will end up non unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
-            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+            open("./testdata/seed-data-command-form.xml")
         )
         form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
 
@@ -421,7 +421,7 @@ class Command(BaseCommand):
                     instance.json = test_data
                     instance.form = form
                     instance.file = UploadedFile(
-                        open("iaso/tests/fixtures/hydroponics_test_upload.xml")
+                        open("./testdata/seed-data-command-instance.xml")
                     )
 
                     instances.append(instance)

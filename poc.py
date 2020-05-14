@@ -122,7 +122,7 @@ with open("./iaso/api/fixtures/sample-submission.xml") as file:
 
 enketo_url(
     settings,
-    "https://f967b309.ngrok.io/api/enketo",
+    "http://docker-host:8081/api/enketo",
     "qlty_pca_04_partie_financier",
     instance_xml=instance_xml,
     instance_id="2fc96b66-9df4-43f4-94db-506ef9775697",  # None,

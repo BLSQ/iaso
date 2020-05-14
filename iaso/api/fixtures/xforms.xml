@@ -5,6 +5,6 @@
 		<version>201503160816</version>
 		<hash>md5:2eb75f0914a60c97ce471d6da118e42b</hash>
 		<descriptionText>entites_skv_sante</descriptionText>
-		<downloadUrl>https://f967b309.ngrok.io/api/enketo/forms/34369/form.xml</downloadUrl>
+		<downloadUrl>http://docker-host:8081/api/enketo/forms/34369/form.xml</downloadUrl>
 	</xform>
 </xforms>

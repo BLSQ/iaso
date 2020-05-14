@@ -10,6 +10,7 @@ from rest_framework import status
 from iaso.models import Instance, InstanceFile
 from django.http import JsonResponse
 import os
+from bs4 import BeautifulSoup as Soup
 
 
 class EnketoViewSet(viewsets.ViewSet):
@@ -76,6 +77,7 @@ class EnketoViewSet(viewsets.ViewSet):
             # can we prevent "media files re upload ?"
             main_file = request.FILES["xml_submission_file"]
 
+            soup = Soup(main_file.read(), "xml")
             form_id = [c for c in soup.children][0].attrs["id"]
             instanceid = soup.meta.instanceID.contents[0]
 

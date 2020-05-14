@@ -1,49 +1,79 @@
-from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
-from rest_framework.response import Response
+from rest_framework import permissions, serializers
+from django.db.models import Count
+import typing
+
 from iaso.models import Group
-from django.core.paginator import Paginator
+from .common import ModelViewSet, TimestampField
 
 
-class GroupsViewSet(viewsets.ViewSet):
+class HasGroupsPermission(permissions.IsAuthenticated):
+    """Rules:
+
+    - The group API is only accessible to authenticated users
     """
-    list devices:
-    """
 
-    permission_classes = []
+    pass
 
-    def list(self, request):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
 
-        profile = request.user.iaso_profile
-        queryset = Group.objects.filter(
-            source_version__data_source__projects__in=profile.account.project_set.all()
-        )
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+        ]
 
-        version = request.GET.get("version", None)
-        limit = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
+    org_unit_count = serializers.IntegerField(read_only=True)
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
-        queryset = queryset.distinct().order_by("name")
+    def validate(self, data: typing.MutableMapping):
+        profile = self.context["request"].user.iaso_profile
+        version = profile.account.default_version
+
+        if version is None:
+            raise serializers.ValidationError("This account has no default version")
+
+        data["source_version"] = version
+
+        return data
+
+
+class GroupsViewSet(ModelViewSet):
+    permission_classes = (HasGroupsPermission,)
+    serializer_class = GroupSerializer
+    results_key = "groups"
+    http_method_names = ("post", "get", "patch", "delete")
+
+    def get_queryset(self):
+        profile = self.request.user.iaso_profile
+        queryset = (
+            Group.objects.filter(
+                source_version__data_source__projects__in=profile.account.project_set.all()
+            )
+        ).annotate(org_unit_count=Count("org_units"))
+
+        version = self.request.query_params.get("version", None)
         if version:
             queryset = queryset.filter(source_version=version)
 
-        if not limit:
-            res = {"groups": [group.as_dict() for group in queryset]}
-        else:
-            limit = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
+        search = self.request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(name__icontains=search)
 
-            res["groups"] = [group.as_dict() for group in page.object_list]
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-        return Response(res)
+        order = self.request.query_params.get("order", "name").split(",")
+
+        return queryset.order_by(*order)

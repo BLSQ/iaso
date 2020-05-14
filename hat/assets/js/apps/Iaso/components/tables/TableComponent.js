@@ -1,11 +1,12 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
-import { withStyles, Grid } from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { withRouter } from 'react-router';
+import isEqual from 'lodash/isEqual';
 
 import { getSort, getOrderArray } from '../../utils/tableUtils';
 
@@ -48,6 +49,10 @@ class Table extends Component {
             intl: { formatMessage },
         } = this.props;
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+    }
+
+    shouldComponentUpdate(nextProps) {
+        return !isEqual(nextProps.data, this.props.data);
     }
 
     onTableParamsChange(key, value) {

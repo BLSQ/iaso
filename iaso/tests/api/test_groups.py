@@ -77,7 +77,7 @@ class GroupsAPITestCase(APITestCase):
         """GET /groups/<group_id> without auth should result in a 404"""
 
         response = self.client.get(f"/api/groups/{self.group_1.id}/")
-        self.assertJSONResponse(response, 404)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_groups_retrieve_wrong_auth(self):
@@ -140,7 +140,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
 
         response_data = response.json()
-        self.assertValidGroupData(response_data)
+        self.assertValidGroupData(response_data, skip=["org_unit_count"])
         self.assertEqual(self.yoda.iaso_profile.account.default_version_id, response_data["source_version"])
 
     def test_groups_create_invalid(self):
@@ -225,11 +225,15 @@ class GroupsAPITestCase(APITestCase):
         for group_data in list_data["groups"]:
             self.assertValidGroupData(group_data)
 
-    def assertValidGroupData(self, group_data: typing.Mapping):
+    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Sequence = None):
+        skip = skip if skip is not None else {}
+
         self.assertHasField(group_data, "id", int)
         self.assertHasField(group_data, "name", str)
         self.assertHasField(group_data, "source_version", int, optional=True)
         self.assertHasField(group_data, "source_ref", str, optional=True)
-        self.assertHasField(group_data, "org_unit_count", int)
+        # org_unit_count is a read-only field, it won't be present when creating an instance
+        if "org_unit_count" not in skip:
+            self.assertHasField(group_data, "org_unit_count", int)
         self.assertHasField(group_data, "created_at", float)
         self.assertHasField(group_data, "updated_at", float)

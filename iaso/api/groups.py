@@ -1,105 +1,79 @@
-from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
-from rest_framework.response import Response
-from iaso.models import Group
-from django.core.paginator import Paginator
+from rest_framework import permissions, serializers
 from django.db.models import Count
-from django.shortcuts import get_object_or_404
+import typing
+
+from iaso.models import Group
+from .common import ModelViewSet, TimestampField
 
 
-class GroupsViewSet(viewsets.ViewSet):
+class HasGroupsPermission(permissions.IsAuthenticated):
+    """Rules:
+
+    - The group API is only accessible to authenticated users
     """
-    list devices:
-    """
 
-    permission_classes = []
+    pass
 
-    def get_queryset(self):
-        if not self.request.user.is_authenticated:
-            return Group.objects.none()
 
-        profile = self.request.user.iaso_profile
+class GroupSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Group
+        fields = [
+            "id",
+            "name",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = [
+            "id",
+            "source_ref",
+            "source_version",
+            "org_unit_count",
+            "created_at",
+            "updated_at",
+        ]
 
-        return Group.objects.filter(
-            source_version__data_source__projects__in=profile.account.project_set.all()
-        )
+    org_unit_count = serializers.IntegerField(read_only=True)
+    created_at = TimestampField(read_only=True)
+    updated_at = TimestampField(read_only=True)
 
-    def list(self, request):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
-        queryset = self.get_queryset()
-
-        version = request.GET.get("version", None)
-        limit = request.GET.get("limit", None)
-        page_offset = request.GET.get("page", 1)
-        orders = request.GET.get("order", "name").split(",")
-        search = request.GET.get("search", None)
-
-        queryset = queryset.distinct().annotate(org_unit_count=Count('org_units'))
-        if search:
-            queryset = queryset.filter(name__icontains=search)
-
-        queryset = queryset.order_by(*orders)
-        if version:
-            queryset = queryset.filter(source_version=version)
-
-        if not limit:
-            res = {"groups": [group.as_dict() for group in queryset]}
-        else:
-            limit = int(limit)
-            page_offset = int(page_offset)
-            paginator = Paginator(queryset, limit)
-            res = {"count": paginator.count}
-            if page_offset > paginator.num_pages:
-                page_offset = paginator.num_pages
-            page = paginator.page(page_offset)
-
-            res["groups"] = [group.as_dict() for group in page.object_list]
-            res["has_next"] = page.has_next()
-            res["has_previous"] = page.has_previous()
-            res["page"] = page_offset
-            res["pages"] = paginator.num_pages
-            res["limit"] = limit
-        return Response(res)
-
-    def retrieve(self, request, *args, **kwargs):
-        pk = kwargs.get('pk')
-        group = get_object_or_404(self.get_queryset(), pk=pk)
-        return Response(group.as_dict())
-
-    def partial_update(self, request, pk=None):
-        group = get_object_or_404(Group, pk=pk)
-        name = request.data.get("name")
-        if not name:
-            return Response({"name", ["Nom requis"]}, status=400)
-        group.name = name
-        group.save()
-
-        return Response(group.as_dict())
-
-    def create(self, request):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
-        profile = request.user.iaso_profile
+    def validate(self, data: typing.MutableMapping):
+        profile = self.context["request"].user.iaso_profile
         version = profile.account.default_version
 
         if version is None:
-            return Response({"name": ["Compte sans version"]}, status=400)
+            raise serializers.ValidationError("This account has no default version")
 
-        name = request.data.get("name")
-        if not name:
-            return Response({"name": ["Nom requis"]}, status=400)
+        data["source_version"] = version
 
-        group = Group.objects.create(name=name, source_version=version)
+        return data
 
-        return Response(group.as_dict(), status=201)
 
-    def delete(self, request, pk=None):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
+class GroupsViewSet(ModelViewSet):
+    permission_classes = (HasGroupsPermission,)
+    serializer_class = GroupSerializer
+    results_key = "groups"
+    http_method_names = ("post", "get", "patch", "delete")
 
-        group = get_object_or_404(self.get_queryset(), pk=pk)
-        group.delete()
-        return Response(status=204)
+    def get_queryset(self):
+        profile = self.request.user.iaso_profile
+        queryset = (
+            Group.objects.filter(
+                source_version__data_source__projects__in=profile.account.project_set.all()
+            )
+        ).annotate(org_unit_count=Count("org_units"))
+
+        version = self.request.query_params.get("version", None)
+        if version:
+            queryset = queryset.filter(source_version=version)
+
+        search = self.request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(name__icontains=search)
+
+        order = self.request.query_params.get("order", "name").split(",")
+
+        return queryset.order_by(*order)

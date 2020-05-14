@@ -105,6 +105,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.assertValidGroupData(response.json())
 
+    @tag("iaso_only")
     def test_groups_create_without_auth(self):
         """POST /groups/ without auth: 403"""
 
@@ -113,6 +114,7 @@ class GroupsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 403)
 
+    @tag("iaso_only")
     def test_groups_create_no_source_version(self):
         """POST /groups/ (user has no source version, cannot work)"""
 
@@ -126,6 +128,7 @@ class GroupsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 400)
 
+    @tag("iaso_only")
     def test_groups_create_ok(self):
         """POST /groups/ happy path"""
 
@@ -143,6 +146,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
         self.assertEqual(self.yoda.iaso_profile.account.default_version_id, response_data["source_version"])
 
+    @tag("iaso_only")
     def test_groups_create_invalid(self):
         """POST /groups/ with missing data"""
 

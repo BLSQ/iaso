@@ -69,7 +69,7 @@ def get_or_create_patient_from_case(
     return get_or_create_patient(
         case.prename,
         case.lastname,
-        case.name,
+        case.postname,
         case.mothers_surname,
         case.sex,
         case.year_of_birth,

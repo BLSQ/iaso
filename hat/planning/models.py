@@ -15,11 +15,12 @@ class Planning(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     deleted = models.BooleanField(default=False)
     is_template = models.BooleanField(default=False)
+    months = models.IntegerField(default=12)
+    month_start = models.IntegerField(default=1)
 
     years_coverage = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
-
 
     def __str__(self):
         return "%s - % s" % (self.year, self.name)
@@ -30,11 +31,13 @@ class Planning(models.Model):
             assignations[assignation.village_id] = assignation.as_dict()
 
         return {
-            'id': self.id,
-            'year': self.year,
-            'name': self.name,
-            'assignations': assignations,
-            'years_coverage': self.years_coverage,
+            "id": self.id,
+            "year": self.year,
+            "name": self.name,
+            "assignations": assignations,
+            "years_coverage": self.years_coverage,
+            "months": self.months,
+            "month_start": self.month_start,
         }
 
     def copy(self, new_name):
@@ -52,7 +55,9 @@ class Planning(models.Model):
             assignation.planning_id = planning.id
             assignation.save()
 
-        team_action_zones = TeamActionZone.objects.filter(planning_id=original_planning_id)
+        team_action_zones = TeamActionZone.objects.filter(
+            planning_id=original_planning_id
+        )
 
         for taz in team_action_zones:
             taz.pk = None
@@ -91,36 +96,39 @@ class Assignation(models.Model):
         return "%s - % s - %s" % (self.planning, self.village, self.team)
 
     class Meta:
-        unique_together = (('planning', 'village', 'month'),)
+        unique_together = (("planning", "village", "month"),)
 
     def as_dict(self):
         return {
-            'village_id': self.village_id,
-            'village_name': self.village.name,
-            'village_population': self.village.population,
-            'longitude': self.village.longitude,
-            'latitude': self.village.latitude,
-            'team_id': self.team_id,
-            'id': self.id,
-            'month': self.month,
-            'index': self.index,
-            'split': self.population_split is not None,
-            'population_split': self.population_split
+            "village_id": self.village_id,
+            "village_name": self.village.name,
+            "village_population": self.village.population,
+            "longitude": self.village.longitude,
+            "latitude": self.village.latitude,
+            "team_id": self.team_id,
+            "id": self.id,
+            "month": self.month,
+            "index": self.index,
+            "split": self.population_split is not None,
+            "population_split": self.population_split,
         }
 
 
 def pick_random_color():
-     return random.choice([
-    '#FF6900',
-    '#FCB900',
-    '#7BDCB5',
-    '#22955A',
-    '#8ED1FC',
-    '#0693E3',
-    '#00008B',
-    '#bf4840',
-    '#F78DA7',
-    '#9900EF',])
+    return random.choice(
+        [
+            "#FF6900",
+            "#FCB900",
+            "#7BDCB5",
+            "#22955A",
+            "#8ED1FC",
+            "#0693E3",
+            "#00008B",
+            "#bf4840",
+            "#F78DA7",
+            "#9900EF",
+        ]
+    )
 
 
 class WorkZone(models.Model):
@@ -143,35 +151,39 @@ class WorkZone(models.Model):
         if hasattr(self, "population_sum"):
             total_population = getattr(self, "population_sum")
         else:
-            total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(Sum('population'))['population__sum']
+            total_population = Village.objects.filter(AS__in=self.AS.all()).aggregate(
+                Sum("population")
+            )["population__sum"]
         if total_population is None:
             total_population = 0  # to always output a number, and not null
 
         res = {
-            'id': self.id,
-            'name': self.name,
-            'color': self.color,
-            'teams': teams_list,
-            'total_capacity': total_capacity,
-            'total_population': total_population,
-            'planning_id': self.planning_id,
-            'coordination_id': self.coordination_id,
-            'planning_name': self.planning.name,
-            'coordination_name': self.coordination.name
+            "id": self.id,
+            "name": self.name,
+            "color": self.color,
+            "teams": teams_list,
+            "total_capacity": total_capacity,
+            "total_population": total_population,
+            "planning_id": self.planning_id,
+            "coordination_id": self.coordination_id,
+            "planning_name": self.planning.name,
+            "coordination_name": self.coordination.name,
         }
 
         if with_areas:
             user = get_current_user()
             areas = self.AS.all()
             if not user.profile.province_scope.count() == 0:
-                areas = areas.filter(ZS__province_id__in=get_user_geo_list(user, 'province_scope'))
+                areas = areas.filter(
+                    ZS__province_id__in=get_user_geo_list(user, "province_scope")
+                )
             if not user.profile.ZS_scope.count() == 0:
-                areas = areas.filter(ZS__id__in=get_user_geo_list(user, 'ZS_scope'))
+                areas = areas.filter(ZS__id__in=get_user_geo_list(user, "ZS_scope"))
             if not user.profile.AS_scope.count() == 0:
-                areas = areas.filter(id__in=get_user_geo_list(user, 'AS_scope'))
+                areas = areas.filter(id__in=get_user_geo_list(user, "AS_scope"))
 
             as_list = [area.as_dict() for area in areas]
-            res['as_list'] = as_list
+            res["as_list"] = as_list
 
         # include fields that were added through annotate
         if additional_fields:
@@ -187,7 +199,9 @@ class WorkZone(models.Model):
 
 class TeamActionZone(models.Model):
     team = models.ForeignKey(Team, null=False, blank=False, on_delete=models.CASCADE)
-    planning = models.ForeignKey(Planning, null=False, blank=False, on_delete=models.CASCADE)
+    planning = models.ForeignKey(
+        Planning, null=False, blank=False, on_delete=models.CASCADE
+    )
     area = models.ForeignKey(AS, null=False, blank=False, on_delete=models.CASCADE)
 
     def __str__(self):

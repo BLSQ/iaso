@@ -22,13 +22,15 @@ const QuestionMappingForm = ({
         setNewQuestionMapping(value);
     };
 
-    const mapToMapping = (options) => {
+    const mapToMapping = (options, input) => {
         const results = [];
+
         options
             .filter(de => (mappingVersion.mapping.mapping_type === 'AGGREGATE'
                 ? de.domainType !== 'TRACKER'
                 : de.domainType !== 'AGGREGATE'))
             .forEach((dataElement) => {
+
                 dataElement.categoryCombo.categoryOptionCombos.forEach((coc) => {
                     results.push({
                         id: dataElement.id,
@@ -155,7 +157,7 @@ const QuestionMappingForm = ({
                                 ? question.name
                                 : undefined
                         }
-                        label="Search for data element (and combo) by name, code or id"
+                        label="Search for tracker data element (and combo) by name, code or id"
                         onChange={onChange}
                         fields="programStages[programStageDataElements[dataElement[id,name,code,valueType,domainType,optionSet[options[id,name,code]],categoryCombo[id,name,categoryOptionCombos[id,name]]]]]"
                         mapOptions={mapToMappingProgramElements}

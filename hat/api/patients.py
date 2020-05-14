@@ -38,7 +38,7 @@ class PatientsViewSet(viewsets.ViewSet):
     teams: list of teams to include. Only applies to normalized teams, not the mobile_unit text field
     coordination_id: list of coordinations to include
     date_from, date_to: date range for patient TESTS to consider
-    search_name, search_prename, search_lastname, search_mother_name: patient search fields, partial & case insensitive
+    search_postname, search_prename, search_lastname, search_mother_name: patient search fields, partial & case insensitive
     test_type: list of test types to include
     screening_result, confirmation_result: include only patients having had this result
     only_dupes: only provide patients that have potential duplicates
@@ -70,7 +70,7 @@ class PatientsViewSet(viewsets.ViewSet):
         coordination_id = request.GET.get("coordination_id", None)
         date_from = request.GET.get("date_from", None)
         date_to = request.GET.get("date_to", None)
-        search_name = request.GET.get("search_name", None)
+        search_postname = request.GET.get("search_postname", None)
         search_prename = request.GET.get("search_prename", None)
         search_lastname = request.GET.get("search_lastname", None)
         search_mother_name = request.GET.get("search_mother_name", None)
@@ -345,8 +345,8 @@ class PatientsViewSet(viewsets.ViewSet):
             request.user.has_perm("menupermissions.x_anonymous")
             and not request.user.is_superuser
         ):
-            if search_name:
-                queryset = queryset.filter(Q(post_name__icontains=search_name))
+            if search_postname:
+                queryset = queryset.filter(Q(post_name__icontains=search_postname))
             if search_prename:
                 queryset = queryset.filter(Q(first_name__icontains=search_prename))
             if search_lastname:

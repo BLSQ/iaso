@@ -404,10 +404,10 @@ export const searchLastname = component => (
     }
 );
 
-export const searchName = component => (
+export const searchPostName = component => (
     {
-        name: 'search_name',
-        urlKey: 'search_name',
+        name: 'search_postname',
+        urlKey: 'search_postname',
         allowEmptySearch: true,
         showResetSearch: true,
         displayResults: false,

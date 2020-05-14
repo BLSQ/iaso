@@ -16,10 +16,15 @@ from hat.users.models import get_user_geo_list
 
 
 def is_user_coordination_authorized(coordination, user):
-    is_authorized = user.profile.ZS_scope.count() == 0 and user.profile.province_scope.count() == 0
+    is_authorized = (
+        user.profile.ZS_scope.count() == 0 and user.profile.province_scope.count() == 0
+    )
     for zone in coordination.ZS.all():
-        user_zs_list = get_user_geo_list(user, 'ZS_scope')
-        if zone.province.id in get_user_geo_list(user, 'province_scope') and len(user_zs_list) == 0:
+        user_zs_list = get_user_geo_list(user, "ZS_scope")
+        if (
+            zone.province.id in get_user_geo_list(user, "province_scope")
+            and len(user_zs_list) == 0
+        ):
             is_authorized = True
         if zone.id in user_zs_list:
             is_authorized = True
@@ -30,27 +35,32 @@ class CoordinationViewSet(viewsets.ViewSet):
     """
     Api to list all coordinations, retrieve information about just one, or update the assignations for a coordination.
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_required = [
-        'menupermissions.x_management_coordinations',
-        'menupermissions.x_management_workzones',
-        'menupermissions.x_management_teams',
-        'menupermissions.x_plannings_macroplanning',
-        'menupermissions.x_plannings_microplanning',
-        'menupermissions.x_qualitycontrol'
+        "menupermissions.x_management_coordinations",
+        "menupermissions.x_management_workzones",
+        "menupermissions.x_management_teams",
+        "menupermissions.x_plannings_macroplanning",
+        "menupermissions.x_plannings_microplanning",
+        "menupermissions.x_qualitycontrol",
     ]
 
     def list(self, request):
         order = request.GET.get("order", None)
         queryset = Coordination.objects.all()
         if request.user.profile.province_scope.count() != 0:
-            queryset = queryset.filter(ZS__province_id__in=get_user_geo_list(request.user, 'province_scope')).distinct()
+            queryset = queryset.filter(
+                ZS__province_id__in=get_user_geo_list(request.user, "province_scope")
+            ).distinct()
         if request.user.profile.ZS_scope.count() != 0:
-            queryset = queryset.filter(ZS__id__in=get_user_geo_list(request.user, 'ZS_scope')).distinct()
+            queryset = queryset.filter(
+                ZS__id__in=get_user_geo_list(request.user, "ZS_scope")
+            ).distinct()
 
         res = map(lambda x: x.as_dict(), queryset)
         if order is not None:
-            reverse = order.startswith('-')
+            reverse = order.startswith("-")
 
             if reverse:
                 order = order[1:]
@@ -64,29 +74,41 @@ class CoordinationViewSet(viewsets.ViewSet):
         coordination = get_object_or_404(Coordination, pk=pk)
         endemic_population = request.GET.get("endemic_population", None)
         years = request.GET.get("years", get_last_years(5))
-        workzone_id = request.GET.get('workzone_id', None)
+        workzone_id = request.GET.get("workzone_id", None)
         is_authorized = is_user_coordination_authorized(coordination, request.user)
         if not is_authorized:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
         else:
 
             if as_geo_json:
                 if workzone_id:
                     work_zone = get_object_or_404(WorkZone, id=workzone_id)
                     areas = work_zone.AS.all()
-                    all_zs = ZS.objects.filter(id__in=work_zone.AS.values_list('ZS_id', flat=True)).distinct()
+                    all_zs = ZS.objects.filter(
+                        id__in=work_zone.AS.values_list("ZS_id", flat=True)
+                    ).distinct()
 
                 else:
                     all_zs = coordination.ZS.all()
                     areas = AS.objects.filter(ZS__in=all_zs)
 
-
                 if endemic_population:
                     as_pop_dict = {}
                     years_array = years.split(",")
-                    endemic_villages_ids = Village.objects.filter(AS__in=areas).filter(caseview__confirmed_case=True,
-                                                                                    caseview__normalized_year__in=years_array).values('id')
-                    endemic_as_populations = Village.objects.filter(AS__in=areas).filter(id__in=endemic_villages_ids).values('AS_id').annotate(endemic_population=Sum('population'))
+                    endemic_villages_ids = (
+                        Village.objects.filter(AS__in=areas)
+                        .filter(
+                            caseview__confirmed_case=True,
+                            caseview__normalized_year__in=years_array,
+                        )
+                        .values("id")
+                    )
+                    endemic_as_populations = (
+                        Village.objects.filter(AS__in=areas)
+                        .filter(id__in=endemic_villages_ids)
+                        .values("AS_id")
+                        .annotate(endemic_population=Sum("population"))
+                    )
 
                     for obj in endemic_as_populations:
                         pop = obj["endemic_population"]
@@ -94,11 +116,21 @@ class CoordinationViewSet(viewsets.ViewSet):
                             pop = 0
                         as_pop_dict[obj["AS_id"]] = pop
 
-                serialized_zs = serialize('geojson', all_zs, geometry_field='simplified_geom', fields=('name', 'pk',))
-                serialized_as = serialize('geojson', areas, geometry_field='simplified_geom', fields=['name', 'pk', 'ZS'])
+                serialized_zs = serialize(
+                    "geojson",
+                    all_zs,
+                    geometry_field="simplified_geom",
+                    fields=("name", "pk",),
+                )
+                serialized_as = serialize(
+                    "geojson",
+                    areas,
+                    geometry_field="simplified_geom",
+                    fields=["name", "pk", "ZS"],
+                )
                 res_dict = {
-                    'areas': json.loads(serialized_as),
-                    'zones': json.loads(serialized_zs)
+                    "areas": json.loads(serialized_as),
+                    "zones": json.loads(serialized_zs),
                 }
                 if endemic_population:
                     res_dict["endemic_as_populations"] = as_pop_dict
@@ -112,43 +144,50 @@ class CoordinationViewSet(viewsets.ViewSet):
         else:
             coordination = get_object_or_404(Coordination, pk=pk)
 
-        assignations = request.data.get('assignations', -1)
+        assignations = request.data.get("assignations", -1)
         if assignations != -1:
-            planning = get_object_or_404(Planning, pk=request.data.get('planning_id', -1))
-            Assignation.objects.filter(team__coordination=coordination, planning=planning).delete()
+            planning = get_object_or_404(
+                Planning, pk=request.data.get("planning_id", -1)
+            )
+            Assignation.objects.filter(
+                team__coordination=coordination, planning=planning
+            ).delete()
 
-            assignations = request.data['assignations']
+            assignations = request.data["assignations"]
 
             teams_dict = defaultdict(list)
             for a in assignations:
-                teams_dict[a['team_id']].append(a)
+                teams_dict[a["team_id"]].append(a)
 
             if -1 in teams_dict:
                 del teams_dict[-1]
 
             for team_id in teams_dict:
                 assignation_list = teams_dict[team_id]
-                ordered = optimize_path(assignation_list)
+                ordered = optimize_path(assignation_list, planning.months)
                 for index, obj in enumerate(ordered):
-                    Assignation.objects.filter(planning=planning, village_id=obj['village_id']).delete()
+                    Assignation.objects.filter(
+                        planning=planning, village_id=obj["village_id"]
+                    ).delete()
                     assignation = Assignation()
                     assignation.planning = planning
-                    assignation.index = obj['index']
-                    assignation.month = obj['month']
-                    assignation.village_id = obj['village_id']
-                    assignation.team_id = obj['team_id']
+                    assignation.index = obj["index"]
+                    assignation.month = obj["month"]
+                    assignation.village_id = obj["village_id"]
+                    assignation.team_id = obj["team_id"]
                     assignation.save()
         else:
-            coordination.name = request.data.get('name', '')
-            locations = request.data.get('zs', None)
+            coordination.name = request.data.get("name", "")
+            locations = request.data.get("zs", None)
             if locations:
                 if pk == "0":
                     coordination.save()
                 coordination.ZS.clear()
                 for location in locations:
-                    new_location = get_object_or_404(ZS, pk=location['id'])
-                    if new_location.province.id in get_user_geo_list(request.user, 'province_scope') or\
-                        new_location.id in get_user_geo_list(request.user, 'ZS_scope'):
+                    new_location = get_object_or_404(ZS, pk=location["id"])
+                    if new_location.province.id in get_user_geo_list(
+                        request.user, "province_scope"
+                    ) or new_location.id in get_user_geo_list(request.user, "ZS_scope"):
                         coordination.ZS.add(new_location)
             coordination.save()
 
@@ -158,7 +197,7 @@ class CoordinationViewSet(viewsets.ViewSet):
         coordination = get_object_or_404(Coordination, pk=pk)
         is_authorized = is_user_coordination_authorized(coordination, request.user)
         if not is_authorized:
-            return Response('Unauthorized', status=401)
+            return Response("Unauthorized", status=401)
         else:
             coordination.delete()
             return Response(True)

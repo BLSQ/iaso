@@ -180,7 +180,7 @@ class VillageViewSet(viewsets.ViewSet):
         if years:
             years_array = years.split(",")
             nr_positive_cases = Count(
-                "caseview",
+                "infection_cases",
                 filter=Q(
                     caseview__confirmation_result=RES_POSITIVE,
                     caseview__normalized_year__in=years_array,
@@ -190,7 +190,7 @@ class VillageViewSet(viewsets.ViewSet):
             values = values + ("nr_positive_cases",)
             for year in years_array:
                 nr_positive_cases_year = Count(
-                    "caseview",
+                    "infection_cases",
                     filter=Q(
                         caseview__confirmation_result=RES_POSITIVE,
                         caseview__normalized_year=year,

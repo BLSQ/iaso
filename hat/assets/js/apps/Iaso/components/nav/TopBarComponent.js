@@ -69,11 +69,12 @@ TopBar.defaultProps = {
     children: null,
     displayBackButton: false,
     goBack: () => null,
+    title: '',
 };
 
 TopBar.propTypes = {
     classes: PropTypes.object.isRequired,
-    title: PropTypes.string.isRequired,
+    title: PropTypes.string,
     toggleSidebar: PropTypes.func.isRequired,
     children: PropTypes.any,
     displayBackButton: PropTypes.bool,

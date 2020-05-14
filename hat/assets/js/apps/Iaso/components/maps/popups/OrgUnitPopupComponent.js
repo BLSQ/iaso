@@ -1,10 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
 
 import {
     Popup,
 } from 'react-leaflet';
+import {
+    Link,
+} from 'react-router';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import {
@@ -23,11 +25,12 @@ import LoadingSpinner from '../../LoadingSpinnerComponent';
 import PopupItemComponent from './PopupItemComponent';
 import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
 
-import { createUrl } from '../../../../../utils/fetchData';
 import { textPlaceholder } from '../../../constants/uiConstants';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
+
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -98,15 +101,6 @@ class OrgUnitPopupComponent extends Component {
     constructor(props) {
         super(props);
         this.popup = React.createRef();
-    }
-
-    goToOrgUnit() {
-        const { redirectTo, currentOrgUnit } = this.props;
-        const newParams = {
-            orgUnitId: currentOrgUnit.id,
-            tab: 'infos',
-        };
-        redirectTo('orgunits/detail', newParams);
     }
 
     confirmDialog() {
@@ -199,9 +193,13 @@ class OrgUnitPopupComponent extends Component {
                                             variant="outlined"
                                             size="small"
                                             color="primary"
-                                            onClick={() => this.goToOrgUnit()}
                                         >
-                                            <FormattedMessage id="iaso.label.see" defaultMessage="See" />
+                                            <Link
+                                                to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
+                                                className={classes.linkButton}
+                                            >
+                                                <FormattedMessage id="iaso.label.see" defaultMessage="See" />
+                                            </Link>
                                         </Button>
                                     </Grid>
                                 </Box>
@@ -223,7 +221,6 @@ OrgUnitPopupComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     currentOrgUnit: PropTypes.object,
-    redirectTo: PropTypes.func.isRequired,
     displayUseLocation: PropTypes.bool,
     useLocation: PropTypes.func,
 };
@@ -234,7 +231,6 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
 

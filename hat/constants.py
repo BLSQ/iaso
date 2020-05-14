@@ -13,6 +13,7 @@ GE = "GE"
 CLINICAL_SICKNESS = "CLINICAL_SICKNESS"
 LNP = "LNP"
 PARASIT = "PARASIT"
+RESEARCH_PL = "RESEARCH_PL"
 
 TEST_TYPE_CHOICES = (
     (CATT, "CATT"),
@@ -30,9 +31,10 @@ TEST_TYPE_CHOICES = (
     (CLINICAL_SICKNESS, "Malade clinique"),
     (LNP, "Lymph Node Puncture"),
     (PARASIT, "Confirmation parasytologique"),
+    (RESEARCH_PL, "PL de recherche"),
 )
 # See also filters.py: screening_tests and confirmation_tests
-TYPES_CONFIRMATION = {PG, CTCWOO, MAECT, PL, GE, LCR, LNP, SF}
+TYPES_CONFIRMATION = {PG, CTCWOO, MAECT, PL, GE, LCR, LNP, SF, RESEARCH_PL}
 TYPES_WITH_IMAGES = {CATT, RDT}
 TYPES_WITH_VIDEOS = {PG, CTCWOO, MAECT, PL}
 

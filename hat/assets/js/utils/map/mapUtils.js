@@ -3,7 +3,7 @@ import L from 'leaflet';
 import { defineMessages } from 'react-intl';
 import moment from 'moment';
 import geoUtils from '../geo';
-import { isCaseLocalised } from '../index';
+import { isCaseLocalised, formatThousand } from '../index';
 
 export const genericMap = mapNode => L.map(mapNode, {
     attributionControl: false,
@@ -350,3 +350,50 @@ export const isCoordInsidePolygon = ([x, y], poly) => {
 
     return inside;
 };
+
+
+export const renderVillagesPopup = (village, formatMessage) => (
+    `<section class="custom-popup-container">
+        <div>
+            ${formatMessage({ defaultMessage: 'Nom', id: 'main.label.name' })}:
+            <span>${village.name}</span>
+        </div>
+        <div>
+            ${formatMessage({ defaultMessage: 'Jours', id: 'main.label.days' })}:
+            <span>${moment(village.original.first_test_date).format('DD-MM-YYYY')} - ${moment(village.original.last_test_date).format('DD-MM-YYYY')}</span>
+        </div>
+
+        <table>
+            <tbody>
+                <tr><td>CATT</td><td>${village.original.catt_count}</td></tr>
+                <tr><td>RDT</td><td>${village.original.rdt_count}</td></tr>
+                <tr><td>PG</td><td>${village.original.pg_count}</td></tr>
+                <tr><td>MAECT</td><td>${village.original.maect_count}</td></tr>
+                <tr><td>PL</td><td>${village.original.pl_count}</td></tr>
+                <tr><td>Total</td><td>${village.original.test_count}</td></tr>
+            </tbody>
+        </table>
+    </section>`
+);
+
+
+export const renderSmallVillagesPopup = (village, formatMessage) => (
+    `<section class="custom-popup-container">
+        <div>
+            ${formatMessage({ defaultMessage: 'Name', id: 'main.label.name' })}:
+            <span class="margin-left--tiny--tiny inline-block">${village.name}</span>
+        </div>
+        <div>
+            ID:
+            <span class="margin-left--tiny--tiny inline-block"> ${village.id}</span>
+        </div>
+        <div>
+            ${formatMessage({ defaultMessage: 'Population', id: 'main.label.population' })}:
+            <span class="margin-left--tiny--tiny inline-block"> ${village.population ? formatThousand(village.population) : '--'}</span>
+        </div>
+        <div>
+            ${formatMessage({ defaultMessage: 'Village type', id: 'main.label.village_type' })}:
+            <span class="margin-left--tiny--tiny inline-block"> ${village.village_type || '--'}</span>
+        </div>
+    </section>`
+);

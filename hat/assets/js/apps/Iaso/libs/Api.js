@@ -55,7 +55,7 @@ export const patchRequest = (url, data) => req
     .then(result => result.body)
     .catch((error) => {
         console.error(`Error when patching ${url}: ${error}`);
-        throw error;
+        throw new ApiError(error.message, error.response);
     });
 
 export const deleteRequest = url => req

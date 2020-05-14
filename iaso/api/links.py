@@ -6,8 +6,6 @@ from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from copy import deepcopy
 from hat.audit.models import log_modification, ORG_UNIT_API
-from hat.api.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
@@ -19,7 +17,6 @@ class LinkViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):

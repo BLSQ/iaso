@@ -199,7 +199,6 @@ class Patient(models.Model):
 
 class Test(models.Model):
     type = models.TextField("Type", choices=TEST_TYPE_CHOICES)
-    note = models.TextField("Note", null=True, blank=True)
     date = models.DateTimeField(null=True, blank=True, db_index=True)
     result = models.IntegerField(
         choices=Case.GENERAL_TEST_RESULT_CHOICES, null=True, blank=True, db_index=True

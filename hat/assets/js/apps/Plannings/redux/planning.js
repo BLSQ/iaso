@@ -6,6 +6,10 @@ const req = require('superagent');
 export const showPlannings = plannings => ({
     type: SHOW_PLANNINGS,
     payload: plannings,
+    errorMessage: {
+        id: 'main.snackBar.errors.fetchPlannings',
+        defaultMessage: 'An error occurred while fetching plannings list',
+    },
 });
 
 export const fetchPlannings = (dispatch) => {

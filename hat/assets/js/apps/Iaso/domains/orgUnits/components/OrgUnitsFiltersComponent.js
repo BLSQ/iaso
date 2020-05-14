@@ -35,6 +35,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
+import { decodeSearch, encodeUriSearches } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -60,14 +61,22 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
 
 class OrgUnitsFiltersComponent extends Component {
     onSearch() {
-        if (this.props.filtersUpdated) {
+        const {
+            filtersUpdated,
+            params,
+            redirectTo,
+            onSearch,
+        } = this.props;
+        const searches = [...decodeSearch(params.searches)];
+        if (filtersUpdated) {
             this.props.setFiltersUpdated(false);
             const tempParams = {
-                ...this.props.params,
+                ...params,
+                searches: encodeUriSearches(searches),
             };
-            this.props.redirectTo(this.props.baseUrl, tempParams);
+            redirectTo(this.props.baseUrl, tempParams);
         }
-        this.props.onSearch();
+        onSearch();
     }
 
     onChange(value, urlKey) {
@@ -91,14 +100,14 @@ class OrgUnitsFiltersComponent extends Component {
                 this.props.setOrgUnitsLocations(orgUnitsLocations);
             }, 100);
         }
-        const searches = [...JSON.parse(params.searches)];
+        const searches = [...decodeSearch(params.searches)];
         searches[searchIndex] = {
             ...searches[searchIndex],
             [urlKey]: value,
         };
         const tempParams = {
             ...params,
-            searches: JSON.stringify(searches),
+            searches: encodeUriSearches(searches),
         };
         this.props.redirectTo(this.props.baseUrl, tempParams);
     }
@@ -118,7 +127,7 @@ class OrgUnitsFiltersComponent extends Component {
             groups,
             searchIndex,
         } = this.props;
-        const searches = [...JSON.parse(params.searches)];
+        const searches = [...decodeSearch(params.searches)];
         const searchParams = searches[searchIndex];
         const filters = [
             extendFilter(searchParams, search(), (value, urlKey) => this.onChange(value, urlKey), searchIndex),

@@ -215,7 +215,7 @@ LinksFiltersComponent.propTypes = {
 const MapStateToProps = state => ({
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     sources: state.orgUnits.sources,
-    profiles: state.profiles.list,
+    profiles: state.users.list,
     algorithms: state.links.algorithmsList,
     algorithmRuns: state.links.algorithmRunsList,
 });

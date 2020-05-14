@@ -16,6 +16,12 @@ class FormsVersionAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         dc = m.Account.objects.create(name="DC Comics")
 
+        sw_source = m.DataSource.objects.create(name="Evil Empire")
+        cls.sw_source = sw_source
+        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        star_wars.default_version = sw_version
+        star_wars.save()
+
         cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
         cls.batman = cls.create_user_with_profile(username="batman", account=dc)
 
@@ -99,6 +105,7 @@ class FormsVersionAPITestCase(APITestCase):
         response = self.client.delete(f"/api/formversions/33/")
         self.assertJSONResponse(response, 405)
 
+    @tag("iaso_only")
     def test_form_versions_create_ok_first_version(self):
         """POST /form-versions/ happy path (first version)"""
 
@@ -108,7 +115,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -133,6 +140,7 @@ class FormsVersionAPITestCase(APITestCase):
         version_form = created_version.form
         self.assertEqual("sample1", version_form.form_id)
 
+    @tag("iaso_only")
     def test_form_versions_create_ok_second_version(self):
         """POST /form-versions/ happy path (second version)"""
 
@@ -142,7 +150,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -153,6 +161,102 @@ class FormsVersionAPITestCase(APITestCase):
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
 
+    @tag("iaso_only")
+    def test_form_versions_create_ok_second_version_with_mappings(self):
+        """POST /form-versions/ happy path (second version)"""
+
+        self.client.force_authenticate(self.yoda)
+        form_mapping = m.Mapping.objects.create(
+            form=self.form_2, mapping_type=m.AGGREGATE, data_source=self.sw_source
+        )
+        version_mapping = m.MappingVersion.objects.create(
+            mapping=form_mapping,
+            form_version=self.form_2.form_versions.first(),
+            json={
+                "question_mappings": {
+                    "old_question": {"type": "neverMapped"},
+                    "member": {"id": "dhis2_id", "valueType": "NUMBER"},
+                }
+            },
+        )
+
+        derived_form_mapping = m.Mapping.objects.create(
+            form=self.form_2,
+            mapping_type=m.DERIVED,
+            data_source=self.sw_source,
+            name="derived",
+        )
+        derived_version_mapping = m.MappingVersion.objects.create(
+            mapping=derived_form_mapping,
+            form_version=self.form_2.form_versions.first(),
+            name="derived",
+            json={
+                "aggregations": [
+                    {
+                        "id": "old_question",
+                        "questionName": "question_name_old",
+                        "aggregationType": "sum",
+                    },
+                    {
+                        "id": "member",
+                        "questionName": "question_name_member",
+                        "aggregationType": "sum",
+                    },
+                ]
+            },
+        )
+
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_sample2_2020022402.xls", "rb"
+        ) as xls_file:
+            response = self.client.post(
+                f"/api/formversions/",
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
+                format="multipart",
+                HTTP_ACCEPT="application/json",
+            )
+        self.assertJSONResponse(response, 201)
+        response_data = response.json()
+        self.assertValidFormVersionData(response_data)
+
+        created_version = m.FormVersion.objects.get(pk=response_data["id"])
+        self.assertEqual(created_version.version_id, "2020022402")
+        new_mapping = (
+            m.MappingVersion.objects.all()
+            .filter(mapping__mapping_type=m.AGGREGATE)
+            .last()
+        )
+        self.assertEqual(new_mapping.form_version_id, response_data["id"])
+        self.assertEqual(
+            new_mapping.json,
+            {
+                "question_mappings": {
+                    "member": {"id": "dhis2_id", "valueType": "NUMBER"}
+                }
+            },
+        )
+
+        new_mapping = (
+            m.MappingVersion.objects.all()
+            .filter(mapping__mapping_type=m.DERIVED)
+            .last()
+        )
+
+        self.assertEqual(new_mapping.form_version_id, response_data["id"])
+        self.assertEqual(
+            new_mapping.json,
+            {
+                "aggregations": [
+                    {
+                        "aggregationType": "sum",
+                        "id": "member",
+                        "questionName": "question_name_member",
+                    }
+                ]
+            },
+        )
+
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_form_id_1(self):
         """POST /form-versions/ with a form_id that already exists within the account (for a different form)"""
 
@@ -162,7 +266,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -171,6 +275,7 @@ class FormsVersionAPITestCase(APITestCase):
             response.json(), "xls_file", "The form_id is already used in another form."
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_form_id_2(self):
         """POST /form-versions/ attempt to create a second version with a different form_id"""
 
@@ -180,7 +285,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -191,6 +296,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Form id should stay constant across form versions.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_version(self):
         """POST /form-versions/ attempt to create a second version with a version inferior to the previous one"""
 
@@ -200,7 +306,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_2.id, "xls_file": xls_file,},
+                data={"form_id": self.form_2.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -211,6 +317,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Invalid XLS file: Parsed version should be greater than previous version.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_invalid_xls_file(self):
         """POST /form-versions/ with invalid XLS file"""
 
@@ -220,7 +327,7 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
@@ -231,6 +338,7 @@ class FormsVersionAPITestCase(APITestCase):
             "Invalid XLS file: The survey sheet is either empty or missing important column headers.",
         )
 
+    @tag("iaso_only")
     def test_form_versions_create_no_xls_file(self):
         """POST /form-versions/, missing params"""
 
@@ -246,6 +354,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasError(response_data, "form_id")
         self.assertHasError(response_data, "xls_file")
 
+    @tag("iaso_only")
     def test_form_versions_create_no_auth(self):
         """POST /form-versions/ , without auth -> we expect a 403 error"""
 
@@ -254,12 +363,13 @@ class FormsVersionAPITestCase(APITestCase):
         ) as xls_file:
             response = self.client.post(
                 f"/api/formversions/",
-                data={"form_id": self.form_1.id, "xls_file": xls_file,},
+                data={"form_id": self.form_1.id, "xls_file": xls_file},
                 format="multipart",
                 HTTP_ACCEPT="application/json",
             )
         self.assertJSONResponse(response, 403)
 
+    @tag("iaso_only")
     def test_form_versions_create_wrong_form(self):
         """POST /form-versions/ - user has no access to the underlying form"""
 

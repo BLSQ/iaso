@@ -55,7 +55,7 @@ class CasesViewSet(viewsets.ViewSet):
     Example:
         /api/cases/?limit=50&page=1&geo_search=zo
 
-    To retrieve aall details on a specific record (case):
+    To retrieve all details on a specific record (case):
         GET /api/cases/12345?full
     All information related to the record will be returned with normalized location, patient, tests, device...
     Note that 12345 is the ID of the record, not the document_id or hat_id
@@ -89,7 +89,7 @@ class CasesViewSet(viewsets.ViewSet):
         screening_result = request.GET.get("screening_result", None)
         confirmation_result = request.GET.get("confirmation_result", None)
         source = request.GET.get("source", None)
-        search_name = request.GET.get("search_name", None)
+        search_postname = request.GET.get("search_postname", None)
         search_prename = request.GET.get("search_prename", None)
         search_lastname = request.GET.get("search_lastname", None)
         search_mother_name = request.GET.get("search_mother_name", None)
@@ -231,8 +231,8 @@ class CasesViewSet(viewsets.ViewSet):
             request.user.has_perm("menupermissions.x_anonymous")
             and not request.user.is_superuser
         ):
-            if search_name:
-                queryset = queryset.filter(Q(name__icontains=search_name))
+            if search_postname:
+                queryset = queryset.filter(Q(postname__icontains=search_postname))
             if search_prename:
                 queryset = queryset.filter(Q(prename__icontains=search_prename))
             if search_lastname:
@@ -679,7 +679,7 @@ class CasesViewSet(viewsets.ViewSet):
         if document_date:
             new_case.document_date = dateparse.parse_datetime(document_date)
         new_case.normalized_patient = patient
-        new_case.name = patient.post_name
+        new_case.postname = patient.post_name
         new_case.lastname = patient.last_name
         new_case.prename = patient.first_name
         new_case.age = patient.age

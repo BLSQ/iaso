@@ -1,6 +1,7 @@
 /* globals STATIC_URL */
 import L from 'leaflet';
 import Color from 'color';
+import orderBy from 'lodash/orderBy';
 
 import { MESSAGES } from '../../../utils/map/mapUtils';
 import theme from './theme';
@@ -178,6 +179,8 @@ export const mapOrgUnitByLocation = (orgUnits) => {
                 otCopy.orgUnits.shapes.push(o);
             }
         });
+        otCopy.orgUnits.locations = orderBy(otCopy.orgUnits.locations, [o => o.org_unit_type_depth], ['asc']);
+        otCopy.orgUnits.shapes = orderBy(otCopy.orgUnits.shapes, [o => o.org_unit_type_depth], ['asc']);
         mappedOrgunits.push(otCopy);
     });
     return mappedOrgunits;

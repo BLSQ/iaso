@@ -38,6 +38,35 @@ const MESSAGES = {
     },
 };
 
+const infectionLocationTypes = (currentCase, formatMessage) => {
+    const types = [
+        {
+            label: formatMessage(MESSAGES.ambiguous),
+            value: 'ambiguous',
+        },
+        {
+            label: formatMessage(MESSAGES.residence),
+            value: 'residence',
+        },
+    ];
+    if (currentCase.screening_type !== 'passive') {
+        types.push(
+            {
+                label: formatMessage(MESSAGES.test),
+                value: 'test',
+            },
+        );
+    }
+
+    types.push(
+        {
+            label: formatMessage(MESSAGES.other),
+            value: 'other',
+        },
+    );
+    return types;
+};
+
 class CaseInfectionLocationModalComponent extends Component {
     constructor(props) {
         super(props);
@@ -146,24 +175,7 @@ class CaseInfectionLocationModalComponent extends Component {
                                         simpleValue
                                         value={currentCase.infection_location_type}
                                         placeholder={formatMessage(MESSAGES.selectPlaceholder)}
-                                        options={[
-                                            {
-                                                label: formatMessage(MESSAGES.ambiguous),
-                                                value: 'ambiguous',
-                                            },
-                                            {
-                                                label: formatMessage(MESSAGES.residence),
-                                                value: 'residence',
-                                            },
-                                            {
-                                                label: formatMessage(MESSAGES.test),
-                                                value: 'test',
-                                            },
-                                            {
-                                                label: formatMessage(MESSAGES.other),
-                                                value: 'other',
-                                            },
-                                        ]}
+                                        options={infectionLocationTypes(currentCase, formatMessage)}
                                         onChange={value => this.onChange('infection_location_type', value)}
                                     />
                                 )}

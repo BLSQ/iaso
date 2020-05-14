@@ -137,12 +137,12 @@ def get_menu(user, active_link):
                 },
                 {
                     "name": "Macroplanification",
-                    "url_key": reverse("dashboard:macro") +"/years/" + get_last_years(3),
+                    "url_key": reverse("dashboard:macro"),
                     "perms": "x_plannings_macroplanning"
                 },
                 {
                     "name": "Microplanification",
-                    "url_key": reverse("dashboard:micro")+"/years/" + get_last_years(3),
+                    "url_key": reverse("dashboard:micro"),
                     "perms": "x_plannings_microplanning"
                 },
                 {

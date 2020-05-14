@@ -10,8 +10,6 @@ from hat.geo.geojson import geojson_queryset
 from django.db.models import Q
 from copy import deepcopy
 from hat.audit.models import log_modification, ORG_UNIT_API
-from hat.api.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from django.core.exceptions import PermissionDenied
@@ -33,13 +31,19 @@ def check_access(org_unit, user):
         raise PermissionDenied("Your account does not have access to this org unit")
 
 
-def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
+def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
     new_org_units = []
     version = None
     if not user.is_anonymous:
         version = user.iaso_profile.account.default_version
+        project = Project.objects.filter(app_id=app_id).first()
+        if project and project.needs_authentication:
+            if not user or user.iaso_profile.account.id != project.account.id:
+                raise PermissionDenied("User permissions problems")
     elif app_id is not None:
         project = Project.objects.get(app_id=app_id)
+        if project.needs_authentication:
+            raise PermissionDenied("User permissions problems")
         version = project.account.default_version
 
     for org_unit in org_units:
@@ -52,6 +56,7 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
         if latitude and longitude:
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+
         if created:
             org_unit_db.custom = True
             org_unit_db.validated = False
@@ -59,7 +64,9 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
             if not parent_id:
-                parent_id = org_unit.get("parent_id", None) # there exist versions of the mobile app in the wild with both parentId and parent_id
+                parent_id = org_unit.get(
+                    "parent_id", None
+                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
 
             if parent_id is not None:
                 if str.isdigit(parent_id):
@@ -68,7 +75,9 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
                     parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
                     org_unit_db.parent_id = parent_org_unit.id
 
-            org_unit_type_id =  org_unit.get("orgUnitTypeId", None) # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            org_unit_type_id = org_unit.get(
+                "orgUnitTypeId", None
+            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
             if not org_unit_type_id:
                 org_unit_type_id = org_unit.get("org_unit_type_id", None)
             org_unit_db.org_unit_type_id = org_unit_type_id
@@ -84,8 +93,8 @@ def import_data(org_units, user, api_import, app_id='org.bluesquarehub.iaso'):
                 org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
             else:
                 org_unit_db.updated_at = org_unit.get("created_at", None)
-
-            org_unit_db.creator = user
+            if not user.is_anonymous:
+                org_unit_db.creator = user
             org_unit_db.source = "API"
             org_unit_db.api_import = api_import
             if org_unit_location:
@@ -213,7 +222,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):
@@ -255,7 +263,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 else:
                     queryset = queryset.union(additional_queryset)
                 counts.append(
-                    {"index": search_index, "count": additional_queryset.count(),}
+                    {"index": search_index, "count": additional_queryset.count()}
                 )
                 search_index += 1
         else:
@@ -335,12 +343,19 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Source", "width": 20},
                 {"title": "Validé", "width": 15},
                 {"title": "Référence externe", "width": 17},
-                {"title": "parent1", "width": 20},
-                {"title": "parent2", "width": 20},
-                {"title": "parent3", "width": 20},
-                {"title": "parent4", "width": 20},
+                {"title": "parent 1", "width": 20},
+                {"title": "parent 2", "width": 20},
+                {"title": "parent 3", "width": 20},
+                {"title": "parent 4", "width": 20},
+                {"title": "Ref Ext parent 1", "width": 20},
+                {"title": "Ref Ext parent 2", "width": 20},
+                {"title": "Ref Ext parent 3", "width": 20},
+                {"title": "Ref Ext parent 4", "width": 20},
             ]
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
+            parent_field_names.extend(
+                ["parent__" * i + "source_ref" for i in range(1, 5)]
+            )
             queryset = queryset.values(
                 "id",
                 "name",

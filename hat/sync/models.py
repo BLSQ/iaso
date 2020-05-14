@@ -124,6 +124,7 @@ class DeviceImportEvent(models.Model):
     created_records = models.IntegerField(null=True)
     updated_records = models.IntegerField(null=True)
     deleted_records = models.IntegerField(null=True)
+    ptr_records = models.IntegerField(null=True)
     errors = models.IntegerField(null=True)
     last_synced_seq = models.IntegerField(null=True)
     details = models.TextField(null=True)
@@ -330,3 +331,19 @@ class JSONDocument(models.Model):
             self.doc_revision,
             self.device,
         )
+
+    def as_dict(self, full=False):
+        response = {
+            "id": self.id,
+            "doc_id": self.doc_id,
+            "doc_revision": self.doc_revision,
+            "device": self.device.as_dict() if self.device else None,
+            "case_id": self.case_id,
+            "type": self.type,
+            "deleted": self.deleted,
+            "created_at": self.created_at,
+            "processed": self.processed,
+        }
+        if full:
+            response["doc"] = self.doc
+        return response

@@ -36,7 +36,9 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 import { orgUnitsTableColumns } from './config';
 
 import { createUrl } from '../../../../utils/fetchData';
-import { fetchLatestOrgUnitLevelId } from './utils';
+import {
+    fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
+} from './utils';
 import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
@@ -54,7 +56,9 @@ import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBars
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
-const baseUrl = 'orgunits';
+import { baseUrls } from '../../constants/urls';
+
+const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;
 export const locationLimitMax = 3000;
 
@@ -78,31 +82,6 @@ const styles = theme => ({
         borderRadius: 15,
     },
 });
-
-const mapOrgUnitBySearch = (orgUnits, searches) => {
-    const mappedOrgunits = [];
-    searches.forEach((search, i) => {
-        mappedOrgunits[i] = orgUnits.filter(o => o.search_index === i);
-    });
-    return mappedOrgunits;
-};
-
-const mapOrgUnitByLocation = (orgUnits, searches) => {
-    const mappedOrgunits = {
-        shapes: [],
-        locations: [],
-    };
-    orgUnits.forEach((o) => {
-        if (o.latitude && o.longitude) {
-            mappedOrgunits.locations.push(o);
-        }
-        if (o.geo_json) {
-            mappedOrgunits.shapes.push(o);
-        }
-    });
-    mappedOrgunits.locations = mapOrgUnitBySearch(mappedOrgunits.locations, searches);
-    return mappedOrgunits;
-};
 
 class OrgUnits extends Component {
     constructor(props) {
@@ -192,8 +171,7 @@ class OrgUnits extends Component {
         const {
             params,
         } = this.props;
-
-        const searches = JSON.parse(params.searches);
+        const searches = decodeSearch(params.searches);
         searches.forEach((s, i) => {
             searches[i].orgUnitParentId = searches[i].levels ? fetchLatestOrgUnitLevelId(searches[i].levels) : null;
         });
@@ -202,7 +180,7 @@ class OrgUnits extends Component {
             limit: params.pageSize ? params.pageSize : 50,
             order: params.order ? params.order : '-updated_at',
             page: params.page ? params.page : 1,
-            searches: JSON.stringify(searches),
+            searches: encodeUriSearches(searches),
         };
         delete urlParams.tab;
         delete urlParams.searchActive;
@@ -235,15 +213,6 @@ class OrgUnits extends Component {
         this.setState(newState);
     }
 
-    selectOrgUnit(orgUnit, tab) {
-        const { redirectTo } = this.props;
-        const newParams = {
-            orgUnitId: orgUnit.id,
-            tab,
-        };
-        redirectTo('orgunits/detail', newParams);
-    }
-
     fetchOrgUnitsLocations() {
         const {
             dispatch,
@@ -255,7 +224,7 @@ class OrgUnits extends Component {
             this.props.setOrgUnitsLocations(
                 mapOrgUnitByLocation(
                     orgUnits,
-                    JSON.parse(params.searches),
+                    decodeSearch(params.searches),
                 ),
             );
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -281,9 +250,7 @@ class OrgUnits extends Component {
         this.props.setOrgUnits(null, params, 0, 1, []);
         Promise.all(promises).then((data) => {
             if (!params.searchActive) {
-                const newParams = {
-                    ...params,
-                };
+                const newParams = encodeUriParams(params);
                 newParams.searchActive = true;
                 this.props.redirectTo(baseUrl, newParams);
             }
@@ -292,7 +259,7 @@ class OrgUnits extends Component {
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
                     data[1],
-                    JSON.parse(params.searches),
+                    decodeSearch(params.searches),
                 ));
             }
             dispatch(this.props.setOrgUnitsListFetching(false));
@@ -321,7 +288,7 @@ class OrgUnits extends Component {
             formatMessage,
             this,
             classes,
-            JSON.parse(params.searches),
+            decodeSearch(params.searches),
         );
         return (
             <Fragment>
@@ -354,7 +321,7 @@ class OrgUnits extends Component {
                 </TopBar>
                 <Box className={classes.containerFullHeightPadded}>
                     {
-                        JSON.parse(params.searches).map((s, searchIndex) => {
+                        decodeSearch(params.searches).map((s, searchIndex) => {
                             const currentSearchIndex = parseInt(params.searchTabIndex, 10);
                             return (
                                 <div key={searchIndex} className={searchIndex !== currentSearchIndex ? classes.hiddenOpacity : null}>

@@ -1,5 +1,6 @@
 import React, { Fragment } from 'react';
 import { injectIntl } from 'react-intl';
+import { Link } from 'react-router';
 
 import {
     withStyles,
@@ -16,6 +17,9 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 import muiTheme from '../../utils/theme';
+import {
+    userHasPermission,
+} from '../../domains/users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -33,6 +37,7 @@ function MenuItem(props) {
         intl,
         subMenuLevel,
         currentPath,
+        currentUser,
     } = props;
     const path = `${currentPath}/${menuItem.key}`;
     const baseUrl = location.pathname.split('/')[subMenuLevel];
@@ -49,39 +54,50 @@ function MenuItem(props) {
     };
     return (
         <Fragment>
-            <ListItem
-                style={itemStyle}
-                button
-                onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+            <Link
+                className={classes.linkButton}
+                to={path}
             >
-                <ListItemIcon className={classes.listItemIcon}>
-                    {menuItem.icon({ color })}
-                </ListItemIcon>
-                <ListItemText
-                    primary={<Typography type="body2" color={color}>{intl.formatMessage(menuItem.label)}</Typography>}
-                />
-                {
-                    hasSubMenu ? subMenuIcon : null
-                }
-            </ListItem>
+                <ListItem
+                    style={itemStyle}
+                    button
+                    onClick={() => (!hasSubMenu ? onClick(path) : toggleOpen())}
+                >
+                    <ListItemIcon className={classes.listItemIcon}>
+                        {menuItem.icon({ color })}
+                    </ListItemIcon>
+                    <ListItemText
+                        primary={<Typography type="body2" color={color}>{intl.formatMessage(menuItem.label)}</Typography>}
+                    />
+                    {
+                        hasSubMenu ? subMenuIcon : null
+                    }
+                </ListItem>
+            </Link>
             {
                 hasSubMenu
                 && (
                     <Collapse in={open} timeout="auto" unmountOnExit>
                         <List component="div" disablePadding>
                             {
-                                menuItem.subMenu.map(subMenu => (
-                                    <MenuItem
-                                        classes={classes}
-                                        intl={intl}
-                                        key={subMenu.key}
-                                        menuItem={subMenu}
-                                        onClick={subPath => onClick(subPath)}
-                                        subMenuLevel={subMenuLevel + 1}
-                                        location={location}
-                                        currentPath={path}
-                                    />
-                                ))
+                                menuItem.subMenu.map((subMenu) => {
+                                    if (userHasPermission(subMenu.permission, currentUser)) {
+                                        return (
+                                            <MenuItem
+                                                classes={classes}
+                                                intl={intl}
+                                                key={subMenu.key}
+                                                menuItem={subMenu}
+                                                onClick={subPath => onClick(subPath)}
+                                                subMenuLevel={subMenuLevel + 1}
+                                                location={location}
+                                                currentPath={path}
+                                                currentUser={currentUser}
+                                            />
+                                        );
+                                    }
+                                    return null;
+                                })
                             }
                         </List>
                     </Collapse>
@@ -104,6 +120,7 @@ MenuItem.propTypes = {
     classes: PropTypes.object.isRequired,
     subMenuLevel: PropTypes.number,
     currentPath: PropTypes.string,
+    currentUser: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(MenuItem));

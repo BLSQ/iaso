@@ -1,10 +1,7 @@
 from django.core.exceptions import PermissionDenied
 from rest_framework import viewsets
 from rest_framework.response import Response
-from iaso.models import DataSource, SourceVersion
-
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework.authentication import BasicAuthentication
+from iaso.models import SourceVersion
 
 
 class SourceVersionViewSet(viewsets.ViewSet):
@@ -12,7 +9,6 @@ class SourceVersionViewSet(viewsets.ViewSet):
     list:
     """
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = []
 
     def list(self, request):

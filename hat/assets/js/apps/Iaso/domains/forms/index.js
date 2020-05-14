@@ -24,10 +24,13 @@ import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsCo
 import CustomTableComponent from '../../../../components/CustomTableComponent';
 import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
-const baseUrl = 'forms';
+import { baseUrls } from '../../constants/urls';
+
+const baseUrl = baseUrls.forms;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -79,15 +82,6 @@ class Forms extends Component {
         return url;
     }
 
-    selectForm(form) {
-        const { redirectTo } = this.props;
-        this.props.setCurrentForm(form);
-        const newParams = {
-            formId: form.id,
-        };
-        redirectTo('instances', newParams);
-    }
-
     deleteForm(form) {
         return deleteForm(this.props.dispatch, form.id)
             .then(() => this.setState({ isUpdated: true }))
@@ -102,6 +96,7 @@ class Forms extends Component {
             intl: {
                 formatMessage,
             },
+            isLoading,
         } = this.props;
         return (
             <section>
@@ -139,14 +134,18 @@ class Forms extends Component {
                             onSuccess={() => this.setState({ isUpdated: true })}
                         />
                         {reduxPage.list
-            && (
-                <DownloadButtonsComponent
-                    csvUrl={this.getExportUrl('csv')}
-                    xlsxUrl={this.getExportUrl('xlsx')}
-                />
-            )}
+                            && (
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getExportUrl('csv')}
+                                    xlsxUrl={this.getExportUrl('xlsx')}
+                                />
+                            )}
                     </Grid>
                 </Box>
+                {
+                    isLoading
+                    && <LoadingSpinner />
+                }
             </section>
         );
     }
@@ -167,10 +166,12 @@ Forms.propTypes = {
     setProjects: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    isLoading: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({
     reduxPage: state.forms.formsPage,
+    isLoading: state.forms.isLoading,
 });
 
 const MapDispatchToProps = dispatch => ({

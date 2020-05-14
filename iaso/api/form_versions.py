@@ -2,13 +2,18 @@ import typing
 from django.db import transaction
 from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers, permissions, parsers
-from rest_framework.authentication import BasicAuthentication
 
 from iaso.models import Form, FormVersion
+from django.db.models.functions import Concat
+from django.db.models import Value, Count
+from django.db.models import BooleanField
+from django.db.models.expressions import Case, When
+
+
 from iaso.odk import parsing
 from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
-from .auth.authentication import CsrfExemptSessionAuthentication
 from .forms import HasFormPermission
+from iaso.dhis2.form_mapping import copy_mappings_from_previous_version
 
 
 class FormVersionSerializer(DynamicFieldsModelSerializer):
@@ -18,6 +23,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "id",
             "version_id",
             "form_id",
+            "form_name",
             "xls_file",
             "file",
             "created_at",
@@ -27,6 +33,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "id",
             "version_id",
             "form_id",
+            "form_name",
+            "full_name",
+            "mapped",
             "xls_file",
             "file",
             "created_at",
@@ -35,7 +44,10 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         ]
         read_only_fields = [
             "id",
+            "form_name",
+            "full_name",
             "version_id",
+            "mapped",
             "file",
             "created_at",
             "updated_at",
@@ -45,6 +57,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     form_id = serializers.PrimaryKeyRelatedField(
         source="form", queryset=Form.objects.all()
     )
+    form_name = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    mapped = serializers.SerializerMethodField()
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
     )  # field is not required in model
@@ -52,9 +67,17 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
 
+    def get_mapped(self, form_version):
+        return form_version.mapped
+
+    def get_form_name(self, form_version):
+        return form_version.form.name
+
     def get_descriptor(self, form_version):
-        json_survey = parsing.to_json_dict(form_version)
-        return json_survey
+        return form_version.get_or_save_form_descriptor()
+
+    def get_full_name(self, form_version):
+        return form_version.full_name
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]
@@ -122,13 +145,14 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             form.form_id = form_form_id
             form.save()
 
+        copy_mappings_from_previous_version(version)
+
         return version
 
 
 class FormVersionsViewSet(ModelViewSet):
     """Form versions API: /api/formversions/"""
 
-    authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
     permission_classes = (permissions.IsAuthenticated,)
     serializer_class = FormVersionSerializer
     results_key = "form_versions"
@@ -137,5 +161,39 @@ class FormVersionsViewSet(ModelViewSet):
     http_method_names = ("post", "get")
 
     def get_queryset(self):
-        profile = self.request.user.iaso_profile
-        return FormVersion.objects.filter(form__projects__account=profile.account)
+        orders = self.request.GET.get("order", "full_name").split(",")
+        mapped_filter = self.request.GET.get("mapped", "")
+
+        queryset = None
+        if self.request.user and not self.request.user.is_anonymous:
+            profile = self.request.user.iaso_profile
+            queryset = FormVersion.objects.filter(
+                form__projects__account=profile.account
+            )
+        else:
+            raise PermissionDenied()
+
+        search_name = self.request.GET.get("search_name", None)
+        if search_name:
+            queryset = queryset.filter(form__name__icontains=search_name)
+
+        queryset = queryset.annotate(
+            full_name=Concat("form__name", Value(" - V"), "version_id")
+        )
+
+        queryset = queryset.annotate(mapping_versions_count=Count("mapping_versions"))
+
+        queryset = queryset.annotate(
+            mapped=Case(
+                When(mapping_versions_count__gt=0, then=True),
+                default=False,
+                output_field=BooleanField(),
+            )
+        )
+
+        if mapped_filter:
+            queryset = queryset.filter(mapped=(mapped_filter == "true"))
+
+        queryset = queryset.order_by(*orders)
+
+        return queryset

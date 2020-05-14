@@ -1,9 +1,11 @@
 from random import randint, random
+from django.utils import timezone
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from uuid import uuid4
+from django.contrib.auth.models import Permission
 from iaso.models import (
     User,
     Instance,
@@ -21,10 +23,11 @@ from iaso.models import (
 )
 from django.core import management
 
-from iaso.dhis2.aggregate_exporter import AggregateExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from django.utils.dateparse import parse_datetime
 from dhis2 import Api
+
 import json
 
 """
@@ -39,7 +42,13 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-
+        parser.add_argument(
+            "--dhis2version",
+            type=str,
+            help="seed or export",
+            required=True,
+            default="2.31.8",
+        )
         parser.add_argument(
             "-f",
             "--force",
@@ -48,7 +57,7 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        dhis2_version = "2.31.7"
+        dhis2_version = options.get("dhis2version")
         mode = options.get("mode")
 
         account, account_created = Account.objects.get_or_create(
@@ -61,6 +70,9 @@ class Command(BaseCommand):
         )
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
+        user.user_permissions.clear()
+        for permission in Permission.objects.all():
+            user.user_permissions.add(permission)
         user.save()
         try:
             user.iaso_profile
@@ -103,7 +115,11 @@ class Command(BaseCommand):
         project.forms.add(quantity_form)
         quantity_form.org_unit_types.add(orgunit_type)
         quantity_mapping_version = self.seed_form(
-            quantity_form, datasource, credentials
+            quantity_form,
+            datasource,
+            credentials,
+            mapping_type="AGGREGATE",
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
         )
 
         # quality
@@ -115,14 +131,21 @@ class Command(BaseCommand):
         )
         quality_form.org_unit_types.add(orgunit_type)
         project.forms.add(quality_form)
-        quality_form_version = self.seed_form(quality_form, datasource, credentials)
+        quality_form_version = self.seed_form(
+            quality_form,
+            datasource,
+            credentials,
+            mapping_type="AGGREGATE",
+            mapping_file="./testdata/seed-data-command-form-mapping.json",
+            xls_file="testdata/seed-data-command-form-i18n.xlsx",
+        )
         project.save()
 
         self.quantity_form = quantity_form
 
         # cvs
         cvs_form, created = Form.objects.get_or_create(
-            form_id="css_" + dhis2_version,
+            form_id="cvs_" + dhis2_version,
             name="Community Verification Satisfaction form " + dhis2_version,
             period_type="QUARTER",
             single_per_period=False,
@@ -133,9 +156,33 @@ class Command(BaseCommand):
             cvs_form,
             datasource,
             credentials,
-            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+            mapping_type="EVENT",
+            mapping_file="./testdata/seed-data-command-cvs_survey-mapping.json",
+            xls_file="./testdata/seed-data-command-cvs_survey.xls",
         )
         project.forms.add(cvs_form)
+
+        cvs_stat_form, created = Form.objects.get_or_create(
+            form_id="cvs_stat_" + dhis2_version,
+            name="CVS Stats " + dhis2_version,
+            period_type="QUARTER",
+            single_per_period=False,
+        )
+        cvs_stat_form.derived = True
+        cvs_stat_form.save()
+
+        cvs_stat_form.org_unit_types.add(orgunit_type)
+
+        cvs_stat_mapping_version = self.seed_form(
+            cvs_stat_form,
+            datasource,
+            credentials,
+            mapping_type="DERIVED",
+            mapping_file="./testdata/seed-data-command-cvs-form-mapping.json",
+            xls_file="./testdata/seed-data-command-form-cvs-stats.xls",
+        )
+
+        project.forms.add(cvs_stat_form)
 
         self.project = project
 
@@ -193,9 +240,27 @@ class Command(BaseCommand):
                 "instances",
             )
 
+        if mode == "derived":
+
+            period = "2018Q1"
+            for i in cvs_stat_form.instances.filter(period=period).all():
+                i.delete()
+
+            from iaso.dhis2.derived_instance_generator import generate_instances
+
+            generate_instances(
+                project, cvs_mapping_version, cvs_stat_mapping_version, period
+            )
+
+            print(
+                "generated",
+                cvs_stat_form.name,
+                cvs_stat_form.instances.count(),
+                "instances",
+            )
+
         if mode == "export":
             force = options.get("force")
-            from django.utils import timezone
 
             print("********* exporting")
             print("fixing categoryOptions sharing", timezone.now())
@@ -215,11 +280,27 @@ class Command(BaseCommand):
             )
 
             print("exporting", export_request.exportstatus_set.count(), timezone.now())
-            AggregateExporter().export_instances(export_request, True)
+            DataValueExporter().export_instances(export_request, True)
 
         if mode == "stats":
             for c in Instance.objects.with_status().counts_by_status():
                 print(c)
+
+        if mode == "fix":
+            print("fixing assign all orgunits to program", timezone.now())
+            self.assign_orgunits_to_program(credentials)
+            print("fixing categoryOptions sharing", timezone.now())
+            self.make_category_options_public(credentials)
+
+    def assign_orgunits_to_program(self, credentials):
+        api = Api(credentials.url, credentials.login, credentials.password)
+        program_id = "eBAyeGv0exc"
+        orgunits = api.get(
+            "organisationUnits", params={"fields": "id", "paging": "false"}
+        ).json()["organisationUnits"]
+        program = api.get("programs/" + program_id, params={"fields": ":all"}).json()
+        program["organisationUnits"] = orgunits
+        api.put("programs/" + program_id, program)
 
     def make_category_options_public(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
@@ -254,7 +335,9 @@ class Command(BaseCommand):
         form,
         datasource,
         credentials,
-        mapping_file="./testdata/seed-data-command-form-mapping.json",
+        mapping_type="AGGREGATE",
+        mapping_file=None,
+        xls_file="testdata/seed-data-command-form.xlsx",
     ):
         form_version, created = FormVersion.objects.get_or_create(
             form=form, version_id=1
@@ -264,9 +347,14 @@ class Command(BaseCommand):
             # TODO: use better fixture
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")
         )
+        form_version.xls_file = UploadedFile(open(xls_file, "rb+"))
+
         form_version.save()
-        mapping_type = "AGGREGATE" if form.single_per_period else "DERIVED"
-        mapping_version_name = "aggregate" if form.single_per_period else "derived"
+
+        if not mapping_file:
+            return
+
+        mapping_version_name = mapping_type
 
         mapping, _mapping_created = Mapping.objects.get_or_create(
             form=form, data_source=datasource, mapping_type=mapping_type
@@ -322,14 +410,13 @@ class Command(BaseCommand):
 
                     test_data = {"_version": 1}
 
-                    if "question_mappings" in mapping_version.json:
+                    if mapping_version and "question_mappings" in mapping_version.json:
                         # quality or quantity
                         for key in mapping_version.json["question_mappings"]:
                             test_data[key] = randint(1, 10)
                     else:
                         # CVS
-                        for key in mapping_version.json["aggregations"]:
-                            test_data[key["question_key"]] = randint(1, 100)
+                        test_data["cs_304"] = randint(1, 100)
 
                     instance.json = test_data
                     instance.form = form

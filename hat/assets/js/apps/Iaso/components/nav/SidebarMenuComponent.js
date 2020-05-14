@@ -6,26 +6,32 @@ import { push } from 'react-router-redux';
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
     withStyles,
+    Box,
     Button,
     IconButton,
     Drawer,
     List,
     Divider,
+    Typography,
 } from '@material-ui/core';
 
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
-import logoUrl from '../../images/iaso-logo.svg';
-
 import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
 import { SIDEBAR_WIDTH } from '../../constants/uiConstants';
 
 import MenuItem from './MenuItemComponent';
+import LogoSvg from '../svg/LogoSvgComponent';
 
 import commonStyles from '../../styles/common';
 
 import menuItems from '../../constants/menu';
+
+import {
+    userHasPermission,
+    userHasOneOfPermissions,
+} from '../../domains/users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -54,16 +60,17 @@ const styles = theme => ({
         marginLeft: theme.spacing(3),
         marginRight: theme.spacing(3),
     },
+    userName: {
+        marginLeft: 5,
+    },
 });
 
 class SidebarMenu extends PureComponent {
-    onClick(path) {
+    onClick() {
         const {
-            redirectTo,
             toggleSidebar,
         } = this.props;
         toggleSidebar();
-        redirectTo(path);
     }
 
     render() {
@@ -72,6 +79,7 @@ class SidebarMenu extends PureComponent {
             isOpen,
             toggleSidebar,
             location,
+            currentUser,
         } = this.props;
         return (
             <Drawer
@@ -80,7 +88,7 @@ class SidebarMenu extends PureComponent {
                 onClose={toggleSidebar}
             >
                 <div className={classes.toolbar}>
-                    <img src={logoUrl} className={classes.logo} alt="logo" />
+                    <LogoSvg className={classes.logo} />
                     <IconButton
                         className={classes.menuButton}
                         color="inherit"
@@ -93,26 +101,43 @@ class SidebarMenu extends PureComponent {
                 <Divider />
                 <List className={classes.list}>
                     {
-                        menuItems.map(menuItem => (
-                            <MenuItem
-                                location={location}
-                                key={menuItem.key}
-                                menuItem={menuItem}
-                                onClick={path => this.onClick(path)}
-                            />
-                        ))
+                        menuItems.map((menuItem) => {
+                            if (
+                                (menuItem.permission && userHasPermission(menuItem.permission, currentUser))
+                                || (menuItem.subMenu && userHasOneOfPermissions(menuItem.subMenu.map(sm => sm.permission), currentUser))
+                            ) {
+                                return (
+                                    <MenuItem
+                                        location={location}
+                                        key={menuItem.key}
+                                        menuItem={menuItem}
+                                        onClick={path => this.onClick(path)}
+                                        currentUser={currentUser}
+                                    />
+                                );
+                            }
+                            return null;
+                        })
                     }
                 </List>
-                <Button
-                    size="small"
-                    className={classes.logout}
-                    color="inherit"
-                    href="/logout-iaso"
-                    aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
-                >
-                    <ExitIcon className={classes.smallButtonIcon} />
-                    <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
-                </Button>
+                <Box className={classes.logout}>
+                    <Typography
+                        variant="body2"
+                        color="textSecondary"
+                        className={classes.userName}
+                    >
+                        {currentUser.user_name}
+                    </Typography>
+                    <Button
+                        size="small"
+                        color="inherit"
+                        href="/logout-iaso"
+                        aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                    >
+                        <ExitIcon className={classes.smallButtonIcon} />
+                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
+                    </Button>
+                </Box>
             </Drawer>
         );
     }
@@ -124,10 +149,12 @@ SidebarMenu.propTypes = {
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
+    currentUser: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     isOpen: state.sidebar.isOpen,
+    currentUser: state.users.current,
 });
 
 const MapDispatchToProps = dispatch => ({

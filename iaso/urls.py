@@ -1,5 +1,9 @@
 from django.conf.urls import url, include
 from rest_framework import routers
+from rest_framework_simplejwt.views import (
+    TokenObtainPairView,
+    TokenRefreshView,
+)
 from .api.org_units import OrgUnitViewSet
 
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -20,7 +24,13 @@ from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
 from .api.enketo import EnketoViewSet
+from .api.mappings import MappingsViewSet
+from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
+from .api.derived_instances import DerivedInstancesViewSet
+from .api.hesabu_descriptors import HesabuDescriptorsViewSet
+from .api.dhis2_resources import DHIS2_VIEWSETS
+from .api.permissions import PermissionsViewSet
 from iaso import matching
 import pkgutil
 
@@ -48,6 +58,12 @@ router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsr
 router.register(r"groups", GroupsViewSet, base_name="groups")
 router.register(r"completeness", CompletenessViewSet, base_name="completeness")
 router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
+router.register(r"mappings", MappingsViewSet, base_name="mappings")
+router.register(r"mappingversions", MappingVersionsViewSet, base_name="mappingversions")
+router.register(r"permissions", PermissionsViewSet, base_name="permissions")
+router.register(
+    r"derivedinstances", DerivedInstancesViewSet, base_name="derivedinstances"
+)
 
 
 urlpatterns = [
@@ -83,6 +99,38 @@ urlpatterns = [
         name="enketo-submission",
     ),
 ]
+
+
+def append_datasources_subresource(viewset, resource_name, urlpatterns):
+    urlpatterns.append(
+        url(
+            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"/$",
+            view=viewset.as_view({"get": "list"}),
+            name=resource_name,
+        )
+    )
+    urlpatterns.append(
+        url(
+            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/"
+            + resource_name
+            + r"\.(?P<format>[a-z0-9]+)/?$",
+            view=viewset.as_view({"get": "list"}),
+            name=resource_name,
+        )
+    )
+
+
+urlpatterns = [
+    url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
+    url(r"^", include(router.urls)),
+]
+for dhis2_resource in DHIS2_VIEWSETS:
+    append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
+
+append_datasources_subresource(
+    HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns
+)
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########

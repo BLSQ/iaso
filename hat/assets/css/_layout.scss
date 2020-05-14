@@ -178,6 +178,7 @@ $directions: left right top bottom;
 .display-flex {
     display: flex ! important;
 }
+
 .flex-center {
     justify-content: center;
     align-items: center;
@@ -281,6 +282,14 @@ $directions: left right top bottom;
 
 .margin-left {
     margin-left: $padding-unit/2;
+}
+
+.margin-left--tiny {
+    margin-left: $padding-unit/4;
+}
+
+.margin-left--tiny {
+    margin-left: $padding-unit/8;
 }
 
 .margin-bottom {
@@ -417,4 +426,9 @@ $directions: left right top bottom;
 
 .MuiSnackbar-root {
     z-index: 999999 !important;
+}
+
+
+.line-height {
+    line-height: 15px !important;
 }

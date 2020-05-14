@@ -24,6 +24,7 @@ import {
     zooms,
     genericMap,
     MESSAGES,
+    renderSmallVillagesPopup,
 } from '../../../utils/map/mapUtils';
 import setDrawMessages from '../../../utils/map/drawMapMessages';
 
@@ -129,6 +130,7 @@ class ShapeMap extends Component {
         // create panes to preserve z-index order
         map.createPane('custom-pane-shapes');
         map.createPane('custom-draw');
+        map.createPane('custom-pane-markers');
         this.map = map;
     }
 
@@ -167,6 +169,9 @@ class ShapeMap extends Component {
         const { map } = this;
         if (map.hasLayer(this.shapesLayer)) {
             map.removeLayer(this.shapesLayer);
+        }
+        if (map.hasLayer(this.locations)) {
+            map.removeLayer(this.shapeslocationsLayer);
         }
         if (shapeItem.geo_json) {
             const geoLayer = L.geoJson(shapeItem.geo_json, drawShapeOptions(this));
@@ -221,6 +226,35 @@ class ShapeMap extends Component {
                 });
             });
         }
+        if (shapeItem.villages.length > 0) {
+            this.locations = new L.FeatureGroup([]);
+            let villageMarker;
+            shapeItem.villages.forEach((location) => {
+                villageMarker = L.circle([
+                    location.latitude ? location.latitude : 0,
+                    location.longitude ? location.longitude : 0,
+                ], {
+                    color: 'blue',
+                    fillColor: 'blue',
+                    fillOpacity: 0.5,
+                    radius: 100,
+                    pane: 'custom-pane-markers',
+                }).on('click', (event) => {
+                    const popUp = event.target.getPopup();
+                    popUp.setContent(renderSmallVillagesPopup(location, this.props.intl.formatMessage));
+                }).on('mouseover', (event) => {
+                    L.DomEvent.stop(event);
+                    this.updateTooltipSmallVillage(location);
+                }).bindPopup();
+
+                villageMarker.addTo(this.locations);
+                map.addLayer(this.locations);
+            });
+        }
+    }
+
+    updateTooltipSmallVillage(location) {
+        this.state.containers.tooltipSmall.innerHTML = location.name;
     }
 
     updateTooltipSmall(item) {

@@ -11,7 +11,7 @@ from rest_framework.response import Response
 
 from django.core.paginator import Paginator
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import AS, ZS
+from hat.geo.models import AS, ZS, Village
 from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
 from hat.users.models import Team
@@ -203,6 +203,11 @@ class ASViewSet(viewsets.ViewSet):
             res["geo_json"] = geojson_queryset(
                 queryset, geometry_field="simplified_geom"
             )
+
+        villages = Village.objects.filter(
+            Q(AS=pk) & Q(village_official="YES")
+        )
+        res["villages"] = [village.as_dict() for village in villages]
         if is_authorized:
             return Response(res)
         else:

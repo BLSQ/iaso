@@ -9,6 +9,7 @@ import ReactTable, { ReactTableDefaults } from 'react-table';
 import { getColumns } from '../config';
 import commonStyles from '../../../styles/common';
 import customTableTranslations from '../../../../../utils/constants/customTableTranslations';
+import { baseUrls } from '../../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -22,9 +23,11 @@ const styles = theme => ({
     },
     error: {
         color: theme.palette.error.main,
+        fontWeight: 'bold',
     },
     ready: {
         color: theme.palette.success.main,
+        fontWeight: 'bold',
     },
     cell: {
         outline: 'none',
@@ -48,11 +51,17 @@ class CompletenessPeriodComponent extends Component {
     }
 
     onSelectCell(form, status, period) {
-        this.props.redirectTo('instances', {
+        this.props.redirectTo(baseUrls.instances, {
             formId: form.id,
             periods: period.asPeriodType(form.period_type).periodString,
             status: status.toUpperCase(),
         });
+    }
+
+    onClick(form, onGenerateDerivedInstances) {
+        const periods = Array.from(new Set(Object.values(form.months).map(m => m.period.periodString)));
+        const derived = form.generate_derived;
+        onGenerateDerivedInstances({ periods, derived });
     }
 
     render() {
@@ -65,6 +74,7 @@ class CompletenessPeriodComponent extends Component {
             intl: {
                 formatMessage,
             },
+            onGenerateDerivedInstances,
         } = this.props;
 
         return (
@@ -93,6 +103,7 @@ class CompletenessPeriodComponent extends Component {
                             classes,
                             activeInstanceStatuses,
                             (form, status, p) => this.onSelectCell(form, status, p),
+                            (arg => this.onClick(arg, onGenerateDerivedInstances)),
                             activePeriodType,
                         )}
                         data={forms}
@@ -116,5 +127,6 @@ CompletenessPeriodComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    onGenerateDerivedInstances: PropTypes.func.isRequired,
 };
 export default injectIntl(withStyles(styles)(CompletenessPeriodComponent));

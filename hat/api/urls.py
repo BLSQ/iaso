@@ -9,6 +9,7 @@ from .algo import AlgoViewSet
 from .assignation import AssignationViewSet
 from .cases import CasesViewSet
 from .coordination import CoordinationViewSet
+from .jsondocument import JSONDocumentViewSet
 from .planning import PlanningViewSet
 from .province import ProvinceViewSet
 from .qcstats import QCStatsViewSet
@@ -102,7 +103,10 @@ router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
 router.register(r"tests", TestsViewSet, base_name="tests")
 router.register(r"screeningtypes", ScreeningTypeViewSet, base_name="screeningtypes")
+router.register(r"jsondocument", JSONDocumentViewSet, base_name="jsondocument")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")
-urlpatterns = [url(r"^", include(router.urls))]
+urlpatterns = [
+    url(r"^", include(router.urls))
+]

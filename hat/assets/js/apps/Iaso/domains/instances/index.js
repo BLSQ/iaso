@@ -51,15 +51,19 @@ import ExportInstancesDialogComponent from './components/ExportInstancesDialogCo
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
+import { baseUrls } from '../../constants/urls';
 
-const asBackendStatus = status => {
+const baseUrl = baseUrls.instances;
+
+const defaultOrder = 'updated_at';
+
+const asBackendStatus = (status) => {
     if (status) {
-        return status.split(',').map(s => s == "ERROR" ? "DUPLICATED" : s).join(",")
+        return status.split(',').map(s => (s === 'ERROR' ? 'DUPLICATED' : s)).join(',');
     }
-    return status
-}
+    return status;
+};
 
-const baseUrl = 'instances';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -151,11 +155,11 @@ class Instances extends Component {
                 && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)
             )
         ) {
-            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params.columns));
+            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params, defaultOrder));
         }
     }
 
-    getFilters(){
+    getFilters() {
         const {
             params,
         } = this.props;
@@ -167,8 +171,8 @@ class Instances extends Component {
             periods: params.periods,
             status: asBackendStatus(params.status),
             deviceOwnershipId: params.deviceOwnershipId,
-            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels)
-        }
+            orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+        };
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
@@ -177,10 +181,10 @@ class Instances extends Component {
         } = this.props;
         const urlParams = {
             limit: params.pageSize ? params.pageSize : 20,
-            order: params.order ? params.order : '-updated_at',
+            order: params.order ? params.order : `-${defaultOrder}`,
             page: params.page ? params.page : 1,
             asSmallDict: true,
-            ...this.getFilters()
+            ...this.getFilters(),
         };
         return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
     }
@@ -242,20 +246,12 @@ class Instances extends Component {
         };
         this.setState({
             visibleColumns,
-            tableColumns: getInstancesColumns(formatMessage, visibleColumns, this),
+            tableColumns: getInstancesColumns(formatMessage, visibleColumns),
         });
 
         redirectToReplace(baseUrl, newParams);
     }
 
-    selectInstance(instance) {
-        const {
-            redirectTo,
-        } = this.props;
-        redirectTo('instance', {
-            instanceId: instance.id,
-        });
-    }
 
     render() {
         const {
@@ -289,7 +285,7 @@ class Instances extends Component {
                         if (prevPathname) {
                             router.goBack();
                         } else {
-                            redirectTo('forms', {});
+                            redirectTo(baseUrls.forms, {});
                         }
                     }}
                 >
@@ -362,7 +358,7 @@ class Instances extends Component {
                                     pageSize={20}
                                     showPagination
                                     columns={tableColumns}
-                                    defaultSorted={[{ id: 'updated_at', desc: false }]}
+                                    defaultSorted={[{ id: defaultOrder, desc: false }]}
                                     params={params}
                                     defaultPath={baseUrl}
                                     dataKey="instances"
@@ -375,7 +371,8 @@ class Instances extends Component {
                         )
                     }
                     {
-                        tab === 'map' && (
+                        !fetching
+                        && tab === 'map' && (
                             <div className={classes.containerMarginNeg}>
                                 <InstancesMap instances={instancesSmall} />
                             </div>
@@ -393,7 +390,7 @@ class Instances extends Component {
                             <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
                                 <Grid xs={12} item className={classes.textAlignRight}>
                                     <div className={classes.paddingBottomBig}>
-                                        <ExportInstancesDialogComponent getFilters={() =>  this.getFilters()}/>
+                                        <ExportInstancesDialogComponent getFilters={() => this.getFilters()} />
                                         <DownloadButtonsComponent
                                             csvUrl={this.getEndpointUrl(true, 'csv')}
                                             xlsxUrl={this.getEndpointUrl(true, 'xlsx')}

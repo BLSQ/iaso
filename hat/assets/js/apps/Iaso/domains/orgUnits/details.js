@@ -46,7 +46,9 @@ import commonStyles from '../../styles/common';
 
 import { getChipColors } from '../../constants/chipColors';
 
-const baseUrl = 'orgunits/detail';
+import { baseUrls } from '../../constants/urls';
+
+const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),

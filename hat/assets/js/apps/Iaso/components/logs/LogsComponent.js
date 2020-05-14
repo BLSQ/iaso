@@ -14,6 +14,9 @@ import LogsDetails from './LogsDetailsComponent';
 import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
+import { baseUrls } from '../../constants/urls';
+
+const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -22,8 +25,6 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
 });
-
-const baseUrl = 'orgunits/detail';
 
 class Logs extends Component {
     constructor(props) {

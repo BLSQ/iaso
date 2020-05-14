@@ -45,6 +45,7 @@ class ProjectsAPITestCase(APITestCase):
         )
         form = m.Form(name="Quantity FORM")
         form.period_type = "monthly"
+        form.form_id = "quantityf"
         form.single_per_period = True
         form.save()
         cls.form = form
@@ -85,9 +86,14 @@ class ProjectsAPITestCase(APITestCase):
 
         self.build_instance(self.village_2, self.uuid(5), "201901")
         self.build_instance(self.village_2, self.uuid(6), "201902")
+
         exported_instance = self.build_instance(self.village_2, self.uuid(7), "201903")
         exported_instance.last_export_success_at = timezone.now()
         exported_instance.save()
+
+        deleted_instance = self.build_instance(self.village_1, self.uuid(8), "201903")
+        deleted_instance.deleted = True
+        deleted_instance.save()
 
         self.client.force_authenticate(self.user)
 
@@ -98,6 +104,8 @@ class ProjectsAPITestCase(APITestCase):
                     "id": self.form.id,
                     "name": "Quantity FORM",
                     "period_type": "MONTH",
+                    "generate_derived": None,
+                    "form_id": "quantityf",
                 },
                 "counts": {"total": 3, "error": 2, "exported": 0, "ready": 1},
             },
@@ -107,6 +115,8 @@ class ProjectsAPITestCase(APITestCase):
                     "id": self.form.id,
                     "name": "Quantity FORM",
                     "period_type": "MONTH",
+                    "generate_derived": None,
+                    "form_id": "quantityf",
                 },
                 "counts": {"total": 2, "error": 0, "exported": 0, "ready": 2},
             },
@@ -116,6 +126,8 @@ class ProjectsAPITestCase(APITestCase):
                     "id": self.form.id,
                     "name": "Quantity FORM",
                     "period_type": "MONTH",
+                    "generate_derived": None,
+                    "form_id": "quantityf",
                 },
                 "counts": {"total": 2, "error": 0, "exported": 1, "ready": 1},
             },
@@ -125,5 +137,5 @@ class ProjectsAPITestCase(APITestCase):
         self.assertEqual(200, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
-        print(response_data)
+
         self.assertEqual({"completeness": expected_counts}, response_data)

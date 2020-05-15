@@ -155,8 +155,8 @@ class FormVersionsViewSet(ModelViewSet):
     """Form versions API: /api/formversions/"""
 
     serializer_class = FormVersionSerializer
-    permission_required = ["menupermissions.iaso_mappings"]
-    permission_classes = (UserAccessPermission)
+    permission_required = ["menupermissions.iaso_forms"]
+    permission_classes = (UserAccessPermission,)
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)
@@ -166,14 +166,10 @@ class FormVersionsViewSet(ModelViewSet):
         orders = self.request.GET.get("order", "full_name").split(",")
         mapped_filter = self.request.GET.get("mapped", "")
 
-        queryset = None
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = FormVersion.objects.filter(
-                form__projects__account=profile.account
-            )
-        else:
-            raise PermissionDenied()
+        profile = self.request.user.iaso_profile
+        queryset = FormVersion.objects.filter(
+            form__projects__account=profile.account
+        )
 
         search_name = self.request.GET.get("search_name", None)
         if search_name:

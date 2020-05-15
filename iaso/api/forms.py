@@ -141,10 +141,7 @@ class FormSerializer(serializers.ModelSerializer):
 class FormsViewSet(ModelViewSet):
     """Forms API: /api/forms/"""
 
-    permission_required = [
-        "menupermissions.iaso_forms",
-        "menupermissions.iaso_org_units",
-    ]
+    permission_required = ["menupermissions.iaso_forms",]
     permission_classes = [HasFormPermission, UserAccessPermission]
     serializer_class = FormSerializer
     results_key = "forms"

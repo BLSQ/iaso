@@ -19,7 +19,7 @@ def safe_api_import(key: str, fallback_status=200):
 
     def decorator(f):
         @wraps(f)
-        def inner(self, request):
+        def inner(self, request, *args, **kwargs):
             # First, save the data in a API record
             api_import = APIImport()
             if not request.user.is_anonymous:
@@ -30,7 +30,7 @@ def safe_api_import(key: str, fallback_status=200):
 
             # Run the view in a try/except
             try:
-                response = f(self, request, api_import)
+                response = f(self, api_import, request, *args, **kwargs)
             except:
                 api_import.has_problem = True
                 response = Response(

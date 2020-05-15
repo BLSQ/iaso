@@ -42,8 +42,8 @@ class HasOrgUnitPermission(permissions.BasePermission):
         user_account = request.user.iaso_profile.account
         projects = obj.version.data_source.projects.all()
         account_ids = [p.account_id for p in projects]
-        if user_account.id not in account_ids:
-            return False
+
+        return user_account.id in account_ids
 
 
 class OrgUnitViewSet(viewsets.ViewSet):
@@ -255,6 +255,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, id=pk)
+        self.check_object_permissions(request, org_unit)
+
         original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
@@ -355,7 +357,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
     @safe_api_import("orgUnit")
-    def create(self, request, api_import):
+    def create(self, api_import, request):
         app_id = request.GET.get("app_id")
         new_org_units = import_data(request.data, request.user, api_import, app_id)
 
@@ -363,6 +365,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
+        self.check_object_permissions(request, org_unit)
 
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None

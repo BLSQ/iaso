@@ -20,9 +20,6 @@ class HasProfilePermission(permissions.BasePermission):
 
         return request.user.has_perm("menupermissions.iaso_users")
 
-    def has_object_permission(self, request, view, obj):
-        return super().has_object_permission(request, view, obj)
-
 
 class ProfilesViewSet(viewsets.ViewSet):
     """ Profiles API

@@ -268,7 +268,7 @@ class BasicAPITestCase(TestCase):
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
         self.assertEqual(last_api_import.json_body, instance_body)
-        self.assertEqual(last_api_import.import_type, "instancee")
+        self.assertEqual(last_api_import.import_type, "instance")
         self.assertFalse(last_api_import.has_problem)
 
     @tag("iaso_only")
@@ -281,6 +281,7 @@ class BasicAPITestCase(TestCase):
             accept="application/json",
         )  # this should have 0 result
         json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(

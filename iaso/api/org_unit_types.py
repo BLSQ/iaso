@@ -1,29 +1,18 @@
 from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from .common import HasPermission
 from iaso.models import OrgUnitType
 
 
 class OrgUnitTypeViewSet(viewsets.ViewSet):
     """ Org unit types API
 
-    This API is restricted to authenticated users having at least one of the "menupermissions.iaso_forms",
-    "menupermissions.iaso_org_units", or "menupermissions.iaso_links" permissions
+    This API is open to anonymous users.
 
     GET /api/orgunittypes/
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission(
-            [
-                "menupermissions.iaso_forms",
-                "menupermissions.iaso_org_units",
-                "menupermissions.iaso_links",
-            ]
-        ),
-    ]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def list(self, request):
         queryset = OrgUnitType.objects.all()

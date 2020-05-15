@@ -1,9 +1,9 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
 from rest_framework.exceptions import PermissionDenied
+from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
-from django.http import Http404
 from hat.common.utils import queryset_iterator
 from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
@@ -212,20 +212,17 @@ class InstancesViewSet(viewsets.ViewSet):
             return response
 
     @safe_api_import("instance")
-    def create(self, request, api_import):
+    def create(self, api_import, request):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
         import_data(request.data, api_import, app_id)
 
         return Response({"res": "ok"})
 
-    def retrieve(self, _, pk=None):
-        try:
-            instance = Instance.objects.with_status().get(pk=pk)
-        except:
-            raise Http404
+    def retrieve(self, request, pk=None):
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
 
-        res = instance.as_full_model()
-        return Response(res)
+        return Response(instance.as_full_model())
 
 
 def import_data(instances, api_import, app_id=None):

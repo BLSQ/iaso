@@ -56,7 +56,9 @@ class MultiTenantTestCase(APITestCase):
 
         account = Account.objects.create(name="Marvel")
         self.raccoon = self.create_user_with_profile(
-            username="raccoon", account=account, permissions=["iaso_mappings", "iaso_users", "iaso_forms"]
+            username="raccoon",
+            account=account,
+            permissions=["iaso_mappings", "iaso_users", "iaso_forms"],
         )
         self.raccoon_client = APIClient()
         self.raccoon_client.force_authenticate(user=self.raccoon)

@@ -66,7 +66,7 @@ class ExportRequestsViewSet(ModelViewSet):
     serializer_class = ExportRequestSerializer
     results_key = "export_requests"
     queryset = ExportRequest.objects.all()
-    http_method_names = ("get", "post", "put")
+    http_method_names = ["get", "post", "put", "head", "options", "trace"]
 
     def get_queryset(self):
         queryset = ExportRequest.objects.all()

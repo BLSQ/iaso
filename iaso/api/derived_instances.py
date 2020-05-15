@@ -77,4 +77,4 @@ class DerivedInstancesViewSet(ModelViewSet):
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()
-    http_method_names = ["post"]
+    http_method_names = ["post", "head", "options", "trace"]

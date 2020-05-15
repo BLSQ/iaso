@@ -172,7 +172,7 @@ class FormVersionsViewSet(ModelViewSet):
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)
-    http_method_names = ("post", "get")
+    http_method_names = ["get", "post", "head", "options", "trace"]
 
     def get_queryset(self):
         orders = self.request.GET.get("order", "full_name").split(",")

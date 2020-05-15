@@ -61,7 +61,7 @@ class GroupsViewSet(ModelViewSet):
     ]
     serializer_class = GroupSerializer
     results_key = "groups"
-    http_method_names = ("post", "get", "patch", "delete")
+    http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile

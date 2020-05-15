@@ -205,7 +205,7 @@ class MappingVersionsViewSet(ModelViewSet):
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()
-    http_method_names = ("get", "post", "patch")
+    http_method_names = ["get", "post", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
         orders = self.request.GET.get(

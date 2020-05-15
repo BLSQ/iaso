@@ -3,21 +3,7 @@ from django.db.models import Count
 import typing
 
 from iaso.models import Group
-from .common import ModelViewSet, TimestampField
-
-
-class HasGroupsPermission(permissions.IsAuthenticated):
-    """Rules:
-
-    - The group API is only accessible to authenticated users
-    - The group API is only accessible to users having the "menupermissions.iaso_org_units" permission
-    """
-
-    def has_permission(self, request, view):
-        if super().has_permission(request, view):
-            return request.user.has_perm("menupermissions.iaso_org_units")
-
-        return False
+from .common import ModelViewSet, TimestampField, HasPermission
 
 
 class GroupSerializer(serializers.ModelSerializer):
@@ -58,7 +44,21 @@ class GroupSerializer(serializers.ModelSerializer):
 
 
 class GroupsViewSet(ModelViewSet):
-    permission_classes = (HasGroupsPermission,)
+    """ Groups API
+
+    This API is restricted to users having the "menupermissions.iaso_org_units" permission
+
+    GET /api/groups/
+    GET /api/groups/<id>
+    POST /api/groups/
+    PATCH /api/groups/<id>
+    DELETE /api/groups/<id>
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_org_units"),
+    ]
     serializer_class = GroupSerializer
     results_key = "groups"
     http_method_names = ("post", "get", "patch", "delete")

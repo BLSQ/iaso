@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from iaso.models import Link, OrgUnit
 from django.core.paginator import Paginator
@@ -10,16 +10,24 @@ from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from hat.geo.geojson import geojson_queryset
-from hat.api.authentication import UserAccessPermission
+from .common import HasPermission
 
 
 class LinkViewSet(viewsets.ViewSet):
-    """
-    list:
+    """ Links API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
+
+    GET /api/links/
+    GET /api/links/<id>
+    PATCH /api/links/<id>
     """
 
-    permission_required = ["menupermissions.iaso_links"]
-    permission_classes = [UserAccessPermission]
+    permission_required = []
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_links"),
+    ]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

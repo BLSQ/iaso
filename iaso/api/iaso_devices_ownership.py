@@ -1,16 +1,22 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+
+from .common import HasPermission
 from iaso.models import DeviceOwnership
-from hat.api.authentication import UserAccessPermission
 
 
 class IasoDevicesOwnershipViewSet(viewsets.ViewSet):
-    """
-    list devices ownerships:
+    """Iaso Devices ownership API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+
+    GET /api/iasodevicesownership/
     """
 
-    permission_required = ["menupermissions.iaso_forms"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms"),
+    ]
 
     def list(self, request):
         queryset = DeviceOwnership.objects.all()

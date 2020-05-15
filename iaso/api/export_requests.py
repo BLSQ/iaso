@@ -1,5 +1,4 @@
 import typing
-from django.core.exceptions import PermissionDenied
 from iaso.models import ExportRequest
 from rest_framework import serializers, permissions
 
@@ -53,8 +52,14 @@ class ExportRequestSerializer(serializers.ModelSerializer):
 
 
 class ExportRequestsViewSet(ModelViewSet):
-    """
-    list export_requests:
+    """ Export requests API
+
+    This API is restricted to authenticated users
+
+    GET /api/exportrequests/
+    GET /api/exportrequests/<id>
+    POST /api/exportrequests/
+    PUT /api/exportrequests/<id>
     """
 
     permission_classes = [permissions.IsAuthenticated]
@@ -66,11 +71,6 @@ class ExportRequestsViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = ExportRequest.objects.all()
         queryset = queryset.order_by("-id")
+        profile = self.request.user.iaso_profile
 
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = queryset.filter(launcher__iaso_profile__account=profile.account)
-        else:
-            raise PermissionDenied()
-
-        return queryset
+        return queryset.filter(launcher__iaso_profile__account=profile.account)

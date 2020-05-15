@@ -9,31 +9,17 @@ from iaso.models import Form, Project, OrgUnitType
 from iaso.utils import timestamp_to_datetime
 from .common import ModelViewSet, TimestampField
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from .projects import ProjectSerializer, HasProjectPermission
-from hat.api.authentication import UserAccessPermission
+from .projects import ProjectSerializer
 
 
 class HasFormPermission(permissions.BasePermission):
-    """Rules:
-
-    - The forms API is partly accessible to anonymous users
-    - Actions on specific forms can only be performed by users linked to an account associated with one of the form
-      projects
-    """
-
     def has_permission(self, request, view):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return request.user.is_authenticated
-
-    def has_object_permission(self, request: Request, view, obj: Form):
-        if not request.user.is_authenticated:
-            return False
-
-        accounts = [project.account for project in obj.projects.all()]
-
-        return request.user.iaso_profile.account in accounts
+        return request.user.is_authenticated and request.user.has_perm(
+            "menupermissions.iaso_forms"
+        )
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -105,11 +91,8 @@ class FormSerializer(serializers.ModelSerializer):
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
-        permission_checker = HasProjectPermission()
         for project in data["projects"]:
-            if not permission_checker.has_object_permission(
-                self.context["request"], self.context["view"], project
-            ):
+            if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError(
                     {"project_ids": "Invalid project ids"}
                 )
@@ -139,10 +122,20 @@ class FormSerializer(serializers.ModelSerializer):
 
 
 class FormsViewSet(ModelViewSet):
-    """Forms API: /api/forms/"""
+    """ Forms API
 
-    permission_required = ["menupermissions.iaso_forms",]
-    permission_classes = [HasFormPermission, UserAccessPermission]
+    Read-only methods are accessible to anonymous users. All other actions are restricted to authenticated users
+    having the "menupermissions.iaso_forms" permission.
+
+    GET /api/forms/
+    GET /api/forms/<id>
+    POST /api/forms/
+    PUT /api/forms/<id>
+    PATCH /api/forms/<id>
+    DELETE /api/forms/<id>
+    """
+
+    permission_classes = [HasFormPermission]
     serializer_class = FormSerializer
     results_key = "forms"
     queryset = Form.objects.all()

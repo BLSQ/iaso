@@ -1,22 +1,24 @@
-from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+
+from .common import HasPermission
 from iaso.models import Device
-from hat.api.authentication import UserAccessPermission
 
 
 class IasoDevicesViewSet(viewsets.ViewSet):
-    """
-    list devices:
+    """Iaso Devices API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+
+    GET /api/iasodevices/
     """
 
-    permission_required = ["menupermissions.iaso_forms"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms"),
+    ]
 
     def list(self, request):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
         queryset = Device.objects.all()
         profile = request.user.iaso_profile
         queryset = queryset.filter(projects__account=profile.account)

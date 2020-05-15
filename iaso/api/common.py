@@ -1,11 +1,36 @@
 from datetime import datetime
 from django.utils.timezone import make_aware
 from django.db.models import ProtectedError
-from rest_framework import serializers, pagination, exceptions
+from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
-from django.core.exceptions import SuspiciousOperation
+
+
+class HasPermission:
+    """
+    Permission class factory for simple permission checks.
+
+    If the user has any of the the provided permissions, he will be granted access
+
+    Usage:
+
+    > class SomeViewSet(viewsets.ViewSet):
+    >     permission_classes=[HasPermission("perm_1", "perm_2)]
+    >     ...
+    """
+
+    def __init__(self, *perms):
+        class PermissionClass(permissions.BasePermission):
+            def has_permission(self, request, view):
+                return request.user and any(
+                    request.user.has_perm(perm) for perm in perms
+                )
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs):
+        return self._permission_class()
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):

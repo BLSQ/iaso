@@ -1,12 +1,15 @@
 import typing
 from django.core.exceptions import ObjectDoesNotExist
-from rest_framework import serializers
+from rest_framework import serializers, permissions
 import iaso.models as m
-from hat.api.authentication import UserAccessPermission
 
+from .common import (
+    ModelViewSet,
+    TimestampField,
+    DynamicFieldsModelSerializer,
+    HasPermission,
+)
 from iaso.models import FormVersion, MappingVersion
-
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
 
 
 class MappingVersionSerializer(DynamicFieldsModelSerializer):
@@ -185,10 +188,20 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
 
 class MappingVersionsViewSet(ModelViewSet):
-    """Mapping versions API: /api/mappingversions/"""
+    """ Mapping versions API
 
-    permission_required = ["menupermissions.iaso_mappings"]
-    permission_classes = [UserAccessPermission]
+    This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
+
+    GET /api/mappingversions/
+    GET /api/mappingversions/<id>
+    POST /api/mappingversions/
+    PATCH /api/mappingversions/<id>
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_mappings"),
+    ]
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()

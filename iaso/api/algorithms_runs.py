@@ -1,25 +1,28 @@
-from rest_framework import viewsets, status
+import importlib
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
-from hat.api.authentication import UserAccessPermission
 
+from .common import HasPermission
 from iaso.models import AlgorithmRun, DataSource, SourceVersion, MatchingAlgorithm
-import importlib
 
 
 class AlgorithmsRunsViewSet(viewsets.ViewSet):
-    """
-    API list algorithms runs
-    Examples:
+    """ Algorithms runs API
 
+    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
 
     GET /api/algorithmsruns/
-
+    GET /api/algorithmsruns/<id>
+    PUT /api/algorithmsruns/<id>
+    DELETE /api/algorithmsruns/<id>
     """
 
-    permission_required = ["menupermissions.iaso_links"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_links"),
+    ]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -34,13 +37,12 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
 
         queryset = AlgorithmRun.objects.all()
 
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            sources = DataSource.objects.filter(
-                projects__account=profile.account
-            ).distinct()
-            queryset = queryset.filter(version_1__data_source__in=sources)
-            queryset = queryset.filter(version_2__data_source__in=sources)
+        profile = request.user.iaso_profile
+        sources = DataSource.objects.filter(
+            projects__account=profile.account
+        ).distinct()
+        queryset = queryset.filter(version_1__data_source__in=sources)
+        queryset = queryset.filter(version_2__data_source__in=sources)
 
         if algorithm_id:
             queryset = queryset.filter(algorithm__id=algorithm_id)

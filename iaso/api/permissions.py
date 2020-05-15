@@ -1,4 +1,4 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.contrib.auth.models import Permission
 from django.contrib.contenttypes.models import ContentType
@@ -9,17 +9,20 @@ from operator import itemgetter
 
 
 class PermissionsViewSet(viewsets.ViewSet):
+    """Permissions API
+
+    This API is restricted to authenticated users. Note that only users with the "menupermissions.iaso_users"
+    permission will be able to list all permissions - other users can only list their permissions.
+
+    GET /api/permissions/
     """
-    Api to list all permissions assignable by the user interface (outside of the admin)
-    """
+
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
         content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
 
-        if (
-            request.user.has_perm("menupermissions.iaso_users")
-            or request.user.is_superuser
-        ):
+        if request.user.has_perm("menupermissions.iaso_users"):
             perms = Permission.objects
         else:
             perms = request.user.user_permissions

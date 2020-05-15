@@ -1,30 +1,7 @@
-from rest_framework import serializers
-from rest_framework.request import Request
-from rest_framework.permissions import IsAuthenticated, SAFE_METHODS
-from hat.api.authentication import UserAccessPermission
+from rest_framework import serializers, permissions
 
+from .common import TimestampField, ModelViewSet, HasPermission
 from iaso.models import Project
-from .common import TimestampField, ModelViewSet
-
-
-class HasProjectPermission(IsAuthenticated):
-    """Rules:
-
-    - The projects API is only accessible to authenticated users
-    - Write operations are not allowed for now
-    - Actions on specific projects can only be performed by users linked to the project account
-    """
-
-    def has_permission(self, request, view):
-        if (
-            request.method not in SAFE_METHODS
-        ):  # write operations are not allowed for now
-            return False
-
-        return super().has_permission(request, view)
-
-    def has_object_permission(self, request: Request, view, obj: Project):
-        return request.user.iaso_profile.account == obj.account
 
 
 class ProjectSerializer(serializers.ModelSerializer):
@@ -45,12 +22,21 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 
 class ProjectsViewSet(ModelViewSet):
-    """Projects API: /api/projects/"""
+    """Source versions API
 
-    permission_required = ["menupermissions.iaso_forms"]
-    permission_classes = [HasProjectPermission, UserAccessPermission]
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+
+    GET /api/projects/
+    GET /api/projects/<id>
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms"),
+    ]
     serializer_class = ProjectSerializer
     results_key = "projects"
+    http_method_names = ["get", "head", "options", "trace"]
 
     def get_queryset(self):
         """Always filter the base queryset by account"""

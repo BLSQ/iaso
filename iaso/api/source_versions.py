@@ -1,21 +1,20 @@
-from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from iaso.models import SourceVersion
 
 
 class SourceVersionViewSet(viewsets.ViewSet):
-    """
-    list:
+    """Source versions API
+
+    This API is restricted to authenticated users (no specific permission check)
+
+    GET /api/sourceversions/
     """
 
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
         versions = SourceVersion.objects.all()
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
         profile = request.user.iaso_profile
         versions = versions.filter(data_source__projects__account=profile.account)
 

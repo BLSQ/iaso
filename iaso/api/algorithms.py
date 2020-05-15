@@ -1,22 +1,22 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
-from hat.api.authentication import UserAccessPermission
 
 from iaso.models import MatchingAlgorithm
+from .common import HasPermission
 
 
 class AlgorithmsViewSet(viewsets.ViewSet):
-    """
-    API list algorithms
-    Examples:
+    """Algorithms API
 
+    This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
 
     GET /api/algorithms/
-
     """
 
-    permission_required = ["menupermissions.iaso_links"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_links"),
+    ]
 
     def list(self, request):
         queryset = MatchingAlgorithm.objects.all()

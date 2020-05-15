@@ -7,7 +7,6 @@ from hat.common.utils import queryset_iterator
 from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
-from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 
 from django.http import StreamingHttpResponse, HttpResponse
@@ -26,16 +25,21 @@ from .instance_filters import parse_instance_filters
 
 
 class HasInstancePermission(permissions.BasePermission):
-    """Rules:
-
-    - POSTing instances can be done anonymously
-    - Other methods require authentication
-    - Actions on specific instance can only be performed by users linked to an account associated with one of the form
-      projects
-    """
-
     def has_permission(self, request: Request, view):
-        if request.method == "POST":  # Allow anonymous instance creation - mobile app
+        if request.method == "POST":
+            app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
+
+            # Allow anonymous instance creation if the project allows it - mobile app
+            try:
+                project = Project.objects.get(app_id=app_id)
+                if project.needs_authentication and (
+                    not request.user.is_authenticated
+                    or project.account.id != request.user.iaso_profile.account.id
+                ):
+                    return False
+            except Project.DoesNotExist:
+                pass
+
             return True
 
         return request.user.is_authenticated and request.user.has_perm(
@@ -43,78 +47,21 @@ class HasInstancePermission(permissions.BasePermission):
         )
 
     def has_object_permission(self, request: Request, view, obj: Instance):
+        # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
         return request.user.iaso_profile.account == obj.project.account
 
 
-def import_data(instances, api_import, app_id=None):
-    try:
-        project = Project.objects.get(app_id=app_id)
-    except Project.DoesNotExist:
-        project = None
-
-    if project and project.needs_authentication:
-        user = api_import.user
-        if (
-            not user
-            or user.is_anonymous
-            or project.account.id != user.iaso_profile.account.id
-        ):
-            raise PermissionDenied("User permission problem")
-
-    for instance in instances:
-        file_name = ntpath.basename(instance.get("file", None))
-        uuid = instance.get("id", None)
-        latitude = instance.get("latitude", None)
-        longitude = instance.get("longitude", None)
-        altitude = instance.get("altitude", 0)
-        org_unit_location = None
-
-        if latitude and longitude:
-            org_unit_location = Point(x=longitude, y=latitude, srid=4326)
-
-        instances = Instance.objects.filter(uuid=uuid)
-        if len(instances) == 1:
-            instance_db = instances[0]
-            instance_db.file_name = file_name
-        elif len(instances) == 0:
-            instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
-            instance_db.uuid = uuid
-        else:
-            return Response({"res": "Problem: multiple instances exist with that uuid"})
-        instance_db.name = instance.get("name", None)
-        instance_db.period = instance.get("period", None)
-        instance_db.accuracy = instance.get("accuracy", None)
-        instance_db.parent_id = instance.get("parentId", None)
-        tentative_org_unit_id = instance.get("orgUnitId", None)
-        if str(tentative_org_unit_id).isdigit():
-            instance_db.org_unit_id = tentative_org_unit_id
-        else:
-            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
-            instance_db.org_unit = org_unit
-
-        instance_db.form_id = instance.get("formId")
-
-        t = instance.get("created_at", None)
-        if t:
-            instance_db.created_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.created_at = instance.get("created_at", None)
-
-        t = instance.get("updated_at", None)
-        if t:
-            instance_db.updated_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.updated_at = instance.get("created_at", None)
-
-        instance_db.source = "API"
-        instance_db.api_import = api_import
-        if org_unit_location:
-            instance_db.location = org_unit_location
-        instance_db.project = project
-        instance_db.save()
-
-
 class InstancesViewSet(viewsets.ViewSet):
+    """ Instances API
+
+    Posting instances can be done anonymously (if the project allows it), all other methods are restricted
+    to authenticated users having the "menupermissions.iaso_forms" permission.
+
+    GET /api/instances/
+    GET /api/instances/<id>
+    POST /api/instances/
+    """
+
     permission_classes = [HasInstancePermission]
 
     def list(self, request):
@@ -132,11 +79,8 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
 
         queryset = Instance.objects.order_by("-id")
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            queryset = queryset.filter(project__account=profile.account)
-        else:
-            raise PermissionDenied("Please log in")
+        profile = request.user.iaso_profile
+        queryset = queryset.filter(project__account=profile.account)
 
         queryset = (
             queryset.exclude(file="")
@@ -306,3 +250,62 @@ class InstancesViewSet(viewsets.ViewSet):
 
         res = instance.as_full_model()
         return Response(res)
+
+
+def import_data(instances, api_import, app_id=None):
+    try:
+        project = Project.objects.get(app_id=app_id)
+    except Project.DoesNotExist:
+        project = None
+
+    for instance in instances:
+        file_name = ntpath.basename(instance.get("file", None))
+        uuid = instance.get("id", None)
+        latitude = instance.get("latitude", None)
+        longitude = instance.get("longitude", None)
+        altitude = instance.get("altitude", 0)
+        org_unit_location = None
+
+        if latitude and longitude:
+            org_unit_location = Point(x=longitude, y=latitude, srid=4326)
+
+        instances = Instance.objects.filter(uuid=uuid)
+        if len(instances) == 1:
+            instance_db = instances[0]
+            instance_db.file_name = file_name
+        elif len(instances) == 0:
+            instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
+            instance_db.uuid = uuid
+        else:
+            return Response({"res": "Problem: multiple instances exist with that uuid"})
+        instance_db.name = instance.get("name", None)
+        instance_db.period = instance.get("period", None)
+        instance_db.accuracy = instance.get("accuracy", None)
+        instance_db.parent_id = instance.get("parentId", None)
+        tentative_org_unit_id = instance.get("orgUnitId", None)
+        if str(tentative_org_unit_id).isdigit():
+            instance_db.org_unit_id = tentative_org_unit_id
+        else:
+            org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
+            instance_db.org_unit = org_unit
+
+        instance_db.form_id = instance.get("formId")
+
+        t = instance.get("created_at", None)
+        if t:
+            instance_db.created_at = timestamp_to_utc_datetime(int(t))
+        else:
+            instance_db.created_at = instance.get("created_at", None)
+
+        t = instance.get("updated_at", None)
+        if t:
+            instance_db.updated_at = timestamp_to_utc_datetime(int(t))
+        else:
+            instance_db.updated_at = instance.get("created_at", None)
+
+        instance_db.source = "API"
+        instance_db.api_import = api_import
+        if org_unit_location:
+            instance_db.location = org_unit_location
+        instance_db.project = project
+        instance_db.save()

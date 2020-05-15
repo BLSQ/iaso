@@ -1,23 +1,25 @@
-from django.core.exceptions import PermissionDenied
-from rest_framework import viewsets
-from rest_framework.response import Response
-from iaso.models import Mapping
 from django.core.paginator import Paginator
-from hat.api.authentication import UserAccessPermission
+from rest_framework import viewsets, permissions
+from rest_framework.response import Response
+
+from .common import HasPermission
+from iaso.models import Mapping
 
 
 class MappingsViewSet(viewsets.ViewSet):
-    """
-    list mappings:
+    """ Mappings API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_mappings" permission
+
+    GET /api/mappings/
     """
 
-    permission_required = ["menupermissions.iaso_mappings"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_mappings"),
+    ]
 
     def list(self, request):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
 

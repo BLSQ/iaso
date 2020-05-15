@@ -1,5 +1,5 @@
 from time import process_time
-from rest_framework import status
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework import viewsets
 from django.core.exceptions import PermissionDenied
@@ -10,18 +10,24 @@ from iaso.models import DataSource
 
 
 class Dhis2ViewSet(viewsets.ViewSet):
-    permission_classes = []
+    """ DHIS2 datasources API
+
+    This API is restricted to authenticated users (no specific permission check)
+
+    GET /api/datasources/dataElements/
+    GET /api/datasources/dataSets/
+    GET /api/datasources/programs/
+    """
+
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request, datasource_id, format="json"):
 
         sources = DataSource.objects.all()
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            data_source = sources.filter(
-                projects__account=profile.account, id=datasource_id
-            ).first()
-        else:
-            raise PermissionDenied()
+        profile = request.user.iaso_profile
+        data_source = sources.filter(
+            projects__account=profile.account, id=datasource_id
+        ).first()
 
         if data_source is None:
             return Response(

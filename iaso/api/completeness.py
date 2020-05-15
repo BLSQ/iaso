@@ -1,37 +1,23 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 
-from hat.api.authentication import UserAccessPermission
-
+from .common import HasPermission
 from iaso.models import Instance, MappingVersion
 import iaso.periods as periods
 
 
-def to_completeness(count):
-    return {
-        "period": count["period"],
-        "form": {
-            "id": count["form_id"],
-            "name": count["form__name"],
-            "period_type": periods.detect(count["period"]),
-            "form_id": count["form__form_id"],
-        },
-        "counts": {
-            "total": count["total_count"],
-            "error": count["duplicated_count"],
-            "exported": count["exported_count"],
-            "ready": count["ready_count"],
-        },
-    }
-
-
 class CompletenessViewSet(viewsets.ViewSet):
-    """
-    list:
+    """ Completeness API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_completeness" permission
+
+    GET /api/completeness/
     """
 
-    permission_required = ["menupermissions.iaso_completeness"]
-    permission_classes = [UserAccessPermission]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_completeness"),
+    ]
 
     def list(self, request):
         profile = request.user.iaso_profile
@@ -60,3 +46,21 @@ class CompletenessViewSet(viewsets.ViewSet):
             )
 
         return Response({"completeness": counts})
+
+
+def to_completeness(count):
+    return {
+        "period": count["period"],
+        "form": {
+            "id": count["form_id"],
+            "name": count["form__name"],
+            "period_type": periods.detect(count["period"]),
+            "form_id": count["form__form_id"],
+        },
+        "counts": {
+            "total": count["total_count"],
+            "error": count["duplicated_count"],
+            "exported": count["exported_count"],
+            "ready": count["ready_count"],
+        },
+    }

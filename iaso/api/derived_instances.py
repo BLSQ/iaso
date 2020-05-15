@@ -1,9 +1,8 @@
 import typing
 from django.core.exceptions import PermissionDenied
-from rest_framework import serializers
+from rest_framework import serializers, permissions
 
-from .common import ModelViewSet
-from hat.api.authentication import UserAccessPermission
+from .common import ModelViewSet, HasPermission
 from iaso.models import ExportRequest, Form, DERIVED
 from iaso.dhis2.derived_instance_generator import generate_instances
 
@@ -64,9 +63,18 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
 
 class DerivedInstancesViewSet(ModelViewSet):
-    permission_required = ["menupermissions.iaso_completeness"]
-    permission_classes = [UserAccessPermission]
+    """ Derived instances API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_completeness" permission
+
+    POST /api/derivedinstances/
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_completeness"),
+    ]
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()
-    http_method_names = "post"
+    http_method_names = ["post"]

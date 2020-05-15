@@ -1,8 +1,10 @@
 from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+
+from iaso.api.common import safe_api_import
 from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group, Project
-from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -24,21 +26,6 @@ from django.db.models import Value, IntegerField
 
 class HasOrgUnitPermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.method == "POST":
-            app_id = request.query_params.get("app_id")
-
-            # Allow anonymous or unit creation if the project allows it - mobile app
-            try:
-                project = Project.objects.get(app_id=app_id)
-                if project.needs_authentication and (
-                    not request.user.is_authenticated
-                    or request.user.iaso_profile.account.id != project.account.id
-                ):
-                    return False
-            except Project.DoesNotExist:
-                pass
-
-        # Default case: actions that are not org-unit specific can be performed anonymously
         return True
 
     def has_object_permission(self, request, view, obj):
@@ -62,8 +49,8 @@ class HasOrgUnitPermission(permissions.BasePermission):
 class OrgUnitViewSet(viewsets.ViewSet):
     """Org units API
 
-    This API is open to anonymous users for actions that are not org unit-specific (but POST can be restricted if the
-    project requires authentication). Actions on specific org units are restricted to authenticated users with the
+    This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
+    projects that require authentication). Actions on specific org units are restricted to authenticated users with the
     "menupermissions.iaso_forms" or "menupermissions.iaso_org_units" permission.
 
     GET /api/orgunits/
@@ -367,22 +354,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return Response(res)
 
-    def create(self, request):
-        org_units = request.data
+    @safe_api_import("orgUnit")
+    def create(self, request, api_import):
         app_id = request.GET.get("app_id")
+        new_org_units = import_data(request.data, request.user, api_import, app_id)
 
-        api_import = APIImport()
-        if not request.user.is_anonymous:
-            api_import.user = request.user
-        api_import.import_type = "orgUnit"
-        api_import.json_body = org_units
-        api_import.save()
-
-        try:
-            new_org_units = import_data(org_units, request.user, api_import, app_id)
-            return Response([org_unit.as_dict() for org_unit in new_org_units])
-        except Exception as exe:
-            return Response({"res": "a problem happened, but your data was saved"})
+        return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
@@ -408,8 +385,14 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
     version = None
     if not user.is_anonymous:
         version = user.iaso_profile.account.default_version
+        project = Project.objects.filter(app_id=app_id).first()
+        if project and project.needs_authentication:
+            if not user or user.iaso_profile.account.id != project.account.id:
+                raise PermissionDenied("User permissions problems")
     elif app_id is not None:
         project = Project.objects.get(app_id=app_id)
+        if project.needs_authentication:
+            raise PermissionDenied("User permissions problems")
         version = project.account.default_version
 
     for org_unit in org_units:

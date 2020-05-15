@@ -1,10 +1,10 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.request import Request
 from rest_framework.response import Response
 from django.http import Http404
 from hat.common.utils import queryset_iterator
-from hat.vector_control.models import APIImport
 from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
@@ -21,25 +21,13 @@ from iaso.utils import timestamp_to_datetime
 from time import gmtime, strftime
 import ntpath
 
+from .common import safe_api_import
 from .instance_filters import parse_instance_filters
 
 
 class HasInstancePermission(permissions.BasePermission):
     def has_permission(self, request: Request, view):
         if request.method == "POST":
-            app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
-
-            # Allow anonymous instance creation if the project allows it - mobile app
-            try:
-                project = Project.objects.get(app_id=app_id)
-                if project.needs_authentication and (
-                    not request.user.is_authenticated
-                    or project.account.id != request.user.iaso_profile.account.id
-                ):
-                    return False
-            except Project.DoesNotExist:
-                pass
-
             return True
 
         return request.user.is_authenticated and request.user.has_perm(
@@ -223,24 +211,12 @@ class InstancesViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
-    def create(self, request):
-        instances = request.data
-        api_import = APIImport()
-        if not request.user.is_anonymous:
-            api_import.user = request.user
+    @safe_api_import("instance")
+    def create(self, request, api_import):
         app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        api_import.import_type = "instance"
-        api_import.json_body = instances
-        api_import.save()
-        try:
-            import_data(instances, api_import, app_id)
-            print("imported")
-            return Response({"res": "ok"})
-        except Exception as e:
-            print("exception", e)
-            api_import.has_problem = True
-            api_import.save()
-            return Response({"result": "ok"})
+        import_data(request.data, api_import, app_id)
+
+        return Response({"res": "ok"})
 
     def retrieve(self, _, pk=None):
         try:
@@ -257,6 +233,15 @@ def import_data(instances, api_import, app_id=None):
         project = Project.objects.get(app_id=app_id)
     except Project.DoesNotExist:
         project = None
+
+    if project and project.needs_authentication:
+        user = api_import.user
+        if (
+            not user
+            or user.is_anonymous
+            or project.account.id != user.iaso_profile.account.id
+        ):
+            raise PermissionDenied("User permission problem")
 
     for instance in instances:
         file_name = ntpath.basename(instance.get("file", None))

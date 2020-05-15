@@ -1,10 +1,50 @@
 from datetime import datetime
+from functools import wraps
 from django.utils.timezone import make_aware
 from django.db.models import ProtectedError
 from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
+
+from hat.vector_control.models import APIImport
+
+
+def safe_api_import(key: str, fallback_status=200):
+    """This decorator allows to mark api views as "safe imports". This has two effects:
+
+        1. The view will always return a 200 OK status, even if there was an exception while executing it
+        2. The posted data will be saved in a APIImport record
+    """
+
+    def decorator(f):
+        @wraps(f)
+        def inner(self, request):
+            # First, save the data in a API record
+            api_import = APIImport()
+            if not request.user.is_anonymous:
+                api_import.user = request.user
+            api_import.import_type = key
+            api_import.json_body = request.data
+            api_import.save()
+
+            # Run the view in a try/except
+            try:
+                response = f(self, request, api_import)
+            except:
+                api_import.has_problem = True
+                response = Response(
+                    {"res": "a problem happened, but your data was saved"},
+                    status=fallback_status,
+                )
+
+            api_import.save()
+
+            return response
+
+        return inner
+
+    return decorator
 
 
 class HasPermission:

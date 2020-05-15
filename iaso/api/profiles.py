@@ -46,9 +46,6 @@ class ProfilesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "user__user_name").split(",")
         search = request.GET.get("search", None)
 
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
         account = request.user.iaso_profile.account
         queryset = Profile.objects.filter(account=account)
         if search:

@@ -23,7 +23,6 @@ class LinkViewSet(viewsets.ViewSet):
     PATCH /api/links/<id>
     """
 
-    permission_required = []
     permission_classes = [
         permissions.IsAuthenticated,
         HasPermission("menupermissions.iaso_links"),

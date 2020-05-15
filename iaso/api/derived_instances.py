@@ -18,14 +18,8 @@ class DerivedInstanceSerializer(serializers.Serializer):
     def create(self, validated_data):
 
         forms = Form.objects.filter(pk__in=validated_data["form_ids"])
-        if (
-            self.context["request"].user
-            and not self.context["request"].user.is_anonymous
-        ):
-            profile = self.context["request"].user.iaso_profile
-            forms = forms.filter(projects__account=profile.account)
-        else:
-            raise PermissionDenied()
+        profile = self.context["request"].user.iaso_profile
+        forms = forms.filter(projects__account=profile.account)
         stats = []
 
         if forms.count() == 0:

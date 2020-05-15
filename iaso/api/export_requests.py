@@ -1,9 +1,7 @@
 import typing
 from django.core.exceptions import PermissionDenied
 from iaso.models import ExportRequest
-from .auth.authentication import CsrfExemptSessionAuthentication
-from rest_framework import serializers, permissions, parsers
-from rest_framework.authentication import BasicAuthentication
+from rest_framework import serializers, permissions
 
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet

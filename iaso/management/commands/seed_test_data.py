@@ -1,4 +1,6 @@
 from random import randint, random
+from io import BytesIO
+from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils import timezone
 from django.contrib.gis.geos import Point
 from django.core.files.uploadedfile import UploadedFile
@@ -420,9 +422,26 @@ class Command(BaseCommand):
 
                     instance.json = test_data
                     instance.form = form
-                    instance.file = UploadedFile(
+                    instance.json["instanceID"] = "uuid:" + str(uuid4())
+                    xml_string = (
                         open("./testdata/seed-data-command-instance.xml")
+                        .read()
+                        .replace("REPLACEUUID", instance.json["instanceID"])
                     )
+                    buffer = BytesIO(xml_string.encode("utf-8"))
+                    buffer.seek(0, 2)
+                    file = InMemoryUploadedFile(
+                        file=buffer,
+                        field_name="file",
+                        name=instance.file_name,
+                        content_type="application/xml",
+                        size=buffer.tell(),
+                        charset="utf-8",
+                    )
+
+                    instance.file = file
+
+                    UploadedFile()
 
                     instances.append(instance)
             Instance.objects.bulk_create(instances)

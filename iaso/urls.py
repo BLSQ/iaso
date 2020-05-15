@@ -66,7 +66,7 @@ router.register(
 urlpatterns = [
     url(r"^", include(router.urls)),
     url(
-        r"^enketo/edit/(?P<instance_id>[a-z0-9-]+)/$",
+        r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$",
         view=EnketoViewSet.as_view({"get": "edit_in_enketo"}),
         name="enketo-formlist",
     ),

@@ -2,19 +2,18 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
-
+import EditIcon from '@material-ui/icons/Edit';
+import DeleteIcon from '@material-ui/icons/Delete';
+import UpdateIcon from '@material-ui/icons/Update';
 import Alert from '@material-ui/lab/Alert';
-import {
-    withStyles,
-    Box,
-    Grid,
-} from '@material-ui/core';
+import { withStyles, Box, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
 import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
+    fetchEditUrl as fetchEditUrlAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -28,7 +27,8 @@ import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
-
+import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
+import EnketoIcon from "./components/EnketoIcon"
 import { getInstancesFilesList } from './utils';
 
 import MESSAGES from './messages';
@@ -42,11 +42,30 @@ const styles = theme => ({
     },
 });
 
+const actions = [
+    {
+        id: 'instanceEditAction',
+        icon: <EnketoIcon />,
+        disabled: false,
+    },
+    {
+        id: 'instanceReAssignAction',
+        icon: <UpdateIcon />,
+        disabled: true,
+    },
+    {
+        id: 'instanceDeleteAction',
+        icon: <DeleteIcon />,
+        disabled: true,
+    },
+];
+
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
         this.state = {};
         props.setCurrentInstance(null);
+        this.onActionSelected = this.onActionSelected.bind(this);
     }
 
     componentDidMount() {
@@ -55,6 +74,12 @@ class InstanceDetails extends Component {
             fetchInstanceDetail,
         } = this.props;
         fetchInstanceDetail(instanceId);
+    }
+
+    onActionSelected(action) {
+        if (action.id === 'instanceEditAction' && this.props.currentInstance) {
+            this.props.fetchEditUrl(this.props.currentInstance, window.location);
+        }
     }
 
     render() {
@@ -88,73 +113,68 @@ class InstanceDetails extends Component {
                         }
                     }}
                 />
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
-                {
-                    currentInstance
-                    && (
-                        <Box className={classes.containerFullHeightNoTabPadded}>
-                            <Grid container spacing={4}>
-
-                                <Grid xs={12} md={5} item>
-                                    {currentInstance.deleted && (
-                                        <Alert severity="warning" className={classes.alert}>
-                                            {formatMessage(MESSAGES.warningSoftDeleted)}
-                                            <br />
-                                            {formatMessage(MESSAGES.warningSoftDeletedExport)}
-                                            <br />
-                                            {formatMessage(MESSAGES.warningSoftDeletedDerived)}
-                                            <br />
-                                        </Alert>
-                                    )}
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.infos)}
-                                        padded
-                                    >
-                                        <InstanceDetailsInfos currentInstance={currentInstance} />
-                                    </WidgetPaper>
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.location)}
-                                    >
-                                        <InstanceDetailsLocation currentInstance={currentInstance} />
-                                    </WidgetPaper>
-                                    <InstanceDetailsExportRequests
-                                        currentInstance={currentInstance}
-                                        classes={classes}
-                                    />
-                                    {currentInstance.files.length > 0 && (
-                                        <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                            <InstancesFilesList
-                                                fetchDetails={false}
-                                                instanceDetail={currentInstance}
-                                                files={getInstancesFilesList([currentInstance])}
-                                            />
-                                        </WidgetPaper>
-                                    )}
-                                </Grid>
-
-                                <Grid xs={12} md={7} item>
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.form)}
-                                        IconButton={IconButtonComponent}
-                                        iconButtonProps={{
-                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                            icon: 'xml',
-                                                color: 'secondary',
-                                                tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
-                                            }
-                                        }
-                                    >
-                                        <InstanceFileContent
-                                            fileContent={currentInstance.file_content}
+                {fetching && <LoadingSpinner />}
+                {currentInstance && (
+                    <Box className={classes.containerFullHeightNoTabPadded}>
+                        <SpeedDialInstanceActions
+                            actions={actions}
+                            onActionSelected={this.onActionSelected}
+                        />
+                        <Grid container spacing={4}>
+                            <Grid xs={12} md={5} item>
+                                {currentInstance.deleted && (
+                                    <Alert severity="warning" className={classes.alert}>
+                                        {formatMessage(MESSAGES.warningSoftDeleted)}
+                                        <br />
+                                        {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                        <br />
+                                        {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                        <br />
+                                    </Alert>
+                                )}
+                                <WidgetPaper title={formatMessage(MESSAGES.infos)} padded>
+                                    <InstanceDetailsInfos currentInstance={currentInstance} />
+                                </WidgetPaper>
+                                <WidgetPaper title={formatMessage(MESSAGES.location)}>
+                                    <InstanceDetailsLocation currentInstance={currentInstance} />
+                                </WidgetPaper>
+                                <InstanceDetailsExportRequests
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
+                                {currentInstance.files.length > 0 && (
+                                    <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
+                                        <InstancesFilesList
+                                            fetchDetails={false}
+                                            instanceDetail={currentInstance}
+                                            files={getInstancesFilesList([currentInstance])}
                                         />
                                     </WidgetPaper>
-                                </Grid>
+                                )}
                             </Grid>
-                        </Box>
-                    )}
+
+                            <Grid xs={12} md={7} item>
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.form)}
+                                    IconButton={IconButtonComponent}
+                                    iconButtonProps={{
+                                        onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                        icon: 'xml',
+                                        color: 'secondary',
+                                        tooltipMessage: {
+                                            id: 'iaso.label.downloadXml',
+                                            defaultMessage: 'Download XML',
+                                        },
+                                    }}
+                                >
+                                    <InstanceFileContent
+                                        fileContent={currentInstance.file_content}
+                                    />
+                                </WidgetPaper>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                )}
             </section>
         );
     }
@@ -175,6 +195,7 @@ InstanceDetails.propTypes = {
     currentInstance: PropTypes.object,
     fetchInstanceDetail: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
+    fetchEditUrl: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -187,6 +208,7 @@ const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
+            fetchEditUrl: fetchEditUrlAction,
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
         },

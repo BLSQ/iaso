@@ -143,6 +143,20 @@ const MESSAGES = defineMessages({
         defaultMessage: 'If this form generates other derived instances, they might not be updated either.',
         id: 'iaso.instance.warningSoftDeletedDerived',
     },
+    instanceDeleteAction: {
+        defaultMessage: 'Delete instance',
+        id: 'iaso.instance.instanceDeleteAction',
+    },
+    instanceEditAction: {
+        defaultMessage: 'Edit any answers in Enketo',
+        id: 'iaso.instance.instanceEditAction',
+    },
+    instanceReAssignAction: {
+        defaultMessage: 'Edit orgUnit or period',
+        id: 'iaso.instance.instanceReAssignAction',
+    }
+
+
 });
 
 export default MESSAGES;

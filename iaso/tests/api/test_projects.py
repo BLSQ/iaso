@@ -11,8 +11,12 @@ class ProjectsAPITestCase(APITestCase):
         ghi = m.Account.objects.create(name="Global Health initial")
         wha = m.Account.objects.create(name="Worldwide Health Aid")
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha, permissions=["iaso_forms"])
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe", account=ghi, permissions=["iaso_forms"]
+        )
+        cls.john = cls.create_user_with_profile(
+            username="johndoe", account=wha, permissions=["iaso_forms"]
+        )
         cls.jim = cls.create_user_with_profile(username="jimdoe", account=wha)
 
         cls.project_1 = m.Project.objects.create(

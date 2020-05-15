@@ -13,13 +13,24 @@ class GroupsAPITestCase(APITestCase):
         cls.now = now()
 
         cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.source_version = m.SourceVersion.objects.create(data_source=cls.data_source, number=1)
+        cls.source_version = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=1
+        )
 
-        star_wars = m.Account.objects.create(name="Star Wars", default_version=cls.source_version)
+        star_wars = m.Account.objects.create(
+            name="Star Wars", default_version=cls.source_version
+        )
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel)
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_org_units"]
+        )
+        cls.chewbacca = cls.create_user_with_profile(
+            username="chewbacca", account=star_wars
+        )
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=["iaso_org_units"]
+        )
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens",
@@ -33,8 +44,12 @@ class GroupsAPITestCase(APITestCase):
             account=star_wars,
         )
 
-        cls.group_1 = m.Group.objects.create(name="Councils", source_version=cls.source_version)
-        cls.group_1 = m.Group.objects.create(name="Assemblies", source_version=cls.source_version)
+        cls.group_1 = m.Group.objects.create(
+            name="Councils", source_version=cls.source_version
+        )
+        cls.group_1 = m.Group.objects.create(
+            name="Assemblies", source_version=cls.source_version
+        )
 
         cls.project_1.data_sources.add(cls.data_source)
         cls.project_1.save()
@@ -47,8 +62,16 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
+    def test_groups_list_wrong_permission(self):
+        """GET /groups/ with authenticated user, without the menupermissions.iaso_org_units permission"""
+
+        self.client.force_authenticate(self.chewbacca)
+        response = self.client.get("/api/groups/")
+        self.assertJSONResponse(response, 403)
+
+    @tag("iaso_only")
     def test_groups_list_ok(self):
-        """GET /groups/ with authenticated user"""
+        """GET /groups/ with authenticated user with the right menu permission"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/groups/")
@@ -120,11 +143,7 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
-            f"/api/groups/",
-            data={
-                "name": "test group",
-            },
-            format="json",
+            f"/api/groups/", data={"name": "test group",}, format="json",
         )
         self.assertJSONResponse(response, 400)
 
@@ -134,28 +153,23 @@ class GroupsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/groups/",
-            data={
-                "name": "test group",
-            },
-            format="json",
+            f"/api/groups/", data={"name": "test group",}, format="json",
         )
         self.assertJSONResponse(response, 201)
 
         response_data = response.json()
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
-        self.assertEqual(self.yoda.iaso_profile.account.default_version_id, response_data["source_version"])
+        self.assertEqual(
+            self.yoda.iaso_profile.account.default_version_id,
+            response_data["source_version"],
+        )
 
     @tag("iaso_only")
     def test_groups_create_invalid(self):
         """POST /groups/ with missing data"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            f"/api/groups/",
-            data={},
-            format="json",
-        )
+        response = self.client.post(f"/api/groups/", data={}, format="json",)
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
@@ -168,9 +182,7 @@ class GroupsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.patch(
             f"/api/groups/{self.group_1.id}/",
-            data={
-                "name": "test group (updated)",
-            },
+            data={"name": "test group (updated)",},
             format="json",
         )
         self.assertJSONResponse(response, 200)
@@ -186,9 +198,7 @@ class GroupsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.put(
             f"/api/groups/{self.group_1.id}/",
-            data={
-                "name": "test group (updated)",
-            },
+            data={"name": "test group (updated)",},
             format="json",
         )
         self.assertJSONResponse(response, 405)
@@ -217,7 +227,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 204)
 
     def assertValidGroupListData(
-            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
         self.assertValidListData(
             list_data=list_data,
@@ -229,7 +239,9 @@ class GroupsAPITestCase(APITestCase):
         for group_data in list_data["groups"]:
             self.assertValidGroupData(group_data)
 
-    def assertValidGroupData(self, group_data: typing.Mapping, skip: typing.Sequence = None):
+    def assertValidGroupData(
+        self, group_data: typing.Mapping, skip: typing.Sequence = None
+    ):
         skip = skip if skip is not None else {}
 
         self.assertHasField(group_data, "id", int)

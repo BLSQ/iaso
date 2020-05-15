@@ -10,9 +10,14 @@ class HasGroupsPermission(permissions.IsAuthenticated):
     """Rules:
 
     - The group API is only accessible to authenticated users
+    - The group API is only accessible to users having the "menupermissions.iaso_org_units" permission
     """
 
-    pass
+    def has_permission(self, request, view):
+        if super().has_permission(request, view):
+            return request.user.has_perm("menupermissions.iaso_org_units")
+
+        return False
 
 
 class GroupSerializer(serializers.ModelSerializer):

@@ -2,6 +2,8 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
 
+import { MONTHS_MESSAGES } from './monthList';
+
 export const planningTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage({
@@ -9,6 +11,7 @@ export const planningTableColumns = (formatMessage, component) => [
             id: 'main.label.name',
         }),
         accessor: 'name',
+        className: 'small align-left',
         Cell: settings => (
             <span
                 className={`${settings.original.is_template ? 'template' : ''}`}
@@ -29,6 +32,7 @@ export const planningTableColumns = (formatMessage, component) => [
             id: 'main.management.planning.yearOfApplication',
         }),
         accessor: 'year',
+        className: 'small',
         Cell: settings => (
             <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{!settings.original.is_template ? settings.original.year : '--'}</span></span>
         ),
@@ -39,6 +43,7 @@ export const planningTableColumns = (formatMessage, component) => [
             id: 'main.management.planning.yearsCoverage',
         }),
         accessor: 'years_coverage',
+        className: 'small',
         Cell: settings => (
             <span
                 className={`${settings.original.is_template ? 'template' : ''}`}
@@ -49,9 +54,45 @@ export const planningTableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage({
+            defaultMessage: 'Amount of months',
+            id: 'main.management.planning.months',
+        }),
+        accessor: 'months',
+        width: 120,
+        className: 'small',
+        Cell: settings => (
+            <span
+                className={`${settings.original.is_template ? 'template' : ''}`}
+            >
+                <span>{settings.original.months}</span>
+            </span>
+        ),
+    },
+    {
+        Header: formatMessage({
+            defaultMessage: 'Starting month',
+            id: 'main.management.planning.startingMonth',
+        }),
+        accessor: 'month',
+        className: 'small',
+        Cell: settings => (
+            <span
+                className={`${settings.original.is_template ? 'template' : ''}`}
+            >
+                <span>
+                    {
+                        formatMessage(MONTHS_MESSAGES[settings.original.month_start - 1])
+                    }
+                </span>
+            </span>
+        ),
+    },
+    {
+        Header: formatMessage({
             defaultMessage: 'Update date',
             id: 'main.label.updateDate',
         }),
+        className: 'small',
         accessor: 'updated_at',
         Cell: settings => (
             <span className={`${settings.original.is_template ? 'template' : ''}`}><span>{moment(settings.original.updated_at).format('YYYY-MM-DD HH:mm')}</span></span>
@@ -64,6 +105,7 @@ export const planningTableColumns = (formatMessage, component) => [
         }),
         sortable: false,
         resizable: false,
+        width: 300,
         Cell: settings => (
             <section className={`${settings.original.is_template ? 'template' : ''}`}>
                 <span>

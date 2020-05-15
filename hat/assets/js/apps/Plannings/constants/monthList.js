@@ -105,3 +105,54 @@ const monthList = [
     },
 ];
 export default monthList;
+
+export const MONTHS_MESSAGES = [
+    {
+        id: 'main.label.months.january',
+        defaultMessage: 'January',
+    },
+    {
+        id: 'main.label.months.february',
+        defaultMessage: 'February',
+    },
+    {
+        id: 'main.label.months.march',
+        defaultMessage: 'March',
+    },
+    {
+        id: 'main.label.months.april',
+        defaultMessage: 'April',
+    },
+    {
+        id: 'main.label.months.may',
+        defaultMessage: 'May',
+    },
+    {
+        id: 'main.label.months.june',
+        defaultMessage: 'June',
+    },
+    {
+        id: 'main.label.months.jully',
+        defaultMessage: 'Jully',
+    },
+    {
+        id: 'main.label.months.august',
+        defaultMessage: 'August',
+    },
+    {
+        id: 'main.label.months.september',
+        defaultMessage: 'September',
+    },
+    {
+        id: 'main.label.months.october',
+        defaultMessage: 'October',
+    },
+    {
+        id: 'main.label.months.november',
+        defaultMessage: 'November',
+    },
+    {
+        id: 'main.label.months.december',
+        defaultMessage: 'December',
+    },
+];

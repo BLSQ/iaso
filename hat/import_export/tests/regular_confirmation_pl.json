@@ -2,9 +2,9 @@
    "_id": "participant-regular_confirmation_pl",
    "_rev": "4-059cfc99b227f754d282b8258a478aaa",
    "person": {
-       "forename": "john",
-       "postname": "fitzgerald",
-       "surname": "kennedy",
+       "forename": "John",
+       "postname": "Fitzgerald",
+       "surname": "Kennedy",
        "birthYear": "1917",
        "noBirthYear": false,
        "gender": "Male",
@@ -30,7 +30,7 @@
        "screenings": {
            "rdt": {
                "result": "positive",
-               "testTime": "2019-01-07T13:52:13.297Z",
+               "testTime": "2019-01-04T19:53:13.297Z",
                "position": {
                    "accuracy": 16.597999572753906,
                    "latitude": 50.8367366,
@@ -38,7 +38,7 @@
                    "timestamp": 1547041933000
                },
                "device": "test_ms_conf",
-               "creationTime": "2019-01-07T13:52:09.742Z",
+               "creationTime": "2019-01-04T19:53:09.742Z",
                "shouldAskMediaForPositive": false,
                "shouldAskMediaForNegative": false,
                "shouldAskMedia": false

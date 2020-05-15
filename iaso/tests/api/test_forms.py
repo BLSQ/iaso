@@ -234,6 +234,7 @@ class FormsAPITestCase(APITestCase):
         form_data = response.json()
         self.assertValidFullFormData(form_data)
 
+    @tag("iaso_only")
     def test_forms_create_ok(self):
         """POST /forms/ happy path"""
 
@@ -256,6 +257,7 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(1, form.projects.count())
         self.assertEqual(2, form.org_unit_types.count())
 
+    @tag("iaso_only")
     def test_forms_create_ok_extended(self):
         """POST /forms/ happy path (more fields)"""
 
@@ -284,6 +286,7 @@ class FormsAPITestCase(APITestCase):
         self.assertEqual(response_data["periods_before_allowed"], 2)
         self.assertEqual(response_data["periods_after_allowed"], 10)
 
+    @tag("iaso_only")
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 403"""
 
@@ -292,6 +295,7 @@ class FormsAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 403)
 
+    @tag("iaso_only")
     def test_forms_create_invalid_1(self):
         """POST /forms/ with a lot of missing/invalid data"""
 
@@ -310,6 +314,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "project_ids")
         self.assertHasError(response_data, "org_unit_type_ids")
 
+    @tag("iaso_only")
     def test_forms_create_invalid_2(self):
         """POST /forms/ specific check for allow_empty"""
 
@@ -325,6 +330,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "project_ids")
         self.assertHasError(response_data, "org_unit_type_ids")
 
+    @tag("iaso_only")
     def test_forms_create_invalid_3(self):
         """POST /forms/ with wrong values for None period type"""
 
@@ -349,6 +355,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasError(response_data, "periods_before_allowed")
         self.assertHasError(response_data, "periods_after_allowed")
 
+    @tag("iaso_only")
     def test_forms_create_wrong_project(self):
         """POST /forms/ - user has no access to the project"""
 
@@ -368,6 +375,7 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
         self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
+    @tag("iaso_only")
     def test_forms_create_wrong_org_unit_types(self):
         """POST /forms/ - mismatch between project and org unit types"""
 

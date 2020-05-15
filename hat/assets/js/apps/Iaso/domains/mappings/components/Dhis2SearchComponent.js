@@ -6,6 +6,23 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import throttle from 'lodash/throttle';
 
+const fetchFrom = (input, filter, pageSize, resourceName, dataSourceId, fields) => Promise.all([
+    fetch(
+        `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${
+            input
+        }&fields=${fields || 'id,name'}&pageSize=${pageSize || 10}`,
+    ).then(resp => resp.json()),
+    fetch(
+        `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${
+            input
+        }&fields=${fields || 'id,name'}&pageSize=${pageSize || 10}`,
+    ).then(resp => resp.json()),
+    fetch(
+        `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${
+            input
+        }&fields=${fields || 'id,name'}&pageSize=${pageSize || 10}`,
+    ).then(resp => resp.json()),
+]);
 const Dhis2Search = (props) => {
     const {
         dataSourceId,
@@ -19,42 +36,22 @@ const Dhis2Search = (props) => {
         pageSize,
         defaultValue,
         mapOptions,
+        fetchFromPromise,
     } = props;
+    const fetchData = fetchFromPromise || fetchFrom;
     const [inputValue, setInputValue] = React.useState(defaultValue || '');
 
     const [options, setOptions] = React.useState([]);
-    const [setSelectedOption] = React.useState([]);
+    const [_selectedOption, setSelectedOption] = React.useState([]);
     const handleChange = (event) => {
         setInputValue(event.target.value);
     };
 
     const fetchMemo = React.useMemo(
         () => throttle((input) => {
-            Promise.all([
-                fetch(
-                    `/api/datasources/${dataSourceId}/${resourceName}.json?filter=name:ilike:${
-                        input.input
-                    }&fields=${fields || 'id,name'}${
-                        filter ? `&filter=${filter}` : ''
-                    }&pageSize=${pageSize || 10}`,
-                ).then(resp => resp.json()),
-                fetch(
-                    `/api/datasources/${dataSourceId}/${resourceName}.json?filter=code:ilike:${
-                        input.input
-                    }&fields=${fields || 'id,name'}${
-                        filter ? `&filter=${filter}` : ''
-                    }&pageSize=${pageSize || 10}`,
-                ).then(resp => resp.json()),
-                fetch(
-                    `/api/datasources/${dataSourceId}/${resourceName}.json?filter=id:eq:${
-                        input.input
-                    }&fields=${fields || 'id,name'}${
-                        filter ? `&filter=${filter}` : ''
-                    }&pageSize=${pageSize || 10}`,
-                ).then(resp => resp.json()),
-            ]).then((f) => {
+            fetchData(input.input, filter, pageSize, resourceName, dataSourceId, fields).then((f) => {
                 const union = f.flatMap(r => r[resourceName]);
-                const finalOptions = mapOptions ? mapOptions(union) : union;
+                const finalOptions = mapOptions ? mapOptions(union, input.input) : union;
                 setOptions(finalOptions);
             });
         }, 200),

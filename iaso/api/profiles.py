@@ -137,13 +137,11 @@ class ProfilesViewSet(viewsets.ViewSet):
                 user.user_permissions.add(permission)
             if permissions != []:
                 user.save()
-            current_profile_id = request.user.id
-            current_user_profile = get_object_or_404(Profile, id=current_profile_id)
-            account = get_object_or_404(Account, id=current_user_profile.account.id)
-            profile = Profile()
-            profile.account = account
-            profile.user = user
-            profile.save()
+            # Create a iaso profile for the new user and attach it to the same account
+            # as the currently authenticated user
+            current_profile = request.user.iaso_profile
+            Profile.objects.create(user = user
+            , account=current_profile.account)
 
             return Response(user.profile.as_dict())
         else:

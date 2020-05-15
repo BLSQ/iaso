@@ -397,8 +397,6 @@ def create_cases(df: DataFrame) -> None:
                 patient_country = None
                 traveler = False
 
-            extract_infection_location(case, ignored_columns)
-
             patient, patient_created = get_or_create_patient_from_case(
                 case,
                 patient_as,
@@ -417,6 +415,8 @@ def create_cases(df: DataFrame) -> None:
             )
             case.normalized_patient = patient
             case.normalized_team = get_case_team(case)
+
+            extract_infection_location(case, ignored_columns)
 
             case.save()
 
@@ -502,6 +502,8 @@ def update_cases(df: DataFrame) -> int:
                     Test.objects.filter(form=case).update(traveller_area=patient_as)
             else:
                 patient_as = None
+
+            extract_infection_location(case, ignored_columns)
 
             case.save()
 
@@ -593,30 +595,56 @@ def extract_infection_location(case, ignored_columns):
             latitude=case.latitude,
             longitude=case.longitude,
         )
+        if infection_as:
+            case.infection_location_as = infection_as
         if infection_village:
             case.infection_location = infection_village
+    else:
+        infection_as = None
+        infection_village = None
 
     infection_location_type = ignored_columns.get("infection_location_type")
     participant_member_type = ignored_columns.get("participant_member_type")
     if participant_member_type == MEMBER_TYPE_RESIDENT:
-        if infection_location_type in INFECTION_RESIDENT:
-            case.infection_location = case.normalized_village
+        # DEFAULT
+        if (
+            infection_location_type is None and case.infection_location_type is None
+        ) or infection_location_type in INFECTION_RESIDENT:
+            case.infection_location_as = (
+                infection_as if infection_as else case.normalized_AS
+            )
+            case.infection_location = (
+                infection_village if infection_village else case.normalized_village
+            )
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
         elif infection_location_type in INFECTION_TEST:
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
+            case.infection_location_as = (
+                infection_as if infection_as else case.normalized_AS
+            )
+            case.infection_location = (
+                infection_village if infection_village else case.normalized_village
+            )
         elif infection_location_type in INFECTION_OTHER:
+            # Already set above
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
     elif (
         participant_member_type == MEMBER_TYPE_TRAVELER
         or participant_member_type == MEMBER_TYPE_TRAVELER_OTHER_COUNTRY
     ):
-        if infection_location_type in INFECTION_RESIDENT:
-            case.infection_location = case.normalized_village
+        # DEFAULT
+        if (
+            infection_location_type is None and case.infection_location_type is None
+        ) or infection_location_type in INFECTION_RESIDENT:
+            case.infection_location = case.normalized_patient.origin_village
+            case.infection_location_as = case.normalized_patient.origin_area
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_RESIDENCE
         elif infection_location_type in INFECTION_TEST:
             case.infection_location = case.normalized_village
+            case.infection_location_as = case.normalized_AS
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_TEST
         elif infection_location_type in INFECTION_OTHER:
+            # already set above
             case.infection_location_type = Case.INFECTION_LOCATION_TYPE_OTHER
     else:
         if participant_member_type:

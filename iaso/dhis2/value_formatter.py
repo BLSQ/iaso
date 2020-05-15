@@ -54,6 +54,9 @@ def format_value(data_element, raw_value):
     else:
         raise Exception("no valueType for ", data_element)
 
+    if raw_value is None:
+        return None
+
     translated_value = translate_optionset(data_element, raw_value)
 
     if data_element_type == "NUMBER":

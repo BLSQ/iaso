@@ -7,6 +7,14 @@ from django.core.files.uploadedfile import UploadedFile
 
 
 class DerivedInstancesTests(APITestCase):
+    def floor_values(self, jsondata):
+        result = {}
+        for k in jsondata:
+            result[k] = (
+                floor(jsondata[k]) if not isinstance(jsondata[k], str) else jsondata[k]
+            )
+        return result
+
     def build_instance(self, form, score):
         instance = m.Instance()
         instance.org_unit = self.org_unit
@@ -119,6 +127,14 @@ class DerivedInstancesTests(APITestCase):
                         "name": "sum of budget",
                         "questionName": "satisfaction_score",
                         "aggregationType": "sum",
+                        "defaultValue": 0,
+                    },
+                    {
+                        "id": "satisfaction_score_sum_with_default",
+                        "name": "sum of budget",
+                        "questionName": "never_filled_question",
+                        "aggregationType": "sum",
+                        "defaultValue": 0,
                     },
                 ],
             },
@@ -147,20 +163,19 @@ class DerivedInstancesTests(APITestCase):
         self.trigger_generation_and_expect_stats(
             {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
         )
-        avg = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+
+        derived_instance = self.derived_form.instances.all().first()
+
+        self.assertEqual(
+            self.floor_values(derived_instance.json),
+            {
+                "_version": "1",
+                "satisfaction_score_avg": 54,
+                "satisfaction_score_count": 4,
+                "satisfaction_score_sum": 216,
+                "satisfaction_score_sum_with_default": 0,
+            },
         )
-        self.assertEqual(floor(avg), 54)
-        sum = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
-        )
-        self.assertEqual(floor(sum), 216)
-        count = (
-            self.derived_form.instances.all()
-            .first()
-            .json.get("satisfaction_score_count")
-        )
-        self.assertEqual(floor(count), 4)
 
         # delete 2 submissions expect an update
         self.survey_form.instances.first().delete()
@@ -170,20 +185,18 @@ class DerivedInstancesTests(APITestCase):
         self.trigger_generation_and_expect_stats(
             {"new": 0, "updated": 1, "skipped": 0, "nullified": 0, "deleted": 0}
         )
-        avg = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        derived_instance = self.derived_form.instances.all().first()
+
+        self.assertEqual(
+            self.floor_values(derived_instance.json),
+            {
+                "_version": "1",
+                "satisfaction_score_avg": 86,
+                "satisfaction_score_count": 2,
+                "satisfaction_score_sum": 173,
+                "satisfaction_score_sum_with_default": 0,
+            },
         )
-        self.assertEqual(floor(avg), 86)
-        sum = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
-        )
-        self.assertEqual(floor(sum), 173)
-        count = (
-            self.derived_form.instances.all()
-            .first()
-            .json.get("satisfaction_score_count")
-        )
-        self.assertEqual(count, 2)
 
     @tag("iaso_only")
     def test_post_derived_instances_with_auth_deleted(self):
@@ -225,12 +238,13 @@ class DerivedInstancesTests(APITestCase):
         # the instances should nullified
         derived_instance = self.derived_form.instances.all().first()
         self.assertEqual(
-            self.derived_form.instances.all().first().json,
+            derived_instance.json,
             {
                 "_version": "1",
                 "satisfaction_score_avg": None,
                 "satisfaction_score_sum": None,
                 "satisfaction_score_count": None,
+                "satisfaction_score_sum_with_default": None,
             },
         )
         self.assertEqual(derived_instance.last_export_success_at, None)
@@ -247,20 +261,18 @@ class DerivedInstancesTests(APITestCase):
             {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
         )
 
-        avg = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_avg")
+        derived_instance = self.derived_form.instances.all().first()
+
+        self.assertEqual(
+            self.floor_values(derived_instance.json),
+            {
+                "_version": "1",
+                "satisfaction_score_avg": 54,
+                "satisfaction_score_count": 4,
+                "satisfaction_score_sum": 216,
+                "satisfaction_score_sum_with_default": 0,
+            },
         )
-        self.assertEqual(floor(avg), 54)
-        sum = (
-            self.derived_form.instances.all().first().json.get("satisfaction_score_sum")
-        )
-        self.assertEqual(floor(sum), 216)
-        count = (
-            self.derived_form.instances.all()
-            .first()
-            .json.get("satisfaction_score_count")
-        )
-        self.assertEqual(floor(count), 4)
 
     def setup_5_instances(self):
         self.build_instance(self.survey_form, 10)

@@ -8,7 +8,7 @@ from rest_framework.authentication import BasicAuthentication
 from iaso.dhis2.export_request_builder import ExportRequestBuilder
 from .common import ModelViewSet
 from .instance_filters import parse_instance_filters
-from iaso.dhis2.aggregate_exporter import AggregateExporter
+from iaso.dhis2.datavalue_exporter import DataValueExporter
 
 
 class ExportRequestSerializer(serializers.ModelSerializer):
@@ -48,7 +48,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             )
 
     def update(self, export_request, validated_data):
-        AggregateExporter().export_instances(export_request, True)
+        DataValueExporter().export_instances(export_request, True)
         # this has a highly probable chance to timeout but the export will continue to be processed
         # still return the export request
         return export_request

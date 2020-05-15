@@ -654,7 +654,7 @@ class Group(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
-            # "org_unit_count": self.org_units.count(),
+            "org_unit_count": self.org_units.count(),
         }
 
 

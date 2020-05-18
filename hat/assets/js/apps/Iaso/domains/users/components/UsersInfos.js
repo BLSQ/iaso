@@ -47,7 +47,7 @@ const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
             value={currentUser.password.value}
             errors={currentUser.password.errors}
             type="password"
-            label={initialData ? MESSAGES.newPassword : MESSAGES.params}
+            label={initialData ? MESSAGES.newPassword : MESSAGES.password}
             required={!initialData}
         />
     </>

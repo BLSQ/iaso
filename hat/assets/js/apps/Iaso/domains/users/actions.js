@@ -69,7 +69,7 @@ export const saveUserProFile = profile => (dispatch) => {
     dispatch(setIsFetching(true));
     return (patchRequest(`/api/profiles/${profile.id}/`, profile, true)
         .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccesfull')));
+            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccessful')));
             return res;
         })
         .catch((error, res) => {
@@ -83,7 +83,7 @@ export const createUserProFile = profile => (dispatch) => {
     dispatch(setIsFetching(true));
     return (postRequest('/api/profiles/', profile)
         .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccesfull')));
+            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccessful')));
             return res;
         })
         .catch((error) => {
@@ -98,7 +98,7 @@ export const deleteUser = (profile, params) => (dispatch) => {
     dispatch(setIsFetching(true));
     return (deleteRequest(`/api/profiles/${profile.id}/`)
         .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('deleteUserSuccesfull')));
+            dispatch(enqueueSnackbar(succesfullSnackBar('deleteUserSuccessful')));
             dispatch(fetchUsersProfiles(params));
             return res;
         })

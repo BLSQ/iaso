@@ -159,17 +159,17 @@ const MESSAGES = {
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
-    saveUserSuccesfull: {
+    saveUserSuccessful: {
         defaultMessage: 'User saved',
-        id: 'iaso.snackBar.saveUserSuccesfull',
+        id: 'iaso.snackBar.saveUserSuccessful',
     },
     saveUserError: {
         defaultMessage: 'An error occurred while saving user profile',
         id: 'iaso.snackBar.saveUserError',
     },
-    deleteUserSuccesfull: {
+    deleteUserSuccessful: {
         defaultMessage: 'User deleted',
-        id: 'iaso.snackBar.deleteUserSuccesfull',
+        id: 'iaso.snackBar.deleteUserSuccessful',
     },
     deleteUserError: {
         defaultMessage: 'An error occurred while deleting user profile',

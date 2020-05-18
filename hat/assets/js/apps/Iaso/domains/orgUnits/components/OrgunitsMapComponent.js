@@ -43,6 +43,7 @@ import { fetchOrgUnitDetail } from '../../../utils/requests';
 import { getChipColors } from '../../../constants/chipColors';
 import commonStyles from '../../../styles/common';
 import { getColorsFromParams, decodeSearch } from '../utils';
+import MESSAGES from '../messages';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -190,11 +191,7 @@ class OrgunitsMap extends Component {
                 <Grid container spacing={0}>
                     <Grid item xs={3} />
                     <Grid item xs={6}>
-                        <ErrorPaperComponent message={formatMessage({
-                            defaultMessage: 'Cannot find an org unit with geolocation',
-                            id: 'iaso.orgUnits.missingGeolocation',
-                        })}
-                        />
+                        <ErrorPaperComponent message={formatMessage(MESSAGES.missingGeolocation)} />
                     </Grid>
                     <Grid item xs={3} />
                 </Grid>

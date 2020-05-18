@@ -362,6 +362,20 @@ class OrgUnit(models.Model):
             "groups": [group.as_dict() for group in self.groups.all()],
         }
 
+    def as_small_dict(self):
+        return {
+            "name": self.name,
+            "id": self.id,
+            "parent_id": self.parent_id,
+            "parent_name": self.parent.name if self.parent else None,
+            "source": self.version.data_source.name if self.version else None,
+            "source_ref": self.source_ref,
+            "parent": self.parent.as_small_dict() if self.parent else None,
+            "org_unit_type_name": self.org_unit_type.name
+            if self.org_unit_type
+            else None,
+        }
+
     def as_dict_for_csv(self):
         return {
             "name": self.name,
@@ -1222,6 +1236,8 @@ class Profile(models.Model):
         User, on_delete=models.CASCADE, related_name="iaso_profile"
     )
 
+    org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="iaso_profile")
+
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
 
@@ -1239,6 +1255,7 @@ class Profile(models.Model):
                 ).values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
         }
 
     def as_short_dict(self):

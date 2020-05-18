@@ -11,8 +11,13 @@ class ProjectsAPITestCase(APITestCase):
         ghi = m.Account.objects.create(name="Global Health initial")
         wha = m.Account.objects.create(name="Worldwide Health Aid")
 
-        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi)
-        cls.john = cls.create_user_with_profile(username="johndoe", account=wha)
+        cls.jane = cls.create_user_with_profile(
+            username="janedoe", account=ghi, permissions=["iaso_forms"]
+        )
+        cls.john = cls.create_user_with_profile(
+            username="johndoe", account=wha, permissions=["iaso_forms"]
+        )
+        cls.jim = cls.create_user_with_profile(username="jimdoe", account=wha)
 
         cls.project_1 = m.Project.objects.create(
             name="Project 1", app_id="org.ghi.p1", account=ghi
@@ -26,6 +31,14 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get("/api/projects/")
         self.assertEqual(403, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
+
+    @tag("iaso_only")
+    def test_projects_list_no_permission(self):
+        """GET /projects/ with auth but without the proper permission"""
+
+        self.client.force_authenticate(self.jim)
+        response = self.client.get("/api/projects/")
+        self.assertEqual(403, response.status_code)
 
     @tag("iaso_only")
     def test_projects_list_empty_for_user(self):
@@ -108,7 +121,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.post("/api/projects/", data={}, format="json")
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")
     def test_projects_update(self):
@@ -118,7 +131,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.put(
             f"/api/projects/{self.project_1.id}/", data={}, format="json"
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")
     def test_projects_delete(self):
@@ -128,7 +141,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.delete(
             f"/api/projects/{self.project_1.id}/", format="json"
         )
-        self.assertJSONResponse(response, 403)
+        self.assertJSONResponse(response, 405)
 
     def assertValidProjectListData(
         self, list_data: typing.Mapping, expected_length: int, paginated: bool = False

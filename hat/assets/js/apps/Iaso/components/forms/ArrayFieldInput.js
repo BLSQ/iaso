@@ -120,7 +120,7 @@ class ArrayFieldInput extends Component {
                                     <OutlinedInput
                                         className={classes.input}
                                         id={`${baseId}-${a.position}`}
-                                        value={a.value}
+                                        value={a.value || undefined}
                                         onChange={event => this.updateField(event.currentTarget.value, fieldIndex)}
                                     />
                                     <IconButton

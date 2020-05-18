@@ -1,36 +1,27 @@
-from rest_framework import status
+import os
+import json
+from rest_framework import status, permissions
 from rest_framework.response import Response
 from rest_framework import viewsets
-from django.core.exceptions import PermissionDenied
 
 from iaso.models import DataSource
 
-import os
-
-import json
-
-
-def load_fixture_response(filename):
-    with open(
-        os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8"
-    ) as f:
-        document = json.load(f)
-        return document
-
 
 class HesabuDescriptorsViewSet(viewsets.ViewSet):
+    """ Hesabu descriptors API
+
+    This API is restricted to authenticated users (no specific permission check)
+
+    GET /api/datasources/<id>/hesabudescriptors
+    """
+
     resource = "hesabudescriptors"
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request, datasource_id, format="json"):
-
         sources = DataSource.objects.all()
-        if not request.user.is_anonymous:
-            profile = request.user.iaso_profile
-            sources = sources.filter(
-                projects__account=profile.account, id=datasource_id
-            )
-        else:
-            raise PermissionDenied()
+        profile = request.user.iaso_profile
+        sources = sources.filter(projects__account=profile.account, id=datasource_id)
         data_source = sources.all()[0]
 
         credentials = data_source.credentials
@@ -48,3 +39,11 @@ class HesabuDescriptorsViewSet(viewsets.ViewSet):
                 ]
             }
         )
+
+
+def load_fixture_response(filename):
+    with open(
+        os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8"
+    ) as f:
+        document = json.load(f)
+        return document

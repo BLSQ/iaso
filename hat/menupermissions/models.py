@@ -38,7 +38,7 @@ DUPLICATES = _("Doublons")
 FORMS = _("Formulaires")
 MAPPINGS = _("Correspondances avec DHIS2")
 COMPLETENESS = _("Complétude des données")
-ORG_UNITS = _("Unités d'organistations")
+ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
 USERS = _("Utilisateurs")
 

@@ -17,8 +17,13 @@ class FormsAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         marvel = m.Account.objects.create(name="Marvel")
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
-        cls.raccoon = cls.create_user_with_profile(username="raccoon", account=marvel)
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_forms"]
+        )
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=["iaso_forms"]
+        )
+        cls.iron_man = cls.create_user_with_profile(username="iron_man", account=marvel)
 
         cls.jedi_council = m.OrgUnitType.objects.create(
             name="Jedi Council", short_name="Cnc"
@@ -290,6 +295,16 @@ class FormsAPITestCase(APITestCase):
     def test_forms_create_without_auth(self):
         """POST /forms/ without auth: 403"""
 
+        response = self.client.post(
+            f"/api/forms/", data={"name": "test form"}, format="json"
+        )
+        self.assertJSONResponse(response, 403)
+
+    @tag("iaso_only")
+    def test_forms_create_wrong_permission(self):
+        """POST /forms/ with auth but not the proper permission: 403"""
+
+        self.client.force_authenticate(self.iron_man)
         response = self.client.post(
             f"/api/forms/", data={"name": "test form"}, format="json"
         )

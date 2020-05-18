@@ -1,14 +1,27 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+
+from .common import HasPermission
 from iaso.models import DataSource, OrgUnit
 
 
 class DataSourceViewSet(viewsets.ViewSet):
-    """
-    list:
+    """ Data source API
+
+    This API is restricted to authenticated users having at least one of the "menupermissions.iaso_mappings",
+    "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
+
+    GET /api/datasources/
     """
 
-    permission_classes = []
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission(
+            "menupermissions.iaso_mappings",
+            "menupermissions.iaso_org_units",
+            "menupermissions.iaso_links",
+        ),
+    ]
 
     def list(self, request):
         linked_to = request.GET.get("linkedTo", None)

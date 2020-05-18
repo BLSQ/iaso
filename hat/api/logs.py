@@ -26,7 +26,7 @@ class LogsViewSet(viewsets.ViewSet):
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
     if settings.FLAVOR == "trypelim":
-        permission_required = ["menupermissions.x_modifications"]
+        permission_required = ["menupermissions.x_modifications", "menupermissions.iaso_org_units"]
 
     def list(self, request):
         from_date = request.GET.get("date_from", None)

@@ -17,6 +17,7 @@ import {
 } from '../../../constants/filters';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -66,7 +67,7 @@ const Filters = ({
                         onClick={() => handleSearch()}
                     >
                         <SearchIcon className={classes.buttonIcon} />
-                        <FormattedMessage id="iaso.search" defaultMessage="Search" />
+                        <FormattedMessage {...MESSAGES.search} />
                     </Button>
                 </Grid>
             </Grid>

@@ -1,10 +1,9 @@
-import typing
 from django.test import tag
+from django.contrib.gis.geos import Point
+from django.utils import timezone
 
 from iaso.test import APITestCase
 from iaso import models as m
-from django.contrib.gis.geos import Point
-from django.utils import timezone
 
 
 class ProjectsAPITestCase(APITestCase):
@@ -30,12 +29,9 @@ class ProjectsAPITestCase(APITestCase):
         cls.project.unit_types.add(unit_type)
         cls.village_unit_type = unit_type
 
-        user = m.User.objects.create(username="link")
-        user.set_password("tiredofplayingthesameagain")
-        user.save()
-        p = m.Profile(user=user, account=account)
-        p.save()
-        cls.user = user
+        cls.user = cls.create_user_with_profile(
+            username="link", account=account, permissions=["iaso_completeness"]
+        )
 
         cls.village_1 = m.OrgUnit.objects.create(
             name="Akkala", org_unit_type=unit_type, version=version

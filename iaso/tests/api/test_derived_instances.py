@@ -1,13 +1,9 @@
-import iaso.models as m
-import typing
 from django.test import tag
 from math import floor
 from iaso.test import APITestCase
 from iaso import models as m
-from django.contrib.gis.geos import Point
 from django.utils import timezone
 from django.core.files.uploadedfile import UploadedFile
-import responses
 
 
 class DerivedInstancesTests(APITestCase):
@@ -20,7 +16,6 @@ class DerivedInstancesTests(APITestCase):
         return result
 
     def build_instance(self, form, score):
-
         instance = m.Instance()
         instance.org_unit = self.org_unit
         instance.period = "2018Q1"
@@ -55,12 +50,12 @@ class DerivedInstancesTests(APITestCase):
             name="Organisation Name"
         )
 
-        user, user_created = m.User.objects.get_or_create(
-            username="Test User Name", email="testemail@bluesquarehub.com"
+        self.user = self.create_user_with_profile(
+            username="Test User Name",
+            email="testemail@bluesquarehub.com",
+            account=account,
+            permissions=["iaso_completeness"],
         )
-        self.user = user
-        p = m.Profile(user=user, account=account)
-        p.save()
         credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
             name="Test export api",
             url="https://dhis2.com",
@@ -162,7 +157,6 @@ class DerivedInstancesTests(APITestCase):
 
     @tag("iaso_only")
     def test_post_derived_instances_with_updated(self):
-
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
@@ -206,7 +200,6 @@ class DerivedInstancesTests(APITestCase):
 
     @tag("iaso_only")
     def test_post_derived_instances_with_auth_deleted(self):
-
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
@@ -225,7 +218,6 @@ class DerivedInstancesTests(APITestCase):
 
     @tag("iaso_only")
     def test_post_derived_instances_with_auth_nullified(self):
-
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
@@ -291,7 +283,6 @@ class DerivedInstancesTests(APITestCase):
         self.build_instance(self.survey_form, "")
 
     def trigger_generation_and_expect_stats(self, expected_stats):
-
         response = self.client.post(
             "/api/derivedinstances/",
             data={

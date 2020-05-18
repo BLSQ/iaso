@@ -24,16 +24,19 @@ import {
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { createUrl } from '../../../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
+import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
+import { getOrgUnitParentsIds } from '../../orgUnits/utils';
+
 
 import { INSTANCE_STATUSES } from '../constants';
-import { setInstancesFilterUpdated as setInstancesFilterAction } from "../actions";
+import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 
-export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
+export const instanceStatusOptions = INSTANCE_STATUSES.map(status => (
     {
-        value: instanceStatus,
+        value: status,
         label: {
-            id: `iaso.label.instanceStatus.${instanceStatus.toLowerCase()}`,
-            defaultMessage: instanceStatus,
+            id: `iaso.label.instanceStatus.${status.toLowerCase()}`,
+            defaultMessage: status,
         },
     }
 ));
@@ -43,8 +46,6 @@ const styles = theme => ({
 });
 
 class InstancesFiltersComponent extends Component {
-
-
     onSearch() {
         const {
             isInstancesFilterUpdated,
@@ -52,7 +53,7 @@ class InstancesFiltersComponent extends Component {
         } = this.props;
 
         if (isInstancesFilterUpdated) {
-            setInstancesFilterUpdated(false)
+            setInstancesFilterUpdated(false);
             const tempParams = {
                 ...this.props.params,
             };
@@ -60,6 +61,24 @@ class InstancesFiltersComponent extends Component {
             this.props.redirectTo(this.props.baseUrl, tempParams);
         }
         this.props.onSearch();
+    }
+
+    onSelectOrgUnit(orgUnit) {
+        const {
+            redirectTo,
+            params,
+            baseUrl,
+            setInstancesFilterUpdated,
+        } = this.props;
+        const parentIds = getOrgUnitParentsIds(orgUnit);
+        parentIds.push(orgUnit.id);
+        const tempParams = {
+            ...params,
+            levels: parentIds.join(','),
+        };
+
+        setInstancesFilterUpdated(true);
+        redirectTo(baseUrl, tempParams);
     }
 
     render() {
@@ -107,6 +126,7 @@ class InstancesFiltersComponent extends Component {
                         />
                     </Grid>
                     <Grid item xs={4}>
+                        <OrgUnitSearch onSelectOrgUnit={ou => this.onSelectOrgUnit(ou)} />
                         <OrgUnitsLevelsFiltersComponent
                             onLatestIdChanged={() => setInstancesFilterUpdated(true)}
                             params={params}
@@ -156,13 +176,13 @@ const MapStateToProps = state => ({
     devices: state.devices.list,
     devicesOwnerships: state.devices.ownershipList,
     periodsList: state.periods.list,
-    isInstancesFilterUpdated: state.instances.isInstancesFilterUpdated
+    isInstancesFilterUpdated: state.instances.isInstancesFilterUpdated,
 });
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setInstancesFilterUpdated: isInstancesFilterUpdated => dispatch(setInstancesFilterAction(isInstancesFilterUpdated))
+    setInstancesFilterUpdated: isInstancesFilterUpdated => dispatch(setInstancesFilterAction(isInstancesFilterUpdated)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(InstancesFiltersComponent)));

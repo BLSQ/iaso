@@ -1,22 +1,36 @@
 import typing
 from unittest import mock
+
+from django.contrib.contenttypes.models import ContentType
 from django.core.files import File
 from django.test import TestCase as BaseTestCase
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Permission
 from django.http import StreamingHttpResponse, HttpResponse
 from rest_framework.response import Response
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
+from hat.menupermissions.models import CustomPermissionSupport
 from iaso import models as m
 
 
 class IasoTestCaseMixin:
     @staticmethod
-    def create_user_with_profile(*, username: str, account: m.Account, **kwargs):
+    def create_user_with_profile(
+        *, username: str, account: m.Account, permissions=None, **kwargs
+    ):
         User = get_user_model()
 
         user = User.objects.create(username=username, **kwargs)
         m.Profile.objects.create(user=user, account=account)
+
+        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
+        if permissions is not None:
+            user.user_permissions.set(
+                Permission.objects.filter(
+                    codename__in=permissions, content_type=content_type
+                )
+            )
 
         return user
 

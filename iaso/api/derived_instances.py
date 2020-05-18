@@ -1,13 +1,9 @@
 import typing
-
 from django.core.exceptions import PermissionDenied
-from rest_framework import permissions, serializers
-from rest_framework.authentication import BasicAuthentication
+from rest_framework import serializers, permissions
 
+from .common import ModelViewSet, HasPermission
 from iaso.models import ExportRequest, Form, DERIVED
-
-from .auth.authentication import CsrfExemptSessionAuthentication
-from .common import ModelViewSet
 from iaso.dhis2.derived_instance_generator import generate_instances
 
 
@@ -22,14 +18,8 @@ class DerivedInstanceSerializer(serializers.Serializer):
     def create(self, validated_data):
 
         forms = Form.objects.filter(pk__in=validated_data["form_ids"])
-        if (
-            self.context["request"].user
-            and not self.context["request"].user.is_anonymous
-        ):
-            profile = self.context["request"].user.iaso_profile
-            forms = forms.filter(projects__account=profile.account)
-        else:
-            raise PermissionDenied()
+        profile = self.context["request"].user.iaso_profile
+        forms = forms.filter(projects__account=profile.account)
         stats = []
 
         if forms.count() == 0:
@@ -42,7 +32,6 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
         for stat_form in forms:
             for period in validated_data["periods"]:
-
                 cvs_stat_version = stat_form.latest_version
                 cvs_stat_mapping_version = cvs_stat_version.mapping_versions.filter(
                     form_version=cvs_stat_version, mapping__mapping_type=DERIVED
@@ -68,8 +57,18 @@ class DerivedInstanceSerializer(serializers.Serializer):
 
 
 class DerivedInstancesViewSet(ModelViewSet):
-    permission_classes = [permissions.IsAuthenticated]
+    """ Derived instances API
+
+    This API is restricted to authenticated users having the "menupermissions.iaso_completeness" permission
+
+    POST /api/derivedinstances/
+    """
+
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_completeness"),
+    ]
     serializer_class = DerivedInstanceSerializer
     results_key = "export_instances"
     queryset = ExportRequest.objects.all()
-    http_method_names = "post"
+    http_method_names = ["post", "head", "options", "trace"]

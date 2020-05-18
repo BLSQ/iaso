@@ -56,7 +56,7 @@ function MenuItem(props) {
         <Fragment>
             <Link
                 className={classes.linkButton}
-                to={path}
+                to={!hasSubMenu ? path : ''}
             >
                 <ListItem
                     style={itemStyle}

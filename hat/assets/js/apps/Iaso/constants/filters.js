@@ -4,6 +4,7 @@ import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
+import { getOrgunitMessage } from '../domains/orgUnits/utils';
 
 
 export const search = () => (
@@ -68,7 +69,7 @@ export const orgUnitLevel = (orgunitList, level, callback, value, formatMessage)
         useKeyParam: false,
         isClearable: true,
         options: orgunitList.map(o => ({
-            label: `${o.name} (${o.org_unit_type_name})`,
+            label: getOrgunitMessage(o, true),
             value: o.id,
         })),
         labelString: `${formatMessage(MESSAGES.level)} ${level + 1}`,

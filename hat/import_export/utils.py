@@ -32,7 +32,7 @@ def create_documentid(row) -> str:
     """
     COLUMNS = [
         # 'document_date',
-        "name",
+        "postname",
         "lastname",
         "prename",
         "sex",
@@ -88,7 +88,7 @@ def hat_id(row) -> str:
     else:
         COLUMNS = [
             "lastname",
-            "name",
+            "postname",
             "prename",
             "sex",
             "year_of_birth",
@@ -105,10 +105,10 @@ def hat_id(row) -> str:
     else:
         lastname = empty
 
-    if "name" in r2:
-        name = strip_accents(r2["name"])
+    if "postname" in r2:
+        postname = strip_accents(r2["postname"])
     else:
-        name = empty
+        postname = empty
 
     if "prename" in r2:
         prename = strip_accents(r2["prename"])
@@ -131,7 +131,7 @@ def hat_id(row) -> str:
         mothers = empty
 
     return (
-        lastname[0:2] + name[0:2] + prename[0:2] + sex[0:1] + yob[0:4] + mothers[0:1]
+        lastname[0:2] + postname[0:2] + prename[0:2] + sex[0:1] + yob[0:4] + mothers[0:1]
     ).upper()
 
 

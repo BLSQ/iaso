@@ -18,12 +18,12 @@ import RouteMap from '../components/RouteMap';
 import { createUrl, getRequest } from '../../../utils/fetchData';
 import { teamActions } from '../redux/team';
 import { clone } from '../../../utils';
-import { getMonthName, hasSameVillageInAMonth } from '../utils/routeUtils';
+import { getMonthName, hasSameVillageInAMonth, getMonthList } from '../utils/routeUtils';
 import { warningSnackBar } from '../../../utils/constants/snackBars';
 import { putRequest } from '../../../utils/requests';
 
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
-import { planningActions } from '../redux/planning';
+import { fetchPlannings } from '../redux/planning';
 import { assignationActions } from '../redux/assignation';
 import { mapActions } from '../redux/map';
 import { saveAssignations } from '../redux/microplanning';
@@ -39,11 +39,14 @@ class Routes extends React.Component {
             showSplitError: false,
             selectedAssignations: props.assignations.filter(a => a.month === selectedMonth),
             notSelectedAssignations: props.assignations.filter(a => a.month !== selectedMonth),
+            monthList: [],
         };
     }
 
     componentDidMount() {
-        this.props.fetchPlannings();
+        fetchPlannings(this.props.dispatch).then(() => {
+            this.setMonthList();
+        });
         this.props.fetchTeams();
         if (this.props.params && (this.props.params.planning_id || this.props.params.team_id)) {
             this.props.fetchAssignations(this.props.params);
@@ -68,6 +71,11 @@ class Routes extends React.Component {
             prevProps.params.month_id !== this.props.params.month_id
         ) {
             this.setAssignations(modifiedAssignations || this.props.assignations);
+        }
+        if (
+            prevProps.params.planning_id !== this.props.params.planning_id
+        ) {
+            this.setMonthList();
         }
 
         const {
@@ -107,6 +115,24 @@ class Routes extends React.Component {
             });
 
             this.props.fetchAssignations(this.props.params);
+        });
+    }
+
+    setMonthList() {
+        const {
+            intl: {
+                formatMessage,
+            },
+        } = this.props;
+
+        const planningId = this.props.params.planning_id ? parseInt(this.props.params.planning_id, 10) : undefined;
+        let currentPlanning;
+        if (planningId) {
+            currentPlanning = this.props.plannings.find(p => p.id === planningId);
+        }
+        const monthList = getMonthList(currentPlanning.months, currentPlanning.month_start, formatMessage);
+        this.setState({
+            monthList,
         });
     }
 
@@ -184,6 +210,7 @@ class Routes extends React.Component {
         const {
             isModified,
             hasSplitError,
+            monthList,
         } = this.state;
         return (
             <section className="route-container ">
@@ -223,12 +250,12 @@ class Routes extends React.Component {
                                             <li className="map__option__list__item">
                                                 <i className="map__option__icon--route-assigned" />
                                                 <FormattedMessage id="microplanning.legend.assigned" defaultMessage="Village(s) assigned to the month of" />
-                                                <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
+                                                <span className="month-name">{getMonthName(this.state.selectedMonth, monthList).toLowerCase()}</span>
                                             </li>
                                             <li className="map__option__list__item">
                                                 <i className="map__option__icon--route-not-assigned" />
                                                 <FormattedMessage id="microplanning.legend.notAssigned" defaultMessage="Village(s) not assinged to the month of" />
-                                                <span className="month-name">{getMonthName(this.state.selectedMonth).toLowerCase()}</span>
+                                                <span className="month-name">{getMonthName(this.state.selectedMonth, monthList).toLowerCase()}</span>
                                             </li>
                                         </ul>
                                     </form>
@@ -261,6 +288,7 @@ class Routes extends React.Component {
                                 && teamId
                                 && (
                                     <RouteSchedule
+                                        monthList={monthList}
                                         selectedMonth={this.state.selectedMonth}
                                         selectMonth={monthId => this.selectMonth(monthId)}
                                         load={this.props.load}
@@ -325,7 +353,6 @@ Routes.propTypes = {
     params: PropTypes.object.isRequired,
     load: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    fetchPlannings: PropTypes.func.isRequired,
     fetchTeams: PropTypes.func.isRequired,
     fetchAssignations: PropTypes.func.isRequired,
     redirect: PropTypes.func.isRequired,
@@ -358,7 +385,6 @@ const MapDispatchToProps = dispatch => ({
     redirect: params => dispatch(push(createUrl(params, 'routes'))),
     fetchAssignations: params => dispatch(assignationActions.fetchAssignations(params, dispatch, true)),
     setModifiedAssignations: assingations => dispatch(assignationActions.setModifiedAssignations(assingations)),
-    fetchPlannings: () => dispatch(planningActions.fetchPlannings(dispatch)),
     fetchTeams: () => dispatch(teamActions.fetchTeams(dispatch)),
     getShape: url => getRequest(url, dispatch, null, false),
     changeLayer: (type, key) => dispatch(mapActions.changeLayer(type, key)),

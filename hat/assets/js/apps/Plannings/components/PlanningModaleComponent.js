@@ -10,7 +10,7 @@ import {
 import CheckBox from '../../../components/CheckBoxComponent';
 import ModalItem from '../../../components/ModalItemComponent';
 import { getYears } from '../../../utils';
-import { MONTHS_MESSAGES } from '../constants/monthList';
+import { MONTHS_MESSAGES } from '../constants/monthsMessages';
 
 class PlanningModale extends Component {
     constructor(props) {
@@ -182,7 +182,7 @@ class PlanningModale extends Component {
                                     max="12"
                                     className={`small ${(!planning.months || planning.months === '') ? 'form-error' : ''}`}
                                     id={`months-${planning.id}`}
-                                    value={planning.months}
+                                    value={planning.months || ''}
                                     onChange={event => this.updatePlanningField('months', event.currentTarget.value)}
                                 />
                             )}
@@ -224,7 +224,7 @@ class PlanningModale extends Component {
                                 <ModalItem
                                     labelComponent={(
                                         <FormattedMessage
-                                            id="'main.label.template"
+                                            id="main.label.template"
                                             defaultMessage="Template"
                                         />
                                     )}

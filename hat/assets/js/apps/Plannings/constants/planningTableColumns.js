@@ -2,7 +2,7 @@ import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
 
-import { MONTHS_MESSAGES } from './monthList';
+import { MONTHS_MESSAGES } from './monthsMessages';
 
 export const planningTableColumns = (formatMessage, component) => [
     {

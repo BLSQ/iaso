@@ -22,6 +22,7 @@ const DeleteSplitRoute = (
             formatMessage,
         },
         handleDelete,
+        monthList,
     },
 ) => {
     const [open, setOpen] = useState(false);
@@ -76,7 +77,7 @@ const DeleteSplitRoute = (
                                 defaultMessage: 'Select an option',
                             })}
                             options={assignations.map(a => ({
-                                label: `M.${a.month}- pop: ${a.population_split || a.village_population}`,
+                                label: `M.${a.month} - ${monthList[a.month - 1].fullLabel} - pop: ${a.population_split || a.village_population}`,
                                 value: a.id,
                             }))}
                             onChange={value => selectAssignation(value)}
@@ -115,6 +116,7 @@ DeleteSplitRoute.propTypes = {
     assignations: PropTypes.array.isRequired,
     currentAssignation: PropTypes.object.isRequired,
     handleDelete: PropTypes.func.isRequired,
+    monthList: PropTypes.array.isRequired,
 };
 
 

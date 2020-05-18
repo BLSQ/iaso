@@ -696,14 +696,13 @@ export const habitats = (formatMessage, habitatsList) => (
         hideEmpty: true,
         isMultiSelect: true,
         isClearable: true,
-        options: habitatsList.map(h =>
-            ({
-                label: formatMessage({
-                    defaultMessage: h[1],
-                    id: `vectors.label.${h[0]}`,
-                }),
-                value: h[0],
-            })),
+        options: habitatsList.map(h => ({
+            label: formatMessage({
+                defaultMessage: h[1],
+                id: `vectors.label.${h[0]}`,
+            }),
+            value: h[0],
+        })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'All',
@@ -827,8 +826,7 @@ export const medecine = formatMessage => (
         hideEmpty: true,
         isMultiSelect: false,
         isClearable: true,
-        options: Object.keys(tempTreatmentsMedecineMessages).map(key =>
-            ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
+        options: Object.keys(tempTreatmentsMedecineMessages).map(key => ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'All',
@@ -1072,8 +1070,7 @@ export const institutions = (institutionsList, isMultiSelect = false) => (
         urlKey: 'institution_id',
         isMultiSelect,
         isClearable: true,
-        options: institutionsList.map(institution =>
-            ({ label: institution.name, value: institution.id })),
+        options: institutionsList.map(institution => ({ label: institution.name, value: institution.id })),
         placeholder: {
             id: 'main.label.all',
             defaultMessage: 'All',
@@ -1092,14 +1089,13 @@ export const problems = (formatMessage, problemsList) => (
         urlKey: 'problems',
         isMultiSelect: true,
         isClearable: true,
-        options: problemsList.map(h =>
-            ({
-                label: formatMessage({
-                    defaultMessage: h[1],
-                    id: `vectors.label.${h[0]}`,
-                }),
-                value: h[0],
-            })),
+        options: problemsList.map(h => ({
+            label: formatMessage({
+                defaultMessage: h[1],
+                id: `vectors.label.${h[0]}`,
+            }),
+            value: h[0],
+        })),
         placeholder: {
             id: 'main.label.none',
             defaultMessage: 'None',

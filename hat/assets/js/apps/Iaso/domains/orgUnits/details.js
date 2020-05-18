@@ -329,7 +329,7 @@ class OrgUnitDetail extends Component {
                                 router.goBack();
                             }, 300);
                         } else {
-                            redirectToPush('orgunits', {});
+                            redirectToPush(baseUrls.orgUnits, {});
                         }
                     }}
                 >

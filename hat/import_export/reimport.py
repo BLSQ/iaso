@@ -1,4 +1,4 @@
-'''
+"""
 Reimport data
 -------------
 
@@ -9,7 +9,7 @@ that an old one was misunderstood and it should be *recalculated* again.
 In that case the transform methods should be redefined and the data
 *re-transformed* or *re-imported*.
 
-'''
+"""
 
 from typing import Dict, Any, Iterator
 import time
@@ -44,35 +44,37 @@ def write_contents_to_file(orgname: str, contents: str) -> str:
 
 def import_event(event: EventType) -> EventStats:
     # Import a event from the hat_event_view
-    table = EventTable(event['table_name'])
+    table = EventTable(event["table_name"])
 
     if table == EventTable.cases_file:
-        orgname = event['name']
-        source_type = event['sub_type']
-        contents = event['contents']
+        orgname = event["name"]
+        source_type = event["sub_type"]
+        contents = event["contents"]
         if contents is not None:
             # The complete file is stored in the database. This is the old
             # way we stored the data. We need to convert this to the newer
             # format where only the contents of the file are stored.
             # TODO: This code path can be removed when all the data were migrated
-            id = event['id']
-            logger.info('migration file contents for event with id: {}'.format(id))
+            id = event["id"]
+            logger.info("migration file contents for event with id: {}".format(id))
             filename = write_contents_to_file(orgname, contents)
             (_, data) = extract_file_data(filename)
             with connection.cursor() as cursor:
-                sql = '''
+                sql = """
                     UPDATE {}
                     SET data = %s, contents = NULL
                     WHERE id = %s
-                '''.format(table.value)
+                """.format(
+                    table.value
+                )
                 cursor.execute(sql, [json.dumps(data), id])
         else:
-            data = event['data']
+            data = event["data"]
         stats = import_cases_data(source_type, orgname, data)
 
     elif table == EventTable.reconciled_file:
-        orgname = event['name']
-        filename = write_contents_to_file(orgname, event['contents'])
+        orgname = event["name"]
+        filename = write_contents_to_file(orgname, event["contents"])
         stats = import_reconciled_file_unchecked(orgname, filename)
 
     elif table == EventTable.cases_merge:
@@ -80,11 +82,11 @@ def import_event(event: EventType) -> EventStats:
         stats = EventStats(updated=0, deleted=0, created=0, total=0)
 
     elif table == EventTable.sync:
-        device_id = event['name']
-        stats = import_synced_docs(event['data'], device_id)
+        device_id = event["name"]
+        stats = import_synced_docs(event["data"], device_id)
 
     else:
-        raise KeyError('Unknown event type: ' + table.value)
+        raise KeyError("Unknown event type: " + table.value)
     return stats
 
 
@@ -95,15 +97,18 @@ def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
 
     batch_size = 10
     # Postgres uses a special value for the lowest date possible'-infinity'
-    last_stamp = '-infinity'
+    last_stamp = "-infinity"
     done = False
     while True:
-        cursor.execute('''
+        cursor.execute(
+            """
             SELECT * FROM hat_event_view
             WHERE stamp > %s
             ORDER BY stamp ASC
             LIMIT %s
-        ''', [last_stamp, batch_size])
+        """,
+            [last_stamp, batch_size],
+        )
         columns = [col[0] for col in cursor.description]
         done = True
         # iterate over the batch until fetch returns None
@@ -113,7 +118,7 @@ def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
                 break
             done = False
             event = dict(zip(columns, row))
-            last_stamp = event['stamp']
+            last_stamp = event["stamp"]
             yield event
 
         # last_stamp will be None if the last batch was empty and we are at the end
@@ -122,40 +127,51 @@ def iterate_events(cursor: DBCursor) -> Iterator[EventType]:
 
 
 @transaction.atomic
-def reimport(delete_data: bool=True) -> List[EventStats]:
-    '''
+def reimport(delete_data: bool = True) -> List[EventStats]:
+    """
     Deletes ALL cases (``delete_data``) and
     reimports the data in the same chronological order they were successfully uploaded.
 
     The returned dict list will contain information about how many records were imported
     or any errors that happened.
-    '''
-    logger.info('starting reimport')
+    """
+    logger.info("starting reimport")
     try:
         start_time = time.clock()
         results = []
         with connection.cursor() as cursor:
             if delete_data:
-                logger.info('deleting cases')
-                cursor.execute('TRUNCATE TABLE cases_case CASCADE')
+                logger.info("deleting cases")
+                cursor.execute("TRUNCATE TABLE cases_case CASCADE")
 
-            logger.info('getting events info')
-            cursor.execute('SELECT count(*), min(stamp), max(stamp) FROM hat_event_view')
+            logger.info("getting events info")
+            cursor.execute(
+                "SELECT count(*), min(stamp), max(stamp) FROM hat_event_view"
+            )
             info_row = cursor.fetchone()
-            logger.info('reimporting {} events from {} to {}'.format(*info_row))
+            logger.info("reimporting {} events from {} to {}".format(*info_row))
 
             for event in iterate_events(cursor):
-                log_keys = ('id', 'table_name', 'stamp',
-                            'created', 'updated', 'deleted',
-                            'name', 'sub_type')
-                log_info = {k: v for k, v in event.items() if k in log_keys and v is not None}
-                logger.info('importing event: {}'.format(log_info))
+                log_keys = (
+                    "id",
+                    "table_name",
+                    "stamp",
+                    "created",
+                    "updated",
+                    "deleted",
+                    "name",
+                    "sub_type",
+                )
+                log_info = {
+                    k: v for k, v in event.items() if k in log_keys and v is not None
+                }
+                logger.info("importing event: {}".format(log_info))
 
                 stats = import_event(event)
                 results.append(stats)
 
             # rebuild indices in table
-            cursor.execute('REINDEX TABLE cases_case')
+            cursor.execute("REINDEX TABLE cases_case")
 
             end_time = time.clock()
 
@@ -163,5 +179,5 @@ def reimport(delete_data: bool=True) -> List[EventStats]:
         logger.exception(str(ex))
         raise ex
 
-    logger.info('reimport finished, duration: {:.2f}'.format(end_time - start_time))
+    logger.info("reimport finished, duration: {:.2f}".format(end_time - start_time))
     return results

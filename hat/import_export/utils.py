@@ -131,7 +131,12 @@ def hat_id(row) -> str:
         mothers = empty
 
     return (
-        lastname[0:2] + postname[0:2] + prename[0:2] + sex[0:1] + yob[0:4] + mothers[0:1]
+        lastname[0:2]
+        + postname[0:2]
+        + prename[0:2]
+        + sex[0:1]
+        + yob[0:4]
+        + mothers[0:1]
     ).upper()
 
 

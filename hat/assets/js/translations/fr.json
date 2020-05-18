@@ -529,6 +529,7 @@
     "main.label.lastName": "Nom",
     "main.label.lastUser": "Dernier utilisateur",
     "main.label.latitude": "Latitude",
+    "main.label.latitudeLongitude": "Latitude/Longitude",
     "main.label.list": "Liste",
     "main.label.loading": "Chargement en cours",
     "main.label.locateCase": "Localiser",

@@ -1,9 +1,10 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, FormattedHTMLMessage, injectIntl } from 'react-intl';
+import { FormattedHTMLMessage, FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 import VideoComponent from '../../../components/VideoComponent';
 import ImgModal from '../../../components/ImgModal';
+import { getTesterDisplayName } from '../../../utils/profilesUtils';
 
 class PatientTestComponent extends React.Component {
     constructor(props) {
@@ -111,16 +112,19 @@ class PatientTestComponent extends React.Component {
                             <th>
                                 <FormattedMessage id="main.label.date" defaultMessage="Date" />
                             </th>
-                            <td className={`${test.date && similarTest && similarTest.date && (moment(similarTest.date).format('DD-MM-YYYY') !== moment(test.date).format('DD-MM-YYYY')) ? 'error' : ''}`}>
-                                {test.date ? moment(test.date).format('DD-MM-YYYY') : '--'}
+                            <td className={`${test.date && similarTest && similarTest.date && (moment(similarTest.date)
+                                .format('DD-MM-YYYY HH:mm') !== moment(test.date)
+                                .format('DD-MM-YYYY HH:mm')) ? 'error' : ''}`}
+                            >
+                                {test.date ? moment(test.date).format('DD-MM-YYYY HH:mm') : '--'}
                             </td>
                         </tr>
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.hour" defaultMessage="Hour" />
+                                <FormattedMessage id="main.label.test.tester" defaultMessage="Testeur" />
                             </th>
-                            <td className={`${test.date && similarTest && similarTest.date && (moment(similarTest.date).format('HH:mm') !== moment(test.date).format('HH:mm')) ? 'error' : ''}`}>
-                                {test.date ? moment(test.date).format('HH:mm') : '--'}
+                            <td className={`${test.tester === null ? 'error' : ''}`}>
+                                {getTesterDisplayName(test.tester)}
                             </td>
                         </tr>
                         <tr>
@@ -335,26 +339,23 @@ class PatientTestComponent extends React.Component {
                         }
                         <tr>
                             <th>
-                                <FormattedMessage id="main.label.latitude" defaultMessage="Latitude" />
+                                <FormattedMessage id="main.label.latitudeLongitude" defaultMessage="Latitude/Longitude" />
                             </th>
                             <td className={!test.latitude ? 'error-text' : ''}>
-                                {
-                                    test.latitude
-                                        ? test.latitude
-                                        : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
-                                }
-                            </td>
-                        </tr>
-                        <tr>
-                            <th>
-                                <FormattedMessage id="main.label.longitude" defaultMessage="Longitude" />
-                            </th>
-                            <td className={!test.longitude ? 'error-text' : ''}>
-                                {
-                                    test.longitude
-                                        ? test.longitude
-                                        : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
-                                }
+                                <span className="inline-block margin-right--tiny">
+                                    {
+                                        test.latitude
+                                            ? `${test.latitude}°`
+                                            : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
+                                    }
+                                </span>
+                                <span className="inline-block">
+                                    {
+                                        test.longitude
+                                            ? `${test.longitude}°`
+                                            : ''
+                                    }
+                                </span>
                             </td>
                         </tr>
                     </tbody>

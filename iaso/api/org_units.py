@@ -120,9 +120,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
                 if small_search:
-                    res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
-                else:
                     res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                else:
+                    res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

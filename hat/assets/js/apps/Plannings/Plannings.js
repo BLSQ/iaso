@@ -107,6 +107,8 @@ class Plannings extends React.Component {
             name: newPlanning.name,
             year: newPlanning.year,
             years_coverage: newPlanning.years_coverage,
+            months: newPlanning.months,
+            month_start: newPlanning.month_start,
         };
         this.setState({
             isUpdating: true,

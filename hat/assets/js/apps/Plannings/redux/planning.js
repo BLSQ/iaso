@@ -12,17 +12,12 @@ export const showPlannings = plannings => ({
     },
 });
 
-export const fetchPlannings = (dispatch) => {
-    req
-        .get('/api/plannings/')
-        .then((result) => {
-            dispatch(showPlannings(result.body));
-        })
-        .catch(err => (console.error(`Error while fetching plannings ${err}`)));
-    return ({
-        type: FETCH_PLANNINGS,
-    });
-};
+export const fetchPlannings = dispatch => req
+    .get('/api/plannings/')
+    .then((result) => {
+        dispatch(showPlannings(result.body));
+    })
+    .catch(err => (console.error(`Error while fetching plannings ${err}`)));
 
 
 export const planningActions = {
@@ -35,9 +30,6 @@ export const planningReducer = (state = {}, action = {}) => {
         case SHOW_PLANNINGS: {
             const list = action.payload;
             return { ...state, list };
-        }
-        case FETCH_PLANNINGS: {
-            return state;
         }
 
         default:

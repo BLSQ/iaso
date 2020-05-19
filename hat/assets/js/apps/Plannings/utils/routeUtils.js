@@ -1,9 +1,12 @@
-import monthList from '../constants/monthList';
+import { MONTHS_MESSAGES } from '../constants/monthsMessages';
 
-const getMonthName = (monthId) => {
+const getMonthName = (monthId, monthList) => {
     let monthName = '';
-    if (monthId) {
-        monthName = monthList.filter(month => (month.id === monthId))[0].fullLabel;
+    if (monthId && monthList.length > 0) {
+        const currentMonth = monthList.find(month => (month.id === monthId));
+        if (currentMonth) {
+            monthName = currentMonth.fullLabel;
+        }
     }
     return monthName;
 };
@@ -72,7 +75,40 @@ const move = (source, destination, droppableSource, droppableDestination) => {
     return result;
 };
 
-const filterAssignations = (assignationsList) => {
+const getMonthList = (monthsCount, startingIndex, formatMessage) => {
+    const newMonthList = Array(monthsCount).fill().map((m, i) => {
+        let currentIndex = startingIndex - 1 + i;
+        if (currentIndex > 11) {
+            currentIndex %= 12;
+        }
+        return ({
+            id: i + 1,
+            key: MONTHS_MESSAGES[currentIndex].key,
+            label: `M. ${i + 1}`,
+            fullLabel: formatMessage(MONTHS_MESSAGES[currentIndex]),
+            data: [],
+            population: 0,
+        });
+    });
+    newMonthList.push(
+        {
+            id: newMonthList.length + 1,
+            key: 'not-assigned',
+            label: 'Aucun',
+            fullLabel: formatMessage(
+                {
+                    id: 'main.label.none',
+                    defaultMessage: 'None',
+                },
+            ),
+            data: [],
+            population: 0,
+        },
+    );
+    return newMonthList;
+};
+
+const filterAssignations = (assignationsList, monthList) => {
     const tempMonthList = [];
     monthList.forEach((m) => {
         const tempAssignation = m;
@@ -91,19 +127,18 @@ const filterAssignations = (assignationsList) => {
 
 const hasSameVillageInAMonth = assignationsList => assignationsList.some(a => assignationsList.filter(as => as.village_id === a.village_id && as.month === a.month).length > 1);
 
-const getCloneAssignations = (monthlyAssignations, monthId, villageId) => {
+const getCloneAssignations = (monthlyAssignations, villageId, assignationIndex) => {
     let assignations = [];
     monthlyAssignations.forEach((month) => {
-        if (monthId !== month.id) {
-            const monthAssignation = month.data.filter(as => as.village_id === villageId).map(a => ({
-                ...a,
-                month: month.id,
-            }));
-            assignations = assignations.concat(monthAssignation);
-        }
+        const monthAssignation = month.data.filter(as => as.village_id === villageId && as.index !== assignationIndex).map(a => ({
+            ...a,
+            month: month.id,
+        }));
+        assignations = assignations.concat(monthAssignation);
     });
     return assignations;
 };
+
 
 export {
     move,
@@ -113,6 +148,7 @@ export {
     reIndex,
     filterAssignations,
     getMonthName,
+    getMonthList,
     hasSameVillageInAMonth,
     getCloneAssignations,
 };

@@ -1,8 +1,10 @@
 $secondary-color: #868486;
+
 .dnd-container {
     position: relative;
     display: flex;
     margin-bottom: 5px;
+
     ul {
         position: relative;
         min-height: 30px;
@@ -15,9 +17,11 @@ $secondary-color: #868486;
         overflow: hidden;
         width: calc(100% - 40px);
     }
+
     .month-selector {
         display: flex;
         width: 70px;
+        min-height: 56px;
         border: 1px solid #D2D2D2;
         border-top-left-radius: 5px;
         border-bottom-left-radius: 5px;
@@ -31,16 +35,20 @@ $secondary-color: #868486;
         box-shadow: none !important;
         outline: none !important;
         cursor: pointer;
+
         span {
             display: inline-block;
             font-size: 10px;
             padding-top: 5px;
         }
-        &.selected, &:hover {
+
+        &.selected,
+        &:hover {
             background-color: $secondary-color;
             color: white;
         }
     }
+
     .no-assignation-text {
         color: $secondary-color;
         font-size: 12px;
@@ -49,29 +57,35 @@ $secondary-color: #868486;
         top: 0;
         left: 0;
         width: 100%;
+
         span {
-            padding-top: 14px
+            padding-top: 21px
         }
     }
+
     .is-draging-over {
         background-color: $light-gray;
+
         .no-assignation-text {
             display: none;
         }
     }
+
     .drag-over {
         background-color: $light-gray;
     }
+
     li {
         border-bottom: 1px solid $light-gray;
         background-color: transparent;
         position: relative;
         outline: none ! important;
         box-shadow: none ! important;
-        min-height: 41px;
-        > span {
+        min-height: 56px;
+
+        >span {
             box-sizing: border-box;
-            padding: 11px 27px 13px 8px;
+            padding: 19px 27px 21px 8px;
             background-color: white;
             display: inline-block;
             width: 100%;
@@ -79,12 +93,14 @@ $secondary-color: #868486;
             height: 100%;
             padding-right: 85px;
         }
+
         .visited-village {
             background-color: transparent;
             color: $green;
             width: auto;
             padding: 5px 0 0 0;
             width: 100%;
+
             span {
                 display: inline;
                 position: relative;
@@ -93,25 +109,28 @@ $secondary-color: #868486;
                 padding: 0 0 0 8px;
             }
         }
+
         i {
-            &.fa-bars{
+            &.fa-bars {
                 background-color: white;
                 color: #D2D2D2;
                 display: inline-block;
                 width: 25px;
                 position: absolute;
-                right: 0;
-                top: 8px;
+                right: 8px;
+                top: 13px;
                 padding-top: 6px;
                 text-align: center;
             }
         }
     }
+
     .routes-split-button-container {
         background-color: white;
         position: absolute;
-        right: 25px;
-        top: 6px;
+        right: 35px;
+        top: 11px;
+
         .MuiIconButton-sizeSmall {
             padding: 6px;
         }

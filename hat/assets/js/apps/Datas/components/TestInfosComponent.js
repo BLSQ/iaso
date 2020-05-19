@@ -22,7 +22,7 @@ import {
 
 import TimeSelect from '../../../components/TimeSelectComponent';
 import TestLocationComponent from './TestLocationComponent';
-import ModalItem from './ModalItemComponent';
+import ModalItem from '../../../components/ModalItemComponent';
 import CattCard from './CattCardComponent';
 import CheckBox from '../../../components/CheckBoxComponent';
 import getDisplayName from '../../../utils/profilesUtils';

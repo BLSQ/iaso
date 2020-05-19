@@ -25,7 +25,7 @@ class RouteSchedule extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            assignations: filterAssignations(props.assignations),
+            assignations: filterAssignations(props.assignations, props.monthList),
         };
     }
 
@@ -48,30 +48,30 @@ class RouteSchedule extends Component {
         let tempAssignations = [];
         if (source.droppableId === destination.droppableId) {
             items = reorder(
-                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.id === destination.droppableId))[0].data,
                 source.index,
                 destination.index,
             );
             assignations.forEach((a) => {
                 const tempA = a;
-                if (tempA.key === destination.droppableId) {
+                if (tempA.id === destination.droppableId) {
                     tempA.data = items;
                 }
                 tempAssignations.push(tempA);
             });
         } else {
             items = move(
-                assignations.filter(assignation => (assignation.key === source.droppableId))[0].data,
-                assignations.filter(assignation => (assignation.key === destination.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.id === source.droppableId))[0].data,
+                assignations.filter(assignation => (assignation.id === destination.droppableId))[0].data,
                 source,
                 destination,
             );
             assignations.forEach((a) => {
                 const tempA = a;
-                if (tempA.key === source.droppableId) {
+                if (tempA.id === source.droppableId) {
                     tempA.data = items[source.droppableId];
                 }
-                if (tempA.key === destination.droppableId) {
+                if (tempA.id === destination.droppableId) {
                     tempA.data = items[destination.droppableId];
                 }
                 tempAssignations.push(tempA);
@@ -79,7 +79,7 @@ class RouteSchedule extends Component {
         }
         tempAssignations = reIndex(tempAssignations);
         const updatedMonth = tempAssignations
-            .filter(assignationList => (assignationList.key === destination.droppableId))[0];
+            .filter(assignationList => (assignationList.id === destination.droppableId))[0];
         this.setState({
             assignations: tempAssignations,
         });
@@ -88,7 +88,7 @@ class RouteSchedule extends Component {
 
     setAssignations() {
         this.setState({
-            assignations: filterAssignations(this.props.assignations),
+            assignations: filterAssignations(this.props.assignations, this.props.monthList),
         });
     }
 
@@ -146,13 +146,14 @@ class RouteSchedule extends Component {
 
     render() {
         const { assignations } = this.state;
+        const { monthList } = this.props;
         return (
             <div className="route-schedule">
                 <DragDropContext onDragEnd={result => this.onDragEnd(result)}>
                     {assignations.map((assignation, assIndex) => (
                         <Droppable
-                            droppableId={assignations[assIndex].key}
-                            key={assignations[assIndex].key}
+                            droppableId={assignation.id}
+                            key={assignation.id}
                         >
                             {(drop, snapshot) => (
                                 <section className="dnd-container">
@@ -162,30 +163,38 @@ class RouteSchedule extends Component {
                                         tabIndex={0}
                                         onClick={() => this.props.selectMonth(assIndex + 1)}
                                     >
-                                        {assignations[assIndex].label}
+                                        {assignation.label}
+                                        {
+                                            assignation.key !== 'not-assigned'
+                                                && (
+                                                    <span>
+                                                        {assignation.fullLabel}
+                                                    </span>
+                                                )
+                                        }
                                         <span>
-                                            (
-                                            {formatThousand(assignations[assIndex].population)}
-                                            )
+                                                (
+                                            {formatThousand(assignation.population)}
+                                                )
                                         </span>
                                     </div>
                                     <ul
                                         ref={drop.innerRef}
                                         className={`${snapshot.isDraggingOver ? 'is-draging-over' : ''}`}
-                                        id={assignations[assIndex].key}
+                                        id={assignation.key}
                                     >
                                         {
-                                            assignations[assIndex].data.length === 0
-                                            && (
-                                                <li className="no-assignation-text">
-                                                    <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
-                                                </li>
-                                            )
+                                            assignation.data.length === 0
+                                                && (
+                                                    <li className="no-assignation-text">
+                                                        <FormattedMessage id="microplanning.route.noAssignation" defaultMessage="No assignation" />
+                                                    </li>
+                                                )
                                         }
-                                        {assignations[assIndex]
+                                        {assignation
                                             .data.map((a, index) => (
                                                 <Draggable
-                                                    key={`${assignations[assIndex].key}-${a.index}-${a.id}`}
+                                                    key={`${assignation.key}-${a.index}-${a.id}`}
                                                     draggableId={`${a.id}-${a.index}`}
                                                     index={index}
                                                 >
@@ -202,48 +211,49 @@ class RouteSchedule extends Component {
                                                             <span>
                                                                 {index + 1}
                                                                 {' '}
-                                                                -
+                                                                    -
                                                                 {a.split ? (
                                                                     <span>
                                                                         <FileCopy fontSize="small" className="copy-icon" />
                                                                         {' '}
-                                                                        -
+                                                                            -
                                                                     </span>
                                                                 ) : null}
                                                                 {a.name}
                                                                 {' '}
 
-                                                                (
+                                                                    (
                                                                 {a.population_split
                                                                     ? formatThousand(a.population_split)
                                                                     : formatThousand(a.population)}
-                                                                )
+                                                                    )
                                                                 {
                                                                     a.tests_count > 0
-                                                                    && (
-                                                                        <span className="visited-village">
-                                                                            <i className="fa fa-check-circle" aria-hidden="true" />
-                                                                            <span>
-                                                                                {a.tests_count}
-                                                                                <FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" />
+                                                                        && (
+                                                                            <span className="visited-village">
+                                                                                <i className="fa fa-check-circle" aria-hidden="true" />
+                                                                                <span>
+                                                                                    {a.tests_count}
+                                                                                    <FormattedMessage id="microplanning.route.tests-done" defaultMessage="test(s) done" />
+                                                                                </span>
                                                                             </span>
-                                                                        </span>
-                                                                    )
+                                                                        )
                                                                 }
                                                             </span>
                                                             <div className="routes-split-button-container">
                                                                 {
                                                                     a.split
-                                                                    && (
-                                                                        <DeleteSplitRoute
-                                                                            currentAssignation={a}
-                                                                            assignations={getCloneAssignations(assignations, assIndex + 1, a.village_id)}
-                                                                            handleDelete={target => this.handleDelete(target, {
-                                                                                index: a.index,
-                                                                                month: assIndex + 1,
-                                                                            })}
-                                                                        />
-                                                                    )
+                                                                        && (
+                                                                            <DeleteSplitRoute
+                                                                                monthList={monthList}
+                                                                                currentAssignation={a}
+                                                                                assignations={getCloneAssignations(assignations, a.village_id, a.index)}
+                                                                                handleDelete={target => this.handleDelete(target, {
+                                                                                    index: a.index,
+                                                                                    month: assIndex + 1,
+                                                                                })}
+                                                                            />
+                                                                        )
                                                                 }
                                                                 <SplitRoutesModal
                                                                     currentAssignation={a}
@@ -279,6 +289,7 @@ RouteSchedule.propTypes = {
     selectedMonth: PropTypes.number.isRequired,
     selectMonth: PropTypes.func.isRequired,
     updateAssignation: PropTypes.func.isRequired,
+    monthList: PropTypes.array.isRequired,
 };
 
 export default injectIntl(RouteSchedule);

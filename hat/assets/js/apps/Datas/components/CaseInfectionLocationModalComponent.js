@@ -13,7 +13,7 @@ import {
 import { casesActions } from '../redux/cases';
 
 import CaseInfectionLocationComponent from './CaseInfectionLocationComponent';
-import ModalItem from './ModalItemComponent';
+import ModalItem from '../../../components/ModalItemComponent';
 
 const MESSAGES = {
     selectPlaceholder: {

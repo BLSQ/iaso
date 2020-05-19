@@ -15,7 +15,7 @@ import {
     stage,
     source,
 } from '../../../utils/constants/filters';
-import ModalItem from './ModalItemComponent';
+import ModalItem from '../../../components/ModalItemComponent';
 import { getYears } from '../../../utils/index';
 import { getDeviceMessage } from '../utils';
 import DeviceTooltip from '../../../components/DeviceTooltip';

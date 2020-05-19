@@ -4,14 +4,9 @@ import {
     selectZone,
     selectArea,
 } from '../selectGeo';
-import { treatmentsMedecineMessages } from './treatmentsMessages';
 
 import testTypes from './testTypes';
 
-const tempTreatmentsMedecineMessages = {
-    ...treatmentsMedecineMessages,
-};
-delete tempTreatmentsMedecineMessages.none;
 export const MESSAGES = {
     positive: {
         defaultMessage: 'Positive',
@@ -819,21 +814,24 @@ export const targets = formatMessage => (
 );
 
 
-export const medecine = formatMessage => (
+export const medicine = medicineList => (
     {
         name: 'treatment_medicine',
         urlKey: 'treatment_medicine',
         hideEmpty: true,
         isMultiSelect: false,
         isClearable: true,
-        options: Object.keys(tempTreatmentsMedecineMessages).map(key => ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
+        options: medicineList.filter(m => m[0] !== 'none').map(m => ({
+            label: m[1],
+            value: m[0],
+        })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'All',
         },
         label: {
-            id: 'main.label.medecine',
-            defaultMessage: 'Type of medecine',
+            id: 'main.label.medicine',
+            defaultMessage: 'Type of medicine',
         },
         type: 'select',
     }

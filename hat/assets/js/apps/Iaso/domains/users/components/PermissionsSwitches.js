@@ -11,6 +11,8 @@ import {
     fetchPermissions as fetchPermissionsAction,
 } from '../actions';
 
+import MESSAGES from '../messages';
+
 
 const styles = theme => ({
     admin: {
@@ -53,15 +55,11 @@ class PermissionsSwitches extends Component {
         } = this.props;
         return (
             <>
-                <Typography variant="h6">
-                    <FormattedMessage id="iaso.users.permissions" defaultMessage="Permissions" />
-                    :
-                </Typography>
                 {
                     isSuperUser
                     && (
                         <Typography variant="body1" className={classes.admin}>
-                            <FormattedMessage id="iaso.users.isSuperUser" defaultMessage="User is a super admin and has all rights" />
+                            <FormattedMessage {...MESSAGES.isSuperUser} />
                         </Typography>
                     )
                 }

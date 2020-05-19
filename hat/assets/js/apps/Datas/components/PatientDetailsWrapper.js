@@ -5,6 +5,7 @@ import { push } from 'react-router-redux';
 import { FormattedMessage, injectIntl, defineMessages } from 'react-intl';
 import { IconButton, Tooltip } from '@material-ui/core';
 import Add from '@material-ui/icons/AddCircle';
+import moment from 'moment';
 import isEqual from 'lodash/isEqual';
 
 import PatientInfos from './PatientInfos';
@@ -18,6 +19,7 @@ import TabsComponent from '../../../components/TabsComponent';
 import LayersComponent from '../../../components/LayersComponent';
 import TestModal from './TestModalComponent';
 import CaseModal from './CaseModalComponent';
+import TreatmentModal from './TreatmentModal';
 import CaseLocationModal from './CaseLocationModalComponent';
 import CaseInfectionLocationModalComponent from './CaseInfectionLocationModalComponent';
 
@@ -37,7 +39,11 @@ const MESSAGES = defineMessages({
     },
     tests: {
         defaultMessage: 'Tests',
-        id: 'management.detail.geo',
+        id: 'management.detail.tests',
+    },
+    treatments: {
+        defaultMessage: 'Treatment(s)',
+        id: 'management.detail.treatments',
     },
     map: {
         defaultMessage: 'Map',
@@ -63,6 +69,8 @@ class PatientDetailsWrapper extends React.Component {
             showCaseLocationModale: false,
             showCaseInfectionLocationModale: false,
             editedCase: undefined,
+            showTreatmentModal: false,
+            editedTreatment: undefined,
         };
     }
 
@@ -235,6 +243,21 @@ class PatientDetailsWrapper extends React.Component {
         });
     }
 
+    toggleTreatmentModal(editedTreatment) {
+        const {
+            patient,
+        } = this.props;
+        this.setState({
+            showTreatmentModal: !this.state.showTreatmentModal,
+            editedTreatment: editedTreatment || {
+                index: patient.treatments.length,
+                id: 0,
+                date: moment().format('YYYY-MM-DDTHH:mmZ'),
+                patient_id: patient.id,
+            },
+        });
+    }
+
     selectTab(newTab) {
         const {
             currentTab,
@@ -279,7 +302,10 @@ class PatientDetailsWrapper extends React.Component {
             showCaseLocationModale,
             showCaseInfectionLocationModale,
             editedCase,
+            showTreatmentModal,
+            editedTreatment,
         } = this.state;
+        if (!patient.id) return null;
         return (
             <section>
                 <TabsComponent
@@ -289,6 +315,7 @@ class PatientDetailsWrapper extends React.Component {
                     tabs={[
                         { label: formatMessage(MESSAGES.infos), key: 'infos' },
                         { label: formatMessage(MESSAGES.tests), key: 'tests', disabled: patient.id === 0 || editEnabled },
+                        { label: formatMessage(MESSAGES.treatments), key: 'treatments', disabled: patient.id === 0 || editEnabled },
                         { label: formatMessage(MESSAGES.map), key: 'map', disabled: patient.id === 0 || editEnabled },
                     ]}
                     defaultSelect={currentTab}
@@ -483,34 +510,62 @@ class PatientDetailsWrapper extends React.Component {
                                 </div>
                             </div>
 
+                        </section>
+                    )
+                }
+                {
+                    patient.cases
+                    && currentTab === 'treatments'
+                    && (
+                        <section>
                             {
-                                patient.treatments.length > 0
+                                showTreatmentModal
                                 && (
-                                    <div className="widget__container">
-                                        <div className="widget__header">
-                                            <h2 className="widget__heading">
-                                                <FormattedMessage id="datas.treatments.header.title" defaultMessage="Traitement(s)" />
-                                                :
-                                            </h2>
-                                        </div>
-                                        <div className="widget__content">
-                                            <ul className="treatments-list">
-                                                {
-                                                    patient.treatments.map(t => (
-                                                        <li
-                                                            key={t.id}
-                                                        >
-                                                            <TreatmentComponent
-                                                                treatment={t}
-                                                            />
-                                                        </li>
-                                                    ))
-                                                }
-                                            </ul>
-                                        </div>
-                                    </div>
+                                    <TreatmentModal
+                                        params={params}
+                                        showModale={showTreatmentModal}
+                                        toggleModal={() => this.toggleTreatmentModal(undefined)}
+                                        currentTreatment={editedTreatment}
+                                        patientId={patient.id}
+                                    />
                                 )
                             }
+                            <div className="widget__container">
+                                <div className="widget__content">
+                                    <ul className="treatments-list">
+                                        {
+                                            patient.treatments && patient.treatments.map(t => (
+                                                <li
+                                                    key={t.id}
+                                                >
+                                                    <TreatmentComponent
+                                                        treatment={t}
+                                                        canEditPatientInfos={canEditPatientInfos}
+                                                        toggleModal={() => this.toggleTreatmentModal(t)}
+                                                    />
+                                                </li>
+                                            ))
+                                        }
+                                    </ul>
+                                    {
+                                        canEditPatientInfos
+                                        && (
+                                            <div className="align-right margin-top">
+                                                <button
+                                                    className="button"
+                                                    onClick={() => this.toggleTreatmentModal(undefined)}
+                                                >
+                                                    <i className="fa fa-plus" />
+                                                    <FormattedMessage
+                                                        id="patient.treatment.add"
+                                                        defaultMessage="Add a treatment"
+                                                    />
+                                                </button>
+                                            </div>
+                                        )
+                                    }
+                                </div>
+                            </div>
                         </section>
                     )
                 }

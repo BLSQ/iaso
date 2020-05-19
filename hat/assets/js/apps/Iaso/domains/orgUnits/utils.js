@@ -58,7 +58,7 @@ export const getOrgunitMessage = (orgUnit, withType) => {
     if (orgUnit) {
         message = orgUnit.name;
         if (orgUnit.org_unit_type_name && withType) {
-            message += `(${orgUnit.org_unit_type_name})`;
+            message += ` (${orgUnit.org_unit_type_name})`;
         }
     }
     return message;
@@ -120,3 +120,20 @@ export const encodeUriParams = (params) => {
     };
     return newParams;
 };
+
+export const getOrgUnitParents = (orgUnit, parents = []) => {
+    let parentsList = [...parents];
+    if (orgUnit.parent) {
+        parentsList.push(orgUnit);
+        if (orgUnit.parent.parent) {
+            parentsList = getOrgUnitParents(orgUnit.parent, parentsList);
+        }
+    }
+    return parentsList;
+};
+
+export const getOrgUnitParentsString = orgUnit => getOrgUnitParents(orgUnit)
+    .map(ou => (ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name)).reverse().join(' > ');
+
+export const getOrgUnitParentsIds = orgUnit => getOrgUnitParents(orgUnit)
+    .map(ou => (ou.parent_id)).reverse();

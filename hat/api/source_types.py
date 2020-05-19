@@ -11,7 +11,7 @@ class SourceTypeViewSet(viewsets.ViewSet):
     """
 
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
-
+    permission_required = ["menupermissions.iaso_org_units"]
     def list(self, request):
         return Response(GEO_SOURCE_CHOICES)
 

@@ -1,7 +1,7 @@
 import typing
 from django.db import transaction
 from django.core.files.uploadedfile import SimpleUploadedFile
-from rest_framework import serializers, permissions, parsers
+from rest_framework import serializers, parsers, permissions
 
 from iaso.models import Form, FormVersion
 from django.db.models.functions import Concat
@@ -9,9 +9,13 @@ from django.db.models import Value, Count
 from django.db.models import BooleanField
 from django.db.models.expressions import Case, When
 
-
 from iaso.odk import parsing
-from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer
+from .common import (
+    ModelViewSet,
+    TimestampField,
+    DynamicFieldsModelSerializer,
+    HasPermission,
+)
 from .forms import HasFormPermission
 from iaso.dhis2.form_mapping import copy_mappings_from_previous_version
 
@@ -151,27 +155,31 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
 
 class FormVersionsViewSet(ModelViewSet):
-    """Form versions API: /api/formversions/"""
+    """ Form versions API
 
-    permission_classes = (permissions.IsAuthenticated,)
+    This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
+
+    GET /api/formversions/
+    GET /api/formversions/<id>
+    POST /api/formversions/
+    """
+
     serializer_class = FormVersionSerializer
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_forms"),
+    ]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)
-    http_method_names = ("post", "get")
+    http_method_names = ["get", "post", "head", "options", "trace"]
 
     def get_queryset(self):
         orders = self.request.GET.get("order", "full_name").split(",")
         mapped_filter = self.request.GET.get("mapped", "")
 
-        queryset = None
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = FormVersion.objects.filter(
-                form__projects__account=profile.account
-            )
-        else:
-            raise PermissionDenied()
+        profile = self.request.user.iaso_profile
+        queryset = FormVersion.objects.filter(form__projects__account=profile.account)
 
         search_name = self.request.GET.get("search_name", None)
         if search_name:

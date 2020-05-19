@@ -34,6 +34,7 @@ import { getInstancesFilesList } from './utils';
 import MESSAGES from './messages';
 
 import commonStyles from '../../styles/common';
+import { baseUrls } from '../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -82,7 +83,7 @@ class InstanceDetails extends Component {
                         if (prevPathname || !currentInstance) {
                             router.goBack();
                         } else {
-                            redirectToReplace('instances', {
+                            redirectToReplace(baseUrls.instances, {
                                 formId: currentInstance.form_id,
                             });
                         }
@@ -142,9 +143,9 @@ class InstanceDetails extends Component {
                                         iconButtonProps={{
                                             onClick: () => window.open(currentInstance.file_url, '_blank'),
                                             icon: 'xml',
-                                                color: 'secondary',
-                                                tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
-                                            }
+                                            color: 'secondary',
+                                            tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
+                                        }
                                         }
                                     >
                                         <InstanceFileContent

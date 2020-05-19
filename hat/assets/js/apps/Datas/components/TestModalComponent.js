@@ -11,8 +11,11 @@ import {
 } from '@material-ui/core';
 
 import { profileActions } from '../../../redux/profilesReducer';
-import { testActions } from '../redux/testReducer';
 import { filterActions } from '../../../redux/filtersRedux';
+import {
+    updateTest,
+    createTest,
+} from '../requests';
 
 import TestInfosComponent from './TestInfosComponent';
 
@@ -125,10 +128,9 @@ class TestModalComponent extends Component {
             currentCase,
         } = this.state;
         const {
-            updateTest,
-            createTest,
-            patientId,
+            dispatch,
             toggleModal,
+            patientId,
         } = this.props;
         currentTest.currentCase = currentCase;
 
@@ -138,9 +140,9 @@ class TestModalComponent extends Component {
             delete currentTest.index;
         }
         if (currentTest.id !== 0) {
-            updateTest(currentTest, patientId, toggleModal);
+            updateTest(dispatch, currentTest, patientId, toggleModal);
         } else {
-            createTest(currentTest, patientId, toggleModal);
+            createTest(dispatch, currentTest, patientId, toggleModal);
         }
     }
 
@@ -258,11 +260,10 @@ TestModalComponent.propTypes = {
     currentCase: PropTypes.object.isRequired,
     currentTest: PropTypes.object,
     fetchProfiles: PropTypes.func.isRequired,
-    updateTest: PropTypes.func.isRequired,
-    createTest: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
     patientId: PropTypes.number.isRequired,
     selectTestProvince: PropTypes.func.isRequired,
+    dispatch: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -276,8 +277,6 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchProfiles: () => dispatch(profileActions.fetchProfiles(dispatch)),
-    updateTest: (test, patientId, toggleModal) => dispatch(testActions.updateTest(dispatch, test, patientId, toggleModal)),
-    createTest: (test, patientId, toggleModal) => dispatch(testActions.createTest(dispatch, test, patientId, toggleModal)),
     selectTestProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),
 });
 

@@ -13,7 +13,7 @@ class PatientInfos extends React.Component {
             patient,
             conflicts,
             fixConflict,
-            isResult
+            isResult,
         } = this.props;
         const { formatMessage } = this.props.intl;
         const fieldPlaceholder = isResult ? '' : '--';
@@ -176,7 +176,7 @@ class PatientInfos extends React.Component {
 PatientInfos.defaultProps = {
     fixConflict: () => { },
     conflicts: [],
-    isResult: false
+    isResult: false,
 };
 
 PatientInfos.propTypes = {
@@ -184,7 +184,7 @@ PatientInfos.propTypes = {
     intl: PropTypes.object.isRequired,
     fixConflict: PropTypes.func,
     conflicts: PropTypes.array,
-    isResult: PropTypes.bool
+    isResult: PropTypes.bool,
 };
 
 const PatientInfosWithIntl = injectIntl(PatientInfos);

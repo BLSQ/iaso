@@ -739,7 +739,7 @@ class Case(CaseAbstract):
             "infection_location": self.infection_location.as_short_dict()
             if self.infection_location
             else None,
-            "infection_location_as": self.infection_location_as.as_short_dict()
+            "infection_location_as": self.infection_location_as.as_dict()
             if self.infection_location_as
             else None,
             "infection_location_type_display": self.get_infection_location_type_display(),

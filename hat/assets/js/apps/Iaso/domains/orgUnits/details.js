@@ -47,6 +47,7 @@ import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
 import { baseUrls } from '../../constants/urls';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -328,7 +329,7 @@ class OrgUnitDetail extends Component {
                                 router.goBack();
                             }, 300);
                         } else {
-                            redirectToPush('orgunits', {});
+                            redirectToPush(baseUrls.orgUnits, {});
                         }
                     }}
                 >
@@ -343,24 +344,15 @@ class OrgUnitDetail extends Component {
                     >
                         <Tab
                             value="infos"
-                            label={formatMessage({
-                                defaultMessage: 'Infos',
-                                id: 'iaso.orgUnits.infos',
-                            })}
+                            label={formatMessage(MESSAGES.infos)}
                         />
                         <Tab
                             value="map"
-                            label={formatMessage({
-                                defaultMessage: 'Map',
-                                id: 'iaso.orgUnits.map',
-                            })}
+                            label={formatMessage(MESSAGES.map)}
                         />
                         <Tab
                             value="history"
-                            label={formatMessage({
-                                defaultMessage: 'History',
-                                id: 'iaso.label.history',
-                            })}
+                            label={formatMessage(MESSAGES.history)}
                         />
                     </Tabs>
                 </TopBar>
@@ -392,7 +384,7 @@ class OrgUnitDetail extends Component {
                                                     variant="contained"
                                                     onClick={() => this.resetOrgUnit()}
                                                 >
-                                                    <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                                                    <FormattedMessage {...MESSAGES.cancel} />
                                                 </Button>
                                                 <Button
                                                     disabled={!orgUnitModified}
@@ -401,7 +393,7 @@ class OrgUnitDetail extends Component {
                                                     color="primary"
                                                     onClick={() => this.saveOrgUnit(currentOrgUnit)}
                                                 >
-                                                    <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
+                                                    <FormattedMessage {...MESSAGES.save} />
                                                 </Button>
                                             </Grid>
                                         </Grid>

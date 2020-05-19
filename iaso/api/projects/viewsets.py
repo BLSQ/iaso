@@ -1,24 +1,8 @@
-from rest_framework import serializers, permissions
+from rest_framework import permissions
 
-from .common import TimestampField, ModelViewSet, HasPermission
+from ..common import ModelViewSet, HasPermission
+from .serializers import ProjectSerializer
 from iaso.models import Project
-
-
-class ProjectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Project
-        fields = [
-            "id",
-            "name",
-            "app_id",
-            "created_at",
-            "updated_at",
-            "needs_authentication",
-        ]
-        read_only_fields = ["id", "created_at", "updated_at"]
-
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
 
 class ProjectsViewSet(ModelViewSet):

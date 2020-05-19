@@ -788,6 +788,7 @@
     "management.userType.label.delete": "Effacer ce rôle",
     "management.users.title": "Utilisateurs",
     "management.user.isActive": "Utlisateur actif",
+    "management.village.label.years_disabled": "Sélectionnez cas positif ou négatif pour filtrer sur les années",
     "management.village.label.results": "Cas",
     "management.village.label.village_official": "Village officiel",
     "management.village.label.village_source": "Source du village",

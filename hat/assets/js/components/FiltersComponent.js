@@ -4,6 +4,7 @@ import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
 import Select from 'react-select';
 import { injectIntl } from 'react-intl';
+import { Tooltip } from '@material-ui/core';
 import Search from './Search';
 
 import { createUrl } from '../utils/fetchData';
@@ -136,18 +137,25 @@ class FiltersComponent extends React.Component {
                                         {
                                             filter.type === 'select'
                                             && (
-                                                <Select
-                                                    multi={filter.isMultiSelect}
-                                                    clearable={filter.isClearable}
-                                                    simpleValue
-                                                    name={filter.name}
-                                                    value={filter.value || params[filter.urlKey]}
-                                                    placeholder={formatMessage(filter.placeholder)}
-                                                    options={filter.options.map(item => ({ label: item.label || item.name, value: item.value || item.id }))}
-                                                    onChange={value => this.onChange(filter.urlKey, value, filter.callback)}
-                                                    className={filter.className ? filter.className : ''}
-                                                    disabled={filter.isDisabled || false}
-                                                />
+                                                <Tooltip
+                                                    title={filter.disabledToolTipMessage && filter.isDisabled ? formatMessage(filter.disabledToolTipMessage) : ''}
+                                                    arrow
+                                                >
+                                                    <div>
+                                                        <Select
+                                                            multi={filter.isMultiSelect}
+                                                            clearable={filter.isClearable}
+                                                            simpleValue
+                                                            name={filter.name}
+                                                            value={filter.value || params[filter.urlKey]}
+                                                            placeholder={formatMessage(filter.placeholder)}
+                                                            options={filter.options.map(item => ({ label: item.label || item.name, value: item.value || item.id }))}
+                                                            onChange={value => this.onChange(filter.urlKey, value, filter.callback)}
+                                                            className={filter.className ? filter.className : ''}
+                                                            disabled={filter.isDisabled || false}
+                                                        />
+                                                    </div>
+                                                </Tooltip>
                                             )
                                         }
 

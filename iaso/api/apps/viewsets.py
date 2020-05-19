@@ -24,6 +24,7 @@ class AppsViewSet(ModelViewSet):
     lookup_value_regex = r"[\w.]+"  # allow dots in the pk url param
     http_method_names = ["get", "head", "options", "trace"]
     queryset = Project.objects.all()
+    results_key = "apps"
 
     def list(self, request: Request, *args, **kwargs):
         raise Http404

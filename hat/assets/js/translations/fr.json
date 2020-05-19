@@ -853,6 +853,7 @@
     "microplanning.label.save": "Sauver le planning",
     "microplanning.label.save.error": "Erreur lors de la sauvegarde",
     "microplanning.label.save.needToSave": "Planning modifié mais non sauvegardé",
+    "microplanning.label.save.saveRequired": "Sauvegardez le planning pour voir l'itinérance de léquipe",
     "microplanning.label.seeTeamsRoutes": "Voir les itinéraires de l'équipe",
     "microplanning.label.selection": "Sélection de village",
     "microplanning.label.team": "Unité",

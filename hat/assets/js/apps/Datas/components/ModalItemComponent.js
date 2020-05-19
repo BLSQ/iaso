@@ -29,6 +29,7 @@ const ModalItem = ({
             container
             className="margin-bottom"
             justify="flex-start"
+            alignItems={alignItems}
         >
             {fieldComponent}
         </Grid>

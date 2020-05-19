@@ -15,7 +15,7 @@ import {
     villages,
     searchMotherName,
     onlyDupes,
-    medecine,
+    medicine,
     onlyTreatedPatients,
     onlyDead,
     testerType,
@@ -100,10 +100,10 @@ const filtersPatients2 = formatMessage => (
     ]
 );
 
-const filtersPatientsTreatments = (teamsList, formatMessage) => (
+const filtersPatientsTreatments = (teamsList, medicineList, formatMessage) => (
     [
         teams(teamsList),
-        medecine(formatMessage),
+        medicine(medicineList || []),
         testerType(formatMessage),
         screeningType(formatMessage),
         onlyTreatedPatients(),

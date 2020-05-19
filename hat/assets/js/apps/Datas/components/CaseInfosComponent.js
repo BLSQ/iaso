@@ -17,6 +17,8 @@ import {
 } from '../../../utils/constants/filters';
 import ModalItem from './ModalItemComponent';
 import { getYears } from '../../../utils/index';
+import { getDeviceMessage } from '../utils';
+import DeviceTooltip from '../../../components/DeviceTooltip';
 
 import TimeSelect from '../../../components/TimeSelectComponent';
 
@@ -206,8 +208,8 @@ const CaseInfosComponent = ({
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage
-                                    id="patientsCases.device.id"
-                                    defaultMessage="Tablet id"
+                                    id="main.label.devices"
+                                    defaultMessage="Device"
                                 />
                             )}
                             fieldComponent={(
@@ -217,9 +219,11 @@ const CaseInfosComponent = ({
                                     simpleValue
                                     value={currentCase.device_id}
                                     placeholder={formatMessage(selectPlaceholder)}
+                                    optionComponent={DeviceTooltip}
                                     options={devices.map(d => ({
-                                        label: d.device_id,
+                                        label: getDeviceMessage(d),
                                         value: d.device_id,
+                                        device: d,
                                     }))}
                                     onChange={value => onChange('device_id', value)}
                                 />

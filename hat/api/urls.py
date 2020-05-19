@@ -47,6 +47,8 @@ from .qcdetails import QCDetailsViewSet
 from .logs import LogsViewSet
 from .source_types import SourceTypeViewSet
 from .tests_api import TestsViewSet
+from .treatments_choices import TreatmentsChoicesViewSet
+from .treatments import TreatmentsViewSet
 
 
 router = routers.DefaultRouter()
@@ -102,8 +104,10 @@ router.register(r"catchesProblems", ProblemsViewSet, base_name="catchesProblems"
 router.register(r"qcdetails", QCDetailsViewSet, base_name="qcdetails")
 router.register(r"sourcetypes", SourceTypeViewSet, base_name="sourcetypes")
 router.register(r"tests", TestsViewSet, base_name="tests")
+router.register(r"treatments", TreatmentsViewSet, base_name="treatments")
 router.register(r"screeningtypes", ScreeningTypeViewSet, base_name="screeningtypes")
 router.register(r"jsondocument", JSONDocumentViewSet, base_name="jsondocument")
+router.register(r"treatmentschoices", TreatmentsChoicesViewSet, base_name="treatmentschoices")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")

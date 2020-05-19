@@ -1,3 +1,5 @@
+import { capitalize } from '../../utils';
+
 const getMergedPatient = (itemA, itemB) => {
     const mergedItem = {};
     const conflicts = [];
@@ -56,4 +58,16 @@ const getMergedPatient = (itemA, itemB) => {
     };
 };
 
+export const getTreatmentMessage = (key, value, treatmentChoices) => {
+    const message = treatmentChoices[key].find(m => m[0] === value);
+    if (!message) return '--';
+    return capitalize(message[1]);
+};
+
+export const getDeviceMessage = (device) => {
+    if (device.last_user) {
+        return `${device.last_user}`;
+    }
+    return device.device_id;
+};
 export default getMergedPatient;

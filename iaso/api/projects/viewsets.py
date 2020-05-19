@@ -6,7 +6,7 @@ from iaso.models import Project
 
 
 class ProjectsViewSet(ModelViewSet):
-    """Source versions API
+    """Projects API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
 

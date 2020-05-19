@@ -11,7 +11,7 @@ import {
 } from '@material-ui/core';
 
 
-import ModalItem from './ModalItemComponent';
+import ModalItem from '../../../components/ModalItemComponent';
 import NullBooleanRadio from '../../../components/NullBooleanRadio';
 import { capitalize } from '../../../utils';
 import { getDeviceMessage } from '../utils';

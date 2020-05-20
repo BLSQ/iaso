@@ -3,6 +3,7 @@ from functools import wraps
 from traceback import format_exc
 from django.utils.timezone import make_aware
 from django.db.models import ProtectedError
+from django.db import transaction
 from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -50,7 +51,8 @@ def safe_api_import(key: str, fallback_status=200):
 
             # Run the view in a try/except
             try:
-                response = f(self, api_import, request, *args, **kwargs)
+                with transaction.atomic():
+                    response = f(self, api_import, request, *args, **kwargs)
             except Exception as e:
                 print("Exception", e)  # For logs
                 api_import.has_problem = True

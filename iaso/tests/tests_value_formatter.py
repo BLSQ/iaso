@@ -18,6 +18,7 @@ class ValueFormatterTests(TestCase):
             ("INTEGER", "25", 25),
             ("NUMBER", "", None),
             ("NUMBER", "25.5", 25.5),
+            ("PERCENTAGE", "25", 25),
             ("BOOLEAN", "1", True),
             ("BOOLEAN", "0", False),
             ("BOOLEAN", "", None),
@@ -30,12 +31,21 @@ class ValueFormatterTests(TestCase):
             ("TIME", "08:30:00.000+01:00", "08:30"),
             ("DATE", "2017-11-28", "2017-11-28"),
             ("DATE", "", None),
+            ("USERNAME", "", ""),
+            ("USERNAME", "yoda", "yoda"),
+            ("EMAIL", "", ""),
+            ("EMAIL", "yoda@galaxy.com", "yoda@galaxy.com"),
+            ("PHONE_NUMBER", "0148-5465-456", "0148-5465-456"),
+            ("PHONE_NUMBER", "", ""),
+            ("LETTER", "", ""),
+            ("LETTER", "A", "A"),
         )
 
         for testcase in testcases:
             self.assertEquals(
                 value_formatter.format_value(buid_de(testcase[0]), testcase[1]),
                 testcase[2],
+                testcase,
             )
 
     def test_formats_options_with_odk_mapping(self):

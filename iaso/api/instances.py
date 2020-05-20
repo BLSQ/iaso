@@ -238,7 +238,7 @@ def import_data(instances, api_import, app_id=None):
             or user.is_anonymous
             or project.account.id != user.iaso_profile.account.id
         ):
-            raise PermissionDenied("User permission problem")
+            raise PermissionDenied("User permissions problem")
 
     for instance in instances:
         file_name = ntpath.basename(instance.get("file", None))

@@ -391,11 +391,11 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
         project = Project.objects.filter(app_id=app_id).first()
         if project and project.needs_authentication:
             if not user or user.iaso_profile.account.id != project.account.id:
-                raise PermissionDenied("User permissions problems")
+                raise PermissionDenied("User permissions problem")
     elif app_id is not None:
         project = Project.objects.get(app_id=app_id)
         if project.needs_authentication:
-            raise PermissionDenied("User permissions problems")
+            raise PermissionDenied("User permissions problem")
         version = project.account.default_version
 
     for org_unit in org_units:

@@ -153,9 +153,11 @@ class TokenAPITestCase(APITestCase):
         # An APIImport record with has_problem set to True should be created
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, instance_body)
         self.assertEqual(last_api_import.import_type, "instance")
         self.assertTrue(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "User permissions problem")
 
     @tag("iaso_only")
     def test_refresh(self):
@@ -226,6 +228,15 @@ class TokenAPITestCase(APITestCase):
 
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
 
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
+        self.assertEqual("Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7])
+        self.assertEqual(last_api_import.json_body, [unit_body])
+        self.assertEqual(last_api_import.import_type, "orgUnit")
+        self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
+
     @tag("iaso_only")
     def test_unauthenticated_post_org_unit(self):
         """Test upload to a project that requires authentication without token"""
@@ -261,6 +272,8 @@ class TokenAPITestCase(APITestCase):
         # An APIImport record with has_problem set to True should be created
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, [unit_body])
         self.assertEqual(last_api_import.import_type, "orgUnit")
         self.assertTrue(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "User permissions problem")

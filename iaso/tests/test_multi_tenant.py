@@ -82,7 +82,6 @@ class MultiTenantTestCase(APITestCase):
             "parentId": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -132,7 +131,6 @@ class MultiTenantTestCase(APITestCase):
             "parentId": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -151,6 +149,7 @@ class MultiTenantTestCase(APITestCase):
                 "formId": self.form.id,
                 "longitude": 4.4,
                 "accuracy": 10,
+                # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
                 "altitude": 100,
                 "file": "hydroponics_test_upload.xml",
                 "name": name,

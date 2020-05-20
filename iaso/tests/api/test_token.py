@@ -102,6 +102,7 @@ class TokenAPITestCase(APITestCase):
                 "formId": self.form_2.id,
                 "longitude": 4.4,
                 "accuracy": 10,
+                # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
                 "altitude": 100,
                 "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "the name",
@@ -133,6 +134,7 @@ class TokenAPITestCase(APITestCase):
                 "formId": self.form_2.id,
                 "longitude": 4.4,
                 "accuracy": 10,
+                # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
                 "altitude": 100,
                 "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": "the name",
@@ -214,7 +216,6 @@ class TokenAPITestCase(APITestCase):
             "parent_id": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -253,7 +254,6 @@ class TokenAPITestCase(APITestCase):
             "parent_id": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }

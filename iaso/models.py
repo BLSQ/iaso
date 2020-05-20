@@ -1068,7 +1068,6 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1089,7 +1088,6 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1110,7 +1108,6 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "file_content": file_content,
             "files": [
@@ -1151,7 +1148,6 @@ class Instance(models.Model):
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],

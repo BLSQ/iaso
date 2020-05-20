@@ -245,7 +245,6 @@ def import_data(instances, api_import, app_id=None):
         uuid = instance.get("id", None)
         latitude = instance.get("latitude", None)
         longitude = instance.get("longitude", None)
-        altitude = instance.get("altitude", 0)
         org_unit_location = None
 
         if latitude and longitude:

@@ -402,11 +402,10 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
         uuid = org_unit.get("id", None)
         latitude = org_unit.get("latitude", None)
         longitude = org_unit.get("longitude", None)
-        altitude = org_unit.get("altitude", 0)
         org_unit_location = None
 
         if latitude and longitude:
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+            org_unit_location = Point(x=longitude, y=latitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
 
         if created:

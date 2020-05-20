@@ -39,6 +39,12 @@ class ValueFormatterTests(TestCase):
             ("PHONE_NUMBER", "", ""),
             ("LETTER", "", ""),
             ("LETTER", "A", "A"),
+            ("COORDINATE", "", None),
+            (
+                "COORDINATE",
+                "50.67630919162184 4.38517696224153 151.0 18.0",
+                "[50.67630919162184,4.38517696224153]",
+            ),
         )
 
         for testcase in testcases:
@@ -75,12 +81,7 @@ class ValueFormatterTests(TestCase):
     def test_formats_options_with_only_codes(self):
         de = buid_de(
             "TEXT",
-            {
-                "options": [
-                    {"code": "HIV prevention"},
-                    {"code": "Malaria preventation"},
-                ]
-            },
+            {"options": [{"code": "HIV prevention"}, {"code": "Malaria preventation"}]},
         )
         self.assertEquals(
             value_formatter.format_value(de, "HIV prevention"), "HIV prevention"

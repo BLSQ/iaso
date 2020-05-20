@@ -115,6 +115,12 @@ def format_value(data_element, raw_value):
                 "Bad value for boolean '" + str(raw_value) + "'", data_element
             )
 
+    if data_element_type == "COORDINATE":
+        if translated_value:
+            coordinates = translated_value.split(" ")
+            return "[" + coordinates[0] + "," + coordinates[1] + "]"
+        return None
+
     if data_element_type == "TIME":
         return translated_value[0:5]
 

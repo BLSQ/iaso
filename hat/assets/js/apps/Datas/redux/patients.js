@@ -20,6 +20,7 @@ const SET_MANUAL_DUPLICATE_ID = 'hat/patient/duplicate/SET_MANUAL_DUPLICATE_ID';
 const SET_IS_FETCHING_DUPLICATE_PAIR = 'hat/patient/duplicate/SET_IS_FETCHING_DUPLICATE_PAIR';
 const EMPTY_MANUAL_DUPLICATE = 'hat/patient/duplicate/EMPTY_MANUAL_DUPLICATE';
 const RESET_CURRENT_PATIENT = 'hat/patient/detail/RESET_CURRENT_PATIENT';
+const SET_TREATMENT_CHOICES = 'hat/patient/detail/SET_TREATMENT_CHOICES';
 
 
 const req = require('superagent');
@@ -58,6 +59,11 @@ const setPatientList = (list, showPagination, params, count, pages) => ({
         count,
         pages,
     },
+});
+
+const setTreatmentChoices = payload => ({
+    type: SET_TREATMENT_CHOICES,
+    payload,
 });
 
 const setDuplicatePatientList = (list, showPagination, params, count, pages) => ({
@@ -205,6 +211,20 @@ const fetchPatients = (dispatch, url, params) => {
         .catch((err) => {
             dispatch(loadActions.errorLoading(err));
             console.error(`Error while fetching patients ${err}`);
+        });
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
+const fetchTreatmentChoices = (dispatch) => {
+    req
+        .get('/api/treatmentschoices/')
+        .then((result) => {
+            dispatch(setTreatmentChoices(result.body.treatmentChoices));
+        })
+        .catch((err) => {
+            console.error(`Error while fetching tratments choices ${err}`);
         });
     return ({
         type: FETCH_ACTION,
@@ -362,6 +382,7 @@ export const patientsActions = {
     fetchDuplicatePair,
     emptyManualDuplicate,
     fetchPatients,
+    fetchTreatmentChoices,
 };
 
 export const patientsInitialState = {
@@ -394,6 +415,7 @@ export const patientsInitialState = {
     },
     manualMergedPatient: null,
     manualMergedConflicts: [],
+    treatmentChoices: {},
 };
 
 export const patientsReducer = (state = patientsInitialState, action = {}) => {
@@ -525,6 +547,11 @@ export const patientsReducer = (state = patientsInitialState, action = {}) => {
         case RESET_CURRENT_PATIENT: {
             const { current } = patientsInitialState;
             return { ...state, current };
+        }
+
+        case SET_TREATMENT_CHOICES: {
+            const treatmentChoices = action.payload;
+            return { ...state, treatmentChoices };
         }
 
         case FETCH_ACTION: {

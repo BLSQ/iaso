@@ -379,6 +379,7 @@ export class Microplanning extends Component {
                     setCurrentTeam={teamId => this.setCurrentTeam(teamId)}
                     capacity={capacity}
                     onChangeFilter={() => this.onChangeFilter()}
+                    isSelectionModified={isSelectionModified}
                 />
                 {
                     currentTeam

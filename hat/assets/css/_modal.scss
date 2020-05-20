@@ -336,8 +336,17 @@
         width: 100%;
     }
 
+    .subtitle {
+        margin-bottom: $padding-unit / 2;
+    }
+
+
     input[type="number"] {
         width: 65px;
+
+        &.small {
+            width: 40px;
+        }
     }
 
     textarea {

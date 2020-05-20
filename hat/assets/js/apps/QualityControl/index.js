@@ -16,7 +16,6 @@ import MonitoringPage from './pages/Monitoring';
 import MonitoringDetail from './pages/MonitoringDetail';
 import { dashboardReducer, dashboardInitialState } from './redux/dashboard';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
-import { testReducer, testInitialState } from './redux/test';
 import { monitoringReducer, monitoringInitialState } from './redux/monitoring';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
@@ -29,27 +28,27 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
 
     const routes = [
         <Route
-            path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
-                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
-                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
-                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/back/:back)'}
+            path={'dashboard/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage'
+                + '/videoPageSize/:videoPageSize/videoPage/:videoPage'
+                + '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)'
+                + '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)'
+                + '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)(/back/:back)'}
             component={QualityDashboard}
         />,
         <Route
-            path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
-                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
-                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
-                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
+            path={'video/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage'
+                + '/videoPageSize/:videoPageSize/videoPage/:videoPage'
+                + '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)'
+                + '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)'
+                + '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,
         <Route
-            path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage' +
-                '/videoPageSize/:videoPageSize/videoPage/:videoPage' +
-                '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)' +
-                '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)' +
-                '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
+            path={'image/test_id/:test_id/date_from/:date_from/date_to/:date_to/imagePageSize/:imagePageSize/imagePage/:imagePage'
+                + '/videoPageSize/:videoPageSize/videoPage/:videoPage'
+                + '(/test_type_image/:test_type_image)(/test_type_video/:test_type_video)(/userId/:userId)'
+                + '(/tab/:tab)(/imageOrder/:imageOrder)(/videoOrder/:videoOrder)(/only_checked_tests/:only_checked_tests)'
+                + '(/province_id/:province_id)(/zs_id/:zs_id)(/as_id/:as_id)'}
             component={QualityDetail}
         />,
         <Route
@@ -76,14 +75,12 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
 
     const store = createStore({
         dashboard: dashboardInitialState,
-        test: testInitialState,
         monitoring: monitoringInitialState(),
         currentUser: currentUserInitialState,
         load: {},
         geoFilters: filtersInitialState,
     }, {
         dashboard: dashboardReducer,
-        test: testReducer,
         monitoring: monitoringReducer,
         currentUser: currentUserReducer,
         load: loadReducer,

@@ -26,6 +26,68 @@ from hat.sync.models import VideoUpload, ImageUpload
 from hat.users.middleware import get_current_user
 from hat.users.models import Profile
 
+MED_NONE = "none"
+MED_PENTAMIDINE = "pentamidine"
+MED_MELARSOPROL = "melarsoprol"
+MED_EFLORNITHINE = "eflornithine"
+MED_NECT = "nect"
+MED_FEXINIDAZOLE = "fexinidazole"
+MED_OXABOROLE = "oxaborole"
+MED_CHOICES = (
+    (MED_NONE, "Aucun"),
+    (MED_PENTAMIDINE, "Pentamidine"),
+    (MED_MELARSOPROL, "Melarsoprol"),
+    (MED_EFLORNITHINE, "Eflornithine"),
+    (MED_NECT, "NECT"),
+    (MED_FEXINIDAZOLE, "Fexinidazole"),
+    (MED_OXABOROLE, "Oxaborole"),
+)
+
+ISSUE_VOMITING = "vomiting"
+ISSUE_DIARRHEA = "diarrhea"
+ISSUE_DISORIENTATION = "desorientation"  # typo in document
+ISSUE_OBNUBILATION = "obnubilation"
+ISSUE_BEHAVIOUR = "behaviour"
+ISSUE_COMA = "coma"
+ISSUE_NEURO = "neuro"
+ISSUE_CONVULSION = "convulsion"
+ISSUE_SEPTICEMY = "septicemy"
+ISSUE_ACUTE_RESPIRATORY_FAILURE = "acute respiratory failure"
+ISSUE_OTHERS = "other"
+ISSUE_CHOICES = (
+    (ISSUE_VOMITING, "vomissement"),
+    (ISSUE_DIARRHEA, "diarrhée"),
+    (ISSUE_DISORIENTATION, "désorientation"),  # typo in document
+    (ISSUE_OBNUBILATION, "obnubilation"),
+    (ISSUE_BEHAVIOUR, "comportement"),
+    (ISSUE_COMA, "coma"),
+    (ISSUE_NEURO, "neuro"),
+    (ISSUE_CONVULSION, "convulsion"),
+    (ISSUE_SEPTICEMY, "septicémie"),
+    (ISSUE_ACUTE_RESPIRATORY_FAILURE, "inflammation respiratoire aiguë"),
+    (ISSUE_OTHERS, "autre"),
+)
+
+INCOMPLETE_REASON_OUTOFSTOCK = "outofstock"
+INCOMPLETE_REASON_ABANDON = "abandon"
+INCOMPLETE_REASON_DEATH = "death"
+INCOMPLETE_REASON_PATIENTINCAPACITY = "patientincapacity"
+INCOMPLETE_REASON_CHOICES = (
+    ("outofstock", "rupture de stock"),
+    ("abandon", "abandon"),
+    ("death", "décès"),
+    ("patientincapacity", "incapacité du patient"),
+)
+
+DEATH_MOMENT_BEFORE = "before"
+DEATH_MOMENT_DURING = "during"
+DEATH_MOMENT_AFTER = "after"
+DEATH_MOMENT_CHOICES = (
+    ("before", "Avant traitement"),
+    ("during", "Pendant traitement"),
+    ("after", "Après traitement"),
+)
+
 
 class Patient(models.Model):
     post_name = contrib.CITextField("Postnom", null=True)
@@ -190,7 +252,9 @@ class Patient(models.Model):
             "village": village,
             "village_id": village_id if village else None,
             "death": death,
-            "treatments": [t.as_dict() for t in self.treatment_set.all()],
+            "treatments": [
+                t.as_dict() for t in self.treatment_set.all().order_by("-index")
+            ],
             "death_date": self.death_date,
             "phone_number": self.phone_number,
             "phone_number_date": self.phone_number_date,
@@ -293,67 +357,6 @@ class Test(models.Model):
 
 
 class Treatment(models.Model):
-    MED_NONE = "none"
-    MED_PENTAMIDINE = "pentamidine"
-    MED_MELARSOPROL = "melarsoprol"
-    MED_EFLORNITHINE = "eflornithine"
-    MED_NECT = "nect"
-    MED_FEXINIDAZOLE = "fexinidazole"
-    MED_OXABOROLE = "oxaborole"
-    MED_CHOICES = (
-        (MED_NONE, "Aucun"),
-        (MED_PENTAMIDINE, "Pentamidine"),
-        (MED_MELARSOPROL, "Melarsoprol"),
-        (MED_EFLORNITHINE, "Eflornithine"),
-        (MED_NECT, "NECT"),
-        (MED_FEXINIDAZOLE, "Fexinidazole"),
-        (MED_OXABOROLE, "Oxaborole"),
-    )
-
-    ISSUE_VOMITING = "vomiting"
-    ISSUE_DIARRHEA = "diarrhea"
-    ISSUE_DISORIENTATION = "desorientation"  # typo in document
-    ISSUE_OBNUBILATION = "obnubilation"
-    ISSUE_BEHAVIOUR = "behaviour"
-    ISSUE_COMA = "coma"
-    ISSUE_NEURO = "neuro"
-    ISSUE_CONVULSION = "convulsion"
-    ISSUE_SEPTICEMY = "septicemy"
-    ISSUE_ACUTE_RESPIRATORY_FAILURE = "acute respiratory failure"
-    ISSUE_OTHERS = "other"
-    ISSUE_CHOICES = (
-        (ISSUE_VOMITING, "vomiting"),
-        (ISSUE_DIARRHEA, "diarrhea"),
-        (ISSUE_DISORIENTATION, "desorientation"),  # typo in document
-        (ISSUE_OBNUBILATION, "obnubilation"),
-        (ISSUE_BEHAVIOUR, "behaviour"),
-        (ISSUE_COMA, "coma"),
-        (ISSUE_NEURO, "neuro"),
-        (ISSUE_CONVULSION, "convulsion"),
-        (ISSUE_SEPTICEMY, "septicemy"),
-        (ISSUE_ACUTE_RESPIRATORY_FAILURE, "acute respiratory failure"),
-        (ISSUE_OTHERS, "other"),
-    )
-
-    INCOMPLETE_REASON_OUTOFSTOCK = "outofstock"
-    INCOMPLETE_REASON_ABANDON = "abandon"
-    INCOMPLETE_REASON_DEATH = "death"
-    INCOMPLETE_REASON_PATIENTINCAPACITY = "patientincapacity"
-    INCOMPLETE_REASON_CHOICES = (
-        ("outofstock", "rupture de stock"),
-        ("abandon", "abandon"),
-        ("death", "décès"),
-        ("patientincapacity", "incapacité du patient"),
-    )
-
-    DEATH_MOMENT_BEFORE = "before"
-    DEATH_MOMENT_DURING = "during"
-    DEATH_MOMENT_AFTER = "after"
-    DEATH_MOMENT_CHOICES = (
-        ("before", "Avant traitement"),
-        ("during", "Pendant traitement"),
-        ("after", "Après traitement"),
-    )
     patient = models.ForeignKey(to=Patient, on_delete=CASCADE)
     index = models.IntegerField()
     medicine = models.TextField(choices=MED_CHOICES)
@@ -408,6 +411,7 @@ class Treatment(models.Model):
             "complete": self.complete,
             "success": self.success,
             "lost": self.lost,
+            "dead": self.dead,
         }
 
 

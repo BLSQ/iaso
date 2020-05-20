@@ -1,0 +1,27 @@
+.custom-null-radio {
+    position: relative;
+    flex-direction: row !important;
+    margin: 0 !important;
+
+    .MuiRadio-root {
+        padding: 9px 9px 8px 9px;
+    }
+
+    label {
+        display: flex !important;
+        align-items: center;
+    }
+
+    .MuiRadio-colorSecondary.Mui-checked {
+        color: $blue;
+    }
+
+    .MuiRadio-colorSecondary:hover {
+        background-color: transparent !important;
+    }
+
+    .MuiTypography-body1 {
+        position: relative;
+        top: 1px;
+    }
+}

@@ -1,10 +1,12 @@
 body {
     &.trypelim {
         .ReactTable {
+
             .rt-thead .rt-th.-sort-asc,
-            .rt-thead .rt-td.-sort-asc{
+            .rt-thead .rt-td.-sort-asc {
                 box-shadow: inset 0 3px 0 0 $blue;
             }
+
             .rt-thead .rt-th.-sort-desc,
             .rt-thead .rt-td.-sort-desc {
                 box-shadow: inset 0 -3px 0 0 $blue;
@@ -50,8 +52,13 @@ body {
                 }
             }
 
+            &.align-left {
+                justify-content: flex-start !important;
+            }
+
             &.select {
                 overflow: visible !important;
+
                 .Select {
                     text-align: left;
                 }

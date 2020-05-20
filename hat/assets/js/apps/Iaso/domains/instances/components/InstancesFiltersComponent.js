@@ -77,8 +77,8 @@ class InstancesFiltersComponent extends Component {
             levels: parentIds.join(','),
         };
 
-        setInstancesFilterUpdated(true);
         redirectTo(baseUrl, tempParams);
+        setInstancesFilterUpdated(true);
     }
 
     render() {

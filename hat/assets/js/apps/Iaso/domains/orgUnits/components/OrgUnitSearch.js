@@ -115,7 +115,7 @@ const OrgUnitSearch = ({
     };
     const handleSearch = () => {
         if (searchValue !== '') {
-            const url = `/api/orgunits/?searches=[{"validated":"both","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&small_search=True`;
+            const url = `/api/orgunits/?searches=[{"validated":"both","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&smallSearch=True`;
             seIsLoading(true);
             getRequest(url).then((res) => {
                 seIsLoading(false);

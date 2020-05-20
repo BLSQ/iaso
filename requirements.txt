@@ -28,6 +28,7 @@ rq-scheduler==0.7.0
 # postgresql and sql
 psycopg2==2.7.3.2
 snaql==0.4.1
+django-ltree==0.5
 
 # webpack loader
 django-webpack-loader==0.6.0

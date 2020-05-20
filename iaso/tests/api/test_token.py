@@ -157,7 +157,7 @@ class TokenAPITestCase(APITestCase):
         self.assertEqual(last_api_import.json_body, instance_body)
         self.assertEqual(last_api_import.import_type, "instance")
         self.assertTrue(last_api_import.has_problem)
-        self.assertEqual(last_api_import.exception, "User permissions problem")
+        self.assertTrue("User permissions problem" in last_api_import.exception)
 
     @tag("iaso_only")
     def test_refresh(self):
@@ -276,4 +276,4 @@ class TokenAPITestCase(APITestCase):
         self.assertEqual(last_api_import.json_body, [unit_body])
         self.assertEqual(last_api_import.import_type, "orgUnit")
         self.assertTrue(last_api_import.has_problem)
-        self.assertEqual(last_api_import.exception, "User permissions problem")
+        self.assertTrue("User permissions problem" in last_api_import.exception)

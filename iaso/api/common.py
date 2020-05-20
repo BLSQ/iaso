@@ -1,5 +1,6 @@
 from datetime import datetime
 from functools import wraps
+from traceback import format_exc
 from django.utils.timezone import make_aware
 from django.db.models import ProtectedError
 from rest_framework import serializers, pagination, exceptions, permissions
@@ -53,7 +54,7 @@ def safe_api_import(key: str, fallback_status=200):
             except Exception as e:
                 print("Exception", e)  # For logs
                 api_import.has_problem = True
-                api_import.exception = str(e)
+                api_import.exception = format_exc()
                 response = Response(
                     {"res": "a problem happened, but your data was saved"},
                     status=fallback_status,

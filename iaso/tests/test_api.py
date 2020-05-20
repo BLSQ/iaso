@@ -51,7 +51,7 @@ class BasicAPITestCase(TestCase):
             "parentId": None,
             "longitude": 4.469,
             # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
-            "altitude": 0,
+            "altitude": 110,
             "accuracy": 0,
             "time": 0,
             "name": name,

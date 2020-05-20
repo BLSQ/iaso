@@ -118,7 +118,7 @@ def format_value(data_element, raw_value):
     if data_element_type == "COORDINATE":
         if translated_value:
             coordinates = translated_value.split(" ")
-            return "[" + coordinates[0] + "," + coordinates[1] + "]"
+            return "[" + coordinates[1] + "," + coordinates[0] + "]"
         return None
 
     if data_element_type == "TIME":

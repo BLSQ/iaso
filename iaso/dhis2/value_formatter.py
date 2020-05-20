@@ -3,7 +3,7 @@ https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#w
 
 supported   Value type	        Description
 n        Age	                  -
-n        COORDINATE             Coordinate     A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
+y        COORDINATE             Coordinate     A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
 y        DATE                   Date           Dates rendered as calendar widget in data entry.
 y        DATETIME               Date & time	        -
 y        EMAIL                  Email	                Email.

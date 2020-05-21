@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import omit from 'lodash/omit';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { push, replace } from 'react-router-redux';
@@ -240,7 +241,9 @@ class OrgUnitDetail extends Component {
     }
 
     saveOrgUnit() {
-        saveOrgUnit(this.props.dispatch, this.state.currentOrgUnit).then(
+        // Don't send altitude for now, the interface does not handle it
+        const orgUnitPayload = omit(this.state.currentOrgUnit, 'altitude');
+        saveOrgUnit(this.props.dispatch, orgUnitPayload).then(
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,

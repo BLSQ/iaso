@@ -201,6 +201,7 @@
     "iaso.label.links": "Liens",
     "iaso.label.layers": "Couches",
     "iaso.label.longitude": "Longitude",
+    "iaso.label.altitude": "Altitude",
     "iaso.label.geo_json": "Forme geo json",
     "iaso.label.history": "Historique",
     "iaso.label.map": "Carte",

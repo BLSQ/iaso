@@ -137,8 +137,6 @@ class Command(BaseCommand):
                         )
                         pnt = Point(float(longitude), float(latitude))
                         unit.location = pnt
-                        unit.longitude = pnt.x
-                        unit.latitude = pnt.y
 
                     unit.sub_source = source_name
                     unit.version = version

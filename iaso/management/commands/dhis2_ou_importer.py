@@ -213,8 +213,6 @@ class Command(BaseCommand):
                     # No altitude in DHIS2, but mandatory in Iaso
                     pnt = Point((coordinates[0], coordinates[1], 0))
                     org_unit.location = pnt
-                    org_unit.longitude = pnt.x
-                    org_unit.latitude = pnt.y
                 except Exception as bad_coord:
                     self.iaso_logger.error(
                         "failed at importing POINT", coordinates, bad_coord, row
@@ -271,7 +269,7 @@ class Command(BaseCommand):
         self.iaso_logger.info("** Stats ")
         self.iaso_logger.info("orgunits\t", len(unit_dict))
         self.iaso_logger.info(
-            "orgunits with point\t", len([p for p in unit_dict.values() if p.latitude])
+            "orgunits with point\t", len([p for p in unit_dict.values() if p.location])
         )
         self.iaso_logger.info(
             "areas with polygon\t",

@@ -170,8 +170,6 @@ class Command(BaseCommand):
                     if longitude and latitude:
                         pnt = Point(longitude, latitude)
                         unit.location = pnt
-                        unit.longitude = pnt.x
-                        unit.latitude = pnt.y
 
                     unit.sub_source = source_name
                     unit.version = version

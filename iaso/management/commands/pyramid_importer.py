@@ -60,8 +60,6 @@ class Command(BaseCommand):
                     if longitude and latitude:
                         longitude = float(longitude)
                         latitude = float(latitude)
-                        org_unit.latitude = longitude
-                        org_unit.longitude = latitude
                         org_unit.location = Point(x=longitude, y=latitude, srid=4326)
                     org_unit.save()
                     unit_dict[org_unit.source_ref] = org_unit

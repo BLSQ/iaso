@@ -218,6 +218,17 @@ class OrgUnitDetail extends Component {
             ...this.state.currentOrgUnit,
             [key]: value,
         };
+        this.setState({
+            orgUnitModified: true,
+            currentOrgUnit,
+        });
+    }
+
+    handleChangeShape(key, value) {
+        const currentOrgUnit = {
+            ...this.state.currentOrgUnit,
+            [key]: value,
+        };
         if (key !== 'geo_json' && key !== 'catchment' && value) {
             currentOrgUnit.latitude = null;
             currentOrgUnit.longitude = null;
@@ -415,7 +426,7 @@ class OrgUnitDetail extends Component {
                                             onChangeLocation={(location) => {
                                                 this.handleChangeLocation(location);
                                             }}
-                                            onChangeShape={(keyValue, shape) => this.handleChangeInfo(keyValue, shape)}
+                                            onChangeShape={(keyValue, shape) => this.handleChangeShape(keyValue, shape)}
                                         />
                                     </Box>
                                 )

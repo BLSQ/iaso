@@ -173,11 +173,10 @@ class Command(BaseCommand):
             if feature_type == "POINT" and coordinates:
                 try:
                     tuple = json.loads(coordinates)
-                    pnt = Point((float(tuple[0]), float(tuple[1])))
+                    # No altitude in DHIS2, but mandatory in Iaso
+                    pnt = Point((float(tuple[0]), float(tuple[1]), 0))
                     if abs(pnt.x) < 180 and abs(pnt.y) < 90:
                         org_unit.location = pnt
-                        org_unit.longitude = pnt.x
-                        org_unit.latitude = pnt.y
                     else:
                         self.iaso_logger.error(
                             "Invalid coordinates found in row", coordinates, row
@@ -211,7 +210,8 @@ class Command(BaseCommand):
 
             if feature_type == "Point" and coordinates:
                 try:
-                    pnt = Point((coordinates[0], coordinates[1]))
+                    # No altitude in DHIS2, but mandatory in Iaso
+                    pnt = Point((coordinates[0], coordinates[1], 0))
                     org_unit.location = pnt
                     org_unit.longitude = pnt.x
                     org_unit.latitude = pnt.y

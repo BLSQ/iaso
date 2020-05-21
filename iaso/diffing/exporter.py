@@ -100,6 +100,8 @@ class Exporter:
         if comparison.after:
             point_or_shape = GEOSGeometry(comparison.after)
             geometry = json.loads(point_or_shape.geojson)
+            # No altitude in DHIS2, remove before exporting
+            geometry["coordinates"] = geometry["coordinates"][:2]
             # if dhis2 >= 2.32
             payload["geometry"] = geometry
             # if dhis2 < 2.32

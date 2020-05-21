@@ -83,7 +83,7 @@ class DataValueExporterTests(TestCase):
                 "version": self.form_quality_version.version_id,
             }
 
-        instance.location = Point(1.5, 7.3)
+        instance.location = Point(1.5, 7.3, 0)
 
         instance.file = UploadedFile(
             open("iaso/tests/fixtures/hydroponics_test_upload.xml")

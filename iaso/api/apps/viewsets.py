@@ -13,9 +13,12 @@ class AppsViewSet(ModelViewSet):
     The "app" resource is a proxy of the "project" resource, to be consumed by the mobile API.
     The project "app_id" field should be used as the primary key.
 
+    The idea behind the endpoint is to "hide" projects from the mobile app, and just expose app settings for a
+    single app.
+
     This API is open to anonymous users.
 
-    GET /api/projects/<app_id>/
+    GET /api/apps/<app_id>/
     """
 
     permission_classes = [permissions.AllowAny]

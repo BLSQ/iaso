@@ -50,7 +50,6 @@ class BasicAPITestCase(TestCase):
             "orgUnitTypeId": hospital_unit_type.id,
             "parentId": None,
             "longitude": 4.469,
-            # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
             "altitude": 110,
             "accuracy": 0,
             "time": 0,
@@ -67,6 +66,7 @@ class BasicAPITestCase(TestCase):
         # Location should be filled
         self.assertEqual(4.469, velpo_model.location.x)
         self.assertEqual(50.503, velpo_model.location.y)
+        self.assertEqual(110, velpo_model.location.z)
 
         # make sure APIImport record has been created
         last_api_import = APIImport.objects.order_by("-created_at").first()
@@ -100,6 +100,9 @@ class BasicAPITestCase(TestCase):
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
+        self.assertEqual(velpo_json["latitude"], 50.503)
+        self.assertEqual(velpo_json["longitude"], 4.469)
+        self.assertEqual(velpo_json["altitude"], 110)
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
@@ -127,6 +130,7 @@ class BasicAPITestCase(TestCase):
             "orgUnitTypeId": hospital_unit_type.id,
             "parentId": uuid,
             "longitude": 0,
+            "altitude": 0,
             "accuracy": 0,
             "time": 0,
             "name": name2,
@@ -192,6 +196,9 @@ class BasicAPITestCase(TestCase):
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
+        self.assertIsNone(velpo_json["latitude"])
+        self.assertIsNone(velpo_json["longitude"])
+        self.assertIsNone(velpo_json["altitude"])
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
@@ -218,7 +225,6 @@ class BasicAPITestCase(TestCase):
             "parentId": uuid,
             "longitude": 0,
             "accuracy": 0,
-            # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
             "altitude": 0,
             "time": 0,
             "name": name2,
@@ -268,7 +274,6 @@ class BasicAPITestCase(TestCase):
                 "formId": form.id,
                 "longitude": 4.4,
                 "accuracy": 10,
-                # passing the altitude parameter here, as the mobile app seems to send it - we will ignore it
                 "altitude": 100,
                 "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
                 "name": name,
@@ -283,7 +288,9 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(instance.name, name)
         self.assertEqual(instance.org_unit_id, velpo_model.id)
         self.assertEqual(instance.form_id, form.id)
-        self.assertEqual(floor(instance.location.x), floor(4.4))
+        self.assertEqual(instance.location.x, 4.4)
+        self.assertEqual(instance.location.y, 4.4)
+        self.assertEqual(instance.location.z, 100)
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
         self.assertIsInstance(last_api_import.headers, dict)

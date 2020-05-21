@@ -279,7 +279,7 @@ class OrgUnit(models.Model):
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(srid=4326, null=True, blank=True)
+    location = PointField(null=True, blank=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -300,6 +300,7 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
         }
 
     def as_dict(self, with_groups=True):
@@ -320,6 +321,7 @@ class OrgUnit(models.Model):
             "status": False if self.validated is None else self.validated,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
         }
@@ -357,6 +359,7 @@ class OrgUnit(models.Model):
             "status": False if self.validated is None else self.validated,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
             "groups": [group.as_dict() for group in self.groups.all()],
@@ -392,6 +395,7 @@ class OrgUnit(models.Model):
             "short_name": self.name,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
             "org_unit_type_depth": self.org_unit_type.depth
@@ -971,7 +975,7 @@ class Instance(models.Model):
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
-    location = PointField(srid=4326, null=True, blank=True)
+    location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
@@ -1005,7 +1009,7 @@ class Instance(models.Model):
                 latitude, longitude, altitude, accuracy = [
                     float(x) for x in location.split(" ")
                 ]
-                self.location = Point(x=longitude, y=latitude, srid=4326)
+                self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 self.accuracy = accuracy
                 self.save()
 
@@ -1068,6 +1072,7 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1088,6 +1093,7 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
@@ -1108,6 +1114,7 @@ class Instance(models.Model):
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "period": self.period,
             "file_content": file_content,
             "files": [
@@ -1148,6 +1155,7 @@ class Instance(models.Model):
             "period": self.period,
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
+            "altitude": self.location.z if self.location else None,
             "files": [
                 f.file.url if f.file else None for f in self.instancefile_set.all()
             ],

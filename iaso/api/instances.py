@@ -248,7 +248,8 @@ def import_data(instances, api_import, app_id=None):
         org_unit_location = None
 
         if latitude and longitude:
-            org_unit_location = Point(x=longitude, y=latitude, srid=4326)
+            altitude = instance.get("altitude", 0)
+            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
         instances = Instance.objects.filter(uuid=uuid)
         if len(instances) == 1:

@@ -272,10 +272,10 @@ class OrgUnit(models.Model):
 
     latitude = models.DecimalField(
         max_digits=10, decimal_places=8, null=True, blank=True
-    )
+    )  # TODO: deprecated, remove me (location should be use instead)
     longitude = models.DecimalField(
         max_digits=11, decimal_places=8, null=True, blank=True
-    )
+    )  # TODO: deprecated, remove me (location should be use instead)
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES

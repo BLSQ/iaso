@@ -88,9 +88,17 @@ def format_value(data_element, raw_value):
         return str(translated_value)
 
     if data_element_type == "BOOLEAN":
-        if translated_value == "1":
+        if (
+            translated_value == "1"
+            or translated_value == "yes"
+            or translated_value == "true"
+        ):
             return True
-        elif translated_value == "0":
+        elif (
+            translated_value == "0"
+            or translated_value == "no"
+            or translated_value == "false"
+        ):
             return False
         elif translated_value == "":
             return None

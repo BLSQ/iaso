@@ -59,9 +59,11 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(velpo_model.name, name)
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, [unit_body])
         self.assertEqual(last_api_import.import_type, "orgUnit")
         self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
 
         response = c.get("/api/orgunits/", accept="application/json")
 
@@ -267,9 +269,11 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(floor(instance.location.x), floor(4.4))
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, instance_body)
         self.assertEqual(last_api_import.import_type, "instance")
         self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
 
     @tag("iaso_only")
     def test_fetch_org_unit_type(self):

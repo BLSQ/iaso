@@ -9,6 +9,7 @@ import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
 import Select from 'react-select';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { Tooltip } from '@material-ui/core';
 import {
     setVillages, setTeams, setWorkzones,
 } from '../redux/microplanning';
@@ -32,6 +33,10 @@ const MESSAGES = defineMessages({
     'years-select': {
         defaultMessage: 'Select years',
         id: 'microplanning.labels.years.select',
+    },
+    saveRequired: {
+        defaultMessage: 'You need to save the planning in order to see the routes',
+        id: 'microplanning.label.save.saveRequired',
     },
 });
 
@@ -153,6 +158,7 @@ class MicroplanningFilters extends Component {
             teams,
             plannings,
             capacity,
+            isSelectionModified,
         } = this.props;
         const {
             searchDisabled,
@@ -275,16 +281,22 @@ class MicroplanningFilters extends Component {
                                             params.team_id
                                             && (
                                                 <div className="margin-top align-right">
-                                                    <button
-                                                        className="button--tiny"
-                                                        onClick={() => this.props.redirect({
-                                                            planning_id: params.planning_id,
-                                                            team_id: params.team_id,
-                                                            month_id: 1,
-                                                        }, 'routes')}
+                                                    <Tooltip
+                                                        title={isSelectionModified ? formatMessage(MESSAGES.saveRequired) : ''}
+                                                        arrow
                                                     >
-                                                        <FormattedMessage id="microplanning.label.seeTeamsRoutes" defaultMessage="See teams routes" />
-                                                    </button>
+                                                        <button
+                                                            disabled={isSelectionModified}
+                                                            className="button--tiny"
+                                                            onClick={() => this.props.redirect({
+                                                                planning_id: params.planning_id,
+                                                                team_id: params.team_id,
+                                                                month_id: 1,
+                                                            }, 'routes')}
+                                                        >
+                                                            <FormattedMessage id="microplanning.label.seeTeamsRoutes" defaultMessage="See teams routes" />
+                                                        </button>
+                                                    </Tooltip>
 
                                                 </div>
                                             )
@@ -338,6 +350,7 @@ MicroplanningFilters.propTypes = {
     dispatch: PropTypes.func.isRequired,
     capacity: PropTypes.number.isRequired,
     onChangeFilter: PropTypes.func.isRequired,
+    isSelectionModified: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({

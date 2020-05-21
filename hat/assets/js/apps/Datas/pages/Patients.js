@@ -58,6 +58,7 @@ class Patients extends Component {
             intl: { formatMessage },
             permissions,
             currentUser,
+            fetchTreatmentChoices,
         } = this.props;
         Promise.all([
             fetchProvinces(),
@@ -65,6 +66,7 @@ class Patients extends Component {
             fetchCoordinations(),
             fetchDevices(),
             fetchCurrentUserInfos(),
+            fetchTreatmentChoices(),
         ]).then(() => {
             if (params.province_id) {
                 selectProvince(params.province_id, params.zs_id, params.as_id, params.village_id);
@@ -237,6 +239,7 @@ class Patients extends Component {
             redirectTo,
             currentUser,
             permissions,
+            treatmentChoices,
         } = this.props;
         const { tableUrl, tableColumns } = this.state;
         const filters = filtersPatients2(formatMessage);
@@ -315,7 +318,7 @@ class Patients extends Component {
                             <FiltersComponent
                                 params={params}
                                 baseUrl={baseUrl}
-                                filters={filtersPatientsTreatments(teams || [], formatMessage, defineMessages)}
+                                filters={filtersPatientsTreatments(teams || [], treatmentChoices.medChoices, formatMessage, defineMessages)}
                             />
                         </div>
                     </div>
@@ -397,6 +400,8 @@ Patients.propTypes = {
     currentUser: PropTypes.object.isRequired,
     permissions: PropTypes.array.isRequired,
     resetCurrentPatient: PropTypes.func.isRequired,
+    fetchTreatmentChoices: PropTypes.func.isRequired,
+    treatmentChoices: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -408,6 +413,7 @@ const MapStateToProps = state => ({
     patientB: state.patients.manualDuplicate.patientB,
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
+    treatmentChoices: state.patients.treatmentChoices,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -427,6 +433,7 @@ const MapDispatchToProps = dispatch => ({
     loadManualDuplicate: manualDuplicate => dispatch(patientsActions.loadManualDuplicate(manualDuplicate)),
     emptyManualDuplicate: () => dispatch(patientsActions.emptyManualDuplicate()),
     resetCurrentPatient: () => dispatch(patientsActions.resetCurrentPatient()),
+    fetchTreatmentChoices: () => dispatch(patientsActions.fetchTreatmentChoices(dispatch)),
 });
 
 const PatientsWithIntl = injectIntl(Patients);

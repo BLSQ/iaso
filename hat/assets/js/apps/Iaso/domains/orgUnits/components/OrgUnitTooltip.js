@@ -10,7 +10,7 @@ import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
 const useStyles = makeStyles(() => ({
     root: {
         maxWidth: 'none',
-        minWidth: 150,
+        minWidth: 180,
     },
 }));
 

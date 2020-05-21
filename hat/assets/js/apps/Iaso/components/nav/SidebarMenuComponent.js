@@ -145,7 +145,6 @@ class SidebarMenu extends PureComponent {
 
 SidebarMenu.propTypes = {
     classes: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
     isOpen: PropTypes.bool.isRequired,
     toggleSidebar: PropTypes.func.isRequired,
     location: PropTypes.object.isRequired,
@@ -158,7 +157,6 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    redirectTo: key => dispatch(push(key)),
     toggleSidebar: () => dispatch(toggleSidebarMenu()),
 });
 

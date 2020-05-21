@@ -27,6 +27,7 @@ class PatientDetails extends React.Component {
         this.props.fetchProvinces();
         this.props.fetchCurrentUserInfos();
         this.props.fetchGeoDatas();
+        this.props.fetchTreatmentChoices();
     }
 
     componentWillReceiveProps(nextProps) {
@@ -161,6 +162,7 @@ PatientDetails.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     testsMapping: PropTypes.object.isRequired,
     fetchCurrentUserInfos: PropTypes.func.isRequired,
+    fetchTreatmentChoices: PropTypes.func.isRequired,
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     fetchGeoDatas: PropTypes.func.isRequired,
@@ -179,6 +181,7 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     dispatch,
     fetchDetails: patientId => dispatch(patientsActions.fetchDetails(dispatch, patientId)),
+    fetchTreatmentChoices: () => dispatch(patientsActions.fetchTreatmentChoices(dispatch)),
     fetchCurrentUserInfos: () => dispatch(currentUserActions.fetchCurrentUserInfos(dispatch)),
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),

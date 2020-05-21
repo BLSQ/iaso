@@ -132,12 +132,16 @@ const filtersZone2 = (
             },
             label: {
                 id: 'management.village.label.results',
-                defaultMessage: 'Cass',
+                defaultMessage: 'Case',
             },
             type: 'select',
         },
         {
             isDisabled: !resultValue,
+            disabledToolTipMessage: {
+                id: 'management.village.label.years_disabled',
+                defaultMessage: 'Please select positive or negative case',
+            },
             name: 'years',
             urlKey: 'years',
             isMultiSelect: true,

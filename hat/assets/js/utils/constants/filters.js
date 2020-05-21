@@ -4,14 +4,9 @@ import {
     selectZone,
     selectArea,
 } from '../selectGeo';
-import { treatmentsMedecineMessages } from './treatmentsMessages';
 
 import testTypes from './testTypes';
 
-const tempTreatmentsMedecineMessages = {
-    ...treatmentsMedecineMessages,
-};
-delete tempTreatmentsMedecineMessages.none;
 export const MESSAGES = {
     positive: {
         defaultMessage: 'Positive',
@@ -696,14 +691,13 @@ export const habitats = (formatMessage, habitatsList) => (
         hideEmpty: true,
         isMultiSelect: true,
         isClearable: true,
-        options: habitatsList.map(h =>
-            ({
-                label: formatMessage({
-                    defaultMessage: h[1],
-                    id: `vectors.label.${h[0]}`,
-                }),
-                value: h[0],
-            })),
+        options: habitatsList.map(h => ({
+            label: formatMessage({
+                defaultMessage: h[1],
+                id: `vectors.label.${h[0]}`,
+            }),
+            value: h[0],
+        })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'All',
@@ -820,22 +814,24 @@ export const targets = formatMessage => (
 );
 
 
-export const medecine = formatMessage => (
+export const medicine = medicineList => (
     {
         name: 'treatment_medicine',
         urlKey: 'treatment_medicine',
         hideEmpty: true,
         isMultiSelect: false,
         isClearable: true,
-        options: Object.keys(tempTreatmentsMedecineMessages).map(key =>
-            ({ label: formatMessage(tempTreatmentsMedecineMessages[key]), value: key })),
+        options: medicineList.filter(m => m[0] !== 'none').map(m => ({
+            label: m[1],
+            value: m[0],
+        })),
         placeholder: {
             id: 'main.label.allMale',
             defaultMessage: 'All',
         },
         label: {
-            id: 'main.label.medecine',
-            defaultMessage: 'Type of medecine',
+            id: 'main.label.medicine',
+            defaultMessage: 'Type of medicine',
         },
         type: 'select',
     }
@@ -1072,8 +1068,7 @@ export const institutions = (institutionsList, isMultiSelect = false) => (
         urlKey: 'institution_id',
         isMultiSelect,
         isClearable: true,
-        options: institutionsList.map(institution =>
-            ({ label: institution.name, value: institution.id })),
+        options: institutionsList.map(institution => ({ label: institution.name, value: institution.id })),
         placeholder: {
             id: 'main.label.all',
             defaultMessage: 'All',
@@ -1092,14 +1087,13 @@ export const problems = (formatMessage, problemsList) => (
         urlKey: 'problems',
         isMultiSelect: true,
         isClearable: true,
-        options: problemsList.map(h =>
-            ({
-                label: formatMessage({
-                    defaultMessage: h[1],
-                    id: `vectors.label.${h[0]}`,
-                }),
-                value: h[0],
-            })),
+        options: problemsList.map(h => ({
+            label: formatMessage({
+                defaultMessage: h[1],
+                id: `vectors.label.${h[0]}`,
+            }),
+            value: h[0],
+        })),
         placeholder: {
             id: 'main.label.none',
             defaultMessage: 'None',

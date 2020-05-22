@@ -229,12 +229,8 @@ class OrgUnitDetail extends Component {
             ...this.state.currentOrgUnit,
             [key]: value,
         };
-        if (key !== 'geo_json' && key !== 'catchment' && value) {
-            currentOrgUnit.latitude = null;
-            currentOrgUnit.longitude = null;
-        }
         this.setState({
-            orgUnitModified: key !== 'geo_json',
+            orgUnitModified: true,
             currentOrgUnit,
         });
     }
@@ -246,7 +242,6 @@ class OrgUnitDetail extends Component {
                 ...this.state.currentOrgUnit,
                 latitude: location.lat ? parseFloat(location.lat.toFixed(8)) : null,
                 longitude: location.lng ? parseFloat(location.lng.toFixed(8)) : null,
-                geo_json: null,
             },
         });
     }

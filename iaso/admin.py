@@ -9,6 +9,7 @@ from .models import (
     InstanceFile,
     Account,
     Project,
+    FeatureFlag,
     Device,
     DeviceOwnership,
     DataSource,
@@ -66,6 +67,26 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "file")
 
 
+class ProjectAdmin(admin.ModelAdmin):
+    list_display = (
+        "name",
+        "app_id",
+        "account",
+        "needs_authentication",
+        "feature_flags_list",
+    )
+
+    def feature_flags_list(self, obj):
+        flags = obj.feature_flags.all()
+        return ", ".join(flag.name for flag in flags) if len(flags) > 0 else "-"
+
+    feature_flags_list.short_description = "Feature flags"
+
+
+class FeatureFlagAdmin(admin.ModelAdmin):
+    list_display = ("code", "name")
+
+
 class LinkAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("source", "destination")
 
@@ -91,7 +112,8 @@ admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
 admin.site.register(Account)
-admin.site.register(Project)
+admin.site.register(Project, ProjectAdmin)
+admin.site.register(FeatureFlag, FeatureFlagAdmin)
 admin.site.register(Device)
 admin.site.register(SourceVersion)
 admin.site.register(DataSource)

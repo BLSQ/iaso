@@ -168,7 +168,7 @@ class Command(BaseCommand):
                     unit.name = name
 
                     if longitude and latitude:
-                        pnt = Point(longitude, latitude)
+                        pnt = Point(longitude, latitude, 0)
                         unit.location = pnt
 
                     unit.sub_source = source_name

@@ -405,7 +405,7 @@ class Command(BaseCommand):
                     instance.uuid = str(uuid4())
                     if with_location:
                         instance.location = Point(
-                            -11.7868289 + (2 * random()), 8.4494988 + (2 * random())
+                            -11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0
                         )
 
                     test_data = {"_version": 1}

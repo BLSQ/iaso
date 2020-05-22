@@ -135,7 +135,7 @@ class Command(BaseCommand):
                             latitude,
                             type(latitude),
                         )
-                        pnt = Point(float(longitude), float(latitude))
+                        pnt = Point(float(longitude), float(latitude), 0)
                         unit.location = pnt
 
                     unit.sub_source = source_name

@@ -28,12 +28,13 @@ import InstanceDetailsExportRequests from './components/InstanceDetailsExportReq
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
-import EnketoIcon from "./components/EnketoIcon"
+import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 
 import MESSAGES from './messages';
 
 import commonStyles from '../../styles/common';
+import { baseUrls } from '../../constants/urls';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -107,74 +108,104 @@ class InstanceDetails extends Component {
                         if (prevPathname || !currentInstance) {
                             router.goBack();
                         } else {
-                            redirectToReplace('instances', {
+                            redirectToReplace(baseUrls.instances, {
                                 formId: currentInstance.form_id,
                             });
                         }
                     }}
                 />
-                {fetching && <LoadingSpinner />}
-                {currentInstance && (
-                    <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions
-                            actions={actions}
-                            onActionSelected={this.onActionSelected}
-                        />
-                        <Grid container spacing={4}>
-                            <Grid xs={12} md={5} item>
-                                {currentInstance.deleted && (
-                                    <Alert severity="warning" className={classes.alert}>
-                                        {formatMessage(MESSAGES.warningSoftDeleted)}
-                                        <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedExport)}
-                                        <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedDerived)}
-                                        <br />
-                                    </Alert>
-                                )}
-                                <WidgetPaper title={formatMessage(MESSAGES.infos)} padded>
-                                    <InstanceDetailsInfos currentInstance={currentInstance} />
-                                </WidgetPaper>
-                                <WidgetPaper title={formatMessage(MESSAGES.location)}>
-                                    <InstanceDetailsLocation currentInstance={currentInstance} />
-                                </WidgetPaper>
-                                <InstanceDetailsExportRequests
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
-                                {currentInstance.files.length > 0 && (
-                                    <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                        <InstancesFilesList
-                                            fetchDetails={false}
-                                            instanceDetail={currentInstance}
-                                            files={getInstancesFilesList([currentInstance])}
+                {
+                    fetching
+                    && <LoadingSpinner />
+                }
+                {
+                    currentInstance
+                    && (
+                        <Box className={classes.containerFullHeightNoTabPadded}>
+                            <SpeedDialInstanceActions
+                                actions={actions}
+                                onActionSelected={this.onActionSelected}
+                            />
+                            <Grid container spacing={4}>
+
+                                <Grid xs={12} md={5} item>
+                                    {currentInstance.deleted && (
+                                        <Alert severity="warning" className={classes.alert}>
+                                            {formatMessage(MESSAGES.warningSoftDeleted)}
+                                            <br />
+                                            {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                            <br />
+                                            {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                            <br />
+                                        </Alert>
+                                    )}
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.infos)}
+                                        padded
+                                    >
+                                        <InstanceDetailsInfos currentInstance={currentInstance} />
+                                    </WidgetPaper>
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.location)}
+                                    >
+                                        <InstanceDetailsLocation currentInstance={currentInstance} />
+                                    </WidgetPaper>
+                                    <InstanceDetailsExportRequests
+                                        currentInstance={currentInstance}
+                                        classes={classes}
+                                    />
+                                    {currentInstance.files.length > 0 && (
+                                        <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
+                                            <InstancesFilesList
+                                                fetchDetails={false}
+                                                instanceDetail={currentInstance}
+                                                files={getInstancesFilesList([currentInstance])}
+                                            />
+                                        </WidgetPaper>
+                                    )}
+                                </Grid>
+
+                                <Grid xs={12} md={7} item>
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.form)}
+                                        IconButton={IconButtonComponent}
+                                        iconButtonProps={{
+                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                            icon: 'xml',
+                                            color: 'secondary',
+                                            tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
+                                        }
+                                        }
+                                    >
+                                        <InstanceFileContent
+                                            fileContent={currentInstance.file_content}
                                         />
                                     </WidgetPaper>
                                 )}
-                            </Grid>
+                                </Grid>
 
-                            <Grid xs={12} md={7} item>
-                                <WidgetPaper
-                                    title={formatMessage(MESSAGES.form)}
-                                    IconButton={IconButtonComponent}
-                                    iconButtonProps={{
-                                        onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                        icon: 'xml',
-                                        color: 'secondary',
-                                        tooltipMessage: {
-                                            id: 'iaso.label.downloadXml',
-                                            defaultMessage: 'Download XML',
-                                        },
-                                    }}
-                                >
-                                    <InstanceFileContent
-                                        fileContent={currentInstance.file_content}
-                                    />
-                                </WidgetPaper>
+                                <Grid xs={12} md={7} item>
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.form)}
+                                        IconButton={IconButtonComponent}
+                                        iconButtonProps={{
+                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                            icon: 'xml',
+                                            color: 'secondary',
+                                            tooltipMessage: {
+                                                id: 'iaso.label.downloadXml',
+                                                defaultMessage: 'Download XML',
+                                            },
+                                        }}
+                                    >
+                                        <InstanceFileContent
+                                            fileContent={currentInstance.file_content}
+                                        />
+                                    </WidgetPaper>
+                                </Grid>
                             </Grid>
-                        </Grid>
-                    </Box>
-                )}
+                        </Box>
+                    )}
             </section>
         );
     }

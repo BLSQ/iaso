@@ -22,8 +22,13 @@ class FormsVersionAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         star_wars.save()
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
-        cls.batman = cls.create_user_with_profile(username="batman", account=dc)
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_forms"]
+        )
+        cls.batman = cls.create_user_with_profile(
+            username="batman", account=dc, permissions=["iaso_forms"]
+        )
+        cls.superman = cls.create_user_with_profile(username="superman", account=dc)
 
         cls.sith_council = m.OrgUnitType.objects.create(
             name="Sith Council", short_name="Cnc"
@@ -60,6 +65,21 @@ class FormsVersionAPITestCase(APITestCase):
         cls.project.forms.add(cls.form_2)
 
         cls.project.save()
+
+    @tag("iaso_only")
+    def test_form_versions_list_without_auth(self):
+        """GET /formversions/: without auth: 403"""
+
+        response = self.client.get("/api/formversions/")
+        self.assertJSONResponse(response, 403)
+
+    @tag("iaso_only")
+    def test_form_versions_list_wrong_permission(self):
+        """GET /formversions/: with auth but without the iaso_forms permission"""
+
+        self.client.force_authenticate(self.superman)
+        response = self.client.get("/api/formversions/")
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_form_versions_list(self):
@@ -407,8 +427,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasField(form_version_data, "updated_at", float)
 
     def assertNotLoadedDescriptor(self, descriptor):
-
         self.assertEquals(
-            descritor,
+            descriptor,
             {"warning": "not loaded try with ?fields=descriptor", "loaded": False},
         )

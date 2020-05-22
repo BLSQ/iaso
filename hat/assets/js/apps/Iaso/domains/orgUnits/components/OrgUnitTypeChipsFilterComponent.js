@@ -20,6 +20,8 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import { getOtChipColors } from '../../../constants/chipColors';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     content: {
@@ -190,7 +192,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         component="div"
                     >
                         <Typography variant="subtitle1">
-                            <FormattedMessage id="iaso.orgUnits.subOrgUnitsType" defaultMessage="Sub org units types" />
+                            <FormattedMessage {...MESSAGES.subOrgUnitsType} />
                         </Typography>
                     </Box>
                 }
@@ -203,7 +205,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                         && orgUnitTypesSelected.length === 0
                         && (
                             <Typography variant="body2" align="center" color="textSecondary">
-                                <FormattedMessage id="iaso.orgUnits.subOrgUnitsType.noData" defaultMessage="No sub org unit types" />
+                                <FormattedMessage {...MESSAGES.subOrgUnitsTypeNoData} />
                             </Typography>
                         )
                     }
@@ -238,10 +240,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                                         value: t.id,
                                     }))
                                 }
-                                label={{
-                                    id: 'iaso.orgUnits.addOrgUnitType',
-                                    defaultMessage: 'Add org unit type',
-                                }}
+                                label={MESSAGES.addOrgUnitType}
                             />
                         )
                     }

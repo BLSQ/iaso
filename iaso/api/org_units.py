@@ -1,8 +1,10 @@
-from rest_framework import viewsets, status
+from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
+from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+
+from iaso.api.common import safe_api_import
 from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group, Project
-from hat.vector_control.models import APIImport
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -12,7 +14,6 @@ from copy import deepcopy
 from hat.audit.models import log_modification, ORG_UNIT_API
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
-from django.core.exceptions import PermissionDenied
 from hat.api.export_utils import (
     Echo,
     generate_xlsx,
@@ -23,206 +24,42 @@ import json
 from django.db.models import Value, IntegerField
 
 
-def check_access(org_unit, user):
-    user_account = user.iaso_profile.account
-    projects = org_unit.version.data_source.projects.all()
-    account_ids = [p.account_id for p in projects]
-    if user_account.id not in account_ids:
-        raise PermissionDenied("Your account does not have access to this org unit")
+class HasOrgUnitPermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        return True
 
-
-def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
-    new_org_units = []
-    version = None
-    if not user.is_anonymous:
-        version = user.iaso_profile.account.default_version
-        project = Project.objects.filter(app_id=app_id).first()
-        if project and project.needs_authentication:
-            if not user or user.iaso_profile.account.id != project.account.id:
-                raise PermissionDenied("User permissions problems")
-    elif app_id is not None:
-        project = Project.objects.get(app_id=app_id)
-        if project.needs_authentication:
-            raise PermissionDenied("User permissions problems")
-        version = project.account.default_version
-
-    for org_unit in org_units:
-        uuid = org_unit.get("id", None)
-        latitude = org_unit.get("latitude", None)
-        longitude = org_unit.get("longitude", None)
-        altitude = org_unit.get("altitude", 0)
-        org_unit_location = None
-
-        if latitude and longitude:
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
-        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
-
-        if created:
-            org_unit_db.custom = True
-            org_unit_db.validated = False
-            org_unit_db.name = org_unit.get("name", None)
-            org_unit_db.accuracy = org_unit.get("accuracy", None)
-            parent_id = org_unit.get("parentId", None)
-            if not parent_id:
-                parent_id = org_unit.get(
-                    "parent_id", None
-                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
-
-            if parent_id is not None:
-                if str.isdigit(parent_id):
-                    org_unit_db.parent_id = parent_id
-                else:
-                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
-                    org_unit_db.parent_id = parent_org_unit.id
-
-            org_unit_type_id = org_unit.get(
-                "orgUnitTypeId", None
-            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
-            if not org_unit_type_id:
-                org_unit_type_id = org_unit.get("org_unit_type_id", None)
-            org_unit_db.org_unit_type_id = org_unit_type_id
-
-            t = org_unit.get("created_at", None)
-            if t:
-                org_unit_db.created_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.created_at = org_unit.get("created_at", None)
-
-            t = org_unit.get("updated_at", None)
-            if t:
-                org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
-            else:
-                org_unit_db.updated_at = org_unit.get("created_at", None)
-            if not user.is_anonymous:
-                org_unit_db.creator = user
-            org_unit_db.source = "API"
-            org_unit_db.api_import = api_import
-            if org_unit_location:
-                org_unit_db.location = org_unit_location
-
-            new_org_units.append(org_unit_db)
-            org_unit_db.version = version
-            org_unit_db.save()
-    return new_org_units
-
-
-def build_org_units_queryset(queryset, params):
-    validated = params.get("validated", "true")
-    has_instances = params.get("hasInstances", None)
-    search = params.get("search", None)
-
-    org_unit_type_id = params.get("orgUnitTypeId", None)
-    source_id = params.get("sourceId", None)
-    with_shape = params.get("withShape", None)
-    with_location = params.get("withLocation", None)
-    parent_id = params.get("parent_id", None)
-    source = params.get("source", None)
-    group = params.get("group", None)
-    version = params.get("version", None)
-
-    org_unit_parent_id = params.get("orgUnitParentId", None)
-
-    linked_to = params.get("linkedTo", None)
-    link_validated = params.get("linkValidated", True)
-    link_source = params.get("linkSource", None)
-    link_version = params.get("linkVersion", None)
-
-    if validated == "true":
-        validated = True
-    if validated == "false":
-        validated = False
-
-    if validated != "both":
-        queryset = queryset.filter(validated=validated)
-
-    if search:
-        queryset = queryset.filter(
-            Q(name__icontains=search) | Q(aliases__contains=[search])
-        )
-
-    if group:
-        queryset = queryset.filter(groups__in=group.split(","))
-
-    if source:
-        queryset = queryset.filter(version__data_source_id=source)
-
-    if version:
-        queryset = queryset.filter(version=version)
-
-    if has_instances is not None:
-        ids_with_instances = Instance.objects.filter(
-            org_unit__isnull=False
-        ).values_list("org_unit_id", flat=True)
-        if has_instances == "true":
-            queryset = queryset.filter(id__in=ids_with_instances)
-        else:
-            queryset = queryset.exclude(id__in=ids_with_instances)
-
-    if org_unit_type_id:
-        queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
-
-    if with_shape == "true":
-        queryset = queryset.filter(simplified_geom__isnull=False)
-
-    if with_shape == "false":
-        queryset = queryset.filter(simplified_geom__isnull=True)
-
-    if with_location == "true":
-        queryset = queryset.filter(
-            Q(location__isnull=False)
-            | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
-        )
-
-    if with_location == "false":
-        queryset = queryset.filter(
-            Q(location__isnull=True)
-            & Q(latitude__isnull=True)
-            & Q(longitude__isnull=True)
-        )
-
-    if parent_id:
-        if parent_id == "0":
-            queryset = queryset.filter(parent__isnull=True)
-        else:
-            queryset = queryset.filter(parent__id=parent_id)
-
-    if org_unit_parent_id:
-        queryset = queryset.filter(
-            Q(id=org_unit_parent_id)
-            | Q(parent__id=org_unit_parent_id)
-            | Q(parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(
-                parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+    def has_object_permission(self, request, view, obj):
+        if not (
+            request.user.is_authenticated
+            and (
+                request.user.has_perm("menupermissions.iaso_forms")
+                or request.user.has_perm("menupermissions.iaso_org_units")
             )
-        )
+        ):
+            return False
 
-    if linked_to:
-        queryset = queryset.filter(
-            destination_set__destination_id=linked_to,
-            destination_set__validated=link_validated,
-        )
-        if link_source:
-            queryset = queryset.filter(version__data_source_id=link_source)
-        if link_version:
-            queryset = queryset.filter(version_id=link_version)
+        # TODO: can be handled with get_queryset()
+        user_account = request.user.iaso_profile.account
+        projects = obj.version.data_source.projects.all()
+        account_ids = [p.account_id for p in projects]
 
-    if source_id:
-        queryset = queryset.filter(sub_source=source_id)
-    queryset = queryset.select_related("version__data_source")
-    queryset = queryset.select_related("org_unit_type")
-    return queryset
+        return user_account.id in account_ids
 
 
 class OrgUnitViewSet(viewsets.ViewSet):
-    """
-    list:
+    """Org units API
+
+    This API is open to anonymous users for actions that are not org unit-specific (see create method for nuance in
+    projects that require authentication). Actions on specific org units are restricted to authenticated users with the
+    "menupermissions.iaso_forms" or "menupermissions.iaso_org_units" permission.
+
+    GET /api/orgunits/
+    GET /api/orgunits/<id>
+    POST /api/orgunits/
+    PATCH /api/orgunits/<id>
     """
 
-    permission_classes = []
+    permission_classes = [HasOrgUnitPermission]
 
     def list(self, request):
         queryset = OrgUnit.objects.all()
@@ -246,6 +83,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
+        small_search = request.GET.get("smallSearch", None)
         app_id = request.GET.get("app_id", default_app_id)
         if app_id:
             queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
@@ -281,7 +119,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if page_offset > paginator.num_pages:
                     page_offset = paginator.num_pages
                 page = paginator.page(page_offset)
-                res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+                if small_search:
+                    res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
+                else:
+                    res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
@@ -414,7 +255,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, id=pk)
-        check_access(org_unit, request.user)
+        self.check_object_permissions(request, org_unit)
+
         original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
@@ -514,26 +356,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         return Response(res)
 
-    def create(self, request):
-        org_units = request.data
+    @safe_api_import("orgUnit")
+    def create(self, api_import, request):
         app_id = request.GET.get("app_id")
+        new_org_units = import_data(request.data, request.user, api_import, app_id)
 
-        api_import = APIImport()
-        if not request.user.is_anonymous:
-            api_import.user = request.user
-        api_import.import_type = "orgUnit"
-        api_import.json_body = org_units
-        api_import.save()
-
-        try:
-            new_org_units = import_data(org_units, request.user, api_import, app_id)
-            return Response([org_unit.as_dict() for org_unit in new_org_units])
-        except Exception as exe:
-            return Response({"res": "a problem happened, but your data was saved"})
+        return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(OrgUnit, pk=pk)
-        check_access(org_unit, request.user)
+        self.check_object_permissions(request, org_unit)
 
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
@@ -549,3 +381,189 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset, geometry_field="catchment"
                 )
         return Response(res)
+
+
+def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
+    new_org_units = []
+    version = None
+    if not user.is_anonymous:
+        version = user.iaso_profile.account.default_version
+        project = Project.objects.filter(app_id=app_id).first()
+        if project and project.needs_authentication:
+            if not user or user.iaso_profile.account.id != project.account.id:
+                raise PermissionDenied("User permissions problem")
+    elif app_id is not None:
+        project = Project.objects.get(app_id=app_id)
+        if project.needs_authentication:
+            raise PermissionDenied("User permissions problem")
+        version = project.account.default_version
+
+    for org_unit in org_units:
+        uuid = org_unit.get("id", None)
+        latitude = org_unit.get("latitude", None)
+        longitude = org_unit.get("longitude", None)
+        altitude = org_unit.get("altitude", 0)
+        org_unit_location = None
+
+        if latitude and longitude:
+            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+        org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
+
+        if created:
+            org_unit_db.custom = True
+            org_unit_db.validated = False
+            org_unit_db.name = org_unit.get("name", None)
+            org_unit_db.accuracy = org_unit.get("accuracy", None)
+            parent_id = org_unit.get("parentId", None)
+            if not parent_id:
+                parent_id = org_unit.get(
+                    "parent_id", None
+                )  # there exist versions of the mobile app in the wild with both parentId and parent_id
+
+            if parent_id is not None:
+                if str.isdigit(parent_id):
+                    org_unit_db.parent_id = parent_id
+                else:
+                    parent_org_unit = OrgUnit.objects.get(uuid=parent_id)
+                    org_unit_db.parent_id = parent_org_unit.id
+
+            org_unit_type_id = org_unit.get(
+                "orgUnitTypeId", None
+            )  # there exist versions of the mobile app in the wild with both orgUnitTypeId and org_unit_type_id
+            if not org_unit_type_id:
+                org_unit_type_id = org_unit.get("org_unit_type_id", None)
+            org_unit_db.org_unit_type_id = org_unit_type_id
+
+            t = org_unit.get("created_at", None)
+            if t:
+                org_unit_db.created_at = timestamp_to_utc_datetime(int(t))
+            else:
+                org_unit_db.created_at = org_unit.get("created_at", None)
+
+            t = org_unit.get("updated_at", None)
+            if t:
+                org_unit_db.updated_at = timestamp_to_utc_datetime(int(t))
+            else:
+                org_unit_db.updated_at = org_unit.get("created_at", None)
+            if not user.is_anonymous:
+                org_unit_db.creator = user
+            org_unit_db.source = "API"
+            org_unit_db.api_import = api_import
+            if org_unit_location:
+                org_unit_db.location = org_unit_location
+
+            new_org_units.append(org_unit_db)
+            org_unit_db.version = version
+            org_unit_db.save()
+    return new_org_units
+
+
+def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_queryset()
+    validated = params.get("validated", "true")
+    has_instances = params.get("hasInstances", None)
+    search = params.get("search", None)
+
+    org_unit_type_id = params.get("orgUnitTypeId", None)
+    source_id = params.get("sourceId", None)
+    with_shape = params.get("withShape", None)
+    with_location = params.get("withLocation", None)
+    parent_id = params.get("parent_id", None)
+    source = params.get("source", None)
+    group = params.get("group", None)
+    version = params.get("version", None)
+
+    org_unit_parent_id = params.get("orgUnitParentId", None)
+
+    linked_to = params.get("linkedTo", None)
+    link_validated = params.get("linkValidated", True)
+    link_source = params.get("linkSource", None)
+    link_version = params.get("linkVersion", None)
+
+    if validated == "true":
+        validated = True
+    if validated == "false":
+        validated = False
+
+    if validated != "both":
+        queryset = queryset.filter(validated=validated)
+
+    if search:
+        queryset = queryset.filter(
+            Q(name__icontains=search) | Q(aliases__contains=[search])
+        )
+
+    if group:
+        queryset = queryset.filter(groups__in=group.split(","))
+
+    if source:
+        queryset = queryset.filter(version__data_source_id=source)
+
+    if version:
+        queryset = queryset.filter(version=version)
+
+    if has_instances is not None:
+        ids_with_instances = Instance.objects.filter(
+            org_unit__isnull=False
+        ).values_list("org_unit_id", flat=True)
+        if has_instances == "true":
+            queryset = queryset.filter(id__in=ids_with_instances)
+        else:
+            queryset = queryset.exclude(id__in=ids_with_instances)
+
+    if org_unit_type_id:
+        queryset = queryset.filter(org_unit_type__id__in=org_unit_type_id.split(","))
+
+    if with_shape == "true":
+        queryset = queryset.filter(simplified_geom__isnull=False)
+
+    if with_shape == "false":
+        queryset = queryset.filter(simplified_geom__isnull=True)
+
+    if with_location == "true":
+        queryset = queryset.filter(
+            Q(location__isnull=False)
+            | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+        )
+
+    if with_location == "false":
+        queryset = queryset.filter(
+            Q(location__isnull=True)
+            & Q(latitude__isnull=True)
+            & Q(longitude__isnull=True)
+        )
+
+    if parent_id:
+        if parent_id == "0":
+            queryset = queryset.filter(parent__isnull=True)
+        else:
+            queryset = queryset.filter(parent__id=parent_id)
+
+    if org_unit_parent_id:
+        queryset = queryset.filter(
+            Q(id=org_unit_parent_id)
+            | Q(parent__id=org_unit_parent_id)
+            | Q(parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+            | Q(
+                parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
+            )
+        )
+
+    if linked_to:
+        queryset = queryset.filter(
+            destination_set__destination_id=linked_to,
+            destination_set__validated=link_validated,
+        )
+        if link_source:
+            queryset = queryset.filter(version__data_source_id=link_source)
+        if link_version:
+            queryset = queryset.filter(version_id=link_version)
+
+    if source_id:
+        queryset = queryset.filter(sub_source=source_id)
+    queryset = queryset.select_related("version__data_source")
+    queryset = queryset.select_related("org_unit_type")
+    return queryset

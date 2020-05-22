@@ -7,6 +7,8 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import { textPlaceholder } from '../../constants/uiConstants';
+import MESSAGES from './messages';
 
 export const orgUnitsTableColumns = (
     formatMessage,
@@ -21,17 +23,11 @@ export const orgUnitsTableColumns = (
             width: 80,
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Name',
-                id: 'iaso.orgUnits.name',
-            }),
+            Header: formatMessage(MESSAGES.name),
             accessor: 'name',
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Type',
-                id: 'iaso.orgUnits.type',
-            }),
+            Header: formatMessage(MESSAGES.type),
             accessor: 'org_unit_type_id',
             Cell: settings => (
                 <section>
@@ -40,43 +36,37 @@ export const orgUnitsTableColumns = (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Groups',
-                id: 'iaso.label.groups',
-            }),
+            Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
             Cell: settings => (
                 <section>
                     {
-                        settings.original.groups.length > 0
+                        settings.original.groups && settings.original.groups.length > 0
                         && settings.original.groups.map(g => g.name).join(', ')
                     }
                     {
-                        settings.original.groups.length === 0
-                        && '--'
+                        (!settings.original.groups || settings.original.groups.length === 0)
+                        && textPlaceholder
                     }
                 </section>
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Source',
-                id: 'iaso.orgUnits.source',
-            }),
+            Header: formatMessage(MESSAGES.source),
             accessor: 'source',
             Cell: settings => (
                 <section>
                     {
-                        settings.original.source
+                        settings.original.source && settings.original.source
+                    }
+                    {
+                        !settings.original.source && textPlaceholder
                     }
                 </section>
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Updated at',
-                id: 'iaso.label.updated_at',
-            }),
+            Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
@@ -85,10 +75,7 @@ export const orgUnitsTableColumns = (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Created at',
-                id: 'iaso.label.created_at',
-            }),
+            Header: formatMessage(MESSAGES.created_at),
             accessor: 'created_at',
             Cell: settings => (
                 <section>
@@ -105,7 +92,7 @@ export const orgUnitsTableColumns = (
                     <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
                         icon="remove-red-eye"
-                        tooltipMessage={{ id: 'iaso.label.details', defaultMessage: 'Details' }}
+                        tooltipMessage={MESSAGES.details}
                     />
                     {
                         (settings.original.has_geo_json
@@ -114,7 +101,7 @@ export const orgUnitsTableColumns = (
                             <IconButtonComponent
                                 url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
                                 icon="map"
-                                tooltipMessage={{ id: 'iaso.label.map', defaultMessage: 'Map' }}
+                                tooltipMessage={MESSAGES.map}
                             />
                         )
                     }
@@ -122,7 +109,7 @@ export const orgUnitsTableColumns = (
                     <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
                         icon="history"
-                        tooltipMessage={{ id: 'iaso.label.history', defaultMessage: 'History' }}
+                        tooltipMessage={MESSAGES.history}
                     />
                 </section>
             ),
@@ -132,10 +119,7 @@ export const orgUnitsTableColumns = (
     if (searchCount > 1) {
         columns.unshift(
             {
-                Header: formatMessage({
-                    defaultMessage: 'Search',
-                    id: 'iaso.label.search',
-                }),
+                Header: formatMessage(MESSAGES.search),
                 accessor: 'search_index',
                 width: 100,
                 Cell: settings => (
@@ -167,18 +151,12 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => ([
         width: 100,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Date',
-            id: 'iaso.label.date',
-        }),
+        Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
         Cell: settings => <span>{moment(settings.original.created_at).format('YYYY-MM-DD HH:mm')}</span>,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'User',
-            id: 'iaso.label.user',
-        }),
+        Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
         Cell: settings => (
             <span>
@@ -200,10 +178,7 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => ([
                         classes={{
                             popper: classes.popperFixed,
                         }}
-                        title={formatMessage({
-                            defaultMessage: 'Details',
-                            id: 'iaso.label.details',
-                        })}
+                        title={formatMessage(MESSAGES.details)}
                     >
                         <Visibility />
                     </Tooltip>

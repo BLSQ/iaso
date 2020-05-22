@@ -1,17 +1,20 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
+
 from iaso.models import OrgUnitType
 
 
 class OrgUnitTypeViewSet(viewsets.ViewSet):
-    """
-    list:
+    """ Org unit types API
+
+    This API is open to anonymous users.
+
+    GET /api/orgunittypes/
     """
 
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
     def list(self, request):
-
         queryset = OrgUnitType.objects.all()
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile

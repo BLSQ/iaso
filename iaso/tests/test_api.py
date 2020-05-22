@@ -1,8 +1,9 @@
 from django.test import TestCase, tag
+
+from hat.vector_control.models import APIImport
 from ..models import (
     OrgUnit,
     Form,
-    InstanceFile,
     Instance,
     OrgUnitType,
     Account,
@@ -56,6 +57,13 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
+
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertEqual(last_api_import.json_body, [unit_body])
+        self.assertEqual(last_api_import.import_type, "orgUnit")
+        self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
 
         response = c.get("/api/orgunits/", accept="application/json")
 
@@ -260,6 +268,13 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(instance.form_id, form.id)
         self.assertEqual(floor(instance.location.x), floor(4.4))
 
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertEqual(last_api_import.json_body, instance_body)
+        self.assertEqual(last_api_import.import_type, "instance")
+        self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
+
     @tag("iaso_only")
     def test_fetch_org_unit_type(self):
         """Fetch Org Unit Types through the API"""
@@ -270,6 +285,7 @@ class BasicAPITestCase(TestCase):
             accept="application/json",
         )  # this should have 0 result
         json_response = json.loads(response.content)
+        self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(

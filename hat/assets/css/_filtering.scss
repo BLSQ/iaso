@@ -1,4 +1,5 @@
 $filter-container-height: 2rem;
+
 @mixin filter-container-common {
     display: flex;
     flex-wrap: wrap;
@@ -35,12 +36,14 @@ $filter-container-height: 2rem;
     border-radius: 2px;
     margin-right: $padding-unit/2;
     margin-bottom: $padding-unit/2;
+
     &:last-of-type {
         margin-right: 0;
     }
 }
 
 $select-width: 120px;
+
 .date-select-container {
     display: inline-block;
     position: relative;
@@ -49,6 +52,11 @@ $select-width: 120px;
 
 .filter__container__select {
     $triangle-size: 4px;
+
+    &.form-error {
+        border-color: $red,
+    }
+
     &:after {
         position: absolute;
         right: 10px;
@@ -56,23 +64,28 @@ $select-width: 120px;
         pointer-events: none;
         @include triangle(bottom, $dark-blue, $triangle-size);
     }
+
     &.date-select {
         display: inline-block;
         margin: 0 20px 0 0px;
         padding: 0;
-        z-index: 1;
+        // z-index: 1;
         position: relative;
+
         .filter__container__select__label {
             width: 55px;
             text-align: center;
         }
+
         >div {
             >div {
                 display: inline-block;
                 width: $select-width;
             }
+
             display: inline-block;
             width: $select-width;
+
             input {
                 width: $select-width;
             }
@@ -94,6 +107,7 @@ $select-width: 120px;
     font-weight: normal !important;
     color: $mid-gray;
     font-size: $font-size-s !important;
+
     .fa {
         margin-right: 0.4em;
     }
@@ -114,6 +128,7 @@ $select-width: 120px;
     background: white !important;
     -webkit-appearance: none;
     font-size: $font-size-s !important;
+
     &:focus {
         outline: #E0E5EB auto 4px !important;
         outline-offset: -3px !important;
@@ -134,6 +149,7 @@ $select-width: 120px;
     font-weight: normal;
     color: $mid-gray;
     font-size: $font-size-s;
+
     .fa {
         margin-right: 0.2em;
     }
@@ -141,11 +157,13 @@ $select-width: 120px;
 
 .type-filter {
     margin-left: auto;
+
     .filter__label {
         display: inline-block;
         position: relative;
         top: -13px;
     }
+
     .Select {
         display: inline-block;
         width: 200px;
@@ -188,6 +206,7 @@ Select {
     width: 100%;
     box-shadow: none !important;
     min-width: 0px;
+
     select {
         background: transparent;
         border: none !important;
@@ -219,12 +238,15 @@ input.input--minimised {
     @include text--standard;
     display: inline-block;
     vertical-align: middle;
+
     &[type="number"] {
         width: 30px;
     }
+
     &[type="text"] {
         width: 200px;
     }
+
     height: $filter-container-height;
     margin: 0;
     padding: 0 10px;
@@ -233,6 +255,7 @@ input.input--minimised {
     background: white;
     -webkit-appearance: none;
     font-size: $font-size-s;
+
     &:focus {
         outline: #E0E5EB auto 4px;
         outline-offset: -3px;
@@ -251,10 +274,12 @@ input.input--minimised {
 
 .react-datepicker__input-container {
     @include filter-select-positioning;
+
     input[type="text"] {
         @include filter-select-style;
         /* some stuff to override text input styles: */
-        box-sizing: border-box !important;;
+        box-sizing: border-box !important;
+        ;
         width: 200px;
         height: $filter-container-height;
         box-shadow: none !important;
@@ -279,6 +304,7 @@ input.input--minimised {
     color: $mid-gray;
     font-size: 12px;
     padding-bottom: 15px;
+
     .search-container {
         margin-bottom: 0;
     }

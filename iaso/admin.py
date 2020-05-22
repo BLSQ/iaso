@@ -45,6 +45,15 @@ admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
 class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
     ordering = ("name",)
+    list_display = (
+        "name",
+        "form_id",
+        "period_type",
+        "single_per_period",
+        "periods_before_allowed",
+        "periods_after_allowed",
+        "derived",
+    )
 
 
 class InstanceAdmin(admin.GeoModelAdmin):
@@ -69,8 +78,15 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
     list_filter = ("form_version_id",)
 
 
-admin.site.register(Link, LinkAdmin)
+class GroupAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("org_units",)
 
+
+class ProfileAdmin(admin.GeoModelAdmin):
+    raw_id_fields = ("org_units",)
+
+
+admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
 admin.site.register(InstanceFile, InstanceFileAdmin)
@@ -83,14 +99,8 @@ admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
 admin.site.register(FormVersion)
-admin.site.register(Profile)
+admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)
 admin.site.register(MappingVersion, MappingVersionAdmin)
-
-
-class GroupAdmin(admin.GeoModelAdmin):
-    raw_id_fields = ("groups",)
-
-
-admin.site.register(Group)
+admin.site.register(Group, GroupAdmin)

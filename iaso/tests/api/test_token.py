@@ -1,10 +1,9 @@
-import typing
-
 from django.test import tag
 from django.core.files import File
 from unittest import mock
 
 from iaso import models as m
+from hat.vector_control.models import APIImport
 from iaso.test import APITestCase
 
 
@@ -148,9 +147,17 @@ class TokenAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertTrue(m.Instance.objects.filter(uuid=uuid).first() is None)
-        # the result is that the instance is not created, even though the api sent back a 200
+        # The result is that the instance is not created, even though the api sent back a 200
         # this is normal: we want the api to accept all creations requests to be able to debug on the server
-        # and not have data stuck on a mobile phone
+        # and not have data stuck on a mobile phone.
+        # An APIImport record with has_problem set to True should be created
+
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertEqual(last_api_import.json_body, instance_body)
+        self.assertEqual(last_api_import.import_type, "instance")
+        self.assertTrue(last_api_import.has_problem)
+        self.assertTrue("User permissions problem" in last_api_import.exception)
 
     @tag("iaso_only")
     def test_refresh(self):
@@ -168,7 +175,7 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token_2}")
 
         # test an endpoint that requires authentication
-        response = self.client.get("/api/groups/")
+        response = self.client.get("/api/orgunits/")
 
         self.assertJSONResponse(response, 200)
 
@@ -221,6 +228,15 @@ class TokenAPITestCase(APITestCase):
 
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
 
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
+        self.assertEqual("Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7])
+        self.assertEqual(last_api_import.json_body, [unit_body])
+        self.assertEqual(last_api_import.import_type, "orgUnit")
+        self.assertFalse(last_api_import.has_problem)
+        self.assertEqual(last_api_import.exception, "")
+
     @tag("iaso_only")
     def test_unauthenticated_post_org_unit(self):
         """Test upload to a project that requires authentication without token"""
@@ -250,3 +266,14 @@ class TokenAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
 
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is None)
+        # The result is that the org unit is not created, even though the api sent back a 200
+        # this is normal: we want the api to accept all creations requests to be able to debug on the server
+        # and not have data stuck on a mobile phone.
+        # An APIImport record with has_problem set to True should be created
+
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertEqual(last_api_import.json_body, [unit_body])
+        self.assertEqual(last_api_import.import_type, "orgUnit")
+        self.assertTrue(last_api_import.has_problem)
+        self.assertTrue("User permissions problem" in last_api_import.exception)

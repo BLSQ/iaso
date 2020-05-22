@@ -1,9 +1,7 @@
-from django.test import TestCase, tag
+from django.test import tag
 from ..models import (
     OrgUnit,
     Form,
-    InstanceFile,
-    Profile,
     Instance,
     OrgUnitType,
     Account,
@@ -13,19 +11,15 @@ from ..models import (
 )
 
 from rest_framework.test import APIClient
-from django.contrib.auth.models import User
-
+from iaso.test import APITestCase
 import json
 
 
-class MultiTenantTestCase(TestCase):
+class MultiTenantTestCase(APITestCase):
     def setUp(self):
-        account = Account(name="Star Wars")
-
         source = DataSource.objects.create(name="Jedi Academy")
         version = SourceVersion.objects.create(data_source=source, number=1)
-        account.default_version = version
-        account.save()
+        account = Account.objects.create(name="Star Wars", default_version=version)
 
         self.project = Project(
             name="Hydroponic gardens",
@@ -52,27 +46,22 @@ class MultiTenantTestCase(TestCase):
         self.form.save()
         self.project.forms.add(self.form)
 
-        user = User.objects.create(username="yoda")
-        user.set_password("ActuallyTheDarkSideRule2")
-        user.save()
-        p = Profile(user=user, account=account)
-        p.save()
-        self.yoda = user
+        self.yoda = self.create_user_with_profile(
+            username="yoda",
+            account=account,
+            permissions=["iaso_org_units", "iaso_forms", "iaso_users"],
+        )
         self.yoda_client = APIClient()
-        self.yoda_client.login(username="yoda", password="ActuallyTheDarkSideRule2")
+        self.yoda_client.force_authenticate(user=self.yoda)
 
-        account = Account(name="Marvel")
-        account.save()
-
-        user = User.objects.create(username="rraccoon")
-        user.set_password("OhSweetNatasha")
-        user.save()
-        p = Profile(user=user, account=account)
-        p.save()
-        self.raccoon = user
-
+        account = Account.objects.create(name="Marvel")
+        self.raccoon = self.create_user_with_profile(
+            username="raccoon",
+            account=account,
+            permissions=["iaso_mappings", "iaso_users", "iaso_forms"],
+        )
         self.raccoon_client = APIClient()
-        self.raccoon_client.login(username="rraccoon", password="OhSweetNatasha")
+        self.raccoon_client.force_authenticate(user=self.raccoon)
 
         OrgUnit.objects.create(name="Tatooine", org_unit_type=unit_type_2)
 
@@ -256,7 +245,7 @@ class MultiTenantTestCase(TestCase):
     def test_profile_access(self):
         response = self.raccoon_client.get("/api/profiles/", accept="application/json")
         content = json.loads(response.content)
-        self.assertEqual(content["profiles"][0]["user_name"], "rraccoon")
+        self.assertEqual(content["profiles"][0]["user_name"], "raccoon")
 
         response = self.yoda_client.get("/api/profiles/", accept="application/json")
         content = json.loads(response.content)

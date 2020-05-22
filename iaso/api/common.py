@@ -1,11 +1,101 @@
 from datetime import datetime
+from functools import wraps
+from traceback import format_exc
 from django.utils.timezone import make_aware
 from django.db.models import ProtectedError
-from rest_framework import serializers, pagination, exceptions
+from django.db import transaction
+from rest_framework import serializers, pagination, exceptions, permissions
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet as BaseModelViewSet
-from django.core.exceptions import SuspiciousOperation
+
+from hat.vector_control.models import APIImport
+
+
+REQUEST_HEADER_INFO_KEYS = [
+    "HTTP_COOKIE",
+    "PATH_INFO",
+    "REMOTE_ADDR",
+    "REQUEST_METHOD",
+    "SCRIPT_NAME",
+    "SERVER_NAME",
+    "SERVER_PORT",
+    "SERVER_PROTOCOL",
+    "CONTENT_LENGTH",
+    "CONTENT_TYPE",
+    "QUERY_STRING",
+    "HTTP_AUTHORIZATION",
+]
+
+
+def safe_api_import(key: str, fallback_status=200):
+    """This decorator allows to mark api views as "safe imports". This has two effects:
+
+        1. The view will always return a 200 OK status, even if there was an exception while executing it
+        2. The posted data will be saved in a APIImport record
+    """
+
+    def decorator(f):
+        @wraps(f)
+        def inner(self, request, *args, **kwargs):
+            # First, store the data in a APIImport record
+            api_import = APIImport()
+            if not request.user.is_anonymous:
+                api_import.user = request.user
+            api_import.import_type = key
+            api_import.headers = {
+                request_key: request.META.get(request_key)
+                for request_key in REQUEST_HEADER_INFO_KEYS
+            }
+            api_import.json_body = request.data
+
+            # Run the view in a try/except
+            try:
+                with transaction.atomic():
+                    response = f(self, api_import, request, *args, **kwargs)
+            except Exception as e:
+                print("Exception", e)  # For logs
+                api_import.has_problem = True
+                api_import.exception = format_exc()
+                response = Response(
+                    {"res": "a problem happened, but your data was saved"},
+                    status=fallback_status,
+                )
+
+            # Save the APIImport record
+            api_import.save()
+
+            return response
+
+        return inner
+
+    return decorator
+
+
+class HasPermission:
+    """
+    Permission class factory for simple permission checks.
+
+    If the user has any of the the provided permissions, he will be granted access
+
+    Usage:
+
+    > class SomeViewSet(viewsets.ViewSet):
+    >     permission_classes=[HasPermission("perm_1", "perm_2)]
+    >     ...
+    """
+
+    def __init__(self, *perms):
+        class PermissionClass(permissions.BasePermission):
+            def has_permission(self, request, view):
+                return request.user and any(
+                    request.user.has_perm(perm) for perm in perms
+                )
+
+        self._permission_class = PermissionClass
+
+    def __call__(self, *args, **kwargs):
+        return self._permission_class()
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):

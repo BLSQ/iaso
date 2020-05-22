@@ -100,7 +100,7 @@ class PlanningViewSet(viewsets.ViewSet):
         name = request.data.get("name", None)
         years_coverage = request.data.get("years_coverage", None)
         months = request.data.get("months", None)  # defaults in Model
-        month_start = request.data.get("month_start", None)
+        month_start = request.data.get("month_start", 1)
 
         if planning_to_copy_id:
             planning = get_object_or_404(Planning, pk=planning_to_copy_id)

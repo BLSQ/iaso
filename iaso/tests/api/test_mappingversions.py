@@ -27,8 +27,12 @@ class FormsVersionAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         cls.sw_source = sw_source
 
-        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
-        cls.batman = cls.create_user_with_profile(username="batman", account=dc)
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_mappings"]
+        )
+        cls.batman = cls.create_user_with_profile(
+            username="batman", account=dc, permissions=["iaso_mappings"]
+        )
 
         cls.sith_council = m.OrgUnitType.objects.create(
             name="Sith Council", short_name="Cnc"
@@ -72,7 +76,7 @@ class FormsVersionAPITestCase(APITestCase):
         """PUT /mappingversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(f"/api/formversions/33/", data={})
+        response = self.client.put(f"/api/mappingversions/33/", data={})
         self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")
@@ -80,7 +84,7 @@ class FormsVersionAPITestCase(APITestCase):
         """DELETE /formversions/<form_id>: not authorized for now"""
 
         self.client.force_authenticate(self.yoda)
-        response = self.client.delete(f"/api/formversions/33/")
+        response = self.client.delete(f"/api/mappingversions/33/")
         self.assertJSONResponse(response, 405)
 
     @tag("iaso_only")

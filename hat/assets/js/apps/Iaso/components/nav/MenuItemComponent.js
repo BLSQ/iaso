@@ -40,8 +40,8 @@ function MenuItem(props) {
         currentUser,
     } = props;
     const path = `${currentPath}/${menuItem.key}`;
-    const baseUrl = location.pathname.split('/')[subMenuLevel];
-    const isMenuActive = baseUrl === menuItem.key;
+    const activePath = location.pathname.split('/', subMenuLevel + 1).join('/');
+    const isMenuActive = path === activePath;
     const [open, setOpen] = React.useState(isMenuActive);
     const toggleOpen = () => {
         setOpen(!open);
@@ -56,7 +56,7 @@ function MenuItem(props) {
         <Fragment>
             <Link
                 className={classes.linkButton}
-                to={path}
+                to={!hasSubMenu ? path : ''}
             >
                 <ListItem
                     style={itemStyle}

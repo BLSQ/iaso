@@ -1,41 +1,47 @@
 from django.core.exceptions import PermissionDenied
 
-from rest_framework import viewsets
+from rest_framework import viewsets, permissions
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
 
-from iaso.models import Profile, Account
+from iaso.models import Profile, OrgUnit
 
 from django.contrib.auth.models import Permission
 from django.contrib.auth.models import User
-from hat.dashboard.utils import return_error
+
+
+class HasProfilePermission(permissions.BasePermission):
+    def has_permission(self, request, view):
+        if request.query_params.get("pk") == "me":
+            return True
+
+        return request.user.has_perm("menupermissions.iaso_users")
 
 
 class ProfilesViewSet(viewsets.ViewSet):
-    """
-    API to list profiles or get profile detail
-    Examples:
+    """ Profiles API
 
+    This API is restricted to authenticated users having the "menupermissions.iaso_users" permission, with one
+    exception: GET /api/profiles/me is accessible to any authenticated user.
 
     GET /api/profiles/
-    GET /api/profiles/pk
     GET /api/profiles/me => current user
-
+    GET /api/profiles/<id>
+    POST /api/profiles/
+    PATCH /api/profiles/<id>
+    DELETE /api/profiles/<id>
     """
 
-    permission_classes = []
+    permission_classes = [permissions.IsAuthenticated, HasProfilePermission]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         orders = request.GET.get("order", "user__user_name").split(",")
         search = request.GET.get("search", None)
-
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
 
         account = request.user.iaso_profile.account
         queryset = Profile.objects.filter(account=account)
@@ -72,9 +78,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         pk = kwargs.get("pk")
         if pk == "me":
             profile = get_object_or_404(Profile, user__id=request.user.id)
+            return Response(profile.as_dict())
         else:
             profile = get_object_or_404(Profile, pk=pk)
-        return Response(profile.as_dict())
+            return Response(profile.as_dict())
 
     def partial_update(self, request, pk=None):
         profile = get_object_or_404(Profile, id=pk)
@@ -82,7 +89,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         password = request.data.get("password", "")
         if not username:
             return JsonResponse(
-                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"},
+                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis",},
                 status=400,
             )
         user = profile.user
@@ -98,7 +105,12 @@ class ProfilesViewSet(viewsets.ViewSet):
             permission = get_object_or_404(Permission, codename=permission_codename)
             user.user_permissions.add(permission)
         user.save()
-
+        org_units = request.data.get("org_units", [])
+        profile.org_units.clear()
+        for org_unit in org_units:
+            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
+            profile.org_units.add(org_unit_item)
+        profile.save()
         return Response(profile.as_dict())
 
     def create(self, request):
@@ -106,7 +118,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         password = request.data.get("password", "")
         if not username:
             return JsonResponse(
-                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis"},
+                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis",},
                 status=400,
             )
         if not password:
@@ -117,7 +129,10 @@ class ProfilesViewSet(viewsets.ViewSet):
         existing_profile = User.objects.filter(username=username).first()
         if existing_profile:
             return JsonResponse(
-                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur existant"},
+                {
+                    "errorKey": "user_name",
+                    "errorMessage": "Nom d'utilisateur existant",
+                },
                 status=400,
             )
 
@@ -135,10 +150,16 @@ class ProfilesViewSet(viewsets.ViewSet):
             user.user_permissions.add(permission)
         if permissions != []:
             user.save()
-
         # Create a iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
         Profile.objects.create(user=user, account=current_profile.account)
 
         return Response(user.profile.as_dict())
+
+    def delete(self, request, pk=None):
+        profile = get_object_or_404(Profile, id=pk)
+        user = profile.user
+        user.delete()
+        profile.delete()
+        return Response(True)

@@ -159,13 +159,37 @@ const MESSAGES = {
         defaultMessage: 'An error occurred while fetching permissions list',
         id: 'iaso.snackBar.fetchPermissions',
     },
-    saveUserSuccesfull: {
+    saveUserSuccessful: {
         defaultMessage: 'User saved',
-        id: 'iaso.snackBar.saveUserSuccesfull',
+        id: 'iaso.snackBar.saveUserSuccessful',
     },
     saveUserError: {
         defaultMessage: 'An error occurred while saving user profile',
         id: 'iaso.snackBar.saveUserError',
+    },
+    deleteUserSuccessful: {
+        defaultMessage: 'User deleted',
+        id: 'iaso.snackBar.deleteUserSuccessful',
+    },
+    deleteUserError: {
+        defaultMessage: 'An error occurred while deleting user profile',
+        id: 'iaso.snackBar.deleteUserError',
+    },
+    saveGroupSuccesfull: {
+        defaultMessage: 'Group saved',
+        id: 'iaso.snackBar.saveGroupSuccesfull',
+    },
+    saveGroupError: {
+        defaultMessage: 'An error occurred while saving group',
+        id: 'iaso.snackBar.saveGroupError',
+    },
+    deleteGroupSuccesfull: {
+        defaultMessage: 'Group deleted',
+        id: 'iaso.snackBar.deleteGroupSuccesfull',
+    },
+    deleteGroupError: {
+        defaultMessage: 'An error occurred while deleting group',
+        id: 'iaso.snackBar.deleteGroupError',
     },
 };
 

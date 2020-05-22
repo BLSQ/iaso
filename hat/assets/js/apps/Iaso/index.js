@@ -30,6 +30,8 @@ import { linksInitialState, linksReducer } from './domains/links/reducer';
 import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
+import { groupsInitialState, reducer as groupsReducer } from './domains/orgUnits/groups/reducer';
+
 import { getChipColors } from './constants/chipColors';
 
 import App from '../App';
@@ -66,6 +68,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path={baseUrls.orgUnits} to={`${baseUrls.orgUnits}/locationLimit/${locationLimitMax}/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path={baseUrls.mappings} to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.users} to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`} />,
+        <Redirect path={baseUrls.groups} to={`${baseUrls.groups}/order/name/pageSize/20/page/1`} />,
     ]);
 
     let history = useRouterHistory(createHistory)({
@@ -89,6 +92,7 @@ export default function iasoApp(element, baseUrl) {
         completeness: completenessInitialState,
         projects: projectsInitialState,
         mappings: mappingsInitialState,
+        groups: groupsInitialState,
     }, {
         load: loadReducer,
         currentUser: currentUserReducer,
@@ -107,6 +111,7 @@ export default function iasoApp(element, baseUrl) {
         completeness: completenessReducer,
         projects: projectsReducer,
         mappings: mappingReducer,
+        groups: groupsReducer,
     }, [
         routerMiddleware(history),
         thunk,

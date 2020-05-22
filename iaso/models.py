@@ -96,6 +96,7 @@ class Project(models.Model):
     )
     app_id = models.TextField(null=True, blank=True)
     needs_authentication = models.BooleanField(default=False)
+    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1321,3 +1322,15 @@ class ExportStatus(models.Model):
 
     export_logs = models.ManyToManyField(ExportLog, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class FeatureFlag(models.Model):
+    code = models.CharField(max_length=30, blank=False)
+    name = models.CharField(max_length=100, blank=False)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+

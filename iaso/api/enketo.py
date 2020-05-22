@@ -5,11 +5,19 @@ from rest_framework import status, viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from iaso.enketo.enketo_url import enketo_settings, enketo_url
+from iaso.enketo.enketo_url import (
+    enketo_settings,
+    enketo_url,
+    to_xforms_xml,
+    inject_userid,
+    EnketoError,
+)
 from iaso.enketo.md5_file import calculate_md5
 from iaso.models import DataSource, Form, Instance, InstanceFile, OrgUnit
 
 from .auth.authentication import CsrfExemptSessionAuthentication
+from hat.audit.models import log_modification, INSTANCE_API
+from iaso.models import User
 
 
 def public_url_for_enketo(request, path):
@@ -19,6 +27,7 @@ def public_url_for_enketo(request, path):
     return request.build_absolute_uri(path)
 
 
+# See REVERSE-ENKETO.md for more info
 class EnketoViewSet(viewsets.ViewSet):
     """
     list:
@@ -29,14 +38,26 @@ class EnketoViewSet(viewsets.ViewSet):
 
     # Prepare enketo for for edit and return an edit url
     def edit_in_enketo(self, request, instance_uuid):
-        instance = Instance.objects.filter(uuid=instance_uuid).first()
+        if request.user.is_anonymous:
+            raise PermissionDenied("Please log in")
+
+        instance = Instance.objects.filter(
+            uuid=instance_uuid, project__account=request.user.iaso_profile.account
+        ).first()
+
         if instance is None:
-            return JsonResponse({"error": "no such instance"}, status=404)
+            return JsonResponse(
+                {"error": "No such instance or not allowed"}, status=404
+            )
 
         try:
             instance_xml = instance.file.read()
             soup = Soup(instance_xml, "xml")
             instanceid = soup.meta.instanceID.contents[0].strip().replace("uuid:", "")
+
+            # inject editUserID in the meta section of the xml
+            # to allow assign Modification to the user
+            instance_xml = inject_userid(instance_xml.decode("utf-8"), request.user.id)
 
             edit_url = enketo_url(
                 enketo_settings(),
@@ -50,68 +71,62 @@ class EnketoViewSet(viewsets.ViewSet):
             )
 
             return JsonResponse({"edit_url": edit_url}, status=201)
-        except Exception as error:
+        except EnketoError as error:
+            print(error)
             return JsonResponse({"error": str(error)}, status=409)
 
     def list(self, request):
         form = Form.objects.filter(form_id=request.GET["formID"]).first()
         lastest_form_version = form.latest_version
-        # will it work through s3, what about "signing" infos ?
+        # will it work through s3, what about "signing" infos if they expires ?
         downloadurl = public_url_for_enketo(request, lastest_form_version.file.url)
-        content = [
-            '<xforms xmlns="http://openrosa.org/xforms/xformsList">',
-            "<xform>",
-            "<formID>",
-            form.form_id,
-            "</formID>",
-            "<name>",
-            form.name,
-            "</name>",
-            "<version>" + lastest_form_version.version_id + "</version>",
-            "<hash>md5:" + calculate_md5(lastest_form_version.file) + "</hash>",
-            "<descriptionText>",
-            form.name,
-            "</descriptionText>",
-            "<downloadUrl>",
-            downloadurl,
-            "</downloadUrl>",
-            "</xform>",
-            "</xforms>",
-        ]
 
-        return HttpResponse(("").join(content), content_type="application/xml")
+        xforms = to_xforms_xml(
+            form,
+            download_url=downloadurl,
+            version=lastest_form_version.version_id,
+            md5checksum=calculate_md5(lastest_form_version.file),
+        )
+
+        return HttpResponse(xforms, content_type="application/xml")
 
     def post(self, request):
         pass
         # used in the config ?
+        # or request from enketo to check we are alive ?
 
+    # strangely the same endpoint is called for "update"
     def getsubmission(self, request):
+        # HEAD call to no max content size
         if request.method.upper() == "HEAD":
             resp = HttpResponse("", status=status.HTTP_204_NO_CONTENT)
             resp["x-openrosa-accept-content-length"] = 100000000
             return resp
 
+        # UPDATE
         if request.FILES:
-            # TODO version ?
-            # versioning of changes
             main_file = request.FILES["xml_submission_file"]
-
             soup = Soup(main_file.read(), "xml")
             # should we add form_id criteria or instanceID is enough ?
-            form_id = [c for c in soup.children][0].attrs["id"]
+
             instanceid = soup.meta.deprecatedID.contents[0].strip()
+            user_id = soup.meta.editUserID.contents[0].strip()
+            user = User.objects.filter(id=user_id).first()
 
-            i = Instance.objects.filter(json__instanceID=instanceid).first()
+            original = Instance.objects.filter(json__instanceID=instanceid).first()
 
-            i.file = main_file
-            i.json = {}
-            i.save()
+            instance = Instance.objects.filter(json__instanceID=instanceid).first()
 
+            instance.file = main_file
+            instance.json = {}
+            instance.save()
+
+            # copy pasted from the create
             try:
-                i.get_and_save_json_of_xml()
+                instance.get_and_save_json_of_xml()
                 try:
-                    i.convert_location_from_field()
-                    i.convert_device()
+                    instance.convert_location_from_field()
+                    instance.convert_device()
                 except ValueError as error:
                     print(error)
             except:
@@ -121,9 +136,11 @@ class EnketoViewSet(viewsets.ViewSet):
                 if file_name != "xml_submission_file":
                     fi = InstanceFile()
                     fi.file = request.FILES[file_name]
-                    fi.instance_id = i.id
+                    fi.instance_id = instance.id
                     fi.name = file_name
                     fi.save()
+
+            log_modification(original, instance, source=INSTANCE_API, user=user)
 
             return JsonResponse({"result": "success"}, status=201)
         return HttpResponse()

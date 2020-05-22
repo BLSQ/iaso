@@ -7,20 +7,40 @@ cd  setup/docker
 docker-compose up
 ```
 
-# in iaso fixture
+# In iaso fixture
 
-xforms.xml adapt downloadUrl with your ngrok id
+```
+docker-compose  up
 
-# iaso poc.py
+docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
 
-adapt the ngrok url too
+```
 
-python poc.py
+note that the seeded "json" and "xml" don't match the xlsform
+So the edit will "work", but the json will dramatically change.
 
-then open the url (without https)
+then go to the dashboard, got to the instance details of Quantity PCA form 2.31.8
+
+then in the fab button you can Edit : Modifier les réponses via enketo.
+
+## Implementation details
+
+currently everything is in enketo.py and enketo_url.py
+
+the client ask for edit url with the instance
+we hide in the meta tags the editUserID with it's id
+the client redirect to enketo
+
+instanceId is the uuid in meta.instanceID xml tag
+
+when the user submit the modifed form in enketo
+it comes back to iaso with a new meta.instanceID
+and the meta.deprecateID is filled with the previous uuid
+we can find back the user based on the editUserId
+we log modifications and store the new media files
 
 
-# Reverse Engineer notes : Api calls from enketo
+## Reverse Engineer notes : Api calls from enketo
 
 /enketo/formList/?formID=myformid
 

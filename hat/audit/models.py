@@ -14,11 +14,13 @@ PROFILE_API = "profile_api"
 PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
+INSTANCE_API = "instance_api"
+
 
 class Modification(models.Model):
     content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE)
     object_id = models.PositiveIntegerField()
-    content_object = GenericForeignKey('content_type', 'object_id')
+    content_object = GenericForeignKey("content_type", "object_id")
     past_value = JSONField()
     new_value = JSONField()
     source = models.TextField()
@@ -26,7 +28,12 @@ class Modification(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %d - %s - %s" % (self.content_type, self.object_id, self.user, self.created_at)
+        return "%s - %d - %s - %s" % (
+            self.content_type,
+            self.object_id,
+            self.user,
+            self.created_at,
+        )
 
     def as_dict(self):
         return {
@@ -49,6 +56,7 @@ class Modification(models.Model):
             "user": self.user.profile.as_dict(),
             "created_at": self.created_at,
         }
+
 
 def log_modification(v1, v2, source, user=None):
     modification = Modification()

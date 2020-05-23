@@ -219,7 +219,8 @@ class TrapsViewSet(viewsets.ViewSet):
                 {"title": "Utilisateur"},
                 {"title": "Source"},
                 {"title": "Rivière"},
-                {"title": "Site", "width": 30},
+                {"title": "Nom Site", "width": 30},
+                {"title": "UUID Site", "width": 30},
             ]
             filename = "traps"
 
@@ -260,7 +261,8 @@ class TrapsViewSet(viewsets.ViewSet):
                     sdict.get("username"),
                     sdict.get("source"),
                     sdict.get("river"),
-                    sdict.get("site").get("uuid") if sdict.get("site") else "Inconnu",
+                    sdict.get("site").get("name") if sdict.get("site") else "",
+                    sdict.get("site").get("uuid") if sdict.get("site") else "",
                 ]
 
             if xlsx_format:

@@ -668,7 +668,6 @@ class GroupSet(models.Model):
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
-    projects = models.ManyToManyField(Project, related_name="group_sets", blank=True)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

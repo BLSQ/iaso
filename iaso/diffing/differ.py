@@ -29,12 +29,13 @@ class Differ:
         )
         return orgunits
 
-    def diff(self, version_ref, version, options):
+    def diff(self, version_ref, version, ignore_groups=False):
         field_names = ["name", "geometry", "parent"]
-        for group_set in GroupSet.objects.filter(source_version=version):
-            field_names.append(
-                "groupset:" + group_set.source_ref + ":" + group_set.name
-            )
+        if not ignore_groups:
+            for group_set in GroupSet.objects.filter(source_version=version):
+                field_names.append(
+                    "groupset:" + group_set.source_ref + ":" + group_set.name
+                )
         self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 

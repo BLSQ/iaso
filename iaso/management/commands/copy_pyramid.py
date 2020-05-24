@@ -84,6 +84,7 @@ class Command(BaseCommand):
         old_new_dict = {}
         new_units = []
         index = 0
+        print("group_matching", group_matching)
         for unit in source_units:
             original_groups = list(unit.groups.all())
             old_id = unit.id
@@ -94,7 +95,7 @@ class Command(BaseCommand):
             old_new_dict[old_id] = unit.id
             index = index + 1
             for g in original_groups:
-                matching_group = group_matching.get(g.id)
+                matching_group = group_matching[g.id]
                 unit.groups.add(matching_group)
 
             if index % 100 == 0:

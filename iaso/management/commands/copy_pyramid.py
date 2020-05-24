@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 import csv
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet
 from django.contrib.gis.geos import Point
 
 
@@ -15,7 +15,10 @@ class Command(BaseCommand):
         parser.add_argument("destination_source_name", type=str)
         parser.add_argument("destination_version", type=int)
         parser.add_argument(
-            "-f", "--force", action="store_true", help="Define a username prefix"
+            "-f",
+            "--force",
+            action="store_true",
+            help="Will proceed to delete destination version if it already exists",
         )
 
     def handle(self, *args, **options):
@@ -49,12 +52,40 @@ class Command(BaseCommand):
             OrgUnit.objects.filter(version=destination_version).delete()
             print(("%d org units records deleted" % version_count).upper())
 
+        group_sets = GroupSet.objects.filter(source_version=source_version)
+        group_set_matching = {}
+        print("********* Copying groupsets")
+        for gs in group_sets:
+            old_id = gs.id
+            gs.id = None
+            gs.source_version = destination_version
+            gs.save()
+            group_set_matching[old_id] = gs.id
+        print("group_set_matching", group_set_matching)
+        print("********* Copying groups")
+        groups = Group.objects.filter(source_version=source_version)
+        group_matching = {}
+        for g in groups:
+            old_id = g.id
+            original_group_sets = list(g.group_sets.all())
+            g.id = None
+            g.source_version = destination_version
+            g.save()
+
+            for gs in original_group_sets:
+                print(gs, gs.id)
+                matching_gs = group_set_matching.get(gs.id)
+                g.group_sets.add(matching_gs)
+
+            group_matching[old_id] = g.id
+
         source_units = OrgUnit.objects.filter(version=source_version)
 
         old_new_dict = {}
         new_units = []
         index = 0
         for unit in source_units:
+            original_groups = list(unit.groups.all())
             old_id = unit.id
             unit.id = None
             unit.save()
@@ -62,6 +93,10 @@ class Command(BaseCommand):
             new_units.append(unit)
             old_new_dict[old_id] = unit.id
             index = index + 1
+            for g in original_groups:
+                matching_group = group_matching.get(g.id)
+                unit.groups.add(matching_group)
+
             if index % 100 == 0:
                 print("Copied:", index)
 

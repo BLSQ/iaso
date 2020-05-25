@@ -43,10 +43,10 @@ import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
+import Table from '../../components/tables/TableComponent';
 
 import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
@@ -237,7 +237,6 @@ class OrgUnits extends Component {
             params,
             dispatch,
         } = this.props;
-
         const url = this.getEndpointUrl();
         dispatch(this.props.setOrgUnitsListFetching(true));
         const promises = [fetchOrgUnitsList(dispatch, url)];
@@ -248,14 +247,19 @@ class OrgUnits extends Component {
             const urlLocation = this.getEndpointUrl(false, '', true);
             promises.push(fetchOrgUnitsList(dispatch, urlLocation));
         }
-        this.props.setOrgUnits(null, params, 0, 1, []);
         Promise.all(promises).then((data) => {
             if (!params.searchActive) {
                 const newParams = encodeUriParams(params);
                 newParams.searchActive = true;
                 this.props.redirectTo(baseUrl, newParams);
             }
-            this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages, data[0].counts);
+            this.props.setOrgUnits(
+                data[0].orgunits,
+                params,
+                data[0].count,
+                data[0].pages,
+                data[0].counts,
+            );
             this.props.setFiltersUpdated(false);
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
@@ -291,6 +295,12 @@ class OrgUnits extends Component {
             classes,
             decodeSearch(params.searches),
         );
+
+        const searches = decodeSearch(params.searches);
+        const orgunits = reduxPage.list && reduxPage.list.map(ou => ({
+            ...ou,
+            color: searches[ou.search_index] ? searches[ou.search_index].color : null,
+        }));
         return (
             <Fragment>
                 {
@@ -357,22 +367,17 @@ class OrgUnits extends Component {
                                 </Tabs>
                                 {
                                     tab === 'list' && (
-                                        <div className={classes.reactTable}>
-                                            <CustomTableComponent
-                                                isSortable
-                                                pageSize={50}
-                                                showPagination
-                                                columns={tableColumns}
-                                                defaultSorted={[{ id: 'id', desc: false }]}
-                                                params={params}
-                                                defaultPath={baseUrl}
-                                                dataKey="orgunits"
-                                                fetchDatas={false}
-                                                canSelect={false}
-                                                multiSort
-                                                reduxPage={reduxPage}
-                                            />
-                                        </div>
+                                        <Table
+                                            data={orgunits || []}
+                                            pages={reduxPage.pages}
+                                            defaultSorted={[{ id: 'id', desc: false }]}
+                                            columns={tableColumns}
+                                            count={reduxPage.count}
+                                            baseUrl={baseUrl}
+                                            params={params}
+                                            marginTop={false}
+                                            countOnTop={false}
+                                        />
                                     )
                                 }
                                 {
@@ -389,6 +394,7 @@ class OrgUnits extends Component {
                                     )
                                 }
                                 {tab === 'list'
+                                && reduxPage.count > 0
                                     && (
                                         <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
                                             <Grid xs={12} item className={classes.textAlignRight}>

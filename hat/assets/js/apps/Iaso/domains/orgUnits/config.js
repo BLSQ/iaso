@@ -124,18 +124,13 @@ export const orgUnitsTableColumns = (
                 width: 100,
                 Cell: settings => (
                     <section>
-                        {
-                            searches[settings.original.search_index]
-                            && (
-                                <span
-                                    style={{
-                                        backgroundColor: `#${searches[settings.original.search_index].color}`,
-                                        border: `2px solid ${Color(`#${searches[settings.original.search_index].color}`).darken(0.5)}`,
-                                    }}
-                                    className={classes.roundColor}
-                                />
-                            )
-                        }
+                        <span
+                            style={{
+                                backgroundColor: `#${settings.original.color}`,
+                                border: `2px solid ${Color(`#${settings.original.color}`).darken(0.5)}`,
+                            }}
+                            className={classes.roundColor}
+                        />
                     </section>
                 ),
             },

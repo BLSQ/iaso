@@ -10,11 +10,11 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
-from django.db.models import Q, Count
-from operator import itemgetter
+from django.db.models import Q
+from django_ltree.fields import PathField
+from django_ltree.managers import TreeManager
 
 from iaso.odk import parsing
-
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -253,6 +253,7 @@ class OrgUnit(models.Model):
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
+    path = PathField(null=True, blank=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
@@ -284,6 +285,37 @@ class OrgUnit(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+
+    objects = TreeManager()  # TODO: consider custom Manager
+
+    def save(self, *args, force_calculate_path=False, **kwargs):
+        update_children_path = self._calculate_new_path(force_calculate_path)
+        super().save(*args, **kwargs)
+
+        if update_children_path:
+            for child in OrgUnit.objects.filter(parent=self):
+                child.save(
+                    force_calculate_path=force_calculate_path, update_fields=["path"]
+                )
+
+    def _calculate_new_path(self, force: bool) -> bool:
+        # For now, we will only handle update of existing org units that already have a path, and whose parent
+        # has changed. The idea is that a management command (set_org_unit_path) will handle the initial seeding of the
+        # path field, starting at the top of the pyramid. Once this script has been run and the field is filled for
+        # all org units, we should also take new org units into account.
+        # TODO: remove force_calculate_path and condition below
+
+        if self.path is not None or force:
+            base_path = [] if self.parent is None else self.parent.path
+            new_path = [*base_path, str(self.pk)]
+            path_change = new_path != self.path
+
+            if path_change:
+                self.path = new_path
+
+            return path_change or force
+
+        return False
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
@@ -409,7 +441,7 @@ class OrgUnit(models.Model):
             res["search_index"] = self.search_index
         return res
 
-    def path(self):
+    def source_path(self):
         path_components = []
         cur = self
         while cur:
@@ -1258,7 +1290,9 @@ class Profile(models.Model):
                 ).values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "org_units": [
+                o.as_small_dict() for o in self.org_units.all().order_by("name")
+            ],
         }
 
     def as_short_dict(self):
@@ -1332,4 +1366,3 @@ class FeatureFlag(models.Model):
 
     def __str__(self):
         return self.name
-

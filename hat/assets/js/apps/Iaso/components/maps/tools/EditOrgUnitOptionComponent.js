@@ -223,6 +223,17 @@ class EditOrgUnitOptionComponent extends Component {
                                         id: 'iaso.label.longitude',
                                     }}
                                 />
+                                {/* read-only altitude field until edition is implemented */}
+                                <InputComponent
+                                    disabled
+                                    keyValue="altitude"
+                                    value={orgUnit.altitude !== null ? orgUnit.altitude : 0}
+                                    type="number"
+                                    label={{
+                                        defaultMessage: 'Altitude',
+                                        id: 'iaso.label.altitude',
+                                    }}
+                                />
                                 <Button
                                     disabled={editCatchmentEnabled}
                                     variant="outlined"

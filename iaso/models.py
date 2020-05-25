@@ -96,6 +96,7 @@ class Project(models.Model):
     )
     app_id = models.TextField(null=True, blank=True)
     needs_authentication = models.BooleanField(default=False)
+    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -272,14 +273,14 @@ class OrgUnit(models.Model):
 
     latitude = models.DecimalField(
         max_digits=10, decimal_places=8, null=True, blank=True
-    )
+    )  # TODO: deprecated, remove me (location should be use instead)
     longitude = models.DecimalField(
         max_digits=11, decimal_places=8, null=True, blank=True
-    )
+    )  # TODO: deprecated, remove me (location should be use instead)
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(srid=4326, null=True, blank=True)
+    location = PointField(null=True, blank=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -300,6 +301,7 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
         }
 
     def as_dict(self, with_groups=True):
@@ -320,6 +322,7 @@ class OrgUnit(models.Model):
             "status": False if self.validated is None else self.validated,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
         }
@@ -357,6 +360,7 @@ class OrgUnit(models.Model):
             "status": False if self.validated is None else self.validated,
             "latitude": self.location.y if self.location else self.latitude,
             "longitude": self.location.x if self.location else self.longitude,
+            "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
             "groups": [group.as_dict() for group in self.groups.all()],
@@ -664,7 +668,6 @@ class GroupSet(models.Model):
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
-    projects = models.ManyToManyField(Project, related_name="group_sets", blank=True)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -972,7 +975,7 @@ class Instance(models.Model):
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
-    location = PointField(srid=4326, null=True, blank=True)
+    location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey(
         OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
     )
@@ -1006,7 +1009,7 @@ class Instance(models.Model):
                 latitude, longitude, altitude, accuracy = [
                     float(x) for x in location.split(" ")
                 ]
-                self.location = Point(x=longitude, y=latitude, srid=4326)
+                self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 self.accuracy = accuracy
                 self.save()
 
@@ -1318,3 +1321,15 @@ class ExportStatus(models.Model):
 
     export_logs = models.ManyToManyField(ExportLog, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
+
+
+class FeatureFlag(models.Model):
+    code = models.CharField(max_length=30, blank=False)
+    name = models.CharField(max_length=100, blank=False)
+    description = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+

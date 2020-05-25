@@ -1,4 +1,5 @@
 import React, { Component, Fragment } from 'react';
+import omit from 'lodash/omit';
 import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { push, replace } from 'react-router-redux';
@@ -217,12 +218,19 @@ class OrgUnitDetail extends Component {
             ...this.state.currentOrgUnit,
             [key]: value,
         };
-        if (key !== 'geo_json' && key !== 'catchment' && value) {
-            currentOrgUnit.latitude = null;
-            currentOrgUnit.longitude = null;
-        }
         this.setState({
-            orgUnitModified: key !== 'geo_json',
+            orgUnitModified: true,
+            currentOrgUnit,
+        });
+    }
+
+    handleChangeShape(key, value) {
+        const currentOrgUnit = {
+            ...this.state.currentOrgUnit,
+            [key]: value,
+        };
+        this.setState({
+            orgUnitModified: true,
             currentOrgUnit,
         });
     }
@@ -234,13 +242,14 @@ class OrgUnitDetail extends Component {
                 ...this.state.currentOrgUnit,
                 latitude: location.lat ? parseFloat(location.lat.toFixed(8)) : null,
                 longitude: location.lng ? parseFloat(location.lng.toFixed(8)) : null,
-                geo_json: null,
             },
         });
     }
 
     saveOrgUnit() {
-        saveOrgUnit(this.props.dispatch, this.state.currentOrgUnit).then(
+        // Don't send altitude for now, the interface does not handle it
+        const orgUnitPayload = omit(this.state.currentOrgUnit, 'altitude');
+        saveOrgUnit(this.props.dispatch, orgUnitPayload).then(
             (currentOrgUnit) => {
                 this.setState({
                     orgUnitModified: false,
@@ -412,7 +421,7 @@ class OrgUnitDetail extends Component {
                                             onChangeLocation={(location) => {
                                                 this.handleChangeLocation(location);
                                             }}
-                                            onChangeShape={(keyValue, shape) => this.handleChangeInfo(keyValue, shape)}
+                                            onChangeShape={(keyValue, shape) => this.handleChangeShape(keyValue, shape)}
                                         />
                                     </Box>
                                 )

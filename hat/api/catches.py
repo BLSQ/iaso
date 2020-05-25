@@ -146,6 +146,8 @@ class CatchesViewSet(viewsets.ViewSet):
                 {"title": "Utilisateur"},
                 {"title": "Remarques"},
                 {"title": "Problème"},
+                {"title": "Nom Piège", "width": 15},
+                {"title": "UUID Piège", "width": 15},
             ]
             filename = "catches"
 
@@ -170,6 +172,8 @@ class CatchesViewSet(viewsets.ViewSet):
                     cdict.get("username"),
                     cdict.get("remarks"),
                     cdict.get("problem"),
+                    cdict.get("trap").get("name"),
+                    cdict.get("trap").get("uuid"),
                 ]
 
             if xlsx_format:

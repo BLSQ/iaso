@@ -71,7 +71,7 @@ class CommandTests(TestCase):
         # assert location and geometry and parent relationships
         healthcenter = created_orgunits_qs.get(name="Bambara Kaima CHP")
         self.assertEquals(
-            healthcenter.location.wkt, "POINT (-11.3596 8.531700000000001)"
+            healthcenter.location.wkt, "POINT Z (-11.3596 8.531700000000001 0)"
         )
         self.assertEquals(healthcenter.parent.name, "Gorama Mende")
 

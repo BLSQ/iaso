@@ -68,7 +68,7 @@ class ExportRequestsAPITestCase(APITestCase):
         instance.export_id = "EVENT_DHIS2_UID"
         instance.org_unit = org_unit
         instance.json = {"question1": "1"}
-        instance.location = Point(1.5, 7.3)
+        instance.location = Point(1.5, 7.3, 0)
         instance.period = period
         instance.form = self.form
         instance.project = self.project

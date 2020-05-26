@@ -1,4 +1,8 @@
 const MESSAGES = {
+    action: {
+        defaultMessage: 'Actions',
+        id: 'main.label.actions',
+    },
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
@@ -114,6 +118,14 @@ const MESSAGES = {
     addOrgUnitType: {
         defaultMessage: 'Add org unit type',
         id: 'iaso.orgUnits.addOrgUnitType',
+    },
+    selectionAction: {
+        defaultMessage: 'With selected org unit',
+        id: 'iaso.orgUnits.selectionAction',
+    },
+    groupSelectionAction: {
+        defaultMessage: 'Change group',
+        id: 'iaso.orgUnits.groupSelectionAction',
     },
 };
 

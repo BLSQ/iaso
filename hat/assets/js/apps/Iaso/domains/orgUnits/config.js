@@ -84,6 +84,7 @@ export const orgUnitsTableColumns = (
             ),
         },
         {
+            Header: formatMessage(MESSAGES.action),
             resizable: false,
             sortable: false,
             width: 150,

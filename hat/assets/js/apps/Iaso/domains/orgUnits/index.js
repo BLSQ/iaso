@@ -13,6 +13,8 @@ import {
 
 import PropTypes from 'prop-types';
 
+import GroupWorkIcon from '@material-ui/icons/GroupWork';
+
 import {
     fetchOrgUnitsTypes,
     fetchSources,
@@ -271,6 +273,11 @@ class OrgUnits extends Component {
         });
     }
 
+    setGroupPopupOpen(isOpen, orgUnitsSelected) {
+        console.log('isOpen', isOpen);
+        console.log('orgUnitsSelected', orgUnitsSelected);
+    }
+
     render() {
         const {
             classes,
@@ -301,6 +308,13 @@ class OrgUnits extends Component {
             ...ou,
             color: searches[ou.search_index] ? searches[ou.search_index].color : null,
         }));
+        const selectionActions = [
+            {
+                icon: <GroupWorkIcon />,
+                label: formatMessage(MESSAGES.groupSelectionAction),
+                onClick: orgUnits => this.setGroupPopupOpen(true, orgUnits),
+            },
+        ];
         return (
             <Fragment>
                 {
@@ -377,6 +391,8 @@ class OrgUnits extends Component {
                                             params={params}
                                             marginTop={false}
                                             countOnTop={false}
+                                            multiSelect
+                                            selectionActions={selectionActions}
                                         />
                                     )
                                 }

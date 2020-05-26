@@ -83,9 +83,45 @@ class OrgUnitModelTestCase(TestCase):
         )
 
     @tag("iaso_only")
-    def test_org_unit_children_descendants(self):
-        """For now, newly created org unit should not have a path."""
+    def test_org_unit_hierarchy_children_descendants(self):
+        """Test manager methods: hierarchy(), children() and descendants()."""
 
+        corrusca, corruscant, first_council, second_council, task_force = self.create_simple_hierarchy()
+
+        self.assertEqual(5, m.OrgUnit.objects.hierarchy(corrusca).count())
+        self.assertEqual(1, m.OrgUnit.objects.children(corrusca).count())
+        self.assertEqual(4, m.OrgUnit.objects.descendants(corrusca).count())
+
+        self.assertEqual(4, m.OrgUnit.objects.hierarchy(corruscant).count())
+        self.assertEqual(2, m.OrgUnit.objects.children(corruscant).count())
+        self.assertEqual(3, m.OrgUnit.objects.descendants(corruscant).count())
+
+        self.assertEqual(2, m.OrgUnit.objects.hierarchy(first_council).count())
+        self.assertEqual(1, m.OrgUnit.objects.children(first_council).count())
+        self.assertEqual(1, m.OrgUnit.objects.descendants(first_council).count())
+
+        self.assertEqual(1, m.OrgUnit.objects.hierarchy(task_force).count())
+        self.assertEqual(0, m.OrgUnit.objects.children(task_force).count())
+        self.assertEqual(0, m.OrgUnit.objects.descendants(task_force).count())
+
+        # membership sanity checks
+        self.assertIn(first_council, m.OrgUnit.objects.hierarchy(corrusca))
+        self.assertNotIn(first_council, m.OrgUnit.objects.children(corrusca))
+        self.assertIn(first_council, m.OrgUnit.objects.descendants(corrusca))
+        self.assertIn(first_council, m.OrgUnit.objects.hierarchy(corruscant))
+        self.assertIn(first_council, m.OrgUnit.objects.children(corruscant))
+        self.assertIn(first_council, m.OrgUnit.objects.descendants(corruscant))
+        self.assertIn(first_council, m.OrgUnit.objects.hierarchy(first_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.children(first_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.descendants(first_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.hierarchy(second_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.children(second_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.descendants(second_council))
+        self.assertNotIn(first_council, m.OrgUnit.objects.hierarchy(task_force))
+        self.assertNotIn(first_council, m.OrgUnit.objects.children(task_force))
+        self.assertNotIn(first_council, m.OrgUnit.objects.descendants(task_force))
+
+    def create_simple_hierarchy(self):
         corrusca = m.OrgUnit.objects.create(
             org_unit_type=self.sector, name="Corrusca Sector"
         )
@@ -113,14 +149,4 @@ class OrgUnitModelTestCase(TestCase):
         second_council.refresh_from_db()
         task_force.refresh_from_db()
 
-        self.assertEqual(1, m.OrgUnit.objects.children(corrusca.path).count())
-        self.assertEqual(4, m.OrgUnit.objects.descendants(corrusca.path).count())
-
-        self.assertEqual(2, m.OrgUnit.objects.children(corruscant.path).count())
-        self.assertEqual(3, m.OrgUnit.objects.descendants(corruscant.path).count())
-
-        self.assertEqual(1, m.OrgUnit.objects.children(first_council.path).count())
-        self.assertEqual(1, m.OrgUnit.objects.descendants(first_council.path).count())
-
-        self.assertEqual(0, m.OrgUnit.objects.children(task_force.path).count())
-        self.assertEqual(0, m.OrgUnit.objects.descendants(task_force.path).count())
+        return corrusca, corruscant, first_council, second_council, task_force

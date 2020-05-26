@@ -13,7 +13,6 @@ from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
 from django.db.models import Q
 from django_ltree.fields import PathField
-from django_ltree.managers import TreeQuerySet
 
 from iaso.odk import parsing
 
@@ -243,9 +242,19 @@ class SourceVersion(models.Model):
         return report
 
 
-class OrgUnitQuerySet(TreeQuerySet):
-    def descendants(self, path):
-        return self.filter(path__descendants=path, path__depth__gt=len(path))
+class OrgUnitQuerySet(models.QuerySet):
+    def children(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1
+        )
+
+    def hierarchy(self, org_unit):
+        return self.filter(path__descendants=org_unit.path)
+
+    def descendants(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
+        )
 
 
 class OrgUnit(models.Model):
@@ -295,9 +304,7 @@ class OrgUnit(models.Model):
     objects = OrgUnitQuerySet.as_manager()
 
     class Meta:
-        indexes = [
-            GistIndex(fields=["path"], buffering=True)
-        ]
+        indexes = [GistIndex(fields=["path"], buffering=True)]
 
     def save(self, *args, force_calculate_path=False, **kwargs):
         update_children_path = self._calculate_new_path(force_calculate_path)
@@ -1001,6 +1008,9 @@ class InstanceQuerySet(models.QuerySet):
         queryset = queryset.exclude(deleted=True)
 
         return queryset
+
+    def for_org_unit_hierarchy(self, org_unit: OrgUnit):
+        return self.filter(org_unit__path__descendants=org_unit.path)
 
 
 class Instance(models.Model):

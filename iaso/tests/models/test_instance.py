@@ -11,6 +11,8 @@ class InstanceModelTestCase(TestCase):
         cls.maxDiff = None
         star_wars = m.Account.objects.create(name="Star Wars")
 
+        cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
+        cls.system = m.OrgUnitType.objects.create(name="System", short_name="Sys")
         cls.jedi_council = m.OrgUnitType.objects.create(
             name="Jedi Council", short_name="Cnc"
         )
@@ -21,8 +23,8 @@ class InstanceModelTestCase(TestCase):
         cls.jedi_council_coruscant = m.OrgUnit.objects.create(
             name="Coruscant Jedi Council", org_unit_type=cls.jedi_council
         )
-        cls.jedi_academy_dagobah = m.OrgUnit.objects.create(
-            name="Coruscant Jedi Council", org_unit_type=cls.jedi_academy
+        cls.jedi_academy_coruscant = m.OrgUnit.objects.create(
+            name="Coruscant Jedi Academy", org_unit_type=cls.jedi_academy
         )
 
         cls.project = m.Project.objects.create(
@@ -75,7 +77,7 @@ class InstanceModelTestCase(TestCase):
             form=self.form_2, period="2020Q1", org_unit=self.jedi_council_coruscant
         )
         instance_6 = self.create_form_instance(
-            form=self.form_2, period="2020Q1", org_unit=self.jedi_academy_dagobah
+            form=self.form_2, period="2020Q1", org_unit=self.jedi_academy_coruscant
         )
 
         self.assertNumQueries(1, lambda: list(m.Instance.objects.with_status()))
@@ -118,15 +120,15 @@ class InstanceModelTestCase(TestCase):
         )
 
         self.create_form_instance(
-            form=self.form_1, period="201901", org_unit=self.jedi_academy_dagobah
+            form=self.form_1, period="201901", org_unit=self.jedi_academy_coruscant
         )
         self.create_form_instance(
-            form=self.form_1, period="201902", org_unit=self.jedi_academy_dagobah
+            form=self.form_1, period="201902", org_unit=self.jedi_academy_coruscant
         )
         self.create_form_instance(
             form=self.form_1,
             period="201903",
-            org_unit=self.jedi_academy_dagobah,
+            org_unit=self.jedi_academy_coruscant,
             last_export_success_at=now(),
         )
 
@@ -268,3 +270,73 @@ class InstanceModelTestCase(TestCase):
 
         json_instance = instance.get_and_save_json_of_xml()
         self.assertTrue("_version" not in json_instance)
+
+    def test_instances_for_org_unit_hierarchy(self):
+        """Test the querying instances within a specific org unit hierarchy"""
+
+        sluis, dagobah, first_council, second_council, first_academy, second_academy = self.create_simple_hierarchy()
+
+        for _ in range(2):
+            self.create_form_instance(org_unit=sluis)
+
+        for _ in range(3):
+            self.create_form_instance(org_unit=dagobah)
+
+        for _ in range(4):
+            self.create_form_instance(org_unit=first_council)
+            self.create_form_instance(org_unit=second_council)
+
+        for _ in range(5):
+            self.create_form_instance(org_unit=first_academy)
+
+        self.assertEqual(18, m.Instance.objects.for_org_unit_hierarchy(sluis).count())
+        self.assertEqual(16, m.Instance.objects.for_org_unit_hierarchy(dagobah).count())
+        self.assertEqual(9, m.Instance.objects.for_org_unit_hierarchy(first_council).count())
+        self.assertEqual(4, m.Instance.objects.for_org_unit_hierarchy(second_council).count())
+        self.assertEqual(5, m.Instance.objects.for_org_unit_hierarchy(first_academy).count())
+        self.assertEqual(0, m.Instance.objects.for_org_unit_hierarchy(second_academy).count())
+
+        # membership sanity checks with a single instance
+        instance = self.create_form_instance(org_unit=dagobah)
+        self.assertIn(instance, m.Instance.objects.for_org_unit_hierarchy(sluis))
+        self.assertIn(instance, m.Instance.objects.for_org_unit_hierarchy(dagobah))
+        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(first_council))
+        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(second_council))
+        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(first_academy))
+        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(second_academy))
+
+    def create_simple_hierarchy(self):
+        sluis = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Sluis Sector"
+        )
+        dagobah = m.OrgUnit.objects.create(
+            org_unit_type=self.system, parent=sluis, name="Dagobah System",
+        )
+        first_council = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=dagobah,
+            name="First Dagobah Jedi Council",
+        )
+        second_council = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=dagobah,
+            name="Second Dagobah Jedi Council",
+        )
+        first_academy = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_academy,
+            parent=first_council,
+            name="Jedi Academy Dagobah I",
+        )
+        second_academy = m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_academy,
+            parent=first_council,
+            name="Jedi Academy Dagobah II",
+        )
+        sluis.save(force_calculate_path=True)
+        dagobah.refresh_from_db()
+        first_council.refresh_from_db()
+        second_council.refresh_from_db()
+        first_academy.refresh_from_db()
+        second_academy.refresh_from_db()
+
+        return sluis, dagobah, first_council, second_council, first_academy, second_academy

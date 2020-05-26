@@ -309,33 +309,33 @@ class OrgUnit(models.Model):
         indexes = [GistIndex(fields=["path"], buffering=True)]
 
     def save(self, *args, force_calculate_path=False, **kwargs):
-        update_children_path = self._calculate_new_path(force_calculate_path)
         super().save(*args, **kwargs)
+        update_children_path = self._update_path(force_calculate_path)
 
-        if update_children_path:
+        if update_children_path or force_calculate_path:
             for child in OrgUnit.objects.filter(parent=self):
                 child.save(
                     force_calculate_path=force_calculate_path, update_fields=["path"]
                 )
 
-    def _calculate_new_path(self, force: bool) -> bool:
-        # For now, we will only handle update of existing org units that already have a path, and whose parent
-        # has changed. The idea is that a management command (set_org_unit_path) will handle the initial seeding of the
+    def _update_path(self, force: bool) -> bool:
+        # For now, we will skip org units that have a parent without a path.
+        # The idea is that a management command (set_org_unit_path) will handle the initial seeding of the
         # path field, starting at the top of the pyramid. Once this script has been run and the field is filled for
-        # all org units, we should also take new org units into account.
+        # all org units, this should not happen anymore.
         # TODO: remove force_calculate_path and condition below
+        if self.parent is not None and self.parent.path is None:
+            return False
 
-        if self.path is not None or force:
-            base_path = [] if self.parent is None else self.parent.path
-            new_path = [*base_path, str(self.pk)]
-            path_change = new_path != self.path
+        base_path = [] if self.parent is None else self.parent.path
+        new_path = [*base_path, str(self.pk)]
+        path_change = new_path != self.path
 
-            if path_change:
-                self.path = new_path
+        if path_change:
+            self.path = new_path
+            super().save(update_fields=["path"])
 
-            return path_change or force
-
-        return False
+        return path_change or force
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)

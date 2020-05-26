@@ -17,35 +17,35 @@ class OrgUnitModelTestCase(TestCase):
         )
 
     @tag("iaso_only")
-    def test_org_unit_creation(self):
-        """For now, by default, newly created org unit should not have a path."""
+    def test_org_unit_creation_no_parent_or_parent_has_path(self):
+        """Newly created org unit without parents should have a path, and so do new org units
+        attached to a parent that has a path."""
 
         corrusca = m.OrgUnit.objects.create(
             org_unit_type=self.sector, name="Corrusca Sector"
         )
-        self.assertIsNone(corrusca.path)
-
-    @tag("iaso_only")
-    def test_org_unit_save_default(self):
-        """For now, by default, newly created org unit should not have a path. Calling save() for an org
-        unit without a path should not result in a path being set."""
-
-        corrusca = m.OrgUnit.objects.create(
-            org_unit_type=self.sector, name="Corrusca Sector"
+        corruscant = m.OrgUnit.objects.create(
+            parent=corrusca, org_unit_type=self.sector, name="Corruscant System"
         )
-        self.assertIsNone(corrusca.path)
-        corrusca.save()
-        self.assertIsNone(corrusca.path)
-
-    @tag("iaso_only")
-    def test_org_unit_save_force_recalculate(self):
-        """Saving org unit with force_calculate_path -> path should be set"""
-
-        corrusca = m.OrgUnit.objects.create(
-            org_unit_type=self.sector, name="Corrusca Sector"
-        )
-        corrusca.save(force_calculate_path=True)
         self.assertEqual(str(corrusca.path), str(corrusca.pk))
+        self.assertEqual(str(corruscant.path), f"{corrusca.pk}.{corruscant.pk}")
+
+    @tag("iaso_only")
+    def test_org_unit_creation_or_update_parent_without_path(self):
+        """Created or updated a org unit linked to a pathless parent should not have a path."""
+
+        corrusca = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Corrusca Sector"
+        )
+        # trick to simulate parent without path
+        m.OrgUnit.objects.filter(name="Corrusca Sector").update(path=None)
+        corrusca.refresh_from_db()
+        corruscant = m.OrgUnit.objects.create(
+            parent=corrusca, org_unit_type=self.sector, name="Corruscant System"
+        )
+        self.assertIsNone(corruscant.path)
+        corruscant.save()
+        self.assertIsNone(corruscant.path)
 
     @tag("iaso_only")
     def test_org_unit_save_force_recalculate_with_children(self):
@@ -62,14 +62,19 @@ class OrgUnitModelTestCase(TestCase):
             parent=corruscant,
             name="Corruscant Jedi Council",
         )
+        m.OrgUnit.objects.all().update(path=None)
+        corrusca.refresh_from_db()
+        corruscant.refresh_from_db()
+        jedi_council_corruscant.refresh_from_db()
 
         self.assertIsNone(corrusca.path)
         self.assertIsNone(corruscant.path)
         self.assertIsNone(jedi_council_corruscant.path)
 
         with transaction.atomic():
-            # 1 update query, 1 children query, 1 parent query (except for the top-level org unit)
-            with self.assertNumQueries(3 * 3 - 1):
+            # 2 update queries (normal + path update), 1 children query, 1 parent query
+            # (except for the top-level org unit - no parent query for this one)
+            with self.assertNumQueries(3 * 4 - 1):
                 corrusca.save(force_calculate_path=True)
 
         corruscant.refresh_from_db()
@@ -149,7 +154,7 @@ class OrgUnitModelTestCase(TestCase):
             parent=first_council,
             name="Jedi Ethics Task Force",
         )
-        corrusca.save(force_calculate_path=True)
+        corrusca.refresh_from_db()
         corruscant.refresh_from_db()
         first_council.refresh_from_db()
         second_council.refresh_from_db()

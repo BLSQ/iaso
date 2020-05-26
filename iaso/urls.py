@@ -4,6 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api.org_units import OrgUnitViewSet
 
 from .api.org_unit_types import OrgUnitTypeViewSet
+from .api.apps import AppsViewSet
 from .api.projects import ProjectsViewSet
 from .api.instances import InstancesViewSet
 from .api.iaso_devices import IasoDevicesViewSet
@@ -35,6 +36,7 @@ router = routers.DefaultRouter()
 
 router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
 router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
+router.register(r"apps", AppsViewSet, base_name="apps")
 router.register(r"projects", ProjectsViewSet, base_name="projects")
 router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")

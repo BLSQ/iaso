@@ -35,20 +35,23 @@ class BasicAPITestCase(TestCase):
     @tag("iaso_only")
     def test_org_unit_insertion(self):
         """Creating Org Units through the API"""
+
         c = APIClient()
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
         uuid = "f6ec1672-ab58-4fb2-a4a0-4af80573e2ae"
         name = "Hopital Velpo"
+
+        # with latitude and longitude
         unit_body = {
             "id": uuid,
-            "latitude": 0,
+            "latitude": 50.503,
             "created_at": 1565194077692,
             "updated_at": 1565194077693,
             "orgUnitTypeId": hospital_unit_type.id,
             "parentId": None,
-            "longitude": 0,
+            "longitude": 4.469,
+            "altitude": 110,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -57,7 +60,15 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
+        # Latitude and longitude are legacy fields that are not filled for new records
+        self.assertIsNone(velpo_model.latitude)
+        self.assertIsNone(velpo_model.longitude)
+        # Location should be filled
+        self.assertEqual(4.469, velpo_model.location.x)
+        self.assertEqual(50.503, velpo_model.location.y)
+        self.assertEqual(110, velpo_model.location.z)
 
+        # make sure APIImport record has been created
         last_api_import = APIImport.objects.order_by("-created_at").first()
         self.assertIsInstance(last_api_import.headers, dict)
         self.assertEqual(last_api_import.json_body, [unit_body])
@@ -89,6 +100,9 @@ class BasicAPITestCase(TestCase):
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
+        self.assertEqual(velpo_json["latitude"], 50.503)
+        self.assertEqual(velpo_json["longitude"], 4.469)
+        self.assertEqual(velpo_json["altitude"], 110)
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
@@ -106,6 +120,8 @@ class BasicAPITestCase(TestCase):
         # inserting a child org_unit
         uuid2 = "61e1dbfe-a1fc-4075-bfa2-5f3201c918f1"
         name2 = "Hopital Sous Fifre"
+
+        # without latitude / longitude (our code handles lat=0, lng=0 as "no location provided")
         unit_body_2 = {
             "id": uuid2,
             "latitude": 0,
@@ -114,8 +130,8 @@ class BasicAPITestCase(TestCase):
             "orgUnitTypeId": hospital_unit_type.id,
             "parentId": uuid,
             "longitude": 0,
-            "accuracy": 0,
             "altitude": 0,
+            "accuracy": 0,
             "time": 0,
             "name": name2,
         }
@@ -125,6 +141,11 @@ class BasicAPITestCase(TestCase):
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
+        # No location field should be filled (neither the legacy latitude / longitude fields or the
+        # newer location field)
+        self.assertIsNone(fifre_model.latitude)
+        self.assertIsNone(fifre_model.longitude)
+        self.assertIsNone(fifre_model.location)
 
     @tag("iaso_only")
     def test_org_unit_insertion_new_field_names(self):
@@ -142,7 +163,6 @@ class BasicAPITestCase(TestCase):
             "parent_id": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -176,6 +196,9 @@ class BasicAPITestCase(TestCase):
         self.assertTrue(floor(velpo_json["updated_at"]) > floor(1565194077693 / 1000))
         self.assertEqual(velpo_json["org_unit_type_id"], hospital_unit_type.id)
         self.assertEqual(velpo_json["parent_id"], None)
+        self.assertIsNone(velpo_json["latitude"])
+        self.assertIsNone(velpo_json["longitude"])
+        self.assertIsNone(velpo_json["altitude"])
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
@@ -230,7 +253,6 @@ class BasicAPITestCase(TestCase):
             "parentId": None,
             "longitude": 0,
             "accuracy": 0,
-            "altitude": 0,
             "time": 0,
             "name": name,
         }
@@ -266,7 +288,9 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(instance.name, name)
         self.assertEqual(instance.org_unit_id, velpo_model.id)
         self.assertEqual(instance.form_id, form.id)
-        self.assertEqual(floor(instance.location.x), floor(4.4))
+        self.assertEqual(instance.location.x, 4.4)
+        self.assertEqual(instance.location.y, 4.4)
+        self.assertEqual(instance.location.z, 100)
 
         last_api_import = APIImport.objects.order_by("-created_at").first()
         self.assertIsInstance(last_api_import.headers, dict)

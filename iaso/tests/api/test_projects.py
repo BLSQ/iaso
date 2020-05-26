@@ -22,6 +22,8 @@ class ProjectsAPITestCase(APITestCase):
         cls.project_1 = m.Project.objects.create(
             name="Project 1", app_id="org.ghi.p1", account=ghi
         )
+        flag = m.FeatureFlag.objects.create(name="A feature", code="a_feature")
+        cls.project_1.feature_flags.set([flag])
         m.Project.objects.create(name="Project 2", app_id="org.ghi.p2", account=ghi)
 
     @tag("iaso_only")
@@ -29,8 +31,7 @@ class ProjectsAPITestCase(APITestCase):
         """GET /projects/ without auth should result in a 403"""
 
         response = self.client.get("/api/projects/")
-        self.assertEqual(403, response.status_code)
-        self.assertEqual("application/json", response["Content-Type"])
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_projects_list_no_permission(self):
@@ -38,7 +39,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jim)
         response = self.client.get("/api/projects/")
-        self.assertEqual(403, response.status_code)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_projects_list_empty_for_user(self):
@@ -46,9 +47,7 @@ class ProjectsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.john)
         response = self.client.get("/api/projects/")
-        self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response["Content-Type"])
-
+        self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 0)
 
     @tag("iaso_only")
@@ -59,9 +58,7 @@ class ProjectsAPITestCase(APITestCase):
         response = self.client.get(
             "/api/projects/", headers={"Content-Type": "application/json"}
         )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response["Content-Type"])
-
+        self.assertJSONResponse(response, 200)
         self.assertValidProjectListData(response.json(), 2)
 
     @tag("iaso_only")
@@ -73,8 +70,7 @@ class ProjectsAPITestCase(APITestCase):
             "/api/projects/?limit=1&page=1",
             headers={"Content-Type": "application/json"},
         )
-        self.assertEqual(200, response.status_code)
-        self.assertEqual("application/json", response["Content-Type"])
+        self.assertJSONResponse(response, 200)
 
         response_data = response.json()
         self.assertValidProjectListData(response_data, 1, True)
@@ -113,7 +109,11 @@ class ProjectsAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/projects/{self.project_1.id}/")
         self.assertJSONResponse(response, 200)
-        self.assertValidProjectData(response.json())
+
+        response_data = response.json()
+        self.assertValidProjectData(response_data)
+        self.assertEqual(1, len(response_data["feature_flags"]))
+        self.assertValidFeatureFlagData(response_data["feature_flags"][0])
 
     @tag("iaso_only")
     def test_projects_create(self):
@@ -144,7 +144,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 405)
 
     def assertValidProjectListData(
-        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
         self.assertValidListData(
             list_data=list_data,
@@ -159,6 +159,15 @@ class ProjectsAPITestCase(APITestCase):
     def assertValidProjectData(self, project_data: typing.Mapping):
         self.assertHasField(project_data, "id", int)
         self.assertHasField(project_data, "name", str)
+        self.assertHasField(project_data, "feature_flags", list)
         self.assertHasField(project_data, "created_at", float)
         self.assertHasField(project_data, "updated_at", float)
         self.assertHasField(project_data, "needs_authentication", bool)
+
+    def assertValidFeatureFlagData(self, feature_flag_data: typing.Mapping):
+        self.assertHasField(feature_flag_data, "id", int)
+        self.assertHasField(feature_flag_data, "name", str)
+        self.assertHasField(feature_flag_data, "code", str)
+        self.assertHasField(feature_flag_data, "description", str)
+        self.assertHasField(feature_flag_data, "created_at", float)
+        self.assertHasField(feature_flag_data, "updated_at", float)

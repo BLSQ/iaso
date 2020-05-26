@@ -290,7 +290,11 @@ class PatientDetailsWrapper extends React.Component {
             geoFilters,
             redirectTo,
             setCaseslist,
+            load: {
+                loading,
+            },
         } = this.props;
+
         const {
             currentTab,
             canEditPatientInfos,
@@ -305,21 +309,25 @@ class PatientDetailsWrapper extends React.Component {
             showTreatmentModal,
             editedTreatment,
         } = this.state;
-        if (!patient.id) return null;
         return (
             <section>
-                <TabsComponent
-                    selectTab={key => this.selectTab(key)}
-                    params={params}
-                    defaultPath={baseUrl}
-                    tabs={[
-                        { label: formatMessage(MESSAGES.infos), key: 'infos' },
-                        { label: formatMessage(MESSAGES.tests), key: 'tests', disabled: patient.id === 0 || editEnabled },
-                        { label: formatMessage(MESSAGES.treatments), key: 'treatments', disabled: patient.id === 0 || editEnabled },
-                        { label: formatMessage(MESSAGES.map), key: 'map', disabled: patient.id === 0 || editEnabled },
-                    ]}
-                    defaultSelect={currentTab}
-                />
+                {
+                    !loading
+                    && (
+                        <TabsComponent
+                            selectTab={key => this.selectTab(key)}
+                            params={params}
+                            defaultPath={baseUrl}
+                            tabs={[
+                                { label: formatMessage(MESSAGES.infos), key: 'infos' },
+                                { label: formatMessage(MESSAGES.tests), key: 'tests', disabled: patient.id === 0 || editEnabled },
+                                { label: formatMessage(MESSAGES.treatments), key: 'treatments', disabled: patient.id === 0 || editEnabled },
+                                { label: formatMessage(MESSAGES.map), key: 'map', disabled: patient.id === 0 || editEnabled },
+                            ]}
+                            defaultSelect={currentTab}
+                        />
+                    )
+                }
 
                 {
                     currentTab === 'infos'
@@ -534,6 +542,17 @@ class PatientDetailsWrapper extends React.Component {
                                 <div className="widget__content">
                                     <ul className="treatments-list">
                                         {
+                                            (!patient.treatments || (patient.treatments && patient.treatments.length === 0))
+                                            && (
+                                                <div className="align-center padding width-full">
+                                                    <FormattedMessage
+                                                        id="patient.treatment.none"
+                                                        defaultMessage="No treatment"
+                                                    />
+                                                </div>
+                                            )
+                                        }
+                                        {
                                             patient.treatments && patient.treatments.map(t => (
                                                 <li
                                                     key={t.id}
@@ -636,10 +655,12 @@ PatientDetailsWrapper.propTypes = {
     selectVillage: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     setCaseslist: PropTypes.func.isRequired,
+    load: PropTypes.object.isRequired,
 };
 
 const MapStateToProps = state => ({
     map: state.map,
+    load: state.load,
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
     geoFilters: state.geoFilters,

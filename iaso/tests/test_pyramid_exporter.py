@@ -92,12 +92,12 @@ class CommandTests(TestCase):
         org_unit.source_ref = None
         org_unit.validated = False
         org_unit.parent = org_unit_chief
-        org_unit.location = Point(-1.3596, 2.5317)
+        org_unit.location = Point(-1.3596, 2.5317, 0)
         org_unit.save()
 
         # update existing chp coordinates
         chp = OrgUnit.objects.get(source_ref="LOpWauwwghf", version=version_ref)
-        chp.location = Point(-13.3596, 9.5317)
+        chp.location = Point(-13.3596, 9.5317, 0)
         chp.parent = parent
         chp.save()
 

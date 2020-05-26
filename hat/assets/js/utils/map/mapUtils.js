@@ -39,6 +39,10 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Current zoom level',
         id: 'map.label.zoom.info',
     },
+    search: {
+        defaultMessage: 'Search village',
+        id: 'main.label.searchVillage',
+    },
     'shape-loader': {
         defaultMessage: 'Loading shapes',
         id: 'main.label.shape-loader',
@@ -134,6 +138,7 @@ export const includeZoombar = (currentMap, component, withVillageSearch, onSearc
         zoomBoxTitle: formatMessage(MESSAGES['box-zoom-title']),
         zoomInfoTitle: formatMessage(MESSAGES['info-zoom-title']),
         fitToBoundsTitle: formatMessage(MESSAGES['fit-to-bounds']),
+        searchTitle: formatMessage(MESSAGES.search),
         fitToBounds: () => { component.fitToBounds(); },
         position: 'topleft',
         withVillageSearch,

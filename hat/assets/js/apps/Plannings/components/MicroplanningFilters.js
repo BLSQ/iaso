@@ -30,6 +30,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'All',
         id: 'main.label.allMale',
     },
+    noResult: {
+        defaultMessage: 'No result',
+        id: 'main.label.noresult',
+    },
     'years-select': {
         defaultMessage: 'Select years',
         id: 'microplanning.labels.years.select',
@@ -60,8 +64,9 @@ class MicroplanningFilters extends Component {
             this.props.fetchRequest(
                 `${getUrl('workzones', params)}${params.workzone_id ? '?with_areas=False' : ''}`,
                 setWorkzones,
-            );
-            this.props.fetchRequest(getUrl('teams', params), setTeams);
+            ).then(() => {
+                this.props.fetchRequest(getUrl('teams', params), setTeams);
+            });
         } else if (prevProps.params.workzone_id !== params.workzone_id) {
             this.props.fetchRequest(getUrl('teams', params), setTeams);
         }
@@ -186,6 +191,7 @@ class MicroplanningFilters extends Component {
                                             placeholder={formatMessage(MESSAGES.allMale)}
                                             options={plannings.map(planning => ({ label: planning.name, value: planning.id }))}
                                             onChange={value => this.onChangeHandler('planning_id', value)}
+                                            noResultsText={formatMessage(MESSAGES.noResult)}
                                         />
                                     )
 
@@ -207,6 +213,7 @@ class MicroplanningFilters extends Component {
                                     placeholder={formatMessage(MESSAGES['years-select'])}
                                     options={possibleYears.map(value => ({ label: value, value }))}
                                     onChange={value => this.onChangeHandler('years', value)}
+                                    noResultsText={formatMessage(MESSAGES.noResult)}
                                 />
                             </Grid>
                         </Grid>
@@ -237,6 +244,7 @@ class MicroplanningFilters extends Component {
                                             placeholder={formatMessage(MESSAGES.all)}
                                             options={coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
                                             onChange={value => this.onChangeHandler('coordination_id', value)}
+                                            noResultsText={formatMessage(MESSAGES.noResult)}
                                         />
                                     </Grid>
                                     <Grid item xs={4}>
@@ -260,6 +268,7 @@ class MicroplanningFilters extends Component {
                                             }
                                             options={workzones.map(wz => ({ label: wz.name, value: wz.id }))}
                                             onChange={value => this.onChangeHandler('workzone_id', value)}
+                                            noResultsText={formatMessage(MESSAGES.noResult)}
                                         />
                                     </Grid>
                                     <Grid item xs={4}>
@@ -276,6 +285,7 @@ class MicroplanningFilters extends Component {
                                             placeholder={`${formatMessage(MESSAGES.all)} - ${capacity}`}
                                             options={teams.map(team => ({ label: `${team.name} - ${team.capacity}`, value: team.id }))}
                                             onChange={teamId => this.onChangeTeam(teamId)}
+                                            noResultsText={formatMessage(MESSAGES.noResult)}
                                         />
                                         {
                                             params.team_id

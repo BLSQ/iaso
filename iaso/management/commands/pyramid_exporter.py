@@ -59,6 +59,12 @@ class Command(BaseCommand):
         )
 
         parser.add_argument(
+            "--ignore_groups",
+            action="store_true",
+            help="Don't modify groups on dhis2",
+        )
+
+        parser.add_argument(
             "--dhis2_url",
             type=str,
             help="Dhis2 url to import from (without user/password)",
@@ -91,10 +97,11 @@ class Command(BaseCommand):
             options, "source_name_ref", "version_number_ref"
         )
         iaso_logger.ok("================= Diffing =================")
-
-        diffs, fields = Differ(iaso_logger).diff(version_ref, version, options)
+        ignore_groups = options.get("ignore_groups")
+        diffs, fields = Differ(iaso_logger).diff(version_ref, version, ignore_groups)
         Dumper(iaso_logger).dump(diffs, fields)
         export = options.get("export")
+
         if export:
             iaso_logger.ok("================= Exporting =================")
             Exporter(self.iaso_logger).export_to_dhis2(

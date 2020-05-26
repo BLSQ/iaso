@@ -124,10 +124,8 @@ class Command(BaseCommand):
                         if feature_type == "POINT" and coordinates:
                             try:
                                 tuple = json.loads(coordinates)
-                                pnt = Point(float(tuple[0]), float(tuple[1]))
+                                pnt = Point(float(tuple[0]), float(tuple[1]), 0)
                                 org_unit.location = pnt
-                                org_unit.longitude = pnt.x
-                                org_unit.latitude = pnt.y
                             except:
                                 print("failed at importing POINT", coordinates)
 

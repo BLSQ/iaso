@@ -307,17 +307,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.catchment = None
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
-        if latitude and str(latitude) != str(org_unit.latitude):
-            org_unit.latitude = latitude
-        if longitude and str(longitude) != str(org_unit.longitude):
-            org_unit.longitude = longitude
-        if not latitude:
-            org_unit.latitude = None
-        if not longitude:
-            org_unit.longitude = None
 
         if latitude and longitude:
-            org_unit.location = Point(x=float(longitude), y=float(latitude), srid=4326)
+            # TODO: remove this mess once the fontend handles altitude edition
+            if "altitude" in request.data:  # provided explicitly
+                altitude = request.data["altitude"]
+            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
+                altitude = org_unit.location.z
+            else:  # no location yet, no altitude provided, set to 0
+                altitude = 0
+
+            org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         else:
             org_unit.location = None
         org_unit.aliases = request.data.get("aliases", "")
@@ -402,10 +402,10 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
         uuid = org_unit.get("id", None)
         latitude = org_unit.get("latitude", None)
         longitude = org_unit.get("longitude", None)
-        altitude = org_unit.get("altitude", 0)
         org_unit_location = None
 
         if latitude and longitude:
+            altitude = org_unit.get("altitude", 0)
             org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         org_unit_db, created = OrgUnit.objects.get_or_create(uuid=uuid)
 

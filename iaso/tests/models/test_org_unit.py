@@ -113,33 +113,14 @@ class OrgUnitModelTestCase(TestCase):
         second_council.refresh_from_db()
         task_force.refresh_from_db()
 
-        # TODO: simplify descendants query with custom manager
         self.assertEqual(1, m.OrgUnit.objects.children(corrusca.path).count())
-        self.assertEqual(
-            4,
-            m.OrgUnit.objects.filter(
-                path__descendants=corrusca.path, path__depth__gt=len(corrusca.path)
-            ).count(),
-        )
+        self.assertEqual(4, m.OrgUnit.objects.descendants(corrusca.path).count())
+
         self.assertEqual(2, m.OrgUnit.objects.children(corruscant.path).count())
-        self.assertEqual(
-            3,
-            m.OrgUnit.objects.filter(
-                path__descendants=corruscant.path, path__depth__gt=len(corruscant.path),
-            ).count(),
-        )
+        self.assertEqual(3, m.OrgUnit.objects.descendants(corruscant.path).count())
+
         self.assertEqual(1, m.OrgUnit.objects.children(first_council.path).count())
-        self.assertEqual(
-            1,
-            m.OrgUnit.objects.filter(
-                path__descendants=first_council.path,
-                path__depth__gt=len(first_council.path),
-            ).count(),
-        )
+        self.assertEqual(1, m.OrgUnit.objects.descendants(first_council.path).count())
+
         self.assertEqual(0, m.OrgUnit.objects.children(task_force.path).count())
-        self.assertEqual(
-            0,
-            m.OrgUnit.objects.filter(
-                path__descendants=task_force.path, path__depth__gt=len(task_force.path),
-            ).count(),
-        )
+        self.assertEqual(0, m.OrgUnit.objects.descendants(task_force.path).count())

@@ -6,13 +6,14 @@ from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
+from django.contrib.postgres.indexes import GistIndex
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
 from django.db.models import Q
 from django_ltree.fields import PathField
-from django_ltree.managers import TreeManager
+from django_ltree.managers import TreeQuerySet
 
 from iaso.odk import parsing
 
@@ -242,6 +243,11 @@ class SourceVersion(models.Model):
         return report
 
 
+class OrgUnitQuerySet(TreeQuerySet):
+    def descendants(self, path):
+        return self.filter(path__descendants=path, path__depth__gt=len(path))
+
+
 class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
@@ -253,7 +259,7 @@ class OrgUnit(models.Model):
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
-    path = PathField(null=True, blank=True)
+    path = PathField(null=True, blank=True, unique=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
@@ -286,7 +292,12 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = TreeManager()  # TODO: consider custom Manager
+    objects = OrgUnitQuerySet.as_manager()
+
+    class Meta:
+        indexes = [
+            GistIndex(fields=["path"], buffering=True)
+        ]
 
     def save(self, *args, force_calculate_path=False, **kwargs):
         update_children_path = self._calculate_new_path(force_calculate_path)
@@ -442,6 +453,8 @@ class OrgUnit(models.Model):
         return res
 
     def source_path(self):
+        """DHIS2-friendly path built using source refs"""
+
         path_components = []
         cur = self
         while cur:

@@ -86,7 +86,13 @@ class OrgUnitModelTestCase(TestCase):
     def test_org_unit_hierarchy_children_descendants(self):
         """Test manager methods: hierarchy(), children() and descendants()."""
 
-        corrusca, corruscant, first_council, second_council, task_force = self.create_simple_hierarchy()
+        (
+            corrusca,
+            corruscant,
+            first_council,
+            second_council,
+            task_force,
+        ) = self.create_simple_hierarchy()
 
         self.assertEqual(5, m.OrgUnit.objects.hierarchy(corrusca).count())
         self.assertEqual(1, m.OrgUnit.objects.children(corrusca).count())

@@ -1,6 +1,8 @@
 import random
+import operator
 from urllib.request import urlopen
 import pathlib
+from functools import reduce
 from django.db import models
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField, PolygonField
@@ -1009,8 +1011,18 @@ class InstanceQuerySet(models.QuerySet):
 
         return queryset
 
-    def for_org_unit_hierarchy(self, org_unit: OrgUnit):
-        return self.filter(org_unit__path__descendants=org_unit.path)
+    def for_org_unit_hierarchy(self, org_unit):
+        # TODO: we could write our own descendants lookup instead of using the one provided in django-ltree
+        # TODO: as it does not handle arrays of path (ltree does)
+        if isinstance(org_unit, list):
+            query = reduce(
+                operator.or_,
+                [Q(org_unit__path__descendants=ou.path) for ou in org_unit],
+            )
+        else:
+            query = Q(org_unit__path__descendants=org_unit.path)
+
+        return self.filter(query)
 
 
 class Instance(models.Model):

@@ -278,7 +278,18 @@ class InstanceModelTestCase(TestCase):
     def test_instances_for_org_unit_hierarchy(self):
         """Test the querying instances within a specific org unit hierarchy"""
 
-        sluis, dagobah, first_council, second_council, first_academy, second_academy = self.create_simple_hierarchy()
+        (
+            alderaan,
+            sluis,
+            dagobah,
+            first_council,
+            second_council,
+            first_academy,
+            second_academy,
+        ) = self.create_simple_hierarchy()
+
+        for _ in range(7):
+            self.create_form_instance(org_unit=alderaan)
 
         for _ in range(2):
             self.create_form_instance(org_unit=sluis)
@@ -293,26 +304,61 @@ class InstanceModelTestCase(TestCase):
         for _ in range(5):
             self.create_form_instance(org_unit=first_academy)
 
+        self.assertEqual(7, m.Instance.objects.for_org_unit_hierarchy(alderaan).count())
         self.assertEqual(18, m.Instance.objects.for_org_unit_hierarchy(sluis).count())
         self.assertEqual(16, m.Instance.objects.for_org_unit_hierarchy(dagobah).count())
-        self.assertEqual(9, m.Instance.objects.for_org_unit_hierarchy(first_council).count())
-        self.assertEqual(4, m.Instance.objects.for_org_unit_hierarchy(second_council).count())
-        self.assertEqual(5, m.Instance.objects.for_org_unit_hierarchy(first_academy).count())
-        self.assertEqual(0, m.Instance.objects.for_org_unit_hierarchy(second_academy).count())
+        self.assertEqual(
+            9, m.Instance.objects.for_org_unit_hierarchy(first_council).count()
+        )
+        self.assertEqual(
+            4, m.Instance.objects.for_org_unit_hierarchy(second_council).count()
+        )
+        self.assertEqual(
+            5, m.Instance.objects.for_org_unit_hierarchy(first_academy).count()
+        )
+        self.assertEqual(
+            0, m.Instance.objects.for_org_unit_hierarchy(second_academy).count()
+        )
+
+        # test with multiple org units
+        self.assertEqual(
+            13,
+            m.Instance.objects.for_org_unit_hierarchy(
+                [first_council, second_council]
+            ).count(),
+        )
+        self.assertEqual(
+            25, m.Instance.objects.for_org_unit_hierarchy([alderaan, sluis]).count(),
+        )
+        self.assertEqual(
+            16,  # providing first_council and second_council should have no effect here
+            m.Instance.objects.for_org_unit_hierarchy(
+                [dagobah, first_council, second_council]
+            ).count(),
+        )
 
         # membership sanity checks with a single instance
         instance = self.create_form_instance(org_unit=dagobah)
         self.assertIn(instance, m.Instance.objects.for_org_unit_hierarchy(sluis))
         self.assertIn(instance, m.Instance.objects.for_org_unit_hierarchy(dagobah))
-        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(first_council))
-        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(second_council))
-        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(first_academy))
-        self.assertNotIn(instance, m.Instance.objects.for_org_unit_hierarchy(second_academy))
+        self.assertNotIn(
+            instance, m.Instance.objects.for_org_unit_hierarchy(first_council)
+        )
+        self.assertNotIn(
+            instance, m.Instance.objects.for_org_unit_hierarchy(second_council)
+        )
+        self.assertNotIn(
+            instance, m.Instance.objects.for_org_unit_hierarchy(first_academy)
+        )
+        self.assertNotIn(
+            instance, m.Instance.objects.for_org_unit_hierarchy(second_academy)
+        )
 
     def create_simple_hierarchy(self):
-        sluis = m.OrgUnit.objects.create(
-            org_unit_type=self.sector, name="Sluis Sector"
+        alderaan = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Alderaan Sector"
         )
+        sluis = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Sluis Sector")
         dagobah = m.OrgUnit.objects.create(
             org_unit_type=self.system, parent=sluis, name="Dagobah System",
         )
@@ -336,6 +382,7 @@ class InstanceModelTestCase(TestCase):
             parent=first_council,
             name="Jedi Academy Dagobah II",
         )
+        alderaan.save(force_calculate_path=True)
         sluis.save(force_calculate_path=True)
         dagobah.refresh_from_db()
         first_council.refresh_from_db()
@@ -343,4 +390,12 @@ class InstanceModelTestCase(TestCase):
         first_academy.refresh_from_db()
         second_academy.refresh_from_db()
 
-        return sluis, dagobah, first_council, second_council, first_academy, second_academy
+        return (
+            alderaan,
+            sluis,
+            dagobah,
+            first_council,
+            second_council,
+            first_academy,
+            second_academy,
+        )

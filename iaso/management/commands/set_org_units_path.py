@@ -38,10 +38,13 @@ class Command(BaseCommand):
             with transaction.atomic():
                 org_unit.save(force_calculate_path=True, update_fields=["path"])
 
-        # Cheating - simulating an org unit created in the meantime, TODO: remove me
-        OrgUnit.objects.create(
-            parent=OrgUnit.objects.first(), name="set_org_units_path test"
-        )
+        # Cheating - simulating an org unit created during the migration
+        # TODO: remove me
+        if options["test_seed"]:
+            no_path = OrgUnit.objects.create(
+                parent=OrgUnit.objects.first(), name="set_org_units_path test"
+            )
+            OrgUnit.objects.filter(pk=no_path.pk).update(path=None)
 
         no_path_count_after = OrgUnit.objects.filter(path=None).count()
         if no_path_count_after == 0:

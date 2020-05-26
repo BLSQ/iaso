@@ -1258,7 +1258,9 @@ class Profile(models.Model):
                 ).values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
-            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
+            "org_units": [
+                o.as_small_dict() for o in self.org_units.all().order_by("name")
+            ],
         }
 
     def as_short_dict(self):
@@ -1332,4 +1334,3 @@ class FeatureFlag(models.Model):
 
     def __str__(self):
         return self.name
-

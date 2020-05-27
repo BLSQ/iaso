@@ -48,6 +48,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
+import OrgUnitsGroupDialog from './components/OrgUnitsGroupDialog';
 import Table from '../../components/tables/TableComponent';
 
 import commonStyles from '../../styles/common';
@@ -92,6 +93,8 @@ class OrgUnits extends Component {
         this.state = {
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
+            groupPopupOpen: false,
+            orgUnitsSelected: [],
         };
     }
 
@@ -192,6 +195,14 @@ class OrgUnits extends Component {
         return getTableUrl('orgunits', urlParams, toExport, exportType, asLocation);
     }
 
+    setGroupPopupOpen(groupPopupOpen, orgUnitsSelected) {
+        this.setState({
+            groupPopupOpen,
+            orgUnitsSelected,
+        });
+    }
+
+
     handleChangeTab(tab, redirect = true) {
         const { redirectTo, params, filtersUpdated } = this.props;
         const { listUpdated } = this.state;
@@ -273,11 +284,6 @@ class OrgUnits extends Component {
         });
     }
 
-    setGroupPopupOpen(isOpen, orgUnitsSelected) {
-        console.log('isOpen', isOpen);
-        console.log('orgUnitsSelected', orgUnitsSelected);
-    }
-
     render() {
         const {
             classes,
@@ -295,6 +301,8 @@ class OrgUnits extends Component {
         } = this.props;
         const {
             tab,
+            orgUnitsSelected,
+            groupPopupOpen,
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
@@ -321,6 +329,12 @@ class OrgUnits extends Component {
                     fetchingList
                     && <LoadingSpinner />
                 }
+                <OrgUnitsGroupDialog
+                    open={groupPopupOpen}
+                    params={params}
+                    orgUnits={orgUnitsSelected}
+                    closeDialog={() => this.setGroupPopupOpen(false, [])}
+                />
                 <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent
                         baseLabel={formatMessage(MESSAGES.search)}

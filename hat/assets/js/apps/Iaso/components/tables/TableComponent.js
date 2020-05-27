@@ -92,8 +92,15 @@ class Table extends Component {
         const newColumns = getSimplifiedColumns(nextProps.columns);
         const oldColumns = getSimplifiedColumns(this.props.columns);
         return !isEqual(nextProps.data, this.props.data)
+        || nextProps.count !== this.props.count
         || !isEqual(newColumns, oldColumns)
         || !isEqual(nextState.selectionArray, this.state.selectionArray);
+    }
+
+    componentDidUpdate(prevProps) {
+        if (prevProps.count !== this.props.count) {
+            this.resetSelection();
+        }
     }
 
     onTableParamsChange(key, value) {
@@ -120,6 +127,12 @@ class Table extends Component {
     isItemSelected(item) {
         const { selectionArray } = this.state;
         return Boolean(selectionArray.find(el => isEqual(el, item)));
+    }
+
+    resetSelection() {
+        this.setState({
+            selectionArray: [],
+        });
     }
 
     render() {

@@ -40,7 +40,7 @@ RawConfirmCancelActions.propTypes = {
     onCancel: PropTypes.func.isRequired,
     cancelMessage: PropTypes.object.isRequired, // TODO: make a message prop type
 };
-const ConfirmCancelActions = withStyles(actionStyles)(RawConfirmCancelActions);
+export const ConfirmCancelActions = withStyles(actionStyles)(RawConfirmCancelActions);
 
 export default function ConfirmCancelDialogComponent({
     allowConfirm, onConfirm, confirmMessage, onCancel, cancelMessage, ...dialogProps

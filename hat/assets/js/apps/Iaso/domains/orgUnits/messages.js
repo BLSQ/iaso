@@ -3,6 +3,18 @@ const MESSAGES = {
         defaultMessage: 'Actions',
         id: 'main.label.actions',
     },
+    orgunitsGroupChange: {
+        defaultMessage: 'Add {value} org units to group(s)',
+        id: 'iaso.orgUnits.orgunitsGroupChange',
+    },
+    orgunitGroupChange: {
+        defaultMessage: 'Add org unit to group(s)',
+        id: 'iaso.orgUnits.orgunitGroupChange',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
@@ -124,7 +136,7 @@ const MESSAGES = {
         id: 'iaso.orgUnits.selectionAction',
     },
     groupSelectionAction: {
-        defaultMessage: 'Change group',
+        defaultMessage: 'Add to group(s)',
         id: 'iaso.orgUnits.groupSelectionAction',
     },
 };

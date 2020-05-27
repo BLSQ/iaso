@@ -182,8 +182,8 @@ class VillageViewSet(viewsets.ViewSet):
             nr_positive_cases = Count(
                 "infection_cases",
                 filter=Q(
-                    caseview__confirmation_result=RES_POSITIVE,
-                    caseview__normalized_year__in=years_array,
+                    case__confirmed_case=True,
+                    case__document_date__year__in=years_array,
                 ),
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
@@ -192,8 +192,7 @@ class VillageViewSet(viewsets.ViewSet):
                 nr_positive_cases_year = Count(
                     "infection_cases",
                     filter=Q(
-                        caseview__confirmation_result=RES_POSITIVE,
-                        caseview__normalized_year=year,
+                        case__confirmed_case=True, case__document_date__year__in=year,
                     ),
                 )
                 queryset = queryset.annotate(
@@ -203,18 +202,16 @@ class VillageViewSet(viewsets.ViewSet):
         else:
             if from_date is not None and to_date is not None:
                 nr_positive_cases = Count(
-                    "caseview",
+                    "case",
                     filter=Q(
-                        caseview__confirmation_result=RES_POSITIVE,
-                        caseview__normalized_date__range=(from_date, to_date),
+                        case__confirmed_case=True,
+                        case__document_date__year__range=(from_date, to_date),
                     ),
                 )
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
             else:
-                nr_positive_cases = Count(
-                    "caseview", filter=Q(caseview__confirmation_result=RES_POSITIVE)
-                )
+                nr_positive_cases = Count("case", filter=Q(case__confirmed_case=True))
                 queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
                 values = values + ("nr_positive_cases",)
 

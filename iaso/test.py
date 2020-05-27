@@ -11,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.test import APITestCase as BaseAPITestCase, APIClient
 
 from hat.menupermissions.models import CustomPermissionSupport
+from hat.vector_control.models import APIImport
 from iaso import models as m
 
 
@@ -132,3 +133,33 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertIn(field_name, data)
         if error_message is not None:
             self.assertIn(error_message, data[field_name])
+
+    def assertAPIImport(
+        self,
+        import_type: str,
+        *,
+        request_body: typing.Any,
+        has_problems: bool,
+        check_auth_header: bool = False,
+        exception_contains_string: str = None,
+    ):
+        """Make sure that a APIImport has been correctly generated"""
+
+        last_api_import = APIImport.objects.order_by("-created_at").first()
+        self.assertIsNotNone(last_api_import)
+        self.assertIsInstance(last_api_import.headers, dict)
+        self.assertEqual(last_api_import.json_body, request_body)
+        self.assertEqual(last_api_import.import_type, import_type)
+        self.assertEqual(has_problems, last_api_import.has_problem)
+
+        self.assertIsInstance(last_api_import.headers, dict)
+        if check_auth_header:
+            self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
+            self.assertEqual(
+                "Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7]
+            )
+
+        if has_problems is False:
+            self.assertEqual(last_api_import.exception, "")
+        elif exception_contains_string is not None:
+            self.assertTrue(exception_contains_string in last_api_import.exception)

@@ -312,7 +312,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             # TODO: remove this mess once the fontend handles altitude edition
             if "altitude" in request.data:  # provided explicitly
                 altitude = request.data["altitude"]
-            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
+            elif (
+                org_unit.location is not None
+            ):  # not provided but we have a current location: keep altitude
                 altitude = org_unit.location.z
             else:  # no location yet, no altitude provided, set to 0
                 altitude = 0

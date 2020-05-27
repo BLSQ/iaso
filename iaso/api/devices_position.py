@@ -1,8 +1,9 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
+from rest_framework.exceptions import PermissionDenied
 
-from .common import ModelViewSet, TimestampField
-from iaso.models import Device, DevicePosition
+from .common import ModelViewSet, TimestampField, safe_api_import
+from iaso.models import Device, DevicePosition, Project
 
 
 class DevicePositionSerializer(serializers.ModelSerializer):
@@ -26,7 +27,9 @@ class DevicePositionSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
-    device_id = serializers.PrimaryKeyRelatedField(source="device", queryset=Device.objects.all())
+    device_id = serializers.PrimaryKeyRelatedField(
+        source="device", queryset=Device.objects.all()
+    )
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     altitude = serializers.FloatField()
@@ -62,6 +65,27 @@ class DevicesPositionViewSet(ModelViewSet):
     http_method_names = ["post", "head", "options", "trace"]
     results_key = "devicesposition"
     queryset = DevicePosition.objects.all()
+
+    @safe_api_import("devicesposition", fallback_status=201)
+    def create(self, api_import, request, *args, **kwargs):
+        # TODO: attach api_import to device_position
+        # TODO: move all this stuff in an authentication backend
+        app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
+
+        if not request.user.is_anonymous:
+            project = Project.objects.filter(app_id=app_id).first()
+            if project and project.needs_authentication:
+                if (
+                    not request.user
+                    or request.user.iaso_profile.account.id != project.account.id
+                ):
+                    raise PermissionDenied("User permissions problem")
+        elif app_id is not None:
+            project = Project.objects.get(app_id=app_id)
+            if project.needs_authentication:
+                raise PermissionDenied("User permissions problem")
+
+        return super().create(request, *args, **kwargs)
 
     def get_serializer(self, *args, **kwargs):
         """Override serializer getter to force many to True: device positions are created in bulk"""

@@ -1,3 +1,7 @@
+import React from 'react';
+import RemoveIcon from '@material-ui/icons/Remove';
+import AddIcon from '@material-ui/icons/Add';
+
 const getTableUrl = (
     urlKey,
     params,
@@ -54,3 +58,40 @@ export const getOrderArray = orders => (orders.split(',').map(stringValue => ({
     id: stringValue.replace('-', ''),
     desc: stringValue.indexOf('-') !== -1,
 })));
+
+
+export const getSimplifiedColumns = (columns) => {
+    const newColumns = [];
+    columns.forEach((c) => {
+        if (c.accessor) {
+            newColumns.push(c.accessor);
+        }
+    });
+    return newColumns;
+};
+
+
+export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) => [
+    {
+        icon: <AddIcon />,
+        label: formatMessage(
+            {
+                id: 'iaso.label.selectAll',
+                defaultMessage: 'Select all',
+            },
+        ),
+        onClick: () => selectAll(),
+        disabled: () => false,
+    },
+    {
+        icon: <RemoveIcon />,
+        label: formatMessage(
+            {
+                id: 'iaso.label.unSelectAll',
+                defaultMessage: 'Un select all',
+            },
+        ),
+        onClick: () => unSelectAll(),
+        disabled: () => false,
+    },
+];

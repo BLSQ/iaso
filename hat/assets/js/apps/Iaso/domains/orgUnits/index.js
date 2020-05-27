@@ -175,6 +175,14 @@ class OrgUnits extends Component {
         this.props.resetOrgUnits();
     }
 
+    onSearch(withLocations) {
+        const {
+            resetTableSelection,
+        } = this.props;
+        resetTableSelection();
+        this.fetchOrgUnits(withLocations);
+    }
+
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
         const {
             params,
@@ -251,9 +259,7 @@ class OrgUnits extends Component {
         const {
             params,
             dispatch,
-            resetTableSelection,
         } = this.props;
-        resetTableSelection();
         const url = this.getEndpointUrl();
         dispatch(this.props.setOrgUnitsListFetching(true));
         const promises = [fetchOrgUnitsList(dispatch, url)];
@@ -325,6 +331,7 @@ class OrgUnits extends Component {
                 icon: <GroupWorkIcon />,
                 label: formatMessage(MESSAGES.groupSelectionAction),
                 onClick: orgUnits => this.setGroupPopupOpen(true, orgUnits),
+                disabled: orgUnits => orgUnits.length === 0,
             },
         ];
         return (
@@ -364,7 +371,7 @@ class OrgUnits extends Component {
                                     <OrgUnitsFiltersComponent
                                         baseUrl={baseUrl}
                                         params={params}
-                                        onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
+                                        onSearch={() => this.onSearch(params.tab === 'map')}
                                         orgUnitTypes={orgUnitTypes}
                                         sources={sources}
                                         currentTab={tab}

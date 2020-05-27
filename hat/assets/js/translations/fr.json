@@ -143,6 +143,8 @@
     "iaso.label.textSearch": "Recherche",
     "iaso.label.resetSearch": "Vider la recherche",
     "iaso.label.selection": "Sélection",
+    "iaso.label.selectAll": "Tout sélectionné",
+    "iaso.label.unSelectAll": "Tout désélectionné",
     "iaso.label.selected": "sélectionné(s)",
     "iaso.label.instanceStatus": "Statut",
     "iaso.label.instanceStatus.ready": "prêt(s)",

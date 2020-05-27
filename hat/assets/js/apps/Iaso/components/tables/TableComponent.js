@@ -9,11 +9,18 @@ import { withRouter } from 'react-router';
 import isEqual from 'lodash/isEqual';
 import classNames from 'classnames';
 
-import { getSort, getOrderArray } from '../../utils/tableUtils';
+import {
+    getSort, getOrderArray, getSimplifiedColumns, defaultSelectionActions,
+} from '../../utils/tableUtils';
 
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
-import { setTableSelection as setTableSelectionAction, resetTableSelection as resetTableSelectionAction } from '../../redux/tableSelectReducer';
+import {
+    setTableSelected as setTableSelectionAction,
+    setTableUnSelected as setTableUnSelectedAction,
+    resetTableSelection as resetTableSelectionAction,
+    setTableSelectAll as setTableSelectAllAction,
+} from '../../redux/tableSelectReducer';
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
@@ -64,15 +71,7 @@ const styles = theme => ({
         top: 'calc(100% + 19px)',
     },
 });
-const getSimplifiedColumns = (columns) => {
-    const newColumns = [];
-    columns.forEach((c) => {
-        if (c.accessor) {
-            newColumns.push(c.accessor);
-        }
-    });
-    return newColumns;
-};
+
 
 class Table extends Component {
     componentWillMount() {
@@ -89,7 +88,9 @@ class Table extends Component {
         const oldColumns = getSimplifiedColumns(this.props.columns);
         return !isEqual(nextProps.data, this.props.data)
         || !isEqual(newColumns, oldColumns)
-        || !isEqual(nextProps.selectionArray, this.props.selectionArray);
+        || !isEqual(nextProps.selectedItems, this.props.selectedItems)
+        || !isEqual(nextProps.selectAll, this.props.selectAll)
+        || !isEqual(nextProps.unSelectedItems, this.props.unSelectedItems);
     }
 
     componentWillUnmount() {
@@ -106,20 +107,40 @@ class Table extends Component {
     }
 
     onSelect(isSelected, item) {
-        const selectionArray = [...this.props.selectionArray];
-        const { setTableSelection } = this.props;
-        if (isSelected) {
-            selectionArray.push(item);
+        const selectedItems = [...this.props.selectedItems];
+        const unSelectedItems = [...this.props.unSelectedItems];
+        const {
+            setTableSelected,
+            setTableUnSelected,
+            selectAll,
+        } = this.props;
+        if (selectAll) {
+            if (!isSelected) {
+                unSelectedItems.push(item);
+            } else {
+                const itemIndex = unSelectedItems.findIndex(el => isEqual(el, item));
+                if (itemIndex !== -1) {
+                    unSelectedItems.splice(itemIndex, 1);
+                }
+            }
+            setTableUnSelected(unSelectedItems);
         } else {
-            const itemIndex = selectionArray.findIndex(el => isEqual(el, item));
-            selectionArray.splice(itemIndex, 1);
+            if (isSelected) {
+                selectedItems.push(item);
+            } else {
+                const itemIndex = selectedItems.findIndex(el => isEqual(el, item));
+                selectedItems.splice(itemIndex, 1);
+            }
+            setTableSelected(selectedItems);
         }
-        setTableSelection(selectionArray);
     }
 
     isItemSelected(item) {
-        const { selectionArray } = this.props;
-        return Boolean(selectionArray.find(el => isEqual(el, item)));
+        const { selectedItems, unSelectedItems, selectAll } = this.props;
+        if (!selectAll) {
+            return Boolean(selectedItems.find(el => isEqual(el, item)));
+        }
+        return !unSelectedItems.find(el => isEqual(el, item));
     }
 
     render() {
@@ -138,8 +159,21 @@ class Table extends Component {
                 formatMessage,
             },
             selectionActions,
-            selectionArray,
+            selectedItems,
+            resetTableSelection,
+            setTableSelectAll,
+            unSelectedItems,
+            selectAll,
         } = this.props;
+
+        let actions = [
+            ...defaultSelectionActions(
+                () => setTableSelectAll(),
+                () => resetTableSelection(),
+                formatMessage,
+            ),
+        ];
+        actions = actions.concat(selectionActions);
 
         let pageSize = parseInt(params.pageSize, 10) < count
             ? params.pageSize
@@ -169,13 +203,19 @@ class Table extends Component {
                 },
             );
         }
-
+        let selectedCount = 0;
+        if (selectAll) {
+            selectedCount = count - unSelectedItems.length;
+        } else {
+            selectedCount = selectedItems.length;
+        }
+        console.log('selectedCount', selectedCount);
         return (
             <>
                 <SelectionSpeedDials
-                    hidden={selectionArray.length === 0}
-                    items={selectionArray}
-                    actions={selectionActions}
+                    hidden={!multiSelect}
+                    items={selectedItems}
+                    actions={actions}
                 />
                 <div
                     className={classNames(classes.reactTable, {
@@ -193,10 +233,10 @@ class Table extends Component {
                         {count > 0 && (
                             <div>
                                 {
-                                    selectionArray.length > 0
+                                    selectedCount > 0
                                 && (
                                     <span>
-                                        {`${formatThousand(selectionArray.length)} `}
+                                        {`${formatThousand(selectedCount)} `}
                                         <FormattedMessage
                                             id="iaso.label.selected"
                                             defaultMessage="selected"
@@ -260,22 +300,30 @@ Table.propTypes = {
     countOnTop: PropTypes.bool,
     marginTop: PropTypes.bool,
     multiSelect: PropTypes.bool,
-    selectionArray: PropTypes.array.isRequired,
+    selectedItems: PropTypes.array.isRequired,
+    unSelectedItems: PropTypes.array.isRequired,
     selectionActions: PropTypes.array,
-    setTableSelection: PropTypes.func.isRequired,
+    setTableSelected: PropTypes.func.isRequired,
     resetTableSelection: PropTypes.func.isRequired,
+    setTableSelectAll: PropTypes.func.isRequired,
+    setTableUnSelected: PropTypes.func.isRequired,
+    selectAll: PropTypes.bool.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators({
         redirectTo: redirectToAction,
-        setTableSelection: setTableSelectionAction,
+        setTableSelected: setTableSelectionAction,
         resetTableSelection: resetTableSelectionAction,
+        setTableSelectAll: setTableSelectAllAction,
+        setTableUnSelected: setTableUnSelectedAction,
     }, dispatch),
 });
 
 const MapStateToProps = state => ({
-    selectionArray: state.tableSelect.selectionArray,
+    selectedItems: state.tableSelect.selectedItems,
+    unSelectedItems: state.tableSelect.unSelectedItems,
+    selectAll: state.tableSelect.selectAll,
 });
 
 export default withStyles(styles)(

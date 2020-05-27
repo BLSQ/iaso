@@ -37,6 +37,7 @@ const SelectionSpeedDials = ({
     const handleOpen = () => {
         setOpen(true);
     };
+    const activeAction = actions.filter(a => !a.disabled(items));
     return (
         <SpeedDial
             ariaLabel={formatMessage(MESSAGES.selectionAction)}
@@ -48,7 +49,7 @@ const SelectionSpeedDials = ({
             open={open}
             direction="up"
         >
-            {actions.map(action => (
+            {activeAction.map(action => (
                 <SpeedDialAction
                     key={action.label}
                     icon={action.icon}

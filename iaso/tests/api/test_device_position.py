@@ -94,11 +94,56 @@ class DevicesPositionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_post_ok_with_auth(self):
-        self.skipTest("TODO")
+        devices_position_body = [
+            {
+                "captured_at": 1590506880,
+                "uuid": "06248c2d-545a-4a6b-9135-fb0fc750e956",
+                "device_id": self.device_2.pk,
+                "latitude": 0.4,
+                "longitude": 44.56,
+                "altitude": 33.1,
+                "accuracy": 22.5,
+            },
+        ]
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/iasodevicesposition/?app_id={self.project_2.app_id}",
+            devices_position_body,
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        self.assertValidDevicePositionListData(
+            response.json(), 1, with_result_key=False
+        )
 
     @tag("iaso_only")
     def test_post_ko_invalid_device_id(self):
-        self.skipTest("TODO")
+        devices_position_body = [
+            {
+                "captured_at": 1590506880,
+                "uuid": "d31d0c7b-632b-4944-8fda-ca3688153ef9",
+                "device_id": 9999,
+                "latitude": 0.4,
+                "longitude": 44.56,
+                "altitude": 33.1,
+                "accuracy": 22.5,
+            },
+        ]
+        response = self.client.post(
+            f"/api/iasodevicesposition/?app_id={self.project_1.app_id}",
+            devices_position_body,
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        self.assertDictEqual(
+            response.json(), {"res": "a problem happened, but your data was saved"}
+        )
+        self.assertAPIImport(
+            "devicesposition",
+            request_body=devices_position_body,
+            has_problems=True,
+            exception_contains_string="device_id",
+        )
 
     def assertValidDevicePositionListData(
         self,

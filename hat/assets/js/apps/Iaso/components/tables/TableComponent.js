@@ -113,6 +113,7 @@ class Table extends Component {
             setTableSelected,
             setTableUnSelected,
             selectAll,
+            count,
         } = this.props;
         if (selectAll) {
             if (!isSelected) {
@@ -123,7 +124,7 @@ class Table extends Component {
                     unSelectedItems.splice(itemIndex, 1);
                 }
             }
-            setTableUnSelected(unSelectedItems);
+            setTableUnSelected(unSelectedItems, count);
         } else {
             if (isSelected) {
                 selectedItems.push(item);
@@ -164,11 +165,12 @@ class Table extends Component {
             setTableSelectAll,
             unSelectedItems,
             selectAll,
+            selectCount,
         } = this.props;
 
         let actions = [
             ...defaultSelectionActions(
-                () => setTableSelectAll(),
+                () => setTableSelectAll(count),
                 () => resetTableSelection(),
                 formatMessage,
             ),
@@ -203,13 +205,6 @@ class Table extends Component {
                 },
             );
         }
-        let selectedCount = 0;
-        if (selectAll) {
-            selectedCount = count - unSelectedItems.length;
-        } else {
-            selectedCount = selectedItems.length;
-        }
-        console.log('selectedCount', selectedCount);
         return (
             <>
                 <SelectionSpeedDials
@@ -233,10 +228,10 @@ class Table extends Component {
                         {count > 0 && (
                             <div>
                                 {
-                                    selectedCount > 0
+                                    selectCount > 0
                                 && (
                                     <span>
-                                        {`${formatThousand(selectedCount)} `}
+                                        {`${formatThousand(selectCount)} `}
                                         <FormattedMessage
                                             id="iaso.label.selected"
                                             defaultMessage="selected"
@@ -302,12 +297,13 @@ Table.propTypes = {
     multiSelect: PropTypes.bool,
     selectedItems: PropTypes.array.isRequired,
     unSelectedItems: PropTypes.array.isRequired,
+    selectAll: PropTypes.bool.isRequired,
     selectionActions: PropTypes.array,
     setTableSelected: PropTypes.func.isRequired,
     resetTableSelection: PropTypes.func.isRequired,
     setTableSelectAll: PropTypes.func.isRequired,
     setTableUnSelected: PropTypes.func.isRequired,
-    selectAll: PropTypes.bool.isRequired,
+    selectCount: PropTypes.number.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
@@ -324,6 +320,7 @@ const MapStateToProps = state => ({
     selectedItems: state.tableSelect.selectedItems,
     unSelectedItems: state.tableSelect.unSelectedItems,
     selectAll: state.tableSelect.selectAll,
+    selectCount: state.tableSelect.count,
 });
 
 export default withStyles(styles)(

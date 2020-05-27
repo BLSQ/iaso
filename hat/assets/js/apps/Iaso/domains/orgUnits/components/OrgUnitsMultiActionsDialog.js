@@ -1,9 +1,8 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { FormattedMessage } from 'react-intl';
-import Select from 'react-select';
 
 import {
     Dialog,
@@ -19,6 +18,7 @@ import {
     fetchGroups as fetchGroupsAction,
     createGroup as createGroupAction,
 } from '../groups/actions';
+import { formatThousand } from '../../../../../utils';
 
 import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
@@ -41,12 +41,12 @@ const styles = theme => ({
         paddingRight: theme.spacing(2),
     },
 });
-const OrgUnitsGroupDialog = ({
+const OrgUnitsMultiActionsDialog = ({
     open,
     closeDialog,
     classes,
-    orgUnits,
     groups,
+    selectCount,
 }) => {
     const [groupsSelected, setGroupsSelected] = React.useState([]);
     return (
@@ -61,25 +61,15 @@ const OrgUnitsGroupDialog = ({
             scroll="body"
         >
             <DialogTitle className={classes.title}>
-                {
-                    orgUnits.length > 1
-                    && (
-                        <FormattedMessage
-                            {...MESSAGES.orgunitsGroupChange}
-                            values={{
-                                value: orgUnits.length,
-                            }}
-                        />
-                    )
-                }
-                {
-                    orgUnits.length === 1
-                    && (
-                        <FormattedMessage
-                            {...MESSAGES.orgunitGroupChange}
-                        />
-                    )
-                }
+                <FormattedMessage
+                    {...MESSAGES.multiEditTitle}
+                />
+                {` (${formatThousand(selectCount)} `}
+
+                <FormattedMessage
+                    {...MESSAGES.titleMulti}
+                />
+                )
             </DialogTitle>
             <DialogContent className={classes.content}>
                 <InputComponent
@@ -114,18 +104,25 @@ const OrgUnitsGroupDialog = ({
     );
 };
 
-OrgUnitsGroupDialog.propTypes = {
+OrgUnitsMultiActionsDialog.propTypes = {
     open: PropTypes.bool.isRequired,
     groups: PropTypes.array.isRequired,
     closeDialog: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
-    orgUnits: PropTypes.array.isRequired,
+    selectedItems: PropTypes.array.isRequired,
+    unSelectedItems: PropTypes.array.isRequired,
+    selectAll: PropTypes.bool.isRequired,
+    selectCount: PropTypes.number.isRequired,
 };
 
 
 const MapStateToProps = state => ({
     groups: state.orgUnits.groups,
+    selectedItems: state.tableSelect.selectedItems,
+    unSelectedItems: state.tableSelect.unSelectedItems,
+    selectAll: state.tableSelect.selectAll,
+    selectCount: state.tableSelect.count,
 });
 
 const mapDispatchToProps = dispatch => (
@@ -138,5 +135,5 @@ const mapDispatchToProps = dispatch => (
     }
 );
 export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(OrgUnitsGroupDialog),
+    connect(MapStateToProps, mapDispatchToProps)(OrgUnitsMultiActionsDialog),
 );

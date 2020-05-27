@@ -14,7 +14,7 @@ import {
 
 import PropTypes from 'prop-types';
 
-import GroupWorkIcon from '@material-ui/icons/GroupWork';
+import EditIcon from '@material-ui/icons/Edit';
 
 import {
     fetchOrgUnitsTypes,
@@ -49,7 +49,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
-import OrgUnitsGroupDialog from './components/OrgUnitsGroupDialog';
+import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
 import Table from '../../components/tables/TableComponent';
 
 import commonStyles from '../../styles/common';
@@ -95,8 +95,7 @@ class OrgUnits extends Component {
         this.state = {
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
-            groupPopupOpen: false,
-            orgUnitsSelected: [],
+            multiActionPopupOpen: false,
         };
     }
 
@@ -205,10 +204,9 @@ class OrgUnits extends Component {
         return getTableUrl('orgunits', urlParams, toExport, exportType, asLocation);
     }
 
-    setGroupPopupOpen(groupPopupOpen, orgUnitsSelected) {
+    setMultiActionsPopupOpen(multiActionPopupOpen) {
         this.setState({
-            groupPopupOpen,
-            orgUnitsSelected,
+            multiActionPopupOpen,
         });
     }
 
@@ -308,11 +306,12 @@ class OrgUnits extends Component {
             fetchingOrgUnitTypes,
             redirectTo,
             searchCounts,
+            selectedItems,
+            selectAll,
         } = this.props;
         const {
             tab,
-            orgUnitsSelected,
-            groupPopupOpen,
+            multiActionPopupOpen,
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
@@ -326,12 +325,16 @@ class OrgUnits extends Component {
             ...ou,
             color: searches[ou.search_index] ? searches[ou.search_index].color : null,
         }));
+        let multiEditDisabled = false;
+        if (!selectAll && selectedItems.length === 0) {
+            multiEditDisabled = true;
+        }
         const selectionActions = [
             {
-                icon: <GroupWorkIcon />,
+                icon: <EditIcon />,
                 label: formatMessage(MESSAGES.groupSelectionAction),
-                onClick: orgUnits => this.setGroupPopupOpen(true, orgUnits),
-                disabled: orgUnits => orgUnits.length === 0,
+                onClick: () => this.setMultiActionsPopupOpen(true),
+                disabled: multiEditDisabled,
             },
         ];
         return (
@@ -340,11 +343,10 @@ class OrgUnits extends Component {
                     fetchingList
                     && <LoadingSpinner />
                 }
-                <OrgUnitsGroupDialog
-                    open={groupPopupOpen}
+                <OrgUnitsMultiActionsDialog
+                    open={multiActionPopupOpen}
                     params={params}
-                    orgUnits={orgUnitsSelected}
-                    closeDialog={() => this.setGroupPopupOpen(false, [])}
+                    closeDialog={() => this.setMultiActionsPopupOpen(false)}
                 />
                 <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent
@@ -485,6 +487,8 @@ OrgUnits.propTypes = {
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
     resetTableSelection: PropTypes.func.isRequired,
+    selectAll: PropTypes.bool.isRequired,
+    selectedItems: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -495,6 +499,8 @@ const MapStateToProps = state => ({
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
     filtersUpdated: state.orgUnits.filtersUpdated,
+    selectedItems: state.tableSelect.selectedItems,
+    selectAll: state.tableSelect.selectAll,
 });
 
 const MapDispatchToProps = dispatch => ({

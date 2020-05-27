@@ -37,7 +37,7 @@ const SelectionSpeedDials = ({
     const handleOpen = () => {
         setOpen(true);
     };
-    const activeAction = actions.filter(a => !a.disabled(items));
+    const activeAction = actions.filter(a => !a.disabled);
     return (
         <SpeedDial
             ariaLabel={formatMessage(MESSAGES.selectionAction)}
@@ -56,7 +56,7 @@ const SelectionSpeedDials = ({
                     tooltipTitle={action.label}
                     onClick={() => {
                         handleClose();
-                        action.onClick(items);
+                        action.onClick();
                     }}
                 />
             ))}

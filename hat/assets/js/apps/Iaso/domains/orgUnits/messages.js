@@ -3,13 +3,9 @@ const MESSAGES = {
         defaultMessage: 'Actions',
         id: 'main.label.actions',
     },
-    orgunitsGroupChange: {
-        defaultMessage: 'Add {value} org units to group(s)',
-        id: 'iaso.orgUnits.orgunitsGroupChange',
-    },
-    orgunitGroupChange: {
-        defaultMessage: 'Add org unit to group(s)',
-        id: 'iaso.orgUnits.orgunitGroupChange',
+    multiEditTitle: {
+        defaultMessage: 'Edit selection',
+        id: 'iaso.orgUnits.multiEditTitle',
     },
     validate: {
         defaultMessage: 'Validate',
@@ -18,6 +14,10 @@ const MESSAGES = {
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
+    },
+    titleMulti: {
+        defaultMessage: 'org unit(s)',
+        id: 'iaso.orgUnits.titleMulti',
     },
     search: {
         defaultMessage: 'Search',

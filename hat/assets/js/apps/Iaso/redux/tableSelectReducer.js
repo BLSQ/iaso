@@ -7,12 +7,13 @@ export const setTableSelected = selectedItems => ({
     type: SET_TABLE_SELECTED,
     payload: selectedItems,
 });
-export const setTableUnSelected = unSelectedItems => ({
+export const setTableUnSelected = (unSelectedItems, totalCount) => ({
     type: SET_TABLE_UNSELECTED,
-    payload: unSelectedItems,
+    payload: { unSelectedItems, totalCount },
 });
-export const setTableSelectAll = () => ({
+export const setTableSelectAll = totalCount => ({
     type: SET_TABLE_SELECT_ALL,
+    payload: totalCount,
 });
 
 export const resetTableSelection = () => ({
@@ -24,26 +25,33 @@ export const tableSelectInitialState = {
     selectedItems: [],
     unSelectedItems: [],
     selectAll: false,
+    count: 0,
 };
 
 export const tableSelectReducer = (state = tableSelectInitialState, action = {}) => {
     switch (action.type) {
         case SET_TABLE_SELECTED: {
+            const selectedItems = action.payload;
             return {
                 ...state,
-                selectedItems: action.payload,
+                selectedItems,
+                count: selectedItems.length,
             };
         }
         case SET_TABLE_UNSELECTED: {
+            const { unSelectedItems, totalCount } = action.payload;
             return {
                 ...state,
-                unSelectedItems: action.payload,
+                unSelectedItems,
+                count: totalCount - unSelectedItems.length,
             };
         }
         case SET_TABLE_SELECT_ALL: {
+            const totalCount = action.payload;
             return {
                 ...state,
                 selectAll: true,
+                count: totalCount - state.unSelectedItems.length,
             };
         }
         case RESET_TABLE_SELECTION: {

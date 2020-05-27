@@ -81,7 +81,6 @@ export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) =
             },
         ),
         onClick: () => selectAll(),
-        disabled: () => false,
     },
     {
         icon: <RemoveIcon />,
@@ -92,6 +91,5 @@ export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) =
             },
         ),
         onClick: () => unSelectAll(),
-        disabled: () => false,
     },
 ];

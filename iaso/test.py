@@ -95,13 +95,17 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self,
         *,
         list_data: typing.Mapping,
-        results_key: str,
+        results_key: typing.Optional[str],
         expected_length: int,
         paginated: bool = False,
     ):
-        self.assertIn(results_key, list_data)
-        self.assertIsInstance(list_data[results_key], list)
-        self.assertEqual(expected_length, len(list_data[results_key]))
+        if results_key is not None:  # typical list case: we have a specific result key
+            self.assertIn(results_key, list_data)
+            self.assertIsInstance(list_data[results_key], list)
+            self.assertEqual(expected_length, len(list_data[results_key]))
+        else:  # if straightforward list responses without result keys, for custom list methods or bulk create
+            self.assertIsInstance(list_data, list)
+            self.assertEqual(expected_length, len(list_data))
 
         if paginated:
             self.assertHasField(list_data, "has_next", bool)

@@ -4,6 +4,8 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
+
+from .api.devices_position import DevicesPositionViewSet
 from .api.org_units import OrgUnitViewSet
 
 from .api.org_unit_types import OrgUnitTypeViewSet
@@ -49,6 +51,11 @@ router.register(
     r"iasodevicesownership",
     IasoDevicesOwnershipViewSet,
     base_name="iasodevicesownership",
+)
+router.register(
+    r"iasodevicesposition",
+    DevicesPositionViewSet,
+    base_name="iasodevicesposition",
 )
 router.register(r"datasources", DataSourceViewSet, base_name="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")

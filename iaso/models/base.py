@@ -8,10 +8,12 @@ from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
+from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
-from django.db.models import Q, Count
-from operator import itemgetter
+from django.db.models import Q
+
+from .device import DeviceOwnership, Device
 
 from iaso.odk import parsing
 
@@ -1186,50 +1188,6 @@ class InstanceFile(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "file": self.file.url if self.file else None,
-        }
-
-
-class Device(models.Model):
-    imei = models.CharField(max_length=20, null=True, blank=True)
-    test_device = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    projects = models.ManyToManyField(Project, related_name="devices", blank=True)
-
-    def __str__(self):
-        return "%s " % (self.imei,)
-
-    def as_dict(self):
-        return {
-            "imei": self.imei,
-            "test_device": self.test_device,
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-        }
-
-
-class DeviceOwnership(models.Model):
-    device = models.ForeignKey(Device, on_delete=models.CASCADE)
-    project = models.ForeignKey(
-        Project, blank=True, null=True, on_delete=models.DO_NOTHING
-    )
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    start = models.DateTimeField(auto_now_add=True)
-    end = models.DateTimeField(auto_now_add=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s - %s" % (self.device, self.user)
-
-    def as_dict(self):
-        return {
-            "device": self.device.as_dict(),
-            "user": self.user.profile.as_short_dict(),
-            "id": self.id,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
 
 

@@ -1,5 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
@@ -56,6 +57,7 @@ import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../../../utils/constants/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
+import { resetTableSelection as resetTableSelectionAction } from '../../redux/tableSelectReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
@@ -249,7 +251,9 @@ class OrgUnits extends Component {
         const {
             params,
             dispatch,
+            resetTableSelection,
         } = this.props;
+        resetTableSelection();
         const url = this.getEndpointUrl();
         dispatch(this.props.setOrgUnitsListFetching(true));
         const promises = [fetchOrgUnitsList(dispatch, url)];
@@ -473,6 +477,7 @@ OrgUnits.propTypes = {
     setGroups: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
+    resetTableSelection: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -498,6 +503,9 @@ const MapDispatchToProps = dispatch => ({
     setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
     setGroups: groups => dispatch(setGroups(groups)),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
+    ...bindActionCreators({
+        resetTableSelection: resetTableSelectionAction,
+    }, dispatch),
 });
 
 export default withStyles(styles)(

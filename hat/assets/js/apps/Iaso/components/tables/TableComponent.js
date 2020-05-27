@@ -13,6 +13,7 @@ import { getSort, getOrderArray } from '../../utils/tableUtils';
 
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
+import { setTableSelection as setTableSelectionAction, resetTableSelection as resetTableSelectionAction } from '../../redux/tableSelectReducer';
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
@@ -74,33 +75,26 @@ const getSimplifiedColumns = (columns) => {
 };
 
 class Table extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            selectionArray: [],
-        };
-    }
-
     componentWillMount() {
         const {
             intl: { formatMessage },
+            resetTableSelection,
         } = this.props;
+        resetTableSelection();
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
-    shouldComponentUpdate(nextProps, nextState) {
+    shouldComponentUpdate(nextProps) {
         const newColumns = getSimplifiedColumns(nextProps.columns);
         const oldColumns = getSimplifiedColumns(this.props.columns);
         return !isEqual(nextProps.data, this.props.data)
-        || nextProps.count !== this.props.count
         || !isEqual(newColumns, oldColumns)
-        || !isEqual(nextState.selectionArray, this.state.selectionArray);
+        || !isEqual(nextProps.selectionArray, this.props.selectionArray);
     }
 
-    componentDidUpdate(prevProps) {
-        if (prevProps.count !== this.props.count) {
-            this.resetSelection();
-        }
+    componentWillUnmount() {
+        const { resetTableSelection } = this.props;
+        resetTableSelection();
     }
 
     onTableParamsChange(key, value) {
@@ -112,27 +106,20 @@ class Table extends Component {
     }
 
     onSelect(isSelected, item) {
-        const selectionArray = [...this.state.selectionArray];
+        const selectionArray = [...this.props.selectionArray];
+        const { setTableSelection } = this.props;
         if (isSelected) {
             selectionArray.push(item);
         } else {
             const itemIndex = selectionArray.findIndex(el => isEqual(el, item));
             selectionArray.splice(itemIndex, 1);
         }
-        this.setState({
-            selectionArray,
-        });
+        setTableSelection(selectionArray);
     }
 
     isItemSelected(item) {
-        const { selectionArray } = this.state;
+        const { selectionArray } = this.props;
         return Boolean(selectionArray.find(el => isEqual(el, item)));
-    }
-
-    resetSelection() {
-        this.setState({
-            selectionArray: [],
-        });
     }
 
     render() {
@@ -151,9 +138,9 @@ class Table extends Component {
                 formatMessage,
             },
             selectionActions,
+            selectionArray,
         } = this.props;
 
-        const { selectionArray } = this.state;
         let pageSize = parseInt(params.pageSize, 10) < count
             ? params.pageSize
             : count;
@@ -273,15 +260,24 @@ Table.propTypes = {
     countOnTop: PropTypes.bool,
     marginTop: PropTypes.bool,
     multiSelect: PropTypes.bool,
+    selectionArray: PropTypes.array.isRequired,
     selectionActions: PropTypes.array,
+    setTableSelection: PropTypes.func.isRequired,
+    resetTableSelection: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({
     ...bindActionCreators({
         redirectTo: redirectToAction,
+        setTableSelection: setTableSelectionAction,
+        resetTableSelection: resetTableSelectionAction,
     }, dispatch),
 });
 
+const MapStateToProps = state => ({
+    selectionArray: state.tableSelect.selectionArray,
+});
+
 export default withStyles(styles)(
-    connect(() => ({}), MapDispatchToProps)(injectIntl(withRouter(Table))),
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(withRouter(Table))),
 );

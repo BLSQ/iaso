@@ -327,6 +327,7 @@
     "iaso.snackBar.fetchLinkDetailError": "Une erreur est survenue en récupérant le detail d'une correspondance",
     "iaso.snackBar.fetchDevicesError": "Une erreur est survenue en récupérant la liste des appareils",
     "iaso.snackBar.fetchDevicesOwnershipError": "Une erreur est survenue en récupérant la liste des utilisateurs d'appareils",
+    "iaso.snackBar.fetchEnketoError": "Une erreur est survenue en préparant les données pour enketo, soit l'enregistrement est déjà édité par un autre utilisateur, soit enketo est indisponible",
     "iaso.snackBar.fetchFormError": "Une erreur est survenue en récupérant les details du formulaire",
     "iaso.snackBar.fetchFormsError": "Une erreur est survenue en récupérant la liste des formulaires",
     "iaso.snackBar.fetchOrgUnitError": "Une erreur est survenue en récupérant les details de l'unité d’organisation",

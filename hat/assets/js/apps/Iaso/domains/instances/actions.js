@@ -60,9 +60,11 @@ export const fetchEditUrl = (currentInstance, location) => (dispatch) => {
         .then((resp) => {
             window.location.href = resp.edit_url;
         })
-        .catch(() => {
-            dispatch(setInstancesFetching(false));
+        .catch((err) => {
+            console.log(err);
             dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError')));
+        }).then(() => {
+            dispatch(setInstancesFetching(false));
         });
 };
 

@@ -39,6 +39,10 @@ const MESSAGES = {
         id: 'iaso.snackBar.fetchInstanceDictError',
         defaultMessage: 'An error occurred while fetching instances list',
     },
+    fetchEnketoError: {
+        id: 'iaso.snackBar.fetchEnketoError',
+        defaultMessage: 'Failed to upload to enketo, either the record is currently edited or enketo is not available',
+    },
     fetchSourceTypesError: {
         id: 'iaso.snackBar.fetchSourceTypesError',
         defaultMessage: 'An error occurred while fetching sources types list',

@@ -11,7 +11,7 @@ import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
 const ConfirmDialog = ({
-    btnMessage, message, question, confirm, reject,
+    btnMessage, message, question, confirm, reject, btnVariant, btnDisabled,
 }) => {
     const [open, setOpen] = React.useState(false);
 
@@ -31,10 +31,10 @@ const ConfirmDialog = ({
     return (
         <Fragment>
             <Button
-                variant="outlined"
+                variant={btnVariant}
                 color="primary"
+                disabled={btnDisabled}
                 onClick={() => handleClickOpen()}
-                size="small"
             >
                 {btnMessage}
             </Button>
@@ -43,11 +43,16 @@ const ConfirmDialog = ({
                 onClick={() => handleClose(false)}
             >
                 <DialogTitle>{question}</DialogTitle>
-                <DialogContent>
-                    <DialogContentText id="alert-dialog-description">
-                        {message}
-                    </DialogContentText>
-                </DialogContent>
+                {
+                    message !== ''
+                    && (
+                        <DialogContent>
+                            <DialogContentText id="alert-dialog-description">
+                                {message}
+                            </DialogContentText>
+                        </DialogContent>
+                    )
+                }
                 <DialogActions>
                     <Button onClick={() => handleClose(false)} color="primary">
                         <FormattedMessage
@@ -69,14 +74,19 @@ const ConfirmDialog = ({
 
 ConfirmDialog.defaultProps = {
     reject: () => null,
+    btnDisabled: false,
+    btnVariant: 'outlined',
+    message: '',
 };
 
 ConfirmDialog.propTypes = {
     question: PropTypes.any.isRequired,
-    message: PropTypes.any.isRequired,
+    message: PropTypes.any,
     btnMessage: PropTypes.any.isRequired,
     confirm: PropTypes.func.isRequired,
     reject: PropTypes.func,
+    btnDisabled: PropTypes.bool,
+    btnVariant: PropTypes.string,
 };
 
 export default ConfirmDialog;

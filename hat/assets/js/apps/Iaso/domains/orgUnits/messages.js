@@ -7,6 +7,10 @@ const MESSAGES = {
         defaultMessage: 'Edit selection',
         id: 'iaso.orgUnits.multiEditTitle',
     },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
     editGroups: {
         defaultMessage: 'Edit groups',
         id: 'iaso.orgUnits.editGroups',
@@ -24,11 +28,11 @@ const MESSAGES = {
         id: 'iaso.label.validate',
     },
     valid: {
-        defaultMessage: 'Valid',
+        defaultMessage: 'Valid(s)',
         id: 'iaso.label.valid',
     },
     notValid: {
-        defaultMessage: 'Not valid',
+        defaultMessage: 'Not valid(s)',
         id: 'iaso.label.notValid',
     },
     title: {

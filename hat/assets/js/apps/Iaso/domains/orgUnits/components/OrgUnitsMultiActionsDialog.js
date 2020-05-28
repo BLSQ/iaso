@@ -23,6 +23,9 @@ import { formatThousand } from '../../../../../utils';
 import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
 import InputComponent from '../../../components/forms/InputComponent';
+import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
+
+import { decodeSearch } from '../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -50,6 +53,10 @@ const OrgUnitsMultiActionsDialog = ({
     groups,
     orgUnitTypes,
     selectCount,
+    selectedItems,
+    unSelectedItems,
+    selectAll,
+    params,
 }) => {
     const [editGroups, setEditGroups] = React.useState(false);
     const [groupsAdded, setGroupsAdded] = React.useState([]);
@@ -65,60 +72,106 @@ const OrgUnitsMultiActionsDialog = ({
         || (!editGroups && !editOrgUnitType && !editValidation)
     );
     const groupsWithoutAdded = [...groups].filter(g => groupsAdded.indexOf(g.id) === -1);
+    const handleSetEditGroups = (editEnabled) => {
+        if (!editEnabled) {
+            setGroupsAdded([]);
+            setGroupsRemoved([]);
+        }
+        setEditGroups(editEnabled);
+    };
+    const handleSetEditOuType = (editEnabled) => {
+        if (!editEnabled) {
+            setEditOrgUnitType(null);
+        }
+        setEditOrgUnitType(editEnabled);
+    };
+    const handleSetEditValidation = (editEnabled) => {
+        if (!editEnabled) {
+            setIsValid(null);
+        }
+        setEditValidation(editEnabled);
+    };
     const closeAndReset = () => {
         setEditGroups(false);
         setGroupsAdded([]);
         setGroupsRemoved([]);
         setEditOrgUnitType(false);
-        setOrgUnitType([]);
+        setOrgUnitType(null);
         setEditValidation(false);
         setIsValid(null);
         closeDialog();
     };
+    const saveAndReset = () => {
+        const data = {};
+        if (editGroups) {
+            if (groupsAdded.length > 0) {
+                data.groupsAdded = groupsAdded;
+            }
+            if (groupsRemoved.length > 0) {
+                data.groupsRemoved = groupsRemoved;
+            }
+        }
+        if (editOrgUnitType) {
+            data.orgUnitType = orgUnitType;
+        }
+        if (editValidation) {
+            data.isValid = isValid === 'true';
+        }
+        if (!selectAll) {
+            data.selectedOrgunitsIds = selectedItems.map(i => i.id);
+        } else {
+            data.selectAll = true;
+            data.unSelectedOrgunitsIds = unSelectedItems.map(i => i.id);
+            data.searches = decodeSearch(params.searches);
+        }
+        console.log('SAVE', data);
+        closeAndReset();
+    };
     return (
-        <Dialog
-            fullWidth
-            maxWidth="xs"
-            open={open}
-            classes={{
-                paper: classes.paper,
-            }}
-            onBackdropClick={closeAndReset}
-            scroll="body"
-        >
-            <DialogTitle className={classes.title}>
-                <FormattedMessage
-                    {...MESSAGES.multiEditTitle}
-                />
-                {` (${formatThousand(selectCount)} `}
-                {
-                    selectCount === 1
+        <>
+            <Dialog
+                fullWidth
+                maxWidth="xs"
+                open={open}
+                classes={{
+                    paper: classes.paper,
+                }}
+                onBackdropClick={closeAndReset}
+                scroll="body"
+            >
+                <DialogTitle className={classes.title}>
+                    <FormattedMessage
+                        {...MESSAGES.multiEditTitle}
+                    />
+                    {` (${formatThousand(selectCount)} `}
+                    {
+                        selectCount === 1
                     && (
                         <FormattedMessage
                             {...MESSAGES.titleSingle}
                         />
                     )
-                }
-                {
-                    selectCount > 1
+                    }
+                    {
+                        selectCount > 1
                     && (
                         <FormattedMessage
                             {...MESSAGES.titleMulti}
                         />
                     )
-                }
+                    }
                 )
-            </DialogTitle>
-            <DialogContent className={classes.content}>
-                <InputComponent
-                    keyValue="editGroups"
-                    onChange={(key, checked) => setEditGroups(checked)}
-                    value={editGroups}
-                    type="checkbox"
-                    label={MESSAGES.editGroups}
-                />
-                {
-                    editGroups
+                </DialogTitle>
+                <DialogContent className={classes.content}>
+                    <InputComponent
+                        keyValue="editGroups"
+                        onChange={(key, checked) => handleSetEditGroups(checked)}
+                        value={editGroups}
+                        type="checkbox"
+                        label={MESSAGES.editGroups}
+                    />
+                    {
+                        editGroups
                     && (
                         <>
                             <InputComponent
@@ -151,16 +204,16 @@ const OrgUnitsMultiActionsDialog = ({
                             />
                         </>
                     )
-                }
-                <InputComponent
-                    keyValue="editOrgUnitType"
-                    onChange={(key, checked) => setEditOrgUnitType(checked)}
-                    value={editOrgUnitType}
-                    type="checkbox"
-                    label={MESSAGES.editOrgUnitType}
-                />
-                {
-                    editOrgUnitType
+                    }
+                    <InputComponent
+                        keyValue="editOrgUnitType"
+                        onChange={(key, checked) => handleSetEditOuType(checked)}
+                        value={editOrgUnitType}
+                        type="checkbox"
+                        label={MESSAGES.editOrgUnitType}
+                    />
+                    {
+                        editOrgUnitType
                     && (
                         <InputComponent
                             multi={false}
@@ -177,16 +230,16 @@ const OrgUnitsMultiActionsDialog = ({
                             isSearchable
                         />
                     )
-                }
-                <InputComponent
-                    keyValue="editValidation"
-                    onChange={(key, checked) => setEditValidation(checked)}
-                    value={editValidation}
-                    type="checkbox"
-                    label={MESSAGES.editValidation}
-                />
-                {
-                    editValidation
+                    }
+                    <InputComponent
+                        keyValue="editValidation"
+                        onChange={(key, checked) => handleSetEditValidation(checked)}
+                        value={editValidation}
+                        type="checkbox"
+                        label={MESSAGES.editValidation}
+                    />
+                    {
+                        editValidation
                     && (
                         <div className={classes.marginLeft}>
                             <InputComponent
@@ -207,22 +260,23 @@ const OrgUnitsMultiActionsDialog = ({
                             />
                         </div>
                     )
-                }
-            </DialogContent>
-            <DialogActions className={classes.action}>
-                <Button onClick={closeAndReset} color="primary">
-                    <FormattedMessage {...MESSAGES.cancel} />
-                </Button>
-                <Button
-                    onClick={closeAndReset}
-                    color="primary"
-                    autoFocus
-                    disabled={isSaveDisabled()}
-                >
-                    <FormattedMessage {...MESSAGES.validate} />
-                </Button>
-            </DialogActions>
-        </Dialog>
+                    }
+                </DialogContent>
+                <DialogActions className={classes.action}>
+                    <Button onClick={closeAndReset} color="primary">
+                        <FormattedMessage {...MESSAGES.cancel} />
+                    </Button>
+
+                    <ConfirmDialog
+                        btnMessage={<FormattedMessage {...MESSAGES.validate} />}
+                        question={<FormattedMessage {...MESSAGES.confirmMultiChange} />}
+                        confirm={() => saveAndReset()}
+                        btnDisabled={isSaveDisabled()}
+                        btnVariant="text"
+                    />
+                </DialogActions>
+            </Dialog>
+        </>
     );
 };
 

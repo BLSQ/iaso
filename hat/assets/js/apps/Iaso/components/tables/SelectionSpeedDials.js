@@ -3,6 +3,7 @@ import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
+import { ClickAwayListener } from '@material-ui/core';
 import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
@@ -39,28 +40,27 @@ const SelectionSpeedDials = ({
     };
     const activeAction = actions.filter(a => !a.disabled);
     return (
-        <SpeedDial
-            ariaLabel={formatMessage(MESSAGES.selectionAction)}
-            className={classes.speedDial}
-            hidden={hidden}
-            icon={<CheckBoxIcon />}
-            onClose={handleClose}
-            onOpen={handleOpen}
-            open={open}
-            direction="up"
-        >
-            {activeAction.map(action => (
-                <SpeedDialAction
-                    key={action.label}
-                    icon={action.icon}
-                    tooltipTitle={action.label}
-                    onClick={() => {
-                        handleClose();
-                        action.onClick();
-                    }}
-                />
-            ))}
-        </SpeedDial>
+
+        <ClickAwayListener onClickAway={() => handleClose()}>
+            <SpeedDial
+                ariaLabel={formatMessage(MESSAGES.selectionAction)}
+                className={classes.speedDial}
+                hidden={hidden}
+                icon={<CheckBoxIcon />}
+                onOpen={handleOpen}
+                open={open}
+                direction="up"
+            >
+                {activeAction.map(action => (
+                    <SpeedDialAction
+                        key={action.label}
+                        icon={action.icon}
+                        tooltipTitle={action.label}
+                        onClick={() => action.onClick()}
+                    />
+                ))}
+            </SpeedDial>
+        </ClickAwayListener>
     );
 };
 

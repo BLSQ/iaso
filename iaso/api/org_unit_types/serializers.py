@@ -16,12 +16,13 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "name",
             "short_name",
             "depth",
-            "sub_unit_types" "created_at",
+            "sub_unit_types",
+            "created_at",
             "updated_at",
         ]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    sub_unit_types = serializers.SerializerMethodField(many=True)
+    sub_unit_types = serializers.SerializerMethodField()
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
@@ -35,4 +36,5 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             unit_types,
             fields=["id", "name", "short_name", "depth", "created_at", "updated_at",],
             many=True,
+            context=self.context,
         ).data

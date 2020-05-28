@@ -142,7 +142,12 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                 else self.Meta.fields
             )
         else:
-            fields = requested_fields.split(",")
+            # fields could be a string (query param) or a list (constructor argument)
+            fields = (
+                requested_fields.split(",")
+                if isinstance(requested_fields, str)
+                else requested_fields
+            )
             for field in fields:
                 if field not in self.Meta.fields:
                     raise serializers.ValidationError(
@@ -155,7 +160,7 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     )
 
         # Instantiate the superclass normally
-        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
         # Drop any fields that are not specified in the `fields` argument.
         allowed = set(fields)

@@ -335,9 +335,11 @@ class BasicAPITestCase(TestCase):
         self.assertTrue(found)
 
     def assertValidOrgUnitType(self, org_unit_type_data):
+        # TODO: use assertHasField
         self.assertIsInstance(org_unit_type_data["id"], int)
         self.assertIsInstance(org_unit_type_data["name"], str)
         self.assertIsInstance(org_unit_type_data["short_name"], str)
-        self.assertIsInstance(org_unit_type_data["depth"], int)
+        # TODO: assertHasField, optional
+        # self.assertIsInstance(org_unit_type_data["depth"], int)
         self.assertIsInstance(org_unit_type_data["created_at"], float)
         self.assertIsInstance(org_unit_type_data["updated_at"], float)

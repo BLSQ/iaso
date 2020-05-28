@@ -115,13 +115,13 @@ const OrgUnitsMultiActionsDialog = ({
             data.orgUnitType = orgUnitType;
         }
         if (editValidation) {
-            data.isValid = isValid === 'true';
+            data.validated = isValid === 'true';
         }
         if (!selectAll) {
-            data.selectedOrgunitsIds = selectedItems.map(i => i.id);
+            data.selectedIds = selectedItems.map(i => i.id);
         } else {
             data.selectAll = true;
-            data.unSelectedOrgunitsIds = unSelectedItems.map(i => i.id);
+            data.unSelectedIds = unSelectedItems.map(i => i.id);
             data.searches = decodeSearch(params.searches);
         }
         saveMultiEdit(data).then(() => {

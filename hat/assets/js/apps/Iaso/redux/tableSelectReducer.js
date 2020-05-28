@@ -51,6 +51,7 @@ export const tableSelectReducer = (state = tableSelectInitialState, action = {})
             return {
                 ...state,
                 selectAll: true,
+                unSelectedItems: [],
                 count: totalCount - state.unSelectedItems.length,
             };
         }

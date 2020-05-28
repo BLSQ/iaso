@@ -177,8 +177,16 @@ class OrgUnits extends Component {
     onSearch(withLocations) {
         const {
             resetTableSelection,
+            redirectTo,
+            params,
         } = this.props;
         resetTableSelection();
+
+        const newParams = {
+            ...params,
+            page: 1,
+        };
+        redirectTo(baseUrl, newParams);
         this.fetchOrgUnits(withLocations);
     }
 

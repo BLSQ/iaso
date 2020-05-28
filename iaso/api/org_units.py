@@ -22,6 +22,7 @@ from hat.api.export_utils import (
 )
 import json
 from django.db.models import Value, IntegerField
+from hat.common.utils import queryset_iterator
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -256,7 +257,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         multi_edit = request.data.get("multiEdit", None)
         if multi_edit:
-            return Response("SUCCESS", status=200)
+            return multi_save(request.data)
+
         org_unit = get_object_or_404(OrgUnit, id=pk)
         self.check_object_permissions(request, org_unit)
 
@@ -384,6 +386,59 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset, geometry_field="catchment"
                 )
         return Response(res)
+
+
+def update_org_unit(org_unit, validated, org_unit_type_id, groups_ids_added, groups_ids_removed):
+    if validated:
+        org_unit.validated = validated
+    if org_unit_type_id:
+        org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
+        org_unit.org_unit_type = org_unit_type
+    if groups_ids_added:
+        for group_id in groups_ids_added:
+            group = get_object_or_404(Group, id=group_id)
+            group.org_units.add(org_unit)
+    if groups_ids_removed:
+        for group_id in groups_ids_removed:
+            group = get_object_or_404(Group, id=group_id)
+            group.org_units.remove(org_unit)
+
+    org_unit.save()
+
+
+def multi_save(data):
+    select_all = data.get("selectAll", None)
+    validated = data.get("validated", None)
+    org_unit_type_id = data.get("orgUnitType", None)
+    groups_ids_added = data.get("groupsAdded", None)
+    groups_ids_removed = data.get("groupsRemoved", None)
+    selected_ids = data.get("selectedIds", None)
+    un_selected_ids = data.get("unSelectedIds", None)
+
+    if not select_all:
+        for org_unit_id in selected_ids:
+            org_unit = get_object_or_404(OrgUnit, id=org_unit_id)
+            update_org_unit(org_unit, validated, org_unit_type_id,
+                            groups_ids_added, groups_ids_removed)
+    else:
+        queryset = OrgUnit.objects.all()
+        searches = data.get("searches", None)
+        for search in searches:
+            search_index = 0
+            additional_queryset = build_org_units_queryset(
+                queryset, search
+            )
+            if search_index == 0:
+                queryset = additional_queryset
+            else:
+                queryset = queryset.union(additional_queryset)
+            search_index += 1
+        for org_unit in queryset_iterator(queryset):
+            if not org_unit.id in un_selected_ids:
+                update_org_unit(org_unit, validated, org_unit_type_id,
+                                groups_ids_added, groups_ids_removed)
+
+    return Response(True)
 
 
 def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):

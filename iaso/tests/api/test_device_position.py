@@ -1,5 +1,6 @@
 import typing
 from django.test import tag
+from uuid import uuid4
 
 from iaso import models as m
 from iaso.test import APITestCase
@@ -56,6 +57,34 @@ class DevicesPositionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         self.assertValidDevicePositionListData(
             response.json(), 1, with_result_key=False
+        )
+        self.assertAPIImport(
+            "devicesposition", request_body=devices_position_body, has_problems=False
+        )
+
+    @tag("iaso_only")
+    def test_post_ok_no_auth_many(self):
+        """POST /iasodevicesposition/ without auth and many positions"""
+
+        devices_position_body = [
+            {
+                "captured_at": 1590506880 + i,
+                "uuid": str(uuid4()),
+                "device_id": self.device_1.pk,
+                "latitude": 0.4,
+                "longitude": 44.56,
+                "altitude": 33.1,
+                "accuracy": 22.5,
+            } for i in range(50)
+        ]
+        response = self.client.post(
+            f"/api/iasodevicesposition/?app_id={self.project_1.app_id}",
+            devices_position_body,
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        self.assertValidDevicePositionListData(
+            response.json(), 50, with_result_key=False
         )
         self.assertAPIImport(
             "devicesposition", request_body=devices_position_body, has_problems=False

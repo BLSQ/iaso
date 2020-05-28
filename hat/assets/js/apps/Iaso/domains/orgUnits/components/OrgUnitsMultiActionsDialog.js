@@ -14,10 +14,8 @@ import {
 } from '@material-ui/core';
 
 import {
-    saveGroup as saveGroupAction,
-    fetchGroups as fetchGroupsAction,
-    createGroup as createGroupAction,
-} from '../groups/actions';
+    saveMultiEdit as saveMultiEditAction,
+} from '../actions';
 import { formatThousand } from '../../../../../utils';
 
 import commonStyles from '../../../styles/common';
@@ -57,6 +55,8 @@ const OrgUnitsMultiActionsDialog = ({
     unSelectedItems,
     selectAll,
     params,
+    saveMultiEdit,
+    fetchOrgUnits,
 }) => {
     const [editGroups, setEditGroups] = React.useState(false);
     const [groupsAdded, setGroupsAdded] = React.useState([]);
@@ -124,8 +124,10 @@ const OrgUnitsMultiActionsDialog = ({
             data.unSelectedOrgunitsIds = unSelectedItems.map(i => i.id);
             data.searches = decodeSearch(params.searches);
         }
-        console.log('SAVE', data);
-        closeAndReset();
+        saveMultiEdit(data).then(() => {
+            closeAndReset();
+            fetchOrgUnits();
+        });
     };
     return (
         <>
@@ -291,6 +293,8 @@ OrgUnitsMultiActionsDialog.propTypes = {
     selectAll: PropTypes.bool.isRequired,
     selectCount: PropTypes.number.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
+    saveMultiEdit: PropTypes.func.isRequired,
+    fetchOrgUnits: PropTypes.func.isRequired,
 };
 
 
@@ -306,9 +310,7 @@ const MapStateToProps = state => ({
 const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
-            fetchGroups: fetchGroupsAction,
-            saveGroup: saveGroupAction,
-            createGroup: createGroupAction,
+            saveMultiEdit: saveMultiEditAction,
         }, dispatch),
     }
 );

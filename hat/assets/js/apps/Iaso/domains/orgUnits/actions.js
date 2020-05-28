@@ -1,3 +1,7 @@
+import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+import { patchRequest } from '../../libs/Api';
+
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
 export const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
@@ -112,3 +116,17 @@ export const setFiltersUpdated = filtersUpdated => ({
     type: SET_FILTERS_UPDATED,
     payload: filtersUpdated,
 });
+
+export const saveMultiEdit = data => (dispatch) => {
+    dispatch(setOrgUnitsListFetching(true));
+    return (patchRequest('/api/orgunits/0/', { ...data, multiEdit: true }, true)
+        .then((res) => {
+            dispatch(enqueueSnackbar(succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull')));
+            return res;
+        })
+        .catch((error) => {
+            dispatch(enqueueSnackbar(errorSnackBar('saveMultiEditOrgUnitsError')));
+            dispatch(setOrgUnitsListFetching(false));
+            throw error;
+        }));
+};

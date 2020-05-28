@@ -374,6 +374,8 @@
     "iaso.snackBar.saveUserError": "Une erreur est survenue en sauvant le profile",
     "iaso.snackBar.saveGroupSuccesfull": "Groupe sauvegardé avec succés",
     "iaso.snackBar.saveGroupError": "Une erreur est survenue lors de la sauvegarde du groupe",
+    "iaso.snackBar.saveMultiEditOrgUnitsSuccesfull": "Sélecion d'unité d'organisation modifée avec succès",
+    "iaso.snackBar.saveMultiEditOrgUnitsError": "Une erreur est survenue lors de la sauvegarde de la sélection",
     "iaso.snackBar.deleteGroupSuccesfull": "Groupe effacé avec succès",
     "iaso.snackBar.deleteGroupError": "Une erreur est survenue en effaçant un groupe",
     "iaso.snackBar.error": "Impossible de sauvegarder",

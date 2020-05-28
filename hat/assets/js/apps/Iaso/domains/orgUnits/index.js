@@ -345,6 +345,7 @@ class OrgUnits extends Component {
                     open={multiActionPopupOpen}
                     params={params}
                     closeDialog={() => this.setMultiActionsPopupOpen(false)}
+                    fetchOrgUnits={() => this.fetchOrgUnits(false)}
                 />
                 <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent

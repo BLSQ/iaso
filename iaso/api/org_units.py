@@ -254,6 +254,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def partial_update(self, request, pk=None):
+        multi_edit = request.data.get("multiEdit", None)
+        if multi_edit:
+            return Response("SUCCESS", status=200)
         org_unit = get_object_or_404(OrgUnit, id=pk)
         self.check_object_permissions(request, org_unit)
 

@@ -4,6 +4,7 @@ import requests
 import json
 from json.decoder import JSONDecodeError
 from lxml import etree
+from django.conf import settings as djangoSettings
 
 # See REVERSE-ENKETO.md for more info
 
@@ -13,21 +14,7 @@ class EnketoError(Exception):
 
 
 def enketo_settings():
-    settings = {
-        "ENKETO_DEV": os.environ.get("ENKETO_DEV"),
-        "ENKETO_API_TOKEN": os.environ.get("ENKETO_API_TOKEN"),
-        "ENKETO_URL": os.environ.get("ENKETO_URL"),
-        "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
-        "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
-    }
-    settings["ENKETO_PREVIEW_URL"] = "".join(
-        [settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"] + "/preview"]
-    )
-    settings["ENKETO_API_INSTANCE_IFRAME_URL"] = (
-        settings["ENKETO_URL"] + "api_v2/instance/iframe"
-    )
-
-    return settings
+    return djangoSettings.ENKETO
 
 
 def urljoin(arg1, arg2):
@@ -62,31 +49,34 @@ def enketo_url(
                 "return_url": u"%s" % return_url,
             }
         )
+    try:
+        response = requests.post(
+            url, data=values, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True
+        )
+        resp_content = response.content
 
-    response = requests.post(
-        url, data=values, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True
-    )
-    resp_content = response.content
+        resp_content = (
+            resp_content.decode("utf-8")
+            if hasattr(resp_content, "decode")
+            else resp_content
+        )
+        if response.status_code in [200, 201]:
+            try:
+                data = json.loads(resp_content)
+                print(data)
+            except ValueError:
+                pass
+            else:
+                url = data.get("edit_url") or data.get("offline_url") or data.get("url")
+                if url:
+                    if settings.get("ENKETO_DEV"):
+                        return url.replace("https://", "http://")
+                    return url
 
-    resp_content = (
-        resp_content.decode("utf-8")
-        if hasattr(resp_content, "decode")
-        else resp_content
-    )
-    if response.status_code in [200, 201]:
-        try:
-            data = json.loads(resp_content)
-            print(data)
-        except ValueError:
-            pass
-        else:
-            url = data.get("edit_url") or data.get("offline_url") or data.get("url")
-            if url:
-                if settings.get("ENKETO_DEV"):
-                    return url.replace("https://", "http://")
-                return url
+        handle_enketo_error(response)
 
-    handle_enketo_error(response)
+    except requests.exceptions.ConnectionError as connectionError:
+        raise EnketoError("Enketo is not available")
 
 
 def handle_enketo_error(response):

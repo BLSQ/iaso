@@ -1,4 +1,4 @@
-from django.test import TestCase, tag
+from django.test import tag
 
 from hat.vector_control.models import APIImport
 from ..models import (
@@ -12,9 +12,11 @@ from ..models import (
 from math import floor
 from rest_framework.test import APIClient
 import json
+from ..test import APITestCase
+import typing
 
 
-class BasicAPITestCase(TestCase):
+class BasicAPITestCase(APITestCase):
     def setUp(self):
         account = Account(name="Les Inconnus")
         account.save()
@@ -31,6 +33,9 @@ class BasicAPITestCase(TestCase):
 
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
+
+        self.form = Form.objects.create(name="Hydroponics study")
+        self.project.forms.add(self.form)
 
     @tag("iaso_only")
     def test_org_unit_insertion(self):
@@ -322,24 +327,92 @@ class BasicAPITestCase(TestCase):
 
         found = False
         for org_unit_type_data in org_unit_types:
-            self.assertValidOrgUnitType(org_unit_type_data)
+            self.assertValidOrgUnitTypeData(org_unit_type_data)
             if org_unit_type_data["name"] == "Hospital":
                 self.assertLess(
                     org_unit_type_data["created_at"], org_unit_type_data["updated_at"]
                 )
                 self.assertEqual(len(org_unit_type_data["sub_unit_types"]), 1)
                 for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
-                    self.assertValidOrgUnitType(sub_org_unit_type_data)
+                    self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
                 found = True
 
         self.assertTrue(found)
 
-    def assertValidOrgUnitType(self, org_unit_type_data):
-        # TODO: use assertHasField
-        self.assertIsInstance(org_unit_type_data["id"], int)
-        self.assertIsInstance(org_unit_type_data["name"], str)
-        self.assertIsInstance(org_unit_type_data["short_name"], str)
-        # TODO: assertHasField, optional
-        # self.assertIsInstance(org_unit_type_data["depth"], int)
-        self.assertIsInstance(org_unit_type_data["created_at"], float)
-        self.assertIsInstance(org_unit_type_data["updated_at"], float)
+    @tag("iaso_only")
+    def test_forms_list_with_app_id(self):
+        """GET /forms/ mobile app happy path (no auth but with app id): 2 result"""
+
+        response = self.client.get(f"/api/forms/?app_id={self.project.app_id}")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidFormListData(response_data, 1)
+
+        form_data = next(
+            form_data
+            for form_data in response_data["forms"]
+            if form_data["id"] == self.form.id
+        )
+        self.assertValidFullFormData(form_data)
+
+    # noinspection DuplicatedCode
+    def assertValidFormListData(
+            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+    ):
+        self.assertValidListData(
+            list_data=list_data,
+            expected_length=expected_length,
+            results_key="forms",
+            paginated=paginated,
+        )
+
+        for form_data in list_data["forms"]:
+            self.assertValidFormData(form_data)
+
+    # noinspection DuplicatedCode
+    def assertValidFormData(self, form_data: typing.Mapping):
+        self.assertHasField(form_data, "id", int)
+        self.assertHasField(form_data, "name", str)
+        self.assertHasField(form_data, "periods_before_allowed", int)
+        self.assertHasField(form_data, "periods_after_allowed", int)
+        self.assertHasField(form_data, "created_at", float)
+        self.assertHasField(form_data, "updated_at", float)
+
+    # noinspection DuplicatedCode
+    def assertValidFullFormData(self, form_data: typing.Mapping):
+        self.assertValidFormData(form_data)
+
+        self.assertHasField(form_data, "device_field", str)
+        self.assertHasField(form_data, "location_field", str)
+        self.assertHasField(form_data, "form_id", str)
+        self.assertHasField(form_data, "period_type", str)
+        self.assertHasField(form_data, "single_per_period", bool)
+        self.assertHasField(form_data, "org_unit_types", list)
+        self.assertHasField(form_data, "projects", list)
+        self.assertHasField(form_data, "instances_count", int)
+        self.assertHasField(form_data, "instance_updated_at", float)
+
+        for org_unit_type_data in form_data["org_unit_types"]:
+            self.assertIsInstance(org_unit_type_data, dict)
+            self.assertHasField(org_unit_type_data, "id", int)
+
+        for project_data in form_data["projects"]:
+            self.assertIsInstance(project_data, dict)
+            self.assertHasField(project_data, "id", int)
+
+        self.assertHasField(form_data, "instance_updated_at", float)
+        self.assertHasField(form_data, "instances_count", int)
+
+    # noinspection DuplicatedCode
+    def assertValidOrgUnitTypeData(self, org_unit_type_data):
+        self.assertHasField(org_unit_type_data, "id", int)
+        self.assertHasField(org_unit_type_data, "name", str)
+        self.assertHasField(org_unit_type_data, "short_name", str)
+        self.assertHasField(org_unit_type_data, "depth", int, optional=True)
+        self.assertHasField(org_unit_type_data, "sub_unit_types", list, optional=True)
+        self.assertHasField(org_unit_type_data, "created_at", float)
+
+        if "sub_unit_types" in org_unit_type_data:
+            for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
+                self.assertValidOrgUnitTypeData(sub_org_unit_type_data)

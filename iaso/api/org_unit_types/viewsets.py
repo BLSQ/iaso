@@ -16,15 +16,18 @@ class OrgUnitTypeViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrgUnitTypeSerializer
     results_key = "orgUnitTypes"
-    http_method_names = ["get", "head", "options", "trace"]
+    http_method_names = ["get", "post", "put", "delete", "head", "options", "trace"]
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.all()
+        app_id = self.request.query_params.get("app_id")
+
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile
             queryset = queryset.filter(projects__account=profile.account)
-
-        app_id = self.request.query_params["app_id"]
-        queryset = queryset.filter(projects__app_id=app_id)
+        elif app_id is not None:
+            queryset = queryset.filter(projects__app_id=app_id)
+        else:  # TODO: should be 403
+            queryset = queryset.none()
 
         return queryset.order_by("depth").distinct().order_by("name")

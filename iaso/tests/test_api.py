@@ -321,12 +321,23 @@ class BasicAPITestCase(TestCase):
         self.assertEqual(len(org_unit_types), 2)
 
         found = False
-        for org_unit_type in org_unit_types:
-            if org_unit_type["name"] == "Hospital":
-                self.assertTrue(
-                    org_unit_type["created_at"] < org_unit_type["updated_at"]
+        for org_unit_type_data in org_unit_types:
+            self.assertValidOrgUnitType(org_unit_type_data)
+            if org_unit_type_data["name"] == "Hospital":
+                self.assertLess(
+                    org_unit_type_data["created_at"], org_unit_type_data["updated_at"]
                 )
-                self.assertEqual(len(org_unit_type["sub_unit_types"]), 1)
+                self.assertEqual(len(org_unit_type_data["sub_unit_types"]), 1)
+                for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
+                    self.assertValidOrgUnitType(sub_org_unit_type_data)
                 found = True
 
         self.assertTrue(found)
+
+    def assertValidOrgUnitType(self, org_unit_type_data):
+        self.assertIsInstance(org_unit_type_data["id"], int)
+        self.assertIsInstance(org_unit_type_data["name"], str)
+        self.assertIsInstance(org_unit_type_data["short_name"], str)
+        self.assertIsInstance(org_unit_type_data["depth"], int)
+        self.assertIsInstance(org_unit_type_data["created_at"], float)
+        self.assertIsInstance(org_unit_type_data["updated_at"], float)

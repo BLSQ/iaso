@@ -5,7 +5,7 @@ import Select from 'react-select';
 import SearchIcon from '@material-ui/icons/Search';
 import Edit from '@material-ui/icons/Edit';
 import {
-    Checkbox, FormControlLabel, OutlinedInput, withStyles, Tooltip, IconButton,
+    Checkbox, FormControlLabel, OutlinedInput, withStyles, Tooltip, IconButton, RadioGroup, Radio,
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
@@ -83,10 +83,10 @@ const styles = theme => ({
         '& .Select--multi .Select-value-label': {
             height: '27px',
             width: 'auto',
+            maxWidth: '92%',
             overflow: 'hidden',
             whiteSpace: 'nowrap',
             textOverflow: 'ellipsis',
-            maxWidth: '20vw',
         },
     },
     selectError: {
@@ -194,10 +194,12 @@ class InputComponent extends Component {
         } = this.state;
 
         const hasErrors = errors.length > 0;
-
-        const labelText = labelString !== ''
-            ? labelString
-            : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+        let labelText;
+        if (type !== 'radio') {
+            labelText = labelString !== ''
+                ? labelString
+                : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+        }
 
         if (type === 'text' || type === 'number' || type === 'email' || type === 'password') {
             const inputValue = (value === null || typeof value === 'undefined')
@@ -352,6 +354,26 @@ class InputComponent extends Component {
                     )}
                     label={labelText}
                 />
+            );
+        }
+        if (type === 'radio') {
+            return (
+                <RadioGroup
+                    name={keyValue}
+                    value={value}
+                    onChange={event => onChange(keyValue, event.target.value)}
+                >
+                    {
+                        options.map(o => (
+                            <FormControlLabel
+                                key={o.value}
+                                value={o.value}
+                                control={<Radio color="primary" />}
+                                label={o.label}
+                            />
+                        ))
+                    }
+                </RadioGroup>
             );
         }
         return null;

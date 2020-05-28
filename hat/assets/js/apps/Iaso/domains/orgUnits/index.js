@@ -300,8 +300,6 @@ class OrgUnits extends Component {
             intl: {
                 formatMessage,
             },
-            orgUnitTypes,
-            sources,
             fetchingList,
             fetchingOrgUnitTypes,
             redirectTo,
@@ -332,7 +330,7 @@ class OrgUnits extends Component {
         const selectionActions = [
             {
                 icon: <EditIcon />,
-                label: formatMessage(MESSAGES.groupSelectionAction),
+                label: formatMessage(MESSAGES.multiSelectionAction),
                 onClick: () => this.setMultiActionsPopupOpen(true),
                 disabled: multiEditDisabled,
             },
@@ -374,8 +372,6 @@ class OrgUnits extends Component {
                                         baseUrl={baseUrl}
                                         params={params}
                                         onSearch={() => this.onSearch(params.tab === 'map')}
-                                        orgUnitTypes={orgUnitTypes}
-                                        sources={sources}
                                         currentTab={tab}
                                         searchIndex={searchIndex}
                                     />
@@ -460,7 +456,6 @@ class OrgUnits extends Component {
 }
 OrgUnits.defaultProps = {
     reduxPage: undefined,
-    sources: [],
 };
 
 OrgUnits.propTypes = {
@@ -472,9 +467,7 @@ OrgUnits.propTypes = {
     resetOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
     setSources: PropTypes.func.isRequired,
-    sources: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     setFetchingOrgUnitTypes: PropTypes.func.isRequired,
@@ -494,8 +487,6 @@ OrgUnits.propTypes = {
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
     searchCounts: state.orgUnits.orgUnitsPage.counts,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
     filtersUpdated: state.orgUnits.filtersUpdated,

@@ -7,16 +7,40 @@ const MESSAGES = {
         defaultMessage: 'Edit selection',
         id: 'iaso.orgUnits.multiEditTitle',
     },
+    editGroups: {
+        defaultMessage: 'Edit groups',
+        id: 'iaso.orgUnits.editGroups',
+    },
+    editOrgUnitType: {
+        defaultMessage: 'Edit org unit type',
+        id: 'iaso.orgUnits.editOrgUnitType',
+    },
+    editValidation: {
+        defaultMessage: 'Edit validation',
+        id: 'iaso.orgUnits.editValidation',
+    },
     validate: {
         defaultMessage: 'Validate',
         id: 'iaso.label.validate',
+    },
+    valid: {
+        defaultMessage: 'Valid',
+        id: 'iaso.label.valid',
+    },
+    notValid: {
+        defaultMessage: 'Not valid',
+        id: 'iaso.label.notValid',
     },
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
     },
+    titleSingle: {
+        defaultMessage: 'org unit',
+        id: 'iaso.orgUnits.titleSingle',
+    },
     titleMulti: {
-        defaultMessage: 'org unit(s)',
+        defaultMessage: 'org units',
         id: 'iaso.orgUnits.titleMulti',
     },
     search: {
@@ -47,6 +71,10 @@ const MESSAGES = {
         defaultMessage: 'Parent(s)',
         id: 'iaso.orgUnits.parentsMulti',
     },
+    org_unit_type: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.orgUnits.type',
@@ -66,6 +94,14 @@ const MESSAGES = {
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
+    },
+    addToGroups: {
+        defaultMessage: 'Add to group(s)',
+        id: 'iaso.orgUnits.addToGroups',
+    },
+    removeFromGroups: {
+        defaultMessage: 'Remove from group(s)',
+        id: 'iaso.orgUnits.removeFromGroups',
     },
     source: {
         defaultMessage: 'Source',
@@ -135,9 +171,9 @@ const MESSAGES = {
         defaultMessage: 'With selected org unit',
         id: 'iaso.orgUnits.selectionAction',
     },
-    groupSelectionAction: {
-        defaultMessage: 'Add to group(s)',
-        id: 'iaso.orgUnits.groupSelectionAction',
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected org units',
+        id: 'iaso.orgUnits.multiSelectionAction',
     },
 };
 

@@ -25,7 +25,7 @@ const useStyles = makeStyles(theme => ({
 
 
 const SelectionSpeedDials = ({
-    hidden, intl: { formatMessage }, items, actions,
+    hidden, intl: { formatMessage }, actions,
 }) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
@@ -72,7 +72,6 @@ SelectionSpeedDials.defaultProps = {
 SelectionSpeedDials.propTypes = {
     hidden: PropTypes.bool,
     intl: PropTypes.object.isRequired,
-    items: PropTypes.array.isRequired,
     actions: PropTypes.array,
 };
 

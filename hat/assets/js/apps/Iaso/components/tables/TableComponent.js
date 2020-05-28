@@ -27,17 +27,30 @@ import customTableTranslations from '../../../../utils/constants/customTableTran
 import SelectionSpeedDials from './SelectionSpeedDials';
 
 /**
-* Table component, no redux (only for redirect), no fetch, just displaying
+* Table component, no redux (only for redirect), no fetch, just displaying.
+* Multi selection is optionnal, if set to true you can add custom actions
 * Required props in order to work:
 * @param {Object} params
 * @param {Array} data
 * @param {Array} columns
 * @param {Number} pages
 *
-*Optionnal props:
+* Optionnal props:
 * @param {Number} count
 * @param {String} baseUrl
 * @param {Array} defaultSorted
+* @param {Array} marginTop
+* @param {Array} countOnTop
+*
+* Multi selection is optionnal
+* Selection props:
+* @param {Boolean} multiSelect
+* @param {Array} selectionActions
+* if set to true you can add custom actions, an array of object(s):
+*       @param {Array} icon
+*       @param {String} label
+*       @param {Function} onClick
+*       @param {Boolean} disabled
 */
 
 const styles = theme => ({
@@ -94,8 +107,7 @@ class Table extends Component {
     }
 
     componentWillUnmount() {
-        const { resetTableSelection } = this.props;
-        resetTableSelection();
+        this.props.resetTableSelection();
     }
 
     onTableParamsChange(key, value) {
@@ -160,11 +172,8 @@ class Table extends Component {
                 formatMessage,
             },
             selectionActions,
-            selectedItems,
             resetTableSelection,
             setTableSelectAll,
-            unSelectedItems,
-            selectAll,
             selectCount,
         } = this.props;
 
@@ -209,7 +218,6 @@ class Table extends Component {
             <>
                 <SelectionSpeedDials
                     hidden={!multiSelect}
-                    items={selectedItems}
                     actions={actions}
                 />
                 <div
@@ -285,12 +293,11 @@ Table.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    data: PropTypes.array.isRequired,
-    columns: PropTypes.array.isRequired,
     count: PropTypes.number,
     pages: PropTypes.number.isRequired,
     defaultSorted: PropTypes.array,
+    data: PropTypes.array.isRequired,
+    columns: PropTypes.array.isRequired,
     baseUrl: PropTypes.string,
     countOnTop: PropTypes.bool,
     marginTop: PropTypes.bool,
@@ -304,6 +311,7 @@ Table.propTypes = {
     setTableSelectAll: PropTypes.func.isRequired,
     setTableUnSelected: PropTypes.func.isRequired,
     selectCount: PropTypes.number.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapDispatchToProps = dispatch => ({

@@ -41,23 +41,49 @@ const styles = theme => ({
         paddingRight: theme.spacing(2),
     },
 });
+
+const stringOfIdsToArrayofIds = stringValue => (stringValue === '' ? [] : stringValue.split(',').map(s => parseInt(s, 10)));
 const OrgUnitsMultiActionsDialog = ({
     open,
     closeDialog,
     classes,
     groups,
+    orgUnitTypes,
     selectCount,
 }) => {
-    const [groupsSelected, setGroupsSelected] = React.useState([]);
+    const [editGroups, setEditGroups] = React.useState(false);
+    const [groupsAdded, setGroupsAdded] = React.useState([]);
+    const [groupsRemoved, setGroupsRemoved] = React.useState([]);
+    const [editOrgUnitType, setEditOrgUnitType] = React.useState(false);
+    const [orgUnitType, setOrgUnitType] = React.useState(null);
+    const [editValidation, setEditValidation] = React.useState(false);
+    const [isValid, setIsValid] = React.useState(null);
+    const isSaveDisabled = () => (
+        (editGroups && (groupsAdded.length === 0 && groupsRemoved.length === 0))
+        || (editOrgUnitType && !orgUnitType)
+        || (editValidation && isValid === null)
+        || (!editGroups && !editOrgUnitType && !editValidation)
+    );
+    const groupsWithoutAdded = [...groups].filter(g => groupsAdded.indexOf(g.id) === -1);
+    const closeAndReset = () => {
+        setEditGroups(false);
+        setGroupsAdded([]);
+        setGroupsRemoved([]);
+        setEditOrgUnitType(false);
+        setOrgUnitType([]);
+        setEditValidation(false);
+        setIsValid(null);
+        closeDialog();
+    };
     return (
         <Dialog
             fullWidth
-            maxWidth="sm"
+            maxWidth="xs"
             open={open}
             classes={{
                 paper: classes.paper,
             }}
-            onBackdropClick={closeDialog}
+            onBackdropClick={closeAndReset}
             scroll="body"
         >
             <DialogTitle className={classes.title}>
@@ -65,37 +91,133 @@ const OrgUnitsMultiActionsDialog = ({
                     {...MESSAGES.multiEditTitle}
                 />
                 {` (${formatThousand(selectCount)} `}
-
-                <FormattedMessage
-                    {...MESSAGES.titleMulti}
-                />
+                {
+                    selectCount === 1
+                    && (
+                        <FormattedMessage
+                            {...MESSAGES.titleSingle}
+                        />
+                    )
+                }
+                {
+                    selectCount > 1
+                    && (
+                        <FormattedMessage
+                            {...MESSAGES.titleMulti}
+                        />
+                    )
+                }
                 )
             </DialogTitle>
             <DialogContent className={classes.content}>
                 <InputComponent
-                    multi
-                    clearable
-                    keyValue="groups"
-                    onChange={(key, value) => setGroupsSelected(value)}
-                    value={groupsSelected.length > 0 ? groupsSelected : null}
-                    type="select"
-                    options={groups.map(g => ({
-                        label: g.name,
-                        value: g.id,
-                    }))}
-                    label={MESSAGES.group}
-                    isSearchable
+                    keyValue="editGroups"
+                    onChange={(key, checked) => setEditGroups(checked)}
+                    value={editGroups}
+                    type="checkbox"
+                    label={MESSAGES.editGroups}
                 />
+                {
+                    editGroups
+                    && (
+                        <>
+                            <InputComponent
+                                multi
+                                clearable
+                                keyValue="addGroups"
+                                onChange={(key, value) => setGroupsAdded(stringOfIdsToArrayofIds(value))}
+                                value={groupsAdded.length > 0 ? groupsAdded : null}
+                                type="select"
+                                options={groups.map(g => ({
+                                    label: g.name,
+                                    value: g.id,
+                                }))}
+                                label={MESSAGES.addToGroups}
+                                isSearchable
+                            />
+                            <InputComponent
+                                multi
+                                clearable
+                                keyValue="removeGroups"
+                                onChange={(key, value) => setGroupsRemoved(stringOfIdsToArrayofIds(value))}
+                                value={groupsRemoved.length > 0 ? groupsRemoved : null}
+                                type="select"
+                                options={groupsWithoutAdded.map(g => ({
+                                    label: g.name,
+                                    value: g.id,
+                                }))}
+                                label={MESSAGES.removeFromGroups}
+                                isSearchable
+                            />
+                        </>
+                    )
+                }
+                <InputComponent
+                    keyValue="editOrgUnitType"
+                    onChange={(key, checked) => setEditOrgUnitType(checked)}
+                    value={editOrgUnitType}
+                    type="checkbox"
+                    label={MESSAGES.editOrgUnitType}
+                />
+                {
+                    editOrgUnitType
+                    && (
+                        <InputComponent
+                            multi={false}
+                            clearable
+                            keyValue="changeOrgUnitType"
+                            onChange={(key, value) => setOrgUnitType(value)}
+                            value={orgUnitType}
+                            type="select"
+                            options={orgUnitTypes.map(ot => ({
+                                label: ot.name,
+                                value: ot.id,
+                            }))}
+                            label={MESSAGES.org_unit_type}
+                            isSearchable
+                        />
+                    )
+                }
+                <InputComponent
+                    keyValue="editValidation"
+                    onChange={(key, checked) => setEditValidation(checked)}
+                    value={editValidation}
+                    type="checkbox"
+                    label={MESSAGES.editValidation}
+                />
+                {
+                    editValidation
+                    && (
+                        <div className={classes.marginLeft}>
+                            <InputComponent
+                                keyValue="isValid"
+                                onChange={(key, value) => setIsValid(value)}
+                                value={isValid}
+                                type="radio"
+                                options={[
+                                    {
+                                        value: 'true',
+                                        label: <FormattedMessage {...MESSAGES.valid} />,
+                                    },
+                                    {
+                                        value: 'false',
+                                        label: <FormattedMessage {...MESSAGES.notValid} />,
+                                    },
+                                ]}
+                            />
+                        </div>
+                    )
+                }
             </DialogContent>
             <DialogActions className={classes.action}>
-                <Button onClick={closeDialog} color="primary">
+                <Button onClick={closeAndReset} color="primary">
                     <FormattedMessage {...MESSAGES.cancel} />
                 </Button>
                 <Button
-                    onClick={closeDialog}
+                    onClick={closeAndReset}
                     color="primary"
                     autoFocus
-                    disabled={groupsSelected.length === 0}
+                    disabled={isSaveDisabled()}
                 >
                     <FormattedMessage {...MESSAGES.validate} />
                 </Button>
@@ -114,6 +236,7 @@ OrgUnitsMultiActionsDialog.propTypes = {
     unSelectedItems: PropTypes.array.isRequired,
     selectAll: PropTypes.bool.isRequired,
     selectCount: PropTypes.number.isRequired,
+    orgUnitTypes: PropTypes.array.isRequired,
 };
 
 
@@ -123,6 +246,7 @@ const MapStateToProps = state => ({
     unSelectedItems: state.tableSelect.unSelectedItems,
     selectAll: state.tableSelect.selectAll,
     selectCount: state.tableSelect.count,
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
 const mapDispatchToProps = dispatch => (

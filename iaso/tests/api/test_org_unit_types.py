@@ -49,12 +49,16 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """POST /orgunittypes/ with auth: 201 OK"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.post("/api/orgunittypes/", data={
-            "name": "Bimbam",
-            "short_name": "Bi",
-            "depth": 1,
-            "sub_unit_type_ids": []
-        }, format="json")
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "sub_unit_type_ids": [],
+            },
+            format="json",
+        )
         self.assertJSONResponse(response, 201)
         self.assertValidOrgUnitTypeData(response.json())
 
@@ -63,12 +67,16 @@ class OrgUnitTypesAPITestCase(APITestCase):
         """POST /orgunittypes/ with auth: 201 OK"""
 
         self.client.force_authenticate(self.jane)
-        response = self.client.post("/api/orgunittypes/", data={
-            "name": "Bimbam",
-            "short_name": "Bi",
-            "depth": 1,
-            "sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id]
-        }, format="json")
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
+            },
+            format="json",
+        )
         self.assertJSONResponse(response, 201)
 
         org_unit_type_data = response.json()
@@ -81,12 +89,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.jane)
         response = self.client.put(
-            f"/api/orgunittypes/{self.org_unit_type_1.id}/", data={
+            f"/api/orgunittypes/{self.org_unit_type_1.id}/",
+            data={
                 "name": "Plop updated",
                 "short_name": "Bi",
                 "depth": 1,
-                "sub_unit_type_ids": []
-            }, format="json"
+                "sub_unit_type_ids": [],
+            },
+            format="json",
         )
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
@@ -102,7 +112,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 204)
 
     def assertValidOrgUnitTypeListData(
-            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
         self.assertValidListData(
             list_data=list_data,
@@ -126,4 +136,3 @@ class OrgUnitTypesAPITestCase(APITestCase):
         if "sub_unit_types" in org_unit_type_data:
             for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
                 self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
-

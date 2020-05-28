@@ -358,7 +358,7 @@ class BasicAPITestCase(APITestCase):
 
     # noinspection DuplicatedCode
     def assertValidFormListData(
-            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
         self.assertValidListData(
             list_data=list_data,

@@ -68,8 +68,6 @@ class DevicesPositionViewSet(ModelViewSet):
 
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
-        # TODO: attach api_import to device_position
-        # TODO: move all this stuff in an authentication backend
         app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
 
         if not request.user.is_anonymous:

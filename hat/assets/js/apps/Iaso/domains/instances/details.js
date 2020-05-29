@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
-import EditIcon from '@material-ui/icons/Edit';
 import DeleteIcon from '@material-ui/icons/Delete';
 import UpdateIcon from '@material-ui/icons/Update';
 import Alert from '@material-ui/lab/Alert';
@@ -176,27 +175,6 @@ class InstanceDetails extends Component {
                                             tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
                                         }
                                         }
-                                    >
-                                        <InstanceFileContent
-                                            fileContent={currentInstance.file_content}
-                                        />
-                                    </WidgetPaper>
-                                )}
-                                </Grid>
-
-                                <Grid xs={12} md={7} item>
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.form)}
-                                        IconButton={IconButtonComponent}
-                                        iconButtonProps={{
-                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                            icon: 'xml',
-                                            color: 'secondary',
-                                            tooltipMessage: {
-                                                id: 'iaso.label.downloadXml',
-                                                defaultMessage: 'Download XML',
-                                            },
-                                        }}
                                     >
                                         <InstanceFileContent
                                             fileContent={currentInstance.file_content}

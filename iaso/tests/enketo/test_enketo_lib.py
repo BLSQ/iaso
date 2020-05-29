@@ -1,4 +1,4 @@
-from iaso.enketo.enketo_url import inject_userid, to_xforms_xml
+from iaso.enketo import inject_userid, to_xforms_xml
 
 from django.test import TestCase
 

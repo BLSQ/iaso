@@ -5,14 +5,14 @@ from rest_framework import status, viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from iaso.enketo.enketo_url import (
+from iaso.enketo import (
     enketo_settings,
     enketo_url,
     to_xforms_xml,
     inject_userid,
     EnketoError,
 )
-from iaso.enketo.md5_file import calculate_md5
+from iaso.enketo import calculate_file_md5
 from iaso.models import DataSource, Form, Instance, InstanceFile, OrgUnit
 
 from .auth.authentication import CsrfExemptSessionAuthentication
@@ -60,7 +60,6 @@ class EnketoViewSet(viewsets.ViewSet):
             instance_xml = inject_userid(instance_xml.decode("utf-8"), request.user.id)
 
             edit_url = enketo_url(
-                enketo_settings(),
                 public_url_for_enketo(request, "/api/enketo"),
                 form_id_string=instance.form.form_id,
                 instance_xml=instance_xml,
@@ -85,7 +84,7 @@ class EnketoViewSet(viewsets.ViewSet):
             form,
             download_url=downloadurl,
             version=lastest_form_version.version_id,
-            md5checksum=calculate_md5(lastest_form_version.file),
+            md5checksum=calculate_file_md5(lastest_form_version.file),
         )
 
         return HttpResponse(xforms, content_type="application/xml")

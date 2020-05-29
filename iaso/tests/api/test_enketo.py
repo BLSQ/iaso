@@ -5,6 +5,8 @@ from iaso.test import APITestCase
 from iaso import models as m
 from django.contrib.gis.geos import Point
 from django.utils import timezone
+from django.core.files.uploadedfile import SimpleUploadedFile
+from hat.audit.models import Modification
 
 import responses
 
@@ -99,6 +101,47 @@ class EnketoAPITestCase(APITestCase):
             ]
         )
         self.assertEquals(response.content.decode("utf-8"), expected_list)
+
+    @tag("iaso_only")
+    def test_when_anonymous_get_formList_should_work(self):
+
+        with open("iaso/tests/fixtures/hydroponics_test_upload.xml") as modified_xml:
+            original_instance = self.form_1.instances.first()
+            original_instance.file = SimpleUploadedFile(
+                "file.txt", modified_xml.read().encode()
+            )
+            original_instance.get_and_save_json_of_xml()
+
+        with open(
+            "iaso/tests/fixtures/hydroponics_test_upload_modified.xml"
+        ) as modified_xml:
+            f = SimpleUploadedFile(
+                "file.txt",
+                modified_xml.read()
+                .replace("REPLACEuserID", str(self.yoda.id))
+                .encode(),
+            )
+            response = self.client.post(
+                f"/api/enketo/submission",
+                {"name": "xml_submission_file", "xml_submission_file": f},
+            )
+
+            instance = self.form_1.instances.first()
+
+            # assert audit log works
+            modification = Modification.objects.last()
+
+            self.assertEqual(self.yoda, modification.user)
+            self.assertEqual(
+                "0",
+                modification.past_value[0]["fields"]["json"]["Ident_type_serv_medical"],
+            )
+            self.assertEqual(
+                "1",
+                modification.new_value[0]["fields"]["json"]["Ident_type_serv_medical"],
+            )
+
+            self.assertEqual(instance, modification.content_object)
 
     def assertXmlResponse(self, response, expected_status_code):
         self.assertEqual(expected_status_code, response.status_code)

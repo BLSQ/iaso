@@ -89,11 +89,6 @@ class EnketoViewSet(viewsets.ViewSet):
 
         return HttpResponse(xforms, content_type="application/xml")
 
-    def post(self, request):
-        pass
-        # used in the config ?
-        # or request from enketo to check we are alive ?
-
     # strangely the same endpoint is called for "update"
     def getsubmission(self, request):
         # HEAD call to no max content size

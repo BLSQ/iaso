@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import PropTypes from 'prop-types';
-import { FormattedMessage, defineMessages, injectIntl } from 'react-intl';
+import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
 import LoadingSpinner from '../../../components/loading-spinner';
@@ -182,25 +182,29 @@ class ManagementTeams extends React.Component {
         return (
             <section>
                 {
-                    this.state.coordinations &&
-                    <TeamModaleComponent
-                        showModale={this.state.showEditModale}
-                        toggleModal={() => this.toggleEditModale()}
-                        team={this.state.teamEdited}
-                        coordinations={this.state.coordinations}
-                        teamTypes={teamTypes}
-                        saveTeam={team => this.saveTeam(team)}
-                        isUpdating={this.state.isUpdating}
-                    />
+                    this.state.coordinations
+                    && (
+                        <TeamModaleComponent
+                            showModale={this.state.showEditModale}
+                            toggleModal={() => this.toggleEditModale()}
+                            team={this.state.teamEdited}
+                            coordinations={this.state.coordinations}
+                            teamTypes={teamTypes}
+                            saveTeam={team => this.saveTeam(team)}
+                            isUpdating={this.state.isUpdating}
+                        />
+                    )
                 }
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.teamDeleted}
-                        deleteElement={team => this.deleteTeam(team)}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.teamDeleted}
+                            deleteElement={team => this.deleteTeam(team)}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
                     <div className="widget__header">
@@ -232,43 +236,49 @@ class ManagementTeams extends React.Component {
                             />
                         </div>
                         {
-                            params.team_type !== 'vector' &&
-                            <div>
-                                <FiltersComponent
-                                    params={params}
-                                    baseUrl={baseUrl}
-                                    filters={[
-                                        screenTeamType(),
-                                    ]}
-                                />
-                            </div>
+                            params.team_type !== 'vector'
+                            && (
+                                <div>
+                                    <FiltersComponent
+                                        params={params}
+                                        baseUrl={baseUrl}
+                                        filters={[
+                                            screenTeamType(),
+                                        ]}
+                                    />
+                                </div>
+                            )
                         }
                     </div>
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     <section>
                         {
-                            !this.state.isUpdating &&
-                            <CustomTableComponent
-                                withBorder={false}
-                                multiSort
-                                isSortable
-                                showPagination
-                                endPointUrl={this.getEndpointUrl()}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'name', desc: false }]}
-                                params={this.props.params}
-                                defaultPath="teams"
-                                canSelect={false}
-                            />
+                            !this.state.isUpdating
+                            && (
+                                <CustomTableComponent
+                                    withBorder={false}
+                                    multiSort
+                                    isSortable
+                                    showPagination
+                                    endPointUrl={this.getEndpointUrl()}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    params={this.props.params}
+                                    defaultPath="teams"
+                                    canSelect={false}
+                                />
+                            )
                         }
                         <div className="widget__content align-right border-top">
                             <button
@@ -281,7 +291,8 @@ class ManagementTeams extends React.Component {
                         </div>
                     </section>
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 

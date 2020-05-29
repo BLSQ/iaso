@@ -1,5 +1,6 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
+import { formatThousand } from '../../../utils';
 
 const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
     {
@@ -23,10 +24,15 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
     },
     {
         Header: formatMessage({
-            defaultMessage: 'Capacity',
-            id: 'main.label.capacity',
+            defaultMessage: 'Monthly capacity',
+            id: 'main.label.monthlyCapacity',
         }),
         accessor: 'capacity',
+        Cell: settings => (
+            <span>
+                {formatThousand(settings.original.capacity)}
+            </span>
+        ),
     },
     {
         Header: formatMessage({
@@ -50,8 +56,7 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
         accessor: 'coordination_id',
         Cell: (settings) => {
             if (component.state.coordinations.length > 0) {
-                const coordName = component.state.coordinations.filter(c =>
-                    c.id === parseInt(settings.original.coordination_id, 10))[0].name;
+                const coordName = component.state.coordinations.filter(c => c.id === parseInt(settings.original.coordination_id, 10))[0].name;
                 return (
                     <span>{coordName}</span>
                 );
@@ -69,14 +74,16 @@ const managementTeamsColumns = (formatMessage, component, teamTypes) => ([
         width: 250,
         Cell: settings => (
             <section>
-                {settings.original.team_type === 'tester' &&
-                    <button
-                        className="button--tiny margin-right"
-                        onClick={() => component.selectTeam(settings.original)}
-                    >
-                        <i className="fa fa-info-circle" />
-                        <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
-                    </button>}
+                {settings.original.team_type === 'tester'
+                    && (
+                        <button
+                            className="button--tiny margin-right"
+                            onClick={() => component.selectTeam(settings.original)}
+                        >
+                            <i className="fa fa-info-circle" />
+                            <FormattedMessage id="main.label.infos" defaultMessage="Infos" />
+                        </button>
+                    )}
                 <button
                     className="button--edit--tiny margin-right"
                     onClick={() => component.editTeam(settings.original)}

@@ -452,6 +452,7 @@
     "main.label.before": "Avant",
     "main.label.cancel": "Annuler",
     "main.label.capacity": "Capacité",
+    "main.label.monthlyCapacity": "Capacité mensuelle",
     "main.label.capacityLowCase": "capacité",
     "main.label.catch": "Déploiement",
     "main.label.catches": "Déploiements",

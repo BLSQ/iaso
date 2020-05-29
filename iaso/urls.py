@@ -70,21 +70,11 @@ urlpatterns = [
     url(
         r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$",
         view=EnketoViewSet.as_view({"get": "edit_in_enketo"}),
-        name="enketo-formlist",
+        name="enketo-edit-url",
     ),
     url(
         r"^enketo/formList$",
-        view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
-        name="enketo-formlist",
-    ),
-    url(
-        r"^enketo/formList/$",
-        view=EnketoViewSet.as_view({"get": "list", "post": "post", "head": "list"}),
-        name="enketo-formlist",
-    ),
-    url(
-        r"^enketo/submission/$",
-        view=EnketoViewSet.as_view({"get": "getformxml", "head": "getformxml"}),
+        view=EnketoViewSet.as_view({"get": "list"}),
         name="enketo-formlist",
     ),
     url(

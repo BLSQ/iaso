@@ -62,7 +62,6 @@ def enketo_url(
         if response.status_code in [200, 201]:
             try:
                 data = json.loads(resp_content)
-                print(data)
             except ValueError:
                 pass
             else:

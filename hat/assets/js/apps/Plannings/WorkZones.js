@@ -5,17 +5,21 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import Select from 'react-select';
 
-import LoadingSpinner from '../../../components/loading-spinner';
-import CustomTableComponent from '../../../components/CustomTableComponent';
-import { createUrl } from '../../../utils/fetchData';
-import WorkzoneModaleComponent from '../components/WorkzoneModaleComponent';
-import { loadActions } from '../../../redux/load';
-import DeleteModaleComponent from '../../../components/DeleteModaleComponent';
-import { saveFull, deleteFull } from '../../../utils/saveData';
-import { formatThousand } from '../../../utils';
-import { teamsActions } from '../redux/teams';
-import { coordinationsActions } from '../redux/coordinations';
-import { planningsActions } from '../redux/plannings';
+import LoadingSpinner from '../../components/loading-spinner';
+import CustomTableComponent from '../../components/CustomTableComponent';
+import DeleteModaleComponent from '../../components/DeleteModaleComponent';
+import WorkzoneModaleComponent from './components/WorkzoneModaleComponent';
+
+import { saveFull, deleteFull } from '../../utils/saveData';
+import { formatThousand } from '../../utils';
+import { createUrl } from '../../utils/fetchData';
+
+import { loadActions } from '../../redux/load';
+import {
+    setCoordinations,
+    setPlannings,
+    setTeams,
+} from './redux/microplanning';
 
 const request = require('superagent');
 
@@ -135,6 +139,7 @@ class ManagementWorkZones extends React.Component {
             isUpdating: false,
         };
     }
+
     componentDidMount() {
         this.fetchTeams();
         this.fetchCoordinations();
@@ -160,7 +165,7 @@ class ManagementWorkZones extends React.Component {
         return request
             .get('/api/teams/')
             .then((result) => {
-                dispatch(teamsActions.loadTeams(result.body));
+                dispatch(setTeams(result.body));
                 dispatch(loadActions.successLoadingNoData());
             })
             .catch((err) => {
@@ -175,7 +180,7 @@ class ManagementWorkZones extends React.Component {
         return request
             .get('/api/coordinations/')
             .then((result) => {
-                dispatch(coordinationsActions.loadCoordinations(result.body));
+                dispatch(setCoordinations(result.body));
                 dispatch(loadActions.successLoadingNoData());
             })
             .catch((err) => {
@@ -190,7 +195,7 @@ class ManagementWorkZones extends React.Component {
         return request
             .get('/api/plannings/')
             .then((result) => {
-                dispatch(planningsActions.loadPlannings(result.body));
+                dispatch(setPlannings(result.body));
                 dispatch(loadActions.successLoadingNoData());
             })
             .catch((err) => {
@@ -279,13 +284,15 @@ class ManagementWorkZones extends React.Component {
                     isUpdating={this.state.isUpdating}
                 />
                 {
-                    this.state.showDeleteModale &&
-                    <DeleteModaleComponent
-                        showModale={this.state.showDeleteModale}
-                        toggleModal={() => this.toggleDeleteModale()}
-                        element={this.state.workzoneDeleted}
-                        deleteElement={workzone => this.deleteWorkzone(workzone)}
-                    />
+                    this.state.showDeleteModale
+                    && (
+                        <DeleteModaleComponent
+                            showModale={this.state.showDeleteModale}
+                            toggleModal={() => this.toggleDeleteModale()}
+                            element={this.state.workzoneDeleted}
+                            deleteElement={workzone => this.deleteWorkzone(workzone)}
+                        />
+                    )
                 }
                 <div className="widget__container management-control">
                     <div className="widget__header with-link">
@@ -308,8 +315,7 @@ class ManagementWorkZones extends React.Component {
                                 name="planning_id"
                                 value={this.props.params.planning_id}
                                 placeholder="--"
-                                options={this.props.plannings.map(province =>
-                                    ({ label: province.name, value: province.id }))}
+                                options={this.props.plannings.map(province => ({ label: province.name, value: province.id }))}
                                 onChange={(value) => {
                                     this.onChangeFilters('planning_id', value);
                                 }}
@@ -321,27 +327,31 @@ class ManagementWorkZones extends React.Component {
                 </div>
                 <div className="widget__container management-control">
                     {
-                        loading &&
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        loading
+                        && (
+                            <LoadingSpinner message={formatMessage({
+                                defaultMessage: 'Loading',
+                                id: 'main.label.loading',
+                            })}
+                            />
+                        )
                     }
                     <section>
                         {
-                            !this.state.isUpdating &&
-                            <CustomTableComponent
-                                withBorder={false}
-                                isSortable
-                                showPagination
-                                endPointUrl={this.state.tableUrl}
-                                columns={this.state.tableColumns}
-                                defaultSorted={[{ id: 'name', desc: false }]}
-                                params={this.props.params}
-                                defaultPath="workzones"
-                                canSelect={false}
-                            />
+                            !this.state.isUpdating
+                            && (
+                                <CustomTableComponent
+                                    withBorder={false}
+                                    isSortable
+                                    showPagination
+                                    endPointUrl={this.state.tableUrl}
+                                    columns={this.state.tableColumns}
+                                    defaultSorted={[{ id: 'name', desc: false }]}
+                                    params={this.props.params}
+                                    defaultPath="workzones"
+                                    canSelect={false}
+                                />
+                            )
                         }
                         <div className="widget__content align-right border-top">
                             <button
@@ -354,7 +364,8 @@ class ManagementWorkZones extends React.Component {
                         </div>
                     </section>
                 </div>
-            </section>);
+            </section>
+        );
     }
 }
 
@@ -379,9 +390,9 @@ const ManagementWorkzonesIntl = injectIntl(ManagementWorkZones);
 
 const MapStateToProps = state => ({
     load: state.load,
-    teams: state.teams.list,
-    coordinations: state.coordinations.list,
-    plannings: state.plannings.list,
+    teams: state.microplanning.teamsList,
+    coordinations: state.microplanning.coordinationsList,
+    plannings: state.microplanning.planningsList,
 });
 
 const MapDispatchToProps = dispatch => ({

@@ -4,6 +4,7 @@ from django.urls import reverse
 from functools import wraps
 from django.http import JsonResponse
 
+
 def is_user_authorized(view_func):
     def _decorator(request, *args, **kwargs):
         user = request.user
@@ -16,10 +17,12 @@ def is_user_authorized(view_func):
                 return view_func(request, *args, **kwargs)
     return wraps(view_func)(_decorator)
 
+
 def get_last_years(numberOfYears):
     year = datetime.now().year
     years = [str(year - i) for i in range(numberOfYears)]
     return ','.join(years)
+
 
 def get_menu(user, active_link):
     menu = []
@@ -99,11 +102,6 @@ def get_menu(user, active_link):
                     "perms": "x_management_coordinations"
                 },
                 {
-                    "name": "Rayons d\'actions",
-                    "url_key": reverse("dashboard:management_workzone"),
-                    "perms": "x_management_workzones"
-                },
-                {
                     "name": "Villages",
                     "url_key": reverse("dashboard:management_village") + "/village_official/YES",
                     "perms": "x_management_villages"
@@ -136,6 +134,11 @@ def get_menu(user, active_link):
                     "perms": "x_management_plannings"
                 },
                 {
+                    "name": "Rayons d\'actions",
+                    "url_key": reverse("dashboard:workzones"),
+                    "perms": "x_management_workzones"
+                },
+                {
                     "name": "Macroplanification",
                     "url_key": reverse("dashboard:macro"),
                     "perms": "x_plannings_macroplanning"
@@ -150,7 +153,7 @@ def get_menu(user, active_link):
                     "url_key": reverse("dashboard:routes"),
                     "perms": "x_plannings_routes"
                 }
-            ],
+                    ],
             "perms": None
         },
         {
@@ -220,11 +223,11 @@ def get_menu(user, active_link):
             if menu_item.get("perms"):
                 if user.has_perm('menupermissions.' + menu_item.get("perms")):
                     add_menu = True
-        else :
+        else:
             active_sub_menu_items = []
             for sub_menu_item in sub_menu_items:
                 if not sub_menu_item.get("perms") or user.has_perm('menupermissions.' + sub_menu_item.get("perms")):
-                    if active_link in sub_menu_item["url_key"] :
+                    if active_link in sub_menu_item["url_key"]:
                         sub_menu_item["active"] = True
                         menu_item["active"] = True
                     active_sub_menu_items.append(sub_menu_item)
@@ -238,5 +241,5 @@ def get_menu(user, active_link):
     return menu
 
 
-def return_error(message, error_code = 400):
+def return_error(message, error_code=400):
     return JsonResponse({"message": message}, status=error_code)

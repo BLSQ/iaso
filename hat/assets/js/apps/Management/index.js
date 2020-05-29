@@ -12,7 +12,6 @@ import ManagementDevicesPage from './pages/ManagementDevices';
 import ManagementDetailsPage from './pages/ManagementDetails/ManagementDetails';
 import ManagementTeamsPage from './pages/ManagementTeams';
 import ManagementCoordinationsPage from './pages/ManagementCoordinations';
-import ManagementWorkZones from './pages/ManagementWorkZones';
 import ManagementUsersPage from './pages/ManagementUsers';
 import ManagementVillagesPage from './pages/ManagementVillages';
 import ManagementLogs from './pages/ManagementLogs';
@@ -64,10 +63,6 @@ export default function teamsDevicesApp(appConfig, element, baseUrl) {
         <Route
             path="/coordinations(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={ManagementCoordinationsPage}
-        />,
-        <Route
-            path="/workzones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/planning_id/:planning_id)"
-            component={ManagementWorkZones}
         />,
         <Route
             path="/users(/order/:order)(/pageSize/:pageSize)(/page/:page)(/search/:search)(/institution_id/:institution_id)(/team_type/:team_type)(/active/:active)(/inactive/:inactive)"

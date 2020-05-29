@@ -1,6 +1,9 @@
+import logging
 from copy import copy
+from functools import reduce
 
 from django.core.paginator import Paginator
+from django.db import connection
 from django.db.models import Count
 from django.db.models import Q
 from django.db.models.expressions import RawSQL
@@ -11,7 +14,7 @@ from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
 from hat.audit.models import log_modification, VILLAGE_API
-from hat.cases.models import RES_POSITIVE, Case
+from hat.cases.models import Case
 from hat.geo.models import Village, AS
 from hat.planning.models import Assignation, WorkZone, Coordination
 from hat.users.models import get_user_geo_list, is_authorized_user
@@ -19,9 +22,31 @@ from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
 from ..patient.models import Test, Patient
 
-import logging
-
 logger = logging.getLogger(__name__)
+
+
+def years_filter(years):
+    year_filters = []
+    range_year = None
+    start_year_range = None
+    for year in sorted(years):
+        if not range_year:
+            start_year_range = f"{year}-01-01"
+            range_year = year
+        elif int(range_year) == int(year) - 1:
+            range_year = year
+        else:
+            year_filters.append(
+                Q(infection_cases__document_date__gte=start_year_range)
+                & Q(infection_cases__document_date__lte=f"{range_year}-12-31")
+            )
+            start_year_range = f"{year}-01-01"
+            range_year = year
+    year_filters.append(
+        Q(infection_cases__document_date__gte=start_year_range)
+        & Q(infection_cases__document_date__lte=f"{range_year}-12-31")
+    )
+    return reduce(lambda x, y: x | y, year_filters)
 
 
 class VillageViewSet(viewsets.ViewSet):
@@ -181,10 +206,8 @@ class VillageViewSet(viewsets.ViewSet):
             years_array = years.split(",")
             nr_positive_cases = Count(
                 "infection_cases",
-                filter=Q(
-                    case__confirmed_case=True,
-                    case__document_date__year__in=years_array,
-                ),
+                filter=Q(infection_cases__confirmed_case=True)
+                & years_filter(years_array),
             )
             queryset = queryset.annotate(nr_positive_cases=nr_positive_cases)
             values = values + ("nr_positive_cases",)
@@ -192,7 +215,8 @@ class VillageViewSet(viewsets.ViewSet):
                 nr_positive_cases_year = Count(
                     "infection_cases",
                     filter=Q(
-                        case__confirmed_case=True, case__document_date__year__in=year,
+                        infection_cases__confirmed_case=True,
+                        infection_cases__document_date__year=year,
                     ),
                 )
                 queryset = queryset.annotate(

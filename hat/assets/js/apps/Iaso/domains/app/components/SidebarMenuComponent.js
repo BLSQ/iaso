@@ -22,7 +22,7 @@ import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
 import MenuItem from './MenuItemComponent';
 import LogoSvg from './LogoSvgComponent';
-import LanguageSwitch from './LanguageSwitch';
+import LanguageSwitch from './LanguageSwitchComponent';
 
 import commonStyles from '../../../styles/common';
 

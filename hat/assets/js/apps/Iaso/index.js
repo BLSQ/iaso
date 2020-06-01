@@ -35,7 +35,7 @@ import { groupsInitialState, reducer as groupsReducer } from './domains/orgUnits
 
 import { getChipColors } from './constants/chipColors';
 
-import App from '../App';
+import App from './domains/app';
 import { locationLimitMax } from './domains/orgUnits';
 
 import {

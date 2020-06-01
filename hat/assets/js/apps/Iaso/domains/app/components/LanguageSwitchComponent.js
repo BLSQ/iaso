@@ -18,7 +18,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-export default function LanguageSwitch() {
+export default function LanguageSwitchComponent() {
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
     const activeLocale = useSelector(state => state.app.locale);

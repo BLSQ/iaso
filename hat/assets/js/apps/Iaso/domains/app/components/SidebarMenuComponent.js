@@ -1,7 +1,6 @@
 import React, { PureComponent } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import { push } from 'react-router-redux';
 
 import ExitIcon from '@material-ui/icons/ExitToApp';
 import {
@@ -18,20 +17,21 @@ import {
 import ArrowForwardIcon from '@material-ui/icons/ArrowForward';
 import PropTypes from 'prop-types';
 
-import { toggleSidebarMenu } from '../../redux/sidebarMenuReducer';
-import { SIDEBAR_WIDTH } from '../../constants/uiConstants';
+import { toggleSidebarMenu } from '../../../redux/sidebarMenuReducer';
+import { SIDEBAR_WIDTH } from '../../../constants/uiConstants';
 
 import MenuItem from './MenuItemComponent';
-import LogoSvg from '../svg/LogoSvgComponent';
+import LogoSvg from './LogoSvgComponent';
+import LanguageSwitch from './LanguageSwitch';
 
-import commonStyles from '../../styles/common';
+import commonStyles from '../../../styles/common';
 
-import menuItems from '../../constants/menu';
+import menuItems from '../../../constants/menu';
 
 import {
     userHasPermission,
     userHasOneOfPermissions,
-} from '../../domains/users/utils';
+} from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -54,14 +54,14 @@ const styles = theme => ({
     list: {
         width: SIDEBAR_WIDTH,
     },
-    logout: {
+    user: {
         marginTop: 'auto',
         marginBottom: theme.spacing(3),
         marginLeft: theme.spacing(3),
         marginRight: theme.spacing(3),
     },
     userName: {
-        marginLeft: 5,
+        margin: theme.spacing(1),
     },
 });
 
@@ -120,7 +120,8 @@ class SidebarMenu extends PureComponent {
                         })
                     }
                 </List>
-                <Box className={classes.logout}>
+                <Box className={classes.user}>
+                    <LanguageSwitch />
                     <Typography
                         variant="body2"
                         color="textSecondary"

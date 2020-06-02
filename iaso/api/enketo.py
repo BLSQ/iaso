@@ -1,10 +1,10 @@
 from bs4 import BeautifulSoup as Soup
-from django.core.files.storage import get_storage_class
 from django.http import HttpResponse, JsonResponse
-from rest_framework import status, viewsets
-from rest_framework.authentication import BasicAuthentication
+from rest_framework.views import APIView
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework import permissions
 from rest_framework.response import Response
-from django.core.exceptions import PermissionDenied
+from rest_framework import status
 from iaso.enketo import (
     enketo_settings,
     enketo_url,
@@ -13,9 +13,8 @@ from iaso.enketo import (
     EnketoError,
 )
 from iaso.enketo import calculate_file_md5
-from iaso.models import DataSource, Form, Instance, InstanceFile, OrgUnit
+from iaso.models import Form, Instance, InstanceFile
 
-from .auth.authentication import CsrfExemptSessionAuthentication
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
 
@@ -27,80 +26,76 @@ def public_url_for_enketo(request, path):
     return request.build_absolute_uri(path)
 
 
-# See REVERSE-ENKETO.md for more info
-class EnketoViewSet(viewsets.ViewSet):
-    """
-    list:
-    """
+@api_view(["GET"])
+@permission_classes([permissions.IsAuthenticated])
+def enketo_edit_url(request, instance_uuid):
+    instance = Instance.objects.filter(
+        uuid=instance_uuid, project__account=request.user.iaso_profile.account
+    ).first()
 
-    authentication_classes = (CsrfExemptSessionAuthentication,)
-    permission_classes = []
-
-    # Prepare enketo for for edit and return an edit url
-    def edit_in_enketo(self, request, instance_uuid):
-        if request.user.is_anonymous:
-            raise PermissionDenied("Please log in")
-
-        instance = Instance.objects.filter(
-            uuid=instance_uuid, project__account=request.user.iaso_profile.account
-        ).first()
-
-        if instance is None:
-            return JsonResponse(
-                {"error": "No such instance or not allowed"}, status=404
-            )
-
-        try:
-            instance_xml = instance.file.read()
-            soup = Soup(instance_xml, "xml")
-            instanceid = soup.meta.instanceID.contents[0].strip().replace("uuid:", "")
-
-            # inject editUserID in the meta section of the xml
-            # to allow assign Modification to the user
-            instance_xml = inject_userid(instance_xml.decode("utf-8"), request.user.id)
-
-            edit_url = enketo_url(
-                public_url_for_enketo(request, "/api/enketo"),
-                form_id_string=instance.form.form_id + "-" + str(instance.form.id),
-                instance_xml=instance_xml,
-                instance_id=instanceid,
-                return_url=request.GET.get(
-                    "return_url", public_url_for_enketo(request, "")
-                ),
-            )
-
-            return JsonResponse({"edit_url": edit_url}, status=201)
-        except EnketoError as error:
-            print(error)
-            return JsonResponse({"error": str(error)}, status=409)
-
-    def list(self, request):
-        form_id_str = request.GET["formID"].split("-")
-        form_id = form_id_str[-1]
-        form = Form.objects.filter(id=form_id).first()
-        lastest_form_version = form.latest_version
-        # will it work through s3, what about "signing" infos if they expires ?
-        downloadurl = public_url_for_enketo(request, lastest_form_version.file.url)
-
-        xforms = to_xforms_xml(
-            form,
-            download_url=downloadurl,
-            version=lastest_form_version.version_id,
-            md5checksum=calculate_file_md5(lastest_form_version.file),
+    if instance is None:
+        return JsonResponse(
+            {"error": "No such instance or not allowed"}, status=404
         )
 
-        return HttpResponse(xforms, content_type="application/xml")
+    try:
+        instance_xml = instance.file.read()
+        soup = Soup(instance_xml, "xml")
+        instanceid = soup.meta.instanceID.contents[0].strip().replace("uuid:", "")
 
-    # strangely the same endpoint is called for "update"
-    def getsubmission(self, request):
+        # inject editUserID in the meta section of the xml
+        # to allow assign Modification to the user
+        instance_xml = inject_userid(instance_xml.decode("utf-8"), request.user.id)
 
-        # HEAD call to no max content size
-        if request.method.upper() == "HEAD":
-            resp = HttpResponse("", status=status.HTTP_204_NO_CONTENT)
-            resp["x-openrosa-accept-content-length"] = 100000000
-            return resp
+        edit_url = enketo_url(
+            public_url_for_enketo(request, "/api/enketo"),
+            form_id_string=instance.form.form_id + "-" + str(instance.form.id),
+            instance_xml=instance_xml,
+            instance_id=instanceid,
+            return_url=request.GET.get(
+                "return_url", public_url_for_enketo(request, "")
+            ),
+        )
 
-        # UPDATE
+        return JsonResponse({"edit_url": edit_url}, status=201)
+    except EnketoError as error:
+        print(error)
+        return JsonResponse({"error": str(error)}, status=409)
+
+
+@api_view(["GET"])
+@permission_classes([permissions.AllowAny])
+def enketo_form_list(request):
+    form_id_str = request.GET["formID"].split("-")
+    form_id = form_id_str[-1]
+    form = Form.objects.filter(id=form_id).first()
+    lastest_form_version = form.latest_version
+    # will it work through s3, what about "signing" infos if they expires ?
+    downloadurl = public_url_for_enketo(request, lastest_form_version.file.url)
+
+    xforms = to_xforms_xml(
+        form,
+        download_url=downloadurl,
+        version=lastest_form_version.version_id,
+        md5checksum=calculate_file_md5(lastest_form_version.file),
+    )
+
+    return HttpResponse(xforms, content_type="application/xml")
+
+
+class EnketoSubmissionAPIView(APIView):
+    permission_classes = [permissions.AllowAny]
+
+    def head(self, request, format=None):
+        """HEAD call to no max content size"""
+
+        resp = HttpResponse("", status=status.HTTP_204_NO_CONTENT)
+        resp["x-openrosa-accept-content-length"] = 100000000
+
+        return resp
+
+    def post(self, request, format=None):
+        """UPDATE"""
         if request.FILES:
             main_file = request.FILES["xml_submission_file"]
             soup = Soup(main_file.read(), "xml")
@@ -139,5 +134,6 @@ class EnketoViewSet(viewsets.ViewSet):
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
 
-            return JsonResponse({"result": "success"}, status=201)
-        return HttpResponse()
+            return Response({"result": "success"}, status=status.HTTP_201_CREATED)
+
+        return Response()

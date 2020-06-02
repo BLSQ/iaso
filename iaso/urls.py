@@ -21,7 +21,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
-from .api.enketo import EnketoViewSet
+from .api.enketo import enketo_edit_url, enketo_form_list, EnketoSubmissionAPIView
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
@@ -66,20 +66,19 @@ router.register(
 
 
 urlpatterns = [
-    url(r"^", include(router.urls)),
     url(
         r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$",
-        view=EnketoViewSet.as_view({"get": "edit_in_enketo"}),
+        view=enketo_edit_url,
         name="enketo-edit-url",
     ),
     url(
         r"^enketo/formList$",
-        view=EnketoViewSet.as_view({"get": "list"}),
-        name="enketo-formlist",
+        view=enketo_form_list,
+        name="enketo-form-list",
     ),
     url(
         r"^enketo/submission$",
-        view=EnketoViewSet.as_view({"post": "getsubmission", "head": "getsubmission"}),
+        view=EnketoSubmissionAPIView.as_view(),
         name="enketo-submission",
     ),
 ]

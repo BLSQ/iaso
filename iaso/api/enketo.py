@@ -61,7 +61,7 @@ class EnketoViewSet(viewsets.ViewSet):
 
             edit_url = enketo_url(
                 public_url_for_enketo(request, "/api/enketo"),
-                form_id_string=instance.form.form_id,
+                form_id_string=instance.form.form_id + "-" + str(instance.form.id),
                 instance_xml=instance_xml,
                 instance_id=instanceid,
                 return_url=request.GET.get(
@@ -75,7 +75,9 @@ class EnketoViewSet(viewsets.ViewSet):
             return JsonResponse({"error": str(error)}, status=409)
 
     def list(self, request):
-        form = Form.objects.filter(form_id=request.GET["formID"]).first()
+        form_id_str = request.GET["formID"].split("-")
+        form_id = form_id_str[-1]
+        form = Form.objects.filter(id=form_id).first()
         lastest_form_version = form.latest_version
         # will it work through s3, what about "signing" infos if they expires ?
         downloadurl = public_url_for_enketo(request, lastest_form_version.file.url)
@@ -91,6 +93,7 @@ class EnketoViewSet(viewsets.ViewSet):
 
     # strangely the same endpoint is called for "update"
     def getsubmission(self, request):
+
         # HEAD call to no max content size
         if request.method.upper() == "HEAD":
             resp = HttpResponse("", status=status.HTTP_204_NO_CONTENT)

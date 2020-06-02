@@ -27,7 +27,7 @@ def to_xforms_xml(form, download_url, version, md5checksum):
     root.append(xform)
 
     form_id = etree.Element("formID")
-    form_id.text = form.form_id
+    form_id.text = form.form_id + "-" + str(form.id)
     xform.append(form_id)
 
     form_name = etree.Element("name")

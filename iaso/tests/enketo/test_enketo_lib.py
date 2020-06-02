@@ -26,7 +26,7 @@ class EnketoLibTests(TestCase):
         self.assertEqual(xml, expectedInjected)
 
     def test_to_xforms_xml(self):
-        form = m.Form(name="name < with entity", form_id="odk_form_id")
+        form = m.Form(id=10, name="name < with entity", form_id="odk_form_id")
         xml = to_xforms_xml(
             form=form,
             version="2019559126",
@@ -37,7 +37,7 @@ class EnketoLibTests(TestCase):
             '<xforms xmlns="http://openrosa.org/xforms/xformsList">',
             "<xform>",
             "<formID>",
-            "odk_form_id",
+            "odk_form_id-10",
             "</formID>",
             "<name>",
             "name &lt; with entity",

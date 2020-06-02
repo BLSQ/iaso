@@ -46,10 +46,7 @@ const UsersLocations = ({ handleChange, currentUser }) => {
         <>
             <OrgUnitSearch
                 onSelectOrgUnit={ou => handleAdd(ou)}
-                inputLabelObject={{
-                    defaultMessage: 'Add org unit',
-                    id: 'iaso.orgUnits.add',
-                }}
+                inputLabelObject={MESSAGES.addOrgUnit}
             />
             {
                 currentUser.org_units.value.length > 0

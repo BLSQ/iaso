@@ -10,26 +10,25 @@ import {
     updateForm,
     createFormVersion,
     deleteForm,
-} from '../../utils/requests';
-import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
-import InputComponent from '../forms/InputComponent';
-import FileInputComponent from '../forms/FileInputComponent';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { succesfullSnackBar } from '../../../../utils/constants/snackBars';
+} from '../../../utils/requests';
+import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+import FileInputComponent from '../../../components/forms/FileInputComponent';
+import { enqueueSnackbar } from '../../../../../redux/snackBarsReducer';
+import { succesfullSnackBar } from '../../../../../utils/constants/snackBars';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,
     PERIOD_TYPE_YEAR,
-} from '../../domains/periods/constants';
-import { setIsLoadingForm } from '../../domains/forms/actions';
+} from '../../periods/constants';
+import { setIsLoadingForm } from '../actions';
+
+import MESSAGES from '../messages';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
     value: periodType,
-    label: {
-        id: `iaso.label.periodType.${periodType.toLowerCase()}`,
-        defaultMessage: periodType,
-    },
+    label: MESSAGES[periodType.toLowerCase()],
 }));
 
 class FormDialogComponent extends Component {
@@ -158,9 +157,9 @@ class FormDialogComponent extends Component {
                 renderTrigger={renderTrigger}
                 titleMessage={titleMessage}
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
-                confirmMessage={{ id: 'iaso.label.save', defaultMessage: 'Save' }}
+                confirmMessage={MESSAGES.save}
                 onClosed={() => this.setState(this.initialState())}
-                cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
+                cancelMessage={MESSAGES.cancel}
                 maxWidth="md"
             >
                 <Grid container spacing={2} justify="flex-start">
@@ -171,10 +170,7 @@ class FormDialogComponent extends Component {
                             value={this.state.name.value}
                             errors={this.state.name.errors}
                             type="text"
-                            label={{
-                                id: 'iaso.label.name',
-                                defaultMessage: 'Name',
-                            }}
+                            label={MESSAGES.name}
                             required
                         />
                         <Grid container direction="column">
@@ -182,10 +178,7 @@ class FormDialogComponent extends Component {
                                 <FileInputComponent
                                     keyValue="xls_file"
                                     onChange={(key, value) => this.setFieldValue(key, value)}
-                                    label={{
-                                        id: 'iaso.label.xls_form_file',
-                                        defaultMessage: 'XLSForm file',
-                                    }}
+                                    label={MESSAGES.xls_form_file}
                                     errors={this.state.xls_file.errors}
                                     required
                                 />
@@ -199,10 +192,7 @@ class FormDialogComponent extends Component {
                             errors={this.state.period_type.errors}
                             type="select"
                             options={periodTypeOptions}
-                            label={{
-                                id: 'iaso.label.periodType',
-                                defaultMessage: 'Period type',
-                            }}
+                            label={MESSAGES.periodType}
                         />
                         <Grid container spacing={2}>
                             <Grid item xs={6}>
@@ -213,10 +203,7 @@ class FormDialogComponent extends Component {
                                     value={this.state.periods_before_allowed.value}
                                     errors={this.state.periods_before_allowed.errors}
                                     type="number"
-                                    label={{
-                                        id: 'iaso.label.periodsBeforeAllowed',
-                                        defaultMessage: 'Allowed periods before',
-                                    }}
+                                    label={MESSAGES.periodsBeforeAllowed}
                                     required
                                 />
                             </Grid>
@@ -228,10 +215,7 @@ class FormDialogComponent extends Component {
                                     value={this.state.periods_after_allowed.value}
                                     errors={this.state.periods_after_allowed.errors}
                                     type="number"
-                                    label={{
-                                        id: 'iaso.label.periodsAfterAllowed',
-                                        defaultMessage: 'Allowed periods after',
-                                    }}
+                                    label={MESSAGES.periodsAfterAllowed}
                                     required
                                 />
                             </Grid>
@@ -244,10 +228,7 @@ class FormDialogComponent extends Component {
                             value={this.state.single_per_period.value}
                             errors={this.state.single_per_period.errors}
                             type="checkbox"
-                            label={{
-                                id: 'iaso.label.singlePerPeriod',
-                                defaultMessage: 'Single per period',
-                            }}
+                            label={MESSAGES.singlePerPeriod}
                         />
                     </Grid>
                     <Grid xs={6} item>
@@ -263,10 +244,7 @@ class FormDialogComponent extends Component {
                                 label: p.name,
                                 value: p.id,
                             }))}
-                            label={{
-                                id: 'iaso.label.projects',
-                                defaultMessage: 'Projects',
-                            }}
+                            label={MESSAGES.projects}
                             required
                         />
                         <InputComponent
@@ -281,10 +259,7 @@ class FormDialogComponent extends Component {
                                 label: o.name,
                                 value: o.id,
                             }))}
-                            label={{
-                                id: 'iaso.label.orgUnitsTypes',
-                                defaultMessage: 'Organisation unit types',
-                            }}
+                            label={MESSAGES.orgUnitsTypes}
                             required
                         />
                         <InputComponent
@@ -293,10 +268,7 @@ class FormDialogComponent extends Component {
                             value={this.state.device_field.value}
                             errors={this.state.device_field.errors}
                             type="text"
-                            label={{
-                                id: 'iaso.label.deviceField',
-                                defaultMessage: 'Device field',
-                            }}
+                            label={MESSAGES.deviceField}
                         />
                         <InputComponent
                             keyValue="location_field"
@@ -304,10 +276,7 @@ class FormDialogComponent extends Component {
                             value={this.state.location_field.value}
                             errors={this.state.location_field.errors}
                             type="text"
-                            label={{
-                                id: 'iaso.label.locationField',
-                                defaultMessage: 'Location field',
-                            }}
+                            label={MESSAGES.locationField}
                         />
                         <InputComponent
                             keyValue="derived"
@@ -316,10 +285,7 @@ class FormDialogComponent extends Component {
                             errors={this.state.derived.errors}
                             type="checkbox"
                             required
-                            label={{
-                                id: 'iaso.label.derived',
-                                defaultMessage: 'Deduced from another form',
-                            }}
+                            label={MESSAGES.derived}
                         />
                     </Grid>
                 </Grid>

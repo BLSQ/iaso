@@ -14,13 +14,11 @@ import {
     createMappingRequest as createMappingRequestAction,
     fetchSources as fetchSourcesAction,
 } from '../actions';
+import MESSAGES from '../messages';
 
 const mappingTypeOptions = ['AGGREGATE', 'EVENT'].map(mappingType => ({
     value: mappingType,
-    label: {
-        id: `iaso.label.mappingType.${mappingType.toLowerCase()}`,
-        defaultMessage: mappingType.toLowerCase(),
-    },
+    label: MESSAGES[mappingType.toLowerCase()],
 }));
 
 const CreateMappingVersionDialogComponent = ({
@@ -61,14 +59,11 @@ const CreateMappingVersionDialogComponent = ({
             renderTrigger={({ openDialog }) => (
                 <AddButtonComponent onClick={openDialog} />
             )}
-            titleMessage={{
-                id: 'iaso.mappings.create',
-                defaultMessage: 'Create Mapping',
-            }}
+            titleMessage={MESSAGES.createMapping}
             onConfirm={onConfirm}
-            confirmMessage={{ id: 'iaso.label.add', defaultMessage: 'Add' }}
+            confirmMessage={MESSAGES.add}
             onClosed={onClosed}
-            cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
+            cancelMessage={MESSAGES.cancel}
             maxWidth="md"
         >
             <Grid container spacing={1} direction="column">
@@ -78,10 +73,7 @@ const CreateMappingVersionDialogComponent = ({
                     value={mappingType}
                     type="select"
                     options={mappingTypeOptions}
-                    label={{
-                        id: 'iaso.mapping.mappingType',
-                        defaultMessage: 'Mapping type',
-                    }}
+                    label={MESSAGES.mappingType}
                 />
                 {mappingSources && (
                     <Grid>

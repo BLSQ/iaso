@@ -25,6 +25,8 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { createUrl } from '../../../../../utils/fetchData';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
 });
@@ -113,10 +115,7 @@ class RunsFiltersComponent extends Component {
                                     profiles || [],
                                     false,
                                     'launcher',
-                                    formatMessage({
-                                        id: 'iaso.label.launcher',
-                                        defaultMessage: 'Launcher',
-                                    }),
+                                    formatMessage(MESSAGES.launcher),
                                 ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
@@ -133,10 +132,7 @@ class RunsFiltersComponent extends Component {
                                     false,
                                     false,
                                     'origin',
-                                    formatMessage({
-                                        id: 'iaso.label.sourceorigin',
-                                        defaultMessage: 'Origin source',
-                                    }),
+                                    formatMessage(MESSAGES.sourceorigin),
                                 ),
                                 version(
                                     formatMessage,
@@ -144,10 +140,7 @@ class RunsFiltersComponent extends Component {
                                     Boolean(!currentOrigin || (currentOrigin && currentOrigin.versions.length === 0)),
                                     false,
                                     'originVersion',
-                                    formatMessage({
-                                        id: 'iaso.label.sourceoriginversion',
-                                        defaultMessage: 'Origin source version',
-                                    }),
+                                    formatMessage(MESSAGES.sourceoriginversion),
                                 ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
@@ -164,10 +157,7 @@ class RunsFiltersComponent extends Component {
                                     false,
                                     false,
                                     'destination',
-                                    formatMessage({
-                                        id: 'iaso.label.sourcedestination',
-                                        defaultMessage: 'Destination source',
-                                    }),
+                                    formatMessage(MESSAGES.sourcedestination),
                                 ),
                                 version(
                                     formatMessage,
@@ -175,10 +165,7 @@ class RunsFiltersComponent extends Component {
                                     Boolean(!currentDestination || (currentDestination && currentDestination.versions.length === 0)),
                                     false,
                                     'destinationVersion',
-                                    formatMessage({
-                                        id: 'iaso.label.sourcedestinationversion',
-                                        defaultMessage: 'Destination source version',
-                                    }),
+                                    formatMessage(MESSAGES.sourcedestinationversion),
                                 ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
@@ -194,7 +181,7 @@ class RunsFiltersComponent extends Component {
                             onClick={() => onRefresh()}
                         >
                             <Autorenew className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.label.refresh" defaultMessage="Refresh" />
+                            <FormattedMessage {...MESSAGES.refresh} />
                         </Button>
                         <Button
                             disabled={!filtersUpdated}
@@ -204,7 +191,7 @@ class RunsFiltersComponent extends Component {
                             onClick={() => this.onSearch()}
                         >
                             <Search className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.search" defaultMessage="Search" />
+                            <FormattedMessage {...MESSAGES.search} />
                         </Button>
                     </Grid>
                 </Grid>

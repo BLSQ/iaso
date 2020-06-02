@@ -28,6 +28,8 @@ import commonStyles from '../../../styles/common';
 
 import menuItems from '../../../constants/menu';
 
+import MESSAGES from './messages';
+
 import {
     userHasPermission,
     userHasOneOfPermissions,
@@ -133,10 +135,10 @@ class SidebarMenu extends PureComponent {
                         size="small"
                         color="inherit"
                         href="/logout-iaso"
-                        aria-label={<FormattedMessage id="iaso.logout" defaultMessage="Logout" />}
+                        aria-label={<FormattedMessage {...MESSAGES.logout} />}
                     >
                         <ExitIcon className={classes.smallButtonIcon} />
-                        <FormattedMessage id="iaso.logout" defaultMessage="Logout" />
+                        <FormattedMessage {...MESSAGES.logout} />
                     </Button>
                 </Box>
             </Drawer>

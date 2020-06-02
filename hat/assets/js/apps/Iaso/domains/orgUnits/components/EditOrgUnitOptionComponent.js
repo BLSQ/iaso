@@ -14,8 +14,10 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
-import ShapeSvg from '../../svg/ShapeSvgComponent';
-import InputComponent from '../../forms/InputComponent';
+import ShapeSvg from '../../../components/svg/ShapeSvgComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -63,7 +65,7 @@ class EditOrgUnitOptionComponent extends Component {
                         component="div"
                     >
                         <Typography variant="subtitle1">
-                            <FormattedMessage id="iaso.map.catchment" defaultMessage="Catchment" />
+                            <FormattedMessage {...MESSAGES.catchment} />
                         </Typography>
                     </Box>
                     {
@@ -77,7 +79,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="secondary"
                             >
                                 <Edit className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />
+                                <FormattedMessage {...MESSAGES.edit} />
                             </Button>
                         )
                     }
@@ -94,7 +96,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="secondary"
                             >
                                 <Check className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.stopEdit" defaultMessage="Stop edit" />
+                                <FormattedMessage {...MESSAGES.stopEdit} />
                             </Button>
                         )
                     }
@@ -110,7 +112,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 onClick={() => onDeleteShape('catchment')}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                                <FormattedMessage {...MESSAGES.delete} />
                             </Button>
                         )
                     }
@@ -125,7 +127,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="secondary"
                             >
                                 <ShapeSvg className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.add" defaultMessage="Add" />
+                                <FormattedMessage {...MESSAGES.add} />
                             </Button>
                         )
                     }
@@ -135,7 +137,7 @@ class EditOrgUnitOptionComponent extends Component {
                         className={classes.marginTop}
                     >
                         <Typography variant="subtitle1">
-                            <FormattedMessage id="iaso.map.location" defaultMessage="Location" />
+                            <FormattedMessage {...MESSAGES.location} />
                         </Typography>
                     </Box>
                     {
@@ -149,7 +151,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="primary"
                             >
                                 <Edit className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.shape.edit" defaultMessage="Edit shape" />
+                                <FormattedMessage {...MESSAGES.editShape} />
                             </Button>
                         )
                     }
@@ -166,7 +168,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 color="primary"
                             >
                                 <Check className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.label.stopEdit" defaultMessage="Stop edit" />
+                                <FormattedMessage {...MESSAGES.stopEdit} />
                             </Button>
                         )
                     }
@@ -183,7 +185,7 @@ class EditOrgUnitOptionComponent extends Component {
                                 onClick={() => onDeleteShape('location')}
                             >
                                 <DeleteIcon className={classes.buttonIcon} />
-                                <FormattedMessage id="iaso.map.shape.delete" defaultMessage="Delete shape" />
+                                <FormattedMessage {...MESSAGES.deleteShape} />
                             </Button>
                         )
                     }
@@ -204,10 +206,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     }}
                                     value={orgUnit.latitude}
                                     type="number"
-                                    label={{
-                                        defaultMessage: 'Latitude',
-                                        id: 'iaso.label.latitude',
-                                    }}
+                                    label={MESSAGES.latitude}
                                 />
                                 <InputComponent
                                     disabled={editCatchmentEnabled}
@@ -218,10 +217,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     })}
                                     value={orgUnit.longitude}
                                     type="number"
-                                    label={{
-                                        defaultMessage: 'Longitude',
-                                        id: 'iaso.label.longitude',
-                                    }}
+                                    label={MESSAGES.longitude}
                                 />
                                 {/* read-only altitude field until edition is implemented */}
                                 <InputComponent
@@ -229,10 +225,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     keyValue="altitude"
                                     value={orgUnit.altitude !== null ? orgUnit.altitude : 0}
                                     type="number"
-                                    label={{
-                                        defaultMessage: 'Altitude',
-                                        id: 'iaso.label.altitude',
-                                    }}
+                                    label={MESSAGES.altitude}
                                 />
                                 <Button
                                     disabled={editCatchmentEnabled}
@@ -242,7 +235,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     onClick={() => onChangeLocation({ lat: null, lng: null })}
                                 >
                                     <DeleteIcon className={classes.buttonIcon} />
-                                    <FormattedMessage id="iaso.map.marker.delete" defaultMessage="Delete marker" />
+                                    <FormattedMessage {...MESSAGES.deleteMarker} />
                                 </Button>
                             </Fragment>
                         )
@@ -260,7 +253,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     color="primary"
                                 >
                                     <ShapeSvg className={classes.buttonIcon} />
-                                    <FormattedMessage id="iaso.map.shape.addShape" defaultMessage="Add shape" />
+                                    <FormattedMessage {...MESSAGES.addShape} />
                                 </Button>
                                 <Button
                                     disabled={editCatchmentEnabled}
@@ -270,7 +263,7 @@ class EditOrgUnitOptionComponent extends Component {
                                     color="primary"
                                 >
                                     <AddLocation className={classes.buttonIcon} />
-                                    <FormattedMessage id="iaso.map.shape.addLocation" defaultMessage="Add a location" />
+                                    <FormattedMessage {...MESSAGES.addLocation} />
                                 </Button>
                             </Fragment>
                         )

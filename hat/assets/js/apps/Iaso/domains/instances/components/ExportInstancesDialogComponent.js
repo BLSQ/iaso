@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
@@ -8,6 +8,8 @@ import InputComponent from '../../../components/forms/InputComponent';
 import ExportButtonComponent from '../../../components/buttons/ExportButtonComponent';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { createExportRequest as createExportRequestAction } from '../actions';
+
+import MESSAGES from '../messages';
 
 const ExportInstancesDialogComponent = ({
     isInstancesFilterUpdated,
@@ -31,11 +33,11 @@ const ExportInstancesDialogComponent = ({
                     isDisabled={isInstancesFilterUpdated}
                 />
             )}
-            titleMessage={{ id: 'iaso.instances.export', defaultMessage: 'Export' }}
+            titleMessage={MESSAGES.export}
             onConfirm={onConfirm}
-            confirmMessage={{ id: 'iaso.label.export', defaultMessage: 'Export' }}
+            confirmMessage={MESSAGES.export}
             onClosed={onClosed}
-            cancelMessage={{ id: 'iaso.label.cancel', defaultMessage: 'Cancel' }}
+            cancelMessage={MESSAGES.cancel}
             maxWidth="xs"
         >
             <p />
@@ -45,10 +47,7 @@ const ExportInstancesDialogComponent = ({
                 onChange={(key, value) => setForceExport(!forceExport)}
                 value={forceExport}
                 type="checkbox"
-                label={{
-                    id: 'iaso.instances.forceExport',
-                    defaultMessage: 'Force Export',
-                }}
+                label={MESSAGES.forceExport}
             />
         </ConfirmCancelDialogComponent>
     );

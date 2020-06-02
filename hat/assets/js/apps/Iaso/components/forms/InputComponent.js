@@ -232,10 +232,7 @@ class InputComponent extends Component {
                                 disableHoverListener={disabled}
                                 disableTouchListener={disabled}
                                 placement="bottom"
-                                title={formatMessage({
-                                    id: 'iaso.label.displayPassword',
-                                    defaultMessage: 'Display the pasword',
-                                })}
+                                title={formatMessage(MESSAGES.displayPassword)}
                             >
                                 <span>
                                     <IconButton color={displayPassword ? 'primary' : 'inherit'} onClick={() => this.toggleDisplayPassword()}>
@@ -278,10 +275,7 @@ class InputComponent extends Component {
                             onBlur={() => this.toggleFocused(false)}
                             onFocus={() => this.toggleFocused(true)}
                             options={translateOptions(options, formatMessage)}
-                            noResultsText={formatMessage({
-                                id: 'iaso.label.noOptions',
-                                defaultMessage: 'No results found',
-                            })}
+                            noResultsText={formatMessage(MESSAGES.noOptions)}
                             onChange={newValue => onChange(keyValue, newValue)}
                         />
                     </div>
@@ -373,7 +367,6 @@ InputComponent.defaultProps = {
     isSearchable: true,
     multi: false,
     uid: null,
-    searchOnClickIcon: false,
 };
 InputComponent.propTypes = {
     classes: PropTypes.object.isRequired,

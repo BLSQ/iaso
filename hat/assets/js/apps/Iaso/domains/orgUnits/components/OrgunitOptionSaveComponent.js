@@ -9,6 +9,8 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../../styles/common';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     button: {
@@ -48,7 +50,7 @@ function OrgunitOptionSaveComponent(props) {
                     resetOrgUnit();
                 }}
             >
-                <FormattedMessage id="iaso.label.cancel" defaultMessage="Cancel" />
+                <FormattedMessage {...MESSAGES.cancel} />
             </Button>
             <Button
                 disabled={!orgUnitLocationModified || editLocationEnabled || editCatchmentEnabled}
@@ -57,7 +59,7 @@ function OrgunitOptionSaveComponent(props) {
                 color="primary"
                 onClick={() => saveOrgUnit()}
             >
-                <FormattedMessage id="iaso.label.save" defaultMessage="Save" />
+                <FormattedMessage {...MESSAGES.save} />
             </Button>
         </Fragment>
     );

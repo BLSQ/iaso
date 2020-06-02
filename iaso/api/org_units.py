@@ -408,7 +408,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if not select_all:
             queryset = queryset.filter(pk__in=selected_ids)
         else:
-            searches = request.data.get("searches", None)
+            searches = request.data.get("searches", [])
             for search in searches:
                 search_index = 0
                 additional_queryset = build_org_units_queryset(queryset, search)
@@ -429,7 +429,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                         groups_ids_removed,
                     )
 
-        return Response(True)
+        # id is a kind of placeholder for a future job id
+        return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
 
 def update_org_unit(

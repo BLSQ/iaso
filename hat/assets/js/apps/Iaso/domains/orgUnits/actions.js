@@ -1,6 +1,6 @@
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
-import { patchRequest } from '../../libs/Api';
+import { postRequest } from '../../libs/Api';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
@@ -119,7 +119,7 @@ export const setFiltersUpdated = filtersUpdated => ({
 
 export const saveMultiEdit = data => (dispatch) => {
     dispatch(setOrgUnitsListFetching(true));
-    return (patchRequest('/api/orgunits/0/', { ...data, multiEdit: true }, true)
+    return (postRequest('/api/orgunits/bulkupdate/', { ...data })
         .then((res) => {
             dispatch(enqueueSnackbar(succesfullSnackBar('saveMultiEditOrgUnitsSuccesfull')));
             return res;

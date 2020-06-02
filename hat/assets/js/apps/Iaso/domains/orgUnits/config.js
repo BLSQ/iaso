@@ -66,6 +66,19 @@ export const orgUnitsTableColumns = (
             ),
         },
         {
+            Header: formatMessage(MESSAGES.status),
+            accessor: 'status',
+            Cell: settings => (
+                <span>
+                    {
+                        settings.original.status
+                            ? formatMessage(MESSAGES.validated)
+                            : formatMessage(MESSAGES.notValidated)
+                    }
+                </span>
+            ),
+        },
+        {
             Header: formatMessage(MESSAGES.updated_at),
             accessor: 'updated_at',
             Cell: settings => (

@@ -105,23 +105,23 @@ const OrgUnitsMultiActionsDialog = ({
         const data = {};
         if (editGroups) {
             if (groupsAdded.length > 0) {
-                data.groupsAdded = groupsAdded;
+                data.groups_added = groupsAdded;
             }
             if (groupsRemoved.length > 0) {
-                data.groupsRemoved = groupsRemoved;
+                data.groups_removed = groupsRemoved;
             }
         }
         if (editOrgUnitType) {
-            data.orgUnitType = orgUnitType;
+            data.org_unit_type = orgUnitType;
         }
         if (editValidation) {
             data.validated = isValid === 'true';
         }
         if (!selectAll) {
-            data.selectedIds = selectedItems.map(i => i.id);
+            data.selected_ids = selectedItems.map(i => i.id);
         } else {
-            data.selectAll = true;
-            data.unSelectedIds = unSelectedItems.map(i => i.id);
+            data.select_all = true;
+            data.unselected_ids = unSelectedItems.map(i => i.id);
             data.searches = decodeSearch(params.searches);
         }
         saveMultiEdit(data).then(() => {

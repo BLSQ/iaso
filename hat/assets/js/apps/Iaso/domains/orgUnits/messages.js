@@ -35,6 +35,14 @@ const MESSAGES = {
         defaultMessage: 'Not valid(s)',
         id: 'iaso.label.notValid',
     },
+    validated: {
+        id: 'iaso.forms.validated',
+        defaultMessage: 'Validated',
+    },
+    notValidated: {
+        id: 'iaso.forms.notValidated',
+        defaultMessage: 'Not validated',
+    },
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
@@ -178,6 +186,10 @@ const MESSAGES = {
     multiSelectionAction: {
         defaultMessage: 'Edit selected org units',
         id: 'iaso.orgUnits.multiSelectionAction',
+    },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
     },
 };
 

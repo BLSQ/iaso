@@ -2,6 +2,7 @@ from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
+from rest_framework.decorators import action
 
 from iaso.api.common import safe_api_import
 from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group, Project
@@ -9,6 +10,7 @@ from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from hat.geo.geojson import geojson_queryset
+from django.db import transaction
 from django.db.models import Q
 from copy import deepcopy
 from hat.audit.models import log_modification, ORG_UNIT_API
@@ -255,10 +257,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def partial_update(self, request, pk=None):
-        multi_edit = request.data.get("multiEdit", None)
-        if multi_edit:
-            return multi_save(request.data)
-
         org_unit = get_object_or_404(OrgUnit, id=pk)
         self.check_object_permissions(request, org_unit)
 
@@ -317,7 +315,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             # TODO: remove this mess once the fontend handles altitude edition
             if "altitude" in request.data:  # provided explicitly
                 altitude = request.data["altitude"]
-            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
+            elif (
+                org_unit.location is not None
+            ):  # not provided but we have a current location: keep altitude
                 altitude = org_unit.location.z
             else:  # no location yet, no altitude provided, set to 0
                 altitude = 0
@@ -387,58 +387,69 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
         return Response(res)
 
+    @action(
+        detail=False,
+        methods=["POST"],
+        permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission],
+    )
+    def bulkupdate(self, request):
+        select_all = request.data.get("select_all", None)
+        validated = request.data.get("validated", None)
+        org_unit_type_id = request.data.get("org_unit_type", None)
+        groups_ids_added = request.data.get("groups_added", None)
+        groups_ids_removed = request.data.get("groups_removed", None)
+        selected_ids = request.data.get("selected_ids", None)
+        unselected_ids = request.data.get("unselected_ids", None)
 
-def update_org_unit(org_unit, validated, org_unit_type_id, groups_ids_added, groups_ids_removed):
-    if validated:
+        queryset = OrgUnit.objects.filter(
+            version__data_source__projects__account__id=request.user.iaso_profile.account.id
+        )
+
+        if not select_all:
+            queryset = queryset.filter(pk__in=selected_ids)
+        else:
+            searches = request.data.get("searches", None)
+            for search in searches:
+                search_index = 0
+                additional_queryset = build_org_units_queryset(queryset, search)
+                if search_index == 0:
+                    queryset = additional_queryset
+                else:
+                    queryset = queryset.union(additional_queryset)
+                search_index += 1
+
+        with transaction.atomic():
+            for org_unit in queryset_iterator(queryset):
+                if unselected_ids is None or org_unit.id not in unselected_ids:
+                    update_org_unit(
+                        org_unit,
+                        validated,
+                        org_unit_type_id,
+                        groups_ids_added,
+                        groups_ids_removed,
+                    )
+
+        return Response(True)
+
+
+def update_org_unit(
+    org_unit, validated, org_unit_type_id, groups_ids_added, groups_ids_removed
+):
+    if validated is not None:
         org_unit.validated = validated
-    if org_unit_type_id:
+    if org_unit_type_id is not None:
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
-    if groups_ids_added:
+    if groups_ids_added is not None:
         for group_id in groups_ids_added:
             group = get_object_or_404(Group, id=group_id)
             group.org_units.add(org_unit)
-    if groups_ids_removed:
+    if groups_ids_removed is not None:
         for group_id in groups_ids_removed:
             group = get_object_or_404(Group, id=group_id)
             group.org_units.remove(org_unit)
 
     org_unit.save()
-
-
-def multi_save(data):
-    select_all = data.get("selectAll", None)
-    validated = data.get("validated", None)
-    org_unit_type_id = data.get("orgUnitType", None)
-    groups_ids_added = data.get("groupsAdded", None)
-    groups_ids_removed = data.get("groupsRemoved", None)
-    selected_ids = data.get("selectedIds", None)
-    un_selected_ids = data.get("unSelectedIds", None)
-
-    if not select_all:
-        for org_unit_id in selected_ids:
-            org_unit = get_object_or_404(OrgUnit, id=org_unit_id)
-            update_org_unit(org_unit, validated, org_unit_type_id,
-                            groups_ids_added, groups_ids_removed)
-    else:
-        queryset = OrgUnit.objects.all()
-        searches = data.get("searches", None)
-        for search in searches:
-            search_index = 0
-            additional_queryset = build_org_units_queryset(
-                queryset, search
-            )
-            if search_index == 0:
-                queryset = additional_queryset
-            else:
-                queryset = queryset.union(additional_queryset)
-            search_index += 1
-        for org_unit in queryset_iterator(queryset):
-            if not org_unit.id in un_selected_ids:
-                update_org_unit(org_unit, validated, org_unit_type_id,
-                                groups_ids_added, groups_ids_removed)
-
-    return Response(True)
 
 
 def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):

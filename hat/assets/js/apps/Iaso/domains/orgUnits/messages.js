@@ -3,7 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     action: {
         defaultMessage: 'Actions',
-        id: 'main.label.actions',
+        id: 'iaso.label.actions',
     },
     multiEditTitle: {
         defaultMessage: 'Edit selection',

@@ -198,10 +198,7 @@ class Table extends Component {
         if (multiSelect) {
             columns.push(
                 {
-                    Header: formatMessage({
-                        id: 'iaso.label.selection',
-                        defaultMessage: 'Selection',
-                    }),
+                    Header: formatMessage(MESSAGES.selection),
                     accessor: 'selected',
                     width: 100,
                     sorttable: false,
@@ -241,10 +238,7 @@ class Table extends Component {
                                 && (
                                     <span>
                                         {`${formatThousand(selectCount)} `}
-                                        <FormattedMessage
-                                            id="iaso.label.selected"
-                                            defaultMessage="selected"
-                                        />
+                                        <FormattedMessage {...MESSAGES.selected} />
                                         {' - '}
                                     </span>
                                 )

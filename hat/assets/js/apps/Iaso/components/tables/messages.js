@@ -21,6 +21,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.resultsLower',
         defaultMessage: 'result(s)',
     },
+    selection: {
+        id: 'iaso.label.selection',
+        defaultMessage: 'Selection',
+    },
+    selected: {
+        id: 'iaso.label.selected',
+        defaultMessage: 'selected',
+    },
 });
 
 export default MESSAGES;

@@ -5,7 +5,15 @@ from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from iaso.api.common import safe_api_import
-from iaso.models import OrgUnit, OrgUnitType, Instance, SourceVersion, Group, Project
+from iaso.models import (
+    OrgUnit,
+    OrgUnitType,
+    Instance,
+    SourceVersion,
+    Group,
+    Project,
+    BulkOperation,
+)
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -13,7 +21,7 @@ from hat.geo.geojson import geojson_queryset
 from django.db import transaction
 from django.db.models import Q
 from copy import deepcopy
-from hat.audit.models import log_modification, ORG_UNIT_API
+from hat.audit import models as audit_models
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
@@ -340,8 +348,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
             temp_group = get_object_or_404(Group, id=group["id"])
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
-        log_modification(
-            original_copy, org_unit, source=ORG_UNIT_API, user=request.user
+        audit_models.log_modification(
+            original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
         )
         org_unit.save()
 
@@ -398,8 +406,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type_id = request.data.get("org_unit_type", None)
         groups_ids_added = request.data.get("groups_added", None)
         groups_ids_removed = request.data.get("groups_removed", None)
-        selected_ids = request.data.get("selected_ids", None)
-        unselected_ids = request.data.get("unselected_ids", None)
+        selected_ids = request.data.get("selected_ids", [])
+        unselected_ids = request.data.get("unselected_ids", [])
+        searches = request.data.get("searches", [])
 
         queryset = OrgUnit.objects.filter(
             version__data_source__projects__account__id=request.user.iaso_profile.account.id
@@ -408,7 +417,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if not select_all:
             queryset = queryset.filter(pk__in=selected_ids)
         else:
-            searches = request.data.get("searches", [])
+            queryset = queryset.exclude(pk__in=unselected_ids)
             for search in searches:
                 search_index = 0
                 additional_queryset = build_org_units_queryset(queryset, search)
@@ -419,38 +428,26 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 search_index += 1
 
         with transaction.atomic():
-            for org_unit in queryset_iterator(queryset):
-                if unselected_ids is None or org_unit.id not in unselected_ids:
-                    update_org_unit(
+            if queryset.count() > 0:
+                for org_unit in queryset.iterator():
+                    OrgUnit.objects.update_single_unit_from_bulk(
+                        request.user,
                         org_unit,
-                        validated,
-                        org_unit_type_id,
-                        groups_ids_added,
-                        groups_ids_removed,
+                        validated=validated,
+                        org_unit_type_id=org_unit_type_id,
+                        groups_ids_added=groups_ids_added,
+                        groups_ids_removed=groups_ids_removed,
                     )
+
+                BulkOperation.objects.create_for_model_and_request(
+                    OrgUnit,
+                    request,
+                    operation_type=BulkOperation.OPERATION_TYPE_UPDATE,
+                    operation_count=queryset.count(),
+                )
 
         # id is a kind of placeholder for a future job id
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
-
-
-def update_org_unit(
-    org_unit, validated, org_unit_type_id, groups_ids_added, groups_ids_removed
-):
-    if validated is not None:
-        org_unit.validated = validated
-    if org_unit_type_id is not None:
-        org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
-        org_unit.org_unit_type = org_unit_type
-    if groups_ids_added is not None:
-        for group_id in groups_ids_added:
-            group = get_object_or_404(Group, id=group_id)
-            group.org_units.add(org_unit)
-    if groups_ids_removed is not None:
-        for group_id in groups_ids_removed:
-            group = get_object_or_404(Group, id=group_id)
-            group.org_units.remove(org_unit)
-
-    org_unit.save()
 
 
 def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):

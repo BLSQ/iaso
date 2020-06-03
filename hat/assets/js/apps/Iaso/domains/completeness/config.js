@@ -48,6 +48,21 @@ const getFormUrl = (form, status, period) => {
     return url;
 };
 
+const monthsList = [
+    'january',
+    'february',
+    'march',
+    'april',
+    'may',
+    'june',
+    'jully',
+    'august',
+    'september',
+    'october',
+    'november',
+    'december',
+];
+
 export const getColumns = (
     formatMessage,
     months,
@@ -62,7 +77,7 @@ export const getColumns = (
         const monthColumn = {
             Header: (
                 <span className={classes.capitalize}>
-                    {formatMessage(MESSAGES[month])}
+                    {formatMessage(MESSAGES[monthsList[month - 1]])}
                 </span>
             ),
             columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({

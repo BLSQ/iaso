@@ -32,7 +32,7 @@ MED_MELARSOPROL = "melarsoprol"
 MED_EFLORNITHINE = "eflornithine"
 MED_NECT = "nect"
 MED_FEXINIDAZOLE = "fexinidazole"
-MED_OXABOROLE = "oxaborole"
+MED_ACOZIBOROLE = "acoziborole"
 MED_CHOICES = (
     (MED_NONE, "Aucun"),
     (MED_PENTAMIDINE, "Pentamidine"),
@@ -40,7 +40,7 @@ MED_CHOICES = (
     (MED_EFLORNITHINE, "Eflornithine"),
     (MED_NECT, "NECT"),
     (MED_FEXINIDAZOLE, "Fexinidazole"),
-    (MED_OXABOROLE, "Oxaborole"),
+    (MED_ACOZIBOROLE, "Acoziborole"),
 )
 
 ISSUE_VOMITING = "vomiting"
@@ -59,9 +59,9 @@ ISSUE_CHOICES = (
     (ISSUE_DIARRHEA, "diarrhée"),
     (ISSUE_DISORIENTATION, "désorientation"),  # typo in document
     (ISSUE_OBNUBILATION, "obnubilation"),
-    (ISSUE_BEHAVIOUR, "comportement"),
+    (ISSUE_BEHAVIOUR, "troubles du comportement"),
     (ISSUE_COMA, "coma"),
-    (ISSUE_NEURO, "neuro"),
+    (ISSUE_NEURO, "troubles neurologiques"),
     (ISSUE_CONVULSION, "convulsion"),
     (ISSUE_SEPTICEMY, "septicémie"),
     (ISSUE_ACUTE_RESPIRATORY_FAILURE, "inflammation respiratoire aiguë"),

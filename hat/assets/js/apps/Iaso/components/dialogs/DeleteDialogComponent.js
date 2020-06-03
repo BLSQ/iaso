@@ -6,6 +6,8 @@ import { DialogContentText } from '@material-ui/core';
 import ConfirmCancelDialogComponent from './ConfirmCancelDialogComponent';
 import IconButtonComponent from '../buttons/IconButtonComponent';
 
+import MESSAGES from './messages';
+
 export default function DeleteDialog({
     titleMessage, message, onConfirm, disabled,
 }) {
@@ -23,7 +25,7 @@ export default function DeleteDialog({
                     onClick={openDialog}
                     disabled={disabled}
                     icon="delete"
-                    tooltipMessage={{ id: 'iaso.label.delete', defaultMessage: 'Delete' }}
+                    tooltipMessage={MESSAGES.delete}
                 />
             )}
         >

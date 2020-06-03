@@ -15,6 +15,7 @@ import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
 import { formatThousand } from '../../../../utils';
+import MESSAGES from './messages';
 
 
 const styles = theme => ({
@@ -218,7 +219,7 @@ class DynamicTabsComponent extends Component {
                                                 size="small"
                                                 title={(
                                                     <Fragment>
-                                                        <FormattedMessage id="iaso.label.delete" defaultMessage="Delete" />
+                                                        <FormattedMessage {...MESSAGES.delete} />
                                                         {` ${baseLabel.toLowerCase()}`}
                                                     </Fragment>
                                                 )}
@@ -284,7 +285,7 @@ class DynamicTabsComponent extends Component {
                             size="small"
                             title={(
                                 <Fragment>
-                                    <FormattedMessage id="iaso.label.add" defaultMessage="Add" />
+                                    <FormattedMessage {...MESSAGES.add} />
                                     {` ${baseLabel.toLowerCase()}`}
                                 </Fragment>
                             )}

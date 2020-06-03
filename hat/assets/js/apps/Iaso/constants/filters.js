@@ -10,10 +10,7 @@ import { getOrgunitMessage } from '../domains/orgUnits/utils';
 export const search = () => (
     {
         urlKey: 'search',
-        label: {
-            id: 'iaso.forms.textSearch',
-            defaultMessage: 'Text search',
-        },
+        label: MESSAGES.textSearch,
         type: 'search',
     }
 );
@@ -249,14 +246,8 @@ export const algo = algoList => (
 );
 
 const getRunDisplayName = (runItem, formatMessage) => (
-    `${formatMessage({
-        id: 'iaso.label.from',
-        defaultMessage: 'From',
-    })} ${runItem.version_2.data_source.name} v${runItem.version_2.number}`
-    + ` ${formatMessage({
-        id: 'iaso.label.to',
-        defaultMessage: 'to',
-    })} ${runItem.version_1.data_source.name} v${runItem.version_1.number} (`
+    `${formatMessage(MESSAGES.from)} ${runItem.version_2.data_source.name} v${runItem.version_2.number}`
+    + ` ${formatMessage(MESSAGES.to)} ${runItem.version_1.data_source.name} v${runItem.version_1.number} (`
     + `${runItem.algorithm_name})`
 );
 

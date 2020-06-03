@@ -144,7 +144,7 @@ class InstanceDetails extends Component {
                                             onClick: () => window.open(currentInstance.file_url, '_blank'),
                                             icon: 'xml',
                                             color: 'secondary',
-                                            tooltipMessage: { id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' },
+                                            tooltipMessage: MESSAGES.downloadXml,
                                         }
                                         }
                                     >

@@ -1,4 +1,26 @@
-const MESSAGES = {
+import { defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
+    title: {
+        defaultMessage: 'Forms',
+        id: 'iaso.forms.title',
+    },
+    createForm: {
+        defaultMessage: 'Create form',
+        id: 'iaso.forms.create',
+    },
+    noForm: {
+        defaultMessage: 'No form',
+        id: 'iaso.orgUnits.forms.noData',
+    },
+    addForm: {
+        id: 'iaso.orgUnits.addForm',
+        defaultMessage: 'Add form',
+    },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.labels.actions',
+    },
     name: {
         id: 'iaso.forms.name',
         defaultMessage: 'Name',
@@ -19,9 +41,49 @@ const MESSAGES = {
         id: 'iaso.forms.source_ref',
         defaultMessage: 'External reference',
     },
+    view: {
+        id: 'iaso.label.view',
+        defaultMessage: 'View',
+    },
     created_at: {
         id: 'iaso.forms.created_at',
         defaultMessage: 'Created at',
+    },
+    update: {
+        id: 'iaso.forms.update',
+        defaultMessage: 'Update form',
+    },
+    dhis2Mappings: {
+        id: 'iaso.label.dhis2Mappings',
+        defaultMessage: 'DHIS mappings',
+    },
+    deleteFormTitle: {
+        id: 'iaso.forms.dialog.deleteFormTitle',
+        defaultMessage: 'Are you sure you want to delete this form?',
+    },
+    deleteFormText: {
+        id: 'iaso.forms.dialog.deleteFormText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+    latest_version_files: {
+        defaultMessage: 'Latest version',
+        id: 'iaso.forms.latest_version_files',
+    },
+    form_id: {
+        defaultMessage: 'Form id',
+        id: 'iaso.forms.form_id',
+    },
+    type: {
+        defaultMessage: 'Type',
+        id: 'iaso.forms.type',
+    },
+    records: {
+        defaultMessage: 'Record(s)',
+        id: 'iaso.forms.records',
     },
     updated_at: {
         id: 'iaso.forms.updated_at',
@@ -113,7 +175,7 @@ const MESSAGES = {
     },
     shape: {
         id: 'iaso.forms.shape',
-        defaultMessage: 'Shapes',
+        defaultMessage: 'Shape',
     },
     location: {
         id: 'iaso.forms.location',
@@ -199,6 +261,90 @@ const MESSAGES = {
         id: 'iaso.label.periods',
         defaultMessage: 'Periods',
     },
-};
+    year: {
+        id: 'iaso.label.year',
+        defaultMessage: 'Years',
+    },
+    quarter: {
+        id: 'iaso.label.quarter',
+        defaultMessage: 'Quarter',
+    },
+    month: {
+        id: 'iaso.label.month',
+        defaultMessage: 'Month',
+    },
+    six_month: {
+        id: 'iaso.label.six_month',
+        defaultMessage: 'Semester',
+    },
+    save: {
+        id: 'iaso.label.six_month',
+        defaultMessage: 'Semester',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
+    },
+    xls_form_file: {
+        id: 'iaso.label.xls_form_file',
+        defaultMessage: 'XLSForm file',
+    },
+    periodType: {
+        id: 'iaso.label.periodType',
+        defaultMessage: 'Period type',
+    },
+    periodsBeforeAllowed: {
+        id: 'iaso.label.periodsBeforeAllowed',
+        defaultMessage: 'Allowed periods before',
+    },
+    periodsAfterAllowed: {
+        id: 'iaso.label.periodsAfterAllowed',
+        defaultMessage: 'Allowed periods after',
+    },
+    singlePerPeriod: {
+        id: 'iaso.label.singlePerPeriod',
+        defaultMessage: 'Single per period',
+    },
+    projects: {
+        id: 'iaso.label.projects',
+        defaultMessage: 'Projects',
+    },
+    orgUnitsTypes: {
+        id: 'iaso.label.orgUnitsTypes',
+        defaultMessage: 'Organisation unit types',
+    },
+    deviceField: {
+        id: 'iaso.label.deviceField',
+        defaultMessage: 'Device field',
+    },
+    locationField: {
+        id: 'iaso.label.locationField',
+        defaultMessage: 'Location field',
+    },
+    derived: {
+        id: 'iaso.label.derived',
+        defaultMessage: 'Deduced from another form',
+    },
+    displayPassword: {
+        id: 'iaso.label.displayPassword',
+        defaultMessage: 'Display the pasword',
+    },
+    noOptions: {
+        id: 'iaso.label.noOptions',
+        defaultMessage: 'No results found',
+    },
+    textSearch: {
+        id: 'iaso.forms.textSearch',
+        defaultMessage: 'Text search',
+    },
+    from: {
+        id: 'iaso.label.from',
+        defaultMessage: 'From',
+    },
+    to: {
+        id: 'iaso.label.to',
+        defaultMessage: 'to',
+    },
+});
 
 export default MESSAGES;

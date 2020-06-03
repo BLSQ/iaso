@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 
 import PropTypes from 'prop-types';
 
-import SidebarMenu from '../../../components/nav/SidebarMenuComponent';
+import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
 import {
     fetchCurrentUser as fetchCurrentUserAction,

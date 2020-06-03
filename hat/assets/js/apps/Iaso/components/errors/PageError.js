@@ -9,6 +9,8 @@ import NotAuthorized from '@material-ui/icons/NotInterested';
 import HelpOutline from '@material-ui/icons/HelpOutline';
 import TopBar from '../nav/TopBarComponent';
 
+import MESSAGES from './messages';
+
 const useStyles = makeStyles(theme => ({
     icon: {
         color: theme.palette.ligthGray.border,
@@ -39,10 +41,7 @@ const PageError = ({ errorCode }) => {
                                     <>
                                         <Box pt={2} pb={2}>
                                             <Typography variant="h5">
-                                                <FormattedMessage
-                                                    id="iaso.errors.notFound"
-                                                    defaultMessage="Page not found"
-                                                />
+                                                <FormattedMessage {...MESSAGES.notFound} />
                                             </Typography>
                                         </Box>
                                         <NotAuthorized className={classes.icon} />
@@ -55,10 +54,7 @@ const PageError = ({ errorCode }) => {
                                     <>
                                         <Box pt={2} pb={2}>
                                             <Typography variant="h5">
-                                                <FormattedMessage
-                                                    id="iaso.errors.notFound"
-                                                    defaultMessage="Page not found"
-                                                />
+                                                <FormattedMessage {...MESSAGES.notFound} />
                                             </Typography>
                                         </Box>
                                         <HelpOutline className={classes.icon} />
@@ -71,10 +67,7 @@ const PageError = ({ errorCode }) => {
                                     <>
                                         <Box pt={2} pb={2}>
                                             <Typography variant="h5">
-                                                <FormattedMessage
-                                                    id="iaso.errors.label"
-                                                    defaultMessage="An error occured"
-                                                />
+                                                <FormattedMessage {...MESSAGES.labelError} />
                                             </Typography>
                                         </Box>
                                         <ErrorOutline className={classes.icon} />

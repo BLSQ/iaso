@@ -8,6 +8,7 @@ import ArrowBackIcon from '@material-ui/icons/ArrowBack';
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
+import MESSAGES from './messages';
 
 
 const styles = theme => ({
@@ -26,10 +27,7 @@ function BackButton(props) {
             onClick={goBack}
         >
             <ArrowBackIcon className={classes.buttonIcon} />
-            <FormattedMessage
-                id="iaso.orgUnits.back"
-                defaultMessage="Back"
-            />
+            <FormattedMessage {...MESSAGES.back} />
         </Button>
     );
 }

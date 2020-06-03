@@ -15,6 +15,7 @@ import { redirectTo as redirectToAction } from '../../routing/actions';
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
+import MESSAGES from './messages';
 
 /**
 * Table component, no redux (only for redirect), no fetch, just displaying
@@ -84,10 +85,7 @@ class Table extends Component {
                     {count > 0 && (
                         <div>
                             {`${formatThousand(count)} `}
-                            <FormattedMessage
-                                id="table.results_"
-                                defaultMessage="résultat(s)"
-                            />
+                            <FormattedMessage {... MESSAGES.results} />
                         </div>
                     )}
                 </div>

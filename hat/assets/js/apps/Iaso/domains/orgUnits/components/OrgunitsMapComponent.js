@@ -35,7 +35,7 @@ import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import ErrorPaperComponent from '../../../components/papers/ErrorPaperComponent';
-import OrgUnitPopupComponent from '../../../components/maps/popups/OrgUnitPopupComponent';
+import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 

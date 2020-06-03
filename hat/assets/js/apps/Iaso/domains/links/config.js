@@ -51,7 +51,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
                 <span>
                     {`${formatMessage(MESSAGES.source)}: ${settings.original.source.source}`}
                     <br />
-                    {`${formatMessage(MESSAGES.vesion)}: ${settings.original.source.version}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.source.version}`}
                 </span>
             ),
         },
@@ -62,7 +62,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
                 <span>
                     {`${formatMessage(MESSAGES.source)}: ${settings.original.destination.source}`}
                     <br />
-                    {`${formatMessage(MESSAGES.vesion)}: ${settings.original.destination.version}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.destination.version}`}
                 </span>
             ),
         },
@@ -197,7 +197,7 @@ export const runsTableColumns = (formatMessage, component) => (
                 <span>
                     {`${formatMessage(MESSAGES.source)}: ${settings.original.version_2.data_source.name}`}
                     <br />
-                    {`${formatMessage(MESSAGES.vesion)}: ${settings.original.version_2.number}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.version_2.number}`}
                 </span>
             ),
         },
@@ -208,7 +208,7 @@ export const runsTableColumns = (formatMessage, component) => (
                 <span>
                     {`${formatMessage(MESSAGES.source)}: ${settings.original.version_1.data_source.name}`}
                     <br />
-                    {`${formatMessage(MESSAGES.vesion)}: ${settings.original.version_1.number}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.version_1.number}`}
                 </span>
             ),
         },

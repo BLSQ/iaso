@@ -18,7 +18,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Select visible columns',
     },
     results: {
-        id: 'table.results_',
+        id: 'iaso.label.resultsLower',
         defaultMessage: 'result(s)',
     },
 });

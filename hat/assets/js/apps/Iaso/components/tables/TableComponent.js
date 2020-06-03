@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
-import { connect } from 'react-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import { withStyles, Checkbox } from '@material-ui/core';
-import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import { withRouter } from 'react-router';
@@ -10,17 +8,9 @@ import isEqual from 'lodash/isEqual';
 import classNames from 'classnames';
 
 import {
-    getSort, getOrderArray, getSimplifiedColumns, defaultSelectionActions,
+    getSort, getOrderArray, getSimplifiedColumns, defaultSelectionActions, selectionInitialState,
 } from '../../utils/tableUtils';
 
-
-import { redirectTo as redirectToAction } from '../../routing/actions';
-import {
-    setTableSelected as setTableSelectionAction,
-    setTableUnSelected as setTableUnSelectedAction,
-    resetTableSelection as resetTableSelectionAction,
-    setTableSelectAll as setTableSelectAllAction,
-} from '../../redux/tableSelectReducer';
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
@@ -28,13 +18,14 @@ import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
 
 /**
-* Table component, no redux (only for redirect), no fetch, just displaying.
+* Table component, no redux, no fetch, just displaying.
 * Multi selection is optionnal, if set to true you can add custom actions
 * Required props in order to work:
 * @param {Object} params
 * @param {Array} data
 * @param {Array} columns
 * @param {Number} pages
+* @param {Function} redirectTo
 *
 * Optionnal props:
 * @param {Number} count
@@ -46,12 +37,16 @@ import MESSAGES from './messages';
 * Multi selection is optionnal
 * Selection props:
 * @param {Boolean} multiSelect
-* @param {Array} selectionActions
 * if set to true you can add custom actions, an array of object(s):
+*   @param {Array} selectionActions
 *       @param {Array} icon
 *       @param {String} label
 *       @param {Function} onClick
 *       @param {Boolean} disabled
+* You need aslo to maintain selection state in parent component
+* You can use selectionInitialState and setTableSelection from Iaso/utils/tableUtils.js
+*   @param {Object} selection
+*   @param {Function} setTableSelection
 */
 
 const styles = theme => ({
@@ -91,9 +86,9 @@ class Table extends Component {
     componentWillMount() {
         const {
             intl: { formatMessage },
-            resetTableSelection,
+            setTableSelection,
         } = this.props;
-        resetTableSelection();
+        setTableSelection('reset');
         Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
     }
 
@@ -102,13 +97,13 @@ class Table extends Component {
         const oldColumns = getSimplifiedColumns(this.props.columns);
         return !isEqual(nextProps.data, this.props.data)
         || !isEqual(newColumns, oldColumns)
-        || !isEqual(nextProps.selectedItems, this.props.selectedItems)
-        || !isEqual(nextProps.selectAll, this.props.selectAll)
-        || !isEqual(nextProps.unSelectedItems, this.props.unSelectedItems);
+        || !isEqual(nextProps.selection.selectedItems, this.props.selection.selectedItems)
+        || !isEqual(nextProps.selection.selectAll, this.props.selection.selectAll)
+        || !isEqual(nextProps.selection.unSelectedItems, this.props.selection.unSelectedItems);
     }
 
     componentWillUnmount() {
-        this.props.resetTableSelection();
+        this.props.setTableSelection('reset');
     }
 
     onTableParamsChange(key, value) {
@@ -120,13 +115,14 @@ class Table extends Component {
     }
 
     onSelect(isSelected, item) {
-        const selectedItems = [...this.props.selectedItems];
-        const unSelectedItems = [...this.props.unSelectedItems];
+        const selectedItems = [...this.props.selection.selectedItems];
+        const unSelectedItems = [...this.props.selection.unSelectedItems];
         const {
-            setTableSelected,
-            setTableUnSelected,
-            selectAll,
+            selection: {
+                selectAll,
+            },
             count,
+            setTableSelection,
         } = this.props;
         if (selectAll) {
             if (!isSelected) {
@@ -137,7 +133,7 @@ class Table extends Component {
                     unSelectedItems.splice(itemIndex, 1);
                 }
             }
-            setTableUnSelected(unSelectedItems, count);
+            setTableSelection('unselect', unSelectedItems, count);
         } else {
             if (isSelected) {
                 selectedItems.push(item);
@@ -145,12 +141,14 @@ class Table extends Component {
                 const itemIndex = selectedItems.findIndex(el => isEqual(el, item));
                 selectedItems.splice(itemIndex, 1);
             }
-            setTableSelected(selectedItems);
+            setTableSelection('select', selectedItems);
         }
     }
 
     isItemSelected(item) {
-        const { selectedItems, unSelectedItems, selectAll } = this.props;
+        const {
+            selection: { selectedItems, unSelectedItems, selectAll },
+        } = this.props;
         if (!selectAll) {
             return Boolean(selectedItems.find(el => isEqual(el, item)));
         }
@@ -173,15 +171,16 @@ class Table extends Component {
                 formatMessage,
             },
             selectionActions,
-            resetTableSelection,
-            setTableSelectAll,
-            selectCount,
+            setTableSelection,
+            selection: {
+                selectCount,
+            },
         } = this.props;
 
         let actions = [
             ...defaultSelectionActions(
-                () => setTableSelectAll(count),
-                () => resetTableSelection(),
+                () => setTableSelection('selectAll', [], count),
+                () => setTableSelection('reset'),
                 formatMessage,
             ),
         ];
@@ -281,6 +280,7 @@ Table.defaultProps = {
     marginTop: true,
     multiSelect: false,
     selectionActions: [],
+    selection: selectionInitialState,
 };
 
 Table.propTypes = {
@@ -296,35 +296,11 @@ Table.propTypes = {
     countOnTop: PropTypes.bool,
     marginTop: PropTypes.bool,
     multiSelect: PropTypes.bool,
-    selectedItems: PropTypes.array.isRequired,
-    unSelectedItems: PropTypes.array.isRequired,
-    selectAll: PropTypes.bool.isRequired,
     selectionActions: PropTypes.array,
-    setTableSelected: PropTypes.func.isRequired,
-    resetTableSelection: PropTypes.func.isRequired,
-    setTableSelectAll: PropTypes.func.isRequired,
-    setTableUnSelected: PropTypes.func.isRequired,
-    selectCount: PropTypes.number.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    setTableSelection: PropTypes.func.isRequired,
+    selection: PropTypes.object,
 };
 
-const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators({
-        redirectTo: redirectToAction,
-        setTableSelected: setTableSelectionAction,
-        resetTableSelection: resetTableSelectionAction,
-        setTableSelectAll: setTableSelectAllAction,
-        setTableUnSelected: setTableUnSelectedAction,
-    }, dispatch),
-});
 
-const MapStateToProps = state => ({
-    selectedItems: state.tableSelect.selectedItems,
-    unSelectedItems: state.tableSelect.unSelectedItems,
-    selectAll: state.tableSelect.selectAll,
-    selectCount: state.tableSelect.count,
-});
-
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(withRouter(Table))),
-);
+export default withStyles(styles)(injectIntl(withRouter(Table)));

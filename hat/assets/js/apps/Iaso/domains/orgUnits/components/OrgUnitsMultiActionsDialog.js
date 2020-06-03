@@ -17,6 +17,9 @@ import {
     saveMultiEdit as saveMultiEditAction,
 } from '../actions';
 import { formatThousand } from '../../../../../utils';
+import {
+    selectionInitialState,
+} from '../../../utils/tableUtils';
 
 import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
@@ -50,10 +53,12 @@ const OrgUnitsMultiActionsDialog = ({
     classes,
     groups,
     orgUnitTypes,
-    selectCount,
-    selectedItems,
-    unSelectedItems,
-    selectAll,
+    selection: {
+        selectCount,
+        selectedItems,
+        unSelectedItems,
+        selectAll,
+    },
     params,
     saveMultiEdit,
     fetchOrgUnits,
@@ -281,6 +286,9 @@ const OrgUnitsMultiActionsDialog = ({
         </>
     );
 };
+OrgUnitsMultiActionsDialog.defaultProps = {
+    selection: selectionInitialState,
+};
 
 OrgUnitsMultiActionsDialog.propTypes = {
     open: PropTypes.bool.isRequired,
@@ -288,22 +296,15 @@ OrgUnitsMultiActionsDialog.propTypes = {
     closeDialog: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
-    selectedItems: PropTypes.array.isRequired,
-    unSelectedItems: PropTypes.array.isRequired,
-    selectAll: PropTypes.bool.isRequired,
-    selectCount: PropTypes.number.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     saveMultiEdit: PropTypes.func.isRequired,
     fetchOrgUnits: PropTypes.func.isRequired,
+    selection: PropTypes.object,
 };
 
 
 const MapStateToProps = state => ({
     groups: state.orgUnits.groups,
-    selectedItems: state.tableSelect.selectedItems,
-    unSelectedItems: state.tableSelect.unSelectedItems,
-    selectAll: state.tableSelect.selectAll,
-    selectCount: state.tableSelect.count,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 

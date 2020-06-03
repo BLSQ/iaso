@@ -4,7 +4,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { withStyles, Box, Grid } from '@material-ui/core';
-
 import {
     fetchGroups as fetchGroupsAction,
     deleteGroup as deleteGroupAction,
@@ -22,6 +21,8 @@ import { baseUrls } from '../../../constants/urls';
 
 import tableColumns from './config';
 import MESSAGES from './messages';
+
+import { redirectTo as redirectToAction } from '../../../routing/actions';
 
 const baseUrl = baseUrls.groups;
 
@@ -71,6 +72,7 @@ class Groups extends Component {
             fetching,
             classes,
             fetchGroups,
+            redirectTo,
         } = this.props;
         return (
             <>
@@ -98,6 +100,7 @@ class Groups extends Component {
                         count={count}
                         baseUrl={baseUrl}
                         params={params}
+                        redirectTo={redirectTo}
                     />
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <GroupsDialog
@@ -126,6 +129,7 @@ Groups.propTypes = {
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
     pages: PropTypes.number.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -140,6 +144,7 @@ const mapDispatchToProps = dispatch => (
         ...bindActionCreators({
             fetchGroups: fetchGroupsAction,
             deleteGroup: deleteGroupAction,
+            redirectTo: redirectToAction,
         }, dispatch),
     }
 );

@@ -93,3 +93,45 @@ export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) =
         onClick: () => unSelectAll(),
     },
 ];
+
+export const selectionInitialState = {
+    selectedItems: [],
+    unSelectedItems: [],
+    selectAll: false,
+    selectCount: 0,
+};
+
+export const setTableSelection = (selection, selectionType, items = [], totalCount = 0) => {
+    let newSelection;
+    switch (selectionType) {
+        case 'select':
+            newSelection = {
+                ...selection,
+                selectedItems: items,
+                selectCount: items.length,
+            };
+            break;
+        case 'unselect':
+            newSelection = {
+                ...selection,
+                unSelectedItems: items,
+                selectCount: totalCount - items.length,
+            };
+            break;
+        case 'selectAll':
+            newSelection = {
+                ...selection,
+                selectAll: true,
+                unSelectedItems: [],
+                selectCount: totalCount,
+            };
+            break;
+        case 'reset':
+            newSelection = selectionInitialState;
+            break;
+        default:
+            newSelection = { ...selection };
+            break;
+    }
+    return newSelection;
+};

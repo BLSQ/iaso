@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
@@ -42,7 +41,7 @@ import { createUrl } from '../../../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
 } from './utils';
-import getTableUrl from '../../utils/tableUtils';
+import getTableUrl, { selectionInitialState, setTableSelection } from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -57,7 +56,6 @@ import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../../../utils/constants/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
-import { resetTableSelection as resetTableSelectionAction } from '../../redux/tableSelectReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
@@ -96,6 +94,7 @@ class OrgUnits extends Component {
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
             multiActionPopupOpen: false,
+            selection: selectionInitialState,
         };
     }
 
@@ -176,11 +175,10 @@ class OrgUnits extends Component {
 
     onSearch(withLocations) {
         const {
-            resetTableSelection,
             redirectTo,
             params,
         } = this.props;
-        resetTableSelection();
+        this.HandleTableSelection('reset');
 
         const newParams = {
             ...params,
@@ -218,6 +216,15 @@ class OrgUnits extends Component {
         });
     }
 
+    HandleTableSelection(selectionType, items = [], totalCount = 0) {
+        const {
+            selection,
+        } = this.state;
+        const newSelection = setTableSelection(selection, selectionType, items, totalCount);
+        this.setState({
+            selection: newSelection,
+        });
+    }
 
     handleChangeTab(tab, redirect = true) {
         const { redirectTo, params, filtersUpdated } = this.props;
@@ -300,6 +307,7 @@ class OrgUnits extends Component {
         });
     }
 
+
     render() {
         const {
             classes,
@@ -312,12 +320,15 @@ class OrgUnits extends Component {
             fetchingOrgUnitTypes,
             redirectTo,
             searchCounts,
-            selectedItems,
-            selectAll,
         } = this.props;
         const {
             tab,
             multiActionPopupOpen,
+            selection,
+            selection: {
+                selectedItems,
+                selectAll,
+            },
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
@@ -354,6 +365,7 @@ class OrgUnits extends Component {
                     params={params}
                     closeDialog={() => this.setMultiActionsPopupOpen(false)}
                     fetchOrgUnits={() => this.fetchOrgUnits(false)}
+                    selection={selection}
                 />
                 <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent
@@ -424,7 +436,10 @@ class OrgUnits extends Component {
                                             marginTop={false}
                                             countOnTop={false}
                                             multiSelect
+                                            selection={selection}
                                             selectionActions={selectionActions}
+                                            redirectTo={redirectTo}
+                                            setTableSelection={(selectionType, items, totalCount) => this.HandleTableSelection(selectionType, items, totalCount)}
                                         />
                                     )
                                 }
@@ -488,9 +503,6 @@ OrgUnits.propTypes = {
     setGroups: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
     searchCounts: PropTypes.array.isRequired,
-    resetTableSelection: PropTypes.func.isRequired,
-    selectAll: PropTypes.bool.isRequired,
-    selectedItems: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -499,8 +511,6 @@ const MapStateToProps = state => ({
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
     filtersUpdated: state.orgUnits.filtersUpdated,
-    selectedItems: state.tableSelect.selectedItems,
-    selectAll: state.tableSelect.selectAll,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -516,9 +526,6 @@ const MapDispatchToProps = dispatch => ({
     setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
     setGroups: groups => dispatch(setGroups(groups)),
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
-    ...bindActionCreators({
-        resetTableSelection: resetTableSelectionAction,
-    }, dispatch),
 });
 
 export default withStyles(styles)(

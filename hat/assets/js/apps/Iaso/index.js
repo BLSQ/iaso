@@ -27,7 +27,6 @@ import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsRe
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
-import { tableSelectReducer, tableSelectInitialState } from './redux/tableSelectReducer';
 import { linksInitialState, linksReducer } from './domains/links/reducer';
 import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
@@ -96,7 +95,6 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsInitialState,
         mappings: mappingsInitialState,
         groups: groupsInitialState,
-        tableSelect: tableSelectInitialState,
     }, {
         app: appReducer,
         load: loadReducer,
@@ -117,7 +115,6 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsReducer,
         mappings: mappingReducer,
         groups: groupsReducer,
-        tableSelect: tableSelectReducer,
     }, [
         routerMiddleware(history),
         thunk,

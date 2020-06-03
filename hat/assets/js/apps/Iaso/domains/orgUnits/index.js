@@ -178,7 +178,7 @@ class OrgUnits extends Component {
             redirectTo,
             params,
         } = this.props;
-        this.HandleTableSelection('reset');
+        this.handleTableSelection('reset');
 
         const newParams = {
             ...params,
@@ -216,7 +216,7 @@ class OrgUnits extends Component {
         });
     }
 
-    HandleTableSelection(selectionType, items = [], totalCount = 0) {
+    handleTableSelection(selectionType, items = [], totalCount = 0) {
         const {
             selection,
         } = this.state;
@@ -439,7 +439,7 @@ class OrgUnits extends Component {
                                             selection={selection}
                                             selectionActions={selectionActions}
                                             redirectTo={redirectTo}
-                                            setTableSelection={(selectionType, items, totalCount) => this.HandleTableSelection(selectionType, items, totalCount)}
+                                            setTableSelection={(selectionType, items, totalCount) => this.handleTableSelection(selectionType, items, totalCount)}
                                         />
                                     )
                                 }

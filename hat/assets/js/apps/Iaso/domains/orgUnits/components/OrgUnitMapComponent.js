@@ -26,14 +26,14 @@ import {
 
 import TileSwitch from '../../../components/maps/tools/TileSwitchComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
-import EditOrgUnitOptionComponent from '../../../components/maps/tools/EditOrgUnitOptionComponent';
-import OrgunitOptionSaveComponent from '../../../components/maps/tools/OrgunitOptionSaveComponent';
+import EditOrgUnitOptionComponent from './EditOrgUnitOptionComponent';
+import OrgunitOptionSaveComponent from './OrgunitOptionSaveComponent';
 import OrgUnitTypeChipsFilterComponent from './OrgUnitTypeChipsFilterComponent';
 import FormsChipsFilterComponent from '../../forms/components/FormsChipsFilterComponent';
 import SourcesChipsFilterComponent from '../../../components/filters/chips/SourcesChipsFilterComponent';
 import MarkerComponent from '../../../components/maps/markers/MarkerComponent';
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
-import OrgUnitPopupComponent from '../../../components/maps/popups/OrgUnitPopupComponent';
+import OrgUnitPopupComponent from './OrgUnitPopupComponent';
 import InstancePopupComponent from '../../instances/components/InstancePopupComponent';
 
 import { resetMapReducer } from '../../../redux/mapReducer';

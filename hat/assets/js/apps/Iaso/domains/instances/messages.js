@@ -1,11 +1,61 @@
-
-
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    title: {
+        defaultMessage: 'Record(s) for the form',
+        id: 'iaso.instance.form',
+    },
+    forceExport: {
+        id: 'iaso.instances.forceExport',
+        defaultMessage: 'Force Export',
+    },
+    export: {
+        defaultMessage: 'Export',
+        id: 'iaso.label.export',
+    },
+    list: {
+        defaultMessage: 'List',
+        id: 'iaso.label.list',
+    },
+    map: {
+        defaultMessage: 'Map',
+        id: 'iaso.label.map',
+    },
+    files: {
+        defaultMessage: 'Files',
+        id: 'iaso.label.files',
+    },
+    downloadXml: {
+        id: 'iaso.label.downloadXml',
+        defaultMessage: 'Download XML',
+    },
+    dhis2Mappings: {
+        id: 'iaso.label.dhis2Mappings',
+        defaultMessage: 'DHIS mappings',
+    },
+    field: {
+        id: 'iaso.label.field',
+        defaultMessage: 'Field',
+    },
+    key: {
+        id: 'iaso.label.key',
+        defaultMessage: 'Key',
+    },
+    value: {
+        id: 'iaso.label.value',
+        defaultMessage: 'Value',
+    },
+    view: {
+        id: 'iaso.label.view',
+        defaultMessage: 'View',
+    },
     type: {
         id: 'iaso.label.type',
         defaultMessage: 'Type',
+    },
+    cancel: {
+        id: 'iaso.label.cancel',
+        defaultMessage: 'Cancel',
     },
     device: {
         id: 'iaso.instance.device',
@@ -83,6 +133,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export requests',
         id: 'iaso.label.exportRequests',
     },
+    search: {
+        defaultMessage: 'Search',
+        id: 'iaso.search',
+    },
     uuid: {
         defaultMessage: 'Uuid',
         id: 'iaso.label.uuid',
@@ -142,6 +196,26 @@ const MESSAGES = defineMessages({
     warningSoftDeletedDerived: {
         defaultMessage: 'If this form generates other derived instances, they might not be updated either.',
         id: 'iaso.instance.warningSoftDeletedDerived',
+    },
+    images: {
+        defaultMessage: 'Images',
+        id: 'iaso.label.images',
+    },
+    videos: {
+        defaultMessage: 'Videos',
+        id: 'iaso.label.videos',
+    },
+    documents: {
+        defaultMessage: 'Documents',
+        id: 'iaso.label.documents',
+    },
+    others: {
+        defaultMessage: 'Others',
+        id: 'iaso.label.others',
+    },
+    missingFile: {
+        defaultMessage: 'Cannot find an instance with a file',
+        id: 'iaso.instance.missingFile',
     },
 });
 

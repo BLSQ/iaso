@@ -37,7 +37,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RunsFiltersComponent from './components/RunsFiltersComponent';
-import AddRunDialogComponent from '../../components/dialogs/AddRunDialogComponent';
+import AddRunDialogComponent from './components/AddRunDialogComponent';
 import {
     fetchUsersProfiles as fetchUsersProfilesAction,
 } from '../users/actions';
@@ -46,6 +46,8 @@ import {
 import commonStyles from '../../styles/common';
 
 import { baseUrls } from '../../constants/urls';
+
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.algos;
 
@@ -172,11 +174,7 @@ class Runs extends Component {
                     fetching
                     && <LoadingSpinner />
                 }
-                <TopBar title={formatMessage({
-                    defaultMessage: 'Algorithms runs',
-                    id: 'iaso.label.algorithmsRuns',
-                })}
-                />
+                <TopBar title={formatMessage(MESSAGES.runsTitle)} />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <RunsFiltersComponent
                         baseUrl={baseUrl}

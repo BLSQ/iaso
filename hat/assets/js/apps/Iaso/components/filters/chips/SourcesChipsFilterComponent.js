@@ -22,6 +22,8 @@ import {
     getSourcesWithoutCurrentSource,
 } from '../../../domains/orgUnits/utils';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     content: {
@@ -47,22 +49,19 @@ function SourcesChipsFilterComponent(props) {
                 component="div"
             >
                 <Typography variant="subtitle1">
-                    <FormattedMessage id="iaso.label.sources" defaultMessage="Sources" />
+                    <FormattedMessage {...MESSAGES.sources} />
                 </Typography>
             </Box>
             {
                 sources.length === 0
                 && (
                     <Typography variant="body2" align="center" color="textSecondary">
-                        <FormattedMessage id="iaso.orgUnits.sources.noData" defaultMessage="No source" />
+                        <FormattedMessage {...MESSAGES.noSources} />
                     </Typography>
                 )
             }
             <ChipsFilterComponent
-                selectLabelMessage={{
-                    id: 'iaso.orgUnits.addSource',
-                    defaultMessage: 'Add source',
-                }}
+                selectLabelMessage={MESSAGES.addSource}
                 locationsKey="orgUnits"
                 fetchDetails={source => fetchAssociatedOrgUnits(
                     dispatch,

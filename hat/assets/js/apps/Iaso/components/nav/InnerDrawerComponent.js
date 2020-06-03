@@ -15,6 +15,8 @@ import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 import { menuHeight } from '../../styles/innerDrawer';
 
+import MESSAGES from './messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     boxContent: {
@@ -96,7 +98,7 @@ class InnerDrawer extends Component {
                                                     }}
                                                     disabled={filtersDisabled}
                                                     value="filters"
-                                                    label={<FormattedMessage id="iaso.label.filters" defaultMessage="Filters" />}
+                                                    label={<FormattedMessage {...MESSAGES.filters} />}
                                                 />
                                             )
                                         }
@@ -106,7 +108,7 @@ class InnerDrawer extends Component {
                                             }}
                                             disabled={settingsDisabled}
                                             value="settings"
-                                            label={<FormattedMessage id="iaso.label.settings" defaultMessage="Settings" />}
+                                            label={<FormattedMessage {...MESSAGES.settings} />}
                                         />
                                         {
                                             editOptionComponent && (
@@ -115,7 +117,7 @@ class InnerDrawer extends Component {
                                                         root: classes.innerDrawerTab,
                                                     }}
                                                     value="edit"
-                                                    label={<FormattedMessage id="iaso.label.edit" defaultMessage="Edit" />}
+                                                    label={<FormattedMessage {...MESSAGES.edit} />}
                                                 />
                                             )
                                         }

@@ -10,6 +10,7 @@ import {
 } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import { textPlaceholder } from '../../../constants/uiConstants';
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     tableCellHead: {
@@ -37,13 +38,13 @@ const InstanceFileContent = ({
         <TableHead>
             <TableRow>
                 <TableCell width={150} className={classes.tableCellHead}>
-                    <FormattedMessage id="iaso.label.field" defaultMessage="Field" />
+                    <FormattedMessage {...MESSAGES.field} />
                 </TableCell>
                 <TableCell width={150} align="right" className={classes.tableCellHead}>
-                    <FormattedMessage id="iaso.label.key" defaultMessage="Key" />
+                    <FormattedMessage {...MESSAGES.key} />
                 </TableCell>
                 <TableCell width={250} align="right" className={classes.tableCellHead}>
-                    <FormattedMessage id="iaso.label.value" defaultMessage="Value" />
+                    <FormattedMessage {...MESSAGES.value} />
                 </TableCell>
             </TableRow>
         </TableHead>

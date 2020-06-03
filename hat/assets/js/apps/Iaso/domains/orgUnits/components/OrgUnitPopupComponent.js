@@ -21,9 +21,9 @@ import {
 import PropTypes from 'prop-types';
 import moment from 'moment';
 
-import LoadingSpinner from '../../LoadingSpinnerComponent';
-import PopupItemComponent from './PopupItemComponent';
-import ConfirmDialog from '../../dialogs/ConfirmDialogComponent';
+import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
+import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
+import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
 
 import { textPlaceholder } from '../../../constants/uiConstants';
 
@@ -31,6 +31,8 @@ import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
 
 import { baseUrls } from '../../../constants/urls';
+
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -49,53 +51,6 @@ const styles = theme => ({
         padding: theme.spacing(1, 0, 0, 0),
     },
 });
-
-const MESSAGES = {
-    name: {
-        id: 'iaso.label.name',
-        defaultMessage: 'Name',
-    },
-    source: {
-        id: 'iaso.label.source',
-        defaultMessage: 'Source',
-    },
-    type: {
-        id: 'iaso.label.type',
-        defaultMessage: 'Type',
-    },
-    parent: {
-        id: 'iaso.label.parent',
-        defaultMessage: 'Parent',
-    },
-    groups: {
-        id: 'iaso.label.groups',
-        defaultMessage: 'Groups',
-    },
-    created_at: {
-        id: 'iaso.instance.created_at',
-        defaultMessage: 'Created at',
-    },
-    latitude: {
-        id: 'iaso.label.latitude',
-        defaultMessage: 'Latitude',
-    },
-    longitude: {
-        id: 'iaso.label.longitude',
-        defaultMessage: 'Longitude',
-    },
-    associate: {
-        id: 'iaso.label.useOrgUnitLocation.btn',
-        defaultMessage: 'Use this location',
-    },
-    question: {
-        id: 'iaso.label.useOrgUnitLocation.question',
-        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
-    },
-    message: {
-        id: 'iaso.label.useOrgUnitLocation.message',
-        defaultMessage: 'Don\'t forget to save',
-    },
-};
 
 class OrgUnitPopupComponent extends Component {
     constructor(props) {
@@ -198,7 +153,7 @@ class OrgUnitPopupComponent extends Component {
                                                 to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
                                                 className={classes.linkButton}
                                             >
-                                                <FormattedMessage id="iaso.label.see" defaultMessage="See" />
+                                                <FormattedMessage {...MESSAGES.see} />
                                             </Link>
                                         </Button>
                                     </Grid>

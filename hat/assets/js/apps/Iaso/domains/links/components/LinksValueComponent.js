@@ -11,6 +11,7 @@ import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 import { textPlaceholder } from '../../../constants/uiConstants';
 
 import MESSAGES from '../../forms/messages';
+import { MESSAGES as LINKS_MESSAGES } from '../messages';
 
 const styles = theme => ({
     cell: {
@@ -53,15 +54,9 @@ const renderValue = (linkKey, value, classes) => {
         case 'status': {
             return value
                 ? (
-                    <FormattedMessage
-                        id="iaso.forms.validated"
-                        defaultMessage="Validated"
-                    />
+                    <FormattedMessage {...LINKS_MESSAGES.validated} />
                 ) : (
-                    <FormattedMessage
-                        id="iaso.forms.notValidated"
-                        defaultMessage="Not Validated"
-                    />
+                    <FormattedMessage {...LINKS_MESSAGES.notValidated} />
                 );
         }
         case 'groups': {

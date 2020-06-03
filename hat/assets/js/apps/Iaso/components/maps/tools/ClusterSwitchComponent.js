@@ -11,6 +11,7 @@ import {
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import MESSAGES from '../messages';
 import { toggleCluster } from '../../../redux/mapReducer';
 
 
@@ -22,13 +23,6 @@ const styles = theme => ({
         fontSize: 15,
     },
 });
-
-const MESSAGES = {
-    title: {
-        id: 'iaso.map.title.markerClustering',
-        defaultMessage: 'Clustering',
-    },
-};
 
 const ClusterSwitchComponent = (props) => {
     const {

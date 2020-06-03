@@ -19,6 +19,8 @@ import {
 } from '../../../utils/requests';
 import commonStyles from '../../../styles/common';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     content: {
@@ -44,22 +46,19 @@ function FormsChipsFilterComponent(props) {
                 component="div"
             >
                 <Typography variant="subtitle1">
-                    <FormattedMessage id="iaso.forms.title" defaultMessage="Forms" />
+                    <FormattedMessage {...MESSAGES.title} />
                 </Typography>
             </Box>
             {
                 (!currentForms || (currentForms && currentForms.length === 0))
                 && (
                     <Typography variant="body2" align="center" color="textSecondary">
-                        <FormattedMessage id="iaso.orgUnits.forms.noData" defaultMessage="No form" />
+                        <FormattedMessage {...MESSAGES.noForm} />
                     </Typography>
                 )
             }
             <ChipsFilterComponent
-                selectLabelMessage={{
-                    id: 'iaso.orgUnits.addForm',
-                    defaultMessage: 'Add form',
-                }}
+                selectLabelMessage={MESSAGES.addForm}
                 locationsKey="instances"
                 fetchDetails={form => fetchInstancesAsLocationsByForm(
                     dispatch,

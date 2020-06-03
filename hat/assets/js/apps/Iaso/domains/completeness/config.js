@@ -15,6 +15,8 @@ import { formatThousand } from '../../../../utils';
 import { INSTANCE_STATUSES } from '../instances/constants';
 import { textPlaceholder } from '../../constants/uiConstants';
 
+import MESSAGES from './messages';
+
 const STATUS_COLUMN_SIZES = {
     [PERIOD_TYPE_MONTH]: undefined,
     [PERIOD_TYPE_QUARTER]: undefined,
@@ -30,10 +32,7 @@ const STATUS_COLUMN_ICONS = {
 
 const getBaseColumns = formatMessage => ([
     {
-        Header: formatMessage({
-            defaultMessage: 'Forms',
-            id: 'iaso.forms.title',
-        }),
+        Header: formatMessage(MESSAGES.formsTitle),
         accessor: 'name',
         width: 300,
         style: { justifyContent: 'left' },
@@ -63,19 +62,13 @@ export const getColumns = (
         const monthColumn = {
             Header: (
                 <span className={classes.capitalize}>
-                    {formatMessage({
-                        defaultMessage: `Month ${month}`,
-                        id: `main.label.months.${month}`,
-                    })}
+                    {formatMessage(MESSAGES[month])}
                 </span>
             ),
             columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({
                 Header: <HeaderRowIcon
                     IconComponent={STATUS_COLUMN_ICONS[status]}
-                    title={formatMessage({
-                        defaultMessage: status,
-                        id: `iaso.label.instanceStatus.${status}`,
-                    })}
+                    title={formatMessage(MESSAGES[status])}
                 />,
                 key: status.key,
                 Cell: (settings) => {
@@ -105,10 +98,7 @@ export const getColumns = (
     columns.push({
         Header: (
             <span className={classes.capitalize}>
-                {formatMessage({
-                    defaultMessage: 'Actions',
-                    id: 'iaso.labels.actions',
-                })}
+                {formatMessage(MESSAGES.actions)}
             </span>),
         columns: [{
             Header: '',
@@ -116,10 +106,7 @@ export const getColumns = (
                 <IconButtonComponent
                     onClick={() => (onGenerateDerivedInstances(settings.original))}
                     icon="call-merge"
-                    tooltipMessage={{
-                        id: 'iaso.completeness.generateDerivedInstances',
-                        defaultMessage: 'Generate derived instances',
-                    }}
+                    tooltipMessage={MESSAGES.generateDerivedInstances}
                 />
             ) : ''),
 
@@ -133,17 +120,11 @@ export const getColumns = (
 export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
     {
         value: instanceStatus,
-        label: {
-            id: `iaso.label.instanceStatus.${instanceStatus.toLowerCase()}Multi`,
-            defaultMessage: instanceStatus,
-        },
+        label: MESSAGES[`${instanceStatus.toLowerCase()}Multi`],
     }
 ));
 
 export const periodTypeOptions = PERIOD_TYPES.map(periodType => ({
     value: periodType,
-    label: {
-        id: `iaso.label.periodType.${periodType.toLowerCase()}`,
-        defaultMessage: periodType,
-    },
+    label: MESSAGES[periodType.toLowerCase()],
 }));

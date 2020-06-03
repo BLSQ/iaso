@@ -14,7 +14,8 @@
     "webpack": "webpack --config ./hat/webpack.dev.js",
     "webpack-prod": "webpack --config ./hat/webpack.prod.js",
     "extract-strings": "node ./build_scripts/merge-js-transifex.js",
-    "webpack-server": "node ./hat/webpack.server.js"
+    "webpack-server": "node ./hat/webpack.server.js",
+    "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations' './hat/assets/js/apps/Iaso/**/*.js'"
   },
   "repository": {
     "type": "git",
@@ -26,6 +27,7 @@
   "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
   "devDependencies": {
     "@material-ui/lab": "^4.0.0-alpha.48",
+    "extract-react-intl-messages": "^4.1.1",
     "leaflet-draw": "^1.0.4",
     "react-beautiful-dnd": "^11.0.4",
     "react-color": "^2.17.3",

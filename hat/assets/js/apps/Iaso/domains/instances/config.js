@@ -22,12 +22,12 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                     <IconButtonComponent
                         url={`${baseUrls.instanceDetail}/instanceId/${settings.original.id}`}
                         icon="remove-red-eye"
-                        tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
+                        tooltipMessage={MESSAGES.view}
                     />
                     <IconButtonComponent
                         onClick={() => window.open(settings.original.file_url, '_blank')}
                         icon="xml"
-                        tooltipMessage={{ id: 'iaso.label.downloadXml', defaultMessage: 'Download XML' }}
+                        tooltipMessage={MESSAGES.downloadXml}
                     />
                 </section>
             ),

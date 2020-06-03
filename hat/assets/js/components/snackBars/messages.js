@@ -1,4 +1,6 @@
-const MESSAGES = {
+import { defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
     successful: {
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',
@@ -199,6 +201,6 @@ const MESSAGES = {
         defaultMessage: 'An error occurred while deleting group',
         id: 'iaso.snackBar.deleteGroupError',
     },
-};
+});
 
 export default MESSAGES;

@@ -1,4 +1,6 @@
-const MESSAGES = {
+import { defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
@@ -51,6 +53,10 @@ const MESSAGES = {
         id: 'iaso.users.dialog.deleteUserTitle',
         defaultMessage: 'This operation cannot be undone.',
     },
-};
+    edit: {
+        id: 'iaso.label.edit',
+        defaultMessage: 'Edit',
+    },
+});
 
 export default MESSAGES;

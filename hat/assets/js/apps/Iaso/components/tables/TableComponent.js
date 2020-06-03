@@ -25,6 +25,7 @@ import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../../../utils/constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
+import MESSAGES from './messages';
 
 /**
 * Table component, no redux (only for redirect), no fetch, just displaying.
@@ -250,8 +251,7 @@ class Table extends Component {
                                 }
                                 {`${formatThousand(count)} `}
                                 <FormattedMessage
-                                    id="table.results_"
-                                    defaultMessage="résultat(s)"
+                                    {... MESSAGES.results}
                                 />
                             </div>
                         )}

@@ -11,6 +11,8 @@ import {
 
 import LinksValue from './LinksValueComponent';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     paper: {
         padding: theme.spacing(2),
@@ -49,10 +51,7 @@ const LinksCompare = ({
             {
                 isEqual(link, compareLink)
                 && (
-                    <FormattedMessage
-                        id="iaso.label.noDifference"
-                        defaultMessage="No difference"
-                    />
+                    <FormattedMessage {...MESSAGES.noDifference} />
                 )
             }
             {

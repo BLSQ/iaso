@@ -10,6 +10,8 @@ import DialogTitle from '@material-ui/core/DialogTitle';
 import DialogContent from '@material-ui/core/DialogContent';
 import DialogContentText from '@material-ui/core/DialogContentText';
 
+import MESSAGES from './messages';
+
 const ConfirmDialog = ({
     btnMessage, message, question, confirm, reject, btnVariant, btnDisabled,
 }) => {
@@ -55,16 +57,10 @@ const ConfirmDialog = ({
                 }
                 <DialogActions>
                     <Button onClick={() => handleClose(false)} color="primary">
-                        <FormattedMessage
-                            id="iaso.label.no"
-                            defaultMessage="No"
-                        />
+                        <FormattedMessage {...MESSAGES.no} />
                     </Button>
                     <Button onClick={() => handleClose(true)} color="primary" autoFocus>
-                        <FormattedMessage
-                            id="iaso.label.yes"
-                            defaultMessage="Yes"
-                        />
+                        <FormattedMessage {...MESSAGES.yes} />
                     </Button>
                 </DialogActions>
             </Dialog>

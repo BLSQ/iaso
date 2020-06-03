@@ -53,6 +53,8 @@ import commonStyles from '../../styles/common';
 import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
 
+import MESSAGES from './messages';
+
 const baseUrl = baseUrls.instances;
 
 const defaultOrder = 'updated_at';
@@ -276,10 +278,7 @@ class Instances extends Component {
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={`${formatMessage({
-                        defaultMessage: 'Record(s) for the form',
-                        id: 'iaso.instance.form',
-                    })}: ${currentForm ? currentForm.name : ''}`}
+                    title={`${formatMessage(MESSAGES.title)}: ${currentForm ? currentForm.name : ''}`}
                     displayBackButton
                     goBack={() => {
                         if (prevPathname) {
@@ -302,24 +301,15 @@ class Instances extends Component {
                             >
                                 <Tab
                                     value="list"
-                                    label={formatMessage({
-                                        defaultMessage: 'List',
-                                        id: 'iaso.label.list',
-                                    })}
+                                    label={formatMessage(MESSAGES.list)}
                                 />
                                 <Tab
                                     value="map"
-                                    label={formatMessage({
-                                        defaultMessage: 'Map',
-                                        id: 'iaso.label.map',
-                                    })}
+                                    label={formatMessage(MESSAGES.map)}
                                 />
                                 <Tab
                                     value="files"
-                                    label={formatMessage({
-                                        defaultMessage: 'Files',
-                                        id: 'iaso.label.files',
-                                    })}
+                                    label={formatMessage(MESSAGES.files)}
                                 />
                             </Tabs>
                         </Grid>

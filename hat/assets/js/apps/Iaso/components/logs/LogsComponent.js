@@ -15,6 +15,7 @@ import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
+import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -72,11 +73,7 @@ class Logs extends Component {
             <section className={classes.reactTable}>
                 {
                     load.loading && (
-                        <LoadingSpinner message={formatMessage({
-                            defaultMessage: 'Loading',
-                            id: 'main.label.loading',
-                        })}
-                        />
+                        <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                     )
                 }
                 {

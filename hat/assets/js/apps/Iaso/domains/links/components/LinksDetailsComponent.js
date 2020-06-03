@@ -20,6 +20,8 @@ import {
     fetchLinkDetail,
 } from '../../../utils/requests';
 
+import MESSAGES from '../messages';
+
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -74,11 +76,7 @@ class LinksDetails extends Component {
                 <Container maxWidth={false} className={classes.root}>
                     {
                         loading && (
-                            <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Loading',
-                                id: 'main.label.loading',
-                            })}
-                            />
+                            <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                         )
                     }
                     {
@@ -88,10 +86,7 @@ class LinksDetails extends Component {
                                     <Grid item xs={6}>
                                         <LinksCompare
                                             validated={validated}
-                                            title={formatMessage({
-                                                id: 'iaso.label.destination',
-                                                defaultMessage: 'Destination',
-                                            })}
+                                            title={formatMessage(MESSAGES.destination)}
                                             link={link.destination}
                                             compareLink={link.source}
                                         />
@@ -99,10 +94,7 @@ class LinksDetails extends Component {
                                     <Grid item xs={6}>
                                         <LinksCompare
                                             validated={validated}
-                                            title={formatMessage({
-                                                id: 'iaso.label.origin',
-                                                defaultMessage: 'Origin',
-                                            })}
+                                            title={formatMessage(MESSAGES.origin)}
                                             link={link.source}
                                             compareLink={link.destination}
                                         />
@@ -119,20 +111,14 @@ class LinksDetails extends Component {
                                             && (
                                                 <Fragment>
                                                     <CheckBox className={classes.buttonIcon} />
-                                                    <FormattedMessage
-                                                        id="iaso.forms.validated"
-                                                        defaultMessage="Validate"
-                                                    />
+                                                    <FormattedMessage {...MESSAGES.validated} />
                                                 </Fragment>
                                             )}
                                         {!validated
                                             && (
                                                 <Fragment>
                                                     <CheckBoxOutlineBlank className={classes.buttonIcon} />
-                                                    <FormattedMessage
-                                                        id="iaso.forms.notValidated"
-                                                        defaultMessage="Not validate"
-                                                    />
+                                                    <FormattedMessage {...MESSAGES.notValidated} />
                                                 </Fragment>
                                             )}
                                     </Button>

@@ -30,14 +30,12 @@ import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
+import MESSAGES from '../messages';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => (
     {
         value: status,
-        label: {
-            id: `iaso.label.instanceStatus.${status.toLowerCase()}`,
-            defaultMessage: status,
-        },
+        label: MESSAGES[status.toLowerCase()],
     }
 ));
 
@@ -144,7 +142,7 @@ class InstancesFiltersComponent extends Component {
                             onClick={() => this.onSearch()}
                         >
                             <Search className={classes.buttonIcon} />
-                            <FormattedMessage id="iaso.search" defaultMessage="Search" />
+                            <FormattedMessage {...MESSAGES.search} />
                         </Button>
                     </Grid>
                 </Grid>

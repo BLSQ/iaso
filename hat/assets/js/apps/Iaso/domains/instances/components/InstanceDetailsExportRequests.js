@@ -26,10 +26,7 @@ const InstanceDetailsExportRequests = (props) => {
                 url: `/forms/mappings/formId/${currentInstance.form_id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`,
                 color: 'secondary',
                 icon: 'dhis',
-                tooltipMessage: {
-                    id: 'iaso.label.dhis2Mappings',
-                    defaultMessage: 'DHIS mappings',
-                },
+                tooltipMessage: MESSAGES.dhis2Mappings,
             }}
         >
             <InstanceDetailsField

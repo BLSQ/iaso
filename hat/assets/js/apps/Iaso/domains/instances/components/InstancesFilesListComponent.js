@@ -21,27 +21,9 @@ import InstancePopover from './InstancePopoverComponent';
 
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
+import MESSAGES from '../messages';
 
 const minTabHeight = 'calc(100vh - 500px)';
-
-const MESSAGES = {
-    images: {
-        defaultMessage: 'Images',
-        id: 'iaso.label.images',
-    },
-    videos: {
-        defaultMessage: 'Videos',
-        id: 'iaso.label.videos',
-    },
-    documents: {
-        defaultMessage: 'Documents',
-        id: 'iaso.label.documents',
-    },
-    others: {
-        defaultMessage: 'Others',
-        id: 'iaso.label.others',
-    },
-};
 
 const styles = theme => ({
     root: {
@@ -155,7 +137,6 @@ class InstancesFilesList extends Component {
             intl: {
                 formatMessage,
             },
-            fetchDetails,
         } = this.props;
 
         const {
@@ -171,11 +152,7 @@ class InstancesFilesList extends Component {
                 <Grid container spacing={0}>
                     <Grid item xs={5} />
                     <Grid item xs={2}>
-                        <ErrorPaperComponent message={formatMessage({
-                            defaultMessage: 'Cannot find an instance with a file',
-                            id: 'iaso.instance.missingFile',
-                        })}
-                        />
+                        <ErrorPaperComponent message={formatMessage(MESSAGES.missingFile)} />
                     </Grid>
                     <Grid item xs={5} />
                 </Grid>

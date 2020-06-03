@@ -9,8 +9,6 @@ import L from 'leaflet';
 import {
     withStyles,
     Dialog,
-    DialogTitle,
-    DialogContent,
     DialogActions,
     Button,
 } from '@material-ui/core';
@@ -26,6 +24,8 @@ import MarkerComponent from './markers/MarkerComponent';
 import TileSwitch from './tools/TileSwitchComponent';
 
 import commonStyles from '../../styles/common';
+
+import MESSAGES from './messages';
 
 const boundsOptions = { padding: [500, 500] };
 
@@ -120,10 +120,7 @@ class MarkerMap extends Component {
                     </div>
                     <DialogActions>
                         <Button onClick={() => this.toggleTilePopup()} color="primary">
-                            <FormattedMessage
-                                id="iaso.label.close"
-                                defaultMessage="Close"
-                            />
+                            <FormattedMessage {...MESSAGES.close} />
                         </Button>
                     </DialogActions>
                 </Dialog>

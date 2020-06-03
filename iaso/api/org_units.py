@@ -419,9 +419,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(pk__in=selected_ids)
         else:
             queryset = queryset.exclude(pk__in=unselected_ids)
+            search_index = 0
+            base_queryset = queryset
             for search in searches:
-                search_index = 0
-                additional_queryset = build_org_units_queryset(queryset, search)
+                additional_queryset = build_org_units_queryset(base_queryset, search)
                 if search_index == 0:
                     queryset = additional_queryset
                 else:

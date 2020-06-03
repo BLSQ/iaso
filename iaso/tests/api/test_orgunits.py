@@ -41,6 +41,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.elite_group = m.Group.objects.create(name="Elite councils")
         cls.unofficial_group = m.Group.objects.create(name="Unofficial Jedi councils")
+        cls.another_group = m.Group.objects.create(name="Another group")
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
@@ -227,6 +228,30 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(1, am.Modification.objects.count())
+
+    @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_all_with_multiple_searches(self):
+        """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(
+            f"/api/orgunits/bulkupdate/",
+            data={
+                "select_all": True,
+                "groups_added": [self.another_group.pk],
+                "searches": [{"validated": "false"}, {"validated": "true"}],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        self.assertValidBulkupdateData(response.json())
+
+        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
+            jedi_council.refresh_from_db()
+            self.assertIn(self.another_group, jedi_council.groups.all())
+
+        self.assertEqual(1, m.BulkOperation.objects.count())
+        self.assertEqual(3, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_but_some(self):

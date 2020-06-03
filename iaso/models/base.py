@@ -3,25 +3,17 @@ from urllib.request import urlopen
 import pathlib
 from django.db import models
 from django.core.paginator import Paginator
-from django.contrib.gis.db.models.fields import PointField, PolygonField
+from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
-from django.contrib.postgres.fields import ArrayField, CITextField, JSONField
+from django.contrib.postgres.fields import JSONField
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
-from django.db.models import Q, Count
-from operator import itemgetter
+from django.db.models import Q
 
 from iaso.odk import parsing
 
-
-GEO_SOURCE_CHOICES = (
-    ("snis", "SNIS"),
-    ("ucla", "UCLA"),
-    ("pnltha", "PNL THA"),
-    ("derivated", "Derivated from actual data"),
-)
 
 YEAR = "YEAR"
 QUARTER = "QUARTER"
@@ -102,44 +94,6 @@ class Project(models.Model):
 
     def __str__(self):
         return "%s " % (self.name,)
-
-
-class OrgUnitType(models.Model):
-    name = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    sub_unit_types = models.ManyToManyField(
-        "OrgUnitType", related_name="super_types", blank=True
-    )
-
-    projects = models.ManyToManyField(Project, related_name="unit_types", blank=True)
-    depth = models.PositiveSmallIntegerField(null=True, blank=True)
-
-    def __str__(self):
-        return "%s" % (self.name)
-
-    def as_dict(self, sub_units=True, app_id=None):
-        res = {
-            "id": self.id,
-            "name": self.name,
-            "short_name": self.short_name,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "depth": self.depth,
-        }
-        if sub_units:
-            if not app_id:
-                sub_unit_types = [
-                    unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
-                ]
-            else:
-                sub_unit_types = [
-                    unit.as_dict(sub_units=False)
-                    for unit in self.sub_unit_types.filter(projects__app_id=app_id)
-                ]
-            res["sub_unit_types"] = sub_unit_types
-        return res
 
 
 class DataSource(models.Model):
@@ -242,185 +196,6 @@ class SourceVersion(models.Model):
         return report
 
 
-class OrgUnit(models.Model):
-    name = models.CharField(max_length=255)
-    uuid = models.TextField(null=True, blank=True, db_index=True)
-    custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)
-    version = models.ForeignKey(
-        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
-    )
-    parent = models.ForeignKey(
-        "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
-    )
-    aliases = ArrayField(
-        CITextField(max_length=255, blank=True), size=100, null=True, blank=True
-    )
-
-    org_unit_type = models.ForeignKey(
-        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
-    )
-
-    sub_source = models.TextField(
-        choices=GEO_SOURCE_CHOICES, null=True, blank=True
-    )  # sometimes, in a given source, there are sub sources
-    source_ref = models.TextField(null=True, blank=True, db_index=True)
-    geom = PolygonField(srid=4326, null=True, blank=True)
-    simplified_geom = PolygonField(srid=4326, null=True, blank=True)
-    catchment = PolygonField(srid=4326, null=True, blank=True)
-    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
-    geom_ref = models.IntegerField(null=True, blank=True)
-
-    latitude = models.DecimalField(
-        max_digits=10, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
-    longitude = models.DecimalField(
-        max_digits=11, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
-    gps_source = models.TextField(
-        null=True, blank=True
-    )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(null=True, blank=True, dim=3, srid=4326)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
-
-    def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id)
-
-    def as_dict_for_mobile(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-            "parent_id": self.parent_id,
-            "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
-            "altitude": self.location.z if self.location else None,
-        }
-
-    def as_dict(self, with_groups=True):
-        res = {
-            "name": self.name,
-            "short_name": self.name,
-            "id": self.id,
-            "source": self.version.data_source.name if self.version else None,
-            "source_ref": self.source_ref,
-            "parent_id": self.parent_id,
-            "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
-            "altitude": self.location.z if self.location else None,
-            "has_geo_json": True if self.simplified_geom else False,
-            "version": self.version.number if self.version else None,
-        }
-
-        if with_groups:
-            res["groups"] = [group.as_dict() for group in self.groups.all()]
-
-        if hasattr(self, "search_index"):
-            res["search_index"] = self.search_index
-        return res
-
-    def as_dict_with_parents(self):
-        return {
-            "name": self.name,
-            "short_name": self.name,
-            "id": self.id,
-            "source": self.version.data_source.name if self.version else None,
-            "source_id": self.version.data_source.id if self.version else None,
-            "sub_source": self.sub_source,
-            "sub_source_id": self.sub_source,
-            "source_ref": self.source_ref,
-            "parent_id": self.parent_id,
-            "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents() if self.parent else None,
-            "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
-            "org_unit_type": self.org_unit_type.as_dict()
-            if self.org_unit_type
-            else None,
-            "created_at": self.created_at.timestamp() if self.created_at else None,
-            "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
-            "altitude": self.location.z if self.location else None,
-            "has_geo_json": True if self.simplified_geom else False,
-            "version": self.version.number if self.version else None,
-            "groups": [group.as_dict() for group in self.groups.all()],
-        }
-
-    def as_small_dict(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-            "parent_id": self.parent_id,
-            "parent_name": self.parent.name if self.parent else None,
-            "source": self.version.data_source.name if self.version else None,
-            "source_ref": self.source_ref,
-            "parent": self.parent.as_small_dict() if self.parent else None,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
-        }
-
-    def as_dict_for_csv(self):
-        return {
-            "name": self.name,
-            "id": self.id,
-            "source_ref": self.source_ref,
-            "parent_id": self.parent_id,
-            "org_unit_type": self.org_unit_type.name,
-        }
-
-    def as_location(self):
-        res = {
-            "id": self.id,
-            "name": self.name,
-            "short_name": self.name,
-            "latitude": self.location.y if self.location else None,
-            "longitude": self.location.x if self.location else None,
-            "altitude": self.location.z if self.location else None,
-            "has_geo_json": True if self.simplified_geom else False,
-            "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
-            "org_unit_type_depth": self.org_unit_type.depth
-            if self.org_unit_type
-            else None,
-            "source_id": self.version.data_source.id if self.version else None,
-            "source_name": self.version.data_source.name if self.version else None,
-        }
-        if hasattr(self, "search_index"):
-            res["search_index"] = self.search_index
-        return res
-
-    def path(self):
-        path_components = []
-        cur = self
-        while cur:
-            if cur.source_ref:
-                path_components.insert(0, cur.source_ref)
-            cur = cur.parent
-        if len(path_components) > 0:
-            return "/" + ("/".join(path_components))
-        return None
-
-
 class RecordType(models.Model):
     projects = models.ManyToManyField(Project, related_name="record_types", blank=True)
     name = models.TextField()
@@ -434,7 +209,7 @@ class Record(models.Model):
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
     org_unit = models.ForeignKey(
-        OrgUnit, null=True, blank=True, on_delete=models.CASCADE
+        "OrgUnit", null=True, blank=True, on_delete=models.CASCADE
     )
     record_type = models.ForeignKey(
         RecordType, on_delete=models.CASCADE, null=True, blank=True
@@ -512,14 +287,14 @@ class AlgorithmRun(models.Model):
 
 class Link(models.Model):
     destination = models.ForeignKey(
-        OrgUnit,
+        "OrgUnit",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
         related_name="source_set",
     )
     source = models.ForeignKey(
-        OrgUnit,
+        "OrgUnit",
         on_delete=models.CASCADE,
         null=True,
         blank=True,
@@ -583,7 +358,7 @@ class Link(models.Model):
 
 
 class Form(models.Model):
-    org_unit_types = models.ManyToManyField(OrgUnitType, blank=True)
+    org_unit_types = models.ManyToManyField("OrgUnitType", blank=True)
     form_id = models.TextField(null=True, blank=True)  # extracted from version xls file
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -643,7 +418,7 @@ class Group(models.Model):
     source_version = models.ForeignKey(
         SourceVersion, null=True, blank=True, on_delete=models.CASCADE
     )
-    org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="groups")
+    org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -977,7 +752,7 @@ class Instance(models.Model):
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
     org_unit = models.ForeignKey(
-        OrgUnit, on_delete=models.DO_NOTHING, null=True, blank=True
+        "OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True
     )
     form = models.ForeignKey(
         Form, on_delete=models.PROTECT, null=True, blank=True, related_name="instances"
@@ -1239,7 +1014,9 @@ class Profile(models.Model):
         User, on_delete=models.CASCADE, related_name="iaso_profile"
     )
 
-    org_units = models.ManyToManyField(OrgUnit, blank=True, related_name="iaso_profile")
+    org_units = models.ManyToManyField(
+        "OrgUnit", blank=True, related_name="iaso_profile"
+    )
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)

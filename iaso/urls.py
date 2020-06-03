@@ -87,10 +87,9 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 
 
 urlpatterns = [
-    url('^token/$', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    url('^token/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
-    url(r"^", include(router.urls))
-
+    url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
+    url(r"^", include(router.urls)),
 ]
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

@@ -17,6 +17,8 @@ import { setCurrentTile } from '../../../redux/mapReducer';
 import tiles from '../../../constants/mapTiles';
 import commonStyles from '../../../styles/common';
 
+import MESSAGES from '../messages';
+
 const styles = theme => ({
     ...commonStyles(theme),
     list: {
@@ -42,29 +44,6 @@ const styles = theme => ({
     },
 });
 
-const MESSAGES = {
-    title: {
-        id: 'iaso.tile.title',
-        defaultMessage: 'Map layers',
-    },
-    osm: {
-        id: 'iaso.tile.osm',
-        defaultMessage: 'Open Street Map',
-    },
-    'arcgis-street': {
-        id: 'iaso.tile.arcgis.street',
-        defaultMessage: 'ArcGIS Street Map',
-    },
-    'arcgis-satellite': {
-        id: 'iaso.tile.arcgis.satellite',
-        defaultMessage: 'ArcGIS Satellite Map',
-    },
-    'arcgis-topo': {
-        id: 'iaso.tile.arcgis.topo',
-        defaultMessage: 'ArcGIS Topo Map',
-    },
-};
-
 function TileSwitchComponent(props) {
     const {
         currentTile,
@@ -81,7 +60,7 @@ function TileSwitchComponent(props) {
                 component="div"
             >
                 <Typography variant="subtitle1">
-                    {formatMessage(MESSAGES.title)}
+                    {formatMessage(MESSAGES.layersTitle)}
                 </Typography>
             </Box>
             <Box

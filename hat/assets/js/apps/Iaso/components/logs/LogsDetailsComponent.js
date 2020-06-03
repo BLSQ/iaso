@@ -17,6 +17,7 @@ import {
     fetchLogDetail,
 } from '../../utils/requests';
 
+import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -70,11 +71,7 @@ class LogsDetails extends Component {
                 <Container maxWidth={false} className={classes.root}>
                     {
                         loading && (
-                            <LoadingSpinner message={formatMessage({
-                                defaultMessage: 'Loading',
-                                id: 'main.label.loading',
-                            })}
-                            />
+                            <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
                         )
                     }
                     {
@@ -87,10 +84,7 @@ class LogsDetails extends Component {
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
                                                 <LogCompareComponent
-                                                    title={formatMessage({
-                                                        id: 'main.label.before',
-                                                        defaultMessage: 'Before',
-                                                    })}
+                                                    title={formatMessage(MESSAGES.before)}
                                                     log={log.past_value}
                                                     compareLog={log.new_value}
                                                     goToRevision={goToRevision}
@@ -98,10 +92,7 @@ class LogsDetails extends Component {
                                             </Grid>
                                             <Grid item xs={6}>
                                                 <LogCompareComponent
-                                                    title={formatMessage({
-                                                        id: 'main.label.after',
-                                                        defaultMessage: 'After',
-                                                    })}
+                                                    title={formatMessage(MESSAGES.after)}
                                                     log={log.new_value}
                                                     compareLog={log.past_value}
                                                     goToRevision={goToRevision}
@@ -117,10 +108,7 @@ class LogsDetails extends Component {
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
                                                 <h4 className="margin-bottom">
-                                                    <FormattedMessage
-                                                        id="logs.label.delete"
-                                                        defaultMessage="Deleted"
-                                                    />
+                                                    <FormattedMessage {...MESSAGES.deleted} />
                                                 </h4>
                                                 {<LogCompareComponent log={log.past_value} />}
                                             </Grid>
@@ -134,10 +122,7 @@ class LogsDetails extends Component {
                                         <Grid container spacing={2}>
                                             <Grid item xs={6}>
                                                 <h4 className="margin-bottom">
-                                                    <FormattedMessage
-                                                        id="logs.label.create"
-                                                        defaultMessage="Creation"
-                                                    />
+                                                    <FormattedMessage {...MESSAGES.created} />
                                                 </h4>
                                                 {<LogCompareComponent log={log.new_value} />}
                                             </Grid>

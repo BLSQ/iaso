@@ -1,4 +1,6 @@
-const MESSAGES = {
+import { defineMessages } from 'react-intl';
+
+const MESSAGES = defineMessages({
     users: {
         defaultMessage: 'Users',
         id: 'iaso.label.users',
@@ -67,6 +69,30 @@ const MESSAGES = {
         id: 'iaso.users.selectedOrgUnits',
         defaultMessage: 'Org units selected',
     },
-};
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.labels.actions',
+    },
+    edit: {
+        defaultMessage: 'Edit',
+        id: 'iaso.label.edit',
+    },
+    updateUser: {
+        defaultMessage: 'Update user',
+        id: 'iaso.users.update',
+    },
+    deleteUserTitle: {
+        id: 'iaso.users.dialog.deleteUserTitle',
+        defaultMessage: 'Are you sure you want to delete this user?',
+    },
+    deleteUserText: {
+        id: 'iaso.users.dialog.deleteUserText',
+        defaultMessage: 'This operation cannot be undone.',
+    },
+    addOrgUnit: {
+        defaultMessage: 'Add org unit',
+        id: 'iaso.orgUnits.add',
+    },
+});
 
 export default MESSAGES;

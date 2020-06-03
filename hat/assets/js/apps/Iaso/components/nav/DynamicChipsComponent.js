@@ -12,6 +12,7 @@ import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 
 import CustomColorShipComponent from '../chips/CustomColorShipComponent';
+import MESSAGES from './messages';
 
 
 const styles = theme => ({
@@ -158,7 +159,7 @@ class DynamicChipsComponent extends Component {
                             size="small"
                             title={(
                                 <Fragment>
-                                    <FormattedMessage id="iaso.label.add" defaultMessage="Add" />
+                                    <FormattedMessage {...MESSAGES.add} />
                                     {` ${baseLabel.toLowerCase()}`}
                                 </Fragment>
                             )}

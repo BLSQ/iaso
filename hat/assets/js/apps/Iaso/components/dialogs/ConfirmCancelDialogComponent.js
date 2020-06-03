@@ -4,6 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { Button, DialogActions, withStyles } from '@material-ui/core';
 
 import DialogComponent from './DialogComponent';
+import MESSAGES from './messages';
 
 const actionStyles = theme => ({
     action: {
@@ -64,8 +65,8 @@ export default function ConfirmCancelDialogComponent({
 ConfirmCancelDialogComponent.defaultProps = {
     allowConfirm: true,
     onCancel: closeDialog => closeDialog(),
-    confirmMessage: { id: 'iaso.label.yes', defaultMessage: 'Yes' },
-    cancelMessage: { id: 'iaso.label.no', defaultMessage: 'No' },
+    confirmMessage: MESSAGES.yes,
+    cancelMessage: MESSAGES.no,
     maxWidth: 'sm',
     onClosed: () => {},
 };

@@ -43,7 +43,7 @@ const TableColumns = (formatMessage, component) => [
                         <IconButtonComponent
                             onClick={openDialog}
                             icon="edit"
-                            tooltipMessage={{ id: 'iaso.label.edit', defaultMessage: 'Edit' }}
+                            tooltipMessage={MESSAGES.edit}
                         />
                     )}
                     initialData={settings.original}

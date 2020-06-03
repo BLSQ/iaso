@@ -13,13 +13,12 @@ import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import StarsComponent from '../../components/stars/StarsComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 
+import MESSAGES from './messages';
+
 export const linksTableColumns = (formatMessage, component, classes) => (
     [
         {
-            Header: formatMessage({
-                defaultMessage: 'Similarity score',
-                id: 'iaso.label.similarity_score',
-            }),
+            Header: formatMessage(MESSAGES.similarityScore),
             width: 170,
             accessor: 'similarity_score',
             Cell: settings => (
@@ -33,10 +32,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Name',
-                id: 'iaso.label.name',
-            }),
+            Header: formatMessage(MESSAGES.name),
             accessor: 'destination__name',
             Cell: settings => (
                 <span>
@@ -49,50 +45,29 @@ export const linksTableColumns = (formatMessage, component, classes) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Origin',
-                id: 'iaso.label.origin',
-            }),
+            Header: formatMessage(MESSAGES.origin),
             accessor: 'source__source',
             Cell: settings => (
                 <span>
-                    {`${formatMessage({
-                        defaultMessage: 'Source',
-                        id: 'iaso.label.source',
-                    })}: ${settings.original.source.source}`}
+                    {`${formatMessage(MESSAGES.source)}: ${settings.original.source.source}`}
                     <br />
-                    {`${formatMessage({
-                        defaultMessage: 'Version',
-                        id: 'iaso.label.version',
-                    })}: ${settings.original.source.version}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.source.version}`}
                 </span>
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Destination',
-                id: 'iaso.label.destination',
-            }),
+            Header: formatMessage(MESSAGES.destination),
             accessor: 'destination__source',
             Cell: settings => (
                 <span>
-                    {`${formatMessage({
-                        defaultMessage: 'Source',
-                        id: 'iaso.label.source',
-                    })}: ${settings.original.destination.source}`}
+                    {`${formatMessage(MESSAGES.source)}: ${settings.original.destination.source}`}
                     <br />
-                    {`${formatMessage({
-                        defaultMessage: 'Version',
-                        id: 'iaso.label.version',
-                    })}: ${settings.original.destination.version}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.destination.version}`}
                 </span>
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Updated at',
-                id: 'iaso.label.updated_at',
-            }),
+            Header: formatMessage(MESSAGES.updatedAt),
             accessor: 'updated_at',
             Cell: settings => (
                 <span>
@@ -101,30 +76,21 @@ export const linksTableColumns = (formatMessage, component, classes) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Algorithm',
-                id: 'iaso.label.algorithm',
-            }),
+            Header: formatMessage(MESSAGES.algorithm),
             accessor: 'algorithm_run',
             Cell: settings => (
                 settings.original.algorithm_run ? settings.original.algorithm_run.algorithm.description : '?'
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Validator',
-                id: 'iaso.label.validator',
-            }),
+            Header: formatMessage(MESSAGES.validator),
             accessor: 'validator',
             Cell: settings => (
                 settings.original.validator ? getDisplayName(settings.original.validator) : textPlaceholder
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Validated',
-                id: 'iaso.forms.validated',
-            }),
+            Header: formatMessage(MESSAGES.validated),
             accessor: 'validated',
             Cell: settings => (
                 <Checkbox
@@ -149,10 +115,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
                             classes={{
                                 popper: classes.popperFixed,
                             }}
-                            title={formatMessage({
-                                defaultMessage: 'Details',
-                                id: 'iaso.label.details',
-                            })}
+                            title={formatMessage(MESSAGES.details)}
                         >
                             <Visibility />
                         </Tooltip>
@@ -165,10 +128,7 @@ export const linksTableColumns = (formatMessage, component, classes) => (
 export const runsTableColumns = (formatMessage, component) => (
     [
         {
-            Header: formatMessage({
-                defaultMessage: 'Stopped at',
-                id: 'iaso.label.ended_at',
-            }),
+            Header: formatMessage(MESSAGES.endedAt),
             accessor: 'ended_at',
             Cell: settings => (
                 <span>
@@ -180,10 +140,7 @@ export const runsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Launched at',
-                id: 'iaso.label.launched_at',
-            }),
+            Header: formatMessage(MESSAGES.launchedAt),
             accessor: 'created_at',
             Cell: settings => (
                 <span>
@@ -192,10 +149,7 @@ export const runsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Name',
-                id: 'iaso.label.name',
-            }),
+            Header: formatMessage(MESSAGES.name),
             accessor: 'algorithm__name',
             Cell: settings => (
                 <span>
@@ -204,10 +158,7 @@ export const runsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Launcher',
-                id: 'iaso.label.launcher',
-            }),
+            Header: formatMessage(MESSAGES.launcher),
             accessor: 'launcher',
             Cell: settings => (
                 <span>
@@ -216,10 +167,7 @@ export const runsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Links',
-                id: 'iaso.label.links',
-            }),
+            Header: formatMessage(MESSAGES.links),
             accessor: 'links_count',
             sortable: false,
             Cell: settings => (
@@ -243,42 +191,24 @@ export const runsTableColumns = (formatMessage, component) => (
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Origin',
-                id: 'iaso.label.origin',
-            }),
+            Header: formatMessage(MESSAGES.origin),
             accessor: 'version_2',
             Cell: settings => (
                 <span>
-                    {`${formatMessage({
-                        defaultMessage: 'Source',
-                        id: 'iaso.label.source',
-                    })}: ${settings.original.version_2.data_source.name}`}
+                    {`${formatMessage(MESSAGES.source)}: ${settings.original.version_2.data_source.name}`}
                     <br />
-                    {`${formatMessage({
-                        defaultMessage: 'Version',
-                        id: 'iaso.label.version',
-                    })}: ${settings.original.version_2.number}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.version_2.number}`}
                 </span>
             ),
         },
         {
-            Header: formatMessage({
-                defaultMessage: 'Destination',
-                id: 'iaso.label.destination',
-            }),
+            Header: formatMessage(MESSAGES.destination),
             accessor: 'version_1',
             Cell: settings => (
                 <span>
-                    {`${formatMessage({
-                        defaultMessage: 'Source',
-                        id: 'iaso.label.source',
-                    })}: ${settings.original.version_1.data_source.name}`}
+                    {`${formatMessage(MESSAGES.source)}: ${settings.original.version_1.data_source.name}`}
                     <br />
-                    {`${formatMessage({
-                        defaultMessage: 'Version',
-                        id: 'iaso.label.version',
-                    })}: ${settings.original.version_1.number}`}
+                    {`${formatMessage(MESSAGES.version)}: ${settings.original.version_1.number}`}
                 </span>
             ),
         },
@@ -290,14 +220,8 @@ export const runsTableColumns = (formatMessage, component) => (
                 <section>
                     <DeleteDialog
                         disabled={Boolean(!settings.original.ended_at)}
-                        titleMessage={{
-                            id: 'iaso.runs.dialog.deleteRunTitle',
-                            defaultMessage: 'Are you sure you want to delete this run?',
-                        }}
-                        message={{
-                            id: 'iaso.runs.dialog.deleteRunText',
-                            defaultMessage: 'All created links will be deleted.',
-                        }}
+                        titleMessage={MESSAGES.deleteRunTitle}
+                        message={MESSAGES.deleteRunText}
                         onConfirm={closeDialog => component.deleteRuns(settings.original).then(closeDialog)}
                     />
                 </section>

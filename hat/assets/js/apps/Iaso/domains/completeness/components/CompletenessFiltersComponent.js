@@ -5,6 +5,7 @@ import Grid from '@material-ui/core/Grid';
 import InputComponent from '../../../components/forms/InputComponent';
 import ChipListComponent from '../../../components/chips/ChipListComponent';
 import { periodTypeOptions, instanceStatusOptions } from '../config';
+import MESSAGES from '../messages';
 
 function CompletenessFiltersComponent({
     activePeriodType,
@@ -20,10 +21,7 @@ function CompletenessFiltersComponent({
                         type="select"
                         clearable={false}
                         onChange={(_, value) => setActivePeriodType(value)}
-                        label={{
-                            id: 'iaso.label.periodType',
-                            defaultMessage: 'Period type',
-                        }}
+                        label={MESSAGES.periodType}
                         options={periodTypeOptions}
                         value={activePeriodType}
                         keyValue="periodType"

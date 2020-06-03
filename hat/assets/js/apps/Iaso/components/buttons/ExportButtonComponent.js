@@ -5,13 +5,14 @@ import CallMade from '@material-ui/icons/CallMade';
 import { withStyles, Button } from '@material-ui/core';
 
 import commonStyles from '../../styles/common';
+import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
 function ExportButtonComponent({
-    classes, intl, onClick, message, isDisabled
+    classes, intl, onClick, message, isDisabled,
 }) {
     return (
         <Button
@@ -27,8 +28,8 @@ function ExportButtonComponent({
     );
 }
 ExportButtonComponent.defaultProps = {
-    message: { id: 'iaso.label.export', defaultMessage: 'Export' },
-    isDisabled: false
+    message: MESSAGES.export,
+    isDisabled: false,
 };
 ExportButtonComponent.propTypes = {
     intl: PropTypes.object.isRequired,

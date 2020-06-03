@@ -14,9 +14,11 @@ import {
     DialogTitle,
     Grid,
 } from '@material-ui/core';
-import commonStyles from '../../styles/common';
+import commonStyles from '../../../styles/common';
 
-import InputComponent from '../forms/InputComponent';
+import InputComponent from '../../../components/forms/InputComponent';
+
+import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -109,10 +111,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                     onClick={() => this.toggleDialog()}
                 >
                     <Add className={classes.buttonIcon} />
-                    <FormattedMessage
-                        id="iaso.algo.addRun"
-                        defaultMessage="Add algorithm run"
-                    />
+                    <FormattedMessage {...MESSAGES.addRun} />
                 </Button>
                 <Dialog
                     fullWidth
@@ -124,10 +123,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                     scroll="body"
                 >
                     <DialogTitle className={classes.title}>
-                        <FormattedMessage
-                            id="iaso.algo.addRun"
-                            defaultMessage="Add algorithm run"
-                        />
+                        <FormattedMessage {...MESSAGES.addRun} />
                     </DialogTitle>
                     <DialogContent className={classes.content}>
                         <Grid container spacing={2} alignItems="center" justify="flex-start">
@@ -143,10 +139,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                         label: a.description,
                                         value: a.id,
                                     }))}
-                                    label={{
-                                        id: 'iaso.label.algorithm',
-                                        defaultMessage: 'Algorithm',
-                                    }}
+                                    label={MESSAGES.algorithm}
                                 />
                             </Grid>
                         </Grid>
@@ -163,10 +156,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                         label: s.name,
                                         value: s.id,
                                     })) : []}
-                                    label={{
-                                        id: 'iaso.label.sourceorigin',
-                                        defaultMessage: 'Origin source',
-                                    }}
+                                    label={MESSAGES.sourceorigin}
                                 />
                                 <InputComponent
                                     multi={false}
@@ -177,16 +167,10 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                     value={versionOrigin}
                                     type="select"
                                     options={(sourceOriginId ? getVersions(sourcesList, sourceOriginId) : []).map(v => ({
-                                        label: `${formatMessage({
-                                            id: 'iaso.label.version',
-                                            defaultMessage: 'Version',
-                                        })} ${v.number}`,
+                                        label: `${formatMessage(MESSAGES.version)} ${v.number}`,
                                         value: v.number,
                                     }))}
-                                    label={{
-                                        id: 'iaso.label.sourceoriginversion',
-                                        defaultMessage: 'Origin source version',
-                                    }}
+                                    label={MESSAGES.sourceoriginversion}
                                 />
                             </Grid>
                             <Grid xs={6} item>
@@ -201,10 +185,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                         label: s.name,
                                         value: s.id,
                                     })) : []}
-                                    label={{
-                                        id: 'iaso.label.sourcedestination',
-                                        defaultMessage: 'Destination source',
-                                    }}
+                                    label={MESSAGES.sourcedestination}
                                 />
                                 <InputComponent
                                     multi={false}
@@ -217,26 +198,17 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                     options={(sourceDestinationId
                                         ? getVersions(sourcesList, sourceDestinationId)
                                         : []).map(v => ({
-                                        label: `${formatMessage({
-                                            id: 'iaso.label.version',
-                                            defaultMessage: 'Version',
-                                        })} ${v.number}`,
+                                        label: `${formatMessage(MESSAGES.version)} ${v.number}`,
                                         value: v.number,
                                     }))}
-                                    label={{
-                                        id: 'iaso.label.sourcedestinationversion',
-                                        defaultMessage: 'Destination source version',
-                                    }}
+                                    label={MESSAGES.sourcedestinationversion}
                                 />
                             </Grid>
                         </Grid>
                     </DialogContent>
                     <DialogActions className={classes.action}>
                         <Button onClick={() => this.handleClose(false)} color="primary">
-                            <FormattedMessage
-                                id="iaso.label.cancel"
-                                defaultMessage="Cancel"
-                            />
+                            <FormattedMessage {...MESSAGES.cancel} />
                         </Button>
                         <Button
                             onClick={() => this.handleClose(true)}
@@ -250,10 +222,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                             color="primary"
                             autoFocus
                         >
-                            <FormattedMessage
-                                id="iaso.label.execute"
-                                defaultMessage="Execute"
-                            />
+                            <FormattedMessage {...MESSAGES.execute} />
                         </Button>
                     </DialogActions>
                 </Dialog>

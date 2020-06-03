@@ -23,25 +23,19 @@ const mappingsTableColumns = formatMessage => [
                 <IconButtonComponent
                     url={`${baseUrls.mappingDetail}/mappingVersionId/${settings.original.id}`}
                     icon="remove-red-eye"
-                    tooltipMessage={{ id: 'iaso.label.view', defaultMessage: 'View' }}
+                    tooltipMessage={MESSAGES.view}
                 />
             </section>
         ),
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Name',
-            id: 'iaso.label.name',
-        }),
+        Header: formatMessage(MESSAGES.name),
         accessor: 'form_version__form__name',
         style: { justifyContent: 'left' },
         Cell: settings => <span>{settings.original.form_version.form.name}</span>,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Version',
-            id: 'iaso.label.version',
-        }),
+        Header: formatMessage(MESSAGES.version),
         accessor: 'form_version__version_id',
         Cell: settings => (
             <span>{settings.original.form_version.version_id}</span>
@@ -49,34 +43,22 @@ const mappingsTableColumns = formatMessage => [
     },
 
     {
-        Header: formatMessage({
-            defaultMessage: 'Type',
-            id: 'iaso.label.type',
-        }),
+        Header: formatMessage(MESSAGES.type),
         accessor: 'mapping__mapping_type',
         Cell: settings => <span>{settings.original.mapping.mapping_type}</span>,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Mapped questions',
-            id: 'iaso.mappings.mapped_questions',
-        }),
+        Header: formatMessage(MESSAGES.mappedQuestions),
         accessor: 'mapped_questions',
         Cell: settings => <span>{settings.original.mapped_questions}</span>,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Total questions',
-            id: 'iaso.mappings.total_questions',
-        }),
+        Header: formatMessage(MESSAGES.totalQuestions),
         accessor: 'total_questions',
         Cell: settings => <span>{settings.original.total_questions}</span>,
     },
     {
-        Header: formatMessage({
-            defaultMessage: 'Coverage',
-            id: 'iaso.mappings.coverage',
-        }),
+        Header: formatMessage(MESSAGES.coverage),
         accessor: 'coverage',
         Cell: settings => (
             <span>
@@ -89,10 +71,7 @@ const mappingsTableColumns = formatMessage => [
     },
 
     {
-        Header: formatMessage({
-            defaultMessage: 'Updated at',
-            id: 'iaso.label.updated_at',
-        }),
+        Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
             <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>

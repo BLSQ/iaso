@@ -50,6 +50,8 @@ import commonStyles from '../../styles/common';
 
 import { baseUrls } from '../../constants/urls';
 
+import MESSAGES from './messages';
+
 const baseUrl = baseUrls.links;
 
 const styles = theme => ({
@@ -189,10 +191,7 @@ class Links extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar
-                    title={formatMessage({
-                        defaultMessage: 'Links validation',
-                        id: 'iaso.links.title',
-                    })}
+                    title={formatMessage(MESSAGES.title)}
                     displayBackButton={displayBackButton}
                     goBack={() => router.goBack()}
                 />

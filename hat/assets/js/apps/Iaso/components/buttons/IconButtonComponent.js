@@ -72,7 +72,6 @@ function IconButtonComponent({
         console.error('IconButtonComponent needs either the onClick or the url property');
     }
     const icon = ICON_VARIANTS[iconName];
-
     return (
         <Tooltip
             classes={{ popper: classes.popperFixed }}

@@ -20,6 +20,7 @@ import commonStyles from '../../styles/common';
 import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from '../../domains/forms/messages';
+import { MESSAGES as LOG_MESSAGES } from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -123,8 +124,8 @@ const LogCompareComponent = ({
                                         }}
                                         title={
                                             allFields
-                                                ? <FormattedMessage id="iaso.logs.seeChanges" defaultMessage="See only changes" />
-                                                : <FormattedMessage id="iaso.logs.seeAll" defaultMessage="See all fields" />
+                                                ? <FormattedMessage {...LOG_MESSAGES.seeChanges} />
+                                                : <FormattedMessage {...LOG_MESSAGES.seeAll} />
                                         }
                                     >
                                         <IconButton
@@ -145,10 +146,7 @@ const LogCompareComponent = ({
                         isEqual(l.fields, compareLog[i].fields)
                         && !allFields
                         && (
-                            <FormattedMessage
-                                id="iaso.logs.noDifference"
-                                defaultMessage="No difference between revisions"
-                            />
+                            <FormattedMessage {...LOG_MESSAGES.noDifference} />
                         )
                     }
                     {
@@ -215,22 +213,13 @@ const LogCompareComponent = ({
                                     <Grid xs={6} item>
                                         <ConfirmDialog
                                             btnMessage={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevision"
-                                                    defaultMessage="Keep all"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevision} />
                                             )}
                                             question={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevisionQuestion"
-                                                    defaultMessage="Do you confirm the roll back to this revision ?"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevisionQuestion} />
                                             )}
                                             message={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevisionText"
-                                                    defaultMessage="All fiieds will be replaced"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevisionText} />
                                             )}
                                             confirm={() => goToRevision(l)}
                                         />
@@ -238,22 +227,13 @@ const LogCompareComponent = ({
                                     <Grid xs={6} item>
                                         <ConfirmDialog
                                             btnMessage={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevisionChanges"
-                                                    defaultMessage="Keep only changes"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevisionChanges} />
                                             )}
                                             question={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevisionQuestion"
-                                                    defaultMessage="Do you confirm the roll back to this revision ?"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevisionQuestion} />
                                             )}
                                             message={(
-                                                <FormattedMessage
-                                                    id="iaso.logs.goToRevisionTextChanges"
-                                                    defaultMessage="Only changes will be applied"
-                                                />
+                                                <FormattedMessage {...LOG_MESSAGES.goToRevisionTextChanges} />
                                             )}
                                             confirm={() => goToRevision({
                                                 fields: differenceArray[i],

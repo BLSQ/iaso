@@ -410,6 +410,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         unselected_ids = request.data.get("unselected_ids", [])
         searches = request.data.get("searches", [])
 
+        # Restrict qs to org units accessible to the authenticated user
         queryset = OrgUnit.objects.filter(
             version__data_source__projects__account__id=request.user.iaso_profile.account.id
         )
@@ -427,8 +428,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = queryset.union(additional_queryset)
                 search_index += 1
 
-        with transaction.atomic():
-            if queryset.count() > 0:
+        if queryset.count() > 0:
+            with transaction.atomic():
                 for org_unit in queryset.iterator():
                     OrgUnit.objects.update_single_unit_from_bulk(
                         request.user,

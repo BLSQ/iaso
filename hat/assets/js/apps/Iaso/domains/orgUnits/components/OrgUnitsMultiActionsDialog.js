@@ -170,104 +170,110 @@ const OrgUnitsMultiActionsDialog = ({
                 )
                 </DialogTitle>
                 <DialogContent className={classes.content}>
-                    <InputComponent
-                        keyValue="editGroups"
-                        onChange={(key, checked) => handleSetEditGroups(checked)}
-                        value={editGroups}
-                        type="checkbox"
-                        label={MESSAGES.editGroups}
-                    />
-                    {
-                        editGroups
-                    && (
-                        <>
-                            <InputComponent
-                                multi
-                                clearable
-                                keyValue="addGroups"
-                                onChange={(key, value) => setGroupsAdded(stringOfIdsToArrayofIds(value))}
-                                value={groupsAdded.length > 0 ? groupsAdded : null}
-                                type="select"
-                                options={groups.map(g => ({
-                                    label: g.name,
-                                    value: g.id,
-                                }))}
-                                label={MESSAGES.addToGroups}
-                                isSearchable
-                            />
-                            <InputComponent
-                                multi
-                                clearable
-                                keyValue="removeGroups"
-                                onChange={(key, value) => setGroupsRemoved(stringOfIdsToArrayofIds(value))}
-                                value={groupsRemoved.length > 0 ? groupsRemoved : null}
-                                type="select"
-                                options={groupsWithoutAdded.map(g => ({
-                                    label: g.name,
-                                    value: g.id,
-                                }))}
-                                label={MESSAGES.removeFromGroups}
-                                isSearchable
-                            />
-                        </>
-                    )
-                    }
-                    <InputComponent
-                        keyValue="editOrgUnitType"
-                        onChange={(key, checked) => handleSetEditOuType(checked)}
-                        value={editOrgUnitType}
-                        type="checkbox"
-                        label={MESSAGES.editOrgUnitType}
-                    />
-                    {
-                        editOrgUnitType
-                    && (
+                    <div>
                         <InputComponent
-                            multi={false}
-                            clearable
-                            keyValue="changeOrgUnitType"
-                            onChange={(key, value) => setOrgUnitType(value)}
-                            value={orgUnitType}
-                            type="select"
-                            options={orgUnitTypes.map(ot => ({
-                                label: ot.name,
-                                value: ot.id,
-                            }))}
-                            label={MESSAGES.org_unit_type}
-                            isSearchable
+                            keyValue="editGroups"
+                            onChange={(key, checked) => handleSetEditGroups(checked)}
+                            value={editGroups}
+                            type="checkbox"
+                            label={MESSAGES.editGroups}
                         />
-                    )
-                    }
-                    <InputComponent
-                        keyValue="editValidation"
-                        onChange={(key, checked) => handleSetEditValidation(checked)}
-                        value={editValidation}
-                        type="checkbox"
-                        label={MESSAGES.editValidation}
-                    />
-                    {
-                        editValidation
-                    && (
-                        <div className={classes.marginLeft}>
-                            <InputComponent
-                                keyValue="isValid"
-                                onChange={(key, value) => setIsValid(value)}
-                                value={isValid}
-                                type="radio"
-                                options={[
-                                    {
-                                        value: 'true',
-                                        label: <FormattedMessage {...MESSAGES.valid} />,
-                                    },
-                                    {
-                                        value: 'false',
-                                        label: <FormattedMessage {...MESSAGES.notValid} />,
-                                    },
-                                ]}
-                            />
-                        </div>
-                    )
-                    }
+                        {
+                            editGroups
+                            && (
+                                <>
+                                    <InputComponent
+                                        multi
+                                        clearable
+                                        keyValue="addGroups"
+                                        onChange={(key, value) => setGroupsAdded(stringOfIdsToArrayofIds(value))}
+                                        value={groupsAdded.length > 0 ? groupsAdded : null}
+                                        type="select"
+                                        options={groups.map(g => ({
+                                            label: g.name,
+                                            value: g.id,
+                                        }))}
+                                        label={MESSAGES.addToGroups}
+                                        isSearchable
+                                    />
+                                    <InputComponent
+                                        multi
+                                        clearable
+                                        keyValue="removeGroups"
+                                        onChange={(key, value) => setGroupsRemoved(stringOfIdsToArrayofIds(value))}
+                                        value={groupsRemoved.length > 0 ? groupsRemoved : null}
+                                        type="select"
+                                        options={groupsWithoutAdded.map(g => ({
+                                            label: g.name,
+                                            value: g.id,
+                                        }))}
+                                        label={MESSAGES.removeFromGroups}
+                                        isSearchable
+                                    />
+                                </>
+                            )
+                        }
+                    </div>
+                    <div>
+                        <InputComponent
+                            keyValue="editOrgUnitType"
+                            onChange={(key, checked) => handleSetEditOuType(checked)}
+                            value={editOrgUnitType}
+                            type="checkbox"
+                            label={MESSAGES.editOrgUnitType}
+                        />
+                        {
+                            editOrgUnitType
+                            && (
+                                <InputComponent
+                                    multi={false}
+                                    clearable
+                                    keyValue="changeOrgUnitType"
+                                    onChange={(key, value) => setOrgUnitType(value)}
+                                    value={orgUnitType}
+                                    type="select"
+                                    options={orgUnitTypes.map(ot => ({
+                                        label: ot.name,
+                                        value: ot.id,
+                                    }))}
+                                    label={MESSAGES.org_unit_type}
+                                    isSearchable
+                                />
+                            )
+                        }
+                    </div>
+                    <div>
+                        <InputComponent
+                            keyValue="editValidation"
+                            onChange={(key, checked) => handleSetEditValidation(checked)}
+                            value={editValidation}
+                            type="checkbox"
+                            label={MESSAGES.editValidation}
+                        />
+                        {
+                            editValidation
+                            && (
+                                <div className={classes.marginLeft}>
+                                    <InputComponent
+                                        keyValue="isValid"
+                                        onChange={(key, value) => setIsValid(value)}
+                                        value={isValid}
+                                        type="radio"
+                                        options={[
+                                            {
+                                                value: 'true',
+                                                label: <FormattedMessage {...MESSAGES.valid} />,
+                                            },
+                                            {
+                                                value: 'false',
+                                                label: <FormattedMessage {...MESSAGES.notValid} />,
+                                            },
+                                        ]}
+                                    />
+                                </div>
+                            )
+                        }
+                    </div>
                 </DialogContent>
                 <DialogActions className={classes.action}>
                     <Button onClick={closeAndReset} color="primary">

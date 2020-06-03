@@ -21,6 +21,8 @@ import Table from '../../components/tables/TableComponent';
 
 import { baseUrls } from '../../constants/urls';
 
+import MESSAGES from './messages';
+
 const baseUrl = baseUrls.mappings;
 
 const styles = theme => ({
@@ -61,10 +63,7 @@ class Mappings extends Component {
             <>
                 {fetching && <LoadingSpinner />}
                 <TopBar
-                    title={formatMessage({
-                        defaultMessage: 'DHIS mappings',
-                        id: 'iaso.label.dhis2Mappings',
-                    })}
+                    title={formatMessage(MESSAGES.dhis2Mappings)}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Table

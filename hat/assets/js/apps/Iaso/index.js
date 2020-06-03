@@ -13,6 +13,7 @@ import theme from './utils/theme';
 
 import createStore from '../../redux/createStore';
 
+import appReducer from './domains/app/reducer';
 import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './domains/forms/reducer';
@@ -34,7 +35,7 @@ import { groupsInitialState, reducer as groupsReducer } from './domains/orgUnits
 
 import { getChipColors } from './constants/chipColors';
 
-import App from '../App';
+import App from './domains/app';
 import { locationLimitMax } from './domains/orgUnits';
 
 import {
@@ -74,6 +75,7 @@ export default function iasoApp(element, baseUrl) {
     let history = useRouterHistory(createHistory)({
         basename: baseUrl,
     });
+    // TODO: to check, this initial state argument is probably useless
     const store = createStore({
         load: {},
         currentUser: currentUserInitialState,
@@ -94,6 +96,7 @@ export default function iasoApp(element, baseUrl) {
         mappings: mappingsInitialState,
         groups: groupsInitialState,
     }, {
+        app: appReducer,
         load: loadReducer,
         currentUser: currentUserReducer,
         sidebar: sidebarMenuReducer,

@@ -22,11 +22,13 @@ import commonStyles from '../../styles/common';
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import CustomTableComponent from '../../../../components/CustomTableComponent';
-import FormDialogComponent from '../../components/dialogs/FormDialogComponent';
+import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
+
+import MESSAGES from './messages';
 
 import { baseUrls } from '../../constants/urls';
 
@@ -100,11 +102,7 @@ class Forms extends Component {
         } = this.props;
         return (
             <section>
-                <TopBar title={formatMessage({
-                    defaultMessage: 'Forms',
-                    id: 'iaso.forms.title',
-                })}
-                />
+                <TopBar title={formatMessage(MESSAGES.title)} />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <div className={classes.reactTable}>
                         <CustomTableComponent
@@ -129,7 +127,7 @@ class Forms extends Component {
                     </div>
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <FormDialogComponent
-                            titleMessage={{ id: 'iaso.forms.create', defaultMessage: 'Create form' }}
+                            titleMessage={MESSAGES.createForm}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             onSuccess={() => this.setState({ isUpdated: true })}
                         />

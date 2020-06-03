@@ -21,20 +21,7 @@ import ArrowBack from '@material-ui/icons/ArrowBack';
 import IconButtonComponent from '../buttons/IconButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
-const MESSAGES = {
-    close: {
-        id: 'iaso.label.close',
-        defaultMessage: 'Close',
-    },
-    search: {
-        id: 'iaso.label.textSearch',
-        defaultMessage: 'Search',
-    },
-    resetSearch: {
-        id: 'iaso.label.resetSearch',
-        defaultMessage: 'Empty search',
-    },
-};
+import MESSAGES from './messages';
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];
@@ -136,10 +123,7 @@ const ColumnsSelectDrawerComponent = (
                 onClick={toggleDrawer(true)}
                 icon="filter-list"
                 color="white"
-                tooltipMessage={{
-                    id: 'iaso.table.columnSelect.tooltip',
-                    defaultMessage: 'Select visible columns',
-                }}
+                tooltipMessage={MESSAGES.columnSelectTooltip}
             />
             <Drawer anchor="right" open={state.open} onClose={toggleDrawer(false)}>
                 <div

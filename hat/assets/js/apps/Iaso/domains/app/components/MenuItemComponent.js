@@ -15,11 +15,11 @@ import ExpandLess from '@material-ui/icons/ExpandLess';
 import ExpandMore from '@material-ui/icons/ExpandMore';
 
 import PropTypes from 'prop-types';
-import commonStyles from '../../styles/common';
-import muiTheme from '../../utils/theme';
+import commonStyles from '../../../styles/common';
+import muiTheme from '../../../utils/theme';
 import {
     userHasPermission,
-} from '../../domains/users/utils';
+} from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),

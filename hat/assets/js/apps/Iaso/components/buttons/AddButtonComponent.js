@@ -5,6 +5,7 @@ import Add from '@material-ui/icons/Add';
 import { withStyles, Button } from '@material-ui/core';
 
 import commonStyles from '../../styles/common';
+import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -26,7 +27,7 @@ function AddButtonComponent({
     );
 }
 AddButtonComponent.defaultProps = {
-    message: { id: 'iaso.label.create', defaultMessage: 'Create' },
+    message: MESSAGES.create,
 };
 AddButtonComponent.propTypes = {
     intl: PropTypes.object.isRequired,

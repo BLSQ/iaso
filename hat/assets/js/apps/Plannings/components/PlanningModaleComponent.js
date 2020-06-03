@@ -179,7 +179,6 @@ class PlanningModale extends Component {
                                     min="0"
                                     placeholder=""
                                     name="months"
-                                    max="12"
                                     className={`small ${(!planning.months || planning.months === '') ? 'form-error' : ''}`}
                                     id={`months-${planning.id}`}
                                     value={planning.months || ''}

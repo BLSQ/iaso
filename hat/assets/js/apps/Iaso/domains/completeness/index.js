@@ -13,6 +13,8 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import CompletenessListComponent from './components/CompletenessListComponent';
 
+import MESSAGES from './messages';
+
 class Completeness extends Component {
     componentDidMount() {
         this.props.fetchCompleteness();
@@ -36,10 +38,7 @@ class Completeness extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar
-                    title={formatMessage({
-                        defaultMessage: 'Completeness',
-                        id: 'iaso.completeness.title',
-                    })}
+                    title={formatMessage(MESSAGES.completeness)}
                     displayBackButton={false}
                 />
                 <CompletenessListComponent

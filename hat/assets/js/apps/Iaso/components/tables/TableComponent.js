@@ -281,6 +281,7 @@ Table.defaultProps = {
     multiSelect: false,
     selectionActions: [],
     selection: selectionInitialState,
+    setTableSelection: () => null,
 };
 
 Table.propTypes = {
@@ -298,7 +299,7 @@ Table.propTypes = {
     multiSelect: PropTypes.bool,
     selectionActions: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
-    setTableSelection: PropTypes.func.isRequired,
+    setTableSelection: PropTypes.func,
     selection: PropTypes.object,
 };
 

@@ -19,7 +19,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.labels.actions',
+        id: 'iaso.label.actions',
     },
     name: {
         id: 'iaso.forms.name',

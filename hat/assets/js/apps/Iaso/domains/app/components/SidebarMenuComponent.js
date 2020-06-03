@@ -39,7 +39,7 @@ const styles = theme => ({
     ...commonStyles(theme),
     logo: {
         height: 35,
-        width: 'auto',
+        width: 90,
     },
     toolbar: {
         ...theme.mixins.toolbar,

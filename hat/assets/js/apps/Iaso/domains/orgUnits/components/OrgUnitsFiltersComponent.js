@@ -243,6 +243,8 @@ const MapStateToProps = state => ({
     groups: state.orgUnits.groups,
     orgUnitsLocations: state.orgUnits.orgUnitsLocations,
     isClusterActive: state.map.isClusterActive,
+    orgUnitTypes: state.orgUnits.orgUnitTypes,
+    sources: state.orgUnits.sources,
 });
 
 const MapDispatchToProps = dispatch => ({

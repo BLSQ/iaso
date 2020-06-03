@@ -50,6 +50,7 @@
     "babel-plugin-react-intl": "^3.5.0",
     "babel-polyfill": "^6.26.0",
     "babel-register": "^6.26.0",
+    "classnames": "^2.2.6",
     "color": "^3.1.2",
     "css-loader": "^3.0.0",
     "eslint-config-airbnb": "^17.1.1",

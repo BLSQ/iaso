@@ -1,3 +1,7 @@
+import React from 'react';
+import RemoveIcon from '@material-ui/icons/Remove';
+import AddIcon from '@material-ui/icons/Add';
+
 const getTableUrl = (
     urlKey,
     params,
@@ -54,3 +58,80 @@ export const getOrderArray = orders => (orders.split(',').map(stringValue => ({
     id: stringValue.replace('-', ''),
     desc: stringValue.indexOf('-') !== -1,
 })));
+
+
+export const getSimplifiedColumns = (columns) => {
+    const newColumns = [];
+    columns.forEach((c) => {
+        if (c.accessor) {
+            newColumns.push(c.accessor);
+        }
+    });
+    return newColumns;
+};
+
+
+export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) => [
+    {
+        icon: <AddIcon />,
+        label: formatMessage(
+            {
+                id: 'iaso.label.selectAll',
+                defaultMessage: 'Select all',
+            },
+        ),
+        onClick: () => selectAll(),
+    },
+    {
+        icon: <RemoveIcon />,
+        label: formatMessage(
+            {
+                id: 'iaso.label.unSelectAll',
+                defaultMessage: 'Un select all',
+            },
+        ),
+        onClick: () => unSelectAll(),
+    },
+];
+
+export const selectionInitialState = {
+    selectedItems: [],
+    unSelectedItems: [],
+    selectAll: false,
+    selectCount: 0,
+};
+
+export const setTableSelection = (selection, selectionType, items = [], totalCount = 0) => {
+    let newSelection;
+    switch (selectionType) {
+        case 'select':
+            newSelection = {
+                ...selection,
+                selectedItems: items,
+                selectCount: items.length,
+            };
+            break;
+        case 'unselect':
+            newSelection = {
+                ...selection,
+                unSelectedItems: items,
+                selectCount: totalCount - items.length,
+            };
+            break;
+        case 'selectAll':
+            newSelection = {
+                ...selection,
+                selectAll: true,
+                unSelectedItems: [],
+                selectCount: totalCount,
+            };
+            break;
+        case 'reset':
+            newSelection = selectionInitialState;
+            break;
+        default:
+            newSelection = { ...selection };
+            break;
+    }
+    return newSelection;
+};

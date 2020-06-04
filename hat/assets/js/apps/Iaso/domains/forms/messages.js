@@ -278,8 +278,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Semester',
     },
     save: {
-        id: 'iaso.label.six_month',
-        defaultMessage: 'Semester',
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
     },
     cancel: {
         id: 'iaso.label.cancel',

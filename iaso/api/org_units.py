@@ -517,7 +517,6 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
             if not user.is_anonymous:
                 org_unit_db.creator = user
             org_unit_db.source = "API"
-            org_unit_db.api_import = api_import
             if org_unit_location:
                 org_unit_db.location = org_unit_location
 

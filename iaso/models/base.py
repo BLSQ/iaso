@@ -8,14 +8,12 @@ from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
 from django.contrib.postgres.fields import JSONField
-from django.contrib.postgres.indexes import GistIndex
 from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from iaso.utils import flat_parse_xml_file, slugify_underscore
 from django.db.models import Q
-from django_ltree.fields import PathField
 
 from .device import DeviceOwnership, Device
 

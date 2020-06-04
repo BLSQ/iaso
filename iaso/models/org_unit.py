@@ -1,9 +1,10 @@
 from copy import deepcopy
-
 from django.db import models
+from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User
+from django_ltree.fields import PathField
 
 from hat.audit import models as audit_models
 from iaso.models import Group
@@ -54,16 +55,31 @@ class OrgUnitType(models.Model):
         return res
 
 
+class OrgUnitQuerySet(models.QuerySet):
+    def children(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1
+        )
+
+    def hierarchy(self, org_unit):
+        return self.filter(path__descendants=org_unit.path)
+
+    def descendants(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
+        )
+
+
 class OrgUnitManager(models.Manager):
     def update_single_unit_from_bulk(
-        self,
-        user,
-        org_unit,
-        *,
-        validated,
-        org_unit_type_id,
-        groups_ids_added,
-        groups_ids_removed
+            self,
+            user,
+            org_unit,
+            *,
+            validated,
+            org_unit_type_id,
+            groups_ids_added,
+            groups_ids_removed
     ):
         """Used within the context of a bulk operation"""
 
@@ -101,6 +117,7 @@ class OrgUnit(models.Model):
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
+    path = PathField(null=True, blank=True, unique=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
@@ -133,7 +150,39 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager()
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()
+
+    class Meta:
+        indexes = [GistIndex(fields=["path"], buffering=True)]
+
+    def save(self, *args, force_calculate_path=False, **kwargs):
+        super().save(*args, **kwargs)
+        update_children_path = self._update_path(force_calculate_path)
+
+        if update_children_path or force_calculate_path:
+            for child in OrgUnit.objects.filter(parent=self):
+                child.save(
+                    force_calculate_path=force_calculate_path, update_fields=["path"]
+                )
+
+    def _update_path(self, force: bool) -> bool:
+        # For now, we will skip org units that have a parent without a path.
+        # The idea is that a management command (set_org_unit_path) will handle the initial seeding of the
+        # path field, starting at the top of the pyramid. Once this script has been run and the field is filled for
+        # all org units, this should not happen anymore.
+        # TODO: remove force_calculate_path and condition below
+        if self.parent is not None and self.parent.path is None:
+            return False
+
+        base_path = [] if self.parent is None else self.parent.path
+        new_path = [*base_path, str(self.pk)]
+        path_change = new_path != self.path
+
+        if path_change:
+            self.path = new_path
+            super().save(update_fields=["path"])
+
+        return path_change or force
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
@@ -259,7 +308,9 @@ class OrgUnit(models.Model):
             res["search_index"] = self.search_index
         return res
 
-    def path(self):
+    def source_path(self):
+        """DHIS2-friendly path built using source refs"""
+
         path_components = []
         cur = self
         while cur:

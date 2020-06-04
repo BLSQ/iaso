@@ -33,21 +33,14 @@ class EditPatientInfos extends React.Component {
         };
     }
 
-    // componentWillReceiveProps(newProps) {
-    //     const patient = {
-    //         ...this.state.patient,
-    //         province_id: newProps.params.prov_id,
-    //         ZS_id: newProps.params.ZS_id,
-    //         AS_id: newProps.params.AS_id,
-    //         village_id: newProps.params.vil_id,
-    //     };
-
-    //     const state = {
-    //         ...this.state,
-    //         patient,
-    //     };
-    //     this.setState(state);
-    // }
+    componentWillMount() {
+        const {
+            params,
+        } = this.props;
+        if (params.vil_id) {
+            this.updatePatientGeoField('vil_id', params.vil_id);
+        }
+    }
 
     updatePatientGeoField(key, value) {
         const { params, redirectTo, baseUrl } = this.props;
@@ -113,7 +106,6 @@ class EditPatientInfos extends React.Component {
             || !patient.last_name
             || !patient.mothers_surname
             || !patient.sex
-            || !patient.year_of_birth
             || !patient.village_id;
     }
 

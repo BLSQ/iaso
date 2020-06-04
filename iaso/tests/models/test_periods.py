@@ -1,5 +1,4 @@
 from iaso.test import TestCase
-from django.utils.timezone import now
 from django.test import tag
 
 import iaso.periods as periods

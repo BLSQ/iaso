@@ -382,8 +382,8 @@ class InstanceModelTestCase(TestCase):
             parent=first_council,
             name="Jedi Academy Dagobah II",
         )
-        alderaan.save(force_calculate_path=True)
-        sluis.save(force_calculate_path=True)
+        alderaan.save()
+        sluis.save()
         dagobah.refresh_from_db()
         first_council.refresh_from_db()
         second_council.refresh_from_db()

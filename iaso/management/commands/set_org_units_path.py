@@ -36,7 +36,7 @@ class Command(BaseCommand):
 
         for org_unit in root_org_units:
             with transaction.atomic():
-                org_unit.save(force_calculate_path=True, update_fields=["path"])
+                org_unit.save()
 
         # Cheating - simulating an org unit created during the migration
         # TODO: remove me
@@ -56,8 +56,7 @@ class Command(BaseCommand):
             self.stdout.write("Attempting fix")
 
             for org_unit in OrgUnit.objects.filter(path=None):
-                with transaction.atomic():
-                    org_unit.save(force_calculate_path=True, update_fields=["path"])
+                org_unit.save()
 
             no_path_count_final = OrgUnit.objects.filter(path=None).count()
             if no_path_count_final == 0:
@@ -87,9 +86,8 @@ class Command(BaseCommand):
         created = 0
 
         for _ in range(10):
-            new_parent = OrgUnit.objects.create(
-                parent=parent, name="set_org_units_path test"
-            )
+            new_parent = OrgUnit(parent=parent, name="set_org_units_path test")
+            new_parent.save(skip_calculate_path=True)
             created += 1
             if level < self.max_seed_level:
                 created += self._create_org_unit_batch(level + 1, new_parent)

@@ -48,8 +48,8 @@ class OrgUnitModelTestCase(TestCase):
         self.assertIsNone(corruscant.path)
 
     @tag("iaso_only")
-    def test_org_unit_save_force_recalculate_with_children(self):
-        """Saving org unit with force_calculate_path -> path should be set for the whole hierarchy"""
+    def test_org_unit_update_path_with_children(self):
+        """Path should be set for the whole hierarchy"""
 
         corrusca = m.OrgUnit.objects.create(
             org_unit_type=self.sector, name="Corrusca Sector"
@@ -71,11 +71,9 @@ class OrgUnitModelTestCase(TestCase):
         self.assertIsNone(corruscant.path)
         self.assertIsNone(jedi_council_corruscant.path)
 
-        with transaction.atomic():
-            # 2 update queries (normal + path update), 1 children query, 1 parent query
-            # (except for the top-level org unit - no parent query for this one)
-            with self.assertNumQueries(3 * 4 - 1):
-                corrusca.save(force_calculate_path=True)
+        # 2 savepoints, 1 regular update, 3 "get children" queries, 1 bulk update
+        with self.assertNumQueries(7):
+            corrusca.save()
 
         corruscant.refresh_from_db()
         jedi_council_corruscant.refresh_from_db()

@@ -38,7 +38,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Org units',
     },
     actions: {
-        id: 'iaso.labels.actions',
+        id: 'iaso.label.actions',
         defaultMessage: 'Action(s)',
     },
     update: {

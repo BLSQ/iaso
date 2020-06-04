@@ -31,7 +31,7 @@ export const orgUnitsInitialState = {
     fetchingSubOrgUnits: false,
     fetchingOrgUnitTypes: true,
     orgUnitsPage: {
-        list: null,
+        list: [],
         showPagination: false,
         params: {},
         count: 0,

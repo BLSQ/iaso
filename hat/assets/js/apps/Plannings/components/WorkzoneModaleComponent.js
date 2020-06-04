@@ -54,8 +54,7 @@ class WorkzoneModale extends Component {
         if (ids !== '') {
             const arrayIds = ids.split(',');
             arrayIds.forEach((newItem) => {
-                newArray.push(this.state[key].filter(el =>
-                    el.id === parseInt(newItem, 10))[0]);
+                newArray.push(this.state[key].filter(el => el.id === parseInt(newItem, 10))[0]);
             });
         }
         this.updateWorkzoneField(key, newArray);
@@ -79,7 +78,8 @@ class WorkzoneModale extends Component {
                             <FormattedMessage
                                 id="main.label.name"
                                 defaultMessage="Name"
-                            />:
+                            />
+:
                         </label>
                         <input
                             type="text"
@@ -106,8 +106,7 @@ class WorkzoneModale extends Component {
                             value={this.state.workzone.planning_id}
                             className={!this.state.workzone.planning_id ? 'form-error' : ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
-                            options={this.state.plannings.map(planning =>
-                                ({ label: planning.name, value: planning.id }))}
+                            options={this.state.plannings.map(planning => ({ label: planning.name, value: planning.id }))}
                             onChange={planningId => this.updateWorkzoneField('planning_id', planningId)}
                         />
                     </div>
@@ -127,8 +126,7 @@ class WorkzoneModale extends Component {
                             value={this.state.workzone.coordination_id}
                             className={!this.state.workzone.coordination_id ? 'form-error' : ''}
                             placeholder={formatMessage(MESSAGES['location-all'])}
-                            options={this.state.coordinations.map(coordination =>
-                                ({ label: coordination.name, value: coordination.id }))}
+                            options={this.state.coordinations.map(coordination => ({ label: coordination.name, value: coordination.id }))}
                             onChange={coordinationId => this.updateWorkzoneField('coordination_id', coordinationId)}
                         />
                     </div>
@@ -147,8 +145,7 @@ class WorkzoneModale extends Component {
                             value={this.state.workzone.teams.map(t => t.id)}
                             placeholder={formatMessage(MESSAGES['location-all'])}
                             className={this.state.workzone.teams.length === 0 ? 'form-error' : ''}
-                            options={this.state.teams.map(team =>
-                                ({ label: team.name, value: team.id }))}
+                            options={this.state.teams.map(team => ({ label: team.name, value: team.id }))}
                             onChange={teamIds => this.changeSelect(teamIds, 'teams')}
                         />
                     </div>
@@ -162,11 +159,11 @@ class WorkzoneModale extends Component {
                         </button>
                         <button
                             disabled={
-                                (this.state.workzone.name === '' ||
-                                    this.state.workzone.planning_id === undefined ||
-                                    this.state.workzone.coordination_id === undefined ||
-                                    this.state.workzone.teams.length === 0 ||
-                                    (!this.state.isChanged && this.state.workzone.id !== 0))
+                                (this.state.workzone.name === ''
+                                    || this.state.workzone.planning_id === undefined
+                                    || this.state.workzone.coordination_id === undefined
+                                    || this.state.workzone.teams.length === 0
+                                    || (!this.state.isChanged && this.state.workzone.id !== 0))
                             }
                             className="button--save"
                             onClick={() => this.props.saveWorkzone(this.state.workzone)}

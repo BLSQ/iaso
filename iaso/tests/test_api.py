@@ -1,6 +1,5 @@
 from django.test import tag
 
-from hat.vector_control.models import APIImport
 from ..models import (
     OrgUnit,
     Form,
@@ -47,21 +46,23 @@ class BasicAPITestCase(APITestCase):
         name = "Hopital Velpo"
 
         # with latitude and longitude
-        unit_body = {
-            "id": uuid,
-            "latitude": 50.503,
-            "created_at": 1565194077692,
-            "updated_at": 1565194077693,
-            "orgUnitTypeId": hospital_unit_type.id,
-            "parentId": None,
-            "longitude": 4.469,
-            "altitude": 110,
-            "accuracy": 0,
-            "time": 0,
-            "name": name,
-        }
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 50.503,
+                "created_at": 1565194077692,
+                "updated_at": 1565194077693,
+                "orgUnitTypeId": hospital_unit_type.id,
+                "parentId": None,
+                "longitude": 4.469,
+                "altitude": 110,
+                "accuracy": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
 
-        response = c.post("/api/orgunits/", data=[unit_body], format="json")
+        response = c.post("/api/orgunits/", data=unit_body, format="json")
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
@@ -74,12 +75,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(110, velpo_model.location.z)
 
         # make sure APIImport record has been created
-        last_api_import = APIImport.objects.order_by("-created_at").first()
-        self.assertIsInstance(last_api_import.headers, dict)
-        self.assertEqual(last_api_import.json_body, [unit_body])
-        self.assertEqual(last_api_import.import_type, "orgUnit")
-        self.assertFalse(last_api_import.has_problem)
-        self.assertEqual(last_api_import.exception, "")
+        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
         response = c.get("/api/orgunits/", accept="application/json")
 
@@ -297,12 +293,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(instance.location.y, 4.4)
         self.assertEqual(instance.location.z, 100)
 
-        last_api_import = APIImport.objects.order_by("-created_at").first()
-        self.assertIsInstance(last_api_import.headers, dict)
-        self.assertEqual(last_api_import.json_body, instance_body)
-        self.assertEqual(last_api_import.import_type, "instance")
-        self.assertFalse(last_api_import.has_problem)
-        self.assertEqual(last_api_import.exception, "")
+        self.assertAPIImport("instance", request_body=instance_body, has_problems=False)
 
     @tag("iaso_only")
     def test_fetch_org_unit_type(self):

@@ -23,12 +23,17 @@ import { microplanningInitialState, microplanningReducer } from './redux/micropl
 import { geoScopeMapReducer, geoScopeMapInitialState } from './redux/geoScope';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
+import WorkZones from './WorkZones';
 
 export default function microplanningApp(element, baseUrl) {
     const routes = [
         <Route
             path="list(/order/:order)(/pageSize/:pageSize)(/page/:page)"
             component={Plannings}
+        />,
+        <Route
+            path="/workzones(/order/:order)(/pageSize/:pageSize)(/page/:page)(/planning_id/:planning_id)"
+            component={WorkZones}
         />,
         <Route
             path="micro(/years/:years)(/planning_id/:planning_id)(/coordination_id/:coordination_id)(/workzone_id/:workzone_id)(/team_id/:team_id)"

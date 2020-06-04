@@ -185,6 +185,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while saving group',
         id: 'iaso.snackBar.saveGroupError',
     },
+    saveMultiEditOrgUnitsSuccesfull: {
+        defaultMessage: 'Selected org unit saved successfully',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsSuccesfull',
+    },
+    saveMultiEditOrgUnitsError: {
+        defaultMessage: 'An error occurred while saving selected org units',
+        id: 'iaso.snackBar.saveMultiEditOrgUnitsError',
+    },
     deleteGroupSuccesfull: {
         defaultMessage: 'Group deleted',
         id: 'iaso.snackBar.deleteGroupSuccesfull',

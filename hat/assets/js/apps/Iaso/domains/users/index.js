@@ -23,6 +23,8 @@ import { baseUrls } from '../../constants/urls';
 import usersTableColumns from './config';
 import MESSAGES from './messages';
 
+import { redirectTo as redirectToAction } from '../../routing/actions';
+
 const baseUrl = baseUrls.users;
 
 const styles = theme => ({
@@ -71,6 +73,7 @@ class Users extends Component {
             fetching,
             classes,
             fetchUsersProfiles,
+            redirectTo,
         } = this.props;
         return (
             <>
@@ -98,6 +101,7 @@ class Users extends Component {
                         count={count}
                         baseUrl={baseUrl}
                         params={params}
+                        redirectTo={redirectTo}
                     />
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
                         <UsersDialog
@@ -126,6 +130,7 @@ Users.propTypes = {
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
     pages: PropTypes.number.isRequired,
+    redirectTo: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -140,6 +145,7 @@ const mapDispatchToProps = dispatch => (
         ...bindActionCreators({
             fetchUsersProfiles: fetchUsersProfilesAction,
             deleteUser: deleteUserAction,
+            redirectTo: redirectToAction,
         }, dispatch),
     }
 );

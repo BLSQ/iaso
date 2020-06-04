@@ -286,7 +286,6 @@ def import_data(instances, api_import, app_id=None):
             instance_db.updated_at = instance.get("created_at", None)
 
         instance_db.source = "API"
-        instance_db.api_import = api_import
         if org_unit_location:
             instance_db.location = org_unit_location
         instance_db.project = project

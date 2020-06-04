@@ -1,9 +1,61 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    action: {
+        defaultMessage: 'Actions',
+        id: 'iaso.label.actions',
+    },
+    multiEditTitle: {
+        defaultMessage: 'Edit selection',
+        id: 'iaso.orgUnits.multiEditTitle',
+    },
+    confirmMultiChange: {
+        defaultMessage: 'Confirm mass changes ?',
+        id: 'iaso.orgUnits.confirmMultiChange',
+    },
+    editGroups: {
+        defaultMessage: 'Edit groups',
+        id: 'iaso.orgUnits.editGroups',
+    },
+    editOrgUnitType: {
+        defaultMessage: 'Edit org unit type',
+        id: 'iaso.orgUnits.editOrgUnitType',
+    },
+    editValidation: {
+        defaultMessage: 'Edit validation',
+        id: 'iaso.orgUnits.editValidation',
+    },
+    validate: {
+        defaultMessage: 'Validate',
+        id: 'iaso.label.validate',
+    },
+    valid: {
+        defaultMessage: 'Valid(s)',
+        id: 'iaso.label.valid',
+    },
+    notValid: {
+        defaultMessage: 'Not valid(s)',
+        id: 'iaso.label.notValid',
+    },
+    validated: {
+        id: 'iaso.forms.validated',
+        defaultMessage: 'Validated',
+    },
+    notValidated: {
+        id: 'iaso.forms.notValidated',
+        defaultMessage: 'Not validated',
+    },
     title: {
         defaultMessage: 'Org units',
         id: 'iaso.orgUnits.title',
+    },
+    titleSingle: {
+        defaultMessage: 'org unit',
+        id: 'iaso.orgUnits.titleSingle',
+    },
+    titleMulti: {
+        defaultMessage: 'org units',
+        id: 'iaso.orgUnits.titleMulti',
     },
     search: {
         defaultMessage: 'Search',
@@ -33,6 +85,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent(s)',
         id: 'iaso.orgUnits.parentsMulti',
     },
+    org_unit_type: {
+        id: 'iaso.forms.org_unit_type_id',
+        defaultMessage: 'Org unit type',
+    },
     type: {
         defaultMessage: 'Type',
         id: 'iaso.orgUnits.type',
@@ -56,6 +112,14 @@ const MESSAGES = defineMessages({
     groups: {
         defaultMessage: 'Groups',
         id: 'iaso.label.groups',
+    },
+    addToGroups: {
+        defaultMessage: 'Add to group(s)',
+        id: 'iaso.orgUnits.addToGroups',
+    },
+    removeFromGroups: {
+        defaultMessage: 'Remove from group(s)',
+        id: 'iaso.orgUnits.removeFromGroups',
     },
     source: {
         defaultMessage: 'Source',
@@ -120,6 +184,18 @@ const MESSAGES = defineMessages({
     addOrgUnitType: {
         defaultMessage: 'Add org unit type',
         id: 'iaso.orgUnits.addOrgUnitType',
+    },
+    selectionAction: {
+        defaultMessage: 'With selected org unit',
+        id: 'iaso.orgUnits.selectionAction',
+    },
+    multiSelectionAction: {
+        defaultMessage: 'Edit selected org units',
+        id: 'iaso.orgUnits.multiSelectionAction',
+    },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
     },
     parent: {
         id: 'iaso.label.parent',

@@ -72,14 +72,14 @@ class OrgUnitQuerySet(models.QuerySet):
 
 class OrgUnitManager(models.Manager):
     def update_single_unit_from_bulk(
-            self,
-            user,
-            org_unit,
-            *,
-            validated,
-            org_unit_type_id,
-            groups_ids_added,
-            groups_ids_removed
+        self,
+        user,
+        org_unit,
+        *,
+        validated,
+        org_unit_type_id,
+        groups_ids_added,
+        groups_ids_removed
     ):
         """Used within the context of a bulk operation"""
 

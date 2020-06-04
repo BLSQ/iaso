@@ -21,4 +21,6 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = DeviceOwnership.objects.all()
 
-        return Response({"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]})
+        return Response(
+            {"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]}
+        )

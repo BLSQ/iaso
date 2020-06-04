@@ -246,7 +246,11 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 201)
         self.assertValidBulkupdateData(response.json())
 
-        for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels, self.jedi_council_corruscant]:
+        for jedi_council in [
+            self.jedi_council_endor,
+            self.jedi_council_brussels,
+            self.jedi_council_corruscant,
+        ]:
             jedi_council.refresh_from_db()
             self.assertIn(self.another_group, jedi_council.groups.all())
 

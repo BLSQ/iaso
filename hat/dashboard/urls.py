@@ -14,6 +14,11 @@ if settings.FLAVOR == "trypelim":
         ),
         url(r"^stats/reports.*$", views.reports, name="reports"),
         url(r"^plannings/list.*$", views.plannings, name="plannings"),
+        url(
+            r"^plannings/workzones.*$",
+            views.workzones,
+            name="workzones",
+        ),
         url(r"^plannings/micro.*$", views.plannings_micro, name="micro"),
         url(r"^plannings/macro.*$", views.plannings_macro, name="macro"),
         url(r"^plannings/routes.*$", views.plannings_routes, name="routes"),
@@ -37,11 +42,6 @@ if settings.FLAVOR == "trypelim":
             r"^management/coordinations.*$",
             views.coordinations_management,
             name="management_coord",
-        ),
-        url(
-            r"^management/workzones.*$",
-            views.workzones_management,
-            name="management_workzone",
         ),
         url(r"^management/users.*$", views.users_management, name="management_user"),
         url(

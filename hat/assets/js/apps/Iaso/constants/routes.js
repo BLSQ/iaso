@@ -156,6 +156,10 @@ export const orgUnitsPath = {
             isRequired: true,
             key: 'locationLimit',
         },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
         {
             isRequired: false,
             key: 'tab',
@@ -172,7 +176,6 @@ export const orgUnitsPath = {
             isRequired: false,
             key: 'searches',
         },
-        ...paginationPathParams,
     ],
 };
 

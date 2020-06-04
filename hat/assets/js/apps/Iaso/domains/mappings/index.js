@@ -58,6 +58,7 @@ class Mappings extends Component {
             fetching,
             count,
             pages,
+            redirectTo,
         } = this.props;
         return (
             <>
@@ -78,6 +79,7 @@ class Mappings extends Component {
                         count={count}
                         baseUrl={baseUrl}
                         params={params}
+                        redirectTo={redirectTo}
                     />
                     <Grid
                         container

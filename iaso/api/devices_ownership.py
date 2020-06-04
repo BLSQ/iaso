@@ -5,12 +5,12 @@ from .common import HasPermission
 from iaso.models import DeviceOwnership
 
 
-class IasoDevicesOwnershipViewSet(viewsets.ViewSet):
+class DevicesOwnershipViewSet(viewsets.ViewSet):
     """Iaso Devices ownership API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
 
-    GET /api/iasodevicesownership/
+    GET /api/devicesownership/
     """
 
     permission_classes = [
@@ -21,4 +21,4 @@ class IasoDevicesOwnershipViewSet(viewsets.ViewSet):
     def list(self, request):
         queryset = DeviceOwnership.objects.all()
 
-        return Response([ownerShip.as_dict() for ownerShip in queryset])
+        return Response({"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]})

@@ -13,6 +13,8 @@ import {
 
 import PropTypes from 'prop-types';
 
+import EditIcon from '@material-ui/icons/Edit';
+
 import {
     fetchOrgUnitsTypes,
     fetchSources,
@@ -39,14 +41,15 @@ import { createUrl } from '../../../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
 } from './utils';
-import getTableUrl from '../../utils/tableUtils';
+import getTableUrl, { selectionInitialState, setTableSelection } from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import OrgUnitsFiltersComponent from './components/OrgUnitsFiltersComponent';
 import OrgunitsMap from './components/OrgunitsMapComponent';
+import OrgUnitsMultiActionsDialog from './components/OrgUnitsMultiActionsDialog';
+import Table from '../../components/tables/TableComponent';
 
 import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
@@ -90,6 +93,8 @@ class OrgUnits extends Component {
         this.state = {
             tab: props.params.tab ? props.params.tab : 'list',
             listUpdated: false,
+            multiActionPopupOpen: false,
+            selection: selectionInitialState,
         };
     }
 
@@ -168,6 +173,21 @@ class OrgUnits extends Component {
         this.props.resetOrgUnits();
     }
 
+    onSearch(withLocations) {
+        const {
+            redirectTo,
+            params,
+        } = this.props;
+        this.handleTableSelection('reset');
+
+        const newParams = {
+            ...params,
+            page: 1,
+        };
+        redirectTo(baseUrl, newParams);
+        this.fetchOrgUnits(withLocations);
+    }
+
     getEndpointUrl(toExport, exportType = 'csv', asLocation = false) {
         const {
             params,
@@ -188,6 +208,22 @@ class OrgUnits extends Component {
         delete urlParams.pageSize;
 
         return getTableUrl('orgunits', urlParams, toExport, exportType, asLocation);
+    }
+
+    setMultiActionsPopupOpen(multiActionPopupOpen) {
+        this.setState({
+            multiActionPopupOpen,
+        });
+    }
+
+    handleTableSelection(selectionType, items = [], totalCount = 0) {
+        const {
+            selection,
+        } = this.state;
+        const newSelection = setTableSelection(selection, selectionType, items, totalCount);
+        this.setState({
+            selection: newSelection,
+        });
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -237,7 +273,6 @@ class OrgUnits extends Component {
             params,
             dispatch,
         } = this.props;
-
         const url = this.getEndpointUrl();
         dispatch(this.props.setOrgUnitsListFetching(true));
         const promises = [fetchOrgUnitsList(dispatch, url)];
@@ -248,14 +283,19 @@ class OrgUnits extends Component {
             const urlLocation = this.getEndpointUrl(false, '', true);
             promises.push(fetchOrgUnitsList(dispatch, urlLocation));
         }
-        this.props.setOrgUnits(null, params, 0, 1, []);
         Promise.all(promises).then((data) => {
             if (!params.searchActive) {
                 const newParams = encodeUriParams(params);
                 newParams.searchActive = true;
                 this.props.redirectTo(baseUrl, newParams);
             }
-            this.props.setOrgUnits(data[0].orgunits, params, data[0].count, data[0].pages, data[0].counts);
+            this.props.setOrgUnits(
+                data[0].orgunits,
+                params,
+                data[0].count,
+                data[0].pages,
+                data[0].counts,
+            );
             this.props.setFiltersUpdated(false);
             if (withLocations) {
                 this.props.setOrgUnitsLocations(mapOrgUnitByLocation(
@@ -267,6 +307,7 @@ class OrgUnits extends Component {
         });
     }
 
+
     render() {
         const {
             classes,
@@ -275,8 +316,6 @@ class OrgUnits extends Component {
             intl: {
                 formatMessage,
             },
-            orgUnitTypes,
-            sources,
             fetchingList,
             fetchingOrgUnitTypes,
             redirectTo,
@@ -284,6 +323,12 @@ class OrgUnits extends Component {
         } = this.props;
         const {
             tab,
+            multiActionPopupOpen,
+            selection,
+            selection: {
+                selectedItems,
+                selectAll,
+            },
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
@@ -291,12 +336,37 @@ class OrgUnits extends Component {
             classes,
             decodeSearch(params.searches),
         );
+
+        const searches = decodeSearch(params.searches);
+        const orgunits = reduxPage.list && reduxPage.list.map(ou => ({
+            ...ou,
+            color: searches[ou.search_index] ? searches[ou.search_index].color : null,
+        }));
+        let multiEditDisabled = false;
+        if (!selectAll && selectedItems.length === 0) {
+            multiEditDisabled = true;
+        }
+        const selectionActions = [
+            {
+                icon: <EditIcon />,
+                label: formatMessage(MESSAGES.multiSelectionAction),
+                onClick: () => this.setMultiActionsPopupOpen(true),
+                disabled: multiEditDisabled,
+            },
+        ];
         return (
             <Fragment>
                 {
                     fetchingList
                     && <LoadingSpinner />
                 }
+                <OrgUnitsMultiActionsDialog
+                    open={multiActionPopupOpen}
+                    params={params}
+                    closeDialog={() => this.setMultiActionsPopupOpen(false)}
+                    fetchOrgUnits={() => this.fetchOrgUnits(false)}
+                    selection={selection}
+                />
                 <TopBar title={formatMessage(MESSAGES.title)}>
                     <DynamicTabsComponent
                         baseLabel={formatMessage(MESSAGES.search)}
@@ -322,9 +392,7 @@ class OrgUnits extends Component {
                                     <OrgUnitsFiltersComponent
                                         baseUrl={baseUrl}
                                         params={params}
-                                        onSearch={() => this.fetchOrgUnits(params.tab === 'map')}
-                                        orgUnitTypes={orgUnitTypes}
-                                        sources={sources}
+                                        onSearch={() => this.onSearch(params.tab === 'map')}
                                         currentTab={tab}
                                         searchIndex={searchIndex}
                                     />
@@ -357,22 +425,22 @@ class OrgUnits extends Component {
                                 </Tabs>
                                 {
                                     tab === 'list' && (
-                                        <div className={classes.reactTable}>
-                                            <CustomTableComponent
-                                                isSortable
-                                                pageSize={50}
-                                                showPagination
-                                                columns={tableColumns}
-                                                defaultSorted={[{ id: 'id', desc: false }]}
-                                                params={params}
-                                                defaultPath={baseUrl}
-                                                dataKey="orgunits"
-                                                fetchDatas={false}
-                                                canSelect={false}
-                                                multiSort
-                                                reduxPage={reduxPage}
-                                            />
-                                        </div>
+                                        <Table
+                                            data={orgunits || []}
+                                            pages={reduxPage.pages}
+                                            defaultSorted={[{ id: 'id', desc: false }]}
+                                            columns={tableColumns}
+                                            count={reduxPage.count}
+                                            baseUrl={baseUrl}
+                                            params={params}
+                                            marginTop={false}
+                                            countOnTop={false}
+                                            multiSelect
+                                            selection={selection}
+                                            selectionActions={selectionActions}
+                                            redirectTo={redirectTo}
+                                            setTableSelection={(selectionType, items, totalCount) => this.handleTableSelection(selectionType, items, totalCount)}
+                                        />
                                     )
                                 }
                                 {
@@ -389,6 +457,7 @@ class OrgUnits extends Component {
                                     )
                                 }
                                 {tab === 'list'
+                                && reduxPage.count > 0
                                     && (
                                         <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
                                             <Grid xs={12} item className={classes.textAlignRight}>
@@ -411,7 +480,6 @@ class OrgUnits extends Component {
 }
 OrgUnits.defaultProps = {
     reduxPage: undefined,
-    sources: [],
 };
 
 OrgUnits.propTypes = {
@@ -423,9 +491,7 @@ OrgUnits.propTypes = {
     resetOrgUnits: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
-    orgUnitTypes: PropTypes.array.isRequired,
     setSources: PropTypes.func.isRequired,
-    sources: PropTypes.array,
     dispatch: PropTypes.func.isRequired,
     setOrgUnitsListFetching: PropTypes.func.isRequired,
     setFetchingOrgUnitTypes: PropTypes.func.isRequired,
@@ -442,8 +508,6 @@ OrgUnits.propTypes = {
 const MapStateToProps = state => ({
     reduxPage: state.orgUnits.orgUnitsPage,
     searchCounts: state.orgUnits.orgUnitsPage.counts,
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    sources: state.orgUnits.sources,
     fetchingList: state.orgUnits.fetchingList,
     fetchingOrgUnitTypes: state.orgUnits.fetchingOrgUnitTypes,
     filtersUpdated: state.orgUnits.filtersUpdated,

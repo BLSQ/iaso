@@ -144,7 +144,7 @@ class ProjectsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 405)
 
     def assertValidProjectListData(
-            self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
+        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
         self.assertValidListData(
             list_data=list_data,

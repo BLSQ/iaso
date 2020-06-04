@@ -123,7 +123,7 @@ class PatientTestComponent extends React.Component {
                             <th>
                                 <FormattedMessage id="main.label.test.tester" defaultMessage="Testeur" />
                             </th>
-                            <td className={`${test.tester === null ? 'error' : ''}`}>
+                            <td>
                                 {getTesterDisplayName(test.tester)}
                             </td>
                         </tr>

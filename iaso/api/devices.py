@@ -5,12 +5,12 @@ from .common import HasPermission
 from iaso.models import Device
 
 
-class IasoDevicesViewSet(viewsets.ViewSet):
+class DevicesViewSet(viewsets.ViewSet):
     """Iaso Devices API
 
     This API is restricted to authenticated users having the "menupermissions.iaso_forms" permission
 
-    GET /api/iasodevices/
+    GET /api/devices/
     """
 
     permission_classes = [
@@ -23,4 +23,4 @@ class IasoDevicesViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         queryset = queryset.filter(projects__account=profile.account)
 
-        return Response([device.as_dict() for device in queryset])
+        return Response({"devices": [device.as_dict() for device in queryset]})

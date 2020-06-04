@@ -19,7 +19,7 @@ const MESSAGES = defineMessages({
     },
     actions: {
         defaultMessage: 'Action(s)',
-        id: 'iaso.labels.actions',
+        id: 'iaso.label.actions',
     },
     name: {
         id: 'iaso.forms.name',
@@ -278,8 +278,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Semester',
     },
     save: {
-        id: 'iaso.label.six_month',
-        defaultMessage: 'Semester',
+        id: 'iaso.label.save',
+        defaultMessage: 'Save',
     },
     cancel: {
         id: 'iaso.label.cancel',

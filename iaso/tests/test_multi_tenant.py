@@ -213,22 +213,22 @@ class MultiTenantTestCase(APITestCase):
 
         self.assertFalse(found)  # raccoon not supposed to see Star Wars data
 
-        response = yoda_client.get("/api/iasodevices/", accept="application/json")
+        response = yoda_client.get("/api/devices/", accept="application/json")
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content)
 
         # uploading the xml file should have associated the device id with the project
-        self.assertEqual(len(content), 1)
-        self.assertEqual(content[0]["imei"], "358544083104930")
+        self.assertEqual(len(content["devices"]), 1)
+        self.assertEqual(content["devices"][0]["imei"], "358544083104930")
 
-        response = raccoon_client.get("/api/iasodevices/", accept="application/json")
+        response = raccoon_client.get("/api/devices/", accept="application/json")
         self.assertEqual(response.status_code, 200)
 
         content = json.loads(response.content)
 
         # uploading the xml file should have associated the device id with the project
-        self.assertEqual(len(content), 0)
+        self.assertEqual(len(content["devices"]), 0)
 
     @tag("iaso_only")
     def test_source_access(self):

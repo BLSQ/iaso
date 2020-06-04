@@ -4,14 +4,15 @@ from rest_framework_simplejwt.views import (
     TokenObtainPairView,
     TokenRefreshView,
 )
-from .api.org_units import OrgUnitViewSet
 
+from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
 from .api.projects import ProjectsViewSet
 from .api.instances import InstancesViewSet
-from .api.iaso_devices import IasoDevicesViewSet
-from .api.iaso_devices_ownership import IasoDevicesOwnershipViewSet
+from .api.devices import DevicesViewSet
+from .api.devices_ownership import DevicesOwnershipViewSet
+from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
@@ -44,11 +45,16 @@ router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
 router.register(r"formversions", FormVersionsViewSet, base_name="formversions")
 router.register(r"periods", PeriodsViewSet, base_name="periods")
-router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
+router.register(r"devices", DevicesViewSet, base_name="devices")
 router.register(
-    r"iasodevicesownership",
-    IasoDevicesOwnershipViewSet,
-    base_name="iasodevicesownership",
+    r"devicesownership",
+    DevicesOwnershipViewSet,
+    base_name="devicesownership",
+)
+router.register(
+    r"devicesposition",
+    DevicesPositionViewSet,
+    base_name="devicesposition",
 )
 router.register(r"datasources", DataSourceViewSet, base_name="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")
@@ -87,10 +93,9 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
 
 
 urlpatterns = [
-    url('^token/$', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    url('^token/refresh/$', TokenRefreshView.as_view(), name='token_refresh'),
-    url(r"^", include(router.urls))
-
+    url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
+    url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
+    url(r"^", include(router.urls)),
 ]
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)

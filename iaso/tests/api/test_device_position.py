@@ -75,7 +75,8 @@ class DevicesPositionAPITestCase(APITestCase):
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
-            } for i in range(50)
+            }
+            for i in range(50)
         ]
         response = self.client.post(
             f"/api/devicesposition/?app_id={self.project_1.app_id}",

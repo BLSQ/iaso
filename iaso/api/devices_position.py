@@ -55,7 +55,7 @@ class DevicesPositionViewSet(ModelViewSet):
 
     This API is open to anonymous users (if the project allows it).
 
-    GET /api/iasodevicesownership/
+    GET /api/devicesposition/
     """
 
     permission_classes = [

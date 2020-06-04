@@ -60,16 +60,16 @@ export const fetchGroups = dispatch => getRequest('/api/groups/')
         throw error;
     });
 
-export const fetchDevices = dispatch => getRequest('/api/iasodevices')
-    .then(devices => devices)
+export const fetchDevices = dispatch => getRequest('/api/devices')
+    .then(res => res.devices)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesError')));
         console.error('Error while fetching devices list:', error);
         throw error;
     });
 
-export const fetchDevicesOwnerships = dispatch => getRequest('/api/iasodevicesownership')
-    .then(devicesOwnerships => devicesOwnerships)
+export const fetchDevicesOwnerships = dispatch => getRequest('/api/devicesownership')
+    .then(res => res.devicesownership)
     .catch((error) => {
         dispatch(enqueueSnackbar(errorSnackBar('fetchDevicesOwnershipError')));
         console.error('Error while fetching devices ownership list:', error);

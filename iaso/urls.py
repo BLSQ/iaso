@@ -5,15 +5,14 @@ from rest_framework_simplejwt.views import (
     TokenRefreshView,
 )
 
-from .api.devices_position import DevicesPositionViewSet
 from .api.org_units import OrgUnitViewSet
-
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
 from .api.projects import ProjectsViewSet
 from .api.instances import InstancesViewSet
-from .api.iaso_devices import IasoDevicesViewSet
-from .api.iaso_devices_ownership import IasoDevicesOwnershipViewSet
+from .api.devices import DevicesViewSet
+from .api.devices_ownership import DevicesOwnershipViewSet
+from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
@@ -46,16 +45,16 @@ router.register(r"instances", InstancesViewSet, base_name="instances")
 router.register(r"forms", FormsViewSet, base_name="forms")
 router.register(r"formversions", FormVersionsViewSet, base_name="formversions")
 router.register(r"periods", PeriodsViewSet, base_name="periods")
-router.register(r"iasodevices", IasoDevicesViewSet, base_name="iasodevices")
+router.register(r"devices", DevicesViewSet, base_name="devices")
 router.register(
-    r"iasodevicesownership",
-    IasoDevicesOwnershipViewSet,
-    base_name="iasodevicesownership",
+    r"devicesownership",
+    DevicesOwnershipViewSet,
+    base_name="devicesownership",
 )
 router.register(
-    r"iasodevicesposition",
+    r"devicesposition",
     DevicesPositionViewSet,
-    base_name="iasodevicesposition",
+    base_name="devicesposition",
 )
 router.register(r"datasources", DataSourceViewSet, base_name="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")

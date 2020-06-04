@@ -36,7 +36,7 @@ class DevicesPositionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_post_ok_no_auth(self):
-        """POST /iasodevicesposition/ without auth: should work"""
+        """POST /devicesposition/ without auth: should work"""
 
         devices_position_body = [
             {
@@ -50,7 +50,7 @@ class DevicesPositionAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/iasodevicesposition/?app_id={self.project_1.app_id}",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}",
             devices_position_body,
             format="json",
         )
@@ -64,7 +64,7 @@ class DevicesPositionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_post_ok_no_auth_many(self):
-        """POST /iasodevicesposition/ without auth and many positions"""
+        """POST /devicesposition/ without auth and many positions"""
 
         devices_position_body = [
             {
@@ -78,7 +78,7 @@ class DevicesPositionAPITestCase(APITestCase):
             } for i in range(50)
         ]
         response = self.client.post(
-            f"/api/iasodevicesposition/?app_id={self.project_1.app_id}",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}",
             devices_position_body,
             format="json",
         )
@@ -92,7 +92,7 @@ class DevicesPositionAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_post_ko_no_auth(self):
-        """POST /iasodevicesposition/ without auth for "authentication required" project"""
+        """POST /devicesposition/ without auth for "authentication required" project"""
 
         devices_position_body = [
             {
@@ -106,7 +106,7 @@ class DevicesPositionAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/iasodevicesposition/?app_id={self.project_2.app_id}",
+            f"/api/devicesposition/?app_id={self.project_2.app_id}",
             devices_position_body,
             format="json",
         )
@@ -136,7 +136,7 @@ class DevicesPositionAPITestCase(APITestCase):
         ]
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/iasodevicesposition/?app_id={self.project_2.app_id}",
+            f"/api/devicesposition/?app_id={self.project_2.app_id}",
             devices_position_body,
             format="json",
         )
@@ -159,7 +159,7 @@ class DevicesPositionAPITestCase(APITestCase):
             },
         ]
         response = self.client.post(
-            f"/api/iasodevicesposition/?app_id={self.project_1.app_id}",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}",
             devices_position_body,
             format="json",
         )

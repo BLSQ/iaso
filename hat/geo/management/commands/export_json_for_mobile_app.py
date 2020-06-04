@@ -1,4 +1,7 @@
+import json5 as json5
 from django.core.management.base import BaseCommand
+from django.db.models import Q
+
 from hat.geo.models import Province
 import json
 
@@ -34,7 +37,8 @@ class Command(BaseCommand):
                     }
                     #print("area", area.name)
 
-                    for village in area.village_set.filter(village_official="YES").order_by('name'):
+                    for village in area.village_set.filter(Q(village_official="YES") | Q(village_source="device"))\
+                            .order_by('name'):
                         village_dict = {
                             'id': str(village.id),
                             'name': village.name,
@@ -57,8 +61,18 @@ class Command(BaseCommand):
             province_dict['zones'] = zones
             provinces.append(province_dict)
 
-        f = open('/tmp/location.js', 'w')
-        f.write('module.exports = {"provinces": ')
-        f.write(json.dumps(provinces))
+        print("Writing pretty print file /tmp/location_pretty.js")
+        print("Include in mobile app locations_pretty folder to compare versions")
+        f = open('/tmp/locations_pretty.json', 'w')
+        f.write('{\nprovinces: ')
+        f.write(json5.dumps(provinces, indent=2))
+        f.write('}')
+        f.close()
+
+        print("Writing ugly print file /tmp/location_ugly.js")
+        print("USE THIS FILE for src/location/index.js")
+        f = open('/tmp/locations_ugly.js', 'w')
+        f.write('module.exports = {provinces: ')
+        f.write(json5.dumps(provinces))
         f.write('};')
         f.close()

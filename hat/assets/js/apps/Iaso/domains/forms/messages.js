@@ -219,7 +219,7 @@ const MESSAGES = defineMessages({
     },
     org_unit_type_name: {
         id: 'iaso.orgUnits.org_unit_type_name',
-        defaultMessage: 'Orgasnisation unit type',
+        defaultMessage: 'Organisation unit type',
     },
     latitude: {
         id: 'iaso.label.latitude',

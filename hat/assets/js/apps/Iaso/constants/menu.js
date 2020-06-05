@@ -7,6 +7,7 @@ import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
+import CategoryIcon from '@material-ui/icons/Category';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -56,6 +57,12 @@ const menuItems = [
                 permission: paths.groupsPath.permission,
                 key: 'groups',
                 icon: props => <GroupWork {...props} />,
+            },
+            {
+                label: MESSAGES.orgUnitType,
+                permission: paths.orgUnitTypesPath.permission,
+                key: 'types',
+                icon: props => <CategoryIcon {...props} />,
             },
             {
                 label: MESSAGES.matching,

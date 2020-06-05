@@ -336,6 +336,21 @@ export const groupsPath = {
         })),
     ],
 };
+export const orgUnitTypesPath = {
+    baseUrl: baseUrls.orgUnitTypes,
+    permission: 'iaso_org_units',
+    component: props => <Groups {...props} />,
+    params: [
+        {
+            isRequired: false,
+            key: 'search',
+        },
+        ...paginationPathParams.map(p => ({
+            ...p,
+            isRequired: true,
+        })),
+    ],
+};
 
 export const page401 = {
     baseUrl: baseUrls.error401,
@@ -369,6 +384,7 @@ export const routeConfigs = [
     completenessPath,
     usersPath,
     groupsPath,
+    orgUnitTypesPath,
     page401,
     page404,
     page500,

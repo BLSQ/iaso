@@ -70,6 +70,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path={baseUrls.mappings} to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.users} to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.groups} to={`${baseUrls.groups}/order/name/pageSize/20/page/1`} />,
+        <Redirect path={baseUrls.orgUnitTypes} to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`} />,
     ]);
 
     let history = useRouterHistory(createHistory)({

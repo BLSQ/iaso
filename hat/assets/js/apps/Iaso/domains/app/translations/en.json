@@ -248,6 +248,7 @@
   "iaso.orgUnits.addToGroups": "Add to group(s)",
   "iaso.orgUnits.confirmMultiChange": "Confirm bulk changes ?",
   "iaso.orgUnits.editGroups": "Edit groups",
+  "iaso.orgUnits.depth": "Depth",
   "iaso.orgUnits.editOrgUnitType": "Edit org unit type",
   "iaso.orgUnits.editValidation": "Edit validation",
   "iaso.orgUnits.forms.noData": "No form",

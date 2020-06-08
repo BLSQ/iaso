@@ -44,6 +44,7 @@ class OrgUnitsTypesDialogComponent extends Component {
         });
         currentOrgUnit.short_name = currentOrgUnit.shortName;
         currentOrgUnit.sub_unit_types = currentOrgUnit.subUnitTypes;
+        currentOrgUnit.sub_unit_type_ids = currentOrgUnit.subUnitTypes.map(s => s.id);
         delete currentOrgUnit.shortName;
         delete currentOrgUnit.subUnitTypes;
         let saveOrgUnitTypeTemp;
@@ -75,6 +76,16 @@ class OrgUnitsTypesDialogComponent extends Component {
         this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: fieldErrors } });
     }
 
+
+    setSubUnitTypes(newSubUniTypes) {
+        this.setState({
+            subUnitTypes: {
+                value: newSubUniTypes.split(',').map(s => ({ id: s })),
+                errors: [],
+            },
+        });
+    }
+
     setInitialState() {
         this.setState(this.initialState());
     }
@@ -89,14 +100,22 @@ class OrgUnitsTypesDialogComponent extends Component {
             name: { value: get(initialData, 'name', ''), errors: [] },
             shortName: { value: get(initialData, 'short_name', ''), errors: [] },
             subUnitTypes: { value: get(initialData, 'sub_unit_types', []), errors: [] },
+            depth: { value: get(initialData, 'depth', ''), errors: [] },
         };
     }
 
     render() {
         const {
-            titleMessage, renderTrigger,
+            titleMessage, renderTrigger, orgUnitsTypes,
         } = this.props;
-
+        const {
+            id,
+            name,
+            shortName,
+            depth,
+            subUnitTypes,
+        } = this.state;
+        const subUnitTypesList = orgUnitsTypes.filter(s => s.id !== id.value);
         return (
             <ConfirmCancelDialogComponent
                 titleMessage={titleMessage}
@@ -112,8 +131,8 @@ class OrgUnitsTypesDialogComponent extends Component {
                         <InputComponent
                             keyValue="name"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.name.value}
-                            errors={this.state.name.errors}
+                            value={name.value}
+                            errors={name.errors}
                             type="text"
                             label={MESSAGES.name}
                             required
@@ -123,11 +142,37 @@ class OrgUnitsTypesDialogComponent extends Component {
                         <InputComponent
                             keyValue="shortName"
                             onChange={(key, value) => this.setFieldValue(key, value)}
-                            value={this.state.shortName.value}
-                            errors={this.state.shortName.errors}
+                            value={shortName.value}
+                            errors={shortName.errors}
                             type="text"
                             label={MESSAGES.shortName}
                             required={false}
+                        />
+                    </Grid>
+                    <Grid xs={12} item>
+                        <InputComponent
+                            keyValue="depth"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={depth.value}
+                            errors={shortName.errors}
+                            type="number"
+                            label={MESSAGES.depth}
+                            required={false}
+                        />
+                    </Grid>
+                    <Grid xs={12} item>
+                        <InputComponent
+                            multi
+                            clearable
+                            keyValue="subUnitTypes"
+                            onChange={(key, value) => this.setSubUnitTypes(value)}
+                            value={subUnitTypes.value.length > 0 ? subUnitTypes.value.map(ot => ot.id) : null}
+                            type="select"
+                            options={subUnitTypesList.map(ot => ({
+                                label: ot.name,
+                                value: ot.id,
+                            }))}
+                            label={MESSAGES.subUnitTypes}
                         />
                     </Grid>
                 </Grid>
@@ -148,10 +193,12 @@ OrgUnitsTypesDialogComponent.propTypes = {
     saveOrgUnitType: PropTypes.func.isRequired,
     createOrgUnitType: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
+    orgUnitsTypes: PropTypes.array.isRequired,
 };
 
 
 const MapStateToProps = state => ({
+    orgUnitsTypes: state.orgUnitsTypes.allTypes,
     count: state.orgUnitsTypes.count,
     pages: state.orgUnitsTypes.pages,
     fetching: state.orgUnitsTypes.fetching,

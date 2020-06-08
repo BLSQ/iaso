@@ -3,6 +3,7 @@ import {
 } from '../../../redux/actions/formsActions';
 
 export const SET_ORG_UNIT_TYPES = 'ORG_UNIT_TYPES/SET_ORG_UNIT_TYPES';
+export const SET_ALL_ORG_UNIT_TYPES = 'ORG_UNIT_TYPES/SET_ALL_ORG_UNIT_TYPES';
 export const SET_CURRENT_ORG_UNIT_TYPE = 'ORG_UNIT_TYPES/SET_CURRENT_ORG_UNIT_TYPE';
 export const SET_IS_FETCHING_ORG_UNIT_TYPES = 'ORG_UNIT_TYPES/SET_IS_FETCHING_ORG_UNIT_TYPES';
 
@@ -14,6 +15,11 @@ export const setOrgUnitTypes = (list, { count, pages }) => ({
         count,
         pages,
     },
+});
+
+export const setAllOrgUnitTypes = orgUnitsTtypes => ({
+    type: SET_ALL_ORG_UNIT_TYPES,
+    payload: orgUnitsTtypes,
 });
 
 export const setIsFetching = fetching => ({
@@ -30,6 +36,14 @@ export const fetchOrgUnitTypes = params => dispatch => fetchAction(
     'orgUnitTypes',
     params,
     setIsFetching,
+);
+
+export const fetchAllOrgUnitTypes = () => dispatch => fetchAction(
+    dispatch,
+    apiKey,
+    setAllOrgUnitTypes,
+    'fetchOrgUnitTypesError',
+    'orgUnitTypes',
 );
 
 export const saveOrgUnitType = orgUnitType => dispatch => saveAction(

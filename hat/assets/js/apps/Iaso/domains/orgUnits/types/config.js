@@ -4,7 +4,6 @@ import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
-// import { formatThousand } from '../../../../../utils';
 import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [
@@ -56,7 +55,7 @@ const TableColumns = (formatMessage, component) => [
                     disabled={settings.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
-                    onConfirm={closeDialog => component.deleteGroup(settings.original).then(closeDialog)}
+                    onConfirm={closeDialog => component.deleteOrgUnitType(settings.original).then(closeDialog)}
                 />
             </section>
         ),

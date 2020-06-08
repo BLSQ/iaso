@@ -6,6 +6,7 @@ import { injectIntl } from 'react-intl';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
     fetchOrgUnitTypes as fetchOrgUnitTypesAction,
+    fetchAllOrgUnitTypes as fetchAllOrgUnitTypesAction,
     deleteOrgUnitType as deleteOrgUnitTypeAction,
 } from './actions';
 
@@ -34,13 +35,15 @@ const styles = theme => ({
     },
 });
 
-class Groups extends Component {
+class OrgUnitTypes extends Component {
     componentDidMount() {
         const {
             params,
             fetchOrgUnitTypes,
+            fetchAllOrgUnitTypes,
         } = this.props;
         fetchOrgUnitTypes(params);
+        fetchAllOrgUnitTypes(); //  TO-DO, API endpoint giving only id, name, short name. This is used by the dialog to choose sub org unit
     }
 
     componentDidUpdate(prevProps) {
@@ -52,12 +55,12 @@ class Groups extends Component {
         }
     }
 
-    deleteOrgUnitType(group) {
+    deleteOrgUnitType(orgUnitType) {
         const {
             params,
             deleteOrgUnitType,
         } = this.props;
-        return deleteOrgUnitType(group, params);
+        return deleteOrgUnitType(orgUnitType, params);
     }
 
     render() {
@@ -115,15 +118,16 @@ class Groups extends Component {
     }
 }
 
-Groups.defaultProps = {
+OrgUnitTypes.defaultProps = {
     count: 0,
 };
 
-Groups.propTypes = {
+OrgUnitTypes.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetchOrgUnitTypes: PropTypes.func.isRequired,
+    fetchAllOrgUnitTypes: PropTypes.func.isRequired,
     deleteOrgUnitType: PropTypes.func.isRequired,
     orgUnitsTypes: PropTypes.array.isRequired,
     count: PropTypes.number,
@@ -143,10 +147,11 @@ const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
             fetchOrgUnitTypes: fetchOrgUnitTypesAction,
+            fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
             deleteOrgUnitType: deleteOrgUnitTypeAction,
             redirectTo: redirectToAction,
         }, dispatch),
     }
 );
 
-export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(Groups)));
+export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(OrgUnitTypes)));

@@ -61,6 +61,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.edit',
         defaultMessage: 'Edit',
     },
+    subUnitTypes: {
+        id: 'iaso.orgUnits.subOrgUnitsType',
+        defaultMessage: 'Sub org units types',
+    },
+    depth: {
+        id: 'iaso.orgUnits.depth',
+        defaultMessage: 'Depth',
+    },
 });
 
 export default MESSAGES;

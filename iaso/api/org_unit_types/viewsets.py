@@ -1,5 +1,6 @@
 from rest_framework import permissions
 
+from django.db.models import Q
 from iaso.models import OrgUnitType
 from .serializers import OrgUnitTypeSerializer
 from ..common import ModelViewSet
@@ -21,6 +22,11 @@ class OrgUnitTypeViewSet(ModelViewSet):
     def get_queryset(self):
         queryset = OrgUnitType.objects.all()
         app_id = self.request.query_params.get("app_id")
+        search = self.request.query_params.get("search", None)
+        if search:
+            queryset = queryset.filter(
+                Q(name__icontains=search)
+                | Q(short_name__icontains=search))
 
         if not self.request.user.is_anonymous:
             profile = self.request.user.iaso_profile

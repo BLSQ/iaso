@@ -8,17 +8,17 @@ from iaso import models as m
 class OrgUnitTypesAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        ghi = m.Account.objects.create(name="Global Health initial")
+        ghi = m.Account.objects.create(name="Global Health Initiative")
+        wha = m.Account.objects.create(name="Worldwide Health Aid")
+        cls.ead = m.Project.objects.create(name="End All Diseases", account=ghi)
+        cls.esd = m.Project.objects.create(name="End Some Diseases", account=wha)
 
         cls.jane = cls.create_user_with_profile(
             username="janedoe", account=ghi, permissions=["iaso_forms"]
         )
-        cls.project_1 = m.Project.objects.create(
-            name="Project 1", app_id="org.ghi.p1", account=ghi
-        )
         cls.org_unit_type_1 = m.OrgUnitType.objects.create(name="Plop", short_name="Pl")
         cls.org_unit_type_2 = m.OrgUnitType.objects.create(name="Boom", short_name="Bo")
-        cls.project_1.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
+        cls.ead.unit_types.set([cls.org_unit_type_1, cls.org_unit_type_2])
 
     @tag("iaso_only")
     def test_org_unit_types_list_without_auth_or_app_id(self):
@@ -35,7 +35,11 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/orgunittypes/")
         self.assertJSONResponse(response, 200)
-        self.assertValidOrgUnitTypeListData(response.json(), 2)
+
+        response_data = response.json()
+        self.assertValidOrgUnitTypeListData(response_data, 2)
+        for org_unit_type_data in response_data["orgUnitTypes"]:
+            self.assertEqual(len(org_unit_type_data["projects"]), 1)
 
     @tag("iaso_only")
     def test_org_unit_type_create_no_auth(self):
@@ -43,6 +47,37 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         response = self.client.post("/api/orgunittypes/", data={}, format="json")
         self.assertJSONResponse(response, 403)
+
+    @tag("iaso_only")
+    def test_org_unit_type_create_invalid(self):
+        """POST /orgunittypes/ without project ids: invalid"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.post(
+            "/api/orgunittypes/", data={"name": "Bimbam", "depth": 1,}, format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "project_ids", "Ce champ est obligatoire.")
+        self.assertHasError(response.json(), "short_name", "Ce champ est obligatoire.")
+
+    @tag("iaso_only")
+    def test_org_unit_type_create_invalid_wrong_project(self):
+        """POST /orgunittypes/ without project ids: invalid"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.post(
+            "/api/orgunittypes/",
+            data={
+                "name": "Bimbam",
+                "short_name": "Bi",
+                "depth": 1,
+                "project_ids": [self.esd.id],
+                "sub_unit_type_ids": [],
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 400)
+        self.assertHasError(response.json(), "project_ids", "Invalid project ids")
 
     @tag("iaso_only")
     def test_org_unit_type_create_ok(self):
@@ -55,12 +90,16 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "name": "Bimbam",
                 "short_name": "Bi",
                 "depth": 1,
+                "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
             },
             format="json",
         )
+
+        org_unit_type_data = response.json()
         self.assertJSONResponse(response, 201)
-        self.assertValidOrgUnitTypeData(response.json())
+        self.assertValidOrgUnitTypeData(org_unit_type_data)
+        self.assertEqual(1, len(org_unit_type_data["projects"]))
 
     @tag("iaso_only")
     def test_org_unit_type_create_with_sub_unit_types_ok(self):
@@ -73,6 +112,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "name": "Bimbam",
                 "short_name": "Bi",
                 "depth": 1,
+                "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [self.org_unit_type_1.id, self.org_unit_type_2.id],
             },
             format="json",
@@ -81,6 +121,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
         org_unit_type_data = response.json()
         self.assertValidOrgUnitTypeData(org_unit_type_data)
+        self.assertEqual(1, len(org_unit_type_data["projects"]))
         self.assertEqual(2, len(org_unit_type_data["sub_unit_types"]))
 
     @tag("iaso_only")
@@ -94,6 +135,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
                 "name": "Plop updated",
                 "short_name": "Bi",
                 "depth": 1,
+                "project_ids": [self.ead.id],
                 "sub_unit_type_ids": [],
             },
             format="json",
@@ -130,8 +172,13 @@ class OrgUnitTypesAPITestCase(APITestCase):
         self.assertHasField(org_unit_type_data, "name", str)
         self.assertHasField(org_unit_type_data, "short_name", str)
         self.assertHasField(org_unit_type_data, "depth", int, optional=True)
+        self.assertHasField(org_unit_type_data, "projects", list, optional=True)
         self.assertHasField(org_unit_type_data, "sub_unit_types", list, optional=True)
         self.assertHasField(org_unit_type_data, "created_at", float)
+
+        if "projects" in org_unit_type_data:
+            for project_data in org_unit_type_data["projects"]:
+                self.assertValidProjectData(project_data)
 
         if "sub_unit_types" in org_unit_type_data:
             for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:

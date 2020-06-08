@@ -5,7 +5,7 @@ from iaso.test import APITestCase
 from iaso import models as m
 
 
-class ProjectsAPITestCase(APITestCase):
+class AppsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         account = m.Account.objects.create(name="Global Health Initiative")

@@ -1,7 +1,9 @@
+import typing
 from rest_framework import serializers
 
+from iaso.models import OrgUnitType, Project
 from ..common import TimestampField, DynamicFieldsModelSerializer
-from iaso.models import OrgUnitType
+from ..projects.serializers import ProjectSerializer
 
 
 class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
@@ -16,14 +18,26 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "name",
             "short_name",
             "depth",
+            "projects",
+            "project_ids",
             "sub_unit_types",
             "sub_unit_type_ids",
             "created_at",
             "updated_at",
         ]
-        read_only_fields = ["id", "created_at", "updated_at"]
+        read_only_fields = [
+            "id",
+            "projects",
+            "sub_unit_types",
+            "created_at",
+            "updated_at",
+        ]
 
-    sub_unit_types = serializers.SerializerMethodField()
+    projects = ProjectSerializer(many=True, read_only=True)
+    project_ids = serializers.PrimaryKeyRelatedField(
+        source="projects", write_only=True, many=True, queryset=Project.objects.all()
+    )
+    sub_unit_types = serializers.SerializerMethodField(read_only=True)
     sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
         source="sub_unit_types",
         write_only=True,
@@ -46,3 +60,13 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             many=True,
             context=self.context,
         ).data
+
+    def validate(self, data: typing.Mapping):
+        # validate projects (access check)
+        for project in data["projects"]:
+            if self.context["request"].user.iaso_profile.account != project.account:
+                raise serializers.ValidationError(
+                    {"project_ids": "Invalid project ids"}
+                )
+
+        return data

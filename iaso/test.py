@@ -165,3 +165,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(last_api_import.exception, "")
         elif exception_contains_string is not None:
             self.assertTrue(exception_contains_string in last_api_import.exception)
+
+    def assertValidProjectData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "name", str)
+        self.assertHasField(project_data, "feature_flags", list)
+        self.assertHasField(project_data, "created_at", float)
+        self.assertHasField(project_data, "updated_at", float)
+        self.assertHasField(project_data, "needs_authentication", bool)

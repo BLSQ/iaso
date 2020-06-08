@@ -21,43 +21,43 @@ export const setIsFetching = fetching => ({
     payload: fetching,
 });
 
-const apiEndPoint = 'groups';
+const apiKey = 'groups';
 export const fetchGroups = params => dispatch => fetchAction(
     dispatch,
-    params,
-    apiEndPoint,
-    'groups',
-    setIsFetching,
+    apiKey,
     setGroups,
     'fetchGroupsError',
+    'groups',
+    params,
+    setIsFetching,
 );
 
 export const saveGroup = group => dispatch => saveAction(
     dispatch,
     group,
-    apiEndPoint,
-    setIsFetching,
+    apiKey,
     'saveGroupSuccesfull',
     'saveGroupError',
+    setIsFetching,
 );
 
 export const createGroup = group => dispatch => createAction(
     dispatch,
     group,
-    apiEndPoint,
-    setIsFetching,
+    apiKey,
     'saveGroupSuccesfull',
     'saveGroupError',
+    setIsFetching,
 );
 
 export const deleteGroup = (group, params) => dispatch => deleteAction(
     dispatch,
     group,
-    apiEndPoint,
-    'groups',
-    params,
-    setIsFetching,
+    apiKey,
     setGroups,
     'deleteGroupSuccesfull',
     'deleteGroupError',
+    'groups',
+    params,
+    setIsFetching,
 );

@@ -1,8 +1,6 @@
 import {
-    getRequest, patchRequest, postRequest, deleteRequest,
-} from '../../../libs/Api';
-import { enqueueSnackbar } from '../../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../../utils/constants/snackBars';
+    fetchAction, saveAction, createAction, deleteAction,
+} from '../../../redux/actions/formsActions';
 
 export const SET_ORG_UNIT_TYPES = 'ORG_UNIT_TYPES/SET_ORG_UNIT_TYPES';
 export const SET_CURRENT_ORG_UNIT_TYPE = 'ORG_UNIT_TYPES/SET_CURRENT_ORG_UNIT_TYPE';
@@ -23,65 +21,43 @@ export const setIsFetching = fetching => ({
     payload: fetching,
 });
 
+const apiKey = 'orgunittypes';
+export const fetchOrgUnitTypes = params => dispatch => fetchAction(
+    dispatch,
+    apiKey,
+    setOrgUnitTypes,
+    'fetchOrgUnitTypesError',
+    'orgUnitTypes',
+    params,
+    setIsFetching,
+);
 
-export const fetchOrgUnitTypes = params => (dispatch) => {
-    let url = '/api/orgunittypes';
-    if (params) {
-        url += `?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
-        if (params.search) {
-            url += `&search=${params.search}`;
-        }
-        dispatch(setIsFetching(true));
-    }
-    return getRequest(url)
-        .then(res => dispatch(setOrgUnitTypes(res.orgUnitTypes, params ? { count: res.count, pages: res.pages } : { count: res.orgUnitTypes.length, pages: 1 })))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchOrgUnitTypesError'))))
-        .then(() => {
-            if (params) {
-                dispatch(setIsFetching(false));
-            }
-        });
-};
+export const saveOrgUnitType = orgUnitType => dispatch => saveAction(
+    dispatch,
+    orgUnitType,
+    apiKey,
+    'saveOrgUnitTypeSuccesfull',
+    'saveOrgUnitTypeError',
+    setIsFetching,
+);
 
-export const saveOrgUnitType = orgUnitType => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (patchRequest(`/api/orgunittypes/${orgUnitType.id}/`, orgUnitType, true)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveOrgUnitTypeSuccesfull')));
-            return res;
-        })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveOrgUnitTypeError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
+export const createOrgUnitType = orgUnitType => dispatch => createAction(
+    dispatch,
+    orgUnitType,
+    apiKey,
+    'saveOrgUnitTypeSuccesfull',
+    'saveOrgUnitTypeError',
+    setIsFetching,
+);
 
-export const createOrgUnitType = orgUnitType => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (postRequest('/api/orgunittypes/', orgUnitType)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveOrgUnitTypeSuccesfull')));
-            return res;
-        })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveOrgUnitTypeError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
-
-export const deleteOrgUnitType = (orgUnitType, params) => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (deleteRequest(`/api/orgunittypes/${orgUnitType.id}/`)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('deleteOrgUnitTypeSuccesfull')));
-            dispatch(fetchOrgUnitTypes(params));
-            return res;
-        })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('deleteOrgUnitTypeError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
+export const deleteOrgUnitType = (orgUnitType, params) => dispatch => deleteAction(
+    dispatch,
+    orgUnitType,
+    apiKey,
+    setOrgUnitTypes,
+    'deleteOrgUnitTypeSuccesfull',
+    'deleteOrgUnitTypeError',
+    'orgUnitTypes',
+    params,
+    setIsFetching,
+);

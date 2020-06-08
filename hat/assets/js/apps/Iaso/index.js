@@ -32,6 +32,7 @@ import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import { groupsInitialState, reducer as groupsReducer } from './domains/orgUnits/groups/reducer';
+import { orgUnitsTypesInitialState, reducer as orgUnitsTypesReducer } from './domains/orgUnits/types/reducer';
 
 import { getChipColors } from './constants/chipColors';
 
@@ -96,6 +97,7 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsInitialState,
         mappings: mappingsInitialState,
         groups: groupsInitialState,
+        orgUnitsTypes: orgUnitsTypesInitialState,
     }, {
         app: appReducer,
         load: loadReducer,
@@ -116,6 +118,7 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsReducer,
         mappings: mappingReducer,
         groups: groupsReducer,
+        orgUnitsTypes: orgUnitsTypesReducer,
     }, [
         routerMiddleware(history),
         thunk,

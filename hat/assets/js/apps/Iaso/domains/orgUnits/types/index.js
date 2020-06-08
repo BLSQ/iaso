@@ -5,15 +5,15 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { withStyles, Box, Grid } from '@material-ui/core';
 import {
-    fetchGroups as fetchGroupsAction,
-    deleteGroup as deleteGroupAction,
+    fetchOrgUnitTypes as fetchOrgUnitTypesAction,
+    deleteOrgUnitType as deleteOrgUnitTypeAction,
 } from './actions';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
 import Filters from './components/Filters';
 import Table from '../../../components/tables/TableComponent';
-import GroupsDialog from './components/GroupsDialog';
+import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import AddButtonComponent from '../../../components/buttons/AddButtonComponent';
 
 import commonStyles from '../../../styles/common';
@@ -24,7 +24,7 @@ import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 
-const baseUrl = baseUrls.groups;
+const baseUrl = baseUrls.orgUnitTypes;
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -38,26 +38,26 @@ class Groups extends Component {
     componentDidMount() {
         const {
             params,
-            fetchGroups,
+            fetchOrgUnitTypes,
         } = this.props;
-        fetchGroups(params);
+        fetchOrgUnitTypes(params);
     }
 
     componentDidUpdate(prevProps) {
-        const { params, fetchGroups } = this.props;
+        const { params, fetchOrgUnitTypes } = this.props;
         if ((prevProps.params.pageSize !== params.pageSize)
         || (prevProps.params.order !== params.order)
         || (prevProps.params.page !== params.page)) {
-            fetchGroups(params);
+            fetchOrgUnitTypes(params);
         }
     }
 
-    deleteGroup(group) {
+    deleteOrgUnitType(group) {
         const {
             params,
-            deleteGroup,
+            deleteOrgUnitType,
         } = this.props;
-        return deleteGroup(group, params);
+        return deleteOrgUnitType(group, params);
     }
 
     render() {
@@ -66,12 +66,12 @@ class Groups extends Component {
             intl: {
                 formatMessage,
             },
-            groups,
+            orgUnitsTypes,
             count,
             pages,
             fetching,
             classes,
-            fetchGroups,
+            fetchOrgUnitTypes,
             redirectTo,
         } = this.props;
         return (
@@ -81,17 +81,17 @@ class Groups extends Component {
                     && <LoadingSpinner />
                 }
                 <TopBar
-                    title={formatMessage(MESSAGES.groups)}
+                    title={formatMessage(MESSAGES.orgUnitsTypes)}
                     displayBackButton={false}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Filters
                         baseUrl={baseUrl}
                         params={params}
-                        onSearch={() => fetchGroups(params)}
+                        onSearch={() => fetchOrgUnitTypes(params)}
                     />
                     <Table
-                        data={groups}
+                        data={orgUnitsTypes}
                         pages={pages}
                         defaultSorted={[
                             { id: 'name', desc: false },
@@ -103,7 +103,7 @@ class Groups extends Component {
                         redirectTo={redirectTo}
                     />
                     <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
-                        <GroupsDialog
+                        <OrgUnitsTypesDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             params={params}
@@ -123,9 +123,9 @@ Groups.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
-    fetchGroups: PropTypes.func.isRequired,
-    deleteGroup: PropTypes.func.isRequired,
-    groups: PropTypes.array.isRequired,
+    fetchOrgUnitTypes: PropTypes.func.isRequired,
+    deleteOrgUnitType: PropTypes.func.isRequired,
+    orgUnitsTypes: PropTypes.array.isRequired,
     count: PropTypes.number,
     fetching: PropTypes.bool.isRequired,
     pages: PropTypes.number.isRequired,
@@ -133,17 +133,17 @@ Groups.propTypes = {
 };
 
 const MapStateToProps = state => ({
-    groups: state.groups.list,
-    count: state.groups.count,
-    pages: state.groups.pages,
-    fetching: state.groups.fetching,
+    orgUnitsTypes: state.orgUnitsTypes.list,
+    count: state.orgUnitsTypes.count,
+    pages: state.orgUnitsTypes.pages,
+    fetching: state.orgUnitsTypes.fetching,
 });
 
 const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
-            fetchGroups: fetchGroupsAction,
-            deleteGroup: deleteGroupAction,
+            fetchOrgUnitTypes: fetchOrgUnitTypesAction,
+            deleteOrgUnitType: deleteOrgUnitTypeAction,
             redirectTo: redirectToAction,
         }, dispatch),
     }

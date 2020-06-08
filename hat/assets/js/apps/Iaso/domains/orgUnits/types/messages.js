@@ -13,25 +13,29 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.name',
         defaultMessage: 'Name',
     },
+    shortName: {
+        id: 'iaso.orgUnits.shortName',
+        defaultMessage: 'Short name',
+    },
     search: {
         id: 'iaso.search',
         defaultMessage: 'Search',
     },
-    groups: {
-        defaultMessage: 'Groups',
-        id: 'iaso.label.groups',
+    orgUnitsTypes: {
+        defaultMessage: 'Org unit types',
+        id: 'iaso.label.orgUnitsTypes',
     },
     create: {
-        id: 'iaso.groups.create',
-        defaultMessage: 'Create group',
-    },
-    sourceVersion: {
-        id: 'iaso.groups.sourceVersion',
-        defaultMessage: 'Source version',
+        id: 'iaso.orgUnitsTypes.create',
+        defaultMessage: 'Create org unit type',
     },
     updatedAt: {
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated at',
+    },
+    createdAt: {
+        id: 'iaso.label.created',
+        defaultMessage: 'Created at',
     },
     orgUnit: {
         id: 'iaso.label.orgUnit',
@@ -42,12 +46,12 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Action(s)',
     },
     update: {
-        id: 'iaso.groups.update',
-        defaultMessage: 'Update group',
+        id: 'iaso.orgUnitsTypes.update',
+        defaultMessage: 'Update org unit type',
     },
     delete: {
-        id: 'iaso.groups.dialog.delete',
-        defaultMessage: 'Are you sure you want to delete this group?',
+        id: 'iaso.orgUnitsTypes.dialog.delete',
+        defaultMessage: 'Are you sure you want to delete this org unit type?',
     },
     deleteWarning: {
         id: 'iaso.users.dialog.deleteUserTitle',

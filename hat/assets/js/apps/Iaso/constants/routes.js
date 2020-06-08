@@ -11,6 +11,7 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
 import Groups from '../domains/orgUnits/groups';
+import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 
@@ -339,7 +340,7 @@ export const groupsPath = {
 export const orgUnitTypesPath = {
     baseUrl: baseUrls.orgUnitTypes,
     permission: 'iaso_org_units',
-    component: props => <Groups {...props} />,
+    component: props => <Types {...props} />,
     params: [
         {
             isRequired: false,

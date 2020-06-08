@@ -12,12 +12,12 @@ import InputComponent from '../../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 
 import {
-    saveGroup as saveGroupAction,
-    fetchGroups as fetchGroupsAction,
-    createGroup as createGroupAction,
+    fetchOrgUnitTypes as fetchOrgUnitTypesAction,
+    saveOrgUnitType as saveOrgUnitTypeAction,
+    createOrgUnitType as createOrgUnitTypeAction,
 } from '../actions';
 
-class GroupDialogComponent extends Component {
+class OrgUnitsTypesDialogComponent extends Component {
     constructor(props) {
         super(props);
 
@@ -33,27 +33,30 @@ class GroupDialogComponent extends Component {
     onConfirm(closeDialog) {
         const {
             params,
-            fetchGroups,
-            saveGroup,
-            createGroup,
+            fetchOrgUnitTypes,
+            saveOrgUnitType,
+            createOrgUnitType,
             initialData,
         } = this.props;
-        const currentGroup = {};
+        const currentOrgUnit = {};
         Object.keys(this.state).forEach((key) => {
-            currentGroup[key] = this.state[key].value;
+            currentOrgUnit[key] = this.state[key].value;
         });
-
-        let saveGroupTemp;
+        currentOrgUnit.short_name = currentOrgUnit.shortName;
+        currentOrgUnit.sub_unit_types = currentOrgUnit.subUnitTypes;
+        delete currentOrgUnit.shortName;
+        delete currentOrgUnit.subUnitTypes;
+        let saveOrgUnitTypeTemp;
 
         if (initialData) {
-            saveGroupTemp = saveGroup(currentGroup);
+            saveOrgUnitTypeTemp = saveOrgUnitType(currentOrgUnit);
         } else {
-            saveGroupTemp = createGroup(currentGroup);
+            saveOrgUnitTypeTemp = createOrgUnitType(currentOrgUnit);
         }
-        saveGroupTemp.then((newGroup) => {
+        saveOrgUnitTypeTemp.then((newOrgUnitType) => {
             closeDialog();
-            this.setState(this.initialState(newGroup));
-            fetchGroups(params);
+            this.setState(this.initialState(newOrgUnitType));
+            fetchOrgUnitTypes(params);
         })
             .catch((error) => {
                 if (error.status === 400) {
@@ -76,14 +79,16 @@ class GroupDialogComponent extends Component {
         this.setState(this.initialState());
     }
 
-    initialState(group) {
+    initialState(orgUnitType) {
         let initialData = this.props.initialData ? this.props.initialData : {};
-        if (group) {
-            initialData = group;
+        if (orgUnitType) {
+            initialData = orgUnitType;
         }
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
             name: { value: get(initialData, 'name', ''), errors: [] },
+            shortName: { value: get(initialData, 'short_name', ''), errors: [] },
+            subUnitTypes: { value: get(initialData, 'sub_unit_types', []), errors: [] },
         };
     }
 
@@ -114,41 +119,51 @@ class GroupDialogComponent extends Component {
                             required
                         />
                     </Grid>
+                    <Grid xs={12} item>
+                        <InputComponent
+                            keyValue="shortName"
+                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            value={this.state.shortName.value}
+                            errors={this.state.shortName.errors}
+                            type="text"
+                            label={MESSAGES.shortName}
+                            required={false}
+                        />
+                    </Grid>
                 </Grid>
             </ConfirmCancelDialogComponent>
         );
     }
 }
 
-GroupDialogComponent.defaultProps = {
+OrgUnitsTypesDialogComponent.defaultProps = {
     initialData: null,
 };
 
-GroupDialogComponent.propTypes = {
+OrgUnitsTypesDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
-    fetchGroups: PropTypes.func.isRequired,
-    saveGroup: PropTypes.func.isRequired,
-    createGroup: PropTypes.func.isRequired,
+    fetchOrgUnitTypes: PropTypes.func.isRequired,
+    saveOrgUnitType: PropTypes.func.isRequired,
+    createOrgUnitType: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
 };
 
 
 const MapStateToProps = state => ({
-    groups: state.groups.list,
-    count: state.groups.count,
-    pages: state.groups.pages,
-    fetching: state.groups.fetching,
+    count: state.orgUnitsTypes.count,
+    pages: state.orgUnitsTypes.pages,
+    fetching: state.orgUnitsTypes.fetching,
 });
 
 const mapDispatchToProps = dispatch => (
     {
         ...bindActionCreators({
-            fetchGroups: fetchGroupsAction,
-            saveGroup: saveGroupAction,
-            createGroup: createGroupAction,
+            fetchOrgUnitTypes: fetchOrgUnitTypesAction,
+            saveOrgUnitType: saveOrgUnitTypeAction,
+            createOrgUnitType: createOrgUnitTypeAction,
         }, dispatch),
     }
 );
-export default connect(MapStateToProps, mapDispatchToProps)(GroupDialogComponent);
+export default connect(MapStateToProps, mapDispatchToProps)(OrgUnitsTypesDialogComponent);

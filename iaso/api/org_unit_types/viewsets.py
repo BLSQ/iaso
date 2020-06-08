@@ -16,7 +16,7 @@ class OrgUnitTypeViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrgUnitTypeSerializer
     results_key = "orgUnitTypes"
-    http_method_names = ["get", "post", "put", "delete", "head", "options", "trace"]
+    http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.all()

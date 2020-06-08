@@ -1,10 +1,10 @@
 import React from 'react';
 import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
-import GroupsDialog from './components/GroupsDialog';
+import OrgUnitsTypesDialog from './components/OrgUnitsTypesDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
-import { formatThousand } from '../../../../../utils';
+// import { formatThousand } from '../../../../../utils';
 import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [
@@ -15,21 +15,22 @@ const TableColumns = (formatMessage, component) => [
         Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
+        Header: formatMessage(MESSAGES.shortName),
+        accessor: 'short_name',
+        Cell: settings => <ColumnTextComponent text={settings.original.short_name} />,
+    },
+    {
+        Header: formatMessage(MESSAGES.createdAt),
+        accessor: 'created_at',
+        Cell: settings => (
+            <span>{displayDateFromTimestamp(settings.original.created_at)}</span>
+        ),
+    },
+    {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
             <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
-        ),
-    },
-    {
-        Header: formatMessage(MESSAGES.sourceVersion),
-        accessor: 'source_version',
-    },
-    {
-        Header: formatMessage(MESSAGES.orgUnit),
-        accessor: 'org_unit_count',
-        Cell: settings => (
-            <span>{formatThousand(settings.original.org_unit_count)}</span>
         ),
     },
     {
@@ -38,7 +39,7 @@ const TableColumns = (formatMessage, component) => [
         sortable: false,
         Cell: settings => (
             <section>
-                <GroupsDialog
+                <OrgUnitsTypesDialog
                     renderTrigger={({ openDialog }) => (
                         <IconButtonComponent
                             onClick={openDialog}

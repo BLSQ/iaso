@@ -1,10 +1,10 @@
 import {
-    SET_GROUPS,
-    SET_CURRENT_GROUP,
-    SET_IS_FETCHING_GROUPS,
+    SET_ORG_UNIT_TYPES,
+    SET_CURRENT_ORG_UNIT_TYPE,
+    SET_IS_FETCHING_ORG_UNIT_TYPES,
 } from './actions';
 
-export const groupsInitialState = {
+export const orgUnitsTypesInitialState = {
     list: [],
     current: null,
     fetching: false,
@@ -12,20 +12,19 @@ export const groupsInitialState = {
     pages: 1,
 };
 
-
-export const reducer = (state = groupsInitialState, action = {}) => {
+export const reducer = (state = orgUnitsTypesInitialState, action = {}) => {
     switch (action.type) {
-        case SET_GROUPS: {
+        case SET_ORG_UNIT_TYPES: {
             const { list, count = 0, pages = 1 } = action.payload;
             return {
                 ...state, list, count, pages,
             };
         }
-        case SET_CURRENT_GROUP: {
+        case SET_CURRENT_ORG_UNIT_TYPE: {
             const current = action.payload;
             return { ...state, current };
         }
-        case SET_IS_FETCHING_GROUPS: {
+        case SET_IS_FETCHING_ORG_UNIT_TYPES: {
             const fetching = action.payload;
             return { ...state, fetching };
         }

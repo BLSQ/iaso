@@ -1,14 +1,11 @@
 import {
-    getRequest, patchRequest, postRequest, deleteRequest,
-} from '../../libs/Api';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+    fetchAction, saveAction, createAction, deleteAction,
+} from '../../redux/actions/formsActions';
 
 export const SET_USERS_PROFILES = 'SET_USERS_PROFILES';
 export const SET_CURRENT_USER = 'SET_CURRENT_USER';
 export const SET_PERMISSIONS = 'SET_PERMISSIONS';
 export const SET_IS_FETCHING_USERS = 'SET_IS_FETCHING_USERS';
-
 
 export const setUsersProfiles = (list, { count, pages }) => ({
     type: SET_USERS_PROFILES,
@@ -34,77 +31,59 @@ export const setPermissions = permissions => ({
     payload: permissions,
 });
 
+const apiKey = 'profiles';
+export const fetchCurrentUser = () => dispatch => fetchAction(
+    dispatch,
+    `${apiKey}/me`,
+    setCurrentUser,
+    'fetchCurrentUser',
+);
 
-export const fetchUsersProfiles = params => (dispatch) => {
-    let url = '/api/profiles';
-    if (params) {
-        url += `?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
-        if (params.search) {
-            url += `&search=${params.search}`;
-        }
-        dispatch(setIsFetching(true));
-    }
-    return getRequest(url)
-        .then(res => dispatch(setUsersProfiles(res.profiles, params ? { count: res.count, pages: res.pages } : { count: res.profiles.length, pages: 1 })))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchProfilesError'))))
-        .then(() => {
-            if (params) {
-                dispatch(setIsFetching(false));
-            }
-        });
-};
+export const fetchPermissions = () => dispatch => fetchAction(
+    dispatch,
+    'permissions',
+    setPermissions,
+    'fetchPermissions',
+    'permissions',
+);
 
-export const fetchCurrentUser = () => dispatch => getRequest('/api/profiles/me')
-    .then((res) => {
-        dispatch(setCurrentUser(res));
-        return res;
-    })
-    .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchCurrentUser'))));
+export const fetchUsersProfiles = params => dispatch => fetchAction(
+    dispatch,
+    apiKey,
+    setUsersProfiles,
+    'fetchProfilesError',
+    apiKey,
+    params,
+    setIsFetching,
+);
 
-export const fetchPermissions = () => dispatch => getRequest('/api/permissions')
-    .then(res => dispatch(setPermissions(res.permissions)))
-    .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchPermissions'))));
+export const saveUserProFile = profile => dispatch => saveAction(
+    dispatch,
+    profile,
+    apiKey,
+    'saveUserSuccessful',
+    'saveUserError',
+    setIsFetching,
+);
 
-export const saveUserProFile = profile => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (patchRequest(`/api/profiles/${profile.id}/`, profile, true)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccessful')));
-            return res;
-        })
-        .catch((error, res) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveUserError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
-
-export const createUserProFile = profile => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (postRequest('/api/profiles/', profile)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('saveUserSuccessful')));
-            return res;
-        })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveUserError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
+export const createUserProFile = profile => dispatch => createAction(
+    dispatch,
+    profile,
+    apiKey,
+    'saveUserSuccessful',
+    'saveUserError',
+    setIsFetching,
+);
 
 
-export const deleteUser = (profile, params) => (dispatch) => {
-    dispatch(setIsFetching(true));
-    return (deleteRequest(`/api/profiles/${profile.id}/`)
-        .then((res) => {
-            dispatch(enqueueSnackbar(succesfullSnackBar('deleteUserSuccessful')));
-            dispatch(fetchUsersProfiles(params));
-            return res;
-        })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('deleteUserError')));
-            dispatch(setIsFetching(false));
-            throw error;
-        }));
-};
+export const deleteUser = (profile, params) => dispatch => deleteAction(
+    dispatch,
+    profile,
+    apiKey,
+    setUsersProfiles,
+    'deleteUserSuccessful',
+    'deleteUserError',
+    apiKey,
+    params,
+    setIsFetching,
+);

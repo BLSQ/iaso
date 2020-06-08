@@ -26,7 +26,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.groups',
     },
     orgUnitType: {
-        id: 'iaso.orgUnits.org_unit_type_name',
+        id: 'iaso.orgUnits.orgUnitsTypes',
         defaultMessage: 'Organisation unit type',
     },
     matching: {

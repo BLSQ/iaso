@@ -1,0 +1,52 @@
+<?xml version="1.0"?>
+<data id="quality_pca_2.31.8" version="1" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa">
+	<start>2020-03-27T09:01:50.324+03:00</start>
+	<end>2020-03-27T09:02:06.471+03:00</end>
+	<today>2020-03-27</today>
+	<deviceid>355325090129117</deviceid>
+	<subscriberid>208011291143271</subscriberid>
+	<imei>355325090129117</imei>
+	<simserial>89873208011291143271</simserial>
+	<phonenumber />
+	<PBF_PCA_qlt_begin_v8>
+		<PBF_PCA_qlt_8_1 />
+		<PBF_PCA_qlt_8_2 />
+		<PBF_PCA_qlt_8_3_1 />
+		<PBF_PCA_qlt_8_3 />
+		<PBF_PCA_qlt_8_4 />
+		<PBF_PCA_qlt_8_5 />
+		<PBF_PCA_qlt_8_6_1 />
+		<PBF_PCA_qlt_8_6 />
+		<PBF_PCA_qlt_8_7_1 />
+		<PBF_PCA_qlt_8_7 />
+		<PBF_PCA_qlt_8_8 />
+		<PBF_PCA_qlt_8_9_1 />
+		<PBF_PCA_qlt_8_9 />
+		<PBF_PCA_qlt_8_10 />
+		<PBF_PCA_qlt_point_v8 />
+		<PBF_PCA_qlt_max_point_v8 />
+		<PBF_PCA_qlt_note_vol_8 />
+	</PBF_PCA_qlt_begin_v8>
+	<PBF_PCA_qlte_fosa>
+		<PBF_PCA_qlte_nom_enqueteur />
+		<PBF_PCA_qlte_qualif_enqueteur />
+		<PBF_PCA_qlte_struct_enqueteur />
+		<PBF_PCA_qlte_signature_respo_fosa />
+		<PBF_PCA_qlte_tel_enqueteur />
+	</PBF_PCA_qlte_fosa>
+	<PBF_PCA_qlte_infos_evaluateur>
+		<PBF_PCA_qlte_problem_ident />
+		<PBF_PCA_qlte_action_urgent />
+		<PBF_PCA_qlte_nom_evalu />
+		<PBF_PCA_qlte_qualification_eval />
+		<PBF_PCA_qlte_struct_eval />
+		<PBF_PCA_qlte_signature_eval />
+	</PBF_PCA_qlte_infos_evaluateur>
+	<PBF_PCA_qlte_infos_respo_fosa>
+		<PBF_PCA_qlte_nom_respo_fosa />
+		<PBF_PCA_qlte_signature_respo_fosa />
+	</PBF_PCA_qlte_infos_respo_fosa>
+	<meta>
+		<instanceID>REPLACEUUID</instanceID>
+	</meta>
+</data>

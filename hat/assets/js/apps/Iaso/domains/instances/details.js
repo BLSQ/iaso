@@ -2,19 +2,17 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
-
+import DeleteIcon from '@material-ui/icons/Delete';
+import UpdateIcon from '@material-ui/icons/Update';
 import Alert from '@material-ui/lab/Alert';
-import {
-    withStyles,
-    Box,
-    Grid,
-} from '@material-ui/core';
+import { withStyles, Box, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
 import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
+    fetchEditUrl as fetchEditUrlAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -28,7 +26,8 @@ import InstanceDetailsLocation from './components/InstanceDetailsLocation';
 import InstanceDetailsExportRequests from './components/InstanceDetailsExportRequests';
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
-
+import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
+import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 
 import MESSAGES from './messages';
@@ -43,11 +42,30 @@ const styles = theme => ({
     },
 });
 
+const actions = [
+    {
+        id: 'instanceEditAction',
+        icon: <EnketoIcon />,
+        disabled: false,
+    },
+    {
+        id: 'instanceReAssignAction',
+        icon: <UpdateIcon />,
+        disabled: true,
+    },
+    {
+        id: 'instanceDeleteAction',
+        icon: <DeleteIcon />,
+        disabled: true,
+    },
+];
+
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
         this.state = {};
         props.setCurrentInstance(null);
+        this.onActionSelected = this.onActionSelected.bind(this);
     }
 
     componentDidMount() {
@@ -56,6 +74,12 @@ class InstanceDetails extends Component {
             fetchInstanceDetail,
         } = this.props;
         fetchInstanceDetail(instanceId);
+    }
+
+    onActionSelected(action) {
+        if (action.id === 'instanceEditAction' && this.props.currentInstance) {
+            this.props.fetchEditUrl(this.props.currentInstance, window.location);
+        }
     }
 
     render() {
@@ -97,6 +121,10 @@ class InstanceDetails extends Component {
                     currentInstance
                     && (
                         <Box className={classes.containerFullHeightNoTabPadded}>
+                            <SpeedDialInstanceActions
+                                actions={actions}
+                                onActionSelected={this.onActionSelected}
+                            />
                             <Grid container spacing={4}>
 
                                 <Grid xs={12} md={5} item>
@@ -176,6 +204,7 @@ InstanceDetails.propTypes = {
     currentInstance: PropTypes.object,
     fetchInstanceDetail: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
+    fetchEditUrl: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -188,6 +217,7 @@ const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
+            fetchEditUrl: fetchEditUrlAction,
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
         },

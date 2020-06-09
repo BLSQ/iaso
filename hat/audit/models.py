@@ -15,6 +15,7 @@ PASSWORD_API = "password_api"
 PATIENT_API = "patient_api"
 ORG_UNIT_API = "org_unit_api"
 ORG_UNIT_API_BULK = "org_unit_api_bulk"
+INSTANCE_API = "instance_api"
 
 
 class Modification(models.Model):

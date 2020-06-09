@@ -42,6 +42,22 @@ class OrgUnitTypesAPITestCase(APITestCase):
             self.assertEqual(len(org_unit_type_data["projects"]), 1)
 
     @tag("iaso_only")
+    def test_org_unit_types_retrieve_without_auth_or_app_id(self):
+        """GET /orgunittypes/<org_unit_type_id>/ without auth or app idshould result in a 200 empty response"""
+
+        response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_org_unit_types_retrieve_ok(self):
+        """GET /orgunittypes/<org_unit_type_id>/without auth or app idshould result in a 200 empty response"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeData(response.json())
+
+    @tag("iaso_only")
     def test_org_unit_type_create_no_auth(self):
         """POST /orgunittypes/ without auth: 403"""
 
@@ -142,6 +158,21 @@ class OrgUnitTypesAPITestCase(APITestCase):
         )
         self.assertJSONResponse(response, 200)
         self.assertValidOrgUnitTypeData(response.json())
+
+    @tag("iaso_only")
+    def test_org_unit_type_partial_update_ok(self):
+        """PATCH /orgunittypes/<org_unit_type_id>/: 200 OK"""
+
+        self.client.force_authenticate(self.jane)
+        response = self.client.patch(
+            f"/api/orgunittypes/{self.org_unit_type_1.id}/",
+            data={"short_name": "P",},
+            format="json",
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitTypeData(response.json())
+        self.org_unit_type_1.refresh_from_db()
+        self.assertEqual("P", self.org_unit_type_1.short_name)
 
     @tag("iaso_only")
     def test_org_unit_type_delete_ok(self):

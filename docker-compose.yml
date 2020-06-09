@@ -54,6 +54,10 @@ services:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
       PYTHONUNBUFFERED: 'TRUE'
+      ENKETO_DEV: 'TRUE'
+      ENKETO_API_TOKEN: AZE78974654azeAZE
+      ENKETO_DEV: ${ENKETO_DEV}
+      ENKETO_URL: ${ENKETO_URL}
     # Limit logging in dev to not overflow terminal
     logging: &hat_logging
       driver: "json-file"

@@ -60,7 +60,6 @@ const patientInfosMessages = formatMessage => ({
         id: 'main.label.year_of_birth',
         type: 'int',
         min: 1900,
-        isRequired: true,
     },
     origin_country: {
         defaultMessage: 'Country of origin',

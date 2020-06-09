@@ -1,10 +1,6 @@
 from django.conf.urls import url, include
 from rest_framework import routers
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
-
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -25,6 +21,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.enketo import enketo_edit_url, enketo_form_list, EnketoSubmissionAPIView
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
@@ -73,6 +70,25 @@ router.register(
 )
 
 
+urlpatterns = [
+    url(
+        r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$",
+        view=enketo_edit_url,
+        name="enketo-edit-url",
+    ),
+    url(
+        r"^enketo/formList$",
+        view=enketo_form_list,
+        name="enketo-form-list",
+    ),
+    url(
+        r"^enketo/submission$",
+        view=EnketoSubmissionAPIView.as_view(),
+        name="enketo-submission",
+    ),
+]
+
+
 def append_datasources_subresource(viewset, resource_name, urlpatterns):
     urlpatterns.append(
         url(
@@ -91,8 +107,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
         )
     )
 
-
-urlpatterns = [
+urlpatterns = urlpatterns + [
     url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     url("^token/refresh/$", TokenRefreshView.as_view(), name="token_refresh"),
     url(r"^", include(router.urls)),

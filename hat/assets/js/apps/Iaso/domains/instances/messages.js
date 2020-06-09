@@ -217,6 +217,19 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Cannot find an instance with a file',
         id: 'iaso.instance.missingFile',
     },
+    instanceDeleteAction: {
+        defaultMessage: 'Delete instance',
+        id: 'iaso.instance.instanceDeleteAction',
+    },
+    instanceEditAction: {
+        defaultMessage: 'Edit any answer in Enketo',
+        id: 'iaso.instance.instanceEditAction',
+    },
+    instanceReAssignAction: {
+        defaultMessage: 'Edit orgUnit or period',
+        id: 'iaso.instance.instanceReAssignAction',
+    }
+
 });
 
 export default MESSAGES;

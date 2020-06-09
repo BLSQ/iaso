@@ -38,8 +38,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.config',
     },
     users: {
-        defaultMessage: 'Configuration',
-        id: 'iaso.label.config',
+        defaultMessage: 'Users',
+        id: 'iaso.label.users',
     },
 });
 

@@ -63,7 +63,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
 
     def validate(self, data: typing.Mapping):
         # validate projects (access check)
-        for project in data["projects"]:
+        for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
                 raise serializers.ValidationError(
                     {"project_ids": "Invalid project ids"}

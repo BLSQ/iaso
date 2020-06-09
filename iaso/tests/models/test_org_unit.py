@@ -86,6 +86,52 @@ class OrgUnitModelTestCase(TestCase):
         )
 
     @tag("iaso_only")
+    def test_org_unit_path_does_not_change(self):
+        """Updating the "name" property should not result in path change queries """
+
+        corrusca = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Corrusca Sector"
+        )
+        corruscant = m.OrgUnit.objects.create(
+            org_unit_type=self.system, parent=corrusca, name="Coruscant System",
+        )
+        m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=corruscant,
+            name="Corruscant Jedi Council",
+        )
+
+        corrusca.name = "Corrusca Sector FTW"
+        # 2 savepoints, 1 regular update
+        with self.assertNumQueries(3):
+            corrusca.save()
+
+    @tag("iaso_only")
+    def test_org_unit_path_does_change(self):
+        """Changing the parent should trigger a path update"""
+
+        alderaan = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Alderaan Sector"
+        )
+        corrusca = m.OrgUnit.objects.create(
+            org_unit_type=self.sector, name="Corrusca Sector"
+        )
+        corruscant = m.OrgUnit.objects.create(
+            org_unit_type=self.system, parent=alderaan, name="Coruscant System",
+        )
+        m.OrgUnit.objects.create(
+            org_unit_type=self.jedi_council,
+            parent=corruscant,
+            name="Corruscant Jedi Council",
+        )
+
+        corruscant.parent = corrusca
+
+        # 2 savepoints, 1 regular update, 2 children, 1 bulk update
+        with self.assertNumQueries(6):
+            corruscant.save()
+
+    @tag("iaso_only")
     def test_org_unit_hierarchy_children_descendants(self):
         """Test manager methods: hierarchy(), children() and descendants()."""
 

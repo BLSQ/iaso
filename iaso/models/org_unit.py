@@ -158,10 +158,18 @@ class OrgUnit(models.Model):
         indexes = [GistIndex(fields=["path"], buffering=True)]
 
     def save(self, *args, skip_calculate_path: bool = False, **kwargs):
-        with transaction.atomic():
-            super().save(*args, **kwargs)
+        """Override default save() to make sure that the path property is calculated and saved,
+        for this org unit and its children.
 
-            if not skip_calculate_path:  # TODO: remove me, only used for command tests
+        :param skip_calculate_path: use with caution - can be useful in scripts where the extra transactions
+                                    would be a burden, but the path needs to be set afterwards
+        """
+
+        if skip_calculate_path:
+            super().save(*args, **kwargs)
+        else:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
                 OrgUnit.objects.bulk_update(self._calculate_paths(), ["path"])
 
     def _calculate_paths(self, force_recalculate: bool = False) -> typing.List["OrgUnit"]:

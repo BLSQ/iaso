@@ -109,7 +109,6 @@ class OrgUnitTypes extends Component {
                         <OrgUnitsTypesDialog
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
-                            params={params}
                         />
                     </Grid>
                 </Box>

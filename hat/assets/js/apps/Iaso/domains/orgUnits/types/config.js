@@ -46,9 +46,8 @@ const TableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.original}
                     titleMessage={MESSAGES.update}
-                    key={settings.original.updated_at}
+                    key={settings.original.id}
                     params={component.props.params}
                 />
                 <DeleteDialog

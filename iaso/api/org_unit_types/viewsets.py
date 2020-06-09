@@ -9,7 +9,7 @@ from ..common import ModelViewSet
 class OrgUnitTypeViewSet(ModelViewSet):
     """ Org unit types API
 
-    This API is open to anonymous users.
+    This API is open to anonymous users (for read-only operations).
 
     GET /api/orgunittypes/
     """
@@ -17,16 +17,6 @@ class OrgUnitTypeViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = OrgUnitTypeSerializer
     results_key = "orgUnitTypes"
-    http_method_names = [
-        "get",
-        "post",
-        "patch",
-        "put",
-        "delete",
-        "head",
-        "options",
-        "trace",
-    ]
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.all()

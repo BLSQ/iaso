@@ -114,5 +114,5 @@ class Command(BaseCommand):
                 print("Parent fixed:", index)
 
         for unit in new_root_units:
-            print(f"Setting path for the hierarchy starting with org unit {unit.name}")
+            self.stdout.write(f"Setting path for the hierarchy starting with org unit {unit.name}")
             unit.save(update_fields=["path"])

@@ -16,10 +16,19 @@ import {
 } from '../actions';
 import MESSAGES from '../messages';
 
-const mappingTypeOptions = ['AGGREGATE', 'EVENT'].map(mappingType => ({
-    value: mappingType,
-    label: MESSAGES[mappingType.toLowerCase()],
-}));
+const mappingTypeOptions = [
+    {
+        value: 'AGGREGATE',
+        label: MESSAGES.aggregate,
+    },
+    {
+        value: 'EVENT',
+        label: MESSAGES.event,
+    },
+    {
+        value: 'EVENT_TRACKER',
+        label: MESSAGES.eventTracker,
+    }];
 
 const CreateMappingVersionDialogComponent = ({
     createMappingRequest,
@@ -42,7 +51,7 @@ const CreateMappingVersionDialogComponent = ({
         };
         if (mappingType === 'AGGREGATE') {
             payload.dataset = dataset;
-        } else if (mappingType === 'EVENT') {
+        } else if (mappingType === 'EVENT' || mappingType == 'EVENT_TRACKER') {
             payload.program = dataset;
         }
 

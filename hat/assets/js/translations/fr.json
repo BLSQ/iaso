@@ -284,6 +284,7 @@
     "iaso.mappings.total_questions": "Nombre de questions",
     "iaso.mappings.coverage": "Couverture",
     "iaso.label.mappingType.event": "Programme avec evènements simples",
+    "iaso.label.mappingType.eventTracker": "Programme avec enrollement tracker",
     "iaso.label.mappingType.aggregate": "Domaine aggrégée",
     "iaso.label.stopEdit": "Arrêter l'édition",
     "iaso.label.add": "Ajouter",

@@ -25,10 +25,12 @@ SIX_MONTH = "SIX_MONTH"
 AGGREGATE = "AGGREGATE"
 EVENT = "EVENT"
 DERIVED = "DERIVED"
+EVENT_TRACKER = "EVENT_TRACKER"
 
 MAPPING_TYPE_CHOICES = (
     (AGGREGATE, _("Aggregate")),
     (EVENT, _("Event")),
+    (EVENT_TRACKER, _("Event Tracker")),
     (DERIVED, _("Derived")),
 )
 

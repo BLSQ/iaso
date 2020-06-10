@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.serializers import serialize
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from hat.planning.models import Planning, Assignation, WorkZone
 from hat.geo.models import AS, ZS, Village
 from hat.users.models import Coordination
@@ -13,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
 from hat.dashboard.utils import get_last_years
 from hat.users.models import get_user_geo_list
+from ..geo.services import years_filter
 from ..planning.services import reassign_planning
 
 
@@ -99,8 +100,8 @@ class CoordinationViewSet(viewsets.ViewSet):
                     endemic_villages_ids = (
                         Village.objects.filter(AS__in=areas)
                         .filter(
-                            caseview__confirmed_case=True,
-                            caseview__normalized_year__in=years_array,
+                            Q(infection_cases__confirmed_case=True)
+                            & years_filter(years_array)
                         )
                         .values("id")
                     )

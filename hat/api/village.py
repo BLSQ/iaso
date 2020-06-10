@@ -224,6 +224,7 @@ class VillageViewSet(viewsets.ViewSet):
                 )
                 values = values + (f"nr_positive_cases_{year}",)
         else:
+            years_array = None
             if from_date is not None and to_date is not None:
                 nr_positive_cases = Count(
                     "case",
@@ -304,7 +305,7 @@ class VillageViewSet(viewsets.ViewSet):
                     {"title": "Source"},
                     {"title": "Source Gps", "width": 12},
                 ]
-                if years:
+                if years_array:
                     for year in years_array:
                         columns.append({"title": f"Cas positifs\n{year}", "width": 10})
 
@@ -323,8 +324,9 @@ class VillageViewSet(viewsets.ViewSet):
                         village.village_source,
                         village.gps_source,
                     ]
-                    for year in years:
-                        row.append(getattr(village, f"nr_positive_cases_{year}"))
+                    if years:
+                        for year in years:
+                            row.append(getattr(village, f"nr_positive_cases_{year}"))
                     return row
 
                 if xlsx_format:

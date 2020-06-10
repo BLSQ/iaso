@@ -5,6 +5,7 @@ from django.contrib.gis.db.models.fields import (
 )
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.db import models
+from django.db.models import Q
 
 
 GEO_SOURCE_CHOICES = (
@@ -129,6 +130,23 @@ class AS(models.Model):
             "aliases": self.aliases,
             "source": self.source,
             "has_shape": False if self.simplified_geom is None else True,
+        }
+
+    def as_full_dict_with_villages(self):
+        villages = Village.objects.filter(
+            Q(AS=self.pk) & Q(village_official="YES")
+        )
+        return {
+            "id": self.id,
+            "name": self.name,
+            "ZS_id": self.ZS_id,
+            "ZS__name": self.ZS.name,
+            "ZS__province_id": self.ZS.province_id,
+            "ZS__province__name": self.ZS.province.name,
+            "aliases": self.aliases,
+            "source": self.source,
+            "has_shape": False if self.simplified_geom is None else True,
+            "villages": [village.as_dict() for village in villages],
         }
 
 

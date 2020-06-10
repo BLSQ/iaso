@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         file_name = options.get("org_unit_csv_file")
-        org_unit_file_name = options.get("org_unit_type_csv_file")
+        org_unit_type_file_name = options.get("org_unit_type_csv_file")
         source_name = options.get("source_name")
         version = options.get("version")
 
@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         OrgUnit.objects.filter(sub_source=source_name).delete()  # warning: dangerous
         type_dict = dict()
-        with open(org_unit_file_name) as csvfile:
+        with open(org_unit_type_file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
             for row in csv_reader:
                 print(row)
@@ -55,6 +55,7 @@ class Command(BaseCommand):
                         print("parent", parent)
                         org_unit.parent = unit_dict.get(parent)
                         print(org_unit.parent)
+
                     longitude = row[6]
                     latitude = row[7]
                     if longitude and latitude:

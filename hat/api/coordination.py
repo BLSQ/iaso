@@ -13,6 +13,7 @@ from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
 from hat.dashboard.utils import get_last_years
 from hat.users.models import get_user_geo_list
+from ..planning.services import reassign_planning
 
 
 def is_user_coordination_authorized(coordination, user):
@@ -165,17 +166,7 @@ class CoordinationViewSet(viewsets.ViewSet):
             for team_id in teams_dict:
                 assignation_list = teams_dict[team_id]
                 ordered = optimize_path(assignation_list, planning.months)
-                for index, obj in enumerate(ordered):
-                    Assignation.objects.filter(
-                        planning=planning, village_id=obj["village_id"]
-                    ).delete()
-                    assignation = Assignation()
-                    assignation.planning = planning
-                    assignation.index = obj["index"]
-                    assignation.month = obj["month"]
-                    assignation.village_id = obj["village_id"]
-                    assignation.team_id = obj["team_id"]
-                    assignation.save()
+                reassign_planning(ordered, planning)
         else:
             coordination.name = request.data.get("name", "")
             locations = request.data.get("zs", None)

@@ -382,7 +382,7 @@ export const renderVillagesPopup = (village, formatMessage) => (
 );
 
 
-export const renderSmallVillagesPopup = (village, formatMessage) => (
+export const renderSmallVillagesPopup = (village, formatMessage, displayArea = false, displayZone = false) => (
     `<section class="custom-popup-container">
         <div>
             ${formatMessage({ defaultMessage: 'Name', id: 'main.label.name' })}:
@@ -400,5 +400,49 @@ export const renderSmallVillagesPopup = (village, formatMessage) => (
             ${formatMessage({ defaultMessage: 'Village type', id: 'main.label.village_type' })}:
             <span class="margin-left--tiny--tiny inline-block"> ${village.village_type || '--'}</span>
         </div>
+        ${displayArea ? `
+                <div>
+                    ${formatMessage({ defaultMessage: 'Health area', id: 'main.label.area' })}:
+                    <span class="margin-left--tiny--tiny inline-block"> ${village.AS_name || '--'}</span>
+                </div>
+            ` : ''}
+        ${displayZone ? `
+                <div>
+                    ${formatMessage({ defaultMessage: 'Health zone', id: 'main.label.zone' })}:
+                    <span class="margin-left--tiny--tiny inline-block"> ${village.ZS_name || '--'}</span>
+                </div>
+            ` : ''}
     </section>`
 );
+
+export const drawVillageMarker = (
+    mapComponent,
+    location,
+    color,
+    featureGroup,
+    displayArea = false,
+    displayZone = false,
+) => {
+    if (location.latitude && location.longitude) {
+        const { map } = mapComponent;
+        const villageMarker = L.circle([
+            location.latitude,
+            location.longitude,
+        ], {
+            color,
+            fillColor: color,
+            fillOpacity: 0.5,
+            radius: 100,
+            pane: 'custom-pane-markers',
+        }).on('click', (event) => {
+            const popUp = event.target.getPopup();
+            popUp.setContent(renderSmallVillagesPopup(location, mapComponent.props.intl.formatMessage, displayArea, displayZone));
+        }).on('mouseover', (event) => {
+            L.DomEvent.stop(event);
+            mapComponent.updateTooltipSmallVillage(location);
+        }).bindPopup();
+
+        villageMarker.addTo(featureGroup);
+        map.addLayer(featureGroup);
+    }
+};

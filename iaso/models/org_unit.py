@@ -170,9 +170,11 @@ class OrgUnit(models.Model):
         else:
             with transaction.atomic():
                 super().save(*args, **kwargs)
-                OrgUnit.objects.bulk_update(self._calculate_paths(), ["path"])
+                OrgUnit.objects.bulk_update(self.calculate_paths(), ["path"])
 
-    def _calculate_paths(self, force_recalculate: bool = False) -> typing.List["OrgUnit"]:
+    def calculate_paths(
+        self, force_recalculate: bool = False
+    ) -> typing.List["OrgUnit"]:
         """Calculate the path for this org unit and all its children.
 
         This method will check if this org unit path should change. If it is the case (or if force_recalculate is
@@ -206,7 +208,7 @@ class OrgUnit(models.Model):
 
         if path_has_changed or force_recalculate:
             for child in self.orgunit_set.all():
-                updated_records += child._calculate_paths(force_recalculate)
+                updated_records += child.calculate_paths(force_recalculate)
 
         return updated_records
 

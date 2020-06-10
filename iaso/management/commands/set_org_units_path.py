@@ -36,15 +36,15 @@ class Command(BaseCommand):
 
         for org_unit in root_org_units:
             with transaction.atomic():
-                org_unit.save()
+                org_unit.save(update_fields=["path"])
 
         # Cheating - simulating an org unit created during the migration
         # TODO: remove me
         if options["test_seed"]:
-            no_path = OrgUnit.objects.create(
+            no_path = OrgUnit(
                 parent=OrgUnit.objects.first(), name="set_org_units_path test"
             )
-            OrgUnit.objects.filter(pk=no_path.pk).update(path=None)
+            no_path.save(skip_calculate_path=True)
 
         no_path_count_after = OrgUnit.objects.filter(path=None).count()
         if no_path_count_after == 0:
@@ -56,7 +56,7 @@ class Command(BaseCommand):
             self.stdout.write("Attempting fix")
 
             for org_unit in OrgUnit.objects.filter(path=None):
-                org_unit.save()
+                org_unit.save(update_fields=["path"])
 
             no_path_count_final = OrgUnit.objects.filter(path=None).count()
             if no_path_count_final == 0:
@@ -77,8 +77,6 @@ class Command(BaseCommand):
 
         with transaction.atomic():
             created = self._create_org_unit_batch(0)
-
-        OrgUnit.objects.filter(name="set_org_units_path test").update(path=None)
 
         self.stdout.write(f"Created {created} test org units!")
 

@@ -34,12 +34,8 @@ class OrgUnitModelTestCase(TestCase):
     def test_org_unit_creation_or_update_parent_without_path(self):
         """Created or updated a org unit linked to a pathless parent should not have a path."""
 
-        corrusca = m.OrgUnit.objects.create(
-            org_unit_type=self.sector, name="Corrusca Sector"
-        )
-        # trick to simulate parent without path
-        m.OrgUnit.objects.filter(name="Corrusca Sector").update(path=None)
-        corrusca.refresh_from_db()
+        corrusca = m.OrgUnit(org_unit_type=self.sector, name="Corrusca Sector")
+        corrusca.save(skip_calculate_path=True)
         corruscant = m.OrgUnit.objects.create(
             parent=corrusca, org_unit_type=self.sector, name="Corruscant System"
         )
@@ -51,21 +47,18 @@ class OrgUnitModelTestCase(TestCase):
     def test_org_unit_update_path_with_children(self):
         """Path should be set for the whole hierarchy"""
 
-        corrusca = m.OrgUnit.objects.create(
-            org_unit_type=self.sector, name="Corrusca Sector"
+        corrusca = m.OrgUnit(org_unit_type=self.sector, name="Corrusca Sector")
+        corrusca.save(skip_calculate_path=True)
+        corruscant = m.OrgUnit(
+            org_unit_type=self.system, parent=corrusca, name="Coruscant System"
         )
-        corruscant = m.OrgUnit.objects.create(
-            org_unit_type=self.system, parent=corrusca, name="Coruscant System",
-        )
-        jedi_council_corruscant = m.OrgUnit.objects.create(
+        corruscant.save(skip_calculate_path=True)
+        jedi_council_corruscant = m.OrgUnit(
             org_unit_type=self.jedi_council,
             parent=corruscant,
             name="Corruscant Jedi Council",
         )
-        m.OrgUnit.objects.all().update(path=None)
-        corrusca.refresh_from_db()
-        corruscant.refresh_from_db()
-        jedi_council_corruscant.refresh_from_db()
+        jedi_council_corruscant.save(skip_calculate_path=True)
 
         self.assertIsNone(corrusca.path)
         self.assertIsNone(corruscant.path)
@@ -73,7 +66,7 @@ class OrgUnitModelTestCase(TestCase):
 
         # 2 savepoints, 1 regular update, 3 "get children" queries, 1 bulk update
         with self.assertNumQueries(7):
-            corrusca.save()
+            corrusca.save(update_fields=["path"])
 
         corruscant.refresh_from_db()
         jedi_council_corruscant.refresh_from_db()
@@ -107,6 +100,20 @@ class OrgUnitModelTestCase(TestCase):
             corrusca.save()
 
     @tag("iaso_only")
+    def test_org_unit_save_skip_calculate_path(self):
+        """If skip_calculate_path is set to True, path should be None, and no transaction should be created"""
+
+        # create
+        corrusca = m.OrgUnit(org_unit_type=self.sector, name="Corrusca Sector")
+        with self.assertNumQueries(1):
+            corrusca.save(skip_calculate_path=True)
+
+        # update
+        corrusca.name = "Corrusca Sector FTW"
+        with self.assertNumQueries(1):
+            corrusca.save(skip_calculate_path=True)
+
+    @tag("iaso_only")
     def test_org_unit_path_does_change(self):
         """Changing the parent should trigger a path update"""
 
@@ -125,6 +132,7 @@ class OrgUnitModelTestCase(TestCase):
             name="Corruscant Jedi Council",
         )
 
+        corruscant.name = "The awesome Coruscant System"
         corruscant.parent = corrusca
 
         # 2 savepoints, 1 regular update, 2 children, 1 bulk update

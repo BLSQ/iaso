@@ -8,10 +8,11 @@ from django.db.models import Count
 from rest_framework import viewsets, status
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
+from django.contrib.gis.measure import D
 
 from django.core.paginator import Paginator
 from hat.geo.geojson import geojson_queryset
-from hat.geo.models import AS, ZS, Village
+from hat.geo.models import AS, ZS
 from hat.planning.models import Planning
 from hat.planning.models import TeamActionZone
 from hat.users.models import Team
@@ -179,7 +180,7 @@ class ASViewSet(viewsets.ViewSet):
             return Response(queryset.values(*values).order_by("name"))
 
     def retrieve(self, request, pk=None):
-        aire = get_object_or_404(AS, pk=pk)
+        area = get_object_or_404(AS, pk=pk)
         user_as_ids = get_user_geo_list(request.user, "AS_scope")
         user_zs_ids = get_user_geo_list(request.user, "ZS_scope")
         province_ids = get_user_geo_list(request.user, "province_scope")
@@ -188,26 +189,28 @@ class ASViewSet(viewsets.ViewSet):
         )
         if not is_authorized:
             if (
-                (aire.ZS.province.id in province_ids)
+                (area.ZS.province.id in province_ids)
                 and len(user_zs_ids) == 0
                 and len(user_as_ids) == 0
             ):
                 is_authorized = True
-            if (aire.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
+            if (area.ZS.id in user_zs_ids) and len(user_as_ids) == 0:
                 is_authorized = True
-            if aire.id in user_as_ids:
+            if area.id in user_as_ids:
                 is_authorized = True
-        res = aire.as_full_dict()
-        if aire.simplified_geom:
-            queryset = AS.objects.all().filter(id=aire.id)
+        res = area.as_full_dict_with_villages()
+        if area.simplified_geom:
+            queryset = AS.objects.all().filter(id=area.id)
             res["geo_json"] = geojson_queryset(
                 queryset, geometry_field="simplified_geom"
             )
+            # neighbour_areas = AS.objects.filter(simplified_geom__touches=area.simplified_geom)
+            neighbour_areas = AS.objects.filter(
+                simplified_geom__distance_lt=(area.simplified_geom, D(m=5))).exclude(pk=area.pk)
 
-        villages = Village.objects.filter(
-            Q(AS=pk) & Q(village_official="YES")
-        )
-        res["villages"] = [village.as_dict() for village in villages]
+            res["neighbours"] = map(
+                lambda x: x.as_full_dict_with_villages(), neighbour_areas)
+
         if is_authorized:
             return Response(res)
         else:

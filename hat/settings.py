@@ -58,6 +58,15 @@ if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
+if FLAVOR == "iaso":
+    ENKETO = {
+        "ENKETO_DEV": os.getenv("ENKETO_DEV"),
+        "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
+        "ENKETO_URL": os.getenv("ENKETO_URL"),
+        "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
+        "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
+    }
+
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
 LOGGING = {
@@ -309,8 +318,8 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=3650),
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=3651),
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
 }
 
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

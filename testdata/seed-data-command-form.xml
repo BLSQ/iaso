@@ -1,0 +1,489 @@
+<?xml version="1.0"?>
+<h:html xmlns="http://www.w3.org/2002/xforms" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <h:head>
+    <h:title>seed-qlty_pca_08_laboratoire</h:title>
+    <model odk:xforms-version="1.0.0">
+      <itext>
+        <translation lang="French">
+          <text id="/data/start:label">
+            <value> Survey start time: <output value=" /data/start "/> </value></text>
+          <text id="/data/end:label">
+            <value> Survey end time: <output value=" /data/end "/> </value></text>
+          <text id="/data/today:label">
+            <value> Today: <output value=" /data/today "/> </value></text>
+          <text id="/data/deviceid:label">
+            <value> deviceid: <output value=" /data/deviceid "/> </value></text>
+          <text id="/data/subscriberid:label">
+            <value> subscriberid <output value=" /data/subscriberid "/> </value></text>
+          <text id="/data/imei:label">
+            <value> imei: <output value=" /data/imei "/> </value></text>
+          <text id="/data/simserial:label">
+            <value> simserial: <output value=" /data/simserial "/> </value></text>
+          <text id="/data/phonenumber:label">
+            <value> phone: <output value=" /data/phonenumber "/> </value></text>
+          <text id="/data/PBF_PCA_qlt_begin_v8:label">
+            <value>8. LABORATOIRE</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1:label">
+            <value>8.1. Laborantin d'au moins du niveau TMS (technicien Medio sanitaire) disponible :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2:label">
+            <value>8.2. Le laboratoire est fonctionnel tous les jours, 24/24 :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1:label">
+            <value>8.3. Transfusion sanguine :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4:label">
+            <value>8.4. Résultats enregistrés correctement dans le registre du laboratoire et conformes aux résultats dans le carnet du malade ou bon d'examen fiche de paillasse :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5:label">
+            <value>8.5. Liste des examens possibles affichée dans le laboratoire :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1:label">
+            <value>8.6. Disponibilité des démonstrations des formes des parasites :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1:label">
+            <value>8.7. Disponibilité d'un microscope fonctionnel et appareil à Numération formule sanguine :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8:label">
+            <value>8.8. Disponibilité d'une centrifugeuse fonctionnelle :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1:label">
+            <value>8.9. Environnement propreté de la table de coloration, de prélèvement et du laboratoire en général :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10:label">
+            <value>8.10. Personnel plonge les lames et pipettes souillés dans un récipient contenant une solution de décontamination (protocole affiché)</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_note_vol_8:label">
+            <value> LABORATOIRE : <output value=" /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_point_v8 "/> / <output value=" /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_max_point_v8 "/> point(s) </value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa:label">
+            <value>Nom et signature des responsables enquêteurs</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label">
+            <value>Nom évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label">
+            <value>Qualification évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label">
+            <value>Structure évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label">
+            <value>N° Tel :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur:label">
+            <value>INFORMATIONS DE L'EVALUATEUR</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label">
+            <value>Problèmes prioritaires identifiés :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label">
+            <value>Actions urgentes d'amélioration proposées :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label">
+            <value>Nom évéluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label">
+            <value>Qualification évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label">
+            <value>Structure évaluateur :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label">
+            <value>Signature :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa:label">
+            <value>INFORMATIONS DU RESPONSABLE DE LA FORMATION SANITAIRE</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label">
+            <value>Nom du responsable :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature :</value>
+          </text>
+        </translation>
+        <translation lang="English">
+          <text id="/data/start:label">
+            <value> Survey start time: <output value=" /data/start "/> </value></text>
+          <text id="/data/end:label">
+            <value> Survey end time: <output value=" /data/end "/> </value></text>
+          <text id="/data/today:label">
+            <value> Today: <output value=" /data/today "/> </value></text>
+          <text id="/data/deviceid:label">
+            <value> deviceid: <output value=" /data/deviceid "/> </value></text>
+          <text id="/data/subscriberid:label">
+            <value> subscriberid <output value=" /data/subscriberid "/> </value></text>
+          <text id="/data/imei:label">
+            <value> imei: <output value=" /data/imei "/> </value></text>
+          <text id="/data/simserial:label">
+            <value> simserial: <output value=" /data/simserial "/> </value></text>
+          <text id="/data/phonenumber:label">
+            <value> phone: <output value=" /data/phonenumber "/> </value></text>
+          <text id="/data/PBF_PCA_qlt_begin_v8:label">
+            <value>8. LABORATORY</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1:label">
+            <value>8.1. Laboratory assistant at least at TMS level (medio-sanitary technician) available :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2:label">
+            <value>8.2. The laboratory is operational every day, 24/24 :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1:label">
+            <value>8.3. Blood transfusion :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4:label">
+            <value>8.4. Results recorded correctly in the laboratory register and in accordance with the results in the patient's notebook or bench sheet examination voucher :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5:label">
+            <value>8.5. List of possible exams displayed in the laboratory:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1:label">
+            <value>8.6. Availability of demonstrations of parasite shapes:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1:label">
+            <value>8.7. Availability of a functional microscope and blood counting device:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8:label">
+            <value>8.8. Availability of a functional centrifuge:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1:label">
+            <value>8.9. Cleanliness environment of the staining table, of the sample and of the laboratory in general :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10:label">
+            <value>8.10. Staff immerses the soiled slides and pipettes in a container containing a decontamination solution (protocol displayed)</value>
+          </text>
+          <text id="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_note_vol_8:label">
+            <value> LABORATORY : <output value=" /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_point_v8 "/> / <output value=" /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_max_point_v8 "/> point(s) </value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa:label">
+            <value>Name and signature of investigating officers</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label">
+            <value>Name of assessor:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label">
+            <value>Evaluator qualification:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label">
+            <value>Evaluator structure:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Appraiser's signature:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label">
+            <value>Call number</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur:label">
+            <value>EVALUATOR INFORMATION</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label">
+            <value>Priority problems identified:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label">
+            <value>Urgent improvement actions proposed:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label">
+            <value>Name of developer:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label">
+            <value>Evaluator qualification:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label">
+            <value>Evaluator structure:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label">
+            <value>Signature:</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa:label">
+            <value>INFORMATION OF THE HEALTH FACILITY MANAGER</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label">
+            <value>Name of the responsible :</value>
+          </text>
+          <text id="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label">
+            <value>Signature :</value>
+          </text>
+        </translation>
+      </itext>
+      <instance>
+        <data id="quality_pca_2.31.8" version="2020051401">
+          <start/>
+          <end/>
+          <today/>
+          <deviceid/>
+          <subscriberid/>
+          <imei/>
+          <simserial/>
+          <phonenumber/>
+          <PBF_PCA_qlt_begin_v8>
+            <PBF_PCA_qlt_8_1/>
+            <PBF_PCA_qlt_8_2/>
+            <PBF_PCA_qlt_8_3_1/>
+            <PBF_PCA_qlt_8_3/>
+            <PBF_PCA_qlt_8_4/>
+            <PBF_PCA_qlt_8_5/>
+            <PBF_PCA_qlt_8_6_1/>
+            <PBF_PCA_qlt_8_6/>
+            <PBF_PCA_qlt_8_7_1/>
+            <PBF_PCA_qlt_8_7/>
+            <PBF_PCA_qlt_8_8/>
+            <PBF_PCA_qlt_8_9_1/>
+            <PBF_PCA_qlt_8_9/>
+            <PBF_PCA_qlt_8_10/>
+            <PBF_PCA_qlt_point_v8/>
+            <PBF_PCA_qlt_max_point_v8/>
+            <PBF_PCA_qlt_note_vol_8/>
+          </PBF_PCA_qlt_begin_v8>
+          <PBF_PCA_qlte_fosa>
+            <PBF_PCA_qlte_nom_enqueteur/>
+            <PBF_PCA_qlte_qualif_enqueteur/>
+            <PBF_PCA_qlte_struct_enqueteur/>
+            <PBF_PCA_qlte_signature_respo_fosa/>
+            <PBF_PCA_qlte_tel_enqueteur/>
+          </PBF_PCA_qlte_fosa>
+          <PBF_PCA_qlte_infos_evaluateur>
+            <PBF_PCA_qlte_problem_ident/>
+            <PBF_PCA_qlte_action_urgent/>
+            <PBF_PCA_qlte_nom_evalu/>
+            <PBF_PCA_qlte_qualification_eval/>
+            <PBF_PCA_qlte_struct_eval/>
+            <PBF_PCA_qlte_signature_eval/>
+          </PBF_PCA_qlte_infos_evaluateur>
+          <PBF_PCA_qlte_infos_respo_fosa>
+            <PBF_PCA_qlte_nom_respo_fosa/>
+            <PBF_PCA_qlte_signature_respo_fosa/>
+          </PBF_PCA_qlte_infos_respo_fosa>
+          <meta>
+            <instanceID/>
+          </meta>
+        </data>
+      </instance>
+      <bind jr:preload="timestamp" jr:preloadParams="start" nodeset="/data/start" type="dateTime"/>
+      <bind jr:preload="timestamp" jr:preloadParams="end" nodeset="/data/end" type="dateTime"/>
+      <bind jr:preload="date" jr:preloadParams="today" nodeset="/data/today" type="date"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/deviceid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="subscriberid" nodeset="/data/subscriberid" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="deviceid" nodeset="/data/imei" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="simserial" nodeset="/data/simserial" type="string"/>
+      <bind jr:preload="property" jr:preloadParams="phonenumber" nodeset="/data/phonenumber" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1" required="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2" required="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1 =1,2,0)" nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4" required="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5" required="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1 =1,1,0)" nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1 =1,2,0)" nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8" required="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1" required="true()" type="string"/>
+      <bind calculate="if( /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1 =1,1,0)" nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10" required="true()" type="string"/>
+      <bind calculate=" /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9 + /data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10 " nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_point_v8" type="string"/>
+      <bind calculate="12" nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_max_point_v8" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_note_vol_8" readonly="true()" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa" type="binary"/>
+      <bind nodeset="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval" type="binary"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa" type="string"/>
+      <bind nodeset="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa" type="binary"/>
+      <bind jr:preload="uid" nodeset="/data/meta/instanceID" readonly="true()" type="string"/>
+    </model>
+  </h:head>
+  <h:body>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlt_begin_v8">
+      <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8:label')"/>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_1:label')"/>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_2:label')"/>
+        <hint>Vérificateur vérifie les 2 derniers dimanches dans le registre du laboratoire</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_3_1:label')"/>
+        <hint>Disponibilité d'une chaîne de froid avec fiche de vérification de la
+température et à jour
+- Disponibilité d'au moins 5 sachets de O+ et de deux par autre groupe de sang.
+- Chaque transfusion sanguine est effectuée selon le Protocole du
+MINSANTE, ce qui veut dire que tous les tests obligatoires 
+(VIH/HBV/HCS/syphilis/paludisme) sont faits et documentés négatifs avant la transfusion, et que le groupe sanguin et Rh du donneur et bénéficiaire sont compatibles, et que la transfusion est faite suite à une indication du Médecin.</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_4:label')"/>
+        <hint>vérifier les 5 derniers résultats</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_5:label')"/>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_6_1:label')"/>
+        <hint>Sur papier plastifié, dans un livre en couleur, ou affichés
+- Goutte Epaisse : Vivax, Ovale, Falciparum, Malariae
+- Selles : Ascaris, entamoebae, ankylostome, schistosome</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_7_1:label')"/>
+        <hint>objectifs fonctionnels - huile à immersion – miroir ou électricité
+– lames – lamelles – GIEMSA disponible</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_8:label')"/>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_9_1:label')"/>
+        <hint>Rangement matériel
+-Protocole d'évacuation des déchets disponibles et appliqué
+- Déchets organiques dans une poubelle avec plastique avec couvercle remplis au plus au deux tiers
+- Boite de sécurité disponible et utilisé</hint>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <select1 ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_8_10:label')"/>
+        <item>
+          <label>Oui</label>
+          <value>1</value>
+        </item>
+        <item>
+          <label>Non</label>
+          <value>0</value>
+        </item>
+      </select1>
+      <input ref="/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_note_vol_8">
+        <label ref="jr:itext('/data/PBF_PCA_qlt_begin_v8/PBF_PCA_qlt_note_vol_8:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_fosa">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_fosa:label')"/>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_nom_enqueteur:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_qualif_enqueteur:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_struct_enqueteur:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_signature_respo_fosa:label')"/>
+      </upload>
+      <input ref="/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_fosa/PBF_PCA_qlte_tel_enqueteur:label')"/>
+      </input>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_infos_evaluateur">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur:label')"/>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_problem_ident:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_action_urgent:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_nom_evalu:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_qualification_eval:label')"/>
+      </input>
+      <input ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_struct_eval:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_evaluateur/PBF_PCA_qlte_signature_eval:label')"/>
+      </upload>
+    </group>
+    <group appearance="field-list" ref="/data/PBF_PCA_qlte_infos_respo_fosa">
+      <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa:label')"/>
+      <input ref="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_nom_respo_fosa:label')"/>
+      </input>
+      <upload appearance="signature" mediatype="image/*" ref="/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa">
+        <label ref="jr:itext('/data/PBF_PCA_qlte_infos_respo_fosa/PBF_PCA_qlte_signature_respo_fosa:label')"/>
+      </upload>
+    </group>
+  </h:body>
+</h:html>

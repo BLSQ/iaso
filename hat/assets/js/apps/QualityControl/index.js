@@ -17,6 +17,7 @@ import MonitoringDetail from './pages/MonitoringDetail';
 import { dashboardReducer, dashboardInitialState } from './redux/dashboard';
 import { filtersReducer, filtersInitialState } from '../../redux/filtersRedux';
 import { monitoringReducer, monitoringInitialState } from './redux/monitoring';
+import { testInitialState, testReducer } from './redux/test';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 
 export default function qualitycontrolapp(appConfig, element, baseUrl) {
@@ -79,12 +80,14 @@ export default function qualitycontrolapp(appConfig, element, baseUrl) {
         currentUser: currentUserInitialState,
         load: {},
         geoFilters: filtersInitialState,
+        test: testInitialState,
     }, {
         dashboard: dashboardReducer,
         monitoring: monitoringReducer,
         currentUser: currentUserReducer,
         load: loadReducer,
         geoFilters: filtersReducer,
+        test: testReducer,
     }, [
         routerMiddleware(history),
     ]);

@@ -93,12 +93,14 @@ class QualityDetail extends React.Component {
         return (
             <div className="widget__container quality-control">
                 {
-                    (loading || !userLevel) &&
-                    <LoadingSpinner message={formatMessage({
-                        defaultMessage: 'Loading',
-                        id: 'main.label.loading',
-                    })}
-                    />
+                    (loading || !userLevel)
+                    && (
+                        <LoadingSpinner message={formatMessage({
+                            defaultMessage: 'Loading',
+                            id: 'main.label.loading',
+                        })}
+                        />
+                    )
                 }
                 <section>
                     <div className="widget__header">
@@ -110,56 +112,78 @@ class QualityDetail extends React.Component {
                                 <i className="fa fa-arrow-left" />
                             </button>
                             {
-                                currentTest &&
-                                currentTest.id &&
-                                <Fragment>
-                                    <FormattedMessage
-                                        id="quality.image.type"
-                                        defaultMessage="TYPE"
-                                    /> :{' '}{currentTest.type}{' '}
-                                    {
-                                        (isMediumUser(userLevel) || isSuperUser(userLevel)) &&
-                                        currentTest.type === 'CATT' &&
-                                        <Fragment>
-                                            - {' '}<FormattedMessage
-                                                id="quality.image.index"
-                                                defaultMessage="Test n°"
-                                            /> : {currentTest.index}
-                                        </Fragment>
-                                    }
-                                </Fragment>
+                                currentTest
+                                && currentTest.id
+                                && (
+                                    <Fragment>
+                                        <FormattedMessage
+                                            id="quality.image.type"
+                                            defaultMessage="TYPE"
+                                        />
+                                        {' '}
+:
+                                        {' '}
+                                        {currentTest.type}
+                                        {' '}
+                                        {
+                                            (isMediumUser(userLevel) || isSuperUser(userLevel))
+                                        && currentTest.type === 'CATT'
+                                        && (
+                                            <Fragment>
+                                            -
+                                                {' '}
+                                                {' '}
+                                                <FormattedMessage
+                                                    id="quality.image.index"
+                                                    defaultMessage="Test n°"
+                                                />
+                                                {' '}
+:
+                                                {currentTest.index}
+                                            </Fragment>
+                                        )
+                                        }
+                                    </Fragment>
+                                )
                             }
                         </h2>
                     </div>
                     {
-                        userLevel &&
-                        <Fragment>
-                            {
-                                currentTest &&
-                                currentTest.id &&
-                                isImage &&
-                                <ImageValidatorComponent
-                                    currentTest={currentTest}
-                                    saveTest={(test, comment) => this.saveImageItem(test, comment)}
-                                    error={error}
-                                    userLevel={userLevel}
-                                />
-                            }
-                            {
-                                currentTest &&
-                                currentTest.id &&
-                                isVideo &&
-                                <VideoValidatorComponent
-                                    currentTest={currentTest}
-                                    saveTest={test => this.saveVideoItem(test)}
-                                    error={error}
-                                    userLevel={userLevel}
-                                />
-                            }
-                        </Fragment>
+                        userLevel
+                        && (
+                            <Fragment>
+                                {
+                                    currentTest
+                                && currentTest.id
+                                && isImage
+                                && (
+                                    <ImageValidatorComponent
+                                        currentTest={currentTest}
+                                        saveTest={(test, comment) => this.saveImageItem(test, comment)}
+                                        error={error}
+                                        userLevel={userLevel}
+                                    />
+                                )
+                                }
+                                {
+                                    currentTest
+                                && currentTest.id
+                                && isVideo
+                                && (
+                                    <VideoValidatorComponent
+                                        currentTest={currentTest}
+                                        saveTest={test => this.saveVideoItem(test)}
+                                        error={error}
+                                        userLevel={userLevel}
+                                    />
+                                )
+                                }
+                            </Fragment>
+                        )
                     }
                 </section>
-            </div>);
+            </div>
+        );
     }
 }
 

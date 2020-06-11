@@ -15,7 +15,7 @@ from django.contrib.auth.models import User
 
 class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
-        if request.query_params.get("pk") == "me":
+        if view.action == "retrieve" and view.kwargs.get("pk") == "me":
             return True
 
         return request.user.has_perm("menupermissions.iaso_users")

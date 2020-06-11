@@ -35,7 +35,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
 
     projects = ProjectSerializer(many=True, read_only=True)
     project_ids = serializers.PrimaryKeyRelatedField(
-        source="projects", write_only=True, many=True, queryset=Project.objects.all()
+        source="projects", write_only=True, many=True, queryset=Project.objects.all(), allow_empty=False
     )
     sub_unit_types = serializers.SerializerMethodField(read_only=True)
     sub_unit_type_ids = serializers.PrimaryKeyRelatedField(

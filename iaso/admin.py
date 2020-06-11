@@ -38,6 +38,13 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     ordering = ("name",)
+    list_display = ("name", "projects_list", "short_name", "depth",)
+
+    def projects_list(self, obj):
+        projects = obj.projects.all()
+        return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
+
+    projects_list.short_description = "Projects"
 
 
 admin.site.register(OrgUnitType, OrgUnitTypeAdmin)

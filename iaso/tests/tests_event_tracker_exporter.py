@@ -261,20 +261,22 @@ class DataValueExporterTests(TestCase):
         trackedentity, errors = EventTrackerHandler().map_to_values(
             instance, build_form_mapping()
         )
-        print(trackedentity)
+
         self.assertEquals(
             {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "54dfg45re",
                 "attributes": [
                     {
                         "attribute": "GEVwwkMbGKz",
                         "value": "15:17",
-                        "displayName": "Heure d'enrôlement",
+                        "displayName": "Heure d'enr\u00f4lement",
                         "valueType": "TIME",
                     },
                     {
                         "attribute": "XPYFFrfVbAd",
                         "value": "CDLM-00001-45",
-                        "displayName": "Numéro Unique",
+                        "displayName": "Num\u00e9ro Unique",
                         "valueType": "TEXT",
                     },
                     {
@@ -286,6 +288,12 @@ class DataValueExporterTests(TestCase):
                 ],
                 "enrollments": [
                     {
+                        "trackedEntityType": "54dfg45re",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "PROGRAM_DHIS2_ID",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
                         "events": [
                             {
                                 "program": "PROGRAM_DHIS2_ID",
@@ -317,7 +325,7 @@ class DataValueExporterTests(TestCase):
                                 ],
                                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
                             },
-                        ]
+                        ],
                     }
                 ],
             },
@@ -466,6 +474,8 @@ class DataValueExporterTests(TestCase):
 
         self.assertEqual(
             {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "54dfg45re",
                 "attributes": [
                     {
                         "attribute": "pxSXrL4uliL",
@@ -476,13 +486,19 @@ class DataValueExporterTests(TestCase):
                     {
                         "attribute": "GEVwwkMbGKz",
                         "value": "15:17",
-                        "displayName": "Heure d'enrôlement",
+                        "displayName": "Heure d'enr\u00f4lement",
                         "valueType": "TIME",
                     },
                     {"attribute": "XPYFFrfVbAd", "value": "787T8786"},
                 ],
                 "enrollments": [
                     {
+                        "trackedEntityType": "54dfg45re",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "PROGRAM_DHIS2_ID",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
                         "events": [
                             {
                                 "program": "PROGRAM_DHIS2_ID",
@@ -514,7 +530,7 @@ class DataValueExporterTests(TestCase):
                                 ],
                                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
                             },
-                        ]
+                        ],
                     }
                 ],
             },

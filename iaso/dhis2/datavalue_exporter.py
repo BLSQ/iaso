@@ -360,6 +360,10 @@ class EventTrackerHandler:
     def map_to_values(self, instance, form_mapping):
         question_mappings = form_mapping["question_mappings"]
 
+        program_id = form_mapping["program_id"]
+        orgunit_id = instance.org_unit.source_ref
+        tracked_entity_type = form_mapping["tracked_entity_type"]
+
         program_stage_ids = []
         for question_name in form_mapping["question_mappings"]:
             for mapping in question_mappings[question_name]:
@@ -368,6 +372,7 @@ class EventTrackerHandler:
                     if program_stage_id not in program_stage_ids:
                         program_stage_ids.append(program_stage_id)
 
+        event_date = instance.created_at.strftime("%Y-%m-%d")
         events = []
         errored = False
 
@@ -377,7 +382,7 @@ class EventTrackerHandler:
                 "programStage": program_stage_id,
                 "event": instance.export_id,
                 "orgUnit": instance.org_unit.source_ref,
-                "eventDate": instance.created_at.strftime("%Y-%m-%d"),
+                "eventDate": event_date,
                 "status": "COMPLETED",
                 "dataValues": [],
             }
@@ -407,13 +412,24 @@ class EventTrackerHandler:
             if len(event["dataValues"]) > 0:
                 events.append(event)
             else:
-                print(f"no data for stage {program_stage_id}")
+                print(
+                    f"skipping event for stage {program_stage_id} in #{instance.id} no data"
+                )
 
         tracked_entity_with_events = {
+            "orgUnit": orgunit_id,
+            "trackedEntityType": tracked_entity_type,
             "attributes": [],
             "enrollments": [
-                # TODO other enrollments infos
-                {"events": events}
+                {
+                    "trackedEntityType": tracked_entity_type,
+                    "enrollmentDate": event_date,
+                    "program": program_id,
+                    "deleted": False,
+                    "incidentDate": event_date,
+                    "orgUnit": orgunit_id,
+                    "events": events,
+                }
             ],
         }
 

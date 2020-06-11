@@ -14,7 +14,7 @@ import { useFormState } from '../../../../hooks/form';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 
 export default function OrgUnitsTypesDialog({
-    orgUnitType, titleMessage, ...dialogProps
+    orgUnitType, titleMessage, onConfirmed, ...dialogProps
 }) {
     const dispatch = useDispatch();
     const { allOrgUnitTypes, allProjects } = useSelector(state => ({
@@ -37,7 +37,10 @@ export default function OrgUnitsTypesDialog({
             : dispatch(saveOrgUnitTypeAction(formState));
 
         savePromise
-            .then(closeDialog)
+            .then(() => {
+                closeDialog();
+                onConfirmed();
+            })
             .catch((error) => {
                 if (error.status === 400) {
                     Object.entries(error.details).forEach(entry => setFieldErrors(entry[0], entry[1]));
@@ -129,7 +132,7 @@ OrgUnitsTypesDialog.propTypes = {
     orgUnitType: PropTypes.object,
     titleMessage: PropTypes.object.isRequired,
     renderTrigger: PropTypes.func.isRequired,
-    onClosed: PropTypes.func.isRequired,
+    onConfirmed: PropTypes.func.isRequired,
 };
 OrgUnitsTypesDialog.defaultProps = {
     orgUnitType: {

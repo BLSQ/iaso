@@ -115,7 +115,7 @@ class OrgUnitTypes extends Component {
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             params={params}
-                            onClosed={() => this.fetchOrgUnitTypes()}
+                            onConfirmed={() => this.fetchOrgUnitTypes()}
                         />
                     </Grid>
                 </Box>

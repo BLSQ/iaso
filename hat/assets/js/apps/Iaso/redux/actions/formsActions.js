@@ -111,11 +111,13 @@ export const saveAction = (
         })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
+            throw error;
+        }))
+        .finally(() => {
             if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));
             }
-            throw error;
-        }));
+        });
 };
 
 /**
@@ -147,7 +149,7 @@ export const createAction = (
             dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
             throw error;
         })
-        .then(() => {
+        .finally(() => {
             if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));
             }

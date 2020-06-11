@@ -356,6 +356,81 @@ class EventHandler:
             return InstanceExportError(message, counts, descriptions)
 
 
+class EventTrackerHandler:
+    def map_to_values(self, instance, form_mapping):
+        question_mappings = form_mapping["question_mappings"]
+
+        program_stage_ids = []
+        for question_name in form_mapping["question_mappings"]:
+            for mapping in question_mappings[question_name]:
+                if "programStage" in mapping:
+                    program_stage_id = mapping["programStage"]
+                    if program_stage_id not in program_stage_ids:
+                        program_stage_ids.append(program_stage_id)
+
+        events = []
+        errored = False
+
+        for program_stage_id in program_stage_ids:
+            event = {
+                "program": form_mapping["program_id"],
+                "programStage": program_stage_id,
+                "event": instance.export_id,
+                "orgUnit": instance.org_unit.source_ref,
+                "eventDate": instance.created_at.strftime("%Y-%m-%d"),
+                "status": "COMPLETED",
+                "dataValues": [],
+            }
+            if instance.location:
+                event["coordinate"] = {
+                    "latitude": instance.location.y,
+                    "longitude": instance.location.x,
+                }
+
+            event_errors = []
+
+            for question_key in form_mapping["question_mappings"]:
+                if question_key in instance.json.keys():
+                    for mapping in question_mappings[question_key]:
+                        if (
+                            "programStage" in mapping
+                            and mapping["programStage"] == program_stage_id
+                        ):
+                            if "dataElement" in mapping:
+                                data_element = mapping["dataElement"]
+                                raw_value = instance.json[question_key]
+                                data_value = {
+                                    "dataElement": data_element["id"],
+                                    "value": format_value(data_element, raw_value),
+                                }
+                                event["dataValues"].append(data_value)
+            if len(event["dataValues"]) > 0:
+                events.append(event)
+            else:
+                print(f"no data for stage {program_stage_id}")
+
+        tracked_entity_with_events = {"attributes": [], "events": events}
+
+        for question_key in form_mapping["question_mappings"]:
+            if question_key in instance.json.keys():
+                for mapping in question_mappings[question_key]:
+                    if "trackedEntityAttribute" in mapping:
+                        tea = mapping["trackedEntityAttribute"]
+                        raw_value = instance.json[question_key]
+                        attribute = {
+                            "attribute": tea["id"],
+                            "value": format_value(tea, raw_value),
+                            "displayName": tea["name"],
+                            "valueType": tea["valueType"],
+                        }
+                        tracked_entity_with_events["attributes"].append(attribute)
+
+        if errored:
+            return (None, event_errors)
+        else:
+            return (tracked_entity_with_events, None)
+
+
 class DataValueExporter:
     def __init__(self):
         self.form_mappings_cache = {}
@@ -363,6 +438,7 @@ class DataValueExporter:
         self.handlers = {
             models.AGGREGATE: AggregateHandler(),
             models.EVENT: EventHandler(),
+            models.EVENT_TRACKER: EventTrackerHandler(),
         }
 
     def get_api(self, mapping_version):
@@ -381,7 +457,7 @@ class DataValueExporter:
         export_status.save()
 
     def map_page_to_data_values(self, prefix, export_statuses, skipped):
-        data = {models.AGGREGATE: [], models.EVENT: []}
+        data = {models.AGGREGATE: [], models.EVENT: [], models.EVENT_TRACKER: []}
 
         for export_status in export_statuses:
             instance = export_status.instance

@@ -17,7 +17,7 @@ y        PERCENTAGE             Percentage	        Whole numbers inclusive betwe
 y        PHONE_NUMBER           Phone number	        Phone number.
 y        INTEGER_POSITIVE       Positive integer	Any whole number greater than (but not including) zero.
 y        INTEGER_ZERO_OR_POSITIVE   Positive of zero integer	Any positive whole number, including zero.
-n        Organisation unit	    Organisation units rendered as a hierarchy tree widget.
+y        ORGANISATION_UNIT	    Organisation units rendered as a hierarchy tree widget.
 n        UNIT_INTERVAL          Unit interval    Any real number greater than or equal to 0 and less than or equal to 1.
 y        TEXT                   Text            Textual value. The maximum number of allowed characters per value is 50,000.
 y        ??                     Time	            "Time is stored in HH:mm format. HH is a number between 0 and 23 mm is a number between 00 and 59"
@@ -90,6 +90,7 @@ def format_value(data_element, raw_value):
         or data_element_type == "EMAIL"
         or data_element_type == "PHONE_NUMBER"
         or data_element_type == "LETTER"
+        or data_element_type == "ORGANISATION_UNIT"
     ):
         if translated_value is None:
             return None

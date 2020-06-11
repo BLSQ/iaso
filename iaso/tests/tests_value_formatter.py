@@ -45,6 +45,7 @@ class ValueFormatterTests(TestCase):
                 "50.67630919162184 4.38517696224153 151.0 18.0",
                 "[4.38517696224153,50.67630919162184]",
             ),
+            ("ORGANISATION_UNIT", "SDFJKLZ456", "SDFJKLZ456"),
         )
 
         for testcase in testcases:

@@ -21,7 +21,7 @@ export const fetchAction = (
     errorKeyMessage,
     resultKey = null,
     params = null,
-    setIsLoading = () => null,
+    setIsLoading = null,
 ) => {
     let url = `/api/${apiPath}`;
     if (params) {
@@ -29,7 +29,10 @@ export const fetchAction = (
         if (params.search) {
             url += `&search=${params.search}`;
         }
-        dispatch(setIsLoading(true));
+
+        if (setIsLoading !== null) {
+            dispatch(setIsLoading(true));
+        }
     }
     return getRequest(url)
         .then((res) => {
@@ -41,7 +44,41 @@ export const fetchAction = (
         })
         .catch(() => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage))))
         .then(() => {
-            if (params) {
+            if (params && setIsLoading !== null) {
+                dispatch(setIsLoading(false));
+            }
+        });
+};
+
+/**
+* Fetch action to get a list of items
+* @param {Function} dispatch Redux function to trigger an action
+* @param {String} apiPath The endpoint path used
+* @param {Number|String} itemId The resource id (or a string in very specific cases, such as "me")
+* @param {Function} setAction Set action to put the list in redux
+* @param {String} errorKeyMessage The key of the error message used by the snackbar
+* @param {Function} setIsLoading The loading action to display the loading state
+*/
+export const retrieveAction = (
+    dispatch,
+    apiPath,
+    itemId,
+    setAction,
+    errorKeyMessage,
+    setIsLoading = null,
+) => {
+    const url = `/api/${apiPath}/${itemId}/`;
+    if (setIsLoading !== null) {
+        dispatch(setIsLoading(true));
+    }
+
+    return getRequest(url)
+        .then(res => dispatch(
+            setAction(res),
+        ))
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage))))
+        .then(() => {
+            if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));
             }
         });
@@ -62,9 +99,11 @@ export const saveAction = (
     apiPath,
     successKeyMessage,
     errorKeyMessage,
-    setIsLoading = () => null,
+    setIsLoading = null,
 ) => {
-    dispatch(setIsLoading(true));
+    if (setIsLoading !== null) {
+        dispatch(setIsLoading(true));
+    }
     return (patchRequest(`/api/${apiPath}/${item.id}/`, item, true)
         .then((res) => {
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
@@ -72,7 +111,9 @@ export const saveAction = (
         })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
-            dispatch(setIsLoading(false));
+            if (setIsLoading !== null) {
+                dispatch(setIsLoading(false));
+            }
             throw error;
         }));
 };
@@ -92,9 +133,11 @@ export const createAction = (
     apiPath,
     successKeyMessage,
     errorKeyMessage,
-    setIsLoading = () => null,
+    setIsLoading = null,
 ) => {
-    dispatch(setIsLoading(true));
+    if (setIsLoading !== null) {
+        dispatch(setIsLoading(true));
+    }
     return (postRequest(`/api/${apiPath}/`, item)
         .then((res) => {
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
@@ -102,8 +145,12 @@ export const createAction = (
         })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
-            dispatch(setIsLoading(false));
             throw error;
+        })
+        .then(() => {
+            if (setIsLoading !== null) {
+                dispatch(setIsLoading(false));
+            }
         }));
 };
 
@@ -128,9 +175,11 @@ export const deleteAction = (
     errorKeyMessage,
     resultKey = null,
     params = null,
-    setIsLoading = () => null,
+    setIsLoading = null,
 ) => {
-    dispatch(setIsLoading(true));
+    if (setIsLoading !== null) {
+        dispatch(setIsLoading(true));
+    }
     return (deleteRequest(`/api/${apiPath}/${item.id}/`)
         .then((res) => {
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
@@ -147,7 +196,9 @@ export const deleteAction = (
         })
         .catch((error) => {
             dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
-            dispatch(setIsLoading(false));
+            if (setIsLoading !== null) {
+                dispatch(setIsLoading(false));
+            }
             throw error;
         }));
 };

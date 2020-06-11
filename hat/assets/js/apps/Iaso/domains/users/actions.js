@@ -1,5 +1,5 @@
 import {
-    fetchAction, saveAction, createAction, deleteAction,
+    fetchAction, saveAction, createAction, deleteAction, retrieveAction,
 } from '../../redux/actions/formsActions';
 
 export const SET_USERS_PROFILES = 'SET_USERS_PROFILES';
@@ -32,9 +32,10 @@ export const setPermissions = permissions => ({
 });
 
 const apiKey = 'profiles';
-export const fetchCurrentUser = () => dispatch => fetchAction(
+export const fetchCurrentUser = () => dispatch => retrieveAction(
     dispatch,
-    `${apiKey}/me`,
+    `${apiKey}`,
+    'me',
     setCurrentUser,
     'fetchCurrentUser',
 );

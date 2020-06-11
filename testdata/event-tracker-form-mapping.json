@@ -1,7 +1,6 @@
 {
     "program_id": "YiNSCPK5tq4",
     "program_name": "C19",
-    "tracked_entity_identifier": "c19_unique_number",
     "question_mappings": {
         "c19_heure_d_enrolement": [
             {

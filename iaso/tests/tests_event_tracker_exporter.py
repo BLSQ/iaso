@@ -39,10 +39,16 @@ def load_dhis2_fixture(mapping_file):
         return json.load(json_file)
 
 
+def load_dhis2_fixture_as_string(mapping_file):
+    with open("./iaso/tests/fixtures/dhis2/" + mapping_file) as json_file:
+        return json_file.read()
+
+
 def build_form_mapping():
     return {
         "program_id": "PROGRAM_DHIS2_ID",
-        "tracked_entity_identifier": "tea_unique_number",
+        "tracked_entity_identifier": "XPYFFrfVbAd",
+        "tracked_entity_type": "54dfg45re",
         "question_mappings": {
             "tea_heure_d_enrolement": [
                 {
@@ -278,32 +284,239 @@ class DataValueExporterTests(TestCase):
                         "valueType": "TEXT",
                     },
                 ],
-                "events": [
+                "enrollments": [
                     {
-                        "program": "PROGRAM_DHIS2_ID",
-                        "programStage": "STAGE1_DHIS2_ID",
-                        "event": "EVENT_DHIS2_UID",
-                        "orgUnit": "OU_DHIS2_ID",
-                        "eventDate": "2018-02-16",
-                        "status": "COMPLETED",
-                        "dataValues": [
-                            {"dataElement": "ST01DE2_DHIS2_ID", "value": "Bounty"}
-                        ],
-                        "coordinate": {"latitude": 7.3, "longitude": 1.5},
-                    },
-                    {
-                        "program": "PROGRAM_DHIS2_ID",
-                        "programStage": "STAGE2_DHIS2_ID",
-                        "event": "EVENT_DHIS2_UID",
-                        "orgUnit": "OU_DHIS2_ID",
-                        "eventDate": "2018-02-16",
-                        "status": "COMPLETED",
-                        "dataValues": [
-                            {"dataElement": "ST02DE2_DHIS2_ID", "value": "Raider"}
-                        ],
-                        "coordinate": {"latitude": 7.3, "longitude": 1.5},
-                    },
+                        "events": [
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE1_DHIS2_ID",
+                                "event": "EVENT_DHIS2_UID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST01DE2_DHIS2_ID",
+                                        "value": "Bounty",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE2_DHIS2_ID",
+                                "event": "EVENT_DHIS2_UID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST02DE2_DHIS2_ID",
+                                        "value": "Raider",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                        ]
+                    }
                 ],
             },
-            trackedentity,
+            trackedentity[2],
+        )
+
+    @responses.activate
+    def test_event_export_works_on_existing_tracked_entity(self):
+
+        mapping_version = MappingVersion(
+            name="event tracker",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_unique_number": "CDLM-00001-45",
+                "tea_name": "Yoda",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+            },
+        )
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+
+        # mock expected calls
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/trackedEntityInstances.json?fields=%3Aall%2Cenrollments%5B%3Aall%2Cevents%5B%3Aall%5D%5D&ou=54dfg45re&ouMode=DESCENDANTS&trackedEntityType=54dfg45re&filter=XPYFFrfVbAd%3AEQ%3ACDLM-00001-45",
+            json=load_dhis2_fixture("tracked_entity_with_enrollments.json"),
+            status=200,
+        )
+
+        sent_update = []
+
+        def request_callback(request):
+            sent_update.append(json.loads(request.body))
+            return (
+                200,
+                {},
+                load_dhis2_fixture_as_string("tracked_entity_with_enrollments.json"),
+            )
+
+        responses.add_callback(
+            responses.PUT,
+            "https://dhis2.com/api/trackedEntityInstances/WfMWd9YYL4d",
+            callback=request_callback,
+        )
+
+        # excercice
+        instances_qs = Instance.objects.order_by("id").all()
+
+        DataValueExporter().export_instances(export_request, True)
+
+        self.expect_logs("exported")
+
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
+    @responses.activate
+    def test_event_export_works_on_non_existing_tracked_entity(self):
+
+        mapping_version = MappingVersion(
+            name="event tracker",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_name": "Yoda",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+            },
+        )
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+
+        def request_callback(request):
+            import pdb
+
+            pdb.set_trace()
+            pass
+
+        # mock expected calls
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/organisationUnits/OU_DHIS2_ID.json?fields=id%2Cname%2Ccode",
+            json=load_dhis2_fixture("tracked_entity_orgunit.json"),
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/trackedEntityAttributes/XPYFFrfVbAd/generate.json?ORG_UNIT_CODE=47897",
+            json=load_dhis2_fixture("tracked_entity_attribute_generate.json"),
+            status=200,
+        )
+
+        sent_create = []
+
+        def request_callback(request):
+            sent_create.append(json.loads(request.body))
+            return (
+                200,
+                {},
+                load_dhis2_fixture_as_string("tracked_entity_with_enrollments.json"),
+            )
+
+        responses.add_callback(
+            responses.POST,
+            "https://dhis2.com/api/trackedEntityInstances",
+            callback=request_callback,
+        )
+
+        # excercice
+        instances_qs = Instance.objects.order_by("id").all()
+
+        DataValueExporter().export_instances(export_request, True)
+
+        self.expect_logs("exported")
+
+        instance.refresh_from_db()
+        self.assertIsNotNone(instance.last_export_success_at)
+
+        self.assertEqual(
+            {
+                "attributes": [
+                    {
+                        "attribute": "pxSXrL4uliL",
+                        "value": "Yoda",
+                        "displayName": "Nom",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "GEVwwkMbGKz",
+                        "value": "15:17",
+                        "displayName": "Heure d'enrôlement",
+                        "valueType": "TIME",
+                    },
+                    {"attribute": "XPYFFrfVbAd", "value": "787T8786"},
+                ],
+                "enrollments": [
+                    {
+                        "events": [
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE1_DHIS2_ID",
+                                "event": "EVENT_DHIS2_UID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST01DE2_DHIS2_ID",
+                                        "value": "Bounty",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE2_DHIS2_ID",
+                                "event": "EVENT_DHIS2_UID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST02DE2_DHIS2_ID",
+                                        "value": "Raider",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                        ]
+                    }
+                ],
+            },
+            sent_create[0],
         )

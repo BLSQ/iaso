@@ -34,6 +34,7 @@ def village_comparator(village_1, village_2):
     return 0
 
 
+# noinspection PyDefaultArgument
 def sort_villages(id_list=[], years=[]):
 
     queryset = (
@@ -60,6 +61,7 @@ class TempAssignation:
         return str(self.villages)
 
 
+# noinspection PyDefaultArgument
 def assign(village_id_list, workzone_id, years=[]):
     village_list = sort_villages(village_id_list, years)
     workzone = WorkZone.objects.get(pk=workzone_id)
@@ -81,7 +83,10 @@ def assign(village_id_list, workzone_id, years=[]):
             population = village.population
             if population is None:
                 population = 0
-            if temp_assignation.population_reached + population < team.capacity:
+            if (
+                temp_assignation.population_reached + population
+                < team.capacity * workzone.planning.months
+            ):
                 # test if village in ZS/AS of team
 
                 if not village.assigned and village.AS in team.get_as(

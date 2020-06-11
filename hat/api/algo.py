@@ -16,28 +16,25 @@ class AlgoViewSet(viewsets.ViewSet):
             coordination_id: the id of the coordination
             years: a comma separated list of years.
     """
+
     authentication_classes = (CsrfExemptSessionAuthentication, BasicAuthentication)
 
-    permission_required = [
-        'menupermissions.x_plannings_microplanning'
-    ]
+    permission_required = ["menupermissions.x_plannings_microplanning"]
 
     def list(self, request):
-        return Response({"res":"There is an algo here"})
+        return Response({"res": "There is an algo here"})
 
     def update(self, request, pk=None):
-        village_ids = request.data.get('village_id', None).split(',')
-        workzone_id = request.data.get('workzone_id', None)
-        years = request.data.get('years', None).split(',')
+        village_ids = request.data.get("village_id", None).split(",")
+        workzone_id = request.data.get("workzone_id", None)
+        years = request.data.get("years", None).split(",")
         assigned, not_assigned = assign(village_ids, workzone_id, years)
         assignations = []
         for team_id in assigned.keys():
             temp_assignation = assigned[team_id]
             for village in temp_assignation.villages:
-                assignations.append({'team_id': team_id, 'village_id': village.id})
+                assignations.append({"team_id": team_id, "village_id": village.id})
         for village in not_assigned:
-            assignations.append({'village_id': village.id, 'team_id': -1})
+            assignations.append({"village_id": village.id, "team_id": -1})
 
-        return Response({'assignations': assignations})
-
-
+        return Response({"assignations": assignations})

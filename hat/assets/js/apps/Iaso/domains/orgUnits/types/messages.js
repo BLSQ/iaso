@@ -65,6 +65,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.subOrgUnitsType',
         defaultMessage: 'Sub org units types',
     },
+    projects: {
+        id: 'iaso.orgUnitsTypes.projects',
+        defaultMessage: 'Projects',
+    },
     depth: {
         id: 'iaso.orgUnits.depth',
         defaultMessage: 'Depth',

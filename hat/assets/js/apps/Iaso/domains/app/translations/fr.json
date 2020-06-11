@@ -280,6 +280,7 @@
   "iaso.orgUnits.type": "Type",
   "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
   "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
+  "iaso.orgUnitsTypes.projects": "Projets",
   "iaso.orgUnitsTypes.update": "Mettre à jour le type d'unité d'organisation",
   "iaso.province": "Province",
   "iaso.runs.dialog.deleteRunText": "Toutes les correspondances crées seront effacées",

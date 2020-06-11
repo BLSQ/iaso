@@ -9,6 +9,7 @@ import {
     fetchAllOrgUnitTypes as fetchAllOrgUnitTypesAction,
     deleteOrgUnitType as deleteOrgUnitTypeAction,
 } from './actions';
+import { fetchAllProjects as fetchAllProjectsAction } from '../../projects/actions';
 
 import TopBar from '../../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
@@ -38,21 +39,25 @@ const styles = theme => ({
 class OrgUnitTypes extends Component {
     componentDidMount() {
         const {
-            params,
-            fetchOrgUnitTypes,
             fetchAllOrgUnitTypes,
+            fetchAllProjects,
         } = this.props;
-        fetchOrgUnitTypes(params);
+        this.fetchOrgUnitTypes();
         fetchAllOrgUnitTypes(); //  TO-DO, API endpoint giving only id, name, short name. This is used by the dialog to choose sub org unit
+        fetchAllProjects();
     }
 
     componentDidUpdate(prevProps) {
-        const { params, fetchOrgUnitTypes } = this.props;
+        const { params } = this.props;
         if ((prevProps.params.pageSize !== params.pageSize)
         || (prevProps.params.order !== params.order)
         || (prevProps.params.page !== params.page)) {
-            fetchOrgUnitTypes(params);
+            this.fetchOrgUnitTypes();
         }
+    }
+
+    fetchOrgUnitTypes() {
+        this.props.fetchOrgUnitTypes(this.props.params);
     }
 
     deleteOrgUnitType(orgUnitType) {
@@ -110,6 +115,7 @@ class OrgUnitTypes extends Component {
                             titleMessage={MESSAGES.create}
                             renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
                             params={params}
+                            onClosed={() => this.fetchOrgUnitTypes()}
                         />
                     </Grid>
                 </Box>
@@ -128,6 +134,7 @@ OrgUnitTypes.propTypes = {
     params: PropTypes.object.isRequired,
     fetchOrgUnitTypes: PropTypes.func.isRequired,
     fetchAllOrgUnitTypes: PropTypes.func.isRequired,
+    fetchAllProjects: PropTypes.func.isRequired,
     deleteOrgUnitType: PropTypes.func.isRequired,
     orgUnitsTypes: PropTypes.array.isRequired,
     count: PropTypes.number,
@@ -143,15 +150,11 @@ const MapStateToProps = state => ({
     fetching: state.orgUnitsTypes.fetching,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
-            fetchOrgUnitTypes: fetchOrgUnitTypesAction,
-            fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
-            deleteOrgUnitType: deleteOrgUnitTypeAction,
-            redirectTo: redirectToAction,
-        }, dispatch),
-    }
-);
-
+const mapDispatchToProps = dispatch => bindActionCreators({
+    fetchOrgUnitTypes: fetchOrgUnitTypesAction,
+    fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
+    fetchAllProjects: fetchAllProjectsAction,
+    deleteOrgUnitType: deleteOrgUnitTypeAction,
+    redirectTo: redirectToAction,
+}, dispatch);
 export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(OrgUnitTypes)));

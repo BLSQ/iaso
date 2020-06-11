@@ -18,7 +18,7 @@ import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './domains/forms/reducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reducer';
-import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
+import { projectsReducer, projectsInitialState } from './domains/projects/reducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
 import { mappingReducer, mappingsInitialState } from './domains/mappings/reducer';

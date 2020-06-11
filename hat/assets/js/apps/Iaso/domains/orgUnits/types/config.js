@@ -46,10 +46,11 @@ const TableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.edit}
                         />
                     )}
-                    initialData={settings.original}
+                    orgUnitType={settings.original}
                     titleMessage={MESSAGES.update}
                     key={settings.original.updated_at}
                     params={component.props.params}
+                    onClosed={() => component.fetchOrgUnitTypes()}
                 />
                 <DeleteDialog
                     disabled={settings.original.instances_count > 0}

@@ -22,8 +22,8 @@ import {
     PERIOD_TYPE_YEAR,
 } from '../../periods/constants';
 import { setIsLoadingForm } from '../actions';
-
 import MESSAGES from '../messages';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 // TODO: use config file
 const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
@@ -95,17 +95,6 @@ class FormDialogComponent extends Component {
 
     setFieldValue(fieldName, fieldValue) {
         this.setState({ [fieldName]: { value: fieldValue, errors: [] } });
-    }
-
-    // Workaround to map the comma-separated string used by InputComponent with type=select to an array of values
-    // TODO: select input component should return a list of values of the same type as the provided values
-    setRelatedSelectFieldValue(fieldName, fieldValue) {
-        const mappedFieldValue = fieldValue
-            .split(',')
-            .filter(singleValue => singleValue !== '')
-            .map(Number);
-
-        this.setFieldValue(fieldName, mappedFieldValue);
     }
 
     setFieldErrors(fieldName, fieldErrors) {
@@ -236,7 +225,7 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
+                            onChange={(key, value) => this.setFieldValue(key, commaSeparatedIdsToArray(value))}
                             value={this.state.project_ids.value.join(',')}
                             errors={this.state.project_ids.errors}
                             type="select"
@@ -251,7 +240,7 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="org_unit_type_ids"
-                            onChange={(key, value) => this.setRelatedSelectFieldValue(key, value)}
+                            onChange={(key, value) => this.setFieldValue(key, commaSeparatedIdsToArray(value))}
                             value={this.state.org_unit_type_ids.value.join(',')}
                             errors={this.state.org_unit_type_ids.errors}
                             type="select"
@@ -306,8 +295,8 @@ FormDialogComponent.propTypes = {
     titleMessage: PropTypes.object.isRequired,
 };
 const mapStateToProps = state => ({
-    orgUnitTypes: state.orgUnits.orgUnitTypes,
-    projects: state.projects.projects,
+    orgUnitTypes: state.orgUnitsTypes.allTypes,
+    projects: state.projects.allProjects,
 });
 const mapDispatchToProps = dispatch => ({ dispatch });
 export default connect(mapStateToProps, mapDispatchToProps)(FormDialogComponent);

@@ -1,3 +1,4 @@
+import mapValues from 'lodash/mapValues';
 import {
     fetchAction, saveAction, createAction, deleteAction,
 } from '../../../redux/actions/formsActions';
@@ -46,18 +47,18 @@ export const fetchAllOrgUnitTypes = () => dispatch => fetchAction(
     'orgUnitTypes',
 );
 
-export const saveOrgUnitType = orgUnitType => dispatch => saveAction(
+export const saveOrgUnitType = orgUnitTypeData => dispatch => saveAction(
     dispatch,
-    orgUnitType,
+    mapValues(orgUnitTypeData, v => v.value),
     apiKey,
     'saveOrgUnitTypeSuccesfull',
     'saveOrgUnitTypeError',
     setIsFetching,
 );
 
-export const createOrgUnitType = orgUnitType => dispatch => createAction(
+export const createOrgUnitType = orgUnitTypeData => dispatch => createAction(
     dispatch,
-    orgUnitType,
+    mapValues(orgUnitTypeData, v => v.value),
     apiKey,
     'saveOrgUnitTypeSuccesfull',
     'saveOrgUnitTypeError',

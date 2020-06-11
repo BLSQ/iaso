@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
-import { push } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Paper';
@@ -9,14 +8,13 @@ import Grid from '@material-ui/core/Grid';
 
 import PropTypes from 'prop-types';
 
-import { setForms, setCurrentForm } from './actions';
-import { setOrgUnitTypes } from '../orgUnits/actions';
+import { bindActionCreators } from 'redux';
+import { setForms as setFormsAction } from './actions';
+import { fetchAllProjects as fetchAllProjectsAction } from '../projects/actions';
+import { fetchAllOrgUnitTypes as fetchAllOrgUnitTypesAction } from '../orgUnits/types/actions';
 
-import { setProjects } from '../../redux/projectsReducer';
 
 import formsTableColumns from './config';
-
-import { createUrl } from '../../../../utils/fetchData';
 
 import commonStyles from '../../styles/common';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -26,7 +24,6 @@ import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
-import { fetchOrgUnitsTypes, fetchProjects, deleteForm } from '../../utils/requests';
 
 import MESSAGES from './messages';
 
@@ -51,17 +48,9 @@ class Forms extends Component {
         };
     }
 
-    /**
-   * TODO: replace by async actions or saga
-   */
     componentDidMount() {
-        Promise.all([
-            fetchOrgUnitsTypes(this.props.dispatch),
-            fetchProjects(this.props.dispatch),
-        ]).then(([orgUnitsTypes, projects]) => {
-            this.props.setOrgUnitTypes(orgUnitsTypes);
-            this.props.setProjects(projects);
-        });
+        this.props.fetchAllProjects();
+        this.props.fetchAllOrgUnitTypes();
     }
 
     getExportUrl(exportType = 'csv') {
@@ -82,12 +71,6 @@ class Forms extends Component {
             }
         });
         return url;
-    }
-
-    deleteForm(form) {
-        return deleteForm(this.props.dispatch, form.id)
-            .then(() => this.setState({ isUpdated: true }))
-            .catch(() => {});
     }
 
     render() {
@@ -159,28 +142,25 @@ Forms.propTypes = {
     reduxPage: PropTypes.object,
     params: PropTypes.object.isRequired,
     setForms: PropTypes.func.isRequired,
-    setCurrentForm: PropTypes.func.isRequired,
-    setOrgUnitTypes: PropTypes.func.isRequired,
-    setProjects: PropTypes.func.isRequired,
-    redirectTo: PropTypes.func.isRequired,
-    dispatch: PropTypes.func.isRequired,
     isLoading: PropTypes.bool.isRequired,
+    fetchAllOrgUnitTypes: PropTypes.func.isRequired,
+    fetchAllProjects: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
+const mapStateToProps = state => ({
     reduxPage: state.forms.formsPage,
     isLoading: state.forms.isLoading,
 });
 
-const MapDispatchToProps = dispatch => ({
-    setCurrentForm: form => dispatch(setCurrentForm(form)),
-    setForms: (forms, showPagination, params, count, pages) => dispatch(setForms(forms, showPagination, params, count, pages)),
-    setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
-    setProjects: projects => dispatch(setProjects(projects)),
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+const mapDispatchToProps = dispatch => bindActionCreators(
+    {
+        setForms: setFormsAction,
+        fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
+        fetchAllProjects: fetchAllProjectsAction,
+    },
     dispatch,
-});
+);
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Forms)),
+    connect(mapStateToProps, mapDispatchToProps)(injectIntl(Forms)),
 );

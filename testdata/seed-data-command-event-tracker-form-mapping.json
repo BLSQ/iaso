@@ -61,20 +61,6 @@
                 }
             }
         ],
-        "DE_424405": [
-            {
-                "program": "IpHINAT79UW",
-                "programStage": "A03MvHHogjR",
-                "compulsory": false,
-                "dataElement": {
-                    "code": "DE_424405",
-                    "name": "Birth certificate",
-                    "id": "uf3svrmp8Oj",
-                    "shortName": "Birth certificate",
-                    "valueType": "FILE_RESOURCE"
-                }
-            }
-        ],
         "DE_2008294": [
             {
                 "program": "IpHINAT79UW",

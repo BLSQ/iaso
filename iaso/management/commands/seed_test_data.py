@@ -186,6 +186,25 @@ class Command(BaseCommand):
 
         project.forms.add(cvs_stat_form)
 
+        event_tracker_form, created = Form.objects.get_or_create(
+            form_id="event_tracker" + dhis2_version,
+            name="Event Tracker " + dhis2_version,
+            single_per_period=False,
+        )
+
+        event_tracker_form.org_unit_types.add(orgunit_type)
+
+        event_tracker_form_version = self.seed_form(
+            event_tracker_form,
+            datasource,
+            credentials,
+            mapping_type="EVENT_TRACKER",
+            mapping_file="./testdata/seed-data-command-event-tracker-form-mapping.json",
+            xls_file="./testdata/seed-data-command-event-tracker-form.xlsx",
+        )
+
+        project.forms.add(event_tracker_form)
+
         self.project = project
 
         periods = ["201801", "201802", "201803"]
@@ -215,6 +234,15 @@ class Command(BaseCommand):
             )
 
             print("********* generating instances")
+
+            self.seed_instances(
+                source_version,
+                event_tracker_form,
+                [None],
+                event_tracker_form_version,
+                fixed_instance_count=1,
+            )
+
             self.seed_instances(
                 source_version,
                 cvs_form,

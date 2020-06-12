@@ -50,6 +50,15 @@ class IasoTestCaseMixin:
             **kwargs,
         )
 
+    @staticmethod
+    def create_file_mock(**kwargs):
+        file_mock = mock.MagicMock(spec=File)
+
+        for key, value in kwargs.items():
+            setattr(file_mock, key, value)
+
+        return file_mock
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass

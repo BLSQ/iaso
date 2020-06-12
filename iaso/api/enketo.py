@@ -20,10 +20,12 @@ from iaso.models import User
 
 
 def public_url_for_enketo(request, path):
-    if enketo_settings().get("ENKETO_DEV"):
-        return "http://docker-host:8081" + path
+    resolved_path = request.build_absolute_uri(path)
 
-    return request.build_absolute_uri(path)
+    if enketo_settings().get("ENKETO_DEV"):
+        resolved_path = resolved_path.replace("localhost", "docker-host")
+
+    return resolved_path
 
 
 @api_view(["GET"])
@@ -63,7 +65,7 @@ def enketo_edit_url(request, instance_uuid):
         return JsonResponse({"error": str(error)}, status=409)
 
 
-@api_view(["GET"])
+@api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
     form_id_str = request.GET["formID"].split("-")

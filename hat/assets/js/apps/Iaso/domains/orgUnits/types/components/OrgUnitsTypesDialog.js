@@ -78,7 +78,7 @@ export default function OrgUnitsTypesDialog({
                         errors={formState.short_name.errors}
                         type="text"
                         label={MESSAGES.shortName}
-                        required={false}
+                        required
                     />
                 </Grid>
                 <Grid xs={12} item>
@@ -89,7 +89,7 @@ export default function OrgUnitsTypesDialog({
                         errors={formState.depth.errors}
                         type="number"
                         label={MESSAGES.depth}
-                        required={false}
+                        required
                     />
                 </Grid>
                 <Grid xs={12} item>
@@ -122,6 +122,7 @@ export default function OrgUnitsTypesDialog({
                             label: p.name,
                         }))}
                         label={MESSAGES.projects}
+                        required
                     />
                 </Grid>
             </Grid>

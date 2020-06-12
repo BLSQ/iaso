@@ -10,17 +10,32 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
+        sortable: false,
         style: { justifyContent: 'left' },
         Cell: settings => <ColumnTextComponent text={settings.original.name} />,
     },
     {
         Header: formatMessage(MESSAGES.shortName),
         accessor: 'short_name',
+        sortable: false,
         Cell: settings => <ColumnTextComponent text={settings.original.short_name} />,
+    },
+    {
+        Header: formatMessage(MESSAGES.depth),
+        accessor: 'depth',
+        sortable: false,
+        Cell: settings => <ColumnTextComponent text={settings.original.depth !== null ? settings.original.depth : '-'} />,
+    },
+    {
+        Header: formatMessage(MESSAGES.projects),
+        accessor: 'projects',
+        sortable: false,
+        Cell: settings => <ColumnTextComponent text={settings.original.projects.map(p => p.name).join(', ')} />,
     },
     {
         Header: formatMessage(MESSAGES.createdAt),
         accessor: 'created_at',
+        sortable: false,
         Cell: settings => (
             <span>{displayDateFromTimestamp(settings.original.created_at)}</span>
         ),
@@ -28,6 +43,7 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
+        sortable: false,
         Cell: settings => (
             <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
         ),

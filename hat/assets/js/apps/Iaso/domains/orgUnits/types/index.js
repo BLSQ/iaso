@@ -93,11 +93,6 @@ class OrgUnitTypes extends Component {
                     displayBackButton={false}
                 />
                 <Box className={classes.containerFullHeightNoTabPadded}>
-                    <Filters
-                        baseUrl={baseUrl}
-                        params={params}
-                        onSearch={() => fetchOrgUnitTypes(params)}
-                    />
                     <Table
                         data={orgUnitsTypes}
                         pages={pages}

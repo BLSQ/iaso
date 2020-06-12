@@ -298,7 +298,6 @@ class DataValueExporterTests(TestCase):
                             {
                                 "program": "PROGRAM_DHIS2_ID",
                                 "programStage": "STAGE1_DHIS2_ID",
-                                "event": "EVENT_DHIS2_UID",
                                 "orgUnit": "OU_DHIS2_ID",
                                 "eventDate": "2018-02-16",
                                 "status": "COMPLETED",
@@ -313,7 +312,6 @@ class DataValueExporterTests(TestCase):
                             {
                                 "program": "PROGRAM_DHIS2_ID",
                                 "programStage": "STAGE2_DHIS2_ID",
-                                "event": "EVENT_DHIS2_UID",
                                 "orgUnit": "OU_DHIS2_ID",
                                 "eventDate": "2018-02-16",
                                 "status": "COMPLETED",
@@ -365,7 +363,7 @@ class DataValueExporterTests(TestCase):
         # mock expected calls
         responses.add(
             responses.GET,
-            "https://dhis2.com/api/trackedEntityInstances.json?fields=%3Aall%2Cenrollments%5B%3Aall%2Cevents%5B%3Aall%5D%5D&ou=54dfg45re&ouMode=DESCENDANTS&trackedEntityType=54dfg45re&filter=XPYFFrfVbAd%3AEQ%3ACDLM-00001-45",
+            "https://dhis2.com/api/trackedEntityInstances.json?fields=%3Aall%2Cenrollments%5B%3Aall%2Cevents%5B%3Aall%5D%5D&ou=OU_DHIS2_ID&ouMode=DESCENDANTS&trackedEntityType=54dfg45re&filter=XPYFFrfVbAd%3AEQ%3ACDLM-00001-45",
             json=load_dhis2_fixture("tracked_entity_with_enrollments.json"),
             status=200,
         )
@@ -503,7 +501,6 @@ class DataValueExporterTests(TestCase):
                             {
                                 "program": "PROGRAM_DHIS2_ID",
                                 "programStage": "STAGE1_DHIS2_ID",
-                                "event": "EVENT_DHIS2_UID",
                                 "orgUnit": "OU_DHIS2_ID",
                                 "eventDate": "2018-02-16",
                                 "status": "COMPLETED",
@@ -518,7 +515,6 @@ class DataValueExporterTests(TestCase):
                             {
                                 "program": "PROGRAM_DHIS2_ID",
                                 "programStage": "STAGE2_DHIS2_ID",
-                                "event": "EVENT_DHIS2_UID",
                                 "orgUnit": "OU_DHIS2_ID",
                                 "eventDate": "2018-02-16",
                                 "status": "COMPLETED",

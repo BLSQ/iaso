@@ -63,7 +63,10 @@ def format_value(data_element, raw_value):
         if translated_value == "":
             return None
         try:
-            return float(translated_value)
+            if "." in translated_value:
+                return float(translated_value)
+            else:
+                return int(translated_value)
         except:
             raise Exception(
                 "Bad value for float '" + str(raw_value) + "'", data_element

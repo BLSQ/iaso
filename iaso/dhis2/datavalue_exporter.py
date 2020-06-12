@@ -380,7 +380,6 @@ class EventTrackerHandler:
             event = {
                 "program": form_mapping["program_id"],
                 "programStage": program_stage_id,
-                "event": instance.export_id,
                 "orgUnit": instance.org_unit.source_ref,
                 "eventDate": event_date,
                 "status": "COMPLETED",
@@ -438,13 +437,15 @@ class EventTrackerHandler:
                 for mapping in question_mappings[question_key]:
                     if "trackedEntityAttribute" in mapping:
                         tea = mapping["trackedEntityAttribute"]
-                        raw_value = instance.json[question_key]
+                        raw_value = instance.json.get(question_key)
+
                         attribute = {
                             "attribute": tea["id"],
                             "value": format_value(tea, raw_value),
                             "displayName": tea["name"],
                             "valueType": tea["valueType"],
                         }
+
                         tracked_entity_with_events["attributes"].append(attribute)
 
         if errored:
@@ -465,24 +466,30 @@ class EventTrackerHandler:
             "trackedEntityInstances",
             params={
                 "fields": ":all,enrollments[:all,events[:all]]",
-                "ou": tracked_entity_type,
+                "ou": country_dhis2_id,
                 "ouMode": "DESCENDANTS",
                 "trackedEntityType": tracked_entity_type,
-                "filter": f"{unique_number_attribute_id}:EQ:{unique_number}",
+                "filter": f"{unique_number_attribute_id}:EQ:{str(unique_number)}",
             },
         ).json()
+
         return self.get_first(resp["trackedEntityInstances"])
 
     def update_tracked_entity(self, api, tracked_entity):
+        print("update_tracked_entity", json.dumps(tracked_entity))
         resp = api.put(
             "trackedEntityInstances/" + tracked_entity["trackedEntityInstance"],
             tracked_entity,
         ).json()
+        print(resp)
 
         return resp
 
     def create_tracked_entity(self, api, tracked_entity):
+        print("create_tracked_entity", json.dumps(tracked_entity))
         resp = api.post("trackedEntityInstances", tracked_entity).json()
+
+        print(resp)
 
         return resp
 
@@ -497,11 +504,12 @@ class EventTrackerHandler:
             f"organisationUnits/{org_unit.source_ref}",
             params={"fields": "id,name,code"},
         ).json()
-
-        return api.get(
+        generated = api.get(
             f"trackedEntityAttributes/{unique_number_attribute_id}/generate",
             params={"ORG_UNIT_CODE": org_unit_dhis2["code"]},
-        ).json()["value"]
+        ).json()
+        print("generate_unique_number", generated)
+        return generated["value"]
 
     def export_page(self, prefix, data, export_statuses, stats, api):
         if len(data) == 0:
@@ -523,7 +531,13 @@ class EventTrackerHandler:
                         if attribute["attribute"] == unique_number_attribute_id
                     ]
                 )
-
+                print(
+                    "looking for",
+                    unique_number_attribute_id,
+                    "in ",
+                    tracked_entity_iaso["attributes"],
+                )
+                print(instance.id, "unique number ?", unique_number)
                 if unique_number:
                     tracked_entity_dhis2 = self.find_tracked_entity(
                         api,
@@ -533,21 +547,24 @@ class EventTrackerHandler:
                         unique_number,
                     )
                     if tracked_entity_dhis2:
+
                         # copy the new events in the first enrollment
-                        for event in tracked_entity_iaso["enrollments"][0]:
+                        for event in tracked_entity_iaso["enrollments"][0]["events"]:
                             tracked_entity_dhis2["enrollments"][0]["events"].append(
                                 event
                             )
                         self.update_tracked_entity(api, tracked_entity_dhis2)
                     else:
                         raise Exception(
-                            "error : no tracked entity with unique number : "
-                            + unique_number
+                            f"error : no tracked entity with unique number : {unique_number}"
                         )
                 else:
+
                     unique_number = self.generate_unique_number(
                         api, unique_number_attribute_id, instance.org_unit
                     )
+
+                    print(instance.id, "unique number ?", unique_number)
 
                     unique_number_attribute = self.get_first(
                         [
@@ -573,6 +590,9 @@ class EventTrackerHandler:
             except RequestException as dhis2_exception:
                 message = "ERROR while processing " + prefix
                 resp = json.loads(dhis2_exception.description)
+                import pdb
+
+                pdb.set_trace()
                 exception = self.handle_exception(resp, message)
                 raise exception
 

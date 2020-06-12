@@ -124,7 +124,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         optional: bool = False,
     ):
         self.assertIn(field_name, data)
-        if not optional:
+        if data[field_name] is not None or not optional:
             self.assertIsInstance(data[field_name], cls)
 
     def assertHasError(

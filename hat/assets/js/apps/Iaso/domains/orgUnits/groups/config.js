@@ -24,6 +24,14 @@ const TableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.sourceVersion),
         accessor: 'source_version',
+        Cell: (settings) => {
+            const { source_version } = settings.original;
+            const text = source_version !== null
+                ? `${source_version.data_source.name} - ${source_version.number}`
+                : '-';
+
+            return <ColumnTextComponent text={text} />;
+        },
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),

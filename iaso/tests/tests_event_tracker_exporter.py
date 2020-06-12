@@ -423,12 +423,6 @@ class DataValueExporterTests(TestCase):
             launcher=self.user,
         )
 
-        def request_callback(request):
-            import pdb
-
-            pdb.set_trace()
-            pass
-
         # mock expected calls
         responses.add(
             responses.GET,

@@ -590,9 +590,7 @@ class EventTrackerHandler:
             except RequestException as dhis2_exception:
                 message = "ERROR while processing " + prefix
                 resp = json.loads(dhis2_exception.description)
-                import pdb
 
-                pdb.set_trace()
                 exception = self.handle_exception(resp, message)
                 raise exception
 

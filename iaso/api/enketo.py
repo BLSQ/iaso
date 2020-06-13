@@ -34,9 +34,7 @@ def enketo_edit_url(request, instance_uuid):
     ).first()
 
     if instance is None:
-        return JsonResponse(
-            {"error": "No such instance or not allowed"}, status=404
-        )
+        return JsonResponse({"error": "No such instance or not allowed"}, status=404)
 
     try:
         instance_xml = instance.file.read()
@@ -63,7 +61,7 @@ def enketo_edit_url(request, instance_uuid):
         return JsonResponse({"error": str(error)}, status=409)
 
 
-@api_view(["GET"])
+@api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
     form_id_str = request.GET["formID"].split("-")

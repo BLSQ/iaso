@@ -8,7 +8,7 @@ from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, Ex
 import iaso.models as models
 from timeit import default_timer as timer
 import itertools
-
+from .api_logger import ApiLogger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class AggregateHandler:
 
         return None
 
-    def map_to_values(self, instance, form_mapping):
+    def map_to_values(self, instance, form_mapping, export_status=None):
         data_set_entry = {
             "dataSet": form_mapping["data_set_id"],
             "completeDate": instance.created_at.strftime("%Y-%m-%d"),
@@ -223,7 +223,7 @@ class AggregateHandler:
 
 
 class EventHandler:
-    def map_to_values(self, instance, form_mapping):
+    def map_to_values(self, instance, form_mapping, export_status=None):
 
         event = {
             "program": form_mapping["program_id"],
@@ -357,7 +357,7 @@ class EventHandler:
 
 
 class EventTrackerHandler:
-    def map_to_values(self, instance, form_mapping):
+    def map_to_values(self, instance, form_mapping, export_status=None):
         question_mappings = form_mapping["question_mappings"]
 
         program_id = form_mapping["program_id"]
@@ -451,7 +451,10 @@ class EventTrackerHandler:
         if errored:
             return (None, event_errors)
         else:
-            return ((instance, form_mapping, tracked_entity_with_events), None)
+            return (
+                (instance, form_mapping, tracked_entity_with_events, export_status),
+                None,
+            )
 
     def find_tracked_entity(
         self,
@@ -511,16 +514,18 @@ class EventTrackerHandler:
         print("generate_unique_number", generated)
         return generated["value"]
 
-    def export_page(self, prefix, data, export_statuses, stats, api):
+    def export_page(self, prefix, data, export_statuses, stats, raw_api):
         if len(data) == 0:
             stats["batched_time"] = 0
             return []
+        api = ApiLogger(raw_api)
 
         for item in data:
             try:
                 instance = item[0]
                 form_mapping = item[1]
                 tracked_entity_iaso = item[2]
+                export_status = item[3]
                 unique_number_attribute_id = form_mapping["tracked_entity_identifier"]
                 country_dhis2_id = instance.org_unit.path().split("/")[1]
 
@@ -586,6 +591,9 @@ class EventTrackerHandler:
                     self.create_tracked_entity(api, tracked_entity_iaso)
 
                 # TODO export logs
+                export_logs = api.pop_export_logs()
+
+                self.flag_as_exported(export_status, stats, export_logs)
                 return []
             except RequestException as dhis2_exception:
                 message = "ERROR while processing " + prefix
@@ -593,6 +601,24 @@ class EventTrackerHandler:
 
                 exception = self.handle_exception(resp, message)
                 raise exception
+
+    def flag_as_exported(self, export_status, stats, export_logs):
+        export_request = export_status.export_request
+
+        stats["exported_count"] += 1
+        export_status.status = "exported"
+        for export_log in export_logs:
+            export_log.save()
+            export_status.export_logs.add(export_log)
+        export_status.save()
+
+        instance = export_status.instance
+        instance.last_export_success_at = timezone.now()
+        instance.save()
+
+        export_request.errored_count = stats["errored_count"]
+        export_request.exported_count = stats["exported_count"]
+        export_request.save()
 
 
 class DataValueExporter:
@@ -638,7 +664,7 @@ class DataValueExporter:
 
             (values, map_errors) = self.handlers[
                 form_mapping.mapping.mapping_type
-            ].map_to_values(instance, form_mapping.json)
+            ].map_to_values(instance, form_mapping.json, export_status)
 
             if map_errors:
                 message = (
@@ -717,18 +743,17 @@ class DataValueExporter:
                     prefix, data[models.EVENT], export_statuses, stats, api
                 )
 
-                export_logs_event_tracker = self.handlers[
-                    models.EVENT_TRACKER
-                ].export_page(
+                self.handlers[models.EVENT_TRACKER].export_page(
                     prefix, data[models.EVENT_TRACKER], export_statuses, stats, api
                 )
 
-                export_logs = list(
-                    itertools.chain(export_logs_aggregate, export_logs_event)
-                )
-                self.flag_as_exported(
-                    export_request, export_statuses, stats, export_logs
-                )
+                if len(data[models.EVENT_TRACKER]) == 0:
+                    export_logs = list(
+                        itertools.chain(export_logs_aggregate, export_logs_event)
+                    )
+                    self.flag_as_exported(
+                        export_request, export_statuses, stats, export_logs
+                    )
 
                 page_end = timer()
                 page_time = page_end - page_start

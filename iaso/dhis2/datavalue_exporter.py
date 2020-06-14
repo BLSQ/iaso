@@ -620,6 +620,28 @@ class EventTrackerHandler:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
+    def handle_exception(self, resp, message):
+        response = resp["response"]
+
+        if response["status"] == "ERROR":
+            counts = {}
+
+            for count_type in ("imported", "updated", "deleted", "ignored"):
+                counts[count_type] = response.get(count_type, 0)
+            import_summaries = (
+                response.get("importSummaries")
+                or response["response"]["importSummaries"]
+            )
+            descriptions = [
+                m["description"] for m in import_summaries if "description" in m
+            ]
+            conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
+            descriptions = uniquify(descriptions)
+            print("---------------------------------------------------------")
+            print("----------------------- EXPORT ERROR --------------------")
+            print("Failed to create events got", descriptions, conflicts, resp)
+            return InstanceExportError(message, counts, descriptions)
+
 
 class DataValueExporter:
     def __init__(self):

@@ -409,6 +409,9 @@ class Mapping(models.Model):
     def is_aggregate(self):
         return self.mapping_type == AGGREGATE
 
+    def is_event_tracker(self):
+        return self.mapping_type == EVENT_TRACKER
+
     def as_dict(self):
         return {
             "id": self.id,

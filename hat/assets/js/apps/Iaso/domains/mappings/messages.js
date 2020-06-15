@@ -53,6 +53,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Aggregate',
         id: 'iaso.label.mappingType.aggregate',
     },
+    eventTracker: {
+        defaultMessage: 'Event Tracker',
+        id: 'iaso.label.mappingType.eventTracker',
+    },
     add: {
         defaultMessage: 'Add',
         id: 'iaso.label.add',

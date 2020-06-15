@@ -30,7 +30,6 @@ const QuestionMappingForm = ({
                 ? de.domainType !== 'TRACKER'
                 : de.domainType !== 'AGGREGATE'))
             .forEach((dataElement) => {
-
                 dataElement.categoryCombo.categoryOptionCombos.forEach((coc) => {
                     results.push({
                         id: dataElement.id,
@@ -52,7 +51,7 @@ const QuestionMappingForm = ({
     };
 
     const mapToMappingProgramElements = (options, input) => {
-        const token = input ? input.toLowerCase() : ""
+        const token = input ? input.toLowerCase() : '';
         const results = [];
         options.forEach((program) => {
             program.programStages
@@ -176,6 +175,12 @@ const QuestionMappingForm = ({
                         }
                     />
                 )}
+
+            {
+                mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
+                    questionMapping.map(q => <ObjectDumper object={q} />)
+                )
+            }
 
             {newQuestionMapping && (
             <>

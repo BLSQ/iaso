@@ -1,0 +1,92 @@
+{
+    "httpStatus": "Conflict",
+    "httpStatusCode": 409,
+    "status": "ERROR",
+    "message": "An error occurred, please check import summary.",
+    "response": {
+        "responseType": "ImportSummaries",
+        "status": "ERROR",
+        "imported": 0,
+        "updated": 0,
+        "deleted": 0,
+        "ignored": 1,
+        "importOptions": {
+            "idSchemes": {},
+            "dryRun": false,
+            "async": false,
+            "importStrategy": "CREATE_AND_UPDATE",
+            "mergeMode": "REPLACE",
+            "reportMode": "FULL",
+            "skipExistingCheck": false,
+            "sharing": false,
+            "skipNotifications": false,
+            "skipAudit": false,
+            "datasetAllowsPeriods": false,
+            "strictPeriods": false,
+            "strictDataElements": false,
+            "strictCategoryOptionCombos": false,
+            "strictAttributeOptionCombos": false,
+            "strictOrganisationUnits": false,
+            "requireCategoryOptionCombo": false,
+            "requireAttributeOptionCombo": false,
+            "skipPatternValidation": false,
+            "ignoreEmptyCollection": false,
+            "force": false,
+            "firstRowIsHeader": true,
+            "skipLastUpdated": true
+        },
+        "importSummaries": [
+            {
+                "responseType": "ImportSummary",
+                "status": "ERROR",
+                "importOptions": {
+                    "idSchemes": {},
+                    "dryRun": false,
+                    "async": false,
+                    "importStrategy": "CREATE_AND_UPDATE",
+                    "mergeMode": "REPLACE",
+                    "reportMode": "FULL",
+                    "skipExistingCheck": false,
+                    "sharing": false,
+                    "skipNotifications": false,
+                    "skipAudit": false,
+                    "datasetAllowsPeriods": false,
+                    "strictPeriods": false,
+                    "strictDataElements": false,
+                    "strictCategoryOptionCombos": false,
+                    "strictAttributeOptionCombos": false,
+                    "strictOrganisationUnits": false,
+                    "requireCategoryOptionCombo": false,
+                    "requireAttributeOptionCombo": false,
+                    "skipPatternValidation": false,
+                    "ignoreEmptyCollection": false,
+                    "force": false,
+                    "firstRowIsHeader": true,
+                    "skipLastUpdated": true
+                },
+                "importCount": {
+                    "imported": 0,
+                    "updated": 0,
+                    "ignored": 1,
+                    "deleted": 0
+                },
+                "conflicts": [
+                    {
+                        "object": "Attribute.value",
+                        "value": "Value '0994496' is not a valid numeric type for attribute lZGmxYbs97q"
+                    }
+                ],
+                "enrollments": {
+                    "responseType": "ImportSummaries",
+                    "status": "SUCCESS",
+                    "imported": 0,
+                    "updated": 0,
+                    "deleted": 0,
+                    "ignored": 0,
+                    "total": 0
+                }
+            }
+        ],
+        "total": 1
+    }
+}

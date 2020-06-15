@@ -18,6 +18,7 @@ class ValueFormatterTests(TestCase):
             ("INTEGER", "25", 25),
             ("NUMBER", "", None),
             ("NUMBER", "25.5", 25.5),
+            ("NUMBER", "25", 25),
             ("PERCENTAGE", "25", 25),
             ("BOOLEAN", "1", True),
             ("BOOLEAN", "0", False),
@@ -45,6 +46,7 @@ class ValueFormatterTests(TestCase):
                 "50.67630919162184 4.38517696224153 151.0 18.0",
                 "[4.38517696224153,50.67630919162184]",
             ),
+            ("ORGANISATION_UNIT", "SDFJKLZ456", "SDFJKLZ456"),
         )
 
         for testcase in testcases:

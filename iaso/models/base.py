@@ -811,7 +811,7 @@ class Instance(models.Model):
                             "full_name": export_status.export_request.launcher.get_full_name(),
                             "email": export_status.export_request.launcher.email,
                         },
-                        "last_error_message": export_status.export_request.last_error_message,
+                        "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
                 }
                 for export_status in Paginator(
@@ -944,6 +944,8 @@ class ExportStatus(models.Model):
     mapping_version = models.ForeignKey(MappingVersion, on_delete=models.CASCADE)
 
     export_logs = models.ManyToManyField(ExportLog, blank=True)
+    last_error_message = models.TextField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
 

@@ -594,13 +594,18 @@ class EventTrackerHandler:
                 export_logs = api.pop_export_logs()
 
                 self.flag_as_exported(export_status, stats, export_logs)
-                return []
+
             except RequestException as dhis2_exception:
+
                 message = "ERROR while processing " + prefix
+
                 resp = json.loads(dhis2_exception.description)
 
                 exception = self.handle_exception(resp, message)
-                raise exception
+
+                self.flag_as_errored(export_status, exception.message, stats)
+
+        return []
 
     def flag_as_exported(self, export_status, stats, export_logs):
         export_request = export_status.export_request
@@ -637,10 +642,19 @@ class EventTrackerHandler:
             ]
             conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
             descriptions = uniquify(descriptions)
+            if len(descriptions) == 0:
+                descriptions = [conflicts[0][0]["value"]]
             print("---------------------------------------------------------")
             print("----------------------- EXPORT ERROR --------------------")
             print("Failed to create events got", descriptions, conflicts, resp)
             return InstanceExportError(message, counts, descriptions)
+
+    def flag_as_errored(self, export_status, message, stats):
+
+        stats["errored_count"] += 1
+        export_status.status = "errored"
+        export_status.last_error_message = message
+        export_status.save()
 
 
 class DataValueExporter:
@@ -801,7 +815,7 @@ class DataValueExporter:
                 )
                 raise exception
 
-        export_request.status = "exported"
+        export_request.status = "exported" if stats["errored_count"] == 0 else "errored"
         export_request.finished = True
         export_request.errored_count = stats["errored_count"]
         export_request.exported_count = stats["exported_count"]

@@ -526,3 +526,73 @@ class DataValueExporterTests(TestCase):
             },
             sent_create[0],
         )
+
+    @responses.activate
+    def test_event_export_handle_409_error(self):
+
+        mapping_version = MappingVersion(
+            name="event tracker",
+            json=build_form_mapping(),
+            form_version=self.form_version,
+            mapping=self.mapping,
+        )
+        mapping_version.save()
+        # setup
+        # persist an instance
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_name": "Yoda",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+            },
+        )
+
+        export_request = ExportRequestBuilder().build_export_request(
+            filters={"form_id": self.form.id, "org_unit_id": instance.org_unit.id},
+            launcher=self.user,
+        )
+
+        # mock expected calls
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/organisationUnits/OU_DHIS2_ID.json?fields=id%2Cname%2Ccode",
+            json=load_dhis2_fixture("tracked_entity_orgunit.json"),
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/trackedEntityAttributes/XPYFFrfVbAd/generate.json?ORG_UNIT_CODE=47897",
+            json=load_dhis2_fixture("tracked_entity_attribute_generate.json"),
+            status=200,
+        )
+
+        sent_create = []
+
+        def request_callback(request):
+            sent_create.append(json.loads(request.body))
+            return (
+                409,
+                {},
+                load_dhis2_fixture_as_string("tracked_entity_export_error.json"),
+            )
+
+        responses.add_callback(
+            responses.POST,
+            "https://dhis2.com/api/trackedEntityInstances",
+            callback=request_callback,
+        )
+
+        # excercice
+        instances_qs = Instance.objects.order_by("id").all()
+
+        DataValueExporter().export_instances(export_request, True)
+
+        self.expect_logs("errored")
+
+        instance.refresh_from_db()
+        self.assertIsNone(instance.last_export_success_at)

@@ -1,4 +1,5 @@
 from random import randint, random
+from lxml import etree
 from io import BytesIO
 from django.core.files.uploadedfile import InMemoryUploadedFile
 from django.utils import timezone
@@ -450,29 +451,93 @@ class Command(BaseCommand):
 
                     instance.json = test_data
                     instance.form = form
-                    instance.json["instanceID"] = "uuid:" + str(uuid4())
-                    xml_string = (
-                        open("./testdata/seed-data-command-instance.xml")
-                        .read()
-                        .replace("REPLACEUUID", instance.json["instanceID"])
-                    )
-                    buffer = BytesIO(xml_string.encode("utf-8"))
-                    buffer.seek(0, 2)
-                    file = InMemoryUploadedFile(
-                        file=buffer,
-                        field_name="file",
-                        name=instance.file_name,
-                        content_type="application/xml",
-                        size=buffer.tell(),
-                        charset="utf-8",
-                    )
 
-                    instance.file = file
+                    if mapping_version.mapping.is_event_tracker():
+                        instance.json.clear()
+                        instance.json = {
+                            "DE_2005736": "2.5",
+                            "DE_2006098": "5",
+                            "DE_2006101": "1",
+                            "DE_2006103": "Exclusive",
+                            "DE_2006104": "3",
+                            "DE_2008294": "NVP only",
+                            "DE_391382": "dsd",
+                            "DE_424405": "",
+                            "MMD_PER_NAM": "kid " + str(randint(1, 10000)),
+                            "gender": "Male" if randint(1, 10) < 5 else "Female",
+                            "is_existing": "0",
+                            "last_name": "Skywalker",
+                            "_version": 1,
+                        }
 
-                    UploadedFile()
+                        self.generate_xml_file(instance, form.latest_version)
+                    else:
+                        instance.json["instanceID"] = "uuid:" + str(uuid4())
+                        xml_string = (
+                            open("./testdata/seed-data-command-instance.xml")
+                            .read()
+                            .replace("REPLACEUUID", instance.json["instanceID"])
+                        )
+                        buffer = BytesIO(xml_string.encode("utf-8"))
+                        buffer.seek(0, 2)
+                        file = InMemoryUploadedFile(
+                            file=buffer,
+                            field_name="file",
+                            name=instance.file_name,
+                            content_type="application/xml",
+                            size=buffer.tell(),
+                            charset="utf-8",
+                        )
+
+                        instance.file = file
+
+                        UploadedFile()
 
                     instances.append(instance)
             Instance.objects.bulk_create(instances)
+
+    def generate_xml_file(self, instance, form_version):
+        xml_string = self.generate_instance_xml(instance, form_version)
+
+        buffer = BytesIO(xml_string)
+        buffer.seek(
+            0, 2
+        )  # Seek to the end of the stream, so we can get its length with `buf.tell()`
+        instance.file_name = form_version.form.form_id + "_" + instance.uuid
+        file = InMemoryUploadedFile(
+            file=buffer,
+            field_name="file",
+            name=instance.file_name,
+            content_type="application/xml",
+            size=buffer.tell(),
+            charset="utf-8",
+        )
+        instance.file = file
+
+    def generate_instance_xml(self, instance, form_version):
+        # create XML
+        root = etree.Element("data")
+
+        for k in instance.json.keys():
+            # another child with text
+            if k != "_version":
+                child = etree.Element(k)
+                child.text = str(instance.json[k])
+                root.append(child)
+
+        root.attrib["version"] = form_version.version_id
+        root.attrib["id"] = form_version.form.form_id
+
+        # generate <meta><instanceID>uuid:3679c645-24ec-4860-93ea-fce1d068b58f</instanceID></meta>
+        meta = etree.Element("meta")
+        root.append(meta)
+        instance_id = etree.Element("instanceID")
+        instance_id.text = "uuid:" + instance.uuid
+        meta.append(instance_id)
+
+        instance_xml = etree.tostring(root, pretty_print=True, encoding="UTF-8")
+
+        return instance_xml
 
     def mapping_json(self, file):
         with open(file) as json_file:

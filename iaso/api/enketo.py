@@ -20,10 +20,12 @@ from iaso.models import User
 
 
 def public_url_for_enketo(request, path):
-    if enketo_settings().get("ENKETO_DEV"):
-        return "http://docker-host:8081" + path
+    resolved_path = request.build_absolute_uri(path)
 
-    return request.build_absolute_uri(path)
+    if enketo_settings().get("ENKETO_DEV"):
+        resolved_path = resolved_path.replace("localhost", "docker-host")
+
+    return resolved_path
 
 
 @api_view(["GET"])

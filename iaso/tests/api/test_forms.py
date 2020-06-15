@@ -58,12 +58,17 @@ class FormsAPITestCase(APITestCase):
             single_per_period=True,
             created_at=cls.now,
         )
-        form_2_file_mock = mock.MagicMock(spec=File)
-        form_2_file_mock.name = "test.xml"
-        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        cls.form_2.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
-        cls.form_2.instances.create()
+
+        cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
+        cls.form_2.instances.create(
+            file=cls.create_file_mock(name="testi2.xml"),
+            device=m.Device.objects.create(test_device=True),
+        )
         cls.form_2.save()
 
         cls.project_1.unit_types.add(cls.jedi_council)
@@ -225,7 +230,6 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
         self.assertJSONResponse(response, 200)
-
         self.assertValidFormData(response.json())
 
     @tag("iaso_only")
@@ -238,6 +242,7 @@ class FormsAPITestCase(APITestCase):
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
+        self.assertEqual(1, form_data["instances_count"])
 
     @tag("iaso_only")
     def test_forms_create_ok(self):

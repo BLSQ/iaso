@@ -19,15 +19,7 @@ class Command(BaseCommand):
             required=True,
         )
 
-    def dump_alive(self):
-        print("*********************** ALIVE ?")
-        for alive in m.ExportRequest.objects.filter(status__in=m.ALIVE_STATUSES):
-            print(alive.id, alive.status, alive.params)
-        print("***********************")
-
     def handle(self, *args, **options):
-
-        self.dump_alive()
 
         user = m.User.objects.filter(username=options["user"]).first()
 
@@ -57,12 +49,6 @@ class Command(BaseCommand):
                 export_request.status,
                 export_request.params,
             )
-
-            self.dump_alive()
-
-            import pdb
-
-            pdb.set_trace()
 
             self.log(
                 "Exporting",

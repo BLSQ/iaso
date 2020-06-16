@@ -44,17 +44,9 @@ class ExportRequestBuilder:
             instances = instances.filter(last_export_success_at__isnull=True)
 
         # don't export instances already referenced by another running or queued export request
-        import pdb
-
-        pdb.set_trace()
-
         instances = instances.exclude(
             exportstatus__export_request__status__in=ALIVE_STATUSES
         )
-
-        import pdb
-
-        pdb.set_trace()
 
         params = {"filters": filters, "force_export": force_export}
 
@@ -75,7 +67,9 @@ class ExportRequestBuilder:
 
         for page in range(1, paginator.num_pages + 1):
             export_statuses = []
-            for instance in paginator.page(page).object_list:
+            # always fetch the first page since the don't export instances already referenced by another running or queued export request
+            # changes the number of records as the loop inserts records in it
+            for instance in paginator.page(1).object_list:
                 for mapping_version in self.get_form_mapping_versions(instance):
 
                     if mapping_version.mapping.is_event_tracker and force_export:

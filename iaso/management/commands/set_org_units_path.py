@@ -35,8 +35,10 @@ class Command(BaseCommand):
         self.stdout.write(f"Found {len(root_org_units)} root org units without path")
 
         for org_unit in root_org_units:
+            self.stdout.write(f"Setting path for root org unit {org_unit.name} and children...")
             with transaction.atomic():
                 org_unit.save(update_fields=["path"])
+            self.stdout.write("Done")
 
         # Cheating - simulating an org unit created during the migration
         # TODO: remove me

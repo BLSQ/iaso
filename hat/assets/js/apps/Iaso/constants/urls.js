@@ -8,6 +8,7 @@ export const baseUrls = {
     instanceDetail: 'instance',
     orgUnits: 'orgunits/list',
     groups: 'orgunits/groups',
+    orgUnitTypes: 'orgunits/types',
     orgUnitDetails: 'orgunits/detail',
     links: 'orgunits/links/list',
     algos: 'orgunits/links/runs',

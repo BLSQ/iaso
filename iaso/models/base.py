@@ -1,5 +1,7 @@
 import random
+import operator
 from urllib.request import urlopen
+from functools import reduce
 from django.db import models
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
@@ -14,7 +16,6 @@ from django.db.models import Q
 
 from .device import DeviceOwnership, Device
 from .forms import Form
-
 
 YEAR = "YEAR"
 QUARTER = "QUARTER"
@@ -627,6 +628,19 @@ class InstanceQuerySet(models.QuerySet):
         queryset = queryset.exclude(deleted=True)
 
         return queryset
+
+    def for_org_unit_hierarchy(self, org_unit):
+        # TODO: we could write our own descendants lookup instead of using the one provided in django-ltree
+        # TODO: as it does not handle arrays of path (ltree does)
+        if isinstance(org_unit, list):
+            query = reduce(
+                operator.or_,
+                [Q(org_unit__path__descendants=ou.path) for ou in org_unit],
+            )
+        else:
+            query = Q(org_unit__path__descendants=org_unit.path)
+
+        return self.filter(query)
 
 
 class Instance(models.Model):

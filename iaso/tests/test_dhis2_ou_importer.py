@@ -104,3 +104,6 @@ class CommandTests(TestCase):
             [x.name for x in facility_type.groups.all()],
             ["CHP", "MCHP", "Clinic", "Hospital", "CHC"],
         )
+
+        # assert that path has been generated for all org units
+        self.assertEquals(0, OrgUnit.objects.filter(path=None).count())

@@ -18,7 +18,7 @@ def all_slices(iterables, size: int):
 
 def sort_by_path(diffs):
     def by_path(ou):
-        path = ou.path()
+        path = ou.source_path()
         return path if path else ""
 
     # make sure we create new parent first
@@ -79,7 +79,7 @@ class Exporter:
         for to_create in to_create_diffs:
             name_comparison = to_create.comparison("name")
             self.iaso_logger.info(
-                "----", name_comparison.after, to_create.org_unit.path()
+                "----", name_comparison.after, to_create.org_unit.source_path()
             )
 
             payload = {

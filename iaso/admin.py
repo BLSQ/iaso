@@ -30,6 +30,7 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     ordering = ("name",)
+    readonly_fields = ("path",)
 
 
 admin.site.register(OrgUnit, OrgUnitAdmin)
@@ -38,6 +39,13 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     ordering = ("name",)
+    list_display = ("name", "projects_list", "short_name", "depth",)
+
+    def projects_list(self, obj):
+        projects = obj.projects.all()
+        return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
+
+    projects_list.short_description = "Projects"
 
 
 admin.site.register(OrgUnitType, OrgUnitTypeAdmin)

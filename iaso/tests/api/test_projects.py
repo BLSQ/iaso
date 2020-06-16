@@ -8,7 +8,7 @@ from iaso import models as m
 class ProjectsAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
-        ghi = m.Account.objects.create(name="Global Health initial")
+        ghi = m.Account.objects.create(name="Global Health Initiative")
         wha = m.Account.objects.create(name="Worldwide Health Aid")
 
         cls.jane = cls.create_user_with_profile(
@@ -155,14 +155,6 @@ class ProjectsAPITestCase(APITestCase):
 
         for project_data in list_data["projects"]:
             self.assertValidProjectData(project_data)
-
-    def assertValidProjectData(self, project_data: typing.Mapping):
-        self.assertHasField(project_data, "id", int)
-        self.assertHasField(project_data, "name", str)
-        self.assertHasField(project_data, "feature_flags", list)
-        self.assertHasField(project_data, "created_at", float)
-        self.assertHasField(project_data, "updated_at", float)
-        self.assertHasField(project_data, "needs_authentication", bool)
 
     def assertValidFeatureFlagData(self, feature_flag_data: typing.Mapping):
         self.assertHasField(feature_flag_data, "id", int)

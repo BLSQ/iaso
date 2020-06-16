@@ -1,12 +1,15 @@
+import typing
 from copy import deepcopy
-
-from django.db import models
+from django.db import models, transaction
+from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User
+from django_ltree.fields import PathField
 
+from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
-from iaso.models import Group
+from .base import Group
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -25,7 +28,7 @@ class OrgUnitType(models.Model):
         "OrgUnitType", related_name="super_types", blank=True
     )
 
-    projects = models.ManyToManyField("Project", related_name="unit_types", blank=True)
+    projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):
@@ -54,7 +57,22 @@ class OrgUnitType(models.Model):
         return res
 
 
-class OrgUnitManager(models.Manager):
+class OrgUnitQuerySet(models.QuerySet):
+    def children(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1
+        )
+
+    def hierarchy(self, org_unit):
+        return self.filter(path__descendants=org_unit.path)
+
+    def descendants(self, org_unit):
+        return self.filter(
+            path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
+        )
+
+
+class OrgUnitManager(ManagerWithBulkUpdate):
     def update_single_unit_from_bulk(
         self,
         user,
@@ -101,6 +119,7 @@ class OrgUnit(models.Model):
     parent = models.ForeignKey(
         "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
     )
+    path = PathField(null=True, blank=True, unique=True)
     aliases = ArrayField(
         CITextField(max_length=255, blank=True), size=100, null=True, blank=True
     )
@@ -133,7 +152,65 @@ class OrgUnit(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
 
-    objects = OrgUnitManager()
+    objects = OrgUnitManager.from_queryset(OrgUnitQuerySet)()
+
+    class Meta:
+        indexes = [GistIndex(fields=["path"], buffering=True)]
+
+    def save(self, *args, skip_calculate_path: bool = False, **kwargs):
+        """Override default save() to make sure that the path property is calculated and saved,
+        for this org unit and its children.
+
+        :param skip_calculate_path: use with caution - can be useful in scripts where the extra transactions
+                                    would be a burden, but the path needs to be set afterwards
+        """
+
+        if skip_calculate_path:
+            super().save(*args, **kwargs)
+        else:
+            with transaction.atomic():
+                super().save(*args, **kwargs)
+                OrgUnit.objects.bulk_update(self.calculate_paths(), ["path"])
+
+    def calculate_paths(
+        self, force_recalculate: bool = False
+    ) -> typing.List["OrgUnit"]:
+        """Calculate the path for this org unit and all its children.
+
+        This method will check if this org unit path should change. If it is the case (or if force_recalculate is
+        True), it will update the path property for the org unit and its children, and return all the modified
+        records.
+
+        Please note that this method does not save the modified records. Instead, they are updated in bulk in the
+        save() method.
+
+        :param force_recalculate: calculate path for all descendants, even if this org unit path does not change
+        """
+
+        # For now, we will skip org units that have a parent without a path.
+        # The idea is that a management command (set_org_unit_path) will handle the initial seeding of the
+        # path field, starting at the top of the pyramid. Once this script has been run and the field is filled for
+        # all org units, this should not happen anymore.
+        # TODO: remove condition below
+        if self.parent is not None and self.parent.path is None:
+            return []
+
+        # keep track of updated records
+        updated_records = []
+
+        base_path = [] if self.parent is None else list(self.parent.path)
+        new_path = [*base_path, str(self.pk)]
+        path_has_changed = new_path != self.path
+
+        if path_has_changed:
+            self.path = new_path
+            updated_records += [self]
+
+        if path_has_changed or force_recalculate:
+            for child in self.orgunit_set.all():
+                updated_records += child.calculate_paths(force_recalculate)
+
+        return updated_records
 
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id)
@@ -259,7 +336,9 @@ class OrgUnit(models.Model):
             res["search_index"] = self.search_index
         return res
 
-    def path(self):
+    def source_path(self):
+        """DHIS2-friendly path built using source refs"""
+
         path_components = []
         cur = self
         while cur:

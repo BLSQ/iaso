@@ -527,7 +527,7 @@ class EventTrackerHandler:
                 tracked_entity_iaso = item[2]
                 export_status = item[3]
                 unique_number_attribute_id = form_mapping["tracked_entity_identifier"]
-                country_dhis2_id = instance.org_unit.path().split("/")[1]
+                country_dhis2_id = instance.org_unit.source_path().split("/")[1]
 
                 unique_number = self.get_first(
                     [

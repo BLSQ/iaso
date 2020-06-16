@@ -1,8 +1,11 @@
 import pathlib
-from django.db import models
+
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 
+from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
 from .. import periods
@@ -20,9 +23,11 @@ class FormQuerySet(models.QuerySet):
             project.account for project in form.projects.all()
         )  # TODO: discuss - smells weird
         for account in all_accounts:
-            if self.filter(
-                projects__account=account, form_id=form_id
-            ).exclude(pk=form.id).exists():
+            if (
+                self.filter(projects__account=account, form_id=form_id)
+                .exclude(pk=form.id)
+                .exists()
+            ):
                 return True
 
         return False
@@ -100,13 +105,38 @@ def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
 
 
 class FormVersionQuerySet(models.QuerySet):
-    def latest_version_id(self, form: Form):
+    def latest_version(self, form: Form):
         try:
-            return self.filter(form=form).latest(
-                "created_at"
-            ).version_id
+            return self.filter(form=form).latest("created_at")
         except FormVersion.DoesNotExist:
             return None
+
+
+class FormVersionManager(models.Manager):
+    def create_for_form_and_survey(
+        self, *, form: "Form", survey: parsing.Survey, **kwargs
+    ):
+        with transaction.atomic():
+            latest_version = self.latest_version(form)
+
+            form_version = super().create(
+                **kwargs,
+                form=form,
+                file=SimpleUploadedFile(
+                    survey.generate_file_name("xml"),
+                    survey.to_xml(),
+                    content_type="text/xml",
+                ),
+                version_id=survey.version,
+                form_descriptor=survey.to_json(),
+            )
+            form_version.form.form_id = survey.form_id
+            form.save()
+
+            if latest_version is not None:
+                copy_mappings_from_previous_version(form_version, latest_version)
+
+        return form_version
 
 
 class FormVersion(models.Model):
@@ -123,9 +153,11 @@ class FormVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    objects = FormVersionQuerySet.as_manager()
+    objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(self):  # TODO: remove me - shoud be populated on create
+    def get_or_save_form_descriptor(
+        self,
+    ):  # TODO: remove me - shoud be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:

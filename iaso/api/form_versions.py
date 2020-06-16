@@ -1,6 +1,4 @@
 import typing
-from django.db import transaction
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers, parsers, permissions
 
 from iaso.models import Form, FormVersion
@@ -17,7 +15,6 @@ from .common import (
     HasPermission,
 )
 from .forms import HasFormPermission
-from iaso.dhis2.form_mapping import copy_mappings_from_previous_version
 
 
 class FormVersionSerializer(DynamicFieldsModelSerializer):
@@ -38,8 +35,6 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "version_id",
             "form_id",
             "form_name",
-            "full_name",
-            "mapped",
             "xls_file",
             "file",
             "created_at",
@@ -49,9 +44,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         read_only_fields = [
             "id",
             "form_name",
-            "full_name",
             "version_id",
-            "mapped",
             "file",
             "created_at",
             "updated_at",
@@ -62,8 +55,6 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         source="form", queryset=Form.objects.all()
     )
     form_name = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()
-    mapped = serializers.SerializerMethodField()
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
     )  # field is not required in model
@@ -71,17 +62,11 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
 
-    def get_mapped(self, form_version):
-        return form_version.mapped
-
     def get_form_name(self, form_version):
         return form_version.form.name
 
     def get_descriptor(self, form_version):
         return form_version.get_or_save_form_descriptor()
-
-    def get_full_name(self, form_version):
-        return form_version.full_name
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]
@@ -95,8 +80,12 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
         # handle xls to xml conversion
         try:
+            previous_form_version = FormVersion.objects.latest_version(form)
             survey = parsing.parse_xls_form(
-                data["xls_file"], previous_version=FormVersion.objects.latest_version_id(form)
+                data["xls_file"],
+                previous_version=previous_form_version.version_id
+                if previous_form_version is not None
+                else None,
             )
         except parsing.ParsingError as e:
             raise serializers.ValidationError({"xls_file": str(e)})
@@ -108,33 +97,24 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             )
 
         # validate form_id (from XLS file) uniqueness across account
-        if Form.objects.exists_with_same_version_id_within_projects(form, survey.form_id):
+        if Form.objects.exists_with_same_version_id_within_projects(
+            form, survey.form_id
+        ):
             raise serializers.ValidationError(
                 {"xls_file": "The form_id is already used in another form."}
             )
 
-        data["file"] = SimpleUploadedFile(
-            survey.generate_file_name('xml'), survey.to_xml(), content_type="text/xml"
-        )
-        data["version_id"] = survey.version
-        data["form_form_id"] = survey.form_id
+        data["survey"] = survey
 
         return data
 
-    def create(self, validated_data: typing.MutableMapping):
-        form_form_id = validated_data.pop("form_form_id")
-        with transaction.atomic():
-            # save version
-            version: FormVersion = super().create(validated_data)
+    def create(self, validated_data):
+        form = validated_data.pop("form")
+        survey = validated_data.pop("survey")
 
-            # update form instance with survey settings
-            form = version.form
-            form.form_id = form_form_id
-            form.save()
-
-        copy_mappings_from_previous_version(version)
-
-        return version
+        return FormVersion.objects.create_for_form_and_survey(
+            form=form, survey=survey, **validated_data
+        )
 
 
 class FormVersionsViewSet(ModelViewSet):

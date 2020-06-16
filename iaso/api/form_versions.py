@@ -93,20 +93,10 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         ):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
 
-        # fetch previous version
-        try:
-            previous_version = FormVersion.objects.filter(form=form).latest(
-                "created_at"
-            )
-            previous_version_id = previous_version.version_id
-        except FormVersion.DoesNotExist:
-            previous_version_id = None
-
         # handle xls to xml conversion
-        uploaded_xls_file = data["xls_file"]
         try:
             survey = parsing.parse_xls_form(
-                uploaded_xls_file, previous_version=previous_version_id
+                data["xls_file"], previous_version=FormVersion.objects.latest_version_id(form)
             )
         except parsing.ParsingError as e:
             raise serializers.ValidationError({"xls_file": str(e)})
@@ -118,17 +108,10 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             )
 
         # validate form_id (from XLS file) uniqueness across account
-        all_accounts = set(
-            project.account for project in form.projects.all()
-        )  # TODO: discuss - smells weird
-        for account in all_accounts:
-            queryset = Form.objects.filter(
-                projects__account=account, form_id=survey.form_id
-            ).exclude(pk=form.id)
-            if queryset.exists():
-                raise serializers.ValidationError(
-                    {"xls_file": "The form_id is already used in another form."}
-                )
+        if Form.objects.exists_with_same_version_id_within_projects(form, survey.form_id):
+            raise serializers.ValidationError(
+                {"xls_file": "The form_id is already used in another form."}
+            )
 
         data["file"] = SimpleUploadedFile(
             survey.generate_file_name('xml'), survey.to_xml(), content_type="text/xml"

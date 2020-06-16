@@ -18,7 +18,7 @@ import { loadReducer } from '../../redux/load';
 import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './domains/forms/reducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reducer';
-import { projectsReducer, projectsInitialState } from './redux/projectsReducer';
+import { projectsReducer, projectsInitialState } from './domains/projects/reducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
 import { mappingReducer, mappingsInitialState } from './domains/mappings/reducer';
@@ -32,6 +32,7 @@ import { usersReducer, usersInitialState } from './domains/users/reducer';
 import { periodsInitialState, periodsReducer } from './domains/periods/reducer';
 import { completenessInitialState, reducer as completenessReducer } from './domains/completeness/reducer';
 import { groupsInitialState, reducer as groupsReducer } from './domains/orgUnits/groups/reducer';
+import { orgUnitsTypesInitialState, reducer as orgUnitsTypesReducer } from './domains/orgUnits/types/reducer';
 
 import { getChipColors } from './constants/chipColors';
 
@@ -70,6 +71,7 @@ export default function iasoApp(element, baseUrl) {
         <Redirect path={baseUrls.mappings} to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.users} to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.groups} to={`${baseUrls.groups}/order/name/pageSize/20/page/1`} />,
+        <Redirect path={baseUrls.orgUnitTypes} to={`${baseUrls.orgUnitTypes}/order/name/pageSize/20/page/1`} />,
     ]);
 
     let history = useRouterHistory(createHistory)({
@@ -95,6 +97,7 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsInitialState,
         mappings: mappingsInitialState,
         groups: groupsInitialState,
+        orgUnitsTypes: orgUnitsTypesInitialState,
     }, {
         app: appReducer,
         load: loadReducer,
@@ -115,6 +118,7 @@ export default function iasoApp(element, baseUrl) {
         projects: projectsReducer,
         mappings: mappingReducer,
         groups: groupsReducer,
+        orgUnitsTypes: orgUnitsTypesReducer,
     }, [
         routerMiddleware(history),
         thunk,

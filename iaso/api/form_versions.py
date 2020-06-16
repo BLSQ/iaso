@@ -105,14 +105,14 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         # handle xls to xml conversion
         uploaded_xls_file = data["xls_file"]
         try:
-            xml_form = parsing.parse_xls_form(
+            survey = parsing.parse_xls_form(
                 uploaded_xls_file, previous_version=previous_version_id
             )
         except parsing.ParsingError as e:
             raise serializers.ValidationError({"xls_file": str(e)})
 
         # validate that form_id stays constant across versions
-        if form.form_id is not None and xml_form["form_id"] != form.form_id:
+        if form.form_id is not None and survey.form_id != form.form_id:
             raise serializers.ValidationError(
                 {"xls_file": "Form id should stay constant across form versions."}
             )
@@ -123,7 +123,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         )  # TODO: discuss - smells weird
         for account in all_accounts:
             queryset = Form.objects.filter(
-                projects__account=account, form_id=xml_form["form_id"]
+                projects__account=account, form_id=survey.form_id
             ).exclude(pk=form.id)
             if queryset.exists():
                 raise serializers.ValidationError(
@@ -131,10 +131,10 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
                 )
 
         data["file"] = SimpleUploadedFile(
-            xml_form.file_name, xml_form.file_content, content_type="text/xml"
+            survey.generate_file_name('xml'), survey.to_xml(), content_type="text/xml"
         )
-        data["version_id"] = xml_form["version"]
-        data["form_form_id"] = xml_form["form_id"]
+        data["version_id"] = survey.version
+        data["form_form_id"] = survey.form_id
 
         return data
 

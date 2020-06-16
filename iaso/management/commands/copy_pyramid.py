@@ -1,7 +1,5 @@
 from django.core.management.base import BaseCommand
-import csv
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet
-from django.contrib.gis.geos import Point
+from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet
 
 
 class Command(BaseCommand):
@@ -83,14 +81,16 @@ class Command(BaseCommand):
 
         old_new_dict = {}
         new_units = []
+        new_root_units = []
         index = 0
         print("group_matching", group_matching)
         for unit in source_units:
             original_groups = list(unit.groups.all())
             old_id = unit.id
             unit.id = None
-            unit.save()
+            unit.path = None
             unit.version = destination_version
+            unit.save(skip_calculate_path=True)
             new_units.append(unit)
             old_new_dict[old_id] = unit.id
             index = index + 1
@@ -103,9 +103,16 @@ class Command(BaseCommand):
 
         index = 0
         for unit in new_units:
-            if unit.parent_id:
+            if unit.parent_id is not None:
                 unit.parent_id = old_new_dict[unit.parent_id]
-                unit.save()
+                unit.save(skip_calculate_path=True)
+            else:
+                new_root_units.append(unit)
+
             index = index + 1
             if index % 100 == 0:
                 print("Parent fixed:", index)
+
+        for unit in new_root_units:
+            self.stdout.write(f"Setting path for the hierarchy starting with org unit {unit.name}")
+            unit.save(update_fields=["path"])

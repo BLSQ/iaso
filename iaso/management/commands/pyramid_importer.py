@@ -15,7 +15,7 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         file_name = options.get("org_unit_csv_file")
-        org_unit_file_name = options.get("org_unit_type_csv_file")
+        org_unit_type_file_name = options.get("org_unit_type_csv_file")
         source_name = options.get("source_name")
         version = options.get("version")
 
@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
         OrgUnit.objects.filter(sub_source=source_name).delete()  # warning: dangerous
         type_dict = dict()
-        with open(org_unit_file_name) as csvfile:
+        with open(org_unit_type_file_name) as csvfile:
             csv_reader = csv.reader(csvfile)
             for row in csv_reader:
                 print(row)
@@ -38,6 +38,8 @@ class Command(BaseCommand):
             csv_reader = csv.reader(csvfile)
             index = 1
             unit_dict = dict()
+            root_org_units = []
+
             for row in csv_reader:
                 try:
                     # 0,kwango,,,province,kemri,,,,
@@ -52,18 +54,34 @@ class Command(BaseCommand):
                     org_unit.validated = False
                     parent = row[2]
                     if parent:
-                        print("parent", parent)
-                        org_unit.parent = unit_dict.get(parent)
-                        print(org_unit.parent)
+                        self.stdout.write(f"Attempting to find parent {parent}")
+                        try:
+                            org_unit.parent = unit_dict[parent]
+                            self.stdout.write(f"Found {org_unit.parent}")
+                        except KeyError:
+                            self.stderr.write(
+                                f"Could not find parent {parent} for org unit {org_unit.source_ref} - "
+                                f"the org units might not be sorted in the correct order"
+                            )
+                            root_org_units.append(org_unit)
+                    else:
+                        root_org_units.append(org_unit)
+
                     longitude = row[6]
                     latitude = row[7]
                     if longitude and latitude:
                         longitude = float(longitude)
                         latitude = float(latitude)
-                        org_unit.location = Point(x=longitude, y=latitude, z=0, srid=4326)
-                    org_unit.save()
+                        org_unit.location = Point(
+                            x=longitude, y=latitude, z=0, srid=4326
+                        )
+                    org_unit.save(skip_calculate_path=True)
                     unit_dict[org_unit.source_ref] = org_unit
                     index += 1
                 except Exception as e:
                     print("Error %s for row %d" % (e, index), row)
                     break
+
+            for unit in root_org_units:
+                self.stdout.write(f"Setting path for the hierarchy starting with org unit {unit.name}")
+                unit.save(update_fields=["path"])

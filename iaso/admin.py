@@ -30,6 +30,7 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
     ordering = ("name",)
+    readonly_fields = ("path",)
 
 
 admin.site.register(OrgUnit, OrgUnitAdmin)

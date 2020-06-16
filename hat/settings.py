@@ -127,6 +127,7 @@ INSTALLED_APPS = [
     "corsheaders",
     "rest_framework",
     "webpack_loader",
+    "django_ltree",
     "hat.users",
     "hat.api",
     "hat.cases",

@@ -2,7 +2,7 @@
 https://docs.dhis2.org/2.30/en/developer/html/dhis2_developer_manual_full.html#webapi_csv_data_elements
 
 supported   Value type	        Description
-n        Age	                  -
+y        AGE	                approximative as date
 y        COORDINATE             Coordinate     A point coordinate specified as longitude and latitude in decimal degrees. All coordinate should be specified in the format "-19.23 , 56.42" with a comma separating the longitude and latitude.
 y        DATE                   Date           Dates rendered as calendar widget in data entry.
 y        DATETIME               Date & time	        -
@@ -128,7 +128,7 @@ def format_value(data_element, raw_value):
     if data_element_type == "TIME":
         return translated_value[0:5]
 
-    if data_element_type == "DATE":
+    if data_element_type == "DATE" or data_element_type == "AGE":
         if translated_value:
             return translated_value
         return None

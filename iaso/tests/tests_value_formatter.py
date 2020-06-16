@@ -32,6 +32,8 @@ class ValueFormatterTests(TestCase):
             ("TIME", "08:30:00.000+01:00", "08:30"),
             ("DATE", "2017-11-28", "2017-11-28"),
             ("DATE", "", None),
+            ("AGE", "2017-11-28", "2017-11-28"),
+            ("AGE", "", None),
             ("USERNAME", "", ""),
             ("USERNAME", "yoda", "yoda"),
             ("EMAIL", "", ""),

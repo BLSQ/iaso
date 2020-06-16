@@ -12,6 +12,8 @@ from iaso.models import (
     MappingVersion,
     ExportLog,
     RUNNING,
+    ERRORED,
+    EXPORTED,
 )
 import iaso.models as models
 from timeit import default_timer as timer
@@ -225,7 +227,7 @@ class AggregateHandler:
             export_log.save()
 
             for export_status in export_statuses:
-                self.export_log_on("errored", export_status, [export_log])
+                self.export_log_on(ERRORED, export_status, [export_log])
 
             raise exception
 
@@ -619,7 +621,7 @@ class EventTrackerHandler:
         export_request = export_status.export_request
 
         stats["exported_count"] += 1
-        export_status.status = "exported"
+        export_status.status = EXPORTED
         for export_log in export_logs:
             export_log.save()
             export_status.export_logs.add(export_log)
@@ -660,7 +662,7 @@ class EventTrackerHandler:
     def flag_as_errored(self, export_status, message, stats):
 
         stats["errored_count"] += 1
-        export_status.status = "errored"
+        export_status.status = ERRORED
         export_status.last_error_message = message
         export_status.save()
 
@@ -728,12 +730,12 @@ class DataValueExporter:
     def flag_as_errored(self, export_request, export_statuses, message, stats):
         for export_status in export_statuses:
             stats["errored_count"] += len(export_statuses)
-            export_status.status = "errored"
+            export_status.status = ERRORED
             export_status.save()
 
         export_request.exportstatus_set.filter(status="QUEUED").update(status="SKIPPED")
 
-        export_request.status = "errored"
+        export_request.status = ERRORED
         export_request.ended_at = timezone.now()
         export_request.finished = True
         export_request.errored_count = stats["errored_count"]
@@ -744,7 +746,7 @@ class DataValueExporter:
     def flag_as_exported(self, export_request, export_statuses, stats, export_logs):
         stats["exported_count"] += len(export_statuses)
         for export_status in export_statuses:
-            self.export_log_on("exported", export_status, export_logs)
+            self.export_log_on(EXPORTED, export_status, export_logs)
 
         for export_status in export_statuses:
             instance = export_status.instance
@@ -823,7 +825,7 @@ class DataValueExporter:
                 )
                 raise exception
 
-        export_request.status = "exported" if stats["errored_count"] == 0 else "errored"
+        export_request.status = EXPORTED if stats["errored_count"] == 0 else ERRORED
         export_request.finished = True
         export_request.errored_count = stats["errored_count"]
         export_request.exported_count = stats["exported_count"]

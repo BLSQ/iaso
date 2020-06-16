@@ -33,8 +33,10 @@ class BasicAPITestCase(APITestCase):
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
 
-        self.form = Form.objects.create(name="Hydroponics study")
-        self.project.forms.add(self.form)
+        self.form_1 = Form.objects.create(name="Hydroponics study")
+        self.form_2 = Form.objects.create(name="Another hydroponics study")
+        self.project.forms.add(self.form_1)
+        self.project.forms.add(self.form_2)
 
     @tag("iaso_only")
     def test_org_unit_insertion(self):
@@ -332,20 +334,16 @@ class BasicAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_forms_list_with_app_id(self):
-        """GET /forms/ mobile app happy path (no auth but with app id): 2 result"""
+        """GET /forms/ mobile app happy path (no auth but with app id): 2 results"""
 
         response = self.client.get(f"/api/forms/?app_id={self.project.app_id}")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
-        self.assertValidFormListData(response_data, 1)
+        self.assertValidFormListData(response_data, 2)
 
-        form_data = next(
-            form_data
-            for form_data in response_data["forms"]
-            if form_data["id"] == self.form.id
-        )
-        self.assertValidFullFormData(form_data)
+        for form_data in response_data["forms"]:
+            self.assertValidFormData(form_data)
 
     # noinspection DuplicatedCode
     def assertValidFormListData(

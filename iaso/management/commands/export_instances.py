@@ -9,6 +9,11 @@ import iaso.models as m
 from django.utils import timezone
 
 
+# ./manage.py export_instances --user "testemail2.33.4" --formids "event_tracker2.33.4"
+#
+# can normaly be scheduled as cron and is supposed to handle gracefully re-entrance
+# don't know how robust the re-entrance is
+#
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--user", type=str, help="username", required=True)

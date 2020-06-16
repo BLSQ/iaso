@@ -1,5 +1,5 @@
 from django.db import transaction
-from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED
+from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED, ALIVE_STATUSES
 from django.core.paginator import Paginator
 
 
@@ -42,6 +42,19 @@ class ExportRequestBuilder:
         # don't export already exported instances except if forced to
         if not force_export:
             instances = instances.filter(last_export_success_at__isnull=True)
+
+        # don't export instances already referenced by another running or queued export request
+        import pdb
+
+        pdb.set_trace()
+
+        instances = instances.exclude(
+            exportstatus__export_request__status__in=ALIVE_STATUSES
+        )
+
+        import pdb
+
+        pdb.set_trace()
 
         params = {"filters": filters, "force_export": force_export}
 

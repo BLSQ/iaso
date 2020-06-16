@@ -28,7 +28,7 @@ class OrgUnitType(models.Model):
         "OrgUnitType", related_name="super_types", blank=True
     )
 
-    projects = models.ManyToManyField("Project", related_name="unit_types", blank=True)
+    projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
 
     def __str__(self):

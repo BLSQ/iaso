@@ -61,6 +61,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchOrgUnitTypesError',
         defaultMessage: 'An error occurred while fetching org unit types list',
     },
+    saveOrgUnitTypeSuccesfull: {
+        id: 'iaso.snackBar.saveOrgUnitTypeSuccesfull',
+        defaultMessage: 'Org unit type saved successfully',
+    },
+    saveOrgUnitTypeError: {
+        id: 'iaso.snackBar.saveOrgUnitTypeError',
+        defaultMessage: 'An error occurred while saving org unit type',
+    },
+    deleteOrgUnitTypeSuccesfull: {
+        id: 'iaso.snackBar.deleteOrgUnitTypeSuccesfull',
+        defaultMessage: 'Org unit type deleted successfully',
+    },
+    deleteOrgUnitTypeError: {
+        id: 'iaso.snackBar.deleteOrgUnitTypeError',
+        defaultMessage: 'An error occurred while deleting org unit type',
+    },
     fetchOrgUnitsError: {
         id: 'iaso.snackBar.fetchOrgUnitsError',
         defaultMessage: 'An error occurred while fetching org unit list',
@@ -92,6 +108,10 @@ const MESSAGES = defineMessages({
     createExportRequestErrorNoFormMappingError: {
         id: 'iaso.snackBar.createExportRequestErrorNoFormMappingError',
         defaultMessage: "The form doesn't a form mapping to export to dhis2",
+    },
+    createExportRequestErrorNotSupportedError: {
+        id: 'iaso.snackBar.createExportRequestErrorNotSupportedError',
+        defaultMessage: "Forcing export isn't supported for event tracker",
     },
     createExportRequestError: {
         id: 'iaso.snackBar.createExportRequestError',

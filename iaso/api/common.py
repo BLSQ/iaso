@@ -99,21 +99,57 @@ class HasPermission:
 
 
 class DynamicFieldsModelSerializer(serializers.ModelSerializer):
-    """
-    A ModelSerializer that takes an additional `fields` argument that
-    controls which fields should be displayed.
+    """ A ModelSerializer that
+    - inspects the request to check if a specific field set has been requested through the "fields" query param
+    - accepts an additional optional `fields` constructor argument that allows to specify which
+      fields should be included if the request does not contain the "fields" query param
+
+    Note that the request query param will always take precedence over the constructor argument.
+
+    This field query param or constructor argument can be either a comma-separated list of field names,
+    or the :all or :default keywords.
+
+    When implementing this serializer class, you can define a "default_fields" attribute on your inner Meta
+    class. This represents the default set of fields that will be returned. If you don't define this attribute,
+    the standard "fields" attribute will be used instead.
+
+    As an example, consider a viewset using the following serializer:
+
+    class DinosaurSerializer(DynamicFieldsModelSerializer)
+        class Meta:
+            model = OrgUnitType
+            fields = ["id", "name", "related_species"]
+            default_fields = ["id", "name"]
+
+    1. If the request does not contain the "field" query param, "id" and "name" will e returned.
+    2. If the request has a "field" query param equals to "id", only the id will be returned
+    3. If the request has a "field" query param equals to "id,name,related_species", all the fields will be returned
+    4. If this serializer is manually instantiated in a piece of code with the ":all" keyword, and the request
+       does not contain a "field" query param, then all fields will be returned as well.
     """
 
     def __init__(self, *args, **kwargs):
         # Don't pass the 'fields' arg up to the superclass
-        fields = kwargs.pop("fields", self.Meta.default_fields)
-        requested_fields = kwargs["context"]["request"].GET.get("fields")
+        requested_fields = kwargs["context"]["request"].query_params.get(
+            "fields", kwargs.pop("fields", ":default")
+        )
         if requested_fields == ":all":
             fields = self.Meta.fields
-        elif requested_fields:
-            fields = requested_fields.split(",")
+        elif requested_fields == ":default":
+            fields = (
+                self.Meta.default_fields
+                if hasattr(self.Meta, "default_fields")
+                else self.Meta.fields
+            )
+        else:
+            # fields could be a string (query param) or a list (constructor argument)
+            fields = (
+                requested_fields.split(",")
+                if isinstance(requested_fields, str)
+                else requested_fields
+            )
             for field in fields:
-                if not field in self.Meta.fields:
+                if field not in self.Meta.fields:
                     raise serializers.ValidationError(
                         {
                             "fields": "field unknown '"
@@ -124,14 +160,13 @@ class DynamicFieldsModelSerializer(serializers.ModelSerializer):
                     )
 
         # Instantiate the superclass normally
-        super(DynamicFieldsModelSerializer, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
 
-        if fields is not None:
-            # Drop any fields that are not specified in the `fields` argument.
-            allowed = set(fields)
-            existing = set(self.fields)
-            for field_name in existing - allowed:
-                self.fields.pop(field_name)
+        # Drop any fields that are not specified in the `fields` argument.
+        allowed = set(fields)
+        existing = set(self.fields)
+        for field_name in existing - allowed:
+            self.fields.pop(field_name)
 
 
 class TimestampField(serializers.Field):

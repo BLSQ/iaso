@@ -13,6 +13,7 @@ from hat.planning.models import WorkZone, Planning, Assignation
 from hat.users.models import Team, Coordination
 from hat.users.models import get_user_geo_list, is_authorized_user
 from .authentication import CsrfExemptSessionAuthentication
+from ..planning.services import reassign_planning
 
 
 class WorkZoneViewSet(viewsets.ViewSet):
@@ -264,17 +265,7 @@ class WorkZoneViewSet(viewsets.ViewSet):
             for team_id in teams_dict:
                 assignation_list = teams_dict[team_id]
                 ordered = optimize_path(assignation_list, work_zone.planning.months)
-                for index, obj in enumerate(ordered):
-                    Assignation.objects.filter(
-                        planning=planning, village_id=obj["village_id"]
-                    ).delete()
-                    assignation = Assignation()
-                    assignation.planning = planning
-                    assignation.index = obj["index"]
-                    assignation.month = obj["month"]
-                    assignation.village_id = obj["village_id"]
-                    assignation.team_id = obj["team_id"]
-                    assignation.save()
+                reassign_planning(ordered, planning)
         if name:
             work_zone.name = name
             work_zone.save()

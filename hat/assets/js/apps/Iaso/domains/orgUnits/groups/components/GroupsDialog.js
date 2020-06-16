@@ -136,7 +136,6 @@ GroupDialogComponent.propTypes = {
 
 
 const MapStateToProps = state => ({
-    groups: state.groups.list,
     count: state.groups.count,
     pages: state.groups.pages,
     fetching: state.groups.fetching,

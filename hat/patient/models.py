@@ -55,16 +55,16 @@ ISSUE_SEPTICEMY = "septicemy"
 ISSUE_ACUTE_RESPIRATORY_FAILURE = "acute respiratory failure"
 ISSUE_OTHERS = "other"
 ISSUE_CHOICES = (
-    (ISSUE_VOMITING, "vomissement"),
-    (ISSUE_DIARRHEA, "diarrhée"),
-    (ISSUE_DISORIENTATION, "désorientation"),  # typo in document
-    (ISSUE_OBNUBILATION, "obnubilation"),
-    (ISSUE_BEHAVIOUR, "troubles du comportement"),
     (ISSUE_COMA, "coma"),
-    (ISSUE_NEURO, "troubles neurologiques"),
     (ISSUE_CONVULSION, "convulsion"),
-    (ISSUE_SEPTICEMY, "septicémie"),
+    (ISSUE_DISORIENTATION, "désorientation"),  # typo in document
+    (ISSUE_DIARRHEA, "diarrhée"),
     (ISSUE_ACUTE_RESPIRATORY_FAILURE, "inflammation respiratoire aiguë"),
+    (ISSUE_OBNUBILATION, "obnubilation"),
+    (ISSUE_SEPTICEMY, "septicémie"),
+    (ISSUE_BEHAVIOUR, "troubles du comportement"),
+    (ISSUE_NEURO, "troubles neurologiques"),
+    (ISSUE_VOMITING, "vomissement"),
     (ISSUE_OTHERS, "autre"),
 )
 

@@ -210,7 +210,7 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Map results limit',
     },
     short_name: {
-        id: 'iaso.orgUnits.short_name',
+        id: 'iaso.orgUnits.shortName',
         defaultMessage: 'Short name',
     },
     parent_name: {
@@ -218,8 +218,8 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Parent name',
     },
     org_unit_type_name: {
-        id: 'iaso.orgUnits.org_unit_type_name',
-        defaultMessage: 'Orgasnisation unit type',
+        id: 'iaso.orgUnits.orgUnitsTypes',
+        defaultMessage: 'Organisation unit type',
     },
     latitude: {
         id: 'iaso.label.latitude',

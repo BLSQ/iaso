@@ -144,7 +144,7 @@ class WorkZone(models.Model):
     def as_dict(self, with_areas=True, additional_fields=None):
         total_capacity = 0
         for team in self.teams.all():
-            total_capacity += team.capacity
+            total_capacity += team.capacity * self.planning.months
 
         teams_list = [team.as_dict_without_as() for team in self.teams.all()]
 

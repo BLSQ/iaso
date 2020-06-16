@@ -21,13 +21,17 @@ import PageError from '../../../components/errors/PageError';
 
 class ProtectedRoute extends Component {
     componentDidMount() {
+        this.props.fetchCurrentUser();
+    }
+
+    componentDidUpdate(prevProps) {
         const {
-            fetchCurrentUser,
             isRootUrl,
             permission,
             redirectTo,
+            currentUser,
         } = this.props;
-        fetchCurrentUser().then((currentUser) => {
+        if (currentUser !== prevProps.currentUser) {
             const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
             if (!isAuthorized && isRootUrl) {
                 const newBaseUrl = getFirstAllowedUrl(permission, currentUser);
@@ -35,7 +39,7 @@ class ProtectedRoute extends Component {
                     redirectTo(newBaseUrl, {});
                 }
             }
-        });
+        }
     }
 
     render() {
@@ -87,7 +91,6 @@ ProtectedRoute.propTypes = {
 };
 
 const MapStateToProps = state => ({
-    reduxPage: state.links.linksPage,
     currentUser: state.users.current,
 });
 

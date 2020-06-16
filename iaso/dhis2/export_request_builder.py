@@ -15,6 +15,10 @@ class NoFormMappingError(Exception):
     pass
 
 
+class NotSupportedError(Exception):
+    pass
+
+
 class ExportRequestBuilder:
     def __init__(self):
         self.form_mappings_cache = {}
@@ -60,6 +64,12 @@ class ExportRequestBuilder:
             export_statuses = []
             for instance in paginator.page(page).object_list:
                 for mapping_version in self.get_form_mapping_versions(instance):
+
+                    if mapping_version.mapping.is_event_tracker and force_export:
+                        raise NotSupportedError(
+                            f"{mapping_version} can't be forced to be exported, due to possible duplicates tracked entity or event for instance {instance.id}"
+                        )
+
                     export_status = ExportStatus(
                         export_request=export_request,
                         instance=instance,

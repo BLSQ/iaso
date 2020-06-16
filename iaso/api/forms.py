@@ -155,7 +155,12 @@ class FormsViewSet(ModelViewSet):
         queryset = Form.objects.all()
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
-            instances_count=Count("instances", filter=(~Q(instances__file="")))
+            instances_count=Count(
+                "instances",
+                filter=(
+                    ~Q(instances__file="") & ~Q(instances__device__test_device=True)
+                ),
+            )
         )
 
         # The way this endpoint has been structured is due to the fact that the first mobile application

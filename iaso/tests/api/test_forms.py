@@ -58,12 +58,17 @@ class FormsAPITestCase(APITestCase):
             single_per_period=True,
             created_at=cls.now,
         )
-        form_2_file_mock = mock.MagicMock(spec=File)
-        form_2_file_mock.name = "test.xml"
-        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        cls.form_2.form_versions.create(
+            file=cls.create_file_mock(name="testf1.xml"), version_id="2020022401"
+        )
         cls.form_2.org_unit_types.add(cls.jedi_council)
         cls.form_2.org_unit_types.add(cls.jedi_academy)
-        cls.form_2.instances.create()
+
+        cls.form_2.instances.create(file=cls.create_file_mock(name="testi1.xml"))
+        cls.form_2.instances.create(
+            file=cls.create_file_mock(name="testi2.xml"),
+            device=m.Device.objects.create(test_device=True),
+        )
         cls.form_2.save()
 
         cls.project_1.unit_types.add(cls.jedi_council)
@@ -90,23 +95,6 @@ class FormsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         self.assertValidFormListData(response.json(), 0)
-
-    @tag("iaso_only")
-    def test_forms_list_with_app_id(self):
-        """GET /forms/ mobile app happy path (no auth but with app id): 2 result"""
-
-        response = self.client.get(f"/api/forms/?app_id={self.project_1.app_id}")
-        self.assertJSONResponse(response, 200)
-
-        response_data = response.json()
-        self.assertValidFormListData(response_data, 2)
-
-        form_2_data = next(
-            form_data
-            for form_data in response_data["forms"]
-            if form_data["id"] == self.form_2.id
-        )
-        self.assertValidFullFormData(form_2_data)
 
     @tag("iaso_only")
     def test_forms_list_ok(self):
@@ -225,7 +213,6 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get(f"/api/forms/{self.form_1.id}/")
         self.assertJSONResponse(response, 200)
-
         self.assertValidFormData(response.json())
 
     @tag("iaso_only")
@@ -238,6 +225,7 @@ class FormsAPITestCase(APITestCase):
 
         form_data = response.json()
         self.assertValidFullFormData(form_data)
+        self.assertEqual(1, form_data["instances_count"])
 
     @tag("iaso_only")
     def test_forms_create_ok(self):
@@ -477,6 +465,7 @@ class FormsAPITestCase(APITestCase):
         response = self.client.delete(f"/api/forms/{self.form_1.id}/", format="json")
         self.assertJSONResponse(response, 403)
 
+    # noinspection DuplicatedCode
     def assertValidFormListData(
         self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
     ):
@@ -490,6 +479,7 @@ class FormsAPITestCase(APITestCase):
         for form_data in list_data["forms"]:
             self.assertValidFormData(form_data)
 
+    # noinspection DuplicatedCode
     def assertValidFormData(self, form_data: typing.Mapping):
         self.assertHasField(form_data, "id", int)
         self.assertHasField(form_data, "name", str)
@@ -498,6 +488,7 @@ class FormsAPITestCase(APITestCase):
         self.assertHasField(form_data, "created_at", float)
         self.assertHasField(form_data, "updated_at", float)
 
+    # noinspection DuplicatedCode
     def assertValidFullFormData(self, form_data: typing.Mapping):
         self.assertValidFormData(form_data)
 

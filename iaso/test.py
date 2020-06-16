@@ -50,6 +50,15 @@ class IasoTestCaseMixin:
             **kwargs,
         )
 
+    @staticmethod
+    def create_file_mock(**kwargs):
+        file_mock = mock.MagicMock(spec=File)
+
+        for key, value in kwargs.items():
+            setattr(file_mock, key, value)
+
+        return file_mock
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
@@ -123,8 +132,10 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         *,
         optional: bool = False,
     ):
-        self.assertIn(field_name, data)
         if not optional:
+            self.assertIn(field_name, data)
+
+        if field_name in data and (not optional or data[field_name] is not None):
             self.assertIsInstance(data[field_name], cls)
 
     def assertHasError(
@@ -163,3 +174,11 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertEqual(last_api_import.exception, "")
         elif exception_contains_string is not None:
             self.assertTrue(exception_contains_string in last_api_import.exception)
+
+    def assertValidProjectData(self, project_data: typing.Mapping):
+        self.assertHasField(project_data, "id", int)
+        self.assertHasField(project_data, "name", str)
+        self.assertHasField(project_data, "feature_flags", list)
+        self.assertHasField(project_data, "created_at", float)
+        self.assertHasField(project_data, "updated_at", float)
+        self.assertHasField(project_data, "needs_authentication", bool)

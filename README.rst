@@ -362,3 +362,34 @@ To run a Jupyter Notebook, just activate the virtualenv and run
     python manage.py shell_plus --notebook
 
 ..
+
+Testing S3 uploads in development
+=================================
+
+If you need to test s3 storage in development, you have to:
+
+1. Set the `AWS_STORAGE_BUCKET_NAME` env variable to "iaso-dev" (a bucket created for such tests)
+2. Set the `AWS_ACCESS_KEY_ID` and `AKIAS4KZU3S6BZ7CFTXO` env variables appropriately
+   (see "iaso-dev AWS user" credentials in 1password)
+3. Change the `DEFAULT_FILE_STORAGE` setting to `storages.backends.s3boto3.S3Boto3Storage`
+
+Enketo
+======
+
+To enable the Enketo editor in your local environment, you will have to install our fork of enketo-express:
+
+.. code:: shell
+
+    git clone git@bitbucket.org:bluesquare_org/enketo-express.git
+    cd setup/docker
+    docker-compose up
+
+Then, you need to make sure your `.env` file is properly configured.
+`ENKETO_URL` should be set to `http://192.168.1.15:81` (Replace 192.168.1.15 by your host)
+
+If you need usable instances:
+
+.. code:: shell
+
+    docker-compose up
+    docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.33.4'

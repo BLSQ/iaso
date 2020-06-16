@@ -224,12 +224,11 @@ class Instances extends Component {
 
         dispatch(this.props.setInstancesFetching(true));
         Promise.all([
-            fetchInstancesAsDict(dispatch, url).then((data) => {
-                this.props.setInstances(data.instances, params, data.count, data.pages);
-            }),
-            fetchInstancesAsSmallDict(dispatch, urlSmall)
-                .then(data => this.props.setInstancesSmallDict(data)),
-        ]).then(() => {
+            fetchInstancesAsDict(dispatch, url),
+            fetchInstancesAsSmallDict(dispatch, urlSmall),
+        ]).then(([instancesData, smallInstancesData]) => {
+            this.props.setInstances(instancesData.instances, params, instancesData.count, instancesData.pages);
+            this.props.setInstancesSmallDict(smallInstancesData);
             dispatch(this.props.setInstancesFetching(false));
         });
     }

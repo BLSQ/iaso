@@ -1,13 +1,10 @@
-from rest_framework import viewsets
-from rest_framework.request import Request
-from rest_framework.response import Response
-from rest_framework.reverse import reverse
-from rest_framework.exceptions import NotFound
 from django.shortcuts import get_object_or_404
-from hat.planning.models import Planning, Assignation
-
-from .authentication import CsrfExemptSessionAuthentication
+from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
+from rest_framework.response import Response
+
+from hat.planning.models import Planning, Assignation
+from .authentication import CsrfExemptSessionAuthentication
 
 
 class PlanningViewSet(viewsets.ViewSet):

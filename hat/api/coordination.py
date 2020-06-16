@@ -3,7 +3,7 @@ from rest_framework import viewsets
 from rest_framework.response import Response
 from django.shortcuts import get_object_or_404
 from django.core.serializers import serialize
-from django.db.models import Sum
+from django.db.models import Sum, Q
 from hat.planning.models import Planning, Assignation, WorkZone
 from hat.geo.models import AS, ZS, Village
 from hat.users.models import Coordination
@@ -13,6 +13,8 @@ from rest_framework.authentication import BasicAuthentication
 from collections import defaultdict
 from hat.dashboard.utils import get_last_years
 from hat.users.models import get_user_geo_list
+from ..geo.services import years_filter
+from ..planning.services import reassign_planning
 
 
 def is_user_coordination_authorized(coordination, user):
@@ -98,8 +100,8 @@ class CoordinationViewSet(viewsets.ViewSet):
                     endemic_villages_ids = (
                         Village.objects.filter(AS__in=areas)
                         .filter(
-                            caseview__confirmed_case=True,
-                            caseview__normalized_year__in=years_array,
+                            Q(infection_cases__confirmed_case=True)
+                            & years_filter(years_array)
                         )
                         .values("id")
                     )
@@ -165,17 +167,7 @@ class CoordinationViewSet(viewsets.ViewSet):
             for team_id in teams_dict:
                 assignation_list = teams_dict[team_id]
                 ordered = optimize_path(assignation_list, planning.months)
-                for index, obj in enumerate(ordered):
-                    Assignation.objects.filter(
-                        planning=planning, village_id=obj["village_id"]
-                    ).delete()
-                    assignation = Assignation()
-                    assignation.planning = planning
-                    assignation.index = obj["index"]
-                    assignation.month = obj["month"]
-                    assignation.village_id = obj["village_id"]
-                    assignation.team_id = obj["team_id"]
-                    assignation.save()
+                reassign_planning(ordered, planning)
         else:
             coordination.name = request.data.get("name", "")
             locations = request.data.get("zs", None)

@@ -8,7 +8,7 @@ from iaso.models import Instance, OrgUnit, Form, FormVersion, MappingVersion, Ex
 import iaso.models as models
 from timeit import default_timer as timer
 import itertools
-
+from .api_logger import ApiLogger
 import logging
 
 logger = logging.getLogger(__name__)
@@ -68,7 +68,7 @@ class AggregateHandler:
 
         return None
 
-    def map_to_values(self, instance, form_mapping):
+    def map_to_values(self, instance, form_mapping, export_status=None):
         data_set_entry = {
             "dataSet": form_mapping["data_set_id"],
             "completeDate": instance.created_at.strftime("%Y-%m-%d"),
@@ -223,7 +223,7 @@ class AggregateHandler:
 
 
 class EventHandler:
-    def map_to_values(self, instance, form_mapping):
+    def map_to_values(self, instance, form_mapping, export_status=None):
 
         event = {
             "program": form_mapping["program_id"],
@@ -356,6 +356,307 @@ class EventHandler:
             return InstanceExportError(message, counts, descriptions)
 
 
+class EventTrackerHandler:
+    def map_to_values(self, instance, form_mapping, export_status=None):
+        question_mappings = form_mapping["question_mappings"]
+
+        program_id = form_mapping["program_id"]
+        orgunit_id = instance.org_unit.source_ref
+        tracked_entity_type = form_mapping["tracked_entity_type"]
+
+        program_stage_ids = []
+        for question_name in form_mapping["question_mappings"]:
+            for mapping in question_mappings[question_name]:
+                if "programStage" in mapping:
+                    program_stage_id = mapping["programStage"]
+                    if program_stage_id not in program_stage_ids:
+                        program_stage_ids.append(program_stage_id)
+
+        event_date = instance.created_at.strftime("%Y-%m-%d")
+        events = []
+        errored = False
+
+        for program_stage_id in program_stage_ids:
+            event = {
+                "program": form_mapping["program_id"],
+                "programStage": program_stage_id,
+                "orgUnit": instance.org_unit.source_ref,
+                "eventDate": event_date,
+                "status": "COMPLETED",
+                "dataValues": [],
+            }
+            if instance.location:
+                event["coordinate"] = {
+                    "latitude": instance.location.y,
+                    "longitude": instance.location.x,
+                }
+
+            event_errors = []
+
+            for question_key in form_mapping["question_mappings"]:
+                if question_key in instance.json.keys():
+                    for mapping in question_mappings[question_key]:
+                        if (
+                            "programStage" in mapping
+                            and mapping["programStage"] == program_stage_id
+                        ):
+                            if "dataElement" in mapping:
+                                data_element = mapping["dataElement"]
+                                raw_value = instance.json[question_key]
+                                data_value = {
+                                    "dataElement": data_element["id"],
+                                    "value": format_value(data_element, raw_value),
+                                }
+                                event["dataValues"].append(data_value)
+            if len(event["dataValues"]) > 0:
+                events.append(event)
+            else:
+                print(
+                    f"skipping event for stage {program_stage_id} in #{instance.id} no data"
+                )
+
+        tracked_entity_with_events = {
+            "orgUnit": orgunit_id,
+            "trackedEntityType": tracked_entity_type,
+            "attributes": [],
+            "enrollments": [
+                {
+                    "trackedEntityType": tracked_entity_type,
+                    "enrollmentDate": event_date,
+                    "program": program_id,
+                    "deleted": False,
+                    "incidentDate": event_date,
+                    "orgUnit": orgunit_id,
+                    "events": events,
+                }
+            ],
+        }
+
+        for question_key in form_mapping["question_mappings"]:
+            if question_key in instance.json.keys():
+                for mapping in question_mappings[question_key]:
+                    if "trackedEntityAttribute" in mapping:
+                        tea = mapping["trackedEntityAttribute"]
+                        raw_value = instance.json.get(question_key)
+
+                        attribute = {
+                            "attribute": tea["id"],
+                            "value": format_value(tea, raw_value),
+                            "displayName": tea["name"],
+                            "valueType": tea["valueType"],
+                        }
+
+                        tracked_entity_with_events["attributes"].append(attribute)
+
+        if errored:
+            return (None, event_errors)
+        else:
+            return (
+                (instance, form_mapping, tracked_entity_with_events, export_status),
+                None,
+            )
+
+    def find_tracked_entity(
+        self,
+        api,
+        country_dhis2_id,
+        tracked_entity_type,
+        unique_number_attribute_id,
+        unique_number,
+    ):
+
+        resp = api.get(
+            "trackedEntityInstances",
+            params={
+                "fields": ":all,enrollments[:all,events[:all]]",
+                "ou": country_dhis2_id,
+                "ouMode": "DESCENDANTS",
+                "trackedEntityType": tracked_entity_type,
+                "filter": f"{unique_number_attribute_id}:EQ:{str(unique_number)}",
+            },
+        ).json()
+
+        return self.get_first(resp["trackedEntityInstances"])
+
+    def update_tracked_entity(self, api, tracked_entity):
+        print("update_tracked_entity", json.dumps(tracked_entity))
+        resp = api.put(
+            "trackedEntityInstances/" + tracked_entity["trackedEntityInstance"],
+            tracked_entity,
+        ).json()
+        print(resp)
+
+        return resp
+
+    def create_tracked_entity(self, api, tracked_entity):
+        print("create_tracked_entity", json.dumps(tracked_entity))
+        resp = api.post("trackedEntityInstances", tracked_entity).json()
+
+        print(resp)
+
+        return resp
+
+    def get_first(self, iterable, default=None):
+        if iterable:
+            for item in iterable:
+                return item
+        return default
+
+    def generate_unique_number(self, api, unique_number_attribute_id, org_unit):
+        org_unit_dhis2 = api.get(
+            f"organisationUnits/{org_unit.source_ref}",
+            params={"fields": "id,name,code"},
+        ).json()
+        generated = api.get(
+            f"trackedEntityAttributes/{unique_number_attribute_id}/generate",
+            params={"ORG_UNIT_CODE": org_unit_dhis2["code"]},
+        ).json()
+        print("generate_unique_number", generated)
+        return generated["value"]
+
+    def export_page(self, prefix, data, export_statuses, stats, raw_api):
+        if len(data) == 0:
+            stats["batched_time"] = 0
+            return []
+        api = ApiLogger(raw_api)
+
+        for item in data:
+            try:
+                instance = item[0]
+                form_mapping = item[1]
+                tracked_entity_iaso = item[2]
+                export_status = item[3]
+                unique_number_attribute_id = form_mapping["tracked_entity_identifier"]
+                country_dhis2_id = instance.org_unit.path().split("/")[1]
+
+                unique_number = self.get_first(
+                    [
+                        attribute["value"]
+                        for attribute in tracked_entity_iaso["attributes"]
+                        if attribute["attribute"] == unique_number_attribute_id
+                    ]
+                )
+                print(
+                    "looking for",
+                    unique_number_attribute_id,
+                    "in ",
+                    tracked_entity_iaso["attributes"],
+                )
+                print(instance.id, "unique number ?", unique_number)
+                if unique_number:
+                    tracked_entity_dhis2 = self.find_tracked_entity(
+                        api,
+                        country_dhis2_id,
+                        form_mapping["tracked_entity_type"],
+                        unique_number_attribute_id,
+                        unique_number,
+                    )
+                    if tracked_entity_dhis2:
+
+                        # copy the new events in the first enrollment
+                        for event in tracked_entity_iaso["enrollments"][0]["events"]:
+                            tracked_entity_dhis2["enrollments"][0]["events"].append(
+                                event
+                            )
+                        self.update_tracked_entity(api, tracked_entity_dhis2)
+                    else:
+                        raise Exception(
+                            f"error : no tracked entity with unique number : {unique_number}"
+                        )
+                else:
+
+                    unique_number = self.generate_unique_number(
+                        api, unique_number_attribute_id, instance.org_unit
+                    )
+
+                    print(instance.id, "unique number ?", unique_number)
+
+                    unique_number_attribute = self.get_first(
+                        [
+                            attribute
+                            for attribute in tracked_entity_iaso["attributes"]
+                            if attribute["attribute"] == unique_number_attribute_id
+                        ]
+                    )
+                    if unique_number_attribute:
+                        unique_number_attribute["value"] = unique_number
+                    else:
+                        tracked_entity_iaso["attributes"].append(
+                            {
+                                "attribute": unique_number_attribute_id,
+                                "value": unique_number,
+                            }
+                        )
+
+                    self.create_tracked_entity(api, tracked_entity_iaso)
+
+                # TODO export logs
+                export_logs = api.pop_export_logs()
+
+                self.flag_as_exported(export_status, stats, export_logs)
+
+            except RequestException as dhis2_exception:
+
+                message = "ERROR while processing " + prefix
+
+                resp = json.loads(dhis2_exception.description)
+
+                exception = self.handle_exception(resp, message)
+
+                self.flag_as_errored(export_status, exception.message, stats)
+
+        return []
+
+    def flag_as_exported(self, export_status, stats, export_logs):
+        export_request = export_status.export_request
+
+        stats["exported_count"] += 1
+        export_status.status = "exported"
+        for export_log in export_logs:
+            export_log.save()
+            export_status.export_logs.add(export_log)
+        export_status.save()
+
+        instance = export_status.instance
+        instance.last_export_success_at = timezone.now()
+        instance.save()
+
+        export_request.errored_count = stats["errored_count"]
+        export_request.exported_count = stats["exported_count"]
+        export_request.save()
+
+    def handle_exception(self, resp, message):
+        response = resp["response"]
+
+        if response["status"] == "ERROR":
+            counts = {}
+
+            for count_type in ("imported", "updated", "deleted", "ignored"):
+                counts[count_type] = response.get(count_type, 0)
+            import_summaries = (
+                response.get("importSummaries")
+                or response["response"]["importSummaries"]
+            )
+            descriptions = [
+                m["description"] for m in import_summaries if "description" in m
+            ]
+            conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
+            descriptions = uniquify(descriptions)
+            if len(descriptions) == 0:
+                descriptions = [conflicts[0][0]["value"]]
+            print("---------------------------------------------------------")
+            print("----------------------- EXPORT ERROR --------------------")
+            print("Failed to create events got", descriptions, conflicts, resp)
+            return InstanceExportError(message, counts, descriptions)
+
+    def flag_as_errored(self, export_status, message, stats):
+
+        stats["errored_count"] += 1
+        export_status.status = "errored"
+        export_status.last_error_message = message
+        export_status.save()
+
+
 class DataValueExporter:
     def __init__(self):
         self.form_mappings_cache = {}
@@ -363,6 +664,7 @@ class DataValueExporter:
         self.handlers = {
             models.AGGREGATE: AggregateHandler(),
             models.EVENT: EventHandler(),
+            models.EVENT_TRACKER: EventTrackerHandler(),
         }
 
     def get_api(self, mapping_version):
@@ -381,7 +683,7 @@ class DataValueExporter:
         export_status.save()
 
     def map_page_to_data_values(self, prefix, export_statuses, skipped):
-        data = {models.AGGREGATE: [], models.EVENT: []}
+        data = {models.AGGREGATE: [], models.EVENT: [], models.EVENT_TRACKER: []}
 
         for export_status in export_statuses:
             instance = export_status.instance
@@ -398,7 +700,7 @@ class DataValueExporter:
 
             (values, map_errors) = self.handlers[
                 form_mapping.mapping.mapping_type
-            ].map_to_values(instance, form_mapping.json)
+            ].map_to_values(instance, form_mapping.json, export_status)
 
             if map_errors:
                 message = (
@@ -477,12 +779,17 @@ class DataValueExporter:
                     prefix, data[models.EVENT], export_statuses, stats, api
                 )
 
-                export_logs = list(
-                    itertools.chain(export_logs_aggregate, export_logs_event)
+                self.handlers[models.EVENT_TRACKER].export_page(
+                    prefix, data[models.EVENT_TRACKER], export_statuses, stats, api
                 )
-                self.flag_as_exported(
-                    export_request, export_statuses, stats, export_logs
-                )
+
+                if len(data[models.EVENT_TRACKER]) == 0:
+                    export_logs = list(
+                        itertools.chain(export_logs_aggregate, export_logs_event)
+                    )
+                    self.flag_as_exported(
+                        export_request, export_statuses, stats, export_logs
+                    )
 
                 page_end = timer()
                 page_time = page_end - page_start
@@ -508,7 +815,7 @@ class DataValueExporter:
                 )
                 raise exception
 
-        export_request.status = "exported"
+        export_request.status = "exported" if stats["errored_count"] == 0 else "errored"
         export_request.finished = True
         export_request.errored_count = stats["errored_count"]
         export_request.exported_count = stats["exported_count"]

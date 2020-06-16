@@ -199,3 +199,13 @@ class ParsingTestCase(SimpleTestCase):
         self.assertEqual(to_questions_by_name({}), {})
 
         self.assertEqual(to_questions_by_name(None), {})
+
+    def test_to_questions_by_name_with_node_without_children(self):
+        flattened = to_questions_by_name(
+            {
+                "name": "parent",
+                "type": "survey",
+                "children": [{"name": "group_without_children", "type": "group"}],
+            }
+        )
+        self.assertEqual({}, flattened)

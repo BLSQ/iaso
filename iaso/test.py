@@ -50,6 +50,15 @@ class IasoTestCaseMixin:
             **kwargs,
         )
 
+    @staticmethod
+    def create_file_mock(**kwargs):
+        file_mock = mock.MagicMock(spec=File)
+
+        for key, value in kwargs.items():
+            setattr(file_mock, key, value)
+
+        return file_mock
+
 
 class TestCase(BaseTestCase, IasoTestCaseMixin):
     pass
@@ -123,10 +132,8 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         *,
         optional: bool = False,
     ):
-        if not optional:
-            self.assertIn(field_name, data)
-
-        if "field_name" in data:
+        self.assertIn(field_name, data)
+        if data[field_name] is not None or not optional:
             self.assertIsInstance(data[field_name], cls)
 
     def assertHasError(

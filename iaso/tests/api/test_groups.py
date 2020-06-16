@@ -13,12 +13,15 @@ class GroupsAPITestCase(APITestCase):
         cls.now = now()
 
         cls.data_source = m.DataSource.objects.create(name="Default source")
-        cls.source_version = m.SourceVersion.objects.create(
+        cls.source_version_1 = m.SourceVersion.objects.create(
             data_source=cls.data_source, number=1
+        )
+        cls.source_version_2 = m.SourceVersion.objects.create(
+            data_source=cls.data_source, number=2
         )
 
         star_wars = m.Account.objects.create(
-            name="Star Wars", default_version=cls.source_version
+            name="Star Wars", default_version=cls.source_version_2
         )
         marvel = m.Account.objects.create(name="Marvel")
 
@@ -45,10 +48,10 @@ class GroupsAPITestCase(APITestCase):
         )
 
         cls.group_1 = m.Group.objects.create(
-            name="Councils", source_version=cls.source_version
+            name="Councils", source_version=cls.source_version_1
         )
-        cls.group_1 = m.Group.objects.create(
-            name="Assemblies", source_version=cls.source_version
+        cls.group_2 = m.Group.objects.create(
+            name="Assemblies", source_version=cls.source_version_2
         )
 
         cls.project_1.data_sources.add(cls.data_source)
@@ -161,7 +164,7 @@ class GroupsAPITestCase(APITestCase):
         self.assertValidGroupData(response_data, skip=["org_unit_count"])
         self.assertEqual(
             self.yoda.iaso_profile.account.default_version_id,
-            response_data["source_version"],
+            response_data["source_version"]["id"],
         )
 
     @tag("iaso_only")
@@ -189,7 +192,10 @@ class GroupsAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertValidGroupData(response_data)
-        self.assertEqual(response_data["name"], "test group (updated)")
+
+        self.group_1.refresh_from_db()
+        self.assertEquals("test group (updated)", self.group_1.name)
+        self.assertEquals(1, self.group_1.source_version.number)
 
     @tag("iaso_only")
     def test_groups_update_not_implemented(self):
@@ -246,10 +252,20 @@ class GroupsAPITestCase(APITestCase):
 
         self.assertHasField(group_data, "id", int)
         self.assertHasField(group_data, "name", str)
-        self.assertHasField(group_data, "source_version", int, optional=True)
+        self.assertHasField(group_data, "source_version", dict, optional=True)
         self.assertHasField(group_data, "source_ref", str, optional=True)
         # org_unit_count is a read-only field, it won't be present when creating an instance
         if "org_unit_count" not in skip:
             self.assertHasField(group_data, "org_unit_count", int)
         self.assertHasField(group_data, "created_at", float)
         self.assertHasField(group_data, "updated_at", float)
+
+        if "source_version" in group_data:
+            source_version_data = group_data["source_version"]
+            self.assertHasField(source_version_data, "id", int)
+            self.assertHasField(source_version_data, "number", int)
+            self.assertHasField(source_version_data, "data_source", dict)
+
+            data_source_data = source_version_data["data_source"]
+            self.assertHasField(data_source_data, "id", int)
+            self.assertHasField(data_source_data, "name", str)

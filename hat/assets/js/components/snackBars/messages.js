@@ -109,6 +109,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.createExportRequestErrorNoFormMappingError',
         defaultMessage: "The form doesn't a form mapping to export to dhis2",
     },
+    createExportRequestErrorNotSupportedError: {
+        id: 'iaso.snackBar.createExportRequestErrorNotSupportedError',
+        defaultMessage: "Forcing export isn't supported for event tracker",
+    },
     createExportRequestError: {
         id: 'iaso.snackBar.createExportRequestError',
         defaultMessage: 'An error occured while creating export request',

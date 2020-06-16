@@ -43,8 +43,9 @@ def to_json_dict(form_version):
 def visit(node, questions_by_name):
     parent = node["type"] == "survey" or node["type"] == "group"
     if parent:
-        for child in node["children"]:
-            visit(child, questions_by_name)
+        if "children" in node:
+            for child in node["children"]:
+                visit(child, questions_by_name)
     else:
         questions_by_name[node["name"]] = node
 

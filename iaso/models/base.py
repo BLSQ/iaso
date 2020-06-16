@@ -25,10 +25,12 @@ SIX_MONTH = "SIX_MONTH"
 AGGREGATE = "AGGREGATE"
 EVENT = "EVENT"
 DERIVED = "DERIVED"
+EVENT_TRACKER = "EVENT_TRACKER"
 
 MAPPING_TYPE_CHOICES = (
     (AGGREGATE, _("Aggregate")),
     (EVENT, _("Event")),
+    (EVENT_TRACKER, _("Event Tracker")),
     (DERIVED, _("Derived")),
 )
 
@@ -406,6 +408,9 @@ class Mapping(models.Model):
 
     def is_aggregate(self):
         return self.mapping_type == AGGREGATE
+
+    def is_event_tracker(self):
+        return self.mapping_type == EVENT_TRACKER
 
     def as_dict(self):
         return {
@@ -806,7 +811,7 @@ class Instance(models.Model):
                             "full_name": export_status.export_request.launcher.get_full_name(),
                             "email": export_status.export_request.launcher.email,
                         },
-                        "last_error_message": export_status.export_request.last_error_message,
+                        "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
                 }
                 for export_status in Paginator(
@@ -939,6 +944,8 @@ class ExportStatus(models.Model):
     mapping_version = models.ForeignKey(MappingVersion, on_delete=models.CASCADE)
 
     export_logs = models.ManyToManyField(ExportLog, blank=True)
+    last_error_message = models.TextField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
 
 

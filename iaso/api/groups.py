@@ -27,20 +27,26 @@ class GroupSerializer(serializers.ModelSerializer):
             "updated_at",
         ]
 
+    source_version = serializers.SerializerMethodField(
+        read_only=True
+    )  # TODO: use serializer
     org_unit_count = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
-    def validate(self, data: typing.MutableMapping):
+    def get_source_version(self, group: Group):
+        return group.source_version.as_dict()
+
+    def create(self, validated_data):
         profile = self.context["request"].user.iaso_profile
         version = profile.account.default_version
 
         if version is None:
             raise serializers.ValidationError("This account has no default version")
 
-        data["source_version"] = version
+        validated_data["source_version"] = version
 
-        return data
+        return super().create(validated_data)
 
 
 class GroupsViewSet(ModelViewSet):

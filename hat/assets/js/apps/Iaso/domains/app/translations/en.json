@@ -290,6 +290,7 @@
   "iaso.snackBar.createExportRequestErrorNoFormMappingError": "The form doesn't a form mapping to export to dhis2",
   "iaso.snackBar.createExportRequestErrorNoVersionError": "One of the instance had no version specified",
   "iaso.snackBar.createExportRequestErrorNothingToExportError": "We found nothing to export, change your filter or force the re-export",
+  "iaso.snackBar.createExportRequestErrorNotSupportedError": "Forcing export isn't supported for event tracker",
   "iaso.snackBar.createExportRequestSuccess": "Export request queued",
   "iaso.snackBar.createFormError": "An error occurred while creating a form",
   "iaso.snackBar.deleteFormError": "An error occurred while deleting a form",

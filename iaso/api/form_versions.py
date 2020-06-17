@@ -25,6 +25,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "version_id",
             "form_id",
             "form_name",
+            "full_name",  # model annotation
+            "mapped",  # model annotation
             "xls_file",
             "file",
             "created_at",
@@ -35,16 +37,20 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "version_id",
             "form_id",
             "form_name",
+            "full_name",  # model annotation
+            "mapped",  # model annotation
             "xls_file",
             "file",
+            "descriptor",
             "created_at",
             "updated_at",
-            "descriptor",
         ]
         read_only_fields = [
             "id",
             "form_name",
             "version_id",
+            "full_name",
+            "mapped",
             "file",
             "created_at",
             "updated_at",
@@ -58,6 +64,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
     )  # field is not required in model
+    mapped = serializers.BooleanField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
@@ -138,13 +146,13 @@ class FormVersionsViewSet(ModelViewSet):
     http_method_names = ["get", "post", "head", "options", "trace"]
 
     def get_queryset(self):
-        orders = self.request.GET.get("order", "full_name").split(",")
-        mapped_filter = self.request.GET.get("mapped", "")
+        orders = self.request.query_params.get("order", "full_name").split(",")
+        mapped_filter = self.request.query_params.get("mapped", "")
 
         profile = self.request.user.iaso_profile
         queryset = FormVersion.objects.filter(form__projects__account=profile.account)
 
-        search_name = self.request.GET.get("search_name", None)
+        search_name = self.request.query_params.get("search_name", None)
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)
 

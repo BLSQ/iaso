@@ -13,14 +13,15 @@ class ParsingTestCase(SimpleTestCase):
             survey = parse_xls_form(xls_file)
 
         self.assertIsInstance(survey, Survey)
-        self.assertEqual(survey.generate_file_name('xml'), "odk_form_valid_sample1_2020022401.xml")
+        self.assertEqual(
+            survey.generate_file_name("xml"), "odk_form_valid_sample1_2020022401.xml"
+        )
         xml_content = survey.to_xml()
         self.assertIsInstance(xml_content, bytes)
         self.assertGreater(len(xml_content), 100)
         # check correctness of root data key
         self.assertIn(
-            f'<data id="sample1" version="2020022401">',
-            xml_content.decode("utf-8"),
+            f'<data id="sample1" version="2020022401">', xml_content.decode("utf-8"),
         )
         self.assertEqual(survey.form_id, "sample1")
         self.assertEqual(survey.version, "2020022401")

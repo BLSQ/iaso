@@ -24,6 +24,9 @@ class PatientDetails extends React.Component {
         if (this.props.params.patient_id !== '0') {
             this.props.fetchDetails(this.props.params.patient_id);
         }
+        if (this.props.userTypes.length === 0) {
+            this.props.fetchUserTypes();
+        }
         this.props.fetchProvinces();
         this.props.fetchCurrentUserInfos();
         this.props.fetchGeoDatas();
@@ -166,7 +169,9 @@ PatientDetails.propTypes = {
     fetchProvinces: PropTypes.func.isRequired,
     selectProvince: PropTypes.func.isRequired,
     fetchGeoDatas: PropTypes.func.isRequired,
+    fetchUserTypes: PropTypes.func.isRequired,
     currentUser: PropTypes.object.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const PatientDetailsIntl = injectIntl(PatientDetails);
@@ -176,6 +181,7 @@ const MapStateToProps = state => ({
     patient: state.patients.current,
     testsMapping: state.patients.testsMapping,
     currentUser: state.currentUser.user,
+    userTypes: state.testsFilters.userTypes,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -187,6 +193,7 @@ const MapDispatchToProps = dispatch => ({
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId, true, false, 'YES,NO,OTHER')),
     fetchGeoDatas: () => dispatch(smallMapActions.fetchGeoDatas(dispatch)),
+    fetchUserTypes: () => dispatch(filterActions.fetchUserTypes(dispatch)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(PatientDetailsIntl);

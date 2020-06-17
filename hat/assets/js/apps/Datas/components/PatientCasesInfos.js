@@ -42,6 +42,15 @@ const getTeamName = (currentCase) => {
     return teamName;
 };
 
+const getUserType = (userTypeKey, userTypes) => {
+    let userTypeLabel;
+    const userType = userTypes.find(u => u[0] === userTypeKey);
+    if (userType) {
+        [, userTypeLabel] = userType;
+    }
+    return userTypeLabel;
+};
+
 class PatientCasesInfo extends React.Component {
     render() {
         const {
@@ -49,6 +58,7 @@ class PatientCasesInfo extends React.Component {
             similarCase,
             toggleModal,
             canEditPatientInfos,
+            userTypes,
         } = this.props;
         if (!currentCase) {
             return null;
@@ -117,6 +127,14 @@ class PatientCasesInfo extends React.Component {
                                 {currentCase.screening_type === 'passive'
                                     && <FormattedMessage id="main.label.passive" defaultMessage="Passive" />
                                 }
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <FormattedMessage id="main.cases.userType" defaultMessage="User type" />
+                            </th>
+                            <td>
+                                {getUserType(currentCase.user_type, userTypes) || placeholder}
                             </td>
                         </tr>
                         <tr>
@@ -264,6 +282,7 @@ PatientCasesInfo.propTypes = {
     intl: PropTypes.object.isRequired,
     toggleModal: PropTypes.func.isRequired,
     canEditPatientInfos: PropTypes.bool.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const PatientCasesWithIntl = injectIntl(PatientCasesInfo);

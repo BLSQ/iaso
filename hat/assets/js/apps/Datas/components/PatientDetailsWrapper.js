@@ -475,11 +475,17 @@ class PatientDetailsWrapper extends React.Component {
                                                             canEditPatientInfos={canEditPatientInfos}
                                                             userTypes={userTypes}
                                                         />
-                                                        <CaseInfoLocation
-                                                            currentCase={c}
-                                                            toggleModal={() => this.toggleCaseLocationModal(c)}
-                                                            canEditPatientInfos={canEditPatientInfos}
-                                                        />
+                                                        {
+                                                            (!c.user_type
+                                                            || (c.user_type && c.user_type !== 'CDTC' && c.user_type !== 'fixed_structure'))
+                                                            && (
+                                                                <CaseInfoLocation
+                                                                    currentCase={c}
+                                                                    toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                                    canEditPatientInfos={canEditPatientInfos}
+                                                                />
+                                                            )
+                                                        }
                                                         <CaseInfectionLocation
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseInfectionLocationModal(c)}

@@ -10,7 +10,7 @@ export const DuplicateHint = ({ mapping, mappingVersion }) => {
     const duplicates = [];
     Object.keys(mappingVersion.question_mappings).forEach((questionName) => {
         const qmap = mappingVersion.question_mappings[questionName];
-        if (qmap) {
+        if (!Array.isArray(qmap)) {
             if (mapping.id === qmap.id
                 && mapping.categoryOptionCombo === qmap.categoryOptionCombo) {
                 duplicates.push(questionName);

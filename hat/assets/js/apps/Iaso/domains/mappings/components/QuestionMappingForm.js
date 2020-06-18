@@ -177,8 +177,8 @@ const QuestionMappingForm = ({
                 )}
 
             {
-                mapping.mapping.mapping_type === 'EVENT_TRACKER' && (
-                    questionMapping.map(q => <ObjectDumper object={q} />)
+                mapping.mapping.mapping_type === 'EVENT_TRACKER' && questionMapping.map && (
+                    questionMapping.map((q, index) => <ObjectDumper key={index} object={q} />)
                 )
             }
 

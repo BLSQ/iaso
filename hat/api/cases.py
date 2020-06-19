@@ -176,9 +176,7 @@ class CasesViewSet(viewsets.ViewSet):
             )
 
         if user_types:
-            queryset = queryset.filter(
-                user_type__in=user_types.split(",")
-            )
+            queryset = queryset.filter(user_type__in=user_types.split(","))
         if coordination_ids:
             queryset = queryset.filter(
                 normalized_team__coordination__id__in=coordination_ids.split(",")
@@ -427,7 +425,7 @@ class CasesViewSet(viewsets.ViewSet):
             columns = [
                 {"title": "Identifiant", "width": 9},
                 {"title": "UM", "width": 14},
-                {"title": "Type d'utlisateur", "width": 14},
+                {"title": "Type d'utilisateur", "width": 14},
                 {"title": "Date", "width": 15},
                 {"title": "Source", "width": 10},
                 {"title": "Province encodée", "width": 10},

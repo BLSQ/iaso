@@ -51,7 +51,7 @@ def is_authorized_user(user, province, zone, area):
     )
     if not is_authorized:
         if (
-            (province_id in user_province_ids)
+            (province_id in user_province_ids or province_id is None)
             and len(user_zs_ids) == 0
             and len(user_as_ids) == 0
         ):

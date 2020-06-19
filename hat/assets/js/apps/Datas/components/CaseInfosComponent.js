@@ -38,6 +38,7 @@ const CaseInfosComponent = ({
     devices,
     onChange,
     currentCase,
+    userTypes,
 }) => {
     const years = getYears(30);
     return (
@@ -100,6 +101,28 @@ const CaseInfosComponent = ({
                                     placeholder={formatMessage(selectPlaceholder)}
                                     options={screeningType(formatMessage).options}
                                     onChange={value => onChange('screening_type', value)}
+                                />
+                            )}
+                        />
+                        <ModalItem
+                            labelComponent={(
+                                <FormattedMessage
+                                    id="main.cases.userType"
+                                    defaultMessage="User type"
+                                />
+                            )}
+                            fieldComponent={(
+                                <Select
+                                    multi={false}
+                                    clearable
+                                    simpleValue
+                                    value={currentCase.user_type}
+                                    placeholder={formatMessage(selectPlaceholder)}
+                                    options={userTypes.map(u => ({
+                                        label: u[1],
+                                        value: u[0],
+                                    }))}
+                                    onChange={value => onChange('user_type', value)}
                                 />
                             )}
                         />
@@ -332,6 +355,7 @@ CaseInfosComponent.propTypes = {
     onChange: PropTypes.func.isRequired,
     teams: PropTypes.array.isRequired,
     devices: PropTypes.array.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -340,6 +364,7 @@ const MapStateToProps = state => ({
     deleteError: state.cases.deleteError,
     teams: state.patientsFilters.teams,
     devices: state.patientsFilters.devices,
+    userTypes: state.testsFilters.userTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

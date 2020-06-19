@@ -22,6 +22,7 @@ export const SHOW_PROFILES = 'hat/casesList/SHOW_PROFILES';
 export const SHOW_COORDINATIONS = 'hat/casesList/SHOW_COORDINATIONS';
 export const LOAD_VILLAGE_SOURCE = 'hat/casesList/LOAD_VILLAGE_SOURCE';
 export const LOAD_WORKZONES = 'hat/casesList/LOAD_WORKZONES';
+export const LOAD_USER_TYPES = 'hat/casesList/LOAD_USER_TYPES';
 export const LOAD_DEVICES = 'hat/casesList/LOAD_DEVICES';
 
 export const filtersInitialState = {
@@ -39,6 +40,7 @@ export const filtersInitialState = {
     workzones: [],
     devices: [],
     profiles: [],
+    userTypes: [],
 };
 
 const req = require('superagent');
@@ -351,6 +353,23 @@ export const fetchDevices = (dispatch) => {
     });
 };
 
+export const loadUserTypes = userTypes => ({
+    type: LOAD_USER_TYPES,
+    payload: userTypes,
+});
+
+export const fetchUserTypes = (dispatch) => {
+    req
+        .get('/api/casesusertypes/')
+        .then((result) => {
+            dispatch(loadUserTypes(result.body));
+        })
+        .catch(err => (console.error(`Error while fetching user types ${err}`)));
+    return ({
+        type: FETCH_ACTION,
+    });
+};
+
 export const filterActions = {
     loadAreas,
     loadZones,
@@ -374,6 +393,7 @@ export const filterActions = {
     fetchDevices,
     loadProvinces,
     fetchProfiles,
+    fetchUserTypes,
 };
 
 export const filtersReducer = (state = filtersInitialState, action = {}) => {
@@ -521,6 +541,13 @@ export const filtersReducer = (state = filtersInitialState, action = {}) => {
         case SHOW_COORDINATIONS: {
             const coordinations = action.payload;
             return { ...state, coordinations };
+        }
+        case LOAD_USER_TYPES: {
+            const userTypes = action.payload;
+            return {
+                ...state,
+                userTypes,
+            };
         }
         default:
             return state;

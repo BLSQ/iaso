@@ -49,6 +49,7 @@ from .source_types import SourceTypeViewSet
 from .tests_api import TestsViewSet
 from .treatments_choices import TreatmentsChoicesViewSet
 from .treatments import TreatmentsViewSet
+from .cases_user_types import CasesUserTypes
 
 
 router = routers.DefaultRouter()
@@ -108,6 +109,7 @@ router.register(r"treatments", TreatmentsViewSet, base_name="treatments")
 router.register(r"screeningtypes", ScreeningTypeViewSet, base_name="screeningtypes")
 router.register(r"jsondocument", JSONDocumentViewSet, base_name="jsondocument")
 router.register(r"treatmentschoices", TreatmentsChoicesViewSet, base_name="treatmentschoices")
+router.register(r"casesusertypes", CasesUserTypes, base_name="casesusertypes")
 
 
 router.register(r"logs", LogsViewSet, base_name="logs")

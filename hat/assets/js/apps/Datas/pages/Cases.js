@@ -56,6 +56,7 @@ class Cases extends Component {
             this.props.fetchCoordinations(),
             this.props.fetchDevices(),
             this.props.fetchCurrentUserInfos(),
+            this.props.fetchUserTypes(),
         ]).then(() => {
             if (this.props.params.province_id) {
                 this.props.selectProvince(this.props.params.province_id, this.props.params.zs_id, this.props.params.as_id, this.props.params.village_id);
@@ -179,6 +180,7 @@ class Cases extends Component {
                 areas,
                 villages,
                 devices,
+                userTypes,
             },
             reduxPage,
             params,
@@ -190,7 +192,7 @@ class Cases extends Component {
             showDeleteModale,
             caseDeleted,
         } = this.state;
-        const filters1 = filtersCases(formatMessage, devices);
+        const filters1 = filtersCases(formatMessage, devices, userTypes);
         const filters2 = filtersCases2(
             formatMessage,
             coordinations || [],
@@ -332,6 +334,7 @@ Cases.propTypes = {
     selectProvince: PropTypes.func.isRequired,
     selectVillage: PropTypes.func.isRequired,
     selectZone: PropTypes.func.isRequired,
+    fetchUserTypes: PropTypes.func.isRequired,
     selectArea: PropTypes.func.isRequired,
     reduxPage: PropTypes.object,
     setCasesList: PropTypes.func.isRequired,
@@ -354,6 +357,7 @@ const MapDispatchToProps = dispatch => ({
     redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     fetchTeams: () => dispatch(filterActions.fetchTeams(dispatch)),
     fetchCoordinations: () => dispatch(filterActions.fetchCoordinations(dispatch)),
+    fetchUserTypes: () => dispatch(filterActions.fetchUserTypes(dispatch)),
     fetchProvinces: () => dispatch(filterActions.fetchProvinces(dispatch)),
     fetchDevices: () => dispatch(filterActions.fetchDevices(dispatch)),
     selectProvince: (provinceId, zoneId, areaId, villageId) => dispatch(filterActions.selectProvince(provinceId, dispatch, zoneId, areaId, villageId)),

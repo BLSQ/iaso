@@ -1191,3 +1191,26 @@ export const inactiveUsers = (disabled = false) => (
         type: 'checkbox',
     }
 );
+
+
+export const userTypes = (formatMessage, userTypesList) => (
+    {
+        name: 'userTypes',
+        urlKey: 'userTypes',
+        isMultiSelect: true,
+        isClearable: true,
+        options: userTypesList.map(u => ({
+            label: u[1],
+            value: u[0],
+        })),
+        placeholder: {
+            id: 'main.label.allMale',
+            defaultMessage: 'All',
+        },
+        label: {
+            id: 'main.cases.userTypes',
+            defaultMessage: 'Case done with user type',
+        },
+        type: 'select',
+    }
+);

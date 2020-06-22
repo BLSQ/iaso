@@ -1,0 +1,43 @@
+<?xml version='1.0' ?>
+<data id="ne_csi_quantite" version="2020051401" xmlns:h="http://www.w3.org/1999/xhtml"
+      xmlns:jr="http://openrosa.org/javarosa" xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms"
+      xmlns:odk="http://www.opendatakit.org/xforms">
+    <point_geo>
+        <geocode>14.7449495 -17.4590048 0.0 20.0</geocode>
+    </point_geo>
+    <indicateurs_fa>
+        <csi_quant_01_validee>54</csi_quant_01_validee>
+        <csi_quant_02_validee>10</csi_quant_02_validee>
+        <csi_quant_03_validee>25</csi_quant_03_validee>
+        <csi_quant_04_validee>3</csi_quant_04_validee>
+        <csi_quant_05_validee>2</csi_quant_05_validee>
+        <csi_quant_06_validee>5</csi_quant_06_validee>
+        <csi_quant_07_validee>12</csi_quant_07_validee>
+        <csi_quant_08_validee>25</csi_quant_08_validee>
+        <csi_quant_09_validee>22</csi_quant_09_validee>
+        <csi_quant_10_validee>13</csi_quant_10_validee>
+        <csi_quant_11_validee>9</csi_quant_11_validee>
+        <csi_quant_12_validee>8</csi_quant_12_validee>
+        <csi_quant_13_validee>22</csi_quant_13_validee>
+        <csi_quant_14_validee>34</csi_quant_14_validee>
+        <csi_quant_15_validee>34</csi_quant_15_validee>
+        <csi_quant_16_validee>67</csi_quant_16_validee>
+        <csi_quant_17_validee>98</csi_quant_17_validee>
+        <csi_quant_18_validee>15</csi_quant_18_validee>
+        <csi_quant_19_validee>23</csi_quant_19_validee>
+        <csi_quant_20_validee>30</csi_quant_20_validee>
+        <csi_quant_21_validee>43</csi_quant_21_validee>
+    </indicateurs_fa>
+    <start>2020-04-07T14:47:25.270Z</start>
+    <end>2020-04-07T14:50:45.049Z</end>
+    <today>2020-04-07</today>
+    <deviceid>869643043461745</deviceid>
+    <subscriberid>608015138042042</subscriberid>
+    <imei>869643043461745</imei>
+    <simserial>8922101051380420420F</simserial>
+    <phonenumber/>
+    <meta>
+        <instanceID>uuid:ab74ad54-6816-41a6-a049-9b1e4c300ec6</instanceID>
+    </meta>
+</data>

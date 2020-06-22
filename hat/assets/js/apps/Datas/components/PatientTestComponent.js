@@ -119,6 +119,19 @@ class PatientTestComponent extends React.Component {
                                 {test.date ? moment(test.date).format('DD-MM-YYYY HH:mm') : '--'}
                             </td>
                         </tr>
+                        {
+                            test.type === 'CATT'
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.index" defaultMessage="Index" />
+                                    </th>
+                                    <td className={!test.index ? 'error-text' : ''}>
+                                        {test.index ? test.index : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />}
+                                    </td>
+                                </tr>
+                            )
+                        }
                         <tr>
                             <th>
                                 <FormattedMessage id="main.label.test.tester" defaultMessage="Testeur" />
@@ -181,19 +194,6 @@ class PatientTestComponent extends React.Component {
                                                 />
                                             )
                                         }
-                                    </td>
-                                </tr>
-                            )
-                        }
-                        {
-                            test.image && test.type === 'CATT'
-                            && (
-                                <tr>
-                                    <th>
-                                        <FormattedMessage id="patientsCasesTests.imageIndex" defaultMessage="Photo index" />
-                                    </th>
-                                    <td className={!test.index ? 'error-text' : ''}>
-                                        {test.index ? test.index : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />}
                                     </td>
                                 </tr>
                             )

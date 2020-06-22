@@ -98,6 +98,7 @@ class CasesViewSet(viewsets.ViewSet):
         test_types = request.GET.get("test_type", None)
         tester_type = request.GET.get("tester_type", None)
         screening_type = request.GET.get("screening_type", None)
+        user_types = request.GET.get("userTypes", None)
         device_ids = request.GET.get("device_id", None)
         pictures = request.GET.get("pictures", None)
         videos = request.GET.get("videos", None)
@@ -174,6 +175,8 @@ class CasesViewSet(viewsets.ViewSet):
                 .exclude(province__icontains="equateur")
             )
 
+        if user_types:
+            queryset = queryset.filter(user_type__in=user_types.split(","))
         if coordination_ids:
             queryset = queryset.filter(
                 normalized_team__coordination__id__in=coordination_ids.split(",")
@@ -422,6 +425,7 @@ class CasesViewSet(viewsets.ViewSet):
             columns = [
                 {"title": "Identifiant", "width": 9},
                 {"title": "UM", "width": 14},
+                {"title": "Type d'utilisateur", "width": 14},
                 {"title": "Date", "width": 15},
                 {"title": "Source", "width": 10},
                 {"title": "Province encodée", "width": 10},
@@ -459,6 +463,7 @@ class CasesViewSet(viewsets.ViewSet):
             queryset = queryset.values(
                 "id",
                 "normalized_team_name",
+                "user_type",
                 "normalized_date",
                 "source",
                 "normalized_province_name",
@@ -622,6 +627,7 @@ class CasesViewSet(viewsets.ViewSet):
                 case.form_number = request.data.get("form_number", None)
                 case.form_year = request.data.get("form_year", None)
                 case.source = request.data.get("source", None)
+                case.user_type = request.data.get("user_type", None)
 
                 village_id = request.data.get("villageId", None)
                 if village_id:
@@ -690,6 +696,7 @@ class CasesViewSet(viewsets.ViewSet):
         new_case.form_number = request.data.get("form_number", None)
         new_case.form_year = request.data.get("form_year", None)
         new_case.source = request.data.get("source", None)
+        new_case.user_type = request.data.get("user_type", None)
         village_id = request.data.get("villageId", None)
         if village_id:
             village = get_object_or_404(Village, id=village_id)

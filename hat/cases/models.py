@@ -98,6 +98,21 @@ SESSION_TYPE_DOOR_TO_DOOR = "doorToDoor"
 SESSION_TYPE_ON_SITE = "onSite"
 
 
+USER_TYPE_UM = "UM"
+USER_TYPE_MUM = "MUM"
+USER_TYPE_MUM_CONF = "MUM_CONF"
+USER_TYPE_CDTC = "CDTC"
+USER_TYPE_FIXED_STRUCTURE = "fixed_structure"
+
+USER_TYPE_CHOICES = (
+    (USER_TYPE_UM, "Unité mobile"),
+    (USER_TYPE_MUM, "Mini unité mobile"),
+    (USER_TYPE_MUM_CONF, "Mini unité mobile de confirmation"),
+    (USER_TYPE_CDTC, "CDTC"),
+    (USER_TYPE_FIXED_STRUCTURE, "Structure fixe"),
+)
+
+
 class CaseAbstract(models.Model):
     """
     Models case object with generic properties, treatment, followup, tests...
@@ -537,7 +552,12 @@ class CaseAbstract(models.Model):
     )
 
     latest_test_date = models.DateTimeField(null=True, blank=True, db_index=True)
-
+    user_type = models.TextField(
+        "Type d'utilisateur",
+        choices=USER_TYPE_CHOICES,
+        null=True,
+        blank=True,
+    )
     FILTER_ANY_PICTURE_FILENAME = Q(
         Q(test_catt_picture_filename__isnull=False)
         | Q(test_rdt_picture_filename__isnull=False)
@@ -703,6 +723,7 @@ class Case(CaseAbstract):
                 "province": province,
                 "record_location": {"lat": self.latitude, "long": self.longitude},
             },
+            "user_type": self.user_type,
             "patient": self.normalized_patient.as_dict(),
             "hat_id": self.hat_id,
             "hat_document_id": self.document_id,

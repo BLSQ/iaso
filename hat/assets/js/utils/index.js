@@ -210,9 +210,9 @@ export const removePositionIndex = (array) => {
 export const scrollTo = (selectorId, headerOffset = 0) => {
     setTimeout(() => {
         const toElement = document.getElementById(selectorId);
-        const elementPosition = toElement.getBoundingClientRect().top;
-        const offsetPosition = elementPosition - headerOffset;
         if (toElement) {
+            const elementPosition = toElement.getBoundingClientRect().top;
+            const offsetPosition = elementPosition - headerOffset;
             window.scrollTo({
                 behavior: 'smooth',
                 top: offsetPosition,

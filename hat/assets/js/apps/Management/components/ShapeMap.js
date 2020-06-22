@@ -237,7 +237,7 @@ class ShapeMap extends Component {
             });
         }
 
-        if (shapeItem.neighbours.length > 0) {
+        if (shapeItem.neighbours && shapeItem.neighbours.length > 0) {
             this.neighbour_locations = new L.FeatureGroup([]);
             shapeItem.neighbours.forEach((a) => {
                 a.villages.forEach((location) => {

@@ -645,6 +645,31 @@
         }
     }
 
+    .village-location-filters {
+        margin-bottom: 0 !important;
+        margin-top: 0;
+
+        .filter-item {
+            display: flex;
+            align-items: center;
+
+
+            >div {
+                width: 71%;
+                padding-left: 4%;
+            }
+
+            .filter-item-subtitle {
+                width: 29%;
+                padding: 0;
+            }
+        }
+
+        .Select {
+            width: 100% ! important;
+        }
+    }
+
     .filter-item {
         text-align: right;
         padding-bottom: 12px;

@@ -91,7 +91,7 @@ class LocationMapComponent extends Component {
         return (
             <section className="third-container">
                 <div>
-                    <div className="filters-container">
+                    <div className="filters-container village-location-filters">
                         <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}

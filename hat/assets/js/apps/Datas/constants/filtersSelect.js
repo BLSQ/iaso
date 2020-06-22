@@ -26,10 +26,11 @@ import {
     stage,
     showDeleted,
     showUnDeleted,
+    userTypes,
 } from '../../../utils/constants/filters';
 
 // CASES
-const filtersCases = (formatMessage, devices) => (
+const filtersCases = (formatMessage, devices, userTypesList) => (
     [
         testType(formatMessage),
         screeningResult(formatMessage),
@@ -37,6 +38,7 @@ const filtersCases = (formatMessage, devices) => (
         source(formatMessage),
         device(devices),
         stage(formatMessage),
+        userTypes(formatMessage, userTypesList),
     ]
 );
 

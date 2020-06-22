@@ -293,6 +293,7 @@ class PatientDetailsWrapper extends React.Component {
             load: {
                 loading,
             },
+            userTypes,
         } = this.props;
 
         const {
@@ -472,12 +473,19 @@ class PatientDetailsWrapper extends React.Component {
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseModal(c)}
                                                             canEditPatientInfos={canEditPatientInfos}
+                                                            userTypes={userTypes}
                                                         />
-                                                        <CaseInfoLocation
-                                                            currentCase={c}
-                                                            toggleModal={() => this.toggleCaseLocationModal(c)}
-                                                            canEditPatientInfos={canEditPatientInfos}
-                                                        />
+                                                        {
+                                                            (!c.user_type
+                                                            || (c.user_type && c.user_type !== 'CDTC' && c.user_type !== 'fixed_structure'))
+                                                            && (
+                                                                <CaseInfoLocation
+                                                                    currentCase={c}
+                                                                    toggleModal={() => this.toggleCaseLocationModal(c)}
+                                                                    canEditPatientInfos={canEditPatientInfos}
+                                                                />
+                                                            )
+                                                        }
                                                         <CaseInfectionLocation
                                                             currentCase={c}
                                                             toggleModal={() => this.toggleCaseInfectionLocationModal(c)}
@@ -656,6 +664,7 @@ PatientDetailsWrapper.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     setCaseslist: PropTypes.func.isRequired,
     load: PropTypes.object.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -664,6 +673,7 @@ const MapStateToProps = state => ({
     currentUser: state.currentUser.user,
     permissions: state.currentUser.permissions,
     geoFilters: state.geoFilters,
+    userTypes: state.testsFilters.userTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

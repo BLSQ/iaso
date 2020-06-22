@@ -71,6 +71,7 @@ class TestsViewSet(viewsets.ViewSet):
         case_item.test_pl_gb_mm3 = current_case.get("test_pl_gb_mm3", None)
         case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
         case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
+        case_item.test_pl_comments = current_case.get("test_pl_comments", None)
         case_item.update_from_test(new_test)
         case_item.save()
         new_test.form = case_item
@@ -122,6 +123,7 @@ class TestsViewSet(viewsets.ViewSet):
         case_item.test_pl_result = current_case.get("test_pl_result", None)
         case_item.test_pl_albumine = current_case.get("test_pl_albumine", None)
         case_item.test_pl_lcr = current_case.get("test_pl_lcr", None)
+        case_item.test_pl_comments = current_case.get("test_pl_comments", None)
         case_item.update_from_test(new_test)
         case_item.save()
         new_test.form = case_item

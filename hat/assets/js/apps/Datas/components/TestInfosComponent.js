@@ -356,21 +356,46 @@ const TestInfoComponent = ({
                         justify="flex-end"
                         alignContent="flex-start"
                     >
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.comments"
-                                    defaultMessage="Comments"
-                                />
-                            )}
-                            alignItems="flex-start"
-                            fieldComponent={(
-                                <textarea
-                                    value={currentTest.comment || ''}
-                                    onChange={event => onChange('comment', event.currentTarget.value, 'currentTest')}
-                                />
-                            )}
-                        />
+                        {
+                            currentTest.type !== 'PL'
+                        && (
+                            <ModalItem
+                                labelComponent={(
+                                    <FormattedMessage
+                                        id="main.label.comments"
+                                        defaultMessage="Comments"
+                                    />
+                                )}
+                                alignItems="flex-start"
+                                fieldComponent={(
+                                    <textarea
+                                        value={currentTest.comment || ''}
+                                        onChange={event => onChange('comment', event.currentTarget.value, 'currentTest')}
+                                    />
+                                )}
+                            />
+                        )
+                        }
+                        {
+                            currentTest.type === 'PL'
+                        && (
+                            <ModalItem
+                                labelComponent={(
+                                    <FormattedMessage
+                                        id="main.label.comments"
+                                        defaultMessage="Comments"
+                                    />
+                                )}
+                                alignItems="flex-start"
+                                fieldComponent={(
+                                    <textarea
+                                        value={currentCase.test_pl_comments || ''}
+                                        onChange={event => onChange('test_pl_comments', event.currentTarget.value, 'currentCase')}
+                                    />
+                                )}
+                            />
+                        )
+                        }
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage

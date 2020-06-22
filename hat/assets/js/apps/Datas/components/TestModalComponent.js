@@ -151,6 +151,9 @@ class TestModalComponent extends Component {
             currentTest,
             currentCase,
         } = this.state;
+        const {
+            isFixedStructure,
+        } = this.props;
         const isNewTest = currentTest.id === 0;
         const isUnTouched = isEqual(currentCase, this.props.currentCase)
         && isEqual(currentTest, getStateTest(this.props.currentTest, this.props.currentCase));
@@ -163,7 +166,12 @@ class TestModalComponent extends Component {
             && Boolean(currentTest.type !== 'clinicalsigns' || (currentTest.type === 'clinicalsigns' && currentTest.clinicalsigns && currentTest.clinicalsigns.length > 0))
             && Boolean(currentTest.type === 'clinicalsigns' || (currentTest.type !== 'clinicalsigns' && currentTest.result !== undefined))
             && Boolean(currentTest.date)
-            && Boolean(currentTest.villageId)
+            && (
+                (
+                    (!isFixedStructure(currentCase) && Boolean(currentTest.villageId))
+                    || (isFixedStructure(currentCase) && !currentTest.villageId)
+                )
+            )
         );
         return ((!isNewTest && isUnTouched) || !isValid);
     }
@@ -172,6 +180,7 @@ class TestModalComponent extends Component {
         const {
             toggleModal,
             showModale,
+            isFixedStructure,
         } = this.props;
         const {
             currentTest,
@@ -214,6 +223,7 @@ class TestModalComponent extends Component {
                         <TestInfosComponent
                             currentCase={currentCase}
                             currentTest={currentTest}
+                            isFixedStructure={isFixedStructure(currentCase)}
                             onChange={(key, value, type) => this.onChange(key, value, type)}
                         />
                     </section>
@@ -264,6 +274,7 @@ TestModalComponent.propTypes = {
     patientId: PropTypes.number.isRequired,
     selectTestProvince: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
+    isFixedStructure: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({

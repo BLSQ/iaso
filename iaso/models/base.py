@@ -15,7 +15,7 @@ from iaso.utils import flat_parse_xml_file
 from django.db.models import Q
 
 from .device import DeviceOwnership, Device
-from .forms import Form
+from .forms import Form, FormVersion
 
 YEAR = "YEAR"
 QUARTER = "QUARTER"
@@ -742,6 +742,15 @@ class Instance(models.Model):
             file_content = {}
         return file_content
 
+    @property
+    def form_version(self):
+        json = self.get_and_save_json_of_xml()
+
+        try:
+            return self.form.form_versions.get(version_id=json['_version'])
+        except (KeyError, FormVersion.DoesNotExist):
+            return None
+
     def __str__(self):
         return "%s %s" % (self.form, self.name)
 
@@ -790,6 +799,8 @@ class Instance(models.Model):
 
     def as_full_model(self):
         file_content = self.get_and_save_json_of_xml()
+        form_version = self.form_version
+
         return {
             "uuid": self.uuid,
             "id": self.id,
@@ -798,6 +809,7 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
             "form_name": self.form.name,
+            "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,

@@ -173,12 +173,9 @@ class InstanceDetails extends Component {
                                             icon: 'xml',
                                             color: 'secondary',
                                             tooltipMessage: MESSAGES.downloadXml,
-                                        }
-                                        }
+                                        }}
                                     >
-                                        <InstanceFileContent
-                                            fileContent={currentInstance.file_content}
-                                        />
+                                        <InstanceFileContent instance={currentInstance} />
                                     </WidgetPaper>
                                 </Grid>
                             </Grid>
@@ -188,6 +185,7 @@ class InstanceDetails extends Component {
         );
     }
 }
+
 InstanceDetails.defaultProps = {
     prevPathname: null,
     currentInstance: null,

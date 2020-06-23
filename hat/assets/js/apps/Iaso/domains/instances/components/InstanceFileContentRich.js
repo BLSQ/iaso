@@ -4,7 +4,7 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableRow,
+    TableRow, Tooltip,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import FunctionsIcon from '@material-ui/icons/Functions';
@@ -30,13 +30,15 @@ const useStyle = makeStyles(theme => ({
         borderBottom: `1px solid ${theme.palette.ligthGray.border}  !important`,
         minWidth: '200px',
     },
+    tableCellCalculated: {
+        color: theme.palette.gray.main,
+    },
     tableCellLabelWrapper: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
     },
     tableCellLabel: {
-        display: 'inline-block',
         whiteSpace: 'normal',
         wordBreak: 'break-word',
         marginLeft: 5,
@@ -72,12 +74,22 @@ function getDisplayedValue(descriptor, data) {
         return textPlaceholder;
     }
 
-    if (descriptor.type === 'select one') {
-        const choice = descriptor.children.find(c => c.name === value);
-        return choice !== undefined ? translateLabel(choice.label) : textPlaceholder;
+    switch (descriptor.type) {
+        case 'select_one':
+        case 'select one': {
+            const choice = descriptor.children.find(c => c.name === value);
+            return choice !== undefined ? translateLabel(choice.label) : textPlaceholder;
+        }
+        case 'select_multiple':
+        case 'select multiple': {
+            const choices = descriptor.children.filter(c => value.split(' ').includes(c.name));
+            return choices.length > 0
+                ? choices.map(choice => translateLabel(choice.label)).join(', ')
+                : textPlaceholder;
+        }
+        default:
+            return value !== '' ? value : textPlaceholder;
     }
-
-    return value !== '' ? value : textPlaceholder;
 }
 
 export default function InstanceFileContentRich({
@@ -115,9 +127,8 @@ function FormChild({ descriptor, data }) {
         case 'note':
             return <FormNoteField descriptor={descriptor} />;
         case 'calculate':
-            return <FormField descriptor={descriptor} data={data} icon={<FunctionsIcon color="disabled" />} />;
+            return <FormCalculatedField descriptor={descriptor} data={data} />;
         default:
-            console.log(descriptor.type, descriptor, data);
             return <FormField descriptor={descriptor} data={data} />;
     }
 }
@@ -153,15 +164,34 @@ FormGroup.propTypes = {
     data: PropTypes.object.isRequired,
 };
 
-function FormField({ descriptor, data, icon }) {
+function FormField({ descriptor, data }) {
+    const classes = useStyle();
+
+    return (
+        <TableRow>
+            <TableCell className={classes.tableCell}>
+                <Label descriptor={descriptor} />
+            </TableCell>
+            <TableCell className={classes.tableCell} align="right">
+                {getDisplayedValue(descriptor, data)}
+            </TableCell>
+        </TableRow>
+    );
+}
+FormField.propTypes = {
+    descriptor: PropTypes.object.isRequired,
+    data: PropTypes.object.isRequired,
+};
+
+function FormCalculatedField({ descriptor, data }) {
     const classes = useStyle();
 
     return (
         <TableRow>
             <TableCell className={classes.tableCell}>
                 <div className={classes.tableCellLabelWrapper}>
-                    {icon !== null && icon}
-                    <Label descriptor={descriptor} />
+                    <FunctionsIcon color="disabled" />
+                    <Label descriptor={descriptor} tooltip={descriptor.bind.calculate} />
                 </div>
             </TableCell>
             <TableCell className={classes.tableCell} align="right">
@@ -170,13 +200,9 @@ function FormField({ descriptor, data, icon }) {
         </TableRow>
     );
 }
-FormField.defaultProps = {
-    icon: null,
-};
-FormField.propTypes = {
+FormCalculatedField.propTypes = {
     descriptor: PropTypes.object.isRequired,
     data: PropTypes.object.isRequired,
-    icon: PropTypes.element,
 };
 
 function FormMetaField({ descriptor, data }) {
@@ -213,7 +239,7 @@ FormNoteField.propTypes = {
     descriptor: PropTypes.object.isRequired,
 };
 
-function Label({ descriptor, value }) {
+function Label({ descriptor, value, tooltip }) {
     const classes = useStyle();
 
     let label;
@@ -227,12 +253,18 @@ function Label({ descriptor, value }) {
         label = descriptor.name;
     }
 
-    return <div className={classes.tableCellLabel}>{label}</div>;
+    const labelElement = <div className={classes.tableCellLabel}>{label}</div>;
+
+    return tooltip === null
+        ? labelElement
+        : <Tooltip size="small" placement="right-start" title={tooltip}>{labelElement}</Tooltip>;
 }
 Label.defaultProps = {
     value: null,
+    tooltip: null,
 };
 Label.propTypes = {
     descriptor: PropTypes.object.isRequired,
     value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    tooltip: PropTypes.string,
 };

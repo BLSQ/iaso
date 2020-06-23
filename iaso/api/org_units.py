@@ -32,7 +32,6 @@ from hat.api.export_utils import (
 )
 import json
 from django.db.models import Value, IntegerField
-from hat.common.utils import queryset_iterator
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -96,8 +95,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
         app_id = request.GET.get("app_id", default_app_id)
-        if app_id:
-            queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
+
+        if app_id:  # let's assume that only the mobile app requests org units by app id
+            queryset = queryset.for_app_id(app_id)
+
         searches = request.GET.get("searches", None)
         counts = []
         if searches:
@@ -371,8 +372,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, api_import, request):
-        app_id = request.GET.get("app_id")
-        new_org_units = import_data(request.data, request.user, api_import, app_id)
+        app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
+        new_org_units = import_data(request.data, request.user, app_id)
 
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
@@ -452,14 +453,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
 
-def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
+def import_data(org_units, user, app_id):
     new_org_units = []
     version = None
     if not user.is_anonymous:
         version = user.iaso_profile.account.default_version
         project = Project.objects.filter(app_id=app_id).first()
         if project and project.needs_authentication:
-            if not user or user.iaso_profile.account.id != project.account.id:
+            if user.iaso_profile.account.id != project.account.id:
                 raise PermissionDenied("User permissions problem")
     elif app_id is not None:
         project = Project.objects.get(app_id=app_id)

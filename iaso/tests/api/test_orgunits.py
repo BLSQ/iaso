@@ -259,7 +259,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_but_some(self):
-        """POST /orgunits/bulkupdate happy path (select all except some)"""
+        """POST /orgunits/bulkupdate/ happy path (select all except some)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -288,6 +288,19 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(1, am.Modification.objects.count())
+
+    def test_org_unit_list_ok(self):
+        """GET /api/orgunits/ happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+
+    def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
+        self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
 
     def assertValidBulkupdateData(self, bulkupdate_data: typing.Mapping):
         self.assertHasField(bulkupdate_data, "id", int)

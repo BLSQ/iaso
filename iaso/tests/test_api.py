@@ -7,6 +7,8 @@ from ..models import (
     OrgUnitType,
     Account,
     Project,
+SourceVersion,
+DataSource,
 )
 from math import floor
 from rest_framework.test import APIClient
@@ -17,10 +19,14 @@ import typing
 
 class BasicAPITestCase(APITestCase):
     def setUp(self):
-        account = Account(name="Les Inconnus")
+        source = DataSource.objects.create(name="Source")
+        old_version = SourceVersion.objects.create(number=1, data_source=source)
+        default_version = SourceVersion.objects.create(number=2, data_source=source)
+
+        account = Account(name="Les Inconnus", default_version=default_version)
         account.save()
 
-        self.project = Project(name="Le spectacle", app_id="org.bluesquarehub.iaso")
+        self.project = Project(name="Le spectacle", app_id="org.bluesquarehub.iaso", account=account)
         self.project.save()
 
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
@@ -32,6 +38,8 @@ class BasicAPITestCase(APITestCase):
 
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
+
+        OrgUnit.objects.create(version=old_version, name="Odd org unit", org_unit_type=unit_type)
 
         self.form_1 = Form.objects.create(name="Hydroponics study")
         self.form_2 = Form.objects.create(name="Another hydroponics study")
@@ -97,6 +105,7 @@ class BasicAPITestCase(APITestCase):
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
+        self.assertEqual(1, len(units))
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
         self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))

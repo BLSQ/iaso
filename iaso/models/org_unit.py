@@ -9,7 +9,7 @@ from django_ltree.fields import PathField
 
 from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
-from .base import Group
+from .base import Group, Project
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -70,6 +70,22 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(
             path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
         )
+
+    def for_app_id(self, app_id: str, only_default_version: bool = True):
+        try:
+            project = Project.objects.get(app_id=app_id)
+            account = project.account
+        except Project.DoesNotExist:
+            account = None
+
+        if only_default_version and account is None:
+            queryset = self.none()  # cannot filter on default version if no project or project has no account
+        else:
+            queryset = self.filter(org_unit_type__projects__app_id=app_id)
+            if only_default_version:
+                queryset = queryset.filter(version=account.default_version)
+
+        return queryset
 
 
 class OrgUnitManager(ManagerWithBulkUpdate):

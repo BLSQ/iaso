@@ -81,6 +81,17 @@ def build_form_mapping():
                     }
                 }
             ],
+            "tea_zone": [
+                {
+                    "trackedEntityAttribute": {
+                        "code": "name",
+                        "name": "Nom",
+                        "id": "pxSXrL4ulzone",
+                        "valueType": "TEXT",
+                    },
+                    "iaso_field": "instance.org_unit.source_ref",
+                }
+            ],
             "ST01DE1": [
                 {
                     "program": "PROGRAM_DHIS2_ID",
@@ -101,6 +112,22 @@ def build_form_mapping():
                         "formName": "Autre pathogène détecté",
                         "valueType": "TEXT",
                     },
+                }
+            ],
+            "ST01DE3": [
+                {
+                    "program": "PROGRAM_DHIS2_ID",
+                    "programStage": "STAGE1_DHIS2_ID",
+                    "compulsory": False,
+                    "dataElement": {
+                        "code": "C19RL03",
+                        "name": "Zone d'enregistrement",
+                        "id": "ST01DE3_DHIS2_ID",
+                        "shortName": "Zone d'enregistrement",
+                        "formName": "Zone d'enregistrement",
+                        "valueType": "ORGANISATION_UNIT",
+                    },
+                    "iaso_field": "instance.org_unit.source_ref",
                 }
             ],
             "ST02DE1": [
@@ -253,10 +280,12 @@ class DataValueExporterTests(TestCase):
                 "tea_heure_d_enrolement": "15:17",
                 "tea_unique_number": "CDLM-00001-45",
                 "tea_name": "Yoda",
+                "tea_zone": "1",
                 "ST01DE1": "2019-12-01",
                 "ST01DE2": "Bounty",
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
+                "ST01DE3": 1,
             },
         )
 
@@ -287,6 +316,12 @@ class DataValueExporterTests(TestCase):
                         "displayName": "Nom",
                         "valueType": "TEXT",
                     },
+                    {
+                        "attribute": "pxSXrL4ulzone",
+                        "displayName": "Nom",
+                        "value": "OU_DHIS2_ID",
+                        "valueType": "TEXT",
+                    },
                 ],
                 "enrollments": [
                     {
@@ -307,7 +342,11 @@ class DataValueExporterTests(TestCase):
                                     {
                                         "dataElement": "ST01DE2_DHIS2_ID",
                                         "value": "Bounty",
-                                    }
+                                    },
+                                    {
+                                        "dataElement": "ST01DE3_DHIS2_ID",
+                                        "value": "OU_DHIS2_ID",
+                                    },
                                 ],
                                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
                             },

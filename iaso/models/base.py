@@ -36,14 +36,18 @@ MAPPING_TYPE_CHOICES = (
 )
 
 QUEUED = "QUEUED"
+RUNNING = "RUNNING"
+ERRORED = "ERRORED"
+EXPORTED = "EXPORTED"
 
 STATUS_TYPE_CHOICES = (
     (QUEUED, _("Queued")),
-    ("RUNNING", _("Running")),
-    ("EXPORTED", _("Exported")),
-    ("ERRORED", _("Errored")),
+    (RUNNING, _("Running")),
+    (EXPORTED, _("Exported")),
+    (ERRORED, _("Errored")),
     ("SKIPPED", _("Skipped")),
 )
+ALIVE_STATUSES = [QUEUED, RUNNING]
 
 
 def generate_id_for_dhis_2():

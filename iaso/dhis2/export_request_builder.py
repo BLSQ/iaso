@@ -1,5 +1,5 @@
 from django.db import transaction
-from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED
+from iaso.models import Instance, ExportRequest, ExportStatus, DERIVED, ALIVE_STATUSES
 from django.core.paginator import Paginator
 
 
@@ -43,6 +43,11 @@ class ExportRequestBuilder:
         if not force_export:
             instances = instances.filter(last_export_success_at__isnull=True)
 
+        # don't export instances already referenced by another running or queued export request
+        instances = instances.exclude(
+            exportstatus__export_request__status__in=ALIVE_STATUSES
+        )
+
         params = {"filters": filters, "force_export": force_export}
 
         if instances.count() == 0:
@@ -62,7 +67,9 @@ class ExportRequestBuilder:
 
         for page in range(1, paginator.num_pages + 1):
             export_statuses = []
-            for instance in paginator.page(page).object_list:
+            # always fetch the first page since the don't export instances already referenced by another running or queued export request
+            # changes the number of records as the loop inserts records in it
+            for instance in paginator.page(1).object_list:
                 for mapping_version in self.get_form_mapping_versions(instance):
 
                     if mapping_version.mapping.is_event_tracker and force_export:

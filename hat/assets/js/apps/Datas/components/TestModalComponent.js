@@ -139,6 +139,7 @@ class TestModalComponent extends Component {
         ) {
             delete currentTest.index;
         }
+        console.log('currentTest', currentTest);
         if (currentTest.id !== 0) {
             updateTest(dispatch, currentTest, patientId, toggleModal);
         } else {

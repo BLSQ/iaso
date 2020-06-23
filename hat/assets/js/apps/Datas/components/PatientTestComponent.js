@@ -298,6 +298,21 @@ class PatientTestComponent extends React.Component {
                             )
                         }
                         {
+                            test.type !== 'PL'
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
+                                    </th>
+                                    <td>
+                                        {
+                                            test.comment ? test.comment : '--'
+                                        }
+                                    </td>
+                                </tr>
+                            )
+                        }
+                        {
                             test.type && (test.type !== 'CATT' && test.type !== 'RDT')
                             && (
                                 <tr>

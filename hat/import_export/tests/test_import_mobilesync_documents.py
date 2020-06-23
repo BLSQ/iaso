@@ -559,6 +559,8 @@ class ImportMobileSyncDocuments(TestCase):
         device_cases = Case.objects.filter(device_id=test_json["deviceId"])
         self.assertEqual(device_cases.count(), 1)
         case = device_cases[0]
+        self.assertEquals(case.test_pl, RES_POSITIVE)
+        self.assertTrue(case.confirmed_case)
 
         # Test
         pl_test = case.test_set.get(type="PL")
@@ -854,6 +856,12 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertNotEqual(device_db.last_synced_seq, "0")
         case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
         self.assertIsNotNone(case)
+        self.assertEquals(
+            case.test_research_pl, RES_POSITIVE, "Positive result in the case"
+        )
+        self.assertTrue(
+            case.confirmed_case, "A research PL should make the case confirmed"
+        )
         rpl_test = case.test_set.filter(type=RESEARCH_PL).first()
         self.assertIsNotNone(rpl_test)
         self.assertEquals(rpl_test.result, RES_POSITIVE)

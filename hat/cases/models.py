@@ -24,6 +24,7 @@ from hat.constants import (
     DIL,
     PARASIT,
     LNP,
+    RESEARCH_PL,
 )
 from hat.geo.models import AS as ASModel
 from hat.geo.models import Village
@@ -481,6 +482,9 @@ class CaseAbstract(models.Model):
     test_pl = models.IntegerField(
         choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
     )
+    test_research_pl = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
     test_rdt = models.IntegerField(
         choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
     )
@@ -553,10 +557,7 @@ class CaseAbstract(models.Model):
 
     latest_test_date = models.DateTimeField(null=True, blank=True, db_index=True)
     user_type = models.TextField(
-        "Type d'utilisateur",
-        choices=USER_TYPE_CHOICES,
-        null=True,
-        blank=True,
+        "Type d'utilisateur", choices=USER_TYPE_CHOICES, null=True, blank=True,
     )
     FILTER_ANY_PICTURE_FILENAME = Q(
         Q(test_catt_picture_filename__isnull=False)
@@ -585,6 +586,10 @@ class CaseAbstract(models.Model):
         permissions = CASES_PERMISSIONS
 
     def confirmed(self):
+        if self.test_pl == RES_POSITIVE:
+            return True
+        if self.test_research_pl == RES_POSITIVE:
+            return True
         if self.test_ctcwoo == RES_POSITIVE:
             return True
         if self.test_ge == RES_POSITIVE:
@@ -623,6 +628,8 @@ class CaseAbstract(models.Model):
         elif new_test.type == PL:
             self.test_pl = new_test.result
             self.test_pl_video_filename = new_test.video_filename
+        elif new_test.type == RESEARCH_PL:
+            self.test_research_pl = new_test.result
         elif new_test.type == CTCWOO:
             self.test_ctcwoo = new_test.result
             self.test_ctcwoo_video_filename = new_test.video_filename

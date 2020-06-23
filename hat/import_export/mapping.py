@@ -1097,7 +1097,6 @@ MAPPING: List[JsonType] = [
     },
     {
         "field": "test_research_pl",
-        "case_ignore": True,
         "export_levels": [Export.full, Export.anon],
         "sources": {
             "mobile": {

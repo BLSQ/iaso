@@ -85,6 +85,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Record(s)',
         id: 'iaso.forms.records',
     },
+    instance_updated_at: {
+        id: 'iaso.forms.instance_updated_at',
+        defaultMessage: 'Last submission',
+    },
     updated_at: {
         id: 'iaso.forms.updated_at',
         defaultMessage: 'Updated at',

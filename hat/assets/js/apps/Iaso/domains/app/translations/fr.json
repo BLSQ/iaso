@@ -23,6 +23,7 @@
   "iaso.forms.dialog.deleteFormTitle": "Etes-vous certain de vouloir effacer ce formulaire ?",
   "iaso.forms.form_id": "ID formulaire",
   "iaso.forms.hasInstances": "Formulaires",
+  "iaso.forms.instance_updated_at": "Dernière soumission",
   "iaso.forms.latest_version_files": "Dernière version",
   "iaso.forms.level": "Niveau",
   "iaso.forms.location": "Localisation",

@@ -12,6 +12,7 @@ class PatientCasesTests extends React.Component {
             currentCase,
             toggleModal,
             canEditPatientInfos,
+            isFixedStructure,
         } = this.props;
         if (!tests || tests.length === 0) {
             return null;
@@ -33,6 +34,7 @@ class PatientCasesTests extends React.Component {
                                     currentCase={currentCase}
                                     toggleModal={toggleModal}
                                     canEditPatientInfos={canEditPatientInfos}
+                                    isFixedStructure={isFixedStructure}
                                 />
                             </div>
                         );
@@ -58,6 +60,7 @@ PatientCasesTests.propTypes = {
     currentCase: PropTypes.object,
     toggleModal: PropTypes.func.isRequired,
     canEditPatientInfos: PropTypes.bool.isRequired,
+    isFixedStructure: PropTypes.bool.isRequired,
 };
 
 const PatientCasesTestsWithIntl = injectIntl(PatientCasesTests);

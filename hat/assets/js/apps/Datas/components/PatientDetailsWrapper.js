@@ -50,6 +50,7 @@ const MESSAGES = defineMessages({
         id: 'management.detail.map',
     },
 });
+const isFixedStructure = currentCase => currentCase.user_type && (currentCase.user_type === 'CDTC' || currentCase.user_type === 'fixed_structure');
 
 class PatientDetailsWrapper extends React.Component {
     constructor(props) {
@@ -429,6 +430,7 @@ class PatientDetailsWrapper extends React.Component {
                                                 currentCase={editedCase}
                                                 currentTest={editedTest}
                                                 patientId={patient.id}
+                                                isFixedStructure={currentCase => isFixedStructure(currentCase)}
                                             />
                                         )
                                     }
@@ -476,9 +478,7 @@ class PatientDetailsWrapper extends React.Component {
                                                             userTypes={userTypes}
                                                         />
                                                         {
-                                                            (!c.user_type
-                                                            || (c.user_type && c.user_type !== 'CDTC' && c.user_type !== 'fixed_structure'))
-                                                            && (
+                                                            !isFixedStructure(c) && (
                                                                 <CaseInfoLocation
                                                                     currentCase={c}
                                                                     toggleModal={() => this.toggleCaseLocationModal(c)}
@@ -499,6 +499,7 @@ class PatientDetailsWrapper extends React.Component {
                                                             currentCase={c}
                                                             toggleModal={test => this.toggleTestModal(test, c)}
                                                             canEditPatientInfos={canEditPatientInfos}
+                                                            isFixedStructure={isFixedStructure(c)}
                                                         />
                                                     </div>
                                                 </li>

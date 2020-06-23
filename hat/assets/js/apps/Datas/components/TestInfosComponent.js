@@ -87,6 +87,7 @@ const TestInfoComponent = ({
     onChange,
     currentTest,
     currentCase,
+    isFixedStructure,
 }) => {
     const {
         testTypeSelect,
@@ -386,10 +387,14 @@ const TestInfoComponent = ({
                                 />
                             )}
                         />
-
-                        <TestLocationComponent
-                            onChange={(key, value, type) => onChange(key, value, type)}
-                        />
+                        {
+                            !isFixedStructure
+                            && (
+                                <TestLocationComponent
+                                    onChange={(key, value, type) => onChange(key, value, type)}
+                                />
+                            )
+                        }
                     </Grid>
                 </Grid>
             </section>
@@ -403,6 +408,7 @@ TestInfoComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
+    isFixedStructure: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({

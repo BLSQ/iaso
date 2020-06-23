@@ -73,9 +73,9 @@ class OrgUnitTypesAPITestCase(APITestCase):
             "/api/orgunittypes/", data={"name": "", "depth": 1, "project_ids": []}, format="json",
         )
         self.assertJSONResponse(response, 400)
-        self.assertHasError(response.json(), "name", "Ce champ ne peut être vide.")
-        self.assertHasError(response.json(), "short_name", "Ce champ est obligatoire.")
-        self.assertHasError(response.json(), "project_ids", "Cette liste ne peut pas être vide.")
+        self.assertHasError(response.json(), "name", "This field may not be blank.")
+        self.assertHasError(response.json(), "short_name", "This field is required.")
+        self.assertHasError(response.json(), "project_ids", "This list may not be empty.")
 
     @tag("iaso_only")
     def test_org_unit_type_create_invalid_wrong_project(self):

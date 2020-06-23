@@ -21,7 +21,7 @@ const formsTableColumns = (formatMessage, component) => (
             Cell: settings => <ColumnTextComponent text={settings.original.name} />,
         },
         {
-            Header: formatMessage(MESSAGES.updated_at),
+            Header: formatMessage(MESSAGES.instance_updated_at),
             accessor: 'instance_updated_at',
             Cell: (settings) => {
                 const dateText = settings.original.instance_updated_at

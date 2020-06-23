@@ -233,7 +233,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 
 # switch webpack.dev and webpack.prod as well if changing here
-LANGUAGE_CODE = "fr"
+LANGUAGE_CODE = "en"
 
 LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
 

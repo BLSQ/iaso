@@ -21,6 +21,8 @@ from iaso.models import (
     Profile,
     Project,
     AGGREGATE,
+    ERRORED,
+    EXPORTED,
 )
 
 import os
@@ -442,7 +444,7 @@ class DataValueExporterTests(TestCase):
         instances_qs = Instance.objects.order_by("id").all()
 
         DataValueExporter().export_instances(export_request, True)
-        self.expect_logs("exported")
+        self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
         self.assertIsNotNone(instance.last_export_success_at)
@@ -501,7 +503,7 @@ class DataValueExporterTests(TestCase):
 
         DataValueExporter().export_instances(export_request, True)
 
-        self.expect_logs("exported")
+        self.expect_logs(EXPORTED)
 
         instance.refresh_from_db()
         self.assertIsNotNone(instance.last_export_success_at)
@@ -539,7 +541,7 @@ class DataValueExporterTests(TestCase):
             )
             DataValueExporter().export_instances(export_request, True)
 
-        self.expect_logs("errored")
+        self.expect_logs(ERRORED)
 
         self.assertEquals(
             "ERROR while processing page 1/1 : Data element: FC3nR54yGUx must be assigned through data sets to organisation unit: t3kZ5ksd8IR",
@@ -578,7 +580,7 @@ class DataValueExporterTests(TestCase):
 
             DataValueExporter().export_instances(export_request, True)
 
-        self.expect_logs("errored")
+        self.expect_logs(ERRORED)
 
         self.assertEquals(
             "ERROR while processing page 1/1, instance_id "
@@ -617,7 +619,7 @@ class DataValueExporterTests(TestCase):
             )
             DataValueExporter().export_instances(export_request, True)
 
-        self.expect_logs("errored")
+        self.expect_logs(ERRORED)
 
         self.assertEquals(
             "ERROR while processing page 1/1 : non json response return by server",

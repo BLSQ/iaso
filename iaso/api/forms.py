@@ -152,14 +152,9 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        user = self.request.user
-        app_id = self.request.query_params.get("app_id")
-
-        # no auth, no app id : -> no results
-        if user.is_anonymous and app_id is None:
-            return Form.objects.none()
-
-        queryset = Form.objects.all()
+        queryset = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
             instances_count=Count(
@@ -169,17 +164,6 @@ class FormsViewSet(ModelViewSet):
                 ),
             )
         )
-
-        if user.is_authenticated:
-            queryset = queryset.filter(projects__account=user.iaso_profile.account)
-
-        if app_id is not None:
-            try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.filter(projects__in=[project])
-                queryset = queryset.exclude(derived=True)
-            except Project.DoesNotExist:
-                return queryset.none()
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:

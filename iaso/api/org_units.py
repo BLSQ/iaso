@@ -68,30 +68,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = [HasOrgUnitPermission]
 
     def list(self, request):
-        user = self.request.user
-        app_id = self.request.query_params.get("app_id")
-
-        # no auth, no app id : -> no results
-        if user.is_anonymous and app_id is None:
-            queryset = OrgUnit.objects.none()
-        else:
-            queryset = OrgUnit.objects.all()
-
-        if user.is_authenticated:
-            account = request.user.iaso_profile.account
-            version_ids = (
-                SourceVersion.objects.filter(data_source__projects__account=account)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-            queryset = queryset.filter(version_id__in=version_ids)
-
-        if app_id is not None:
-            try:
-                project = Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.for_project(project, only_default_version=True)
-            except Project.DoesNotExist:
-                queryset = queryset.none()
+        queryset = OrgUnit.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

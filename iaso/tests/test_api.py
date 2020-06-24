@@ -182,22 +182,24 @@ class BasicAPITestCase(APITestCase):
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
         uuid = "w5dg2671-aa59-4fb2-a4a0-4af80573e2de"
         name = "Hopital Saint-André"
-        unit_body = {
-            "id": uuid,
-            "latitude": 0,
-            "created_at": 1565194077692,
-            "updated_at": 1565194077693,
-            "org_unit_type_id": hospital_unit_type.id,
-            "parent_id": None,
-            "longitude": 0,
-            "accuracy": 0,
-            "time": 0,
-            "name": name,
-        }
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 0,
+                "created_at": 1565194077692,
+                "updated_at": 1565194077693,
+                "org_unit_type_id": hospital_unit_type.id,
+                "parent_id": None,
+                "longitude": 0,
+                "accuracy": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
 
         response = c.post(
             "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=[unit_body],
+            data=unit_body,
             format="json",
         )
         self.assertEqual(response.status_code, 200)
@@ -250,29 +252,53 @@ class BasicAPITestCase(APITestCase):
         # inserting a child org_unit
         uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
         name2 = "Hopital Sous Fifre"
-        unit_body_2 = {
-            "id": uuid2,
-            "latitude": 0,
-            "created_at": 1565194077699,
-            "updated_at": 1565194077800,
-            "orgUnitTypeId": hospital_unit_type.id,
-            "parentId": uuid,
-            "longitude": 0,
-            "accuracy": 0,
-            "altitude": 0,
-            "time": 0,
-            "name": name2,
-        }
+        unit_body_2 = [
+            {
+                "id": uuid2,
+                "latitude": 0,
+                "created_at": 1565194077699,
+                "updated_at": 1565194077800,
+                "orgUnitTypeId": hospital_unit_type.id,
+                "parentId": uuid,
+                "longitude": 0,
+                "accuracy": 0,
+                "altitude": 0,
+                "time": 0,
+                "name": name2,
+            }
+        ]
 
         response = c.post(
             "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=[unit_body_2],
+            data=unit_body_2,
             format="json",
         )
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
+
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = c.post("/api/orgunits/", data=unit_body_2, format="json",)
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body_2,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = c.post(
+            "/api/orgunits/?app_id=1234", data=unit_body_2, format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body_2,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
 
     @tag("iaso_only")
     def test_instance_insertion(self):
@@ -340,6 +366,28 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(instance.location.z, 100)
 
         self.assertAPIImport("instance", request_body=instance_body, has_problems=False)
+
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = c.post("/api/instances/", data=instance_body, format="json",)
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "instance",
+            request_body=instance_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = c.post(
+            "/api/instances/?app_id=9876", data=instance_body, format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "instance",
+            request_body=instance_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
 
     @tag("iaso_only")
     def test_fetch_org_unit_type(self):

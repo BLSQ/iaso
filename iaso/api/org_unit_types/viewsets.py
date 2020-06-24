@@ -1,7 +1,7 @@
 from rest_framework import permissions
 
 from django.db.models import Q
-from iaso.models import OrgUnitType
+from iaso.models import OrgUnitType, Project
 from .serializers import OrgUnitTypeSerializer
 from ..common import ModelViewSet
 
@@ -38,11 +38,15 @@ class OrgUnitTypeViewSet(ModelViewSet):
 
         queryset = OrgUnitType.objects.all()
 
-        if not user.is_anonymous:
+        if user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
 
         if app_id is not None:
-            queryset = queryset.filter(projects__app_id=app_id)
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.filter(projects__in=[project])
+            except Project.DoesNotExist:
+                return queryset.none()
 
         search = self.request.query_params.get("search", None)
         if search:

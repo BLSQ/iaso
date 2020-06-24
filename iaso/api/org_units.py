@@ -77,7 +77,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = OrgUnit.objects.all()
 
-        if not user.is_anonymous:
+        if user.is_authenticated:
             account = request.user.iaso_profile.account
             version_ids = (
                 SourceVersion.objects.filter(data_source__projects__account=account)
@@ -87,7 +87,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(version_id__in=version_ids)
 
         if app_id is not None:
-            queryset = queryset.for_app_id(app_id, only_default_version=True)
+            try:
+                Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.for_app_id(app_id, only_default_version=True)
+            except Project.DoesNotExist:
+                queryset = queryset.none()
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

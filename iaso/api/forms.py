@@ -170,12 +170,16 @@ class FormsViewSet(ModelViewSet):
             )
         )
 
-        if not user.is_anonymous:
+        if user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
 
         if app_id is not None:
-            queryset = queryset.filter(projects__app_id=app_id)
-            queryset = queryset.exclude(derived=True)
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.filter(projects__in=[project])
+                queryset = queryset.exclude(derived=True)
+            except Project.DoesNotExist:
+                return queryset.none()
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:

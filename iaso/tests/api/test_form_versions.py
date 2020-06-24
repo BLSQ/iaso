@@ -1,5 +1,7 @@
 import typing
 import tempfile
+
+from django.core.files.uploadedfile import UploadedFile
 from django.test import tag
 from django.core.files import File
 from django.test import override_settings
@@ -61,7 +63,14 @@ class FormsVersionAPITestCase(APITestCase):
         cls.form_1.save()
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
-        cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        with open(
+            "iaso/tests/fixtures/odk_form_valid_no_settings.xls", "rb"
+        ) as xls_file:
+            cls.form_2.form_versions.create(
+                file=form_2_file_mock,
+                xls_file=UploadedFile(xls_file),
+                version_id="2020022401",
+            )
         cls.project.forms.add(cls.form_2)
 
         cls.project.save()
@@ -88,10 +97,11 @@ class FormsVersionAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.get("/api/formversions/")
         self.assertJSONResponse(response, 200)
-        json_response = response.json()
-        formversion = json_response["form_versions"][0]
-        self.assertValidFormVersionDataExceptXlsFile(formversion)
-        self.assertTrue("descriptor" not in formversion)
+        form_versions_data = response.json()["form_versions"]
+
+        for form_version_data in form_versions_data:
+            self.assertValidFormVersionData(form_version_data)
+            self.assertNotIn("descriptor", form_version_data)
 
     @tag("iaso_only")
     def test_form_versions_retrieve(self):
@@ -99,15 +109,12 @@ class FormsVersionAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.yoda)
         response = self.client.get(
-            f"/api/formversions/"
-            + str(self.form_2.form_versions.all()[0].id)
-            + "/?fields=:all"
+            f"/api/formversions/{self.form_2.form_versions.first().id}/?fields=:all"
         )
         self.assertJSONResponse(response, 200)
-        json_response = response.json()
-        formversion = json_response
-        self.assertTrue("descriptor" in formversion)
-        self.assertValidFormVersionDataExceptXlsFile(formversion)
+        form_version_data = response.json()
+        self.assertValidFormVersionData(form_version_data)
+        self.assertHasField(form_version_data, "descriptor", dict)
 
     @tag("iaso_only")
     def test_form_versions_update(self):
@@ -141,7 +148,7 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
-        self.assertValidFormVersionData(response_data)
+        self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022401")
@@ -176,7 +183,7 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
-        self.assertValidFormVersionData(response_data)
+        self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
@@ -189,7 +196,7 @@ class FormsVersionAPITestCase(APITestCase):
         form_mapping = m.Mapping.objects.create(
             form=self.form_2, mapping_type=m.AGGREGATE, data_source=self.sw_source
         )
-        version_mapping = m.MappingVersion.objects.create(
+        m.MappingVersion.objects.create(
             mapping=form_mapping,
             form_version=self.form_2.form_versions.first(),
             json={
@@ -206,7 +213,7 @@ class FormsVersionAPITestCase(APITestCase):
             data_source=self.sw_source,
             name="derived",
         )
-        derived_version_mapping = m.MappingVersion.objects.create(
+        m.MappingVersion.objects.create(
             mapping=derived_form_mapping,
             form_version=self.form_2.form_versions.first(),
             name="derived",
@@ -237,7 +244,7 @@ class FormsVersionAPITestCase(APITestCase):
             )
         self.assertJSONResponse(response, 201)
         response_data = response.json()
-        self.assertValidFormVersionData(response_data)
+        self.assertValidFormVersionData(response_data, check_annotated_fields=False)
 
         created_version = m.FormVersion.objects.get(pk=response_data["id"])
         self.assertEqual(created_version.version_id, "2020022402")
@@ -408,7 +415,7 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertJSONResponse(response, 400)
 
     def assertValidFormVersionData(
-        self, form_version_data: typing.Mapping
+        self, form_version_data: typing.Mapping, *, check_annotated_fields: bool = True
     ):  # TODO: check for other fields
         self.assertHasField(form_version_data, "id", int)
         self.assertHasField(form_version_data, "file", str)
@@ -417,17 +424,6 @@ class FormsVersionAPITestCase(APITestCase):
         self.assertHasField(form_version_data, "created_at", float)
         self.assertHasField(form_version_data, "updated_at", float)
 
-    def assertValidFormVersionDataExceptXlsFile(
-        self, form_version_data: typing.Mapping
-    ):  # TODO: check for other fields
-        self.assertHasField(form_version_data, "id", int)
-        self.assertHasField(form_version_data, "file", str)
-        self.assertHasField(form_version_data, "version_id", str)
-        self.assertHasField(form_version_data, "created_at", float)
-        self.assertHasField(form_version_data, "updated_at", float)
-
-    def assertNotLoadedDescriptor(self, descriptor):
-        self.assertEquals(
-            descriptor,
-            {"warning": "not loaded try with ?fields=descriptor", "loaded": False},
-        )
+        if check_annotated_fields:
+            self.assertHasField(form_version_data, "mapped", bool)
+            self.assertHasField(form_version_data, "full_name", str)

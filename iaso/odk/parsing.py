@@ -1,6 +1,6 @@
 import pathlib
 import typing
-from pyxform import create_survey_from_xls, errors
+from pyxform import create_survey_from_xls, errors, Survey as BaseSurvey
 from django.utils import timezone, dateparse
 
 
@@ -8,27 +8,43 @@ class ParsingError(Exception):
     pass
 
 
-class XMLForm:
+class Survey:
+    """Container class for pyxform survey.
+    Used for xml/json conversion.
+    """
+
     def __init__(
-        self,
-        xml_file_content: bytes,
-        xml_file_name: str,
-        *,
-        settings: typing.Mapping[str, str],
+            self,
+            survey: BaseSurvey,
+            *,
+            xls_file_name: str,
     ):
-        self.file_content = xml_file_content
-        self.file_name = xml_file_name
-        self._settings = settings
+        self._survey = survey
+        self._xls_file_name = xls_file_name
 
-    def __getitem__(self, item):
-        return self._settings[item]
+    def to_xml(self):
+        xml_file_content = self._survey.to_xml(validate=False)
 
-    def __contains__(self, item):
-        return item in self._settings
+        return xml_file_content.encode("utf-8")
+
+    def to_json(self):
+        return self._survey.to_json_dict()
+
+    def generate_file_name(self, extension: str):
+        xls_path = pathlib.Path(self._xls_file_name)
+
+        return f"{xls_path.stem}.{extension}"
+
+    @property
+    def form_id(self):
+        return self._survey.id_string
+
+    @property
+    def version(self):
+        return self._survey.version
 
 
-def to_json_dict(form_version):
-
+def to_json_dict(form_version):  # TODO: remove
     if not form_version.xls_file:
         return None
     try:
@@ -59,13 +75,9 @@ def to_questions_by_name(form_descriptor):
 
 
 def parse_xls_form(
-    xls_file: typing.BinaryIO, *, previous_version: str = None
-) -> XMLForm:
-    """Converts an ODK xls form file to an ODK xml form file.
-
-    Note: the pyxform conversion function works with file paths, and does not handle file-like objects.
-    Instead of using low-level pyxform functions and structure, we use temporary files to be able to use
-    the conversion functions as is.
+        xls_file: typing.BinaryIO, *, previous_version: str = None
+) -> Survey:
+    """Parse an ODK xls form file.
 
     :param xls_file: a named file-like object (a persistent file or a django uploaded file will do)
     :param previous_version: used to validate the version present in the excel file or to auto-generate it
@@ -85,26 +97,17 @@ def parse_xls_form(
         )
 
     if (
-        previous_version is not None
-        and previous_version.isnumeric()
-        and int(previous_version) >= int(survey.version)
+            previous_version is not None
+            and previous_version.isnumeric()
+            and int(previous_version) >= int(survey.version)
     ):
         raise ParsingError(
             "Invalid XLS file: Parsed version should be greater than previous version."
         )
 
-    xml_file_content = survey.to_xml(validate=False)
-    xls_path = pathlib.Path(xls_file.name)
-    xml_file_name = f"{xls_path.stem}.xml"
-
-    return XMLForm(
-        xml_file_content.encode("utf-8"),
-        xml_file_name,
-        settings={
-            "form_id": survey.id_string,
-            "form_title": survey.title,
-            "version": survey.version,
-        },
+    return Survey(
+        survey,
+        xls_file_name=xls_file.name,
     )
 
 
@@ -118,13 +121,13 @@ def _generate_form_version(previous_version: typing.Optional[str]) -> str:
 
     today = timezone.now().date()
     if (
-        previous_version is not None and len(previous_version) == 10
+            previous_version is not None and len(previous_version) == 10
     ):  # previous version in yyyymmddrr format
         previous_version_date_string = (
             f"{previous_version[:4]}-{previous_version[4:6]}-{previous_version[6:8]}"
         )
         if (
-            dateparse.parse_date(previous_version_date_string) == today
+                dateparse.parse_date(previous_version_date_string) == today
         ):  # previous version was created today
             if previous_version[8:] == "99":
                 raise ParsingError("Invalid XLS file: Too many versions.")

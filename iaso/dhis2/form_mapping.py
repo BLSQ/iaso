@@ -1,5 +1,3 @@
-from iaso.models import FormVersion
-
 import uuid
 
 
@@ -37,20 +35,7 @@ def seed_event_mapping(api, program_id):
     return (mapping, missing_data_elements)
 
 
-def copy_mappings_from_previous_version(form_version):
-
-    try:
-        previous_form_version = (
-            FormVersion.objects.filter(form=form_version.form)
-            .exclude(pk=form_version.id)
-            .latest("created_at")
-        )
-    except FormVersion.DoesNotExist:
-        previous_form_version = None
-
-    if not previous_form_version:
-        return
-
+def copy_mappings_from_previous_version(form_version, previous_form_version):
     for mapping_version in previous_form_version.mapping_versions.all():
         # clone the mapping_version and assign it the new version
         mapping_version.id = None

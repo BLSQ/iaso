@@ -21,7 +21,7 @@ import json
 import pandas
 from io import StringIO
 from pathlib import PurePath
-from pandas.io.json import json_normalize
+from pandas import json_normalize
 import hat.common.mdb as mdb
 from .errors import ImportStage, ImportStageException
 from django.utils.translation import ugettext as _

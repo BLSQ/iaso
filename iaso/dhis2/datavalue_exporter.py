@@ -367,6 +367,14 @@ class EventHandler:
 
 
 class EventTrackerHandler:
+    def get_instance_value(self, instance, question_key, mapping):
+        raw_value = instance.json[question_key]
+        if "iaso_field" in mapping:
+            if mapping["iaso_field"] == "instance.org_unit.source_ref":
+                raw_value = instance.org_unit.source_ref
+
+        return raw_value
+
     def map_to_values(self, instance, form_mapping, export_status=None):
         question_mappings = form_mapping["question_mappings"]
 
@@ -412,7 +420,10 @@ class EventTrackerHandler:
                         ):
                             if "dataElement" in mapping:
                                 data_element = mapping["dataElement"]
-                                raw_value = instance.json[question_key]
+                                raw_value = self.get_instance_value(
+                                    instance, question_key, mapping
+                                )
+
                                 data_value = {
                                     "dataElement": data_element["id"],
                                     "value": format_value(data_element, raw_value),
@@ -447,8 +458,9 @@ class EventTrackerHandler:
                 for mapping in question_mappings[question_key]:
                     if "trackedEntityAttribute" in mapping:
                         tea = mapping["trackedEntityAttribute"]
-                        raw_value = instance.json.get(question_key)
-
+                        raw_value = self.get_instance_value(
+                            instance, question_key, mapping
+                        )
                         attribute = {
                             "attribute": tea["id"],
                             "value": format_value(tea, raw_value),

@@ -54,7 +54,9 @@ class CorrelationAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=instance_body,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 
@@ -94,7 +96,9 @@ class CorrelationAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=instance_body,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 

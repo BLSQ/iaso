@@ -299,8 +299,12 @@ class OrgUnitAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
 
-    def assertValidOrgUnitListData(self, *, list_data: typing.Mapping, expected_length: int):
-        self.assertValidListData(list_data=list_data, results_key="orgUnits", expected_length=expected_length)
+    def assertValidOrgUnitListData(
+        self, *, list_data: typing.Mapping, expected_length: int
+    ):
+        self.assertValidListData(
+            list_data=list_data, results_key="orgUnits", expected_length=expected_length
+        )
 
     def assertValidBulkupdateData(self, bulkupdate_data: typing.Mapping):
         self.assertHasField(bulkupdate_data, "id", int)

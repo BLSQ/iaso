@@ -7,8 +7,8 @@ from ..models import (
     OrgUnitType,
     Account,
     Project,
-SourceVersion,
-DataSource,
+    SourceVersion,
+    DataSource,
 )
 from math import floor
 from rest_framework.test import APIClient
@@ -26,7 +26,9 @@ class BasicAPITestCase(APITestCase):
         account = Account(name="Les Inconnus", default_version=default_version)
         account.save()
 
-        self.project = Project(name="Le spectacle", app_id="org.bluesquarehub.iaso", account=account)
+        self.project = Project(
+            name="Le spectacle", app_id="org.inconnus.spectacle", account=account
+        )
         self.project.save()
 
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
@@ -39,7 +41,9 @@ class BasicAPITestCase(APITestCase):
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
 
-        OrgUnit.objects.create(version=old_version, name="Odd org unit", org_unit_type=unit_type)
+        OrgUnit.objects.create(
+            version=old_version, name="Odd org unit", org_unit_type=unit_type
+        )
 
         self.form_1 = Form.objects.create(name="Hydroponics study")
         self.form_2 = Form.objects.create(name="Another hydroponics study")
@@ -72,7 +76,11 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=unit_body, format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=unit_body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
@@ -87,7 +95,9 @@ class BasicAPITestCase(APITestCase):
         # make sure APIImport record has been created
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
-        response = c.get("/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json")
+        response = c.get(
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         json_response = json.loads(response.content)
 
@@ -98,7 +108,7 @@ class BasicAPITestCase(APITestCase):
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )
 
         content_1 = response.content
@@ -118,7 +128,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should be the same result as without the app_id
         content_2 = response.content
         self.assertEqual(content_1, content_2)
@@ -148,7 +158,11 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body_2], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body_2],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
@@ -179,12 +193,18 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
 
-        response = c.get("/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json")
+        response = c.get(
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         json_response = json.loads(response.content)
 
@@ -195,7 +215,7 @@ class BasicAPITestCase(APITestCase):
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )
 
         content_1 = response.content
@@ -214,7 +234,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should be the same result as without the app_id
         content_2 = response.content
         self.assertEqual(content_1, content_2)
@@ -242,7 +262,11 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body_2], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body_2],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
@@ -269,7 +293,11 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body],
+            format="json",
+        )
         self.assertJSONResponse(response, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
@@ -293,7 +321,11 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/instances/?app_id=org.bluesquarehub.iaso", data=instance_body, format="json")
+        response = c.post(
+            "/api/instances/?app_id=org.inconnus.spectacle",
+            data=instance_body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         instance = Instance.objects.get(uuid=uuid)
@@ -321,7 +353,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(
-            "/api/orgunittypes/?app_id=org.bluesquarehub.iaso",
+            "/api/orgunittypes/?app_id=org.inconnus.spectacle",
             accept="application/json",
         )  # this should have 2 results
         json_response = json.loads(response.content)

@@ -173,7 +173,7 @@ class FormsViewSet(ModelViewSet):
         if not user.is_anonymous:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
 
-        if app_id is not None:  # TODO: for_app_id
+        if app_id is not None:
             queryset = queryset.filter(projects__app_id=app_id)
             queryset = queryset.exclude(derived=True)
 

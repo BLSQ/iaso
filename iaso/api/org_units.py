@@ -68,8 +68,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = [HasOrgUnitPermission]
 
     def list(self, request):
+        user = self.request.user
+        app_id = self.request.query_params.get("app_id")
+
+        # no auth, no app id : -> no results
+        if user.is_anonymous and app_id is None:
+            return OrgUnit.objects.none()
+
         queryset = OrgUnit.objects.all()
-        if not request.user.is_anonymous:
+
+        if not user.is_anonymous:
             account = request.user.iaso_profile.account
             version_ids = (
                 SourceVersion.objects.filter(data_source__projects__account=account)
@@ -77,6 +85,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 .distinct()
             )
             queryset = queryset.filter(version_id__in=version_ids)
+
+        if app_id is not None:
+            queryset = queryset.for_app_id(app_id)
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -87,11 +98,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
-
-        # Handle mobile app mode (mobile apps always send app_id)
-        app_id = self.request.query_params.get("app_id")
-        if app_id is not None:
-            queryset = queryset.for_app_id(app_id)
 
         searches = request.GET.get("searches", None)
         counts = []
@@ -366,7 +372,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
+        new_org_units = import_data(
+            request.data, request.user, request.query_params.get("app_id")
+        )
 
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 

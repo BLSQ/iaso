@@ -29,20 +29,25 @@ class OrgUnitTypeViewSet(ModelViewSet):
     ]
 
     def get_queryset(self):
-        queryset = OrgUnitType.objects.all()
+        user = self.request.user
         app_id = self.request.query_params.get("app_id")
+
+        # no auth, no app id : -> no results
+        if user.is_anonymous and app_id is None:
+            return OrgUnitType.objects.none()
+
+        queryset = OrgUnitType.objects.all()
+
+        if not user.is_anonymous:
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+
+        if app_id is not None:
+            queryset = queryset.filter(projects__app_id=app_id)
+
         search = self.request.query_params.get("search", None)
         if search:
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(short_name__icontains=search)
             )
-
-        if not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = queryset.filter(projects__account=profile.account)
-        elif app_id is not None:
-            queryset = queryset.filter(projects__app_id=app_id)
-        else:  # TODO: should be 403
-            queryset = queryset.none()
 
         return queryset.order_by("depth").distinct().order_by("name")

@@ -66,7 +66,9 @@ class DevicesPositionViewSet(ModelViewSet):
 
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
-        Project.objects.get_for_user_and_app_id(request.user, request.query_params.get("app_id"))
+        Project.objects.get_for_user_and_app_id(
+            request.user, request.query_params.get("app_id")
+        )
 
         return super().create(request, *args, **kwargs)
 

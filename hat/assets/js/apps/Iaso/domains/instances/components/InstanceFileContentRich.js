@@ -253,7 +253,7 @@ function Label({ descriptor, value, tooltip }) {
         label = descriptor.name;
     }
 
-    const labelElement = <div className={classes.tableCellLabel}>{label}</div>;
+    const labelElement = <div className={classes.tableCellLabel}>{label.replace(/(<([^>]+)>)/ig, '')}</div>;
 
     return tooltip === null
         ? labelElement

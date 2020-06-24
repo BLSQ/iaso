@@ -66,6 +66,7 @@ class DevicesPositionViewSet(ModelViewSet):
 
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
+        # We need to check the project linked to the app_id: it might requires authentication
         Project.objects.get_for_user_and_app_id(
             request.user, request.query_params.get("app_id")
         )

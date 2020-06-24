@@ -88,8 +88,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if app_id is not None:
             try:
-                Project.objects.get_for_user_and_app_id(user, app_id)
-                queryset = queryset.for_app_id(app_id, only_default_version=True)
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.for_project(project, only_default_version=True)
             except Project.DoesNotExist:
                 queryset = queryset.none()
 

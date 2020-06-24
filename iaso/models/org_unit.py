@@ -71,17 +71,13 @@ class OrgUnitQuerySet(models.QuerySet):
             path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
         )
 
-    def for_app_id(self, app_id: str, *, only_default_version: bool):
-        try:
-            project = Project.objects.get(app_id=app_id)
-            account = project.account
-        except Project.DoesNotExist:
-            account = None
+    def for_project(self, project: Project, *, only_default_version: bool):
+        account = project.account
 
         if only_default_version and account is None:
             queryset = self.none()  # cannot filter on default version if no project or project has no account
         else:
-            queryset = self.filter(org_unit_type__projects__app_id=app_id)
+            queryset = self.filter(org_unit_type__projects__in=[project])
             if only_default_version:
                 queryset = queryset.filter(version=account.default_version)
 

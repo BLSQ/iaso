@@ -30,6 +30,7 @@ class PatientTestComponent extends React.Component {
             },
             canEditPatientInfos,
             toggleModal,
+            isFixedStructure,
         } = this.props;
         if (!test) {
             return null;
@@ -297,6 +298,21 @@ class PatientTestComponent extends React.Component {
                             )
                         }
                         {
+                            test.type !== 'PL'
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.comments" defaultMessage="Comments" />
+                                    </th>
+                                    <td>
+                                        {
+                                            test.comment ? test.comment : '--'
+                                        }
+                                    </td>
+                                </tr>
+                            )
+                        }
+                        {
                             test.type && (test.type !== 'CATT' && test.type !== 'RDT')
                             && (
                                 <tr>
@@ -337,27 +353,32 @@ class PatientTestComponent extends React.Component {
                                 </tr>
                             )
                         }
-                        <tr>
-                            <th>
-                                <FormattedMessage id="main.label.latitudeLongitude" defaultMessage="Latitude/Longitude" />
-                            </th>
-                            <td className={!test.latitude ? 'error-text' : ''}>
-                                <span className="inline-block margin-right--tiny">
-                                    {
-                                        test.latitude
-                                            ? `${test.latitude}°`
-                                            : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
-                                    }
-                                </span>
-                                <span className="inline-block">
-                                    {
-                                        test.longitude
-                                            ? `${test.longitude}°`
-                                            : ''
-                                    }
-                                </span>
-                            </td>
-                        </tr>
+                        {
+                            !isFixedStructure
+                            && (
+                                <tr>
+                                    <th>
+                                        <FormattedMessage id="main.label.latitudeLongitude" defaultMessage="Latitude/Longitude" />
+                                    </th>
+                                    <td className={!test.latitude ? 'error-text' : ''}>
+                                        <span className="inline-block margin-right--tiny">
+                                            {
+                                                test.latitude
+                                                    ? `${test.latitude}°`
+                                                    : <FormattedMessage id="main.label.notCommunicated" defaultMessage="Not communicated" />
+                                            }
+                                        </span>
+                                        <span className="inline-block">
+                                            {
+                                                test.longitude
+                                                    ? `${test.longitude}°`
+                                                    : ''
+                                            }
+                                        </span>
+                                    </td>
+                                </tr>
+                            )
+                        }
                     </tbody>
                 </table>
             </div>
@@ -383,6 +404,7 @@ PatientTestComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     canEditPatientInfos: PropTypes.bool,
     toggleModal: PropTypes.func,
+    isFixedStructure: PropTypes.bool.isRequired,
 };
 
 const PatientTestComponentWithIntl = injectIntl(PatientTestComponent);

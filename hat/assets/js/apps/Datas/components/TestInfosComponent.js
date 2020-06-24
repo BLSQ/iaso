@@ -87,6 +87,7 @@ const TestInfoComponent = ({
     onChange,
     currentTest,
     currentCase,
+    isFixedStructure,
 }) => {
     const {
         testTypeSelect,
@@ -356,21 +357,46 @@ const TestInfoComponent = ({
                         justify="flex-end"
                         alignContent="flex-start"
                     >
-                        <ModalItem
-                            labelComponent={(
-                                <FormattedMessage
-                                    id="main.label.comments"
-                                    defaultMessage="Comments"
-                                />
-                            )}
-                            alignItems="flex-start"
-                            fieldComponent={(
-                                <textarea
-                                    value={currentTest.comment || ''}
-                                    onChange={event => onChange('comment', event.currentTarget.value, 'currentTest')}
-                                />
-                            )}
-                        />
+                        {
+                            currentTest.type !== 'PL'
+                        && (
+                            <ModalItem
+                                labelComponent={(
+                                    <FormattedMessage
+                                        id="main.label.comments"
+                                        defaultMessage="Comments"
+                                    />
+                                )}
+                                alignItems="flex-start"
+                                fieldComponent={(
+                                    <textarea
+                                        value={currentTest.comment || ''}
+                                        onChange={event => onChange('comment', event.currentTarget.value, 'currentTest')}
+                                    />
+                                )}
+                            />
+                        )
+                        }
+                        {
+                            currentTest.type === 'PL'
+                        && (
+                            <ModalItem
+                                labelComponent={(
+                                    <FormattedMessage
+                                        id="main.label.comments"
+                                        defaultMessage="Comments"
+                                    />
+                                )}
+                                alignItems="flex-start"
+                                fieldComponent={(
+                                    <textarea
+                                        value={currentCase.test_pl_comments || ''}
+                                        onChange={event => onChange('test_pl_comments', event.currentTarget.value, 'currentCase')}
+                                    />
+                                )}
+                            />
+                        )
+                        }
                         <ModalItem
                             labelComponent={(
                                 <FormattedMessage
@@ -386,10 +412,14 @@ const TestInfoComponent = ({
                                 />
                             )}
                         />
-
-                        <TestLocationComponent
-                            onChange={(key, value, type) => onChange(key, value, type)}
-                        />
+                        {
+                            !isFixedStructure
+                            && (
+                                <TestLocationComponent
+                                    onChange={(key, value, type) => onChange(key, value, type)}
+                                />
+                            )
+                        }
                     </Grid>
                 </Grid>
             </section>
@@ -403,6 +433,7 @@ TestInfoComponent.propTypes = {
     currentTest: PropTypes.object.isRequired,
     onChange: PropTypes.func.isRequired,
     profiles: PropTypes.array.isRequired,
+    isFixedStructure: PropTypes.bool.isRequired,
 };
 
 const MapStateToProps = state => ({

@@ -1,6 +1,5 @@
 from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
@@ -35,9 +34,6 @@ from django.db.models import Value, IntegerField
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return True
-
     def has_object_permission(self, request, view, obj):
         if not (
             request.user.is_authenticated
@@ -81,9 +77,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 .distinct()
             )
             queryset = queryset.filter(version_id__in=version_ids)
-            default_app_id = None
-        else:
-            default_app_id = "org.bluesquarehub.iaso"
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -94,9 +87,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
-        app_id = request.GET.get("app_id", default_app_id)
 
-        if app_id:  # let's assume that only the mobile app requests org units by app id
+        # Handle mobile app mode (mobile apps always send app_id)
+        app_id = self.request.query_params.get("app_id")
+        if app_id is not None:
             queryset = queryset.for_app_id(app_id)
 
         searches = request.GET.get("searches", None)
@@ -371,9 +365,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
     @safe_api_import("orgUnit")
-    def create(self, api_import, request):
-        app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
-        new_org_units = import_data(request.data, request.user, app_id)
+    def create(self, _, request):
+        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
 
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
@@ -455,18 +448,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
 def import_data(org_units, user, app_id):
     new_org_units = []
-    version = None
-    if not user.is_anonymous:
-        version = user.iaso_profile.account.default_version
-        project = Project.objects.filter(app_id=app_id).first()
-        if project and project.needs_authentication:
-            if user.iaso_profile.account.id != project.account.id:
-                raise PermissionDenied("User permissions problem")
-    elif app_id is not None:
-        project = Project.objects.get(app_id=app_id)
-        if project.needs_authentication:
-            raise PermissionDenied("User permissions problem")
-        version = project.account.default_version
+    project = Project.objects.get_for_user_and_app_id(user, app_id)
 
     for org_unit in org_units:
         uuid = org_unit.get("id", None)
@@ -522,7 +504,7 @@ def import_data(org_units, user, app_id):
                 org_unit_db.location = org_unit_location
 
             new_org_units.append(org_unit_db)
-            org_unit_db.version = version
+            org_unit_db.version = project.account.default_version
             org_unit_db.save()
     return new_org_units
 

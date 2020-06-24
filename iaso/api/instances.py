@@ -1,6 +1,5 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,6 +7,8 @@ from hat.common.utils import queryset_iterator
 from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
+from time import gmtime, strftime
+import ntpath
 
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
@@ -17,10 +18,6 @@ from hat.api.export_utils import (
     timestamp_to_utc_datetime,
 )
 from iaso.utils import timestamp_to_datetime
-
-from time import gmtime, strftime
-import ntpath
-
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
 
@@ -212,9 +209,8 @@ class InstancesViewSet(viewsets.ViewSet):
             return response
 
     @safe_api_import("instance")
-    def create(self, api_import, request):
-        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        import_data(request.data, api_import, app_id)
+    def create(self, _, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"))
 
         return Response({"res": "ok"})
 
@@ -225,20 +221,8 @@ class InstancesViewSet(viewsets.ViewSet):
         return Response(instance.as_full_model())
 
 
-def import_data(instances, api_import, app_id=None):
-    try:
-        project = Project.objects.get(app_id=app_id)
-    except Project.DoesNotExist:
-        project = None
-
-    if project and project.needs_authentication:
-        user = api_import.user
-        if (
-            not user
-            or user.is_anonymous
-            or project.account.id != user.iaso_profile.account.id
-        ):
-            raise PermissionDenied("User permissions problem")
+def import_data(instances, user, app_id):
+    project = Project.objects.get_for_user_and_app_id(user, app_id)
 
     for instance in instances:
         file_name = ntpath.basename(instance.get("file", None))

@@ -1,5 +1,6 @@
 import random
 import operator
+import typing
 from urllib.request import urlopen
 from functools import reduce
 from django.db import models
@@ -80,6 +81,23 @@ class Account(models.Model):
         return "%s " % (self.name,)
 
 
+class ProjectQuerySet(models.QuerySet):
+    def get_for_user_and_app_id(self, user: User, app_id: typing.Optional[str]):
+        if app_id is not None:
+            try:
+                project = self.get(app_id=app_id)
+                if not project.needs_authentication or (
+                        user.is_authenticated
+                        and user.iaso_profile is not None
+                        and project.account.id == user.iaso_profile.account.id
+                ):
+                    return project
+            except self.model.DoesNotExist:  # we want to launch a custom exception message
+                pass
+
+        raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
+
+
 class Project(models.Model):
     """A data collection project, associated with a single mobile application"""
 
@@ -93,6 +111,8 @@ class Project(models.Model):
     feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    objects = ProjectQuerySet.as_manager()
 
     def __str__(self):
         return "%s " % (self.name,)

@@ -58,9 +58,7 @@ class DevicesPositionViewSet(ModelViewSet):
     GET /api/devicesposition/
     """
 
-    permission_classes = [
-        permissions.AllowAny,
-    ]
+    permission_classes = [permissions.AllowAny]
 
     http_method_names = ["post", "head", "options", "trace"]
     results_key = "devicesposition"
@@ -68,20 +66,7 @@ class DevicesPositionViewSet(ModelViewSet):
 
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
-        app_id = request.query_params.get("app_id", "org.bluesquarehub.iaso")
-
-        if not request.user.is_anonymous:
-            project = Project.objects.filter(app_id=app_id).first()
-            if project and project.needs_authentication:
-                if (
-                    not request.user
-                    or request.user.iaso_profile.account.id != project.account.id
-                ):
-                    raise PermissionDenied("User permissions problem")
-        elif app_id is not None:
-            project = Project.objects.get(app_id=app_id)
-            if project.needs_authentication:
-                raise PermissionDenied("User permissions problem")
+        Project.objects.get_for_user_and_app_id(request.user, request.query_params.get("app_id"))
 
         return super().create(request, *args, **kwargs)
 

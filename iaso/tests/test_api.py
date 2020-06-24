@@ -72,7 +72,7 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/orgunits/", data=unit_body, format="json")
+        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=unit_body, format="json")
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
@@ -87,7 +87,7 @@ class BasicAPITestCase(APITestCase):
         # make sure APIImport record has been created
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
-        response = c.get("/api/orgunits/", accept="application/json")
+        response = c.get("/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json")
 
         json_response = json.loads(response.content)
 
@@ -98,8 +98,8 @@ class BasicAPITestCase(APITestCase):
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/", accept="application/json"
-        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
+            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+        )
 
         content_1 = response.content
         json_response = json.loads(response.content)
@@ -148,7 +148,7 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body_2], format="json")
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
@@ -179,12 +179,12 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        response = c.post("/api/orgunits/", data=[unit_body], format="json")
+        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body], format="json")
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
 
-        response = c.get("/api/orgunits/", accept="application/json")
+        response = c.get("/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json")
 
         json_response = json.loads(response.content)
 
@@ -195,8 +195,8 @@ class BasicAPITestCase(APITestCase):
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/", accept="application/json"
-        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
+            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+        )
 
         content_1 = response.content
         json_response = json.loads(response.content)
@@ -242,7 +242,7 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body_2], format="json")
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
@@ -269,7 +269,8 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        c.post("/api/orgunits/", data=[unit_body], format="json")
+        response = c.post("/api/orgunits/?app_id=org.bluesquarehub.iaso", data=[unit_body], format="json")
+        self.assertJSONResponse(response, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
         name = "Questionnaire CDS"
@@ -292,7 +293,7 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/instances/", data=instance_body, format="json")
+        response = c.post("/api/instances/?app_id=org.bluesquarehub.iaso", data=instance_body, format="json")
         self.assertEqual(response.status_code, 200)
 
         instance = Instance.objects.get(uuid=uuid)

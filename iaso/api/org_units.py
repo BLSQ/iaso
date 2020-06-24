@@ -73,9 +73,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         # no auth, no app id : -> no results
         if user.is_anonymous and app_id is None:
-            return OrgUnit.objects.none()
-
-        queryset = OrgUnit.objects.all()
+            queryset = OrgUnit.objects.none()
+        else:
+            queryset = OrgUnit.objects.all()
 
         if user.is_authenticated:
             account = request.user.iaso_profile.account

@@ -83,6 +83,16 @@ class Account(models.Model):
 
 class ProjectQuerySet(models.QuerySet):
     def get_for_user_and_app_id(self, user: User, app_id: typing.Optional[str]):
+        """ Attempt to find a valid project to which the user has access, and that corresponds to the
+        provided app_id. If the user is not authenticated, he can still access the project if it does not
+        require authentication.
+
+        Raises a Project.DoesNotExist exception if no valid project can be found.
+
+        :param user: User
+        :param app_id: str
+        """
+
         if app_id is not None:
             try:
                 project = self.get(app_id=app_id)

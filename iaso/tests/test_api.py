@@ -115,7 +115,9 @@ class BasicAPITestCase(APITestCase):
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
-        self.assertEqual(1, len(units))
+        self.assertEqual(
+            1, len(units)
+        )  # two org units but only one for default version
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
         self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))

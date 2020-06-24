@@ -71,7 +71,7 @@ class OrgUnitQuerySet(models.QuerySet):
             path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
         )
 
-    def for_app_id(self, app_id: str, only_default_version: bool = True):
+    def for_app_id(self, app_id: str, *, only_default_version: bool):
         try:
             project = Project.objects.get(app_id=app_id)
             account = project.account

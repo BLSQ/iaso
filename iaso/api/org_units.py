@@ -87,7 +87,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.filter(version_id__in=version_ids)
 
         if app_id is not None:
-            queryset = queryset.for_app_id(app_id)
+            queryset = queryset.for_app_id(app_id, only_default_version=True)
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)

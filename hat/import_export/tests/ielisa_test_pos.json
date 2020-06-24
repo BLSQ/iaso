@@ -1,0 +1,71 @@
+{
+   "_id": "participant-regular_neg_rdt",
+   "_rev": "4-059cfc99b227f754d282b8258a478f5d",
+   "person": {
+       "forename": "Getting",
+       "postname": "Fitch",
+       "surname": "Rachel",
+       "birthYear": "",
+       "noBirthYear": true,
+       "gender": "Male",
+       "mothersSurname": "Within",
+       "location": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1976"
+       }
+   },
+   "participant": {
+       "memberType": "resident",
+       "screeningLocation": {
+           "province": "1",
+           "zone": "11",
+           "area": "111",
+           "village": "1111",
+           "ptr": "1976"
+       },
+       "hatId": "RAFIGEMXXXXW",
+       "screenings": {
+                    "catt": {},
+                    "iELISA": {
+                        "result": "positive",
+                        "position": {
+                            "accuracy": 17.257999420166016,
+                            "latitude": 50.6813485,
+                            "longitude": 4.9569898,
+                            "timestamp": 1592819558677
+                        },
+                        "device": "f7651cad79052ac6"
+                    },
+                    "maect": {
+                        "result": "positive",
+                        "creationTime": "2020-06-22T09:52:45.935Z",
+                        "testTime": "2020-06-22T09:52:45.935Z",
+                        "device": "f7651cad79052ac6",
+                        "position": {
+                            "accuracy": 17.30299949645996,
+                            "latitude": 50.6813477,
+                            "longitude": 4.9569903,
+                            "timestamp": 1592819567000
+                        }
+                    }
+                },
+       "version": 5,
+       "geoLocation": {
+           "accuracy": 20.797000885009766,
+           "latitude": 51.8367345,
+           "longitude": 5.4009139,
+           "timestamp": 1547041930000
+       },
+       "infection": {
+           "location": "residenceLocationNew"
+       }
+   },
+   "type": "participant",
+   "appVersion": "ERIC-DEV-2020-02-17",
+   "dateCreated": "2019-01-03T13:52:09.635Z",
+   "dateModified": "2019-01-09T13:52:13.298Z",
+   "deviceId": "test_ms_docs"
+}

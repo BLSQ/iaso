@@ -25,6 +25,7 @@ from hat.constants import (
     PARASIT,
     LNP,
     RESEARCH_PL,
+    IELISA,
 )
 from hat.geo.models import AS as ASModel
 from hat.geo.models import Village
@@ -210,6 +211,7 @@ class CaseAbstract(models.Model):
     :ivar integer test_parasit:              “Confirmation Parasitologique”.
     :ivar integer test_pg:                   “Ponction ganglionnaire”.
     :ivar integer test_pg_video_filename:    “Ponction ganglionnaire, filename of the video”.
+    :ivar integer test_ielisa:               “iELISA test performed outside PNLTHA but confirmed by MUM”.
     :ivar integer test_rdt:                  “Rapid Diagnostic Test”.
     :ivar integer test_rdt_picture_filename: “Rapid Diagnostic Test, filename of the picture”.
     :ivar integer test_rdt_session_type:     “Rapid Diagnostic Test, doorToDoor or onSite”.
@@ -485,6 +487,9 @@ class CaseAbstract(models.Model):
     test_research_pl = models.IntegerField(
         choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
     )
+    test_ielisa = models.IntegerField(
+        choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
+    )
     test_rdt = models.IntegerField(
         choices=GENERAL_TEST_RESULT_CHOICES, null=True, blank=True
     )
@@ -619,6 +624,8 @@ class CaseAbstract(models.Model):
             self.test_catt_level = new_test.level
             self.test_catt_index = new_test.index
             self.test_catt_picture_filename = new_test.image_filename
+        elif new_test.type == IELISA:
+            self.test_ielisa = new_test.result
         elif new_test.type == RDT:
             self.test_rdt = new_test.result
             self.test_rdt_picture_filename = new_test.image_filename
@@ -963,7 +970,9 @@ class CaseView(CaseAbstract):
                 "test_sf",
             )
         )
-        result = result.annotate(screening_result=Greatest("test_catt", "test_rdt"))
+        result = result.annotate(
+            screening_result=Greatest("test_catt", "test_rdt", "test_ielisa")
+        )
         result = result.annotate(
             normalized_date=Coalesce("latest_test_date", "document_date")
         )

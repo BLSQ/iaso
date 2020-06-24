@@ -6,13 +6,13 @@ from datetime import date
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from hat.cases.models import Case, RES_POSITIVE
+from hat.cases.models import Case, RES_POSITIVE, RES_NEGATIVE
 from hat.couchdb import api
 from hat.import_export.utils import replace_in_dict_recursive
 from hat.sync.models import DeviceDB
 from hat.sync.tests import clean_couch
 from ..import_synced import import_synced_devices
-from ...constants import RESEARCH_PL
+from ...constants import RESEARCH_PL, IELISA, MAECT, RDT, CATT
 
 
 def load_document(filename, username=None, device_db_name=None):
@@ -972,5 +972,73 @@ class ImportMobileSyncDocuments(TestCase):
         self.assertEquals(case.test_set.count(), 1)
         catt_test = case.test_set.first()
         self.assertEquals(catt_test.type, "CATT")
-        self.assertEquals(catt_test.result, 1)
-        self.assertEquals(case.test_catt, 1)
+        self.assertEquals(catt_test.result, RES_NEGATIVE)
+        self.assertEquals(case.test_catt, RES_NEGATIVE)
+
+    def test_import_ielisa_neg(self):
+        json_doc, device_db = load_document("ielisa_test_neg.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc["_id"], p1["id"])
+
+        stats = import_synced_devices()[0]["stats"]
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
+        self.assertIsNotNone(case)
+        self.assertFalse(case.confirmed_case)
+
+        catt_or_rdt_test = case.test_set.filter(type__in=[RDT, CATT]).first()
+        self.assertIsNone(catt_or_rdt_test)
+
+        ielisa_test = case.test_set.filter(type=IELISA).first()
+        self.assertIsNotNone(ielisa_test)
+        self.assertEquals(
+            ielisa_test.result, RES_POSITIVE
+        )  # It should always be positive
+
+        maect_test = case.test_set.filter(type=MAECT).first()
+        self.assertIsNotNone(maect_test)
+        self.assertEquals(maect_test.result, RES_NEGATIVE)
+
+    def test_import_ielisa_pos(self):
+        json_doc, device_db = load_document("ielisa_test_pos.json", "supervisor")
+        device_db.last_user = User.objects.get(username="hannibal")
+        device_db.save()
+
+        # create documents in device db and sync
+        p1 = api.post(device_db.db_name, json=json_doc).json()
+        self.assertEqual(json_doc["_id"], p1["id"])
+
+        stats = import_synced_devices()[0]["stats"]
+        self.assertEqual(stats.total, 1)
+        self.assertEqual(stats.created, 1)
+        self.assertEqual(stats.updated, 0)
+        self.assertEqual(stats.deleted, 0)
+
+        device_db.refresh_from_db()
+        self.assertNotEqual(device_db.last_synced_seq, "0")
+        case = Case.objects.filter(device_id=json_doc["deviceId"]).first()
+        self.assertIsNotNone(case)
+        self.assertTrue(case.confirmed_case)
+
+        catt_or_rdt_test = case.test_set.filter(type__in=[RDT, CATT]).first()
+        self.assertIsNone(catt_or_rdt_test)
+
+        ielisa_test = case.test_set.filter(type=IELISA).first()
+        self.assertIsNotNone(ielisa_test)
+        self.assertEquals(
+            ielisa_test.result, RES_POSITIVE
+        )  # It should always be positive
+
+        maect_test = case.test_set.filter(type=MAECT).first()
+        self.assertIsNotNone(maect_test)
+        self.assertEquals(maect_test.result, RES_POSITIVE)

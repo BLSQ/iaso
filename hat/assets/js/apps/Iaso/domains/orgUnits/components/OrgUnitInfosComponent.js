@@ -8,6 +8,9 @@ import moment from 'moment';
 
 import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
+import { commaSeparatedIdsToArray } from '../../../utils/forms';
+
+import { useFormState } from '../../../hooks/form';
 
 import MESSAGES from '../../forms/messages';
 
@@ -24,29 +27,30 @@ function OrgUnitInfosComponent(props) {
         params,
         groups,
     } = props;
-    const onChangeGroups = (groupIds) => {
-        const newgroups = [];
-        groupIds.split(',').forEach((g) => {
-            const fullGroup = groups.find(fg => fg.id === parseInt(g, 10));
-            if (fullGroup) {
-                newgroups.push(fullGroup);
-            }
-        });
-        onChangeInfo('groups', newgroups);
-    };
+
+    const [formState, setFieldValue, setFieldErrors] = useFormState({
+        id: orgUnit.id,
+        name: orgUnit.name,
+        org_unit_type_id: orgUnit.org_unit_type_id,
+        groups: orgUnit.groups.map(g => g.id),
+        sub_source: orgUnit.sub_source,
+        status: orgUnit.status,
+        aliases: orgUnit.aliases,
+    });
+
     return (
         <Grid container spacing={4}>
             <Grid item xs={4}>
                 <InputComponent
                     keyValue="name"
-                    onChange={onChangeInfo}
-                    value={orgUnit.name}
+                    onChange={setFieldValue}
+                    value={formState.name.value}
                     label={MESSAGES.name}
                 />
                 <InputComponent
                     keyValue="org_unit_type_id"
-                    onChange={onChangeInfo}
-                    value={orgUnit.org_unit_type_id}
+                    onChange={setFieldValue}
+                    value={formState.org_unit_type_id.value}
                     type="select"
                     options={
                         orgUnitTypes.map(t => ({
@@ -58,9 +62,9 @@ function OrgUnitInfosComponent(props) {
                 />
                 <InputComponent
                     keyValue="groups"
-                    onChange={(key, values) => onChangeGroups(values)}
+                    onChange={(name, value) => setFieldValue(name, commaSeparatedIdsToArray(value))}
                     multi
-                    value={orgUnit.groups.map(g => g.id)}
+                    value={formState.groups.value}
                     type="select"
                     options={
                         groups.map(g => ({
@@ -72,8 +76,8 @@ function OrgUnitInfosComponent(props) {
                 />
                 <InputComponent
                     keyValue="sub_source"
-                    onChange={onChangeInfo}
-                    value={orgUnit.sub_source}
+                    onChange={setFieldValue}
+                    value={formState.sub_source.value}
                     type="select"
                     options={
                         sourceTypes.map(s => ({
@@ -86,8 +90,8 @@ function OrgUnitInfosComponent(props) {
                 <InputComponent
                     keyValue="status"
                     isClearable={false}
-                    onChange={onChangeInfo}
-                    value={orgUnit.status}
+                    onChange={setFieldValue}
+                    value={formState.status.value}
                     type="select"
                     label={MESSAGES.status}
                     options={
@@ -105,8 +109,8 @@ function OrgUnitInfosComponent(props) {
                 />
                 <InputComponent
                     keyValue="aliases"
-                    onChange={onChangeInfo}
-                    value={orgUnit.aliases}
+                    onChange={setFieldValue}
+                    value={formState.aliases.value}
                     type="arrayInput"
                 />
             </Grid>
@@ -151,14 +155,24 @@ function OrgUnitInfosComponent(props) {
     );
 }
 
+OrgUnitInfosComponent.defaultProps = {
+    orgUnit: {
+        id: null,
+        name: '',
+        org_unit_type_id: null,
+        groups: [],
+        sub_source: null,
+        status: false,
+        aliases: [],
+    },
+};
 OrgUnitInfosComponent.propTypes = {
     params: PropTypes.object.isRequired,
     baseUrl: PropTypes.string.isRequired,
     intl: PropTypes.object.isRequired,
-    orgUnit: PropTypes.object.isRequired,
+    orgUnit: PropTypes.object,
     orgUnitTypes: PropTypes.array.isRequired,
     sourceTypes: PropTypes.array.isRequired,
-    sources: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };

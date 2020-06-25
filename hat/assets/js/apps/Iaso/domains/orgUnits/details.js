@@ -21,6 +21,7 @@ import {
     setSources,
     setGroups,
     setFetching,
+    setFetchingDetail,
 } from './actions';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
@@ -106,28 +107,34 @@ class OrgUnitDetail extends Component {
         if (this.props.groups.length === 0) {
             promisesArray.push(fetchGroups(dispatch).then(groups => this.props.setGroups(groups)));
         }
-
-        fetchAssociatedDataSources(dispatch, orgUnitId)
-            .then((data) => {
-                const sources = [];
-                data.forEach((s, i) => {
-                    sources.push({
-                        ...s,
-                        color: getChipColors(i),
+        if (orgUnitId !== '0') {
+            fetchAssociatedDataSources(dispatch, orgUnitId)
+                .then((data) => {
+                    const sources = [];
+                    data.forEach((s, i) => {
+                        sources.push({
+                            ...s,
+                            color: getChipColors(i),
+                        });
                     });
+                    this.props.setSources(sources);
                 });
-                this.props.setSources(sources);
-            });
+        }
 
         Promise.all(promisesArray).then(() => {
             this.setState({
                 fetchingFilters: false,
             });
-            this.fetchDetail().then(() => {
-                if (this.state.tab !== 'map') {
-                    dispatch(setFetching(false));
-                }
-            });
+            if (orgUnitId !== '0') {
+                this.fetchDetail().then(() => {
+                    if (this.state.tab !== 'map') {
+                        dispatch(setFetching(false));
+                    }
+                });
+            } else {
+                dispatch(setFetching(false));
+                dispatch(setFetchingDetail(false));
+            }
         });
     }
 
@@ -314,6 +321,9 @@ class OrgUnitDetail extends Component {
             router,
             prevPathname,
             redirectToPush,
+            params: {
+                orgUnitId,
+            },
         } = this.props;
         const {
             tab,
@@ -326,6 +336,8 @@ class OrgUnitDetail extends Component {
         if (currentOrgUnit) {
             title = `${title}${currentOrgUnit.org_unit_type_name ? ` - ${currentOrgUnit.org_unit_type_name}` : ''}`;
         }
+        console.log('fetching', fetching);
+        console.log('fetchingSubOrgUnits', fetchingSubOrgUnits);
         return (
             <Fragment>
                 <TopBar
@@ -369,7 +381,7 @@ class OrgUnitDetail extends Component {
                     (fetching || fetchingSubOrgUnits) && <LoadingSpinner />
                 }
                 {!fetching
-                    && currentOrgUnit
+                    && ((currentOrgUnit && orgUnitId !== '0') || (!currentOrgUnit && orgUnitId === '0'))
                     && (
                         <section>
                             {

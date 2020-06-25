@@ -8,6 +8,7 @@ export const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 export const SET_ORG_UNIT = 'SET_ORG_UNIT';
 export const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
 export const SET_FETCHING = 'SET_FETCHING';
+export const SET_FETCHING_DETAIL = 'SET_FETCHING_DETAIL';
 export const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 export const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 export const SET_SOURCES = 'SET_SOURCES';
@@ -105,6 +106,11 @@ export const setCurrentSubOrgUnitTypesSelected = (currentSubOrgUnitsTypesSelecte
 export const setFetching = fetching => ({
     type: SET_FETCHING,
     payload: fetching,
+});
+
+export const setFetchingDetail = fetchingDetail => ({
+    type: SET_FETCHING_DETAIL,
+    payload: fetchingDetail,
 });
 
 export const setFetchingOrgUnitTypes = fetching => ({

@@ -79,7 +79,6 @@ class OrgUnitTypes extends Component {
             pages,
             fetching,
             classes,
-            fetchOrgUnitTypes,
             redirectTo,
         } = this.props;
         return (

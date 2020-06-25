@@ -40,6 +40,7 @@ function SourcesChipsFilterComponent(props) {
         currentOrgUnit,
         fitToBounds,
     } = props;
+    if (!currentOrgUnit) return null;
     const sources = getSourcesWithoutCurrentSource(currentSources, currentOrgUnit.source_id);
     return (
         <Fragment>

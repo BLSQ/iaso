@@ -21,8 +21,9 @@ class OrgUnitAPITestCase(APITestCase):
         sw_source = m.DataSource.objects.create(name="Evil Empire")
         sw_source.projects.add(cls.project)
         cls.sw_source = sw_source
-        sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
-        star_wars.default_version = sw_version
+        sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
+        star_wars.default_version = sw_version_1
         star_wars.save()
 
         cls.yoda = cls.create_user_with_profile(
@@ -45,7 +46,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.jedi_council_corruscant = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
-            version=sw_version,
+            version=sw_version_1,
             name="Corruscant Jedi Council",
             geom=cls.mock_polygon,
             simplified_geom=cls.mock_polygon,
@@ -57,7 +58,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.jedi_council_endor = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
-            version=sw_version,
+            version=sw_version_1,
             name="Endor Jedi Council",
             geom=cls.mock_polygon,
             simplified_geom=cls.mock_polygon,
@@ -68,7 +69,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
-            version=sw_version,
+            version=sw_version_2,
             name="Brussels Jedi Council",
             geom=cls.mock_polygon,
             simplified_geom=cls.mock_polygon,
@@ -259,7 +260,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_but_some(self):
-        """POST /orgunits/bulkupdate happy path (select all except some)"""
+        """POST /orgunits/bulkupdate/ happy path (select all except some)"""
 
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
@@ -288,6 +289,23 @@ class OrgUnitAPITestCase(APITestCase):
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(1, am.Modification.objects.count())
+
+    def test_org_unit_list_ok(self):
+        """GET /api/orgunits/ happy path"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+
+    def assertValidOrgUnitListData(
+        self, *, list_data: typing.Mapping, expected_length: int
+    ):
+        self.assertValidListData(
+            list_data=list_data, results_key="orgUnits", expected_length=expected_length
+        )
 
     def assertValidBulkupdateData(self, bulkupdate_data: typing.Mapping):
         self.assertHasField(bulkupdate_data, "id", int)

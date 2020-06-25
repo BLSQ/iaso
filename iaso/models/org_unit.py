@@ -4,12 +4,13 @@ from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, PolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
 
 from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
-from .base import Group
+from .base import Group, SourceVersion
+from .project import Project
 
 GEO_SOURCE_CHOICES = (
     ("snis", "SNIS"),
@@ -17,6 +18,28 @@ GEO_SOURCE_CHOICES = (
     ("pnltha", "PNL THA"),
     ("derivated", "Derivated from actual data"),
 )
+
+
+class OrgUnitTypeQuerySet(models.QuerySet):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser], app_id: str
+    ):
+        if user.is_anonymous and app_id is None:
+            return self.none()
+
+        queryset = self.all()
+
+        if user.is_authenticated:
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.filter(projects__in=[project])
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
 
 
 class OrgUnitType(models.Model):
@@ -30,6 +53,8 @@ class OrgUnitType(models.Model):
 
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    objects = OrgUnitTypeQuerySet.as_manager()
 
     def __str__(self):
         return "%s" % self.name
@@ -70,6 +95,40 @@ class OrgUnitQuerySet(models.QuerySet):
         return self.filter(
             path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
         )
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser], app_id: str
+    ):
+        if user.is_anonymous and app_id is None:
+            return self.none()
+
+        queryset = self.all()
+
+        if user.is_authenticated:
+            account = user.iaso_profile.account
+            version_ids = (
+                SourceVersion.objects.filter(data_source__projects__account=account)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+            queryset = queryset.filter(version_id__in=version_ids)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                if project.account is None:
+                    # cannot filter on default version if no project or project has no account
+                    return self.none()
+
+                queryset = queryset.filter(
+                    org_unit_type__projects__in=[project],
+                    version=project.account.default_version,
+                )
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
 
 
 class OrgUnitManager(ManagerWithBulkUpdate):

@@ -87,7 +87,11 @@ class MultiTenantTestCase(APITestCase):
             "name": name,
         }
 
-        response = yoda_client.post("/api/orgunits/", data=[unit_body], format="json")
+        response = yoda_client.post(
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=[unit_body],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         json_response = json.loads(response.content)
@@ -116,6 +120,7 @@ class MultiTenantTestCase(APITestCase):
     @tag("iaso_only")
     def test_instance_access(self):
         """Checking access to org units based on account"""
+
         yoda_client = self.yoda_client
         raccoon_client = self.raccoon_client
         c = APIClient()
@@ -137,7 +142,11 @@ class MultiTenantTestCase(APITestCase):
             "name": name,
         }
 
-        c.post("/api/orgunits/", data=[unit_body], format="json")
+        c.post(
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=[unit_body],
+            format="json",
+        )
         instance_uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b4"
         name = "Wooooh wooooh woo riii"
 

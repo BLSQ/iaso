@@ -152,7 +152,9 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.all()
+        queryset = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
             instances_count=Count(
@@ -162,19 +164,6 @@ class FormsViewSet(ModelViewSet):
                 ),
             )
         )
-
-        # The way this endpoint has been structured is due to the fact that the first mobile application
-        # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
-        # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
-        # would send back the forms for the app_id org.bluesquarehub.iaso
-        # Once the org.bluesquarehub.iaso, we should switch to an API that will not assume it's the default
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = queryset.filter(projects__account=profile.account)
-        else:
-            app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
-            queryset = queryset.filter(projects__app_id=app_id)
-            queryset = queryset.exclude(derived=True)
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:

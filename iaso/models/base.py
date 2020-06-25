@@ -1,5 +1,6 @@
 import random
 import operator
+import typing
 from urllib.request import urlopen
 from functools import reduce
 from django.db import models
@@ -80,28 +81,12 @@ class Account(models.Model):
         return "%s " % (self.name,)
 
 
-class Project(models.Model):
-    """A data collection project, associated with a single mobile application"""
-
-    name = models.TextField(null=True, blank=True)
-    forms = models.ManyToManyField("Form", blank=True, related_name="projects")
-    account = models.ForeignKey(
-        Account, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
-    app_id = models.TextField(null=True, blank=True)
-    needs_authentication = models.BooleanField(default=False)
-    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s " % (self.name,)
-
-
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
     read_only = models.BooleanField(default=True)
-    projects = models.ManyToManyField(Project, related_name="data_sources", blank=True)
+    projects = models.ManyToManyField(
+        "Project", related_name="data_sources", blank=True
+    )
     credentials = models.ForeignKey(
         "ExternalCredentials",
         on_delete=models.SET_NULL,
@@ -199,7 +184,9 @@ class SourceVersion(models.Model):
 
 
 class RecordType(models.Model):
-    projects = models.ManyToManyField(Project, related_name="record_types", blank=True)
+    projects = models.ManyToManyField(
+        "Project", related_name="record_types", blank=True
+    )
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -676,7 +663,7 @@ class Instance(models.Model):
         related_name="instances",
     )
     project = models.ForeignKey(
-        Project, blank=True, null=True, on_delete=models.DO_NOTHING
+        "Project", blank=True, null=True, on_delete=models.DO_NOTHING
     )
     json = JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
@@ -746,8 +733,7 @@ class Instance(models.Model):
             file_content = {}
         return file_content
 
-    @property
-    def form_version(self):
+    def get_form_version(self):
         json = self.get_and_save_json_of_xml()
 
         try:
@@ -803,7 +789,7 @@ class Instance(models.Model):
 
     def as_full_model(self):
         file_content = self.get_and_save_json_of_xml()
-        form_version = self.form_version
+        form_version = self.get_form_version()
 
         return {
             "uuid": self.uuid,

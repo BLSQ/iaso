@@ -21,9 +21,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Map',
         id: 'iaso.label.map',
     },
-    files: {
-        defaultMessage: 'Files',
-        id: 'iaso.label.files',
+    version: {
+        defaultMessage: 'Version',
+        id: 'iaso.label.version',
     },
     downloadXml: {
         id: 'iaso.label.downloadXml',

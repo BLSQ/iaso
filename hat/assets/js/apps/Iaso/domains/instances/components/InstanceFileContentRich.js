@@ -38,10 +38,16 @@ const useStyle = makeStyles(theme => ({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    tableCellLabelIcon: {
+        alignSelf: 'flex-start',
+    },
     tableCellLabel: {
         whiteSpace: 'normal',
         wordBreak: 'break-word',
         marginLeft: 5,
+    },
+    tableCellLabelName: {
+        color: theme.palette.mediumGray.main,
     },
 }));
 
@@ -190,7 +196,7 @@ function FormCalculatedField({ descriptor, data }) {
         <TableRow>
             <TableCell className={classes.tableCell}>
                 <div className={classes.tableCellLabelWrapper}>
-                    <FunctionsIcon color="disabled" />
+                    <FunctionsIcon color="disabled" className={classes.tableCellLabelIcon} />
                     <Label descriptor={descriptor} tooltip={descriptor.bind.calculate} />
                 </div>
             </TableCell>
@@ -228,7 +234,7 @@ function FormNoteField({ descriptor }) {
         <TableRow>
             <TableCell className={classes.tableCell} colSpan={2}>
                 <div className={classes.tableCellLabelWrapper}>
-                    <CommentIcon color="disabled" />
+                    <CommentIcon color="disabled" className={classes.tableCellLabelIcon} />
                     <Label descriptor={descriptor} />
                 </div>
             </TableCell>
@@ -242,18 +248,28 @@ FormNoteField.propTypes = {
 function Label({ descriptor, value, tooltip }) {
     const classes = useStyle();
 
-    let label;
+    let label = descriptor.name;
+    let showNameHint = false;
     if ('label' in descriptor) {
         label = translateLabel(descriptor.label);
 
         if (value !== null) { // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"
             label = label.replace(`\${${descriptor.name}}`, value);
+        } else {
+            showNameHint = true;
         }
-    } else {
-        label = descriptor.name;
     }
 
-    const labelElement = <div className={classes.tableCellLabel}>{label.replace(/(<([^>]+)>)/ig, '')}</div>;
+    const labelElement = (
+        <div className={classes.tableCellLabel}>
+            {label.replace(/(<([^>]+)>)/ig, '')}
+            {
+                showNameHint && (
+                    <div className={classes.tableCellLabelName}>{descriptor.name}</div>
+                )
+            }
+        </div>
+    );
 
     return tooltip === null
         ? labelElement

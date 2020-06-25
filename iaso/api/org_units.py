@@ -251,7 +251,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             return response
 
     def partial_update(self, request, pk=None):
-        org_unit = get_object_or_404(OrgUnit, id=pk)
+        org_unit = get_object_or_404(self.get_queryset(), id=pk)
         self.check_object_permissions(request, org_unit)
 
         original_copy = deepcopy(org_unit)
@@ -325,7 +325,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
         if parent_id:
-            parent_org_unit = get_object_or_404(OrgUnit, id=parent_id)
+            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
             org_unit.parent = parent_org_unit
         else:
             org_unit.parent = None

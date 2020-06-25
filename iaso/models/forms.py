@@ -130,7 +130,7 @@ class FormVersionManager(models.Manager):
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
-            form_version.form.form_id = survey.form_id
+            form.form_id = survey.form_id
             form.save()
 
             if latest_version is not None:

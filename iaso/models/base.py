@@ -746,8 +746,7 @@ class Instance(models.Model):
             file_content = {}
         return file_content
 
-    @property
-    def form_version(self):
+    def get_form_version(self):
         json = self.get_and_save_json_of_xml()
 
         try:
@@ -803,7 +802,7 @@ class Instance(models.Model):
 
     def as_full_model(self):
         file_content = self.get_and_save_json_of_xml()
-        form_version = self.form_version
+        form_version = self.get_form_version()
 
         return {
             "uuid": self.uuid,

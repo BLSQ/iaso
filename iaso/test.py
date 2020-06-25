@@ -18,20 +18,28 @@ from iaso import models as m
 class IasoTestCaseMixin:
     @staticmethod
     def create_user_with_profile(
-        *, username: str, account: m.Account, permissions=None, **kwargs
+        *,
+        username: str,
+        account: m.Account,
+        permissions=None,
+        org_units: typing.Sequence[m.OrgUnit] = None,
+        **kwargs,
     ):
         User = get_user_model()
 
         user = User.objects.create(username=username, **kwargs)
         m.Profile.objects.create(user=user, account=account)
 
-        content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
         if permissions is not None:
+            content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
             user.user_permissions.set(
                 Permission.objects.filter(
                     codename__in=permissions, content_type=content_type
                 )
             )
+
+        if org_units is not None:
+            user.iaso_profile.org_units.set(org_units)
 
         return user
 

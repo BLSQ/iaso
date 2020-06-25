@@ -76,7 +76,9 @@ class TokenAPITestCase(APITestCase):
 
         self.authenticate_using_token()
 
-        response = self.client.get("/api/forms/")
+        response = self.client.get(
+            "/api/forms/?app_id=stars.empire.agriculture.hydroponics"
+        )
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -154,7 +156,7 @@ class TokenAPITestCase(APITestCase):
             "instance",
             request_body=instance_body,
             has_problems=True,
-            exception_contains_string="User permissions problem",
+            exception_contains_string="Could not find project for user",
         )
 
     @tag("iaso_only")
@@ -173,7 +175,9 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token_2}")
 
         # test an endpoint that requires authentication
-        response = self.client.get("/api/orgunits/")
+        response = self.client.get(
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics"
+        )
 
         self.assertJSONResponse(response, 200)
 
@@ -185,14 +189,18 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  ")
 
         # test an endpoint that requires authentication
-        response = self.client.get("/api/groups/")
+        response = self.client.get(
+            "/api/groups/?app_id=stars.empire.agriculture.hydroponics"
+        )
 
         self.assertJSONResponse(response, 403)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  WRONG")
 
         # test an endpoint that requires authentication
-        response = self.client.get("/api/groups/")
+        response = self.client.get(
+            "/api/groups/?app_id=stars.empire.agriculture.hydroponics"
+        )
 
         self.assertJSONResponse(response, 403)
 
@@ -273,5 +281,5 @@ class TokenAPITestCase(APITestCase):
             "orgUnit",
             request_body=unit_body,
             has_problems=True,
-            exception_contains_string="User permissions problem",
+            exception_contains_string="Could not find project for user",
         )

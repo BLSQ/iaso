@@ -1,10 +1,12 @@
 import pathlib
-
+import typing
+from django.contrib.auth.models import AnonymousUser, User
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 
+from .project import Project
 from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
@@ -31,6 +33,29 @@ class FormQuerySet(models.QuerySet):
                 return True
 
         return False
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser], app_id: str
+    ):
+        if user.is_anonymous and app_id is None:
+            return self.none()
+
+        queryset = self.all()
+
+        if user.is_authenticated:
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+
+        if app_id is not None:  # mobile app
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.filter(projects__in=[project])
+                queryset = queryset.exclude(
+                    derived=True
+                )  # do not include derived instances for the mobile app
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
 
 
 class Form(models.Model):

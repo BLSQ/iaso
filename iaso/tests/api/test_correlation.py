@@ -11,7 +11,12 @@ class CorrelationAPITestCase(APITestCase):
     @classmethod
     def setUpTestData(cls):
         cls.now = now()
-
+        star_wars = m.Account.objects.create(name="Star Wars")
+        cls.project = m.Project.objects.create(
+            name="Hydroponic gardens",
+            app_id="stars.empire.agriculture.hydroponics",
+            account=star_wars,
+        )
         cls.jedi_council = m.OrgUnitType.objects.create(
             name="Jedi Council", short_name="Cnc"
         )
@@ -49,7 +54,9 @@ class CorrelationAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/", data=instance_body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=instance_body,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 
@@ -89,7 +96,9 @@ class CorrelationAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/", data=instance_body, format="json"
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=instance_body,
+            format="json",
         )
         self.assertEqual(response.status_code, 200)
 

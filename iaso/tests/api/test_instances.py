@@ -122,7 +122,11 @@ class InstancesAPITestCase(APITestCase):
                 "name": "1",
             }
         ]
-        response = self.client.post(f"/api/instances/", data=body, format="json")
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         last_import = hatmodels.APIImport.objects.all().last()
@@ -136,7 +140,7 @@ class InstancesAPITestCase(APITestCase):
         self.assertEquals(
             "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name
         )
-        self.assertEquals(None, last_instance.project)
+        self.assertIsNotNone(last_instance.project)
 
     @tag("iaso_only")
     def test_instance_list_by_form_id_ok(self):

@@ -1,9 +1,7 @@
 import typing
 
 from django.test import tag
-from django.core.files import File
 from django.utils.timezone import now
-from unittest import mock
 
 from iaso import models as m
 from iaso.test import APITestCase

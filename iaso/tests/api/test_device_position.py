@@ -119,7 +119,7 @@ class DevicesPositionAPITestCase(APITestCase):
             "devicesposition",
             request_body=devices_position_body,
             has_problems=True,
-            exception_contains_string="User permissions problem",
+            exception_contains_string="Could not find project for user",
         )
 
     @tag("iaso_only")

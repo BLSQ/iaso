@@ -26,16 +26,14 @@ class OrgUnitAPITestCase(APITestCase):
         star_wars.default_version = sw_version_1
         star_wars.save()
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_org_units"]
-        )
-        cls.raccoon = cls.create_user_with_profile(
-            username="raccoon", account=marvel, permissions=["iaso_org_units"]
+        cls.jedi_squad = m.OrgUnitType.objects.create(
+            name="Jedi Squad", short_name="Jds"
         )
 
         cls.jedi_council = m.OrgUnitType.objects.create(
             name="Jedi Council", short_name="Cnc"
         )
+        cls.jedi_council.sub_unit_types.add(cls.jedi_squad)
 
         cls.mock_polygon = Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
         cls.mock_point = Point(x=4, y=50, z=100)
@@ -66,6 +64,17 @@ class OrgUnitAPITestCase(APITestCase):
             location=cls.mock_point,
             validated=True,
         )
+        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+            parent=cls.jedi_council_endor,
+            org_unit_type=cls.jedi_squad,
+            version=sw_version_1,
+            name="Endor Jedi Squad 1",
+            geom=cls.mock_polygon,
+            simplified_geom=cls.mock_polygon,
+            catchment=cls.mock_polygon,
+            location=cls.mock_point,
+            validated=True,
+        )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,
@@ -76,6 +85,19 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=cls.mock_polygon,
             location=cls.mock_point,
             validated=True,
+        )
+
+        cls.yoda = cls.create_user_with_profile(
+            username="yoda", account=star_wars, permissions=["iaso_org_units"]
+        )
+        cls.luke = cls.create_user_with_profile(
+            username="luke",
+            account=star_wars,
+            permissions=["iaso_org_units"],
+            org_units=[cls.jedi_council_endor],
+        )
+        cls.raccoon = cls.create_user_with_profile(
+            username="raccoon", account=marvel, permissions=["iaso_org_units"]
         )
 
     @tag("iaso_only")
@@ -201,7 +223,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.assertFalse(jedi_council.validated)
 
         self.assertEqual(1, m.BulkOperation.objects.count())
-        self.assertEqual(3, am.Modification.objects.count())
+        self.assertEqual(4, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_search(self):
@@ -256,7 +278,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.assertIn(self.another_group, jedi_council.groups.all())
 
         self.assertEqual(1, m.BulkOperation.objects.count())
-        self.assertEqual(3, am.Modification.objects.count())
+        self.assertEqual(4, am.Modification.objects.count())
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_but_some(self):
@@ -288,7 +310,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.assertTrue(jedi_council.validated)
 
         self.assertEqual(1, m.BulkOperation.objects.count())
-        self.assertEqual(1, am.Modification.objects.count())
+        self.assertEqual(2, am.Modification.objects.count())
 
     def test_org_unit_list_ok(self):
         """GET /api/orgunits/ happy path"""
@@ -298,7 +320,17 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
-        self.assertValidOrgUnitListData(list_data=response_data, expected_length=3)
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=4)
+
+    def test_org_unit_list_ok_user_has_org_unit_restrictions(self):
+        """GET /api/orgunits/ happy path"""
+
+        self.client.force_authenticate(self.luke)
+        response = self.client.get(f"/api/orgunits/")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=2)
 
     def assertValidOrgUnitListData(
         self, *, list_data: typing.Mapping, expected_length: int
@@ -306,6 +338,12 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidListData(
             list_data=list_data, results_key="orgUnits", expected_length=expected_length
         )
+        for org_unit_data in list_data["orgUnits"]:
+            self.assertValidOrgUnitData(org_unit_data)
+
+    def assertValidOrgUnitData(self, org_unit_data: typing.Mapping):
+        self.assertHasField(org_unit_data, "id", int)
+        self.assertHasField(org_unit_data, "name", str)
 
     def assertValidBulkupdateData(self, bulkupdate_data: typing.Mapping):
         self.assertHasField(bulkupdate_data, "id", int)

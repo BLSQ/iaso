@@ -1,5 +1,7 @@
+import operator
 import typing
 from copy import deepcopy
+from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
 from django.contrib.gis.db.models.fields import PointField, PolygonField
@@ -89,7 +91,15 @@ class OrgUnitQuerySet(models.QuerySet):
         )
 
     def hierarchy(self, org_unit):
-        return self.filter(path__descendants=org_unit.path)
+        if isinstance(org_unit, (list, models.QuerySet)):
+            query = reduce(
+                operator.or_,
+                [models.Q(path__descendants=ou.path) for ou in list(org_unit)],
+            )
+        else:
+            query = models.Q(path__descendants=org_unit.path)
+
+        return self.filter(query)
 
     def descendants(self, org_unit):
         return self.filter(
@@ -106,12 +116,18 @@ class OrgUnitQuerySet(models.QuerySet):
 
         if user.is_authenticated:
             account = user.iaso_profile.account
+
+            # Filter on version ids (linked to the account)
             version_ids = (
                 SourceVersion.objects.filter(data_source__projects__account=account)
                 .values_list("id", flat=True)
                 .distinct()
             )
             queryset = queryset.filter(version_id__in=version_ids)
+
+            # If applicable, filter on the org units associated to the user
+            if user.iaso_profile.org_units.count() > 0:
+                queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
 
         if app_id is not None:
             try:

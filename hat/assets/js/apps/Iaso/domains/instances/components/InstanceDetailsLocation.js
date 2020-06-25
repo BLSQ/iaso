@@ -23,7 +23,7 @@ const styles = theme => ({
 });
 
 
-const InstanceDetailsInfos = ({
+const InstanceDetailsLocation = ({
     currentInstance,
     intl: {
         formatMessage,
@@ -76,9 +76,9 @@ const InstanceDetailsInfos = ({
 };
 
 
-InstanceDetailsInfos.propTypes = {
+InstanceDetailsLocation.propTypes = {
     classes: PropTypes.object.isRequired,
     currentInstance: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
 };
-export default withStyles(styles)(injectIntl(InstanceDetailsInfos));
+export default withStyles(styles)(injectIntl(InstanceDetailsLocation));

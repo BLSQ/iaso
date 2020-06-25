@@ -1,6 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
+import get from 'lodash/get';
 
 import InstanceDetailsField from './InstanceDetailsField';
 
@@ -18,14 +19,18 @@ const InstanceDetailsInfos = ({
     return (
         <>
             {
-                fields.map(f => (
-                    <InstanceDetailsField
-                        key={f.key}
-                        label={formatMessage(MESSAGES[f.key])}
-                        valueTitle={f.title ? f.title(currentInstance[f.key]) : null}
-                        value={f.render ? f.render(currentInstance[f.key]) : currentInstance[f.key]}
-                    />
-                ))
+                fields.map((f) => {
+                    const value = get(currentInstance, f.key);
+
+                    return (
+                        <InstanceDetailsField
+                            key={f.key}
+                            label={formatMessage(MESSAGES['labelKey' in f ? f.labelKey : f.key])}
+                            valueTitle={f.title ? f.title(currentInstance[f.key]) : null}
+                            value={f.render ? f.render(value) : value}
+                        />
+                    );
+                })
             }
         </>
     );

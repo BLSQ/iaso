@@ -205,7 +205,7 @@ Django 3 requires version 2+ of the gdal library. Sadly, Beanstalk is based on A
 gdal 1 from the epel repository. To be able to use gdal 2, first identify the AMI of the Elastic Beanstalk EC2 server.
 In EC2, launch a new instance based on that AMI. In the instance, run
 (based on https://stackoverflow.com/questions/49637407/deploying-a-geodjango-application-on-aws-elastic-beanstalk
-and adapted to use /usr instead of /usr/local):
+and adapted to use /usr instead of /usr/local): (For Amazon Linux 2, use geos-3.5.2)
 
     wget http://download.osgeo.org/geos/geos-3.4.2.tar.bz2
     tar xjf geos-3.4.2.tar.bz2
@@ -238,8 +238,6 @@ and adapted to use /usr instead of /usr/local):
 
     make -j4
     sudo make install
-    cd /usr/local
-    tar zcvf ~/gdal-2.2.3-amz1.tar.gz *
 
     sudo ldconfig
 

@@ -40,10 +40,17 @@ class AppsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
-    def test_apps_retrieve_not_found(self):
-        """GET /apps/<app_id>/ with wrong app id"""
+    def test_apps_retrieve_current_not_found(self):
+        """GET /apps/current/?app_id= with wrong app id"""
 
-        response = self.client.get("/api/apps/org.nope.nope/")
+        response = self.client.get(f"/api/apps/current/?app_id=notanappid")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_apps_retrieve_current_no_app_id(self):
+        """GET /apps/current/?app_id= without app id"""
+
+        response = self.client.get(f"/api/apps/current/")
         self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
@@ -67,6 +74,13 @@ class AppsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidAppData(response_data)
         self.assertEqual(2, len(response_data["feature_flags"]))
+
+    @tag("iaso_only")
+    def test_apps_retrieve_not_found(self):
+        """GET /apps/<app_id>/ with wrong app id"""
+
+        response = self.client.get("/api/apps/org.nope.nope/")
+        self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_apps_retrieve_ok_1(self):

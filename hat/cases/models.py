@@ -585,6 +585,23 @@ class CaseAbstract(models.Model):
         & Q(test_pl_video_filename__isnull=True)
     )
 
+    # Mapping of test types to the test_xxxx field. Used mostly by CasesViewSet
+    test_type_mapping = dict(
+        CATT="catt",
+        RDT="rdt",
+        CTCWOO="ctcwoo",
+        GE="ge",
+        LCR="lcr",
+        LNP="lymph_node_puncture",
+        SF="sf",
+        PG="pg",
+        MAECT="maect",
+        PL="pl",
+        research_pl="research_pl",
+        clinicalsigns="clinicalsigns",
+        iELISA="ielisa",
+    )
+
     class Meta:
         abstract = True
         ordering = ["-id"]

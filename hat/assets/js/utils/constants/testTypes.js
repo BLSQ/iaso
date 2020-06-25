@@ -83,6 +83,13 @@ const testTypes = [
             id: 'main.label.test.sf',
         },
     },
+    {
+        key: 'iELISA',
+        label: {
+            defaultMessage: 'iELISA',
+            id: 'main.label.test.iELISA',
+        },
+    },
 ];
 
 export default testTypes;

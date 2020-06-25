@@ -19,6 +19,11 @@ export const INSTANCE_STATUSES = [
 
 export const INSTANCE_METAS_FIELDS = [
     {
+        labelKey: 'version',
+        key: 'file_content._version',
+        type: 'info',
+    },
+    {
         key: 'uuid',
         type: 'info',
     },

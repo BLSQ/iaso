@@ -14,6 +14,7 @@ services:
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
+      - ./media:/opt/app/media
       - ./scripts:/opt/app/scripts
       - ./entrypoint.sh:/opt/app/entrypoint.sh
       - ./docs:/opt/app/docs

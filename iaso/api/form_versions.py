@@ -1,6 +1,4 @@
 import typing
-from django.db import transaction
-from django.core.files.uploadedfile import SimpleUploadedFile
 from rest_framework import serializers, parsers, permissions
 
 from iaso.models import Form, FormVersion
@@ -17,7 +15,6 @@ from .common import (
     HasPermission,
 )
 from .forms import HasFormPermission
-from iaso.dhis2.form_mapping import copy_mappings_from_previous_version
 
 
 class FormVersionSerializer(DynamicFieldsModelSerializer):
@@ -28,6 +25,8 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "version_id",
             "form_id",
             "form_name",
+            "full_name",  # model annotation
+            "mapped",  # model annotation
             "xls_file",
             "file",
             "created_at",
@@ -38,19 +37,19 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "version_id",
             "form_id",
             "form_name",
-            "full_name",
-            "mapped",
+            "full_name",  # model annotation
+            "mapped",  # model annotation
             "xls_file",
             "file",
+            "descriptor",
             "created_at",
             "updated_at",
-            "descriptor",
         ]
         read_only_fields = [
             "id",
             "form_name",
-            "full_name",
             "version_id",
+            "full_name",
             "mapped",
             "file",
             "created_at",
@@ -62,26 +61,20 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         source="form", queryset=Form.objects.all()
     )
     form_name = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()
-    mapped = serializers.SerializerMethodField()
     xls_file = serializers.FileField(
         required=True, allow_empty_file=False
     )  # field is not required in model
+    mapped = serializers.BooleanField(read_only=True)
+    full_name = serializers.CharField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
     descriptor = serializers.SerializerMethodField()
-
-    def get_mapped(self, form_version):
-        return form_version.mapped
 
     def get_form_name(self, form_version):
         return form_version.form.name
 
     def get_descriptor(self, form_version):
         return form_version.get_or_save_form_descriptor()
-
-    def get_full_name(self, form_version):
-        return form_version.full_name
 
     def validate(self, data: typing.MutableMapping):
         form = data["form"]
@@ -93,65 +86,43 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         ):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
 
-        # fetch previous version
-        try:
-            previous_version = FormVersion.objects.filter(form=form).latest(
-                "created_at"
-            )
-            previous_version_id = previous_version.version_id
-        except FormVersion.DoesNotExist:
-            previous_version_id = None
-
         # handle xls to xml conversion
-        uploaded_xls_file = data["xls_file"]
         try:
-            xml_form = parsing.parse_xls_form(
-                uploaded_xls_file, previous_version=previous_version_id
+            previous_form_version = FormVersion.objects.latest_version(form)
+            survey = parsing.parse_xls_form(
+                data["xls_file"],
+                previous_version=previous_form_version.version_id
+                if previous_form_version is not None
+                else None,
             )
         except parsing.ParsingError as e:
             raise serializers.ValidationError({"xls_file": str(e)})
 
         # validate that form_id stays constant across versions
-        if form.form_id is not None and xml_form["form_id"] != form.form_id:
+        if form.form_id is not None and survey.form_id != form.form_id:
             raise serializers.ValidationError(
                 {"xls_file": "Form id should stay constant across form versions."}
             )
 
         # validate form_id (from XLS file) uniqueness across account
-        all_accounts = set(
-            project.account for project in form.projects.all()
-        )  # TODO: discuss - smells weird
-        for account in all_accounts:
-            queryset = Form.objects.filter(
-                projects__account=account, form_id=xml_form["form_id"]
-            ).exclude(pk=form.id)
-            if queryset.exists():
-                raise serializers.ValidationError(
-                    {"xls_file": "The form_id is already used in another form."}
-                )
+        if Form.objects.exists_with_same_version_id_within_projects(
+            form, survey.form_id
+        ):
+            raise serializers.ValidationError(
+                {"xls_file": "The form_id is already used in another form."}
+            )
 
-        data["file"] = SimpleUploadedFile(
-            xml_form.file_name, xml_form.file_content, content_type="text/xml"
-        )
-        data["version_id"] = xml_form["version"]
-        data["form_form_id"] = xml_form["form_id"]
+        data["survey"] = survey
 
         return data
 
-    def create(self, validated_data: typing.MutableMapping):
-        form_form_id = validated_data.pop("form_form_id")
-        with transaction.atomic():
-            # save version
-            version: FormVersion = super().create(validated_data)
+    def create(self, validated_data):
+        form = validated_data.pop("form")
+        survey = validated_data.pop("survey")
 
-            # update form instance with survey settings
-            form = version.form
-            form.form_id = form_form_id
-            form.save()
-
-        copy_mappings_from_previous_version(version)
-
-        return version
+        return FormVersion.objects.create_for_form_and_survey(
+            form=form, survey=survey, **validated_data
+        )
 
 
 class FormVersionsViewSet(ModelViewSet):
@@ -175,13 +146,13 @@ class FormVersionsViewSet(ModelViewSet):
     http_method_names = ["get", "post", "head", "options", "trace"]
 
     def get_queryset(self):
-        orders = self.request.GET.get("order", "full_name").split(",")
-        mapped_filter = self.request.GET.get("mapped", "")
+        orders = self.request.query_params.get("order", "full_name").split(",")
+        mapped_filter = self.request.query_params.get("mapped", "")
 
         profile = self.request.user.iaso_profile
         queryset = FormVersion.objects.filter(form__projects__account=profile.account)
 
-        search_name = self.request.GET.get("search_name", None)
+        search_name = self.request.query_params.get("search_name", None)
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)
 

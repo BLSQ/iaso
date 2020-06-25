@@ -1,17 +1,39 @@
 import pathlib
 import typing
 from django.contrib.auth.models import AnonymousUser, User
-from django.db import models
+from django.core.files.uploadedfile import SimpleUploadedFile
+from django.db import models, transaction
 from django.contrib.postgres.fields import JSONField
 from django.utils.translation import ugettext_lazy as _
 
 from .project import Project
+from ..dhis2.form_mapping import copy_mappings_from_previous_version
 from ..odk import parsing
 from ..utils import slugify_underscore
 from .. import periods
 
 
 class FormQuerySet(models.QuerySet):
+    def exists_with_same_version_id_within_projects(self, form: "Form", form_id: str):
+        """Checks whether the provided form_id is already in a form that is:
+
+        - different from the provided form
+        - linked to a project from the same accounts as the provided form
+        """
+
+        all_accounts = set(
+            project.account for project in form.projects.all()
+        )  # TODO: discuss - smells weird
+        for account in all_accounts:
+            if (
+                self.filter(projects__account=account, form_id=form_id)
+                .exclude(pk=form.id)
+                .exists()
+            ):
+                return True
+
+        return False
+
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser], app_id: str
     ):
@@ -107,6 +129,41 @@ def _form_version_upload_to(instance: "FormVersion", filename: str) -> str:
     return f"forms/{underscored_form_name}_{instance.version_id}{path.suffix}"
 
 
+class FormVersionQuerySet(models.QuerySet):
+    def latest_version(self, form: Form):
+        try:
+            return self.filter(form=form).latest("created_at")
+        except FormVersion.DoesNotExist:
+            return None
+
+
+class FormVersionManager(models.Manager):
+    def create_for_form_and_survey(
+        self, *, form: "Form", survey: parsing.Survey, **kwargs
+    ):
+        with transaction.atomic():
+            latest_version = self.latest_version(form)
+
+            form_version = super().create(
+                **kwargs,
+                form=form,
+                file=SimpleUploadedFile(
+                    survey.generate_file_name("xml"),
+                    survey.to_xml(),
+                    content_type="text/xml",
+                ),
+                version_id=survey.version,
+                form_descriptor=survey.to_json(),
+            )
+            form.form_id = survey.form_id
+            form.save()
+
+            if latest_version is not None:
+                copy_mappings_from_previous_version(form_version, latest_version)
+
+        return form_version
+
+
 class FormVersion(models.Model):
     form = models.ForeignKey(
         Form, on_delete=models.CASCADE, related_name="form_versions"
@@ -121,10 +178,11 @@ class FormVersion(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
-    def __str__(self):
-        return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)
+    objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(self):
+    def get_or_save_form_descriptor(
+        self,
+    ):  # TODO: remove me - shoud be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:
@@ -147,3 +205,6 @@ class FormVersion(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }
+
+    def __str__(self):
+        return "%s - %s - %s" % (self.form.name, self.version_id, self.created_at)

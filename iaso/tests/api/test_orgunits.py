@@ -145,6 +145,33 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(0, am.Modification.objects.count())
 
     @tag("iaso_only")
+    def test_org_unit_bulkupdate_select_all_wrong_account(self):
+        """POST /orgunits/bulkupdate (authenticated user, but no access any org unit)"""
+
+        self.client.force_authenticate(self.raccoon)
+        response = self.client.post(
+            f"/api/orgunits/bulkupdate/",
+            data={
+                "select_all": True,
+                "validated": False,
+            },
+            format="json",
+        )
+        self.assertJSONResponse(response, 201)
+        self.assertValidBulkupdateData(response.json())
+
+        for jedi_council in [
+            self.jedi_council_endor,
+            self.jedi_council_brussels,
+            self.jedi_council_corruscant,
+        ]:
+            jedi_council.refresh_from_db()
+            self.assertTrue(jedi_council.validated)
+
+        self.assertEqual(0, m.BulkOperation.objects.count())
+        self.assertEqual(0, am.Modification.objects.count())
+
+    @tag("iaso_only")
     def test_org_unit_bulkupdate_select_some(self):
         """POST /orgunits/bulkupdate happy path"""
 
@@ -312,6 +339,15 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(2, am.Modification.objects.count())
 
+    def test_org_unit_list_without_auth_or_app_id(self):
+        """GET /api/orgunits/ with no auth or app id -> 200 with 0 org unit"""
+
+        response = self.client.get(f"/api/orgunits/")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidOrgUnitListData(list_data=response_data, expected_length=0)
+
     def test_org_unit_list_ok(self):
         """GET /api/orgunits/ happy path"""
 
@@ -331,6 +367,39 @@ class OrgUnitAPITestCase(APITestCase):
 
         response_data = response.json()
         self.assertValidOrgUnitListData(list_data=response_data, expected_length=2)
+
+    @tag("iaso_only")
+    def test_org_unit_retrieve_without_auth_or_app_id(self):
+        """GET /orgunits/<org_unit_id>/ without auth or app id should result in a 200 empty response"""
+
+        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_org_unit_retrieve_wrong_user(self):
+        """GET /orgunits/<org_unit_id>/ with user that does not have access to the org unit -> 404"""
+
+        self.client.force_authenticate(self.luke)
+        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_org_unit_retrieve_ok_1(self):
+        """GET /orgunits/<org_unit_id>/ happy path (user has no restriction)"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get(f"/api/orgunits/{self.jedi_council_corruscant.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
+
+    @tag("iaso_only")
+    def test_org_unit_retrieve_ok_2(self):
+        """GET /orgunits/<org_unit_id>/ happy path (user is restricted to a few org units)"""
+
+        self.client.force_authenticate(self.luke)
+        response = self.client.get(f"/api/orgunits/{self.jedi_squad_endor.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertValidOrgUnitData(response.json())
 
     def assertValidOrgUnitListData(
         self, *, list_data: typing.Mapping, expected_length: int

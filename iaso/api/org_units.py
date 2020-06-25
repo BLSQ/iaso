@@ -8,7 +8,6 @@ from iaso.models import (
     OrgUnit,
     OrgUnitType,
     Instance,
-    SourceVersion,
     Group,
     Project,
     BulkOperation,
@@ -67,10 +66,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     permission_classes = [HasOrgUnitPermission]
 
-    def list(self, request):
-        queryset = OrgUnit.objects.filter_for_user_and_app_id(
+    def get_queryset(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get("app_id")
         )
+
+    def list(self, request):
+        queryset = self.get_queryset()
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
@@ -131,7 +133,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(
+                        shape_queryset = self.get_queryset().filter(
                             id=temp_org_unit["id"]
                         )
                         temp_org_unit["geo_json"] = geojson_queryset(
@@ -154,7 +156,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_location()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(
+                        shape_queryset = self.get_queryset().filter(
                             id=temp_org_unit["id"]
                         )
                         temp_org_unit["geo_json"] = geojson_queryset(
@@ -341,7 +343,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:
-            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(
                     queryset, geometry_field="simplified_geom"
@@ -362,21 +364,21 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit = get_object_or_404(OrgUnit, pk=pk)
+        org_unit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
 
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:
-            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(
-                    queryset, geometry_field="simplified_geom"
+                    geo_queryset, geometry_field="simplified_geom"
                 )
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(
-                    queryset, geometry_field="catchment"
+                    geo_queryset, geometry_field="catchment"
                 )
         return Response(res)
 
@@ -396,9 +398,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         searches = request.data.get("searches", [])
 
         # Restrict qs to org units accessible to the authenticated user
-        queryset = OrgUnit.objects.filter(
-            version__data_source__projects__account__id=request.user.iaso_profile.account.id
-        )
+        queryset = self.get_queryset()
 
         if not select_all:
             queryset = queryset.filter(pk__in=selected_ids)

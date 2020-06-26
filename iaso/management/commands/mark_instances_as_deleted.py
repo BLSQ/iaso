@@ -30,7 +30,7 @@ class Command(BaseCommand):
         self.stdout.write(f"Deleting all instances from the {project.name} project")
 
         forms = project.forms
-        instances = project.instance_set
+        instances = project.instance_set.exclude(deleted=True)
         instance_count = instances.count()
 
         if not options["force"]:

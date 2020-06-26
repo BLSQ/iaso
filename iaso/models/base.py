@@ -1,9 +1,10 @@
 import random
 import operator
 import typing
+from copy import copy
 from urllib.request import urlopen
 from functools import reduce
-from django.db import models
+from django.db import models, transaction
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -12,6 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
+
+from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_file
 from django.db.models import Q
 
@@ -737,7 +740,7 @@ class Instance(models.Model):
         json = self.get_and_save_json_of_xml()
 
         try:
-            return self.form.form_versions.get(version_id=json['_version'])
+            return self.form.form_versions.get(version_id=json["_version"])
         except (KeyError, FormVersion.DoesNotExist):
             return None
 
@@ -799,7 +802,9 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
             "form_name": self.form.name,
-            "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
+            "form_descriptor": form_version.get_or_save_form_descriptor()
+            if form_version is not None
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
@@ -853,6 +858,13 @@ class Instance(models.Model):
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
         }
+
+    def soft_delete(self, user: typing.Optional[User] = None):
+        with transaction.atomic():
+            original = copy(self)
+            self.deleted = True
+            self.save()
+            log_modification(original, self, INSTANCE_API, user=user)
 
 
 class InstanceFile(models.Model):

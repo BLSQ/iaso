@@ -1,7 +1,6 @@
 from iaso.test import TestCase
 from django.test import tag
 from iaso import models as m
-from django.db import transaction
 
 
 class OrgUnitModelTestCase(TestCase):

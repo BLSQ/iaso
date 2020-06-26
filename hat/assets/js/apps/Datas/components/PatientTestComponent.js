@@ -5,6 +5,7 @@ import moment from 'moment';
 import VideoComponent from '../../../components/VideoComponent';
 import ImgModal from '../../../components/ImgModal';
 import { getTesterDisplayName } from '../../../utils/profilesUtils';
+import testTypes from '../../../utils/constants/testTypes';
 
 class PatientTestComponent extends React.Component {
     constructor(props) {
@@ -34,6 +35,11 @@ class PatientTestComponent extends React.Component {
         } = this.props;
         if (!test) {
             return null;
+        }
+        let testTypeLabel = test.type || '--';
+        const testType = testTypes.find(t => t.key === test.type);
+        if (testType) {
+            testTypeLabel = formatMessage(testType.label);
         }
         return (
             <div className={`${test.hidden ? 'collapsable' : ''} ${this.state.open ? 'open' : ''}`}>
@@ -106,7 +112,7 @@ class PatientTestComponent extends React.Component {
                                 <FormattedMessage id="main.label.testType" defaultMessage="Test type" />
                             </th>
                             <td className={`${similarTest && (similarTest.type !== test.type) ? 'error' : ''}`}>
-                                {test.type ? test.type : '--'}
+                                {testTypeLabel}
                             </td>
                         </tr>
                         <tr>

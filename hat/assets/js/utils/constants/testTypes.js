@@ -42,7 +42,7 @@ const testTypes = [
         },
     },
     {
-        key: 'research_pl',
+        key: 'RESEARCH_PL',
         label: {
             defaultMessage: 'Research lumbar puncture',
             id: 'main.label.test.research_pl',

@@ -29,7 +29,7 @@ class Migration(migrations.Migration):
                     ("LNP", "Lymph Node Puncture"),
                     ("PARASIT", "Confirmation parasitologique"),
                     ("RESEARCH_PL", "PL de recherche"),
-                    ("iELISA", "iELISA"),
+                    ("IELISA", "iELISA"),
                 ],
                 verbose_name="Type",
             ),

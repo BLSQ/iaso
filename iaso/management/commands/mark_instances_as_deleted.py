@@ -40,7 +40,7 @@ class Command(BaseCommand):
             self.stdout.write(
                 f"If called with --force, would delete {instance_count} instances"
             )
-            self.stdout.write(f"Current forms in the impacted project are:")
+            self.stdout.write(f"Forms in the {project.name} project are:")
 
             for form_name in form_names:
                 self.stdout.write(f" - {form_name}")

@@ -16,9 +16,7 @@ class InstancesAPITestCase(APITestCase):
             name="Jedi Council", short_name="Cnc"
         )
 
-        cls.jedi_council_endor = m.OrgUnit.objects.create(
-            name="Endor Jedi Council"
-        )
+        cls.jedi_council_endor = m.OrgUnit.objects.create(name="Endor Jedi Council")
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens",

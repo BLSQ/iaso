@@ -1,5 +1,6 @@
 from django.http import Http404
 from rest_framework import permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
 from .serializers import AppSerializer
@@ -33,8 +34,8 @@ class AppsViewSet(ModelViewSet):
     def get_object(self):
         """Override to handle GET /api/app/current/?app_id=some.app.id"""
         if self.kwargs["app_id"] == "current":
-            return self.get_queryset().get(
-                app_id=self.request.query_params.get("app_id")
+            return get_object_or_404(
+                self.get_queryset(), app_id=self.request.query_params.get("app_id")
             )
 
         return super().get_object()

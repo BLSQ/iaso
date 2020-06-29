@@ -1,5 +1,5 @@
 from django.contrib.contenttypes.models import ContentType
-from django.contrib.gis.geos import Polygon, Point
+from django.contrib.gis.geos import Polygon, Point, MultiPolygon
 from django.test import tag
 import typing
 
@@ -37,7 +37,9 @@ class OrgUnitAPITestCase(APITestCase):
             name="Jedi Council", short_name="Cnc"
         )
 
-        cls.mock_polygon = Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
+        cls.mock_multipolygon = MultiPolygon(
+            [Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])]
+        )
         cls.mock_point = Point(x=4, y=50, z=100)
 
         cls.elite_group = m.Group.objects.create(name="Elite councils")
@@ -48,9 +50,9 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
             name="Corruscant Jedi Council",
-            geom=cls.mock_polygon,
-            simplified_geom=cls.mock_polygon,
-            catchment=cls.mock_polygon,
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validated=True,
         )
@@ -60,9 +62,9 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_council,
             version=sw_version_1,
             name="Endor Jedi Council",
-            geom=cls.mock_polygon,
-            simplified_geom=cls.mock_polygon,
-            catchment=cls.mock_polygon,
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validated=True,
         )
@@ -71,9 +73,9 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_council,
             version=sw_version_2,
             name="Brussels Jedi Council",
-            geom=cls.mock_polygon,
-            simplified_geom=cls.mock_polygon,
-            catchment=cls.mock_polygon,
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validated=True,
         )

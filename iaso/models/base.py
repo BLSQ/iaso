@@ -737,7 +737,7 @@ class Instance(models.Model):
         json = self.get_and_save_json_of_xml()
 
         try:
-            return self.form.form_versions.get(version_id=json['_version'])
+            return self.form.form_versions.get(version_id=json["_version"])
         except (KeyError, FormVersion.DoesNotExist):
             return None
 
@@ -799,7 +799,9 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
             "form_name": self.form.name,
-            "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
+            "form_descriptor": form_version.get_or_save_form_descriptor()
+            if form_version is not None
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,

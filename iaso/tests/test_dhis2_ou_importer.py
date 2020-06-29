@@ -2,12 +2,11 @@ from io import StringIO
 
 from django.test import TestCase
 from django.core import management
-from django.core.management.base import CommandError
 from os import environ
 import responses
 import json
 
-from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet
+from iaso.models import OrgUnit, Group, GroupSet
 
 
 class CommandTests(TestCase):
@@ -77,7 +76,7 @@ class CommandTests(TestCase):
 
         # assert has a simplified geometry
         zone = created_orgunits_qs.get(name="Gorama Mende")
-        self.assertIn("POLYGON ((-11.3596 8.5317", zone.simplified_geom.wkt)
+        self.assertIn("MULTIPOLYGON (((-11.3596 8.5317", zone.simplified_geom.wkt)
 
         # assert groups are created and assigned to orgunits
         group = Group.objects.get(name="CHP")

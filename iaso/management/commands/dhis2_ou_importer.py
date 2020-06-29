@@ -4,7 +4,7 @@ import json
 import time
 
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, MultiPolygon
 from django.contrib.gis.geos import Polygon
 from django.db import transaction
 
@@ -189,7 +189,7 @@ class Command(BaseCommand):
             if feature_type == "POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0])
+                    org_unit.simplified_geom = MultiPolygon([Polygon(j[0])])
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
@@ -197,7 +197,7 @@ class Command(BaseCommand):
             if feature_type == "MULTI_POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0][0])
+                    org_unit.simplified_geom = MultiPolygon([Polygon(j[0][0])])
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
@@ -220,10 +220,12 @@ class Command(BaseCommand):
 
             try:
                 if feature_type == "Polygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0])
+                    org_unit.simplified_geom = MultiPolygon([Polygon(coordinates[0])])
 
                 if feature_type == "MultiPolygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0][0])
+                    org_unit.simplified_geom = MultiPolygon(
+                        [Polygon(coordinates[0][0])]
+                    )
 
             except Exception as bad_coord:
                 self.iaso_logger.error(

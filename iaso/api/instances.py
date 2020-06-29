@@ -230,9 +230,14 @@ def import_data(instances, user, app_id):
         if Instance.objects.filter(uuid=uuid).exists():
             continue
 
+        # Get or create instance based on file_name - this "get or create" logic is important:
+        # it is possible (although it won't happen often) that the instance has already been created by the
+        # POST /sync/ endpoint.
         file_name = ntpath.basename(instance_data.get("file", None))
-        instance = Instance(uuid=uuid, file_name=file_name, project=project)
+        instance, _ = Instance.objects.get_or_create(file_name=file_name)
 
+        instance.uuid = uuid
+        instance.project = project
         instance.name = instance_data.get("name", None)
         instance.period = instance_data.get("period", None)
         instance.accuracy = instance_data.get("accuracy", None)

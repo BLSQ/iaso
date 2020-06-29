@@ -469,6 +469,7 @@ class Command(BaseCommand):
                             "is_existing": "0",
                             "last_name": "Skywalker",
                             "_version": 1,
+                            "instanceID": "uuid:" + instance.uuid,
                         }
 
                         self.generate_xml_file(instance, form.latest_version)
@@ -521,7 +522,7 @@ class Command(BaseCommand):
 
         for k in instance.json.keys():
             # another child with text
-            if k != "_version":
+            if k != "version" and k != "_version" and k != "instanceID":
                 child = etree.Element(k)
                 child.text = str(instance.json[k])
                 root.append(child)

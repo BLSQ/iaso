@@ -45,11 +45,11 @@ class PatientTestComponent extends React.Component {
                         <tr>
                             <th colSpan="2">
                                 {
-                                    test.type && (test.type === 'CATT' || test.type === 'RDT')
+                                    test.type && (test.type === 'CATT' || test.type === 'RDT' || test.type === 'iELISA')
                                     && <strong><FormattedMessage id="main.label.screening_result" defaultMessage="Dépistage" /></strong>
                                 }
                                 {
-                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL')
+                                    test.type && (test.type !== 'CATT' && test.type !== 'RDT' && test.type !== 'PL' && test.type !== 'iELISA')
                                     && <strong><FormattedMessage id="main.label.confirmation_result" defaultMessage="Confirmation" /></strong>
                                 }
                                 {

@@ -272,7 +272,7 @@ class OrgUnit(models.Model):
         return updated_records
 
     def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id)
+        return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
     def as_dict_for_mobile(self):
         return {

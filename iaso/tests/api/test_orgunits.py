@@ -38,7 +38,7 @@ class OrgUnitAPITestCase(APITestCase):
         )
 
         cls.mock_multipolygon = MultiPolygon(
-            [Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])]
+            Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
         )
         cls.mock_point = Point(x=4, y=50, z=100)
 

@@ -71,9 +71,9 @@ class OrgUnitAPITestCase(APITestCase):
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,
             name="Endor Jedi Squad 1",
-            geom=cls.mock_polygon,
-            simplified_geom=cls.mock_polygon,
-            catchment=cls.mock_polygon,
+            geom=cls.mock_multipolygon,
+            simplified_geom=cls.mock_multipolygon,
+            catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validated=True,
         )

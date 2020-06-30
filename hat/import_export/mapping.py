@@ -1003,6 +1003,17 @@ MAPPING: List[JsonType] = [
     },
     # test fields
     {
+        "field": "test_ielisa",
+        "export_levels": [Export.full, Export.anon],
+        "sources": {
+            "mobile": {
+                "field": ("main", "participant.screenings.iELISA.result"),
+                "apply_to_column": mobile_get_result,
+            },
+        },
+        "test_type": SCREENING_TEST,
+    },
+    {
         "field": "test_rdt",
         "export_levels": [Export.full, Export.anon],
         "sources": {

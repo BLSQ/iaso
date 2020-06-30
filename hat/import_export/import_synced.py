@@ -109,6 +109,8 @@ def import_synced_docs(docs, device_id) -> EventStats:
     patient_docs: List[dict] = [
         doc for doc in docs if "type" in doc and doc["type"] == "participant"
     ]
+    if len(docs) == 0:
+        return EventStats(0, 0, 0, 0)
     for doc in patient_docs:
         logger.error(json.dumps(doc))
 

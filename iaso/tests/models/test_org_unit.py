@@ -151,6 +151,12 @@ class OrgUnitModelTestCase(TestCase):
         ) = self.create_simple_hierarchy()
 
         self.assertEqual(5, m.OrgUnit.objects.hierarchy(corrusca).count())
+        self.assertEqual(
+            5,
+            m.OrgUnit.objects.hierarchy(
+                m.OrgUnit.objects.filter(name__icontains="corrus")
+            ).count(),
+        )
         self.assertEqual(1, m.OrgUnit.objects.children(corrusca).count())
         self.assertEqual(4, m.OrgUnit.objects.descendants(corrusca).count())
 
@@ -159,6 +165,9 @@ class OrgUnitModelTestCase(TestCase):
         self.assertEqual(3, m.OrgUnit.objects.descendants(corruscant).count())
 
         self.assertEqual(2, m.OrgUnit.objects.hierarchy(first_council).count())
+        self.assertEqual(
+            3, m.OrgUnit.objects.hierarchy([first_council, second_council]).count()
+        )
         self.assertEqual(1, m.OrgUnit.objects.children(first_council).count())
         self.assertEqual(1, m.OrgUnit.objects.descendants(first_council).count())
 

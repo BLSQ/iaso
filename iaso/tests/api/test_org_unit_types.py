@@ -22,7 +22,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_types_list_without_auth_or_app_id(self):
-        """GET /orgunittypes/ without auth or app idshould result in a 200 empty response"""
+        """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get("/api/orgunittypes/")
         self.assertJSONResponse(response, 200)
@@ -30,7 +30,7 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_types_list_with_auth(self):
-        """GET /orgunittypes/ without auth or app idshould result in a 200 empty response"""
+        """GET /orgunittypes/ without auth or app id should result in a 200 empty response"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/orgunittypes/")
@@ -43,14 +43,14 @@ class OrgUnitTypesAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_types_retrieve_without_auth_or_app_id(self):
-        """GET /orgunittypes/<org_unit_type_id>/ without auth or app idshould result in a 200 empty response"""
+        """GET /orgunittypes/<org_unit_type_id>/ without auth or app id should result in a 200 empty response"""
 
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")
         self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
     def test_org_unit_types_retrieve_ok(self):
-        """GET /orgunittypes/<org_unit_type_id>/without auth or app idshould result in a 200 empty response"""
+        """GET /orgunittypes/<org_unit_type_id>/ happy path"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get(f"/api/orgunittypes/{self.org_unit_type_1.id}/")

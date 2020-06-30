@@ -107,7 +107,7 @@ class MultiTenantTestCase(APITestCase):
             "/api/orgunits/%s/" % coruscant_id, accept="application/json"
         )
         self.assertEqual(
-            response.status_code, 403
+            response.status_code, 404
         )  # raccoon not authorized to see Star Wars data
 
         response = yoda_client.get(

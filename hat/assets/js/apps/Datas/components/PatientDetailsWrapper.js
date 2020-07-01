@@ -26,7 +26,7 @@ import CaseInfectionLocationModalComponent from './CaseInfectionLocationModalCom
 import TestsMap from './TestsMap';
 import { getRequest, createUrl } from '../../../utils/fetchData';
 import { mapActions } from '../redux/mapReducer';
-import { scrollTo, scrollToTop, userHasPermission } from '../../../utils';
+import { isFixedStructure, scrollTo, scrollToTop, userHasPermission } from '../../../utils';
 import { patientsActions } from '../redux/patients';
 import { filterActions } from '../../../redux/filtersRedux';
 import { loadActions } from '../../../redux/load';
@@ -50,7 +50,6 @@ const MESSAGES = defineMessages({
         id: 'management.detail.map',
     },
 });
-const isFixedStructure = currentCase => currentCase.user_type && (currentCase.user_type === 'CDTC' || currentCase.user_type === 'fixed_structure');
 
 class PatientDetailsWrapper extends React.Component {
     constructor(props) {

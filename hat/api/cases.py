@@ -29,6 +29,9 @@ from hat.users.models import (
 from .authentication import CsrfExemptSessionAuthentication
 from .export_utils import Echo, generate_xlsx, iter_items
 from ..import_export.utils import create_documentid, hat_id
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 class CasesViewSet(viewsets.ViewSet):
@@ -278,30 +281,13 @@ class CasesViewSet(viewsets.ViewSet):
 
         if test_types:
             for test_type in test_types.split(","):
-                if test_type == "CATT":
-                    queryset = queryset.filter(test_catt__isnull=False)
-                if test_type == "RDT":
-                    queryset = queryset.filter(test_rdt__isnull=False)
-                if test_type == "CTCWOO":
-                    queryset = queryset.filter(test_ctcwoo__isnull=False)
-                if test_type == "GE":
-                    queryset = queryset.filter(test_ge__isnull=False)
-                if test_type == "LCR":
-                    queryset = queryset.filter(test_lcr__isnull=False)
-                if test_type == "LNP":
-                    queryset = queryset.filter(test_lymph_node_puncture__isnull=False)
-                if test_type == "SF":
-                    queryset = queryset.filter(test_sf__isnull=False)
-                if test_type == "PG":
-                    queryset = queryset.filter(test_pg__isnull=False)
-                if test_type == "MAECT":
-                    queryset = queryset.filter(test_maect__isnull=False)
-                if test_type == "PL":
-                    queryset = queryset.filter(test_pl__isnull=False)
-                if test_type == "research_pl":
-                    queryset = queryset.filter(test_research_pl__isnull=False)
-                if test_type == "clinicalsigns":
-                    queryset = queryset.filter(test_clinicalsigns__isnull=False)
+                if test_type in Case.test_type_mapping:
+                    queryset = queryset.filter(
+                        **{f"test_{Case.test_type_mapping[test_type]}__isnull": False}
+                    )
+                else:
+                    logger.error("Test type %s not recognized", test_type)
+                    continue
 
         if tester_type:
             devices = DeviceDB.objects.filter(

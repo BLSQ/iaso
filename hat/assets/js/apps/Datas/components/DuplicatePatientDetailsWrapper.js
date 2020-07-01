@@ -6,6 +6,7 @@ import PatientCasesInfos from './PatientCasesInfos';
 import PatientCasesLocation from './PatientCasesLocation';
 import PatientTestComponent from './PatientTestComponent';
 import TreatmentComponent from './TreatmentComponent';
+import { isFixedStructure } from '../../../utils';
 
 class DuplicatePatientDetailsWrapper extends React.Component {
     render() {
@@ -18,6 +19,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
             params,
             fixConflict,
             conflicts,
+            userTypes,
         } = this.props;
         return (
             <section className="duplicate-page">
@@ -135,12 +137,16 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                 <PatientCasesInfos
                                                     currentCase={caseItem}
                                                     similarCase={similarCase}
+                                                    canEditPatientInfos={false}
+                                                    userTypes={userTypes}
                                                 />
                                             </td>
                                             <td className={similarCase ? '' : 'empty'}>
                                                 <PatientCasesInfos
                                                     currentCase={similarCase}
                                                     similarCase={caseItem}
+                                                    canEditPatientInfos={false}
+                                                    userTypes={userTypes}
                                                 />
                                             </td>
                                         </tr>
@@ -172,6 +178,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                 test={t}
                                                                 similarTest={similarTest}
                                                                 testsMapping={testsMapping}
+                                                                isFixedStructure={isFixedStructure(caseItem)}
                                                             />
                                                         </td>
                                                         <td className={similarTest ? '' : 'empty'}>
@@ -180,6 +187,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                 test={similarTest}
                                                                 similarTest={t}
                                                                 testsMapping={testsMapping}
+                                                                isFixedStructure={isFixedStructure(caseItem)}
                                                             />
                                                         </td>
                                                     </tr>
@@ -199,6 +207,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                     test={similarTest}
                                                                     similarTest={undefined}
                                                                     testsMapping={testsMapping}
+                                                                    isFixedStructure={isFixedStructure(caseItem)}
                                                                 />
                                                             </td>
                                                         </tr>
@@ -249,6 +258,8 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                     <PatientCasesInfos
                                                         currentCase={similarCase}
                                                         similarCase={null}
+                                                        userTypes={userTypes}
+                                                        canEditPatientInfos={false}
                                                     />
                                                 </td>
                                             </tr>
@@ -271,6 +282,7 @@ class DuplicatePatientDetailsWrapper extends React.Component {
                                                                 similarTest={null}
                                                                 testsMapping={testsMapping}
                                                                 currentCase={similarCase}
+                                                                isFixedStructure={isFixedStructure(similarCase)}
                                                             />
                                                         </td>
                                                     </tr>
@@ -373,6 +385,7 @@ DuplicatePatientDetailsWrapper.propTypes = {
     params: PropTypes.object.isRequired,
     fixConflict: PropTypes.func.isRequired,
     conflicts: PropTypes.array.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const DuplicatePatientDetailsWrapperWithIntl = injectIntl(DuplicatePatientDetailsWrapper);

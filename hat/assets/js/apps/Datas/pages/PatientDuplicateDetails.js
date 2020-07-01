@@ -169,6 +169,7 @@ class PatientDuplicateDetails extends React.Component {
             },
             testsMapping,
             params,
+            userTypes,
         } = this.props;
         const {
             patient,
@@ -311,6 +312,7 @@ class PatientDuplicateDetails extends React.Component {
                                     mergeDuplicates={(patientIdA, patientIdB) => this.props.mergeDuplicates(patientIdA, patientIdB, this)}
                                     fixConflict={(key, value, currentPatient) => this.fixConflict(key, value, currentPatient)}
                                     conflicts={conflicts}
+                                    userTypes={userTypes}
                                 />
                             )
                         }
@@ -324,6 +326,7 @@ class PatientDuplicateDetails extends React.Component {
                                     mergedPatient={mergedPatient}
                                     testsMapping={testsMapping}
                                     conflicts={conflicts}
+                                    userTypes={userTypes}
                                 />
                             )
                         }
@@ -351,6 +354,7 @@ PatientDuplicateDetails.propTypes = {
     conflicts: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     saveAndMergePatient: PropTypes.func.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const PatientDuplicateDetailsIntl = injectIntl(PatientDuplicateDetails);
@@ -362,6 +366,7 @@ const MapStateToProps = state => ({
     testsMapping: state.patients.testsMapping,
     mergedPatient: state.patients.manualMergedPatient,
     conflicts: state.patients.manualMergedConflicts,
+    userTypes: state.testsFilters.userTypes,
 });
 
 const MapDispatchToProps = dispatch => ({

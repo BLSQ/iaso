@@ -10,11 +10,11 @@
   ],
   "containerDefinitions": [
     {
-      "name": "sense-web",
-      "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/sense-hat:${TAG}",
+      "name": "trypelim",
+      "image": "457634672864.dkr.ecr.eu-west-1.amazonaws.com/sense-hat:${TAG}",
       "essential": true,
       "memory": 1024,
-      "hostname": "sense-web",
+      "hostname": "hat",
       "command": [ "start" ],
       "portMappings": [
         {
@@ -33,54 +33,11 @@
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "sense-hat-${ENV}",
-          "awslogs-region": "eu-west-1",
-          "awslogs-stream-prefix": "sense-hat"
-        }
-      },
-      "links": [
-        "redis"
-      ]
-    },
-    {
-      "name": "redis",
-      "image": "redis:3.2",
-      "essential": true,
-      "memory": 512,
-      "hostname": "redis",
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "sense-hat-${ENV}",
-          "awslogs-region": "eu-west-1",
+          "awslogs-region": "eu-central-1",
           "awslogs-stream-prefix": "sense-hat"
         }
       }
-    },
-    {
-      "name": "sense-rq",
-      "image": "387526361725.dkr.ecr.eu-west-1.amazonaws.com/sense-hat:${TAG}",
-      "essential": true,
-      "memory": 2048,
-      "hostname": "sense-rq",
-      "command": [ "start_rq" ],
-      "mountPoints": [
-        {
-          "sourceVolume": "sense-shared",
-          "containerPath": "/opt/shared",
-          "readOnly": false
-        }
-      ],
-      "logConfiguration": {
-        "logDriver": "awslogs",
-        "options": {
-          "awslogs-group": "sense-hat-${ENV}",
-          "awslogs-region": "eu-west-1",
-          "awslogs-stream-prefix": "sense-hat"
-        }
-      },
-      "links": [
-        "redis"
-      ]
     }
+
   ]
 }

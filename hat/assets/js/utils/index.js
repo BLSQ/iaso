@@ -319,3 +319,5 @@ export const isSuperUser = userLevel => userLevel >= 40;
 
 
 export const getAgeFromYear = year => moment().format('YYYY') - parseInt(year, 10);
+
+export const isFixedStructure = currentCase => currentCase.user_type !== null && (currentCase.user_type === 'CDTC' || currentCase.user_type === 'fixed_structure');

@@ -234,6 +234,7 @@ def create_test_data(case: Case, patient_area, raw):
         LNP: "test_lymph_node_puncture",
         PARASIT: "test_parasit",
         RESEARCH_PL: "test_research_pl",
+        IELISA: "test_ielisa",
     }
     for test_type, test_field in test_types.items():
         test_result = getattr(raw, test_field, None)

@@ -77,6 +77,17 @@ class OrgUnitAPITestCase(APITestCase):
             location=cls.mock_point,
             validated=True,
         )
+        cls.jedi_squad_endor = m.OrgUnit.objects.create(
+            parent=cls.jedi_council_endor,
+            org_unit_type=cls.jedi_squad,
+            version=sw_version_1,
+            name="Endor Jedi Squad 1",
+            geom=cls.mock_polygon,
+            simplified_geom=cls.mock_polygon,
+            catchment=cls.mock_polygon,
+            location=cls.mock_point,
+            validated=True,
+        )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_council,

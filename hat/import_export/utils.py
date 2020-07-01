@@ -45,7 +45,7 @@ def create_documentid(row) -> str:
     ]
 
     if isinstance(row, Series):
-        t = tuple(row[COLUMNS])
+        t = tuple(row.reindex(COLUMNS))
     elif isinstance(row, CaseAbstract):
         t = [getattr(row, x) for x in COLUMNS]
     else:

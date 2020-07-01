@@ -6,6 +6,7 @@ import PatientCasesInfos from './PatientCasesInfos';
 import PatientCasesLocation from './PatientCasesLocation';
 import PatientTestComponent from './PatientTestComponent';
 import TreatmentComponent from './TreatmentComponent';
+import { isFixedStructure } from '../../../utils';
 
 class MergedPatientDetailsWrapper extends React.Component {
     render() {
@@ -13,6 +14,7 @@ class MergedPatientDetailsWrapper extends React.Component {
             mergedPatient,
             testsMapping,
             conflicts,
+            userTypes,
         } = this.props;
         return (
             <section className="duplicate-page result">
@@ -61,6 +63,8 @@ class MergedPatientDetailsWrapper extends React.Component {
                                         <td>
                                             <PatientCasesInfos
                                                 currentCase={caseItem}
+                                                userTypes={userTypes}
+                                                canEditPatientInfos={false}
                                             />
                                         </td>
                                     </tr>
@@ -70,11 +74,16 @@ class MergedPatientDetailsWrapper extends React.Component {
                                         </td>
                                     </tr>
                                     {caseItem.tests.map((t) => {
-                                        let similarTest;
                                         return (
                                             <tr key={t.id}>
                                                 <td>
-                                                    <PatientTestComponent currentCase={caseItem} test={t} similarTest={similarTest} testsMapping={testsMapping} />
+                                                    <PatientTestComponent
+                                                        currentCase={caseItem}
+                                                        test={t}
+                                                        similarTest={null}
+                                                        testsMapping={testsMapping}
+                                                        isFixedStructure={isFixedStructure(caseItem)}
+                                                    />
                                                 </td>
                                             </tr>
                                         );
@@ -126,6 +135,7 @@ MergedPatientDetailsWrapper.propTypes = {
     mergedPatient: PropTypes.object.isRequired,
     testsMapping: PropTypes.object.isRequired,
     conflicts: PropTypes.array.isRequired,
+    userTypes: PropTypes.array.isRequired,
 };
 
 const DuplicatePatientDetailsWrapperWithIntl = injectIntl(MergedPatientDetailsWrapper);

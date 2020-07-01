@@ -92,6 +92,7 @@ class PatientCasesInfo extends React.Component {
                                 <strong><FormattedMessage id="main.label.informations" defaultMessage="Informations" /></strong>
                                 {
                                     canEditPatientInfos
+                                    && toggleModal
                                     && (
                                         <span
                                             tabIndex={0}
@@ -274,13 +275,14 @@ class PatientCasesInfo extends React.Component {
 PatientCasesInfo.defaultProps = {
     similarCase: undefined,
     currentCase: undefined,
+    toggleModal: undefined,
 };
 
 PatientCasesInfo.propTypes = {
     currentCase: PropTypes.object,
     similarCase: PropTypes.object,
     intl: PropTypes.object.isRequired,
-    toggleModal: PropTypes.func.isRequired,
+    toggleModal: PropTypes.func,
     canEditPatientInfos: PropTypes.bool.isRequired,
     userTypes: PropTypes.array.isRequired,
 };

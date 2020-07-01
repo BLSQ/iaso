@@ -1,3 +1,4 @@
+from django.contrib.gis.geos import Point
 from django.test import TestCase, tag
 from ..models import (
     OrgUnit,
@@ -46,9 +47,17 @@ class MultiSearchTestCase(TestCase):
         self.link_client = APIClient()
         self.link_client.login(username="link", password="tiredofplayingthesameagain")
 
-        OrgUnit.objects.create(name="Akkala", org_unit_type=unit_type, version=version)
         OrgUnit.objects.create(
-            name="Kakariko", org_unit_type=unit_type, version=version
+            name="Akkala",
+            org_unit_type=unit_type,
+            version=version,
+            location=Point(x=4, y=50, z=100),
+        )
+        OrgUnit.objects.create(
+            name="Kakariko",
+            org_unit_type=unit_type,
+            version=version,
+            location=Point(x=5, y=51, z=101),
         )
 
     @tag("iaso_only")
@@ -60,8 +69,6 @@ class MultiSearchTestCase(TestCase):
             '/api/orgunits/?limit=2&searches=[{"search":"akka"},{"search":"riko"}]&asLocation=True',
             format="json",
         )
-        self.assertEqual(response.status_code, 200)
-
         self.assertEqual(response.status_code, 200)
 
         json_response = json.loads(response.content)
@@ -77,8 +84,6 @@ class MultiSearchTestCase(TestCase):
             '/api/orgunits/?limit=2&searches=[{"search":"akka"},{"search":"riko"}]',
             format="json",
         )
-        self.assertEqual(response.status_code, 200)
-
         self.assertEqual(response.status_code, 200)
 
         json_response = json.loads(response.content)

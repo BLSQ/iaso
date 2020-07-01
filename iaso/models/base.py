@@ -626,13 +626,15 @@ class InstanceQuerySet(models.QuerySet):
     def for_org_unit_hierarchy(self, org_unit):
         # TODO: we could write our own descendants lookup instead of using the one provided in django-ltree
         # TODO: as it does not handle arrays of path (ltree does)
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, list):
             query = reduce(
                 operator.or_,
-                [Q(org_unit__path__descendants=ou.path) for ou in org_unit],
+                [Q(org_unit__path__descendants=str(ou.path)) for ou in org_unit],
             )
         else:
-            query = Q(org_unit__path__descendants=org_unit.path)
+            query = Q(org_unit__path__descendants=str(org_unit.path))
 
         return self.filter(query)
 

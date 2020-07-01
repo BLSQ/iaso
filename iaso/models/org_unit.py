@@ -86,24 +86,30 @@ class OrgUnitType(models.Model):
 
 class OrgUnitQuerySet(models.QuerySet):
     def children(self, org_unit):
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(
-            path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1
+            path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1
         )
 
     def hierarchy(self, org_unit):
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, (list, models.QuerySet)):
             query = reduce(
                 operator.or_,
-                [models.Q(path__descendants=ou.path) for ou in list(org_unit)],
+                [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)],
             )
         else:
-            query = models.Q(path__descendants=org_unit.path)
+            query = models.Q(path__descendants=str(org_unit.path))
 
         return self.filter(query)
 
     def descendants(self, org_unit):
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(
-            path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
+            path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path)
         )
 
     def filter_for_user_and_app_id(

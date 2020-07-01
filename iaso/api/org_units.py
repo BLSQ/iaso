@@ -84,6 +84,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
 
+        if csv_format is None and xlsx_format is None:
+            if limit and not as_location:
+                queryset.prefetch_related("group_set")
+
+        if as_location:
+            queryset = queryset.filter(
+                Q(location__isnull=False)
+                | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
+                | Q(simplified_geom__isnull=False)
+            )
+
         searches = request.GET.get("searches", None)
         counts = []
         if searches:
@@ -103,11 +114,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET)
+
         queryset = queryset.order_by(*order)
 
         if csv_format is None and xlsx_format is None:
             if limit and not as_location:
-                queryset.prefetch_related("group_set")
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
@@ -143,12 +154,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response({"orgUnits": org_units})
             elif as_location:
                 limit = int(limit)
-                queryset = queryset.filter(
-                    Q(location__isnull=False)
-                    | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
-                    | Q(simplified_geom__isnull=False)
-                )
-
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []

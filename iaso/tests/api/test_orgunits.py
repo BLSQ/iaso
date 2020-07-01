@@ -151,10 +151,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
             f"/api/orgunits/bulkupdate/",
-            data={
-                "select_all": True,
-                "validated": False,
-            },
+            data={"select_all": True, "validated": False,},
             format="json",
         )
         self.assertJSONResponse(response, 201)

@@ -138,7 +138,6 @@ class FormsViewSet(ModelViewSet):
     permission_classes = [HasFormPermission]
     serializer_class = FormSerializer
     results_key = "forms"
-    queryset = Form.objects.all()
 
     EXPORT_TABLE_COLUMNS = (
         {"title": "ID du formulaire", "width": 20},
@@ -195,8 +194,8 @@ class FormsViewSet(ModelViewSet):
         # TODO: use accept header to determine format - or at least the standard "format" parameter
         # DRF also provides a mechanic for custom renderer
         # see https://www.django-rest-framework.org/api-guide/renderers/
-        csv_format = bool(request.query_params.get("csv", None))
-        xlsx_format = bool(request.query_params.get("xlsx", None))
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
 
         if csv_format:
             return self.list_to_csv()
@@ -212,7 +211,7 @@ class FormsViewSet(ModelViewSet):
                     self.get_queryset(),
                     Echo(),
                     self.EXPORT_TABLE_COLUMNS,
-                    self.get_table_row,
+                    self._get_table_row,
                 )
             ),
             content_type="text/csv",
@@ -229,7 +228,7 @@ class FormsViewSet(ModelViewSet):
                 "Forms",
                 self.EXPORT_TABLE_COLUMNS,
                 self.get_queryset(),
-                self.get_table_row,
+                self._get_table_row,
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
@@ -239,7 +238,7 @@ class FormsViewSet(ModelViewSet):
 
         return response
 
-    def get_table_row(self, form: Form, **kwargs):  # TODO: use serializer
+    def _get_table_row(self, form: typing.Mapping, **kwargs):  # TODO: use serializer
         form_data = self.get_serializer(form).data
         created_at = timestamp_to_datetime(form_data.get("created_at"))
         updated_at = (

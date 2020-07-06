@@ -9,8 +9,9 @@ from iaso.enketo import (
     enketo_settings,
     enketo_url,
     to_xforms_xml,
-    inject_userid,
+    inject_userid_and_version,
     EnketoError,
+    ENKETO_FORM_ID_SEPARATOR,
 )
 from iaso.enketo import calculate_file_md5
 from iaso.models import Form, Instance, InstanceFile
@@ -45,11 +46,19 @@ def enketo_edit_url(request, instance_uuid):
 
         # inject editUserID in the meta section of the xml
         # to allow assign Modification to the user
-        instance_xml = inject_userid(instance_xml.decode("utf-8"), request.user.id)
+        instance_xml = inject_userid_and_version(
+            instance_xml.decode("utf-8"),
+            request.user.id,
+            instance.form.latest_version.version_id,
+        )
 
         edit_url = enketo_url(
             public_url_for_enketo(request, "/api/enketo"),
-            form_id_string=instance.form.form_id + "-" + str(instance.form.id),
+            form_id_string=instance.form.form_id
+            + ENKETO_FORM_ID_SEPARATOR
+            + str(instance.form.id)
+            + ENKETO_FORM_ID_SEPARATOR
+            + str(instance.form.latest_version.version_id),
             instance_xml=instance_xml,
             instance_id=instanceid,
             return_url=request.GET.get(
@@ -66,8 +75,10 @@ def enketo_edit_url(request, instance_uuid):
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
-    form_id_str = request.GET["formID"].split("-")
-    form_id = form_id_str[-1]
+    form_id_str = request.GET["formID"].split(ENKETO_FORM_ID_SEPARATOR)
+    form_id = form_id_str[-2]
+    version_id = form_id_str[-1]
+
     form = Form.objects.filter(id=form_id).first()
     lastest_form_version = form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
@@ -98,13 +109,13 @@ class EnketoSubmissionAPIView(APIView):
         """UPDATE"""
         if request.FILES:
             main_file = request.FILES["xml_submission_file"]
-            soup = Soup(main_file.read(), "xml")
+            xml = main_file.read()
+            soup = Soup(xml, "xml")
             # should we add form_id criteria or instanceID is enough ?
 
             instanceid = soup.meta.deprecatedID.contents[0].strip()
             user_id = soup.meta.editUserID.contents[0].strip()
             user = User.objects.filter(id=user_id).first()
-
             original = Instance.objects.filter(json__instanceID=instanceid).first()
 
             instance = Instance.objects.filter(json__instanceID=instanceid).first()

@@ -47,7 +47,7 @@ def translate_optionset(data_element, raw_value):
     return raw_value
 
 
-def format_value(data_element, raw_value):
+def format_value(data_element, raw_value, orgunit_resolver):
     data_element_type = None
     if "valueType" in data_element:
         data_element_type = data_element["valueType"]
@@ -86,6 +86,12 @@ def format_value(data_element, raw_value):
         except:
             raise Exception("Bad value for int '" + str(raw_value) + "'", data_element)
 
+    if (data_element_type == "ORGANISATION_UNIT"):
+        if translated_value is None:
+            return None
+        return orgunit_resolver(str(translated_value))
+
+
     if (
         data_element_type == "TEXT"
         or data_element_type == "LONG_TEXT"
@@ -93,7 +99,7 @@ def format_value(data_element, raw_value):
         or data_element_type == "EMAIL"
         or data_element_type == "PHONE_NUMBER"
         or data_element_type == "LETTER"
-        or data_element_type == "ORGANISATION_UNIT"
+
     ):
         if translated_value is None:
             return None

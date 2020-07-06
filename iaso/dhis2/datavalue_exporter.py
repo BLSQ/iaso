@@ -50,8 +50,18 @@ def uniquify(seq, idfun=None):
 
     return result
 
+class BaseHandler:
+    def orgunit_resolver(self, orgunit_id):
+        if orgunit_id.isnumeric():
+            # should we enforce accounts ?
+            # if it's a number then look up by id
+            return OrgUnit.objects.filter(id=orgunit_id).first().source_ref
 
-class AggregateHandler:
+        # keep old behaviour eg : entity attribute generated based on instance.org_unit
+        return orgunit_id
+
+
+class AggregateHandler(BaseHandler):
     def handle_exception(self, resp, message):
         response = resp["response"]
         counts = {}
@@ -104,7 +114,7 @@ class AggregateHandler:
                     raw_value = instance.json[question_key]
                     data_value = {
                         "dataElement": data_element["id"],
-                        "value": format_value(data_element, raw_value),
+                        "value": format_value(data_element, raw_value, self.orgunit_resolver),
                         "comment": str(instance.id)
                         + " "
                         + str(raw_value)
@@ -232,7 +242,7 @@ class AggregateHandler:
             raise exception
 
 
-class EventHandler:
+class EventHandler(BaseHandler):
     def map_to_values(self, instance, form_mapping, export_status=None):
 
         event = {
@@ -291,14 +301,14 @@ class EventHandler:
                             boolval = "1" if (value in raw_values) else "0"
                             data_value = {
                                 "dataElement": mapping_de["id"],
-                                "value": format_value(mapping_de, boolval)
+                                "value": format_value(mapping_de, boolval, self.orgunit_resolver)
                                 # "debug": str(raw_value) + " " + question_key,
                             }
                             event["dataValues"].append(data_value)
                     else:
                         data_value = {
                             "dataElement": data_element["id"],
-                            "value": format_value(data_element, raw_value),
+                            "value": format_value(data_element, raw_value, self.orgunit_resolver),
                             # "debug": str(raw_value) + " " + question_key,
                         }
                         event["dataValues"].append(data_value)
@@ -366,7 +376,7 @@ class EventHandler:
             return InstanceExportError(message, counts, descriptions)
 
 
-class EventTrackerHandler:
+class EventTrackerHandler(BaseHandler):
     def get_instance_value(self, instance, question_key, mapping):
         raw_value = instance.json[question_key]
         if "iaso_field" in mapping:
@@ -426,8 +436,9 @@ class EventTrackerHandler:
 
                                 data_value = {
                                     "dataElement": data_element["id"],
-                                    "value": format_value(data_element, raw_value),
+                                    "value": format_value(data_element, raw_value, self.orgunit_resolver),
                                 }
+
                                 event["dataValues"].append(data_value)
             if len(event["dataValues"]) > 0:
                 events.append(event)
@@ -463,7 +474,7 @@ class EventTrackerHandler:
                         )
                         attribute = {
                             "attribute": tea["id"],
-                            "value": format_value(tea, raw_value),
+                            "value": format_value(tea, raw_value, self.orgunit_resolver),
                             "displayName": tea["name"],
                             "valueType": tea["valueType"],
                         }

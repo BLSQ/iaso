@@ -66,6 +66,13 @@ function translateLabel(label) {
     return label;
 }
 
+function getRawValue(descriptor, data) {
+    const value = data[descriptor.name];
+    if (value === undefined) {
+        return textPlaceholder;
+    }
+    return value
+}
 /**
  * Extract the value from data using the descriptor
  * (handles the different scenarios, such as select fields)
@@ -178,7 +185,7 @@ function FormField({ descriptor, data }) {
             <TableCell className={classes.tableCell}>
                 <Label descriptor={descriptor} />
             </TableCell>
-            <TableCell className={classes.tableCell} align="right">
+            <TableCell className={classes.tableCell} align="right" title={getRawValue(descriptor,data)}>
                 {getDisplayedValue(descriptor, data)}
             </TableCell>
         </TableRow>

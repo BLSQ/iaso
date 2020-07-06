@@ -3,6 +3,7 @@ from django.test import TestCase
 
 from ..dhis2 import value_formatter
 
+orgunit_resolver = lambda x: "resolved-"+x
 
 def buid_de(value_type, option_set=None):
     de = {"id": "dataElementId", "valueType": value_type}
@@ -11,8 +12,10 @@ def buid_de(value_type, option_set=None):
     return de
 
 
+
 class ValueFormatterTests(TestCase):
     def test_formats_basic_types(self):
+
         testcases = (
             ("INTEGER", "", None),
             ("INTEGER", "25", 25),
@@ -48,12 +51,12 @@ class ValueFormatterTests(TestCase):
                 "50.67630919162184 4.38517696224153 151.0 18.0",
                 "[4.38517696224153,50.67630919162184]",
             ),
-            ("ORGANISATION_UNIT", "SDFJKLZ456", "SDFJKLZ456"),
+            ("ORGANISATION_UNIT", "SDFJKLZ456", "resolved-SDFJKLZ456"),
         )
 
         for testcase in testcases:
             self.assertEquals(
-                value_formatter.format_value(buid_de(testcase[0]), testcase[1]),
+                value_formatter.format_value(buid_de(testcase[0]), testcase[1], orgunit_resolver),
                 testcase[2],
                 testcase,
             )
@@ -68,14 +71,14 @@ class ValueFormatterTests(TestCase):
                 ]
             },
         )
-        self.assertEquals(value_formatter.format_value(de, "1"), "HIV prevention")
+        self.assertEquals(value_formatter.format_value(de, "1", orgunit_resolver), "HIV prevention")
         self.assertEquals(
-            value_formatter.format_value(de, "20"), "Malaria preventation"
+            value_formatter.format_value(de, "20",orgunit_resolver), "Malaria preventation"
         )
-        self.assertEquals(value_formatter.format_value(de, ""), None)
+        self.assertEquals(value_formatter.format_value(de, "", orgunit_resolver), None)
 
         with self.assertRaises(Exception) as context:
-            value_formatter.format_value(de, "unknown value")
+            value_formatter.format_value(de, "unknown value",orgunit_resolver)
 
         self.assertEqual(
             str(context.exception),
@@ -88,16 +91,16 @@ class ValueFormatterTests(TestCase):
             {"options": [{"code": "HIV prevention"}, {"code": "Malaria preventation"}]},
         )
         self.assertEquals(
-            value_formatter.format_value(de, "HIV prevention"), "HIV prevention"
+            value_formatter.format_value(de, "HIV prevention",orgunit_resolver), "HIV prevention"
         )
         self.assertEquals(
-            value_formatter.format_value(de, "Malaria preventation"),
+            value_formatter.format_value(de, "Malaria preventation",orgunit_resolver),
             "Malaria preventation",
         )
-        self.assertEquals(value_formatter.format_value(de, ""), None)
+        self.assertEquals(value_formatter.format_value(de, "", orgunit_resolver), None)
 
         with self.assertRaises(Exception) as context:
-            value_formatter.format_value(de, "unknown value")
+            value_formatter.format_value(de, "unknown value", orgunit_resolver)
 
         self.assertEqual(
             str(context.exception),
@@ -108,7 +111,7 @@ class ValueFormatterTests(TestCase):
         de = buid_de("UNSUPPORTED")
 
         with self.assertRaises(Exception) as context:
-            value_formatter.format_value(de, "unknown value")
+            value_formatter.format_value(de, "unknown value", orgunit_resolver)
 
         self.assertEqual(
             str(context.exception),
@@ -136,6 +139,6 @@ class ValueFormatterTests(TestCase):
             de = buid_de(testcase[0])
 
             with self.assertRaises(Exception) as context:
-                value_formatter.format_value(de, "a bad string")
+                value_formatter.format_value(de, "a bad string", orgunit_resolver)
 
             self.assertEqual(str(context.exception), testcase[1])

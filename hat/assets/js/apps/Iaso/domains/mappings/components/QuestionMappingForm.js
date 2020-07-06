@@ -347,7 +347,7 @@ const QuestionMappingForm = ({
                 item = [{ ...newQuestionMapping }];
                 if (iasoField && iasoField.value != "undefined") {
                   item = [
-                    { ...newQuestionMapping, iaso_fields: iasoField.value },
+                    { ...newQuestionMapping, iaso_field: iasoField.value },
                   ];
                 }
               }

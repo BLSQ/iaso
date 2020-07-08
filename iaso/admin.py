@@ -62,7 +62,33 @@ class FormAdmin(admin.GeoModelAdmin):
         "periods_before_allowed",
         "periods_after_allowed",
         "derived",
+        "created_at",
+        "updated_at",
     )
+
+
+class FormVersionAdmin(admin.GeoModelAdmin):
+    search_fields = ("form__name", "form__form_id")
+    ordering = ("form__name",)
+    list_display = (
+        "form_name",
+        "form_id",
+        "version_id",
+        "created_at",
+        "updated_at",
+    )
+
+    def form_name(self, obj):
+        return obj.form.name
+
+    def form_id(self, obj):
+        return obj.form.form_id
+
+    form_name.short_description = 'Form name'
+    form_name.admin_order_field = 'form__name'
+
+    form_id.short_description = 'Form ID'
+    form_id.admin_order_field = 'form__id'
 
 
 class InstanceAdmin(admin.GeoModelAdmin):
@@ -128,7 +154,7 @@ admin.site.register(DataSource)
 admin.site.register(DeviceOwnership)
 admin.site.register(MatchingAlgorithm)
 admin.site.register(AlgorithmRun)
-admin.site.register(FormVersion)
+admin.site.register(FormVersion, FormVersionAdmin)
 admin.site.register(Profile, ProfileAdmin)
 admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)

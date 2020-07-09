@@ -139,6 +139,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 if form.correlatable:
                     columns.append({"title": "correlation id", "width": 20})
 
+            sub_columns = ["" for __ in columns]
+            latest_form_version = form.form_versions.order_by("id").last()
+            questions_by_name = latest_form_version.questions_by_name()
+
+
             if form and form.fields:
                 file_content_template = form.fields
                 for title in file_content_template:
@@ -147,7 +152,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
-
+                    sub_columns.append(questions_by_name.get("title", {}).get("label", ""))
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
@@ -195,7 +200,7 @@ class InstancesViewSet(viewsets.ViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx(
-                        "Forms", columns, queryset_iterator(queryset, 100), get_row
+                        "Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns
                     ),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )

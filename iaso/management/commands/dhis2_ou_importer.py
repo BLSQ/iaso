@@ -89,6 +89,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Continue import even if an error occurred for one org unit",
         )
+        parser.add_argument(
+            "--page-size",
+            type=int,
+            default=500,
+            help="Continue import even if an error occurred for one org unit",
+        )
 
     def get_group(self, dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
@@ -145,11 +151,12 @@ class Command(BaseCommand):
 
         for page in api.get_paged(
             "organisationUnits",
-            page_size=500,
+            page_size=options.get("page_size", 500),
             params={
                 "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
             },
         ):
+
             orgunits.extend(page["organisationUnits"])
             self.iaso_logger.info(
                 "fetched ",
@@ -163,7 +170,9 @@ class Command(BaseCommand):
                 "records)",
             )
 
-        return sorted(orgunits, key=lambda ou: ou["path"])
+        orgunits_sorted = sorted(orgunits, key=lambda ou: ou["path"])
+
+        return orgunits_sorted
 
     def map_coordinates(self, row, org_unit):
         if "coordinates" in row:

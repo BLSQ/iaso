@@ -1,8 +1,12 @@
 from lxml import etree
 
+ENKETO_FORM_ID_SEPARATOR = "-"
 
-def inject_userid(xml_str, userId):
+
+def inject_userid_and_version(xml_str, userId, version_id):
     root = etree.fromstring(xml_str)
+
+    root.set("version", str(version_id))
 
     meta_tag = [c for c in root if c.tag == "meta"][0]
 
@@ -27,7 +31,14 @@ def to_xforms_xml(form, download_url, version, md5checksum):
     root.append(xform)
 
     form_id = etree.Element("formID")
-    form_id.text = form.form_id + "-" + str(form.id)
+    form_id.text = (
+        form.form_id
+        + ENKETO_FORM_ID_SEPARATOR
+        + str(form.id)
+        + ENKETO_FORM_ID_SEPARATOR
+        + str(form.latest_version.version_id)
+    )
+
     xform.append(form_id)
 
     form_name = etree.Element("name")

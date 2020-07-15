@@ -12,42 +12,10 @@ module.exports = {
   mode: 'development',
   entry: {
     // use same settings as in Prod
-    'home': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Home/index'
-    ],
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': [
       'webpack-dev-server/client?' + WEBPACK_URL,
       './assets/css/index.scss'
-    ],
-    'plannings': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Plannings/index'
-    ],
-    'management': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Management/index'
-    ],
-    'locator': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Locator/index'
-    ],
-    'vector': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Vector/index'
-    ],
-    'quality_control': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/QualityControl/index'
-    ],
-    'stats': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Stats/index'
-    ],
-    'datas': [
-      'webpack-dev-server/client?' + WEBPACK_URL,
-      './assets/js/apps/Datas/index'
     ],
     'iaso': [
       'webpack-dev-server/client?' + WEBPACK_URL,

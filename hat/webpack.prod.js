@@ -14,16 +14,8 @@ module.exports = {
   mode: 'production',
 
   entry: {
-    'home': './assets/js/apps/Home/index',
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': './assets/css/index.scss',
-    'plannings': './assets/js/apps/Plannings/index',
-    'stats': './assets/js/apps/Stats/index',
-    'management': './assets/js/apps/Management/index',
-    'locator': './assets/js/apps/Locator/index',
-    'quality_control': './assets/js/apps/QualityControl/index',
-    'vector': './assets/js/apps/Vector/index',
-    'datas': './assets/js/apps/Datas/index',
     'iaso': './assets/js/apps/Iaso/index',
   },
 

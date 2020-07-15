@@ -29,8 +29,6 @@ services:
       - ./notebooks:/opt/notebooks
     links: &hat_links
       - db
-      - couchdb
-      - redis
     environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
       FLAVOR:  # set to "iaso" or "trypelim" using your .env file
@@ -41,9 +39,6 @@ services:
       TEST_PROD:
       SECRET_KEY: secret
       GOOGLE_CLIENT_ID:
-      COUCHDB_URL: "http://couchdb:5984"
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
       HAT_MOBILE_KEY:
       SAUCE_USERNAME:
       SAUCE_ACCESS_KEY:
@@ -76,24 +71,6 @@ services:
     environment:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
-
-  couchdb:
-    image: couchdb:1.7
-    ports:
-      - "5984:5984"
-    volumes:
-      # enable cors for mobile app in-browser development:
-      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
-    environment:
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
-    logging: *hat_logging
-
-  redis:
-    image: redis:3.2
-    ports:
-      - "6379:6379"
-    logging: *hat_logging
 
   nginx:
     depends_on:

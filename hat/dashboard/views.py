@@ -4,13 +4,11 @@ from django.contrib.auth.decorators import login_required, permission_required
 from django.views.decorators.http import require_http_methods
 from django.shortcuts import render, redirect
 from django.http.request import HttpRequest
-from django.http import HttpResponse, StreamingHttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 from django.conf import settings
 from django.urls import reverse
 
 from hat.audit.models import log_modification, PASSWORD_API
-from hat.planning.models import Planning, Assignation
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.forms import PasswordChangeForm
@@ -19,11 +17,6 @@ from .utils import is_user_authorized, get_menu
 
 import json
 
-from hat.cases.models import CaseView
-
-import xlsxwriter
-import io
-import csv
 
 
 @login_required()
@@ -161,40 +154,6 @@ def plannings_routes(request: HttpRequest) -> HttpResponse:
         request,
         "dashboard/plannings.html",
         {"menu": get_menu(request.user, reverse("dashboard:routes"))},
-    )
-
-
-@is_user_authorized
-@login_required()
-@permission_required("menupermissions.x_management_devices")
-@require_http_methods(["GET"])
-def device_management(request: HttpRequest) -> HttpResponse:
-    # Use the start of tomorrow as the maximum date to omit records with wrong future dates
-    today = datetime.today()
-    max_date = datetime(today.year, today.month, today.day) + timedelta(days=1)
-    dates = (
-        CaseView.objects.filter(source__icontains="mobile")
-        .filter(document_date__isnull=False)
-        .filter(document_date__lt=max_date)
-        .order_by("document_date_month")
-        .values_list("document_date_month", flat=True)
-        .distinct()
-    )
-
-    json_data = json.dumps(
-        {
-            # dates formatted as 2014-06
-            "dates": [d.strftime("%Y-%m") for d in dates]
-        }
-    )
-
-    return render(
-        request,
-        "dashboard/management.html",
-        {
-            "json_data": json_data,
-            "menu": get_menu(request.user, reverse("dashboard:management_devices")),
-        },
     )
 
 

@@ -29,9 +29,4 @@ server {
     # proxy_pass http://docker.for.mac.localhost:8000;
     proxy_pass http://hat:8080;
   }
-
-  location /_couchdb {
-    rewrite /_couchdb/(.*) /$1 break;
-    proxy_pass ${COUCHDB_URL};
-  }
 }

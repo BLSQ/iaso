@@ -15,7 +15,7 @@ from iaso.models import (
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
-from hat.geo.geojson import geojson_queryset
+from iaso.utils import geojson_queryset
 from django.db import transaction
 from django.db.models import Q
 from copy import deepcopy

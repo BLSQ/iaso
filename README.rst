@@ -4,12 +4,7 @@ Introduction & Settings
 
 Introduction
 ============
-
-Trypelim Dashboard is an online tool to see and manage data related to
-Human African Trypanosomiasis and the activities undertaken by different
-organisations to eradicate it.
-
-The dashboard presents data from historical data sets and the mobile application.
+Iaso is a georegistry and data collection platform structured around org unit trees (also known a master lists)
 
 
 .. note:: The dashboard is optimized for Chrome and must be compatible with
@@ -190,7 +185,7 @@ To seed data coming from play.dhis2.org, since the previous commands doesn't run
 in the same container, you need to do a run a docker exec command
 
 `
-docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
+docker exec -it iaso_hat_1 -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
 `
 
 you can then login through http://127.0.0.1:8081/dashboard with :
@@ -439,4 +434,4 @@ If you need usable instances:
 .. code:: shell
 
     docker-compose up
-    docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.33.4'
+    docker exec -it iaso_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.33.4'

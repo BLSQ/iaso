@@ -30,9 +30,6 @@ DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", "development").lower()
 
 
-# SECURITY WARNING: this should also be considered a secret:
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
-
 ALLOWED_HOSTS = ["*"]
 
 # Tell django to view requests as secure(ssl) that have this header set

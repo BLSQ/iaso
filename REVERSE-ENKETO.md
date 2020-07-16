@@ -12,7 +12,7 @@ docker-compose up
 ```
 docker-compose  up
 
-docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
+docker exec -it iaso_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
 
 ```
 

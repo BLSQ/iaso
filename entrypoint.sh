@@ -53,9 +53,6 @@ case "$1" in
     ./scripts/gen_docs.sh
   ;;
   "start" )
-    envsubst "\$COUCHDB_URL" < build_scripts/nginx.conf > /etc/nginx/sites-available/default
-    cat build_scripts/prod/www.trypelim.org/fullchain.pem > /etc/nginx/fullchain.pem
-    cat build_scripts/prod/www.trypelim.org/privkey.pem > /etc/nginx/privkey.pem
     ./manage.py compilemessages -l fr
     ./manage.py migrate --noinput
     ./manage.py collectstatic --noinput
@@ -63,8 +60,6 @@ case "$1" in
   ;;
   "start_dev" )
     if [ -n "$TEST_PROD" ]; then
-      # Test prod configuration
-      envsubst "\$COUCHDB_URL" < build_scripts/local/nginx.conf.local > /etc/nginx/sites-available/default
       ./scripts/wait_for_dbs.sh
       ./manage.py compilemessages -l fr
       ./manage.py migrate --noinput
@@ -78,13 +73,6 @@ case "$1" in
       ./manage.py migrate --noinput
       ./manage.py runserver 0.0.0.0:8080
     fi
-  ;;
-  "start_dev_nginx" )
-    # ssl proxy to web
-    envsubst "\$COUCHDB_URL" < build_scripts/local/nginx-ssl.conf.local > /etc/nginx/sites-available/default
-    cp build_scripts/local/nginx.key.local /etc/nginx/cert.key
-    cp build_scripts/local/nginx.crt.local /etc/nginx/cert.crt
-    nginx -g "daemon off;"
   ;;
   "start_webpack" )
     # We only run this server if not testing prod config

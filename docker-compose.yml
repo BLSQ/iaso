@@ -1,16 +1,15 @@
 version: '3'
 services:
-  hat:
+  iaso:
     stdin_open: true
     tty: true
     build:
       context: .
       args:
         NODE_ENV: ""
-    image: sense-hat
-    # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
+    image: iaso
     ports:
-      - "8080:8080"
+      - "8081:8080"
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
@@ -39,13 +38,6 @@ services:
       TEST_PROD:
       SECRET_KEY: secret
       GOOGLE_CLIENT_ID:
-      HAT_MOBILE_KEY:
-      SAUCE_USERNAME:
-      SAUCE_ACCESS_KEY:
-      # This is needed to connect to the tunnel on Saucelabs
-      TRAVIS_JOB_NUMBER:
-      # This is needed to group our build on Saucelabs
-      TRAVIS_BUILD_NUMBER:
       AWS_STORAGE_BUCKET_NAME:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
@@ -72,36 +64,14 @@ services:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
 
-  nginx:
-    depends_on:
-      - hat
-    image: sense-hat
-    ports:
-      - "8081:80"
-    volumes: *hat_volumes
-    environment: *hat_environment
-    logging: *hat_logging
-    command: start_dev_nginx
-
   # the webpack dev server
   webpack:
     depends_on:
-      - hat
-    image: sense-hat
+      - iaso
+    image: iaso
     ports:
       - "3000:3000"
     volumes: *hat_volumes
     environment: *hat_environment
     logging: *hat_logging
     command: start_webpack
-
-  # the worker container of the task runner
-  # rq:
-  #   depends_on:
-  #     - hat
-  #   image: sense-hat
-  #   volumes: *hat_volumes
-  #   links: *hat_links
-  #   environment: *hat_environment
-  #   logging: *hat_logging
-  #   command: start_dev_rq

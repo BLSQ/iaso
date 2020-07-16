@@ -1,8 +1,8 @@
 {
-  "name": "sense-hat",
-  "version": "0.0.0",
-  "description": "Sense HAT Dashboard",
-  "author": "eHealth Africa",
+  "name": "Iaso",
+  "version": "1.0.0",
+  "description": "Iaso data collection platform",
+  "author": "Bluesquare",
   "license": "Apache-2.0",
   "scripts": {
     "lint": "eslint --quiet hat/assets/js/",
@@ -13,18 +13,17 @@
     "build": "npm run webpack",
     "webpack": "webpack --config ./hat/webpack.dev.js",
     "webpack-prod": "webpack --config ./hat/webpack.prod.js",
-    "extract-strings": "node ./build_scripts/merge-js-transifex.js",
     "webpack-server": "node ./hat/webpack.server.js",
     "extract-iaso-en-messages": "extract-messages --locales=en  --flat --output './hat/assets/js/apps/Iaso/domains/app/translations' './hat/assets/js/apps/Iaso/**/*.js'"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/eHealthAfrica/sense-hat.git"
+    "url": "git+https://github.com/bluesquare/iaso.git"
   },
   "bugs": {
-    "url": "https://github.com/eHealthAfrica/sense-hat/issues"
+    "url": "https://github.com/bluesquare/iaso/issues"
   },
-  "homepage": "https://github.com/eHealthAfrica/sense-hat#readme",
+  "homepage": "https://github.com/bluesquare/iaso#readme",
   "devDependencies": {
     "@material-ui/lab": "^4.0.0-alpha.48",
     "extract-react-intl-messages": "^4.1.1",

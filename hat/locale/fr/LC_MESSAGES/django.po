@@ -409,21 +409,6 @@ msgstr "Imprimer cette page"
 msgid "Trypelim Dashboard"
 msgstr ""
 
-#: templates/base.html:41
-msgid ""
-"\n"
-"        This is the staging site, which is for testing purposes only. Data "
-"may be periodically deleted.\n"
-"        Access main site at: <a href=\"https://sense-hat.eocng.org\">sense-"
-"hat.eocng.org</a>\n"
-"        "
-msgstr ""
-"\n"
-"Ceci est un site de pré-production qui a été conçu à des fins de tests. Les "
-"données peuvent être supprimées périodiquement. \n"
-"Accéder au site principal à:   <a href=\"https://sense-hat.eocng.org\">sense-"
-"hat.eocng.org</a>"
-
 #: templates/cases/analysis/list.html:6
 msgid "Analysis of cases"
 msgstr "Analyse des cas"

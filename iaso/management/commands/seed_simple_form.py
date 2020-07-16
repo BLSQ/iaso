@@ -21,7 +21,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "account_id", help="The project to which the form should be linked",
+            "account_id", help="The account to which the form should be linked",
         )
 
     def handle(self, *args, **options):
@@ -98,7 +98,9 @@ class Command(BaseCommand):
             )
             form_version_1.save()
 
-        with open("iaso/fixtures/instance_form_1_1.xml", "rb") as form_1_instance_1_file:
+        with open(
+            "iaso/fixtures/instance_form_1_1.xml", "rb"
+        ) as form_1_instance_1_file:
             Instance.objects.create(
                 uuid=uuid4(),
                 export_id=uuid4(),
@@ -114,7 +116,9 @@ class Command(BaseCommand):
                 period="2020Q1",
             )
 
-        with open("iaso/fixtures/instance_form_2_1.xml", "rb") as form_2_instance_1_file:
+        with open(
+            "iaso/fixtures/instance_form_2_1.xml", "rb"
+        ) as form_2_instance_1_file:
             Instance.objects.create(
                 uuid=uuid4(),
                 export_id=uuid4(),

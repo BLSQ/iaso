@@ -1,3 +1,4 @@
+from hat.audit.models import Modification, INSTANCE_API
 from iaso.test import TestCase
 from django.utils.timezone import now
 from django.test import tag
@@ -10,6 +11,8 @@ class InstanceModelTestCase(TestCase):
     def setUpTestData(cls):
         cls.maxDiff = None
         star_wars = m.Account.objects.create(name="Star Wars")
+
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars)
 
         cls.sector = m.OrgUnitType.objects.create(name="Sector", short_name="Sec")
         cls.system = m.OrgUnitType.objects.create(name="System", short_name="Sys")
@@ -399,3 +402,40 @@ class InstanceModelTestCase(TestCase):
             first_academy,
             second_academy,
         )
+
+    @tag("iaso_only")
+    def test_org_unit_soft_delete_no_one(self):
+        instance = self.create_form_instance(
+            form=self.form_1, period="202001", org_unit=self.jedi_council_coruscant
+        )
+
+        self.assertFalse(instance.deleted)
+        self.assertEqual(0, Modification.objects.count())
+
+        instance.soft_delete()
+
+        self.assertTrue(instance.deleted)
+        self.assertEqual(1, Modification.objects.count())
+        modification = Modification.objects.first()
+        self.assertIsNone(modification.user)
+        self.assertEqual(INSTANCE_API, modification.source)
+        self.assertEqual(instance.id, modification.object_id)
+        self.assertNotEqual(modification.past_value, modification.new_value)
+        self.assertFalse(modification.past_value[0]["fields"]["deleted"])
+        self.assertTrue(modification.new_value[0]["fields"]["deleted"])
+
+    @tag("iaso_only")
+    def test_org_unit_soft_delete_someone(self):
+        instance = self.create_form_instance(
+            form=self.form_1, period="202002", org_unit=self.jedi_council_coruscant
+        )
+
+        self.assertFalse(instance.deleted)
+        self.assertEqual(0, Modification.objects.count())
+
+        instance.soft_delete(user=self.yoda)
+
+        self.assertTrue(instance.deleted)
+        self.assertEqual(1, Modification.objects.count())
+        modification = Modification.objects.first()
+        self.assertEqual(self.yoda, modification.user)

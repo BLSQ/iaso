@@ -1,9 +1,10 @@
 import random
 import operator
 import typing
+from copy import copy
 from urllib.request import urlopen
 from functools import reduce
-from django.db import models
+from django.db import models, transaction
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -12,6 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
+
+from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_file
 from django.db.models import Q
 
@@ -857,6 +860,13 @@ class Instance(models.Model):
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
         }
+
+    def soft_delete(self, user: typing.Optional[User] = None):
+        with transaction.atomic():
+            original = copy(self)
+            self.deleted = True
+            self.save()
+            log_modification(original, self, INSTANCE_API, user=user)
 
 
 class InstanceFile(models.Model):

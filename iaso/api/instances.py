@@ -229,53 +229,51 @@ class InstancesViewSet(viewsets.ViewSet):
 def import_data(instances, user, app_id):
     project = Project.objects.get_for_user_and_app_id(user, app_id)
 
-    for instance in instances:
-        file_name = ntpath.basename(instance.get("file", None))
-        uuid = instance.get("id", None)
-        latitude = instance.get("latitude", None)
-        longitude = instance.get("longitude", None)
-        org_unit_location = None
+    for instance_data in instances:
+        uuid = instance_data.get("id", None)
 
-        if latitude and longitude:
-            altitude = instance.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+        if Instance.objects.filter(uuid=uuid).exists():
+            continue
 
-        instances = Instance.objects.filter(uuid=uuid)
-        if len(instances) == 1:
-            instance_db = instances[0]
-            instance_db.file_name = file_name
-        elif len(instances) == 0:
-            instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
-            instance_db.uuid = uuid
-        else:
-            return Response({"res": "Problem: multiple instances exist with that uuid"})
-        instance_db.name = instance.get("name", None)
-        instance_db.period = instance.get("period", None)
-        instance_db.accuracy = instance.get("accuracy", None)
-        instance_db.parent_id = instance.get("parentId", None)
-        tentative_org_unit_id = instance.get("orgUnitId", None)
+        # Get or create instance based on file_name - this "get or create" logic is important:
+        # it is possible (although it won't happen often) that the instance has already been created by the
+        # POST /sync/ endpoint.
+        file_name = ntpath.basename(instance_data.get("file", None))
+        instance, _ = Instance.objects.get_or_create(file_name=file_name)
+
+        instance.uuid = uuid
+        instance.project = project
+        instance.name = instance_data.get("name", None)
+        instance.period = instance_data.get("period", None)
+        instance.accuracy = instance_data.get("accuracy", None)
+
+        tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():
-            instance_db.org_unit_id = tentative_org_unit_id
+            instance.org_unit_id = tentative_org_unit_id
         else:
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
-            instance_db.org_unit = org_unit
+            instance.org_unit = org_unit
 
-        instance_db.form_id = instance.get("formId")
+        instance.form_id = instance_data.get("formId")
 
-        t = instance.get("created_at", None)
-        if t:
-            instance_db.created_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.created_at = instance.get("created_at", None)
+        created_at_ts = instance_data.get("created_at", None)
+        instance.created_at = (
+            timestamp_to_utc_datetime(int(created_at_ts))
+            if created_at_ts is not None
+            else None
+        )
 
-        t = instance.get("updated_at", None)
-        if t:
-            instance_db.updated_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.updated_at = instance.get("created_at", None)
+        updated_at_ts = instance_data.get("updated_at", None)
+        instance.updated_at = (
+            timestamp_to_utc_datetime(int(updated_at_ts))
+            if updated_at_ts is not None
+            else instance.created_at
+        )
 
-        instance_db.source = "API"
-        if org_unit_location:
-            instance_db.location = org_unit_location
-        instance_db.project = project
-        instance_db.save()
+        latitude = instance_data.get("latitude", None)
+        longitude = instance_data.get("longitude", None)
+        if latitude and longitude:
+            altitude = instance_data.get("altitude", 0)
+            instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+
+        instance.save()

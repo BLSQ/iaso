@@ -1,5 +1,0 @@
-{
-  "couch_httpd_auth": {
-    "timeout": 1209600
-  }
-}

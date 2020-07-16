@@ -29,9 +29,4 @@ server {
     proxy_set_header X-Forwarded-Host $server_name;
     proxy_set_header X-Real-IP $remote_addr;
   }
-
-  location /_couchdb {
-    rewrite /_couchdb/(.*) /$1 break;
-    proxy_pass ${COUCHDB_URL};
-  }
 }

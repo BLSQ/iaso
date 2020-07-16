@@ -6,16 +6,9 @@ show_help() {
   Commands
   ---------------------------------------------------------------
 
-  test             : run tests
-  test_js          : run javascript tests
-  test_integration : run integration tests
-
-  gen_docs         : generate app docs
-
   start            : start django + uwsgi
   start_dev        : start django devserver
   start_webpack    : start webpack server (only in DEV mode)
-  start_rq         : start rq worker
 
   manage           : run django manage.py
   eval             : eval shell command

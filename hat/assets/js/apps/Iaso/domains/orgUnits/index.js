@@ -465,6 +465,7 @@ class OrgUnits extends Component {
                                                     <DownloadButtonsComponent
                                                         csvUrl={this.getEndpointUrl(true, 'csv')}
                                                         xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                                        gpkgUrl={this.getEndpointUrl(true, 'gpkg')}
                                                     />
                                                 </div>
                                             </Grid>

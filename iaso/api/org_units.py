@@ -1,9 +1,11 @@
+from django.utils import timezone
 from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from iaso.api.common import safe_api_import
+from iaso.gpkg import org_units_to_gpkg
 from iaso.models import (
     OrgUnit,
     OrgUnitType,
@@ -77,16 +79,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
-        csv_format = request.GET.get("csv", None)
-        xlsx_format = request.GET.get("xlsx", None)
+
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
+        gpkg_format = bool(request.query_params.get("gpkg"))
+        is_export = any([csv_format, xlsx_format, gpkg_format])
 
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
 
-        if csv_format is None and xlsx_format is None:
-            if limit and not as_location:
-                queryset.prefetch_related("group_set")
+        if not is_export and limit and not as_location:
+            queryset.prefetch_related("group_set")
 
         if as_location:
             queryset = queryset.filter(
@@ -117,7 +121,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         queryset = queryset.order_by(*order)
 
-        if csv_format is None and xlsx_format is None:
+        if not is_export:
             if limit and not as_location:
                 limit = int(limit)
                 page_offset = int(page_offset)
@@ -174,6 +178,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response(
                     {"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]}
                 )
+        elif gpkg_format:
+            return self.list_to_gpkg(queryset)
         else:
             columns = [
                 {"title": "ID", "width": 10},
@@ -210,7 +216,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "source_ref",
                 "created_at",
                 "updated_at",
-                *parent_field_names
+                *parent_field_names,
             )
 
             filename = "org_units"
@@ -255,6 +261,17 @@ class OrgUnitViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+    def list_to_gpkg(self, queryset):
+        queryset = queryset.prefetch_related("parent", "org_unit_type")
+
+        response = HttpResponse(
+            org_units_to_gpkg(queryset), content_type="application/octet-stream",
+        )
+        filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+
+        return response
+
     def partial_update(self, request, pk=None):
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
         self.check_object_permissions(request, org_unit)
@@ -273,9 +290,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if False:  # simplified geom shape editing is currently disabled
             if (
-                    geo_json
-                    and geo_json["features"][0]["geometry"]
-                    and geo_json["features"][0]["geometry"]["coordinates"]
+                geo_json
+                and geo_json["features"][0]["geometry"]
+                and geo_json["features"][0]["geometry"]["coordinates"]
             ):
                 if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
                     org_unit.simplified_geom = Polygon(
@@ -294,9 +311,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         if False:  # catchment shape editing is currently disabled
             if (
-                    catchment
-                    and catchment["features"][0]["geometry"]
-                    and catchment["features"][0]["geometry"]["coordinates"]
+                catchment
+                and catchment["features"][0]["geometry"]
+                and catchment["features"][0]["geometry"]["coordinates"]
             ):
                 if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
                     org_unit.catchment = Polygon(

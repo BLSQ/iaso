@@ -3,11 +3,13 @@ django==3.0.3
 django-cors-headers==3.2.1
 djangorestframework==3.11.0
 pandas==1.0.1
+geopandas==0.8.0
 numpy==1.18.1
 Pillow==7.0.0
 django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
+Shapely==1.7.0
 tsp-solver2==0.3
 django-pg-utils==0.1.5
 gpxpy==1.4.0

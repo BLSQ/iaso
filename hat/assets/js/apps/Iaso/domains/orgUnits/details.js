@@ -15,7 +15,6 @@ import PropTypes from 'prop-types';
 import {
     setCurrentOrgUnit,
     setOrgUnitTypes,
-    setSourceTypes,
     resetOrgUnits,
     setCurrentForms,
     setSources,
@@ -27,7 +26,6 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 import { createUrl } from '../../../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
-    fetchSourceTypes,
     fetchAssociatedDataSources,
     fetchOrgUnitDetail,
     fetchForms,
@@ -82,10 +80,6 @@ class OrgUnitDetail extends Component {
         if (this.props.orgUnitTypes.length === 0) {
             promisesArray.push(fetchOrgUnitsTypes(dispatch)
                 .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes)));
-        }
-        if (this.props.sourceTypes.length === 0) {
-            promisesArray.push(fetchSourceTypes(dispatch)
-                .then(sourceTypes => this.props.setSourceTypes(sourceTypes)));
         }
 
         if (!this.props.sources) {
@@ -307,7 +301,6 @@ class OrgUnitDetail extends Component {
                 formatMessage,
             },
             orgUnitTypes,
-            sourceTypes,
             sources,
             groups,
             params,
@@ -380,7 +373,6 @@ class OrgUnitDetail extends Component {
                                             baseUrl={baseUrl}
                                             orgUnit={currentOrgUnit}
                                             orgUnitTypes={orgUnitTypes}
-                                            sourceTypes={sourceTypes}
                                             sources={sources}
                                             groups={groups}
                                             onChangeInfo={(key, value) => this.handleChangeInfo(key, value)}
@@ -458,14 +450,12 @@ OrgUnitDetail.propTypes = {
     setCurrentOrgUnit: PropTypes.func.isRequired,
     setCurrentForms: PropTypes.func.isRequired,
     setOrgUnitTypes: PropTypes.func.isRequired,
-    setSourceTypes: PropTypes.func.isRequired,
     currentOrgUnit: PropTypes.object,
     redirectTo: PropTypes.func.isRequired,
     redirectToPush: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     fetchingSubOrgUnits: PropTypes.bool.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
     dispatch: PropTypes.func.isRequired,
     resetOrgUnits: PropTypes.func.isRequired,
     resetOrgUnitsLevels: PropTypes.func.isRequired,
@@ -482,7 +472,6 @@ const MapStateToProps = state => ({
     currentOrgUnit: state.orgUnits.current,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
     currentForms: state.orgUnits.currentForms,
-    sourceTypes: state.orgUnits.sourceTypes,
     sources: state.orgUnits.sources,
     prevPathname: state.routerCustom.prevPathname,
     groups: state.orgUnits.groups,
@@ -493,7 +482,6 @@ const MapDispatchToProps = dispatch => ({
     setCurrentOrgUnit: orgUnit => dispatch(setCurrentOrgUnit(orgUnit)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setCurrentForms: currentForms => dispatch(setCurrentForms(currentForms)),
-    setSourceTypes: sourceTypes => dispatch(setSourceTypes(sourceTypes)),
     redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
     redirectToPush: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
     resetOrgUnits: () => dispatch(resetOrgUnits()),

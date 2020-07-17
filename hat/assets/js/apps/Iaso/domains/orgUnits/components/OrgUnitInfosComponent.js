@@ -16,7 +16,6 @@ function OrgUnitInfosComponent(props) {
         orgUnit,
         onChangeInfo,
         orgUnitTypes,
-        sourceTypes,
         intl: {
             formatMessage,
         },
@@ -69,19 +68,6 @@ function OrgUnitInfosComponent(props) {
                         }))
                     }
                     label={MESSAGES.groups}
-                />
-                <InputComponent
-                    keyValue="sub_source"
-                    onChange={onChangeInfo}
-                    value={orgUnit.sub_source}
-                    type="select"
-                    options={
-                        sourceTypes.map(s => ({
-                            label: formatMessage(MESSAGES[s[0]]),
-                            value: s[0],
-                        }))
-                    }
-                    label={MESSAGES.subSource}
                 />
                 <InputComponent
                     keyValue="status"
@@ -157,7 +143,6 @@ OrgUnitInfosComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
     sources: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,

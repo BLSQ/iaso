@@ -4,7 +4,7 @@ import json
 import time
 
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, MultiPolygon
 from django.contrib.gis.geos import Polygon
 from django.db import transaction
 
@@ -198,7 +198,7 @@ class Command(BaseCommand):
             if feature_type == "POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0])
+                    org_unit.geom = MultiPolygon(Polygon(j[0]))
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
@@ -206,11 +206,13 @@ class Command(BaseCommand):
             if feature_type == "MULTI_POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0][0])
+                    org_unit.geom = MultiPolygon(*[Polygon(i) for i in j[0]])
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
                     )
+
+            org_unit.simplified_geom = org_unit.geom
 
     def map_geometry(self, row, org_unit):
         if "geometry" in row:
@@ -229,10 +231,12 @@ class Command(BaseCommand):
 
             try:
                 if feature_type == "Polygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0])
+                    org_unit.geom = MultiPolygon(Polygon(coordinates[0]))
 
                 if feature_type == "MultiPolygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0][0])
+                    org_unit.geom = MultiPolygon(*[Polygon(i) for i in coordinates[0]])
+
+                org_unit.simplified_geom = org_unit.geom
 
             except Exception as bad_coord:
                 self.iaso_logger.error(
@@ -282,7 +286,7 @@ class Command(BaseCommand):
         )
         self.iaso_logger.info(
             "areas with polygon\t",
-            len([p for p in unit_dict.values() if p.simplified_geom]),
+            len([p for p in unit_dict.values() if p.geom]),
         )
         self.iaso_logger.info(
             "orgunits with unknown type\t",

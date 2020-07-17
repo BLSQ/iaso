@@ -4,7 +4,7 @@ from copy import deepcopy
 from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
-from django.contrib.gis.db.models.fields import PointField, PolygonField
+from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
@@ -213,9 +213,11 @@ class OrgUnit(models.Model):
         choices=GEO_SOURCE_CHOICES, null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
-    geom = PolygonField(srid=4326, null=True, blank=True)
-    simplified_geom = PolygonField(srid=4326, null=True, blank=True)
-    catchment = PolygonField(srid=4326, null=True, blank=True)
+    geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
+    simplified_geom = MultiPolygonField(
+        null=True, blank=True, srid=4326, geography=True
+    )
+    catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
@@ -228,7 +230,7 @@ class OrgUnit(models.Model):
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(null=True, blank=True, dim=3, srid=4326)
+    location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)

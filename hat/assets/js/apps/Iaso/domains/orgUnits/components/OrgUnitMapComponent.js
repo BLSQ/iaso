@@ -335,6 +335,8 @@ class OrgUnitMapComponent extends Component {
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(orgUnitTypesSelected);
         const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
+        const showEditComponent = hasMarker || !orgUnit.geo_json;
+
         return (
             <Grid container spacing={0}>
                 <InnerDrawer
@@ -360,7 +362,7 @@ class OrgUnitMapComponent extends Component {
                             <FormsChipsFilterComponent fitToBounds={() => this.fitToBounds()} />
                         </Fragment>
                     )}
-                    editOptionComponent={(
+                    editOptionComponent={showEditComponent ? (
 
                         <EditOrgUnitOptionComponent
                             orgUnit={orgUnit}
@@ -376,7 +378,7 @@ class OrgUnitMapComponent extends Component {
                             addShape={shapeType => this.addShape(shapeType)}
                             onChangeLocation={latLong => this.props.onChangeLocation(latLong)}
                         />
-                    )}
+                    ) : null}
                     settingsOptionComponent={(
                         <TileSwitch />
                     )}

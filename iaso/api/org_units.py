@@ -270,43 +270,47 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
-        if (
-            geo_json
-            and geo_json["features"][0]["geometry"]
-            and geo_json["features"][0]["geometry"]["coordinates"]
-        ):
-            if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                org_unit.simplified_geom = Polygon(
-                    geo_json["features"][0]["geometry"]["coordinates"][0]
-                )
-            else:
-                # DB has a single Polygon, refuse if we have more, or less.
-                return Response(
-                    "Only one polygon should be saved in the geo_json shape",
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        elif simplified_geom:
-            org_unit.simplified_geom = simplified_geom
-        else:
-            org_unit.simplified_geom = None
 
-        if (
-            catchment
-            and catchment["features"][0]["geometry"]
-            and catchment["features"][0]["geometry"]["coordinates"]
-        ):
-            if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
-                org_unit.catchment = Polygon(
-                    catchment["features"][0]["geometry"]["coordinates"][0]
-                )
+        if False:  # simplified geom shape editing is currently disabled
+            if (
+                    geo_json
+                    and geo_json["features"][0]["geometry"]
+                    and geo_json["features"][0]["geometry"]["coordinates"]
+            ):
+                if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
+                    org_unit.simplified_geom = Polygon(
+                        geo_json["features"][0]["geometry"]["coordinates"][0]
+                    )
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response(
+                        "Only one polygon should be saved in the geo_json shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            elif simplified_geom:
+                org_unit.simplified_geom = simplified_geom
             else:
-                # DB has a single Polygon, refuse if we have more, or less.
-                return Response(
-                    "Only one polygon should be saved in the catchment shape",
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        else:
-            org_unit.catchment = None
+                org_unit.simplified_geom = None
+
+        if False:  # catchment shape editing is currently disabled
+            if (
+                    catchment
+                    and catchment["features"][0]["geometry"]
+                    and catchment["features"][0]["geometry"]["coordinates"]
+            ):
+                if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
+                    org_unit.catchment = Polygon(
+                        catchment["features"][0]["geometry"]["coordinates"][0]
+                    )
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response(
+                        "Only one polygon should be saved in the catchment shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                org_unit.catchment = None
+
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
 

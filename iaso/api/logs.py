@@ -1,18 +1,12 @@
 from django.core.paginator import Paginator
-from django.db.models import Count, Sum
-from django.http import StreamingHttpResponse, HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework import viewsets
 from rest_framework.authentication import BasicAuthentication
 from rest_framework.response import Response
 
-from hat.users.models import is_authorized_user
-from hat.audit.models import Modification
-from .authentication import CsrfExemptSessionAuthentication
-from hat.api.export_utils import timestamp_to_utc_datetime
-from .export_utils import Echo, generate_xlsx, iter_items
-from django.conf import settings
 
+from hat.audit.models import Modification
+from hat.api.authentication import CsrfExemptSessionAuthentication
 
 class LogsViewSet(viewsets.ViewSet):
     """

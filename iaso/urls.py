@@ -1,6 +1,8 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .api.logs import LogsViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -52,6 +54,7 @@ router.register(
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
+router.register(r"logs", LogsViewSet, basename="links")
 router.register(r"profiles", ProfilesViewSet, basename="profiles")
 router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
 router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")

@@ -146,7 +146,7 @@ To seed data coming from play.dhis2.org, since the previous commands doesn't run
 in the same container, you need to do a run a docker exec command
 
 `
-docker exec -it iaso_hat_1 -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
+docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6
 `
 
 you can then login through http://127.0.0.1:8081/dashboard with :
@@ -370,4 +370,4 @@ If you need usable instances:
 .. code:: shell
 
     docker-compose up
-    docker exec -it iaso_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.33.4'
+    docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6

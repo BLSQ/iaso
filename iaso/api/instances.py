@@ -142,17 +142,16 @@ class InstancesViewSet(viewsets.ViewSet):
             sub_columns = ["" for __ in columns]
             latest_form_version = form.form_versions.order_by("id").last()
             questions_by_name = latest_form_version.questions_by_name()
-
-
-            if form and form.fields:
-                file_content_template = form.fields
+            if form and form.latest_version:
+                file_content_template = form.latest_version.questions_by_name()
                 for title in file_content_template:
+                    sub_columns.append(file_content_template.get(title, {}).get("label", ""))
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
-                    sub_columns.append(questions_by_name.get("title", {}).get("label", ""))
+                    sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):

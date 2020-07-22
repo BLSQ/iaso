@@ -3,6 +3,7 @@ from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from .api.logs import LogsViewSet
+from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -37,6 +38,7 @@ import pkgutil
 router = routers.DefaultRouter()
 
 router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
+
 router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
 router.register(r"apps", AppsViewSet, basename="apps")
 router.register(r"projects", ProjectsViewSet, basename="projects")
@@ -67,7 +69,7 @@ router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(
     r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances"
 )
-
+router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 
 urlpatterns = [
     url(

@@ -298,6 +298,18 @@ class OrgUnit(models.Model):
     def __str__(self):
         return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
 
+    def as_dict_for_mobile_lite(self):
+        return {
+            "n": self.name,
+            "id": self.id,
+            "p": self.parent_id,
+            "out": self.org_unit_type_id,
+            "c_a": self.created_at.timestamp() if self.created_at else None,
+            "lat": self.location.y if self.location else self.latitude,
+            "lon": self.location.x if self.location else self.longitude,
+            "alt": self.location.z if self.location else None,
+        }
+
     def as_dict_for_mobile(self):
         return {
             "name": self.name,

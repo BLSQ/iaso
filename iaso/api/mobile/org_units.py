@@ -1,7 +1,7 @@
 
 from rest_framework import viewsets
 from rest_framework.response import Response
-
+from rest_framework import viewsets, status, permissions
 from iaso.models import (
     OrgUnit,
     Project,
@@ -13,6 +13,25 @@ from hat.api.export_utils import (
 )
 
 
+class HasOrgUnitPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if not (
+            request.user.is_authenticated
+            and (
+                request.user.has_perm("menupermissions.iaso_forms")
+                or request.user.has_perm("menupermissions.iaso_org_units")
+            )
+        ):
+            return False
+
+        # TODO: can be handled with get_queryset()
+        user_account = request.user.iaso_profile.account
+        projects = obj.version.data_source.projects.all()
+        account_ids = [p.account_id for p in projects]
+
+        return user_account.id in account_ids
+
+
 class MobileOrgUnitViewSet(viewsets.ViewSet):
     """Org units API used by the mobile application
 
@@ -22,7 +41,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     GET /api/mobile/orgunits/
     POST /api/mobile/orgunits/
     """
-
+    permission_classes = [HasOrgUnitPermission]
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get("app_id")
@@ -32,9 +51,10 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
         queryset = self.get_queryset()
         queryset = queryset.select_related("org_unit_type")
         response = {}
+        roots = []
         if request.user.is_authenticated:
-            response["roots"] = request.user.iaso_profile.org_units.values_list("id", flat=True)
-
+            roots = request.user.iaso_profile.org_units.values_list("id", flat=True)
+        response["roots"] = roots
         response["orgUnits"] = [unit.as_dict_for_mobile() for unit in queryset]
 
         return Response(

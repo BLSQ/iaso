@@ -65,22 +65,7 @@ Run in project directory:
 This will build and download the containers and start them. The ``docker-compose.yml``
 file describes the setup of the containers.
 
-The web server should be reachable at ``https://<docker-host>:8443``.
-
-Because the https connection uses a self signed cert in development, that needs
-to be accepted manually. If you see no styles in the browser, have a look in the
-js-console if the requests to webpack fail. If they fail, try to open the webpack
-url once and accept the self signed cert there as well.
-
-It will load some users via fixtures. See the `user name/password <#fixtures>`__
-combos further down.
-
-`Jupyter <http://jupyter.org/>`__ iPython notebook server is run at port ``8888``
-as well, that can be used for exploration in development.
-
-We use `Sphinx <http://www.sphinx-doc.org/en/stable/>`__ to generate app
-documentation. This documentation should be reachable at
-``https://<docker-host>:8443/static/docs/index.html``.
+The web server should be reachable at ``http://localhost:8081``.
 
 .. code:: bash
 
@@ -98,7 +83,7 @@ To login to the app or the django admin, a superuser needs to be created with:
 
 
 Then additional users with custom groups and permissions can be added through
-the django admin at ``https://<docker-host>:8443/admin`` or loaded via fixtures.
+the django admin at ``/admin`` or loaded via fixtures.
 
 
 Run commands on the server
@@ -119,7 +104,7 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Create a shell inside the container | ``docker-compose run iaso bash``                          |
 +-------------------------------------+----------------------------------------------------------+
-| Run a shell command                 | ``docker-compose run iaso eval curl http://couchdb:5984`` |
+| Run a shell command                 | ``docker-compose run iaso eval curl http://google.com `` |
 +-------------------------------------+----------------------------------------------------------+
 | Run django manage.py                | ``docker-compose run iaso manage help``                   |
 +-------------------------------------+----------------------------------------------------------+
@@ -220,11 +205,6 @@ Tests can be executed with
 .. code:: bash
 
     docker-compose run iaso test
-
-
-This also runs `flake8 <http://flake8.pycqa.org/en/latest/>`__ to check the code.
-
-.. warning:: The tests need the ``HAT_MOBILE_KEY`` to be set.
 
 Fixtures
 --------

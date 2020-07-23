@@ -24,14 +24,14 @@ GEO_SOURCE_CHOICES = (
 
 class OrgUnitTypeQuerySet(models.QuerySet):
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser], app_id: str
+        self, user: typing.Union[User, AnonymousUser, None], app_id: str
     ):
-        if user.is_anonymous and app_id is None:
+        if user and user.is_anonymous and app_id is None:
             return self.none()
 
         queryset = self.all()
 
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             queryset = queryset.filter(projects__account=user.iaso_profile.account)
 
         if app_id is not None:
@@ -113,14 +113,14 @@ class OrgUnitQuerySet(models.QuerySet):
         )
 
     def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser], app_id: str
+        self, user: typing.Union[User, AnonymousUser, None], app_id: str
     ):
-        if user.is_anonymous and app_id is None:
+        if user and  user.is_anonymous and app_id is None:
             return self.none()
 
         queryset = self.all()
 
-        if user.is_authenticated:
+        if user and user.is_authenticated:
             account = user.iaso_profile.account
 
             # Filter on version ids (linked to the account)

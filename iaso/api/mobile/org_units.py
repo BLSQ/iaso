@@ -42,9 +42,10 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     POST /api/mobile/orgunits/
     """
     permission_classes = [HasOrgUnitPermission]
+
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
+            None, self.request.query_params.get("app_id")
         )
 
     def list(self, request):

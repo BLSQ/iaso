@@ -18,7 +18,7 @@ class ProjectQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = self.get(app_id=app_id)
-                if not project.needs_authentication or (
+                if user is None or not project.needs_authentication or (
                     user.is_authenticated
                     and user.iaso_profile is not None
                     and project.account.id == user.iaso_profile.account.id

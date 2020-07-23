@@ -1,7 +1,11 @@
 
 from rest_framework import viewsets
+from iaso.utils import geojson_queryset
 from rest_framework.response import Response
 from rest_framework import viewsets, status, permissions
+from django.shortcuts import get_object_or_404
+from iaso.api.common import safe_api_import
+
 from iaso.models import (
     OrgUnit,
     Project,
@@ -62,6 +66,14 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
             response
         )
 
+
+    @safe_api_import("orgUnit")
+    def create(self, _, request):
+        new_org_units = import_data(
+            request.data, request.user, request.query_params.get("app_id")
+        )
+
+        return Response([org_unit.as_dict() for org_unit in new_org_units])
 
 def import_data(org_units, user, app_id):
     new_org_units = []
@@ -124,6 +136,7 @@ def import_data(org_units, user, app_id):
             org_unit_db.version = project.account.default_version
             org_unit_db.save()
     return new_org_units
+
 
 
 

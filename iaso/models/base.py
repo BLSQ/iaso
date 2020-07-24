@@ -13,7 +13,6 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_file
 from django.db.models import Q
@@ -52,6 +51,8 @@ STATUS_TYPE_CHOICES = (
     ("SKIPPED", _("Skipped")),
 )
 ALIVE_STATUSES = [QUEUED, RUNNING]
+
+
 
 
 def generate_id_for_dhis_2():
@@ -561,10 +562,14 @@ class InstanceQuerySet(models.QuerySet):
         org_unit_id=None,
         period_ids=None,
         status=None,
+        instance_id=None
     ):
         queryset = self
         if period_ids:
             queryset = queryset.filter(period__in=period_ids.split(","))
+
+        if instance_id:
+            queryset = queryset.filter(id=instance_id)
 
         if org_unit_type_id:
             queryset = queryset.filter(
@@ -745,6 +750,20 @@ class Instance(models.Model):
             return self.form.form_versions.get(version_id=json["_version"])
         except (KeyError, FormVersion.DoesNotExist):
             return None
+
+    def export(self, launcher=None):
+        from iaso.dhis2.datavalue_exporter import DataValueExporter
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
+
+        try:
+            export_request = ExportRequestBuilder().build_export_request(
+                filters={"instance_id": self.id},
+                launcher=None
+            )
+
+            DataValueExporter().export_instances(export_request, True)
+        except NothingToExportError as error:
+            print("Export failed for instance", self)
 
     def __str__(self):
         return "%s %s" % (self.form, self.name)
@@ -979,7 +998,20 @@ class ExportStatus(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+
 class FeatureFlag(models.Model):
+    INSTANT_EXPORT = "INSTANT_EXPORT"
+    TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
+    REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
+    FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
+
+    FEATURE_FLAGS = {
+        (INSTANT_EXPORT, "Instant export",  _("Immediate export of instances to DHIS2")),
+        (TAKE_GPS_ON_FORM, "Mobile: take GPS on new form",  _("GPS localization on start of instance on mobile")),
+        (REQUIRE_AUTHENTICATION, "Mobile: authentication required",  _("Require authentication on mobile")),
+        (FORMS_AUTO_UPLOAD, "", _("Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available")),
+    }
+
     code = models.CharField(max_length=30, blank=False)
     name = models.CharField(max_length=100, blank=False)
     description = models.TextField(blank=True)

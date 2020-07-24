@@ -10,7 +10,7 @@ from django.http import JsonResponse
 
 import logging
 
-from iaso.models import Instance, InstanceFile
+from iaso.models import Instance, InstanceFile, FeatureFlag
 
 logger = logging.getLogger(__name__)
 
@@ -44,5 +44,8 @@ def form_upload(request: HttpRequest) -> HttpResponse:
             fi.instance_id = i.id
             fi.name = file_name
             fi.save()
+
+    if i.project and i.project.has_feature(FeatureFlag.INSTANT_EXPORT):
+        i.export()
 
     return JsonResponse({"result": "success"}, status=201)

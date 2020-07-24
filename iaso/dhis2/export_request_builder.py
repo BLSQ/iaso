@@ -24,14 +24,15 @@ class ExportRequestBuilder:
         self.form_mappings_cache = {}
 
     @transaction.atomic
-    def build_export_request(self, filters, launcher=None, force_export=False):
+    def build_export_request(self, filters, launcher, force_export=False):
         instances = Instance.objects
 
         # normal filters
         instances = instances.for_filters(**filters)
 
         # add account from Launcher
-        instances = instances.filter(project__account=launcher.iaso_profile.account)
+        if launcher:
+            instances = instances.filter(project__account=launcher.iaso_profile.account)
         # don't export duplicate instances
         instances = instances.with_status().exclude(status=Instance.STATUS_DUPLICATED)
         # don't export deleted instances

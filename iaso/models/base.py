@@ -850,8 +850,8 @@ class Instance(models.Model):
                     else None,
                     "export_request": {
                         "launcher": {
-                            "full_name": export_status.export_request.launcher.get_full_name(),
-                            "email": export_status.export_request.launcher.email,
+                            "full_name": export_status.export_request.launcher.get_full_name() if export_status.export_request.launcher else "AUTO UPLOAD",
+                            "email": export_status.export_request.launcher.email if export_status.export_request.launcher else "AUTO UPLOAD",
                         },
                         "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },

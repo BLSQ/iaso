@@ -159,7 +159,9 @@ class FormsViewSet(ModelViewSet):
             instances_count=Count(
                 "instances",
                 filter=(
-                    ~Q(instances__file="") & ~Q(instances__device__test_device=True)
+                    ~Q(instances__file="")
+                    & ~Q(instances__device__test_device=True)
+                    & ~Q(instances__deleted=True)
                 ),
             )
         )

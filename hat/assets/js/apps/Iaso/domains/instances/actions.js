@@ -1,4 +1,9 @@
-import { getRequest, postRequest, putRequest } from '../../libs/Api';
+import {
+    getRequest,
+    postRequest,
+    putRequest,
+    deleteRequest,
+} from '../../libs/Api';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import {
     errorSnackBar,
@@ -63,10 +68,12 @@ export const fetchEditUrl = (currentInstance, location) => (dispatch) => {
         .catch((err) => {
             console.log(err);
             dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError')));
-        }).then(() => {
+        })
+        .then(() => {
             dispatch(setInstancesFetching(false));
         });
 };
+
 
 export const fetchFormDetail = formId => (dispatch) => {
     dispatch(setInstancesFetching(true));
@@ -88,6 +95,18 @@ export const fetchInstanceDetail = instanceId => (dispatch) => {
         });
 };
 
+export const softDeleteInstance = currentInstance => (dispatch) => {
+    dispatch(setInstancesFetching(true));
+    deleteRequest(`/api/instances/${currentInstance.id}`)
+        .then((res) => {
+            dispatch(fetchInstanceDetail(currentInstance.id));
+        })
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .then(() => {
+            dispatch(setInstancesFetching(false));
+        });
+};
+
 export const createExportRequest = filterParams => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return postRequest('/api/exportrequests/', filterParams)
@@ -99,10 +118,10 @@ export const createExportRequest = filterParams => (dispatch) => {
             );
         })
         .catch((err) => {
-            const key = err.details ? `createExportRequestError${err.details.code}` : 'createExportRequestError';
-            return dispatch(
-                enqueueSnackbar(errorSnackBar(key)),
-            );
+            const key = err.details
+                ? `createExportRequestError${err.details.code}`
+                : 'createExportRequestError';
+            return dispatch(enqueueSnackbar(errorSnackBar(key)));
         })
         .then(() => dispatch(setInstancesFetching(false)));
 };

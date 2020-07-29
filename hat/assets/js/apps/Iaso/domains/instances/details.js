@@ -13,6 +13,7 @@ import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
     fetchEditUrl as fetchEditUrlAction,
+    softDeleteInstance as softDeleteAction
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -42,11 +43,12 @@ const styles = theme => ({
     },
 });
 
-const actions = [
+const actions = (currentInstance) => {
+    return [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
-        disabled: false,
+        disabled: currentInstance && currentInstance.deleted,
     },
     {
         id: 'instanceReAssignAction',
@@ -56,9 +58,10 @@ const actions = [
     {
         id: 'instanceDeleteAction',
         icon: <DeleteIcon />,
-        disabled: true,
+        disabled: currentInstance && currentInstance.deleted,
     },
 ];
+}
 
 class InstanceDetails extends Component {
     constructor(props) {
@@ -80,6 +83,11 @@ class InstanceDetails extends Component {
         if (action.id === 'instanceEditAction' && this.props.currentInstance) {
             this.props.fetchEditUrl(this.props.currentInstance, window.location);
         }
+
+        if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
+            this.props.softDelete(this.props.currentInstance);
+        }
+
     }
 
     render() {
@@ -92,8 +100,11 @@ class InstanceDetails extends Component {
             prevPathname,
             redirectToReplace,
         } = this.props;
+
+
         return (
             <section className={classes.relativeContainer}>
+
                 <TopBar
                     title={
                         currentInstance
@@ -122,11 +133,10 @@ class InstanceDetails extends Component {
                     && (
                         <Box className={classes.containerFullHeightNoTabPadded}>
                             <SpeedDialInstanceActions
-                                actions={actions}
+                                actions={actions(currentInstance)}
                                 onActionSelected={this.onActionSelected}
                             />
                             <Grid container spacing={4}>
-
                                 <Grid xs={12} md={5} item>
                                     {currentInstance.deleted && (
                                         <Alert severity="warning" className={classes.alert}>
@@ -203,6 +213,7 @@ InstanceDetails.propTypes = {
     fetchInstanceDetail: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     fetchEditUrl: PropTypes.func.isRequired,
+    softDelete: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -216,6 +227,7 @@ const MapDispatchToProps = dispatch => ({
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
             fetchEditUrl: fetchEditUrlAction,
+            softDelete: softDeleteAction,
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
         },

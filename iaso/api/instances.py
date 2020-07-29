@@ -44,6 +44,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
     GET /api/instances/
     GET /api/instances/<id>
+    DELETE /api/instances/<id>
     POST /api/instances/
     """
 
@@ -145,13 +146,17 @@ class InstancesViewSet(viewsets.ViewSet):
             if form and form.latest_version:
                 file_content_template = form.latest_version.questions_by_name()
                 for title in file_content_template:
-                    sub_columns.append(file_content_template.get(title, {}).get("label", ""))
+                    sub_columns.append(
+                        file_content_template.get(title, {}).get("label", "")
+                    )
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
-                    sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
+                    sub_columns.append(
+                        questions_by_name.get(title, {}).get("label", "")
+                    )
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
@@ -199,7 +204,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx(
-                        "Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns
+                        "Forms",
+                        columns,
+                        queryset_iterator(queryset, 100),
+                        get_row,
+                        sub_columns,
                     ),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
@@ -222,6 +231,12 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
         self.check_object_permissions(request, instance)
 
+        return Response(instance.as_full_model())
+
+    def delete(self, request, pk=None):
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
+        instance.soft_delete(request.user)
         return Response(instance.as_full_model())
 
 

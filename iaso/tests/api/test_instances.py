@@ -339,6 +339,25 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     @tag("iaso_only")
+    def test_soft_delete_an_instance(self):
+        """DELETE /instances/{instanceid}/"""
+
+        soft_deleted_instance = self.form_1.instances.first()
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertFalse(response.json()["deleted"])
+
+        response = self.client.delete(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(response.json()["deleted"])
+
+    @tag("iaso_only")
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
         self.client.force_authenticate(self.yoda)

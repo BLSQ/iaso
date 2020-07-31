@@ -32,7 +32,7 @@ import {
 
 import { linksTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';

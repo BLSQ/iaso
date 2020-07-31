@@ -5,9 +5,9 @@ import { replace } from 'react-router-redux';
 import { injectIntl, FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import ReactResizeDetector from 'react-resize-detector';
-import { getRequest, createUrl } from '../../../utils/fetchData';
+import { getRequest, createUrl } from '../utils/fetchData';
 import customTableTranslations from '../constants/customTableTranslations';
-import { formatThousand } from '../../../utils';
+import { formatThousand } from '../utils';
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 

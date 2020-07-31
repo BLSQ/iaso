@@ -2,7 +2,7 @@ import { push } from 'react-router-redux';
 import request from './request';
 import {
     LOAD, LOAD_SUCCESS, LOAD_SUCCESS_NO_DATA, LOAD_ERROR,
-} from '../apps/Iaso/redux/load';
+} from '../redux/load';
 
 
 const req = require('superagent');

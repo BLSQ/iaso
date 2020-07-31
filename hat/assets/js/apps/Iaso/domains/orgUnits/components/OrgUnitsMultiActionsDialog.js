@@ -16,7 +16,7 @@ import {
 import {
     saveMultiEdit as saveMultiEditAction,
 } from '../actions';
-import { formatThousand } from '../../../../../utils';
+import { formatThousand } from '../../../utils';
 import {
     selectionInitialState,
 } from '../../../utils/tableUtils';

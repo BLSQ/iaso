@@ -14,7 +14,7 @@ import L from 'leaflet';
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
-import setDrawMessages from '../../../../../utils/map/drawMapMessages';
+import setDrawMessages from '../../../utils/map/drawMapMessages';
 import {
     customZoomBar,
     addDrawControl,

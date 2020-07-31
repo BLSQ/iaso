@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../../utils/requests';
-import { createUrl } from '../../../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import { fetchLatestOrgUnitLevelId, decodeSearch } from '../utils';
 
 import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';

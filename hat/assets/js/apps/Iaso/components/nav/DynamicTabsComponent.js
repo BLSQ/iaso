@@ -14,7 +14,7 @@ import Color from 'color';
 import PropTypes from 'prop-types';
 
 import commonStyles from '../../styles/common';
-import { formatThousand } from '../../../../utils';
+import { formatThousand } from '../../utils';
 import MESSAGES from './messages';
 
 

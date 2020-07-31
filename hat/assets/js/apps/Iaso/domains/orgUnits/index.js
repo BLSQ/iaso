@@ -37,7 +37,7 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
 } from './utils';

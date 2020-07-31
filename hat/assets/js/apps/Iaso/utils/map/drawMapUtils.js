@@ -67,8 +67,7 @@ export const getMarkersInShape = (shape, markers) => {
 
     if (!L.Circle.contains) {
         L.Circle.include({
-            contains: (latLng, currentShape) =>
-                currentShape.getLatLng().distanceTo(latLng) < currentShape.getRadius(),
+            contains: (latLng, currentShape) => currentShape.getLatLng().distanceTo(latLng) < currentShape.getRadius(),
         });
     }
 
@@ -83,4 +82,3 @@ export const getMarkersInShape = (shape, markers) => {
     });
     return includedMarkers;
 };
-

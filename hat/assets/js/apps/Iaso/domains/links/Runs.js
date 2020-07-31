@@ -29,7 +29,7 @@ import {
 
 import { runsTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import getTableUrl from '../../utils/tableUtils';
 
 

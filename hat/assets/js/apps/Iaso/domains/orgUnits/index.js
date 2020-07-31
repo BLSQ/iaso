@@ -55,7 +55,7 @@ import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
 import { warningSnackBar } from '../../constants/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 

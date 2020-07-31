@@ -1,7 +1,7 @@
 import {
     getRequest, patchRequest, postRequest, deleteRequest,
 } from '../../libs/Api';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { enqueueSnackbar } from '../snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 /**

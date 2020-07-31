@@ -24,7 +24,7 @@ import MarkersListComponent from '../../../components/maps/markers/MarkersListCo
 import InstancePopupComponent from './InstancePopupComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { warningSnackBar } from '../../../constants/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../../../redux/snackBarsReducer';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
 

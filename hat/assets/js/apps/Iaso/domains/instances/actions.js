@@ -4,7 +4,7 @@ import {
     putRequest,
     deleteRequest,
 } from '../../libs/Api';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import {
     errorSnackBar,
     succesfullSnackBar,

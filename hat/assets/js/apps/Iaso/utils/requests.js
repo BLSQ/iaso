@@ -6,7 +6,7 @@ import {
     deleteRequest,
 } from '../libs/Api';
 
-import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { enqueueSnackbar } from '../redux/snackBarsReducer';
 import { succesfullSnackBar, errorSnackBar } from '../constants/snackBars';
 
 export const fetchOrgUnits = (dispatch, params) => getRequest(`/api/orgunits/?${params}`)

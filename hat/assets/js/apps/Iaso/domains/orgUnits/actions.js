@@ -1,4 +1,4 @@
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
 

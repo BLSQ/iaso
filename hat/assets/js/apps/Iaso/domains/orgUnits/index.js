@@ -54,7 +54,7 @@ import Table from '../../components/tables/TableComponent';
 import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
-import { warningSnackBar } from '../../../../utils/constants/snackBars';
+import { warningSnackBar } from '../../constants/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';

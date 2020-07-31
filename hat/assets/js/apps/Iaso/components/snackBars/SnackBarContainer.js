@@ -5,7 +5,7 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
 import { withSnackbar } from 'notistack';
-import { removeSnackbar } from '../../redux/snackBarsReducer';
+import { removeSnackbar } from '../../../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButtonComponent';
 
 import MESSAGES from './messages';

@@ -39,7 +39,7 @@ import {
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
+import CustomTableComponent from '../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';

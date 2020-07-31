@@ -2,7 +2,7 @@ import { bindActionCreators } from 'redux';
 
 import { loadActions } from '../redux/load';
 import { enqueueSnackbar } from '../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from './constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../apps/Iaso/constants/snackBars';
 
 const MESSAGES = {
     error: {

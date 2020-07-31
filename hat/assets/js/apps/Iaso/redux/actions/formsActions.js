@@ -2,7 +2,7 @@ import {
     getRequest, patchRequest, postRequest, deleteRequest,
 } from '../../libs/Api';
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 /**
 * Fetch action to get a list of items

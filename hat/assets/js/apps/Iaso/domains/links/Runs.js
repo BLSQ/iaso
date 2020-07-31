@@ -34,7 +34,7 @@ import getTableUrl from '../../utils/tableUtils';
 
 
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
+import CustomTableComponent from '../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RunsFiltersComponent from './components/RunsFiltersComponent';
 import AddRunDialogComponent from './components/AddRunDialogComponent';

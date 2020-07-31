@@ -1,5 +1,5 @@
 import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';

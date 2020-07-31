@@ -13,7 +13,7 @@ import {
 
 import { formatThousand } from '../../../../utils';
 import commonStyles from '../../styles/common';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
+import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
 

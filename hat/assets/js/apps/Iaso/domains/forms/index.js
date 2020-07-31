@@ -19,7 +19,7 @@ import formsTableColumns from './config';
 import commonStyles from '../../styles/common';
 import TopBar from '../../components/nav/TopBarComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
+import CustomTableComponent from '../../components/CustomTableComponent';
 import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';

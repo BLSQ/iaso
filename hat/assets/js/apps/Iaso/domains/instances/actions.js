@@ -8,7 +8,7 @@ import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
 import {
     errorSnackBar,
     succesfullSnackBar,
-} from '../../../../utils/constants/snackBars';
+} from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';

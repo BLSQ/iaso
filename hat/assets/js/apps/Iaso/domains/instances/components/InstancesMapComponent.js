@@ -23,7 +23,7 @@ import ClusterSwitch from '../../../components/maps/tools/ClusterSwitchComponent
 import MarkersListComponent from '../../../components/maps/markers/MarkersListComponent';
 import InstancePopupComponent from './InstancePopupComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
-import { warningSnackBar } from '../../../../../utils/constants/snackBars';
+import { warningSnackBar } from '../../../constants/snackBars';
 import { enqueueSnackbar, closeFixedSnackbar } from '../../../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';

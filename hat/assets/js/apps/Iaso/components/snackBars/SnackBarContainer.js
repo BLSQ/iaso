@@ -6,7 +6,8 @@ import { injectIntl } from 'react-intl';
 
 import { withSnackbar } from 'notistack';
 import { removeSnackbar } from '../../redux/snackBarsReducer';
-import SnackBarButton from './SnackBarButtonComponent';
+import SnackBarButton from './SnackBarButton';
+import SnackBarErrorMessage from './SnackBarErrorMessage';
 
 import MESSAGES from './messages';
 
@@ -49,6 +50,15 @@ class SnackBarContainer extends Component {
         const message = notification.messageObject
             ? formatMessage(notification.messageObject) : formatMessage(MESSAGES[notification.messageKey]);
 
+
+        if (notification.errorLog) {
+            options.action = (
+                <SnackBarErrorMessage
+                    messageKey={notification.messageKey}
+                    errorLog={notification.errorLog}
+                />
+            );
+        }
         const id = this.props.enqueueSnackbar(message, options);
 
         // Keep track of snackbars that we've displayed

@@ -83,7 +83,7 @@ export const fetchMappingVersionDetail = (
             dispatch(fetchHesabuDescriptor(detail.mapping.data_source.id));
             return dispatch(setCurrentMappingVersion(detail));
         })
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
@@ -101,7 +101,7 @@ export const applyPartialUpdate = (
         },
     })
         .then(() => dispatch(fetchMappingVersionDetail(mappingVersionId, questionName)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
@@ -118,7 +118,7 @@ export const fetchMappingVersions = params => (dispatch) => {
 
     return getRequest(url)
         .then(res => dispatch(setMappingVersions(res)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
@@ -135,8 +135,8 @@ export const createMappingRequest = params => (dispatch) => {
             );
             return res;
         })
-        .catch((e) => {
-            dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError')));
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)));
         })
         .then((res) => {
             dispatch(fetchingMappingVersions(false));
@@ -147,7 +147,7 @@ export const createMappingRequest = params => (dispatch) => {
 export const fetchSources = () => dispatch => getRequest('/api/datasources/')
     .then(res => dispatch(setMappingSources(res.sources)))
     .catch((error) => {
-        dispatch(enqueueSnackbar(errorSnackBar('fetchSourcesError')));
+        dispatch(enqueueSnackbar(errorSnackBar('fetchSourcesError', null, error)));
         console.error('Error while fetching source list:', error);
         throw error;
     });

@@ -42,7 +42,7 @@ export const fetchAction = (
                     ? { count: res.count, pages: res.pages } : { count: result.length, pages: 1 }),
             );
         })
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err))))
         .then(() => {
             if (params && setIsLoading !== null) {
                 dispatch(setIsLoading(false));
@@ -76,7 +76,7 @@ export const retrieveAction = (
         .then(res => dispatch(
             setAction(res),
         ))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err))))
         .then(() => {
             if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));
@@ -109,9 +109,9 @@ export const saveAction = (
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;
         })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
-            throw error;
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)));
+            throw err;
         }))
         .finally(() => {
             if (setIsLoading !== null) {
@@ -145,9 +145,9 @@ export const createAction = (
             dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
             return res;
         })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
-            throw error;
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)));
+            throw err;
         })
         .finally(() => {
             if (setIsLoading !== null) {
@@ -196,11 +196,11 @@ export const deleteAction = (
             );
             return res;
         })
-        .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage)));
+        .catch((err) => {
+            dispatch(enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)));
             if (setIsLoading !== null) {
                 dispatch(setIsLoading(false));
             }
-            throw error;
+            throw err;
         }));
 };

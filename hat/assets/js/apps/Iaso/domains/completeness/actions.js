@@ -26,7 +26,7 @@ export const fetchCompleteness = () => (dispatch) => {
     dispatch(startFetchingCompleteness());
     return getRequest('/api/completeness/')
         .then(res => dispatch(setCompleteness(res.completeness)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchCompletenessError', null, err))))
         .then(() => {
             dispatch(stopFetchingCompleteness());
         });
@@ -39,7 +39,7 @@ export const generateDerivedInstances = derivedrequest => (dispatch) => {
             enqueueSnackbar(succesfullSnackBar('generateDerivedRequestSuccess')),
         ))
         .then(res => dispatch(fetchCompleteness()))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('generateDerivedRequestError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('generateDerivedRequestError', null, err))))
         .then(() => {
             dispatch(stopFetchingCompleteness());
         });

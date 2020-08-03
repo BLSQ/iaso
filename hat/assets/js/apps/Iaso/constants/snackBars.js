@@ -14,13 +14,14 @@ export const succesfullSnackBar = (messageKey = formSuccessFullMessageKey, messa
     },
 });
 
-export const errorSnackBar = (messageKey = formErrorMessageKey, messageObject) => ({
+export const errorSnackBar = (messageKey = formErrorMessageKey, messageObject, errorLog) => ({
     messageKey,
     messageObject,
     options: {
         variant: 'error',
-        persist: false,
+        persist: Boolean(errorLog),
     },
+    errorLog,
 });
 
 export const warningSnackBar = (messageKey = formWarningMessageKey, messageObject) => ({

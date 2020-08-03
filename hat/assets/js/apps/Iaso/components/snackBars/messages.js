@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    close: {
+        id: 'iaso.label.close',
+        defaultMessage: 'Close',
+    },
+    copyError: {
+        id: 'iaso.snackBar.copyError',
+        defaultMessage: 'Copy error',
+    },
     successful: {
         id: 'iaso.snackBar.successful',
         defaultMessage: 'Saved successfully',

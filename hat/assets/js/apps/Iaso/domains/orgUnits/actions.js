@@ -125,7 +125,7 @@ export const saveMultiEdit = data => (dispatch) => {
             return res;
         })
         .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveMultiEditOrgUnitsError')));
+            dispatch(enqueueSnackbar(errorSnackBar('saveMultiEditOrgUnitsError', null, error)));
             dispatch(setOrgUnitsListFetching(false));
             throw error;
         }));

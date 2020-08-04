@@ -261,7 +261,7 @@ class DataValueExporterTests(TestCase):
         datasource.projects.add(self.project)
 
         org_unit = OrgUnit()
-        org_unit.name= "instance orgunit"
+        org_unit.name = "instance orgunit"
         org_unit.validated = True
         org_unit.source_ref = "OU_DHIS2_ID"
         org_unit.version = source_version
@@ -270,7 +270,7 @@ class DataValueExporterTests(TestCase):
         self.org_unit = org_unit
 
         another_org_unit = OrgUnit()
-        another_org_unit.name= "another_org_unit"
+        another_org_unit.name = "another_org_unit"
         another_org_unit.validated = True
         another_org_unit.source_ref = "ANOTHER_OU_DHIS2_ID"
         another_org_unit.version = source_version
@@ -355,7 +355,106 @@ class DataValueExporterTests(TestCase):
                                     },
                                     {
                                         "dataElement": "ST01DE3_DHIS2_ID",
-                                        "value": "OU_DHIS2_ID", # use the invoice orgunit
+                                        "value": "OU_DHIS2_ID",  # use the invoice orgunit
+                                    },
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE2_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST02DE2_DHIS2_ID",
+                                        "value": "Raider",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                        ],
+                    }
+                ],
+            },
+            trackedentity[2],
+        )
+
+    def test_event_mapping_works_event_status(self):
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_unique_number": "CDLM-00001-45",
+                "tea_name": "Yoda",
+                "tea_zone": "1",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+                "ST01DE3": str(self.another_org_unit.id),
+                "status_STAGE1_DHIS2_ID": "active",
+            },
+        )
+
+        trackedentity, errors = EventTrackerHandler().map_to_values(
+            instance, build_form_mapping()
+        )
+
+        self.assertEquals(
+            {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "54dfg45re",
+                "attributes": [
+                    {
+                        "attribute": "GEVwwkMbGKz",
+                        "value": "15:17",
+                        "displayName": "Heure d'enr\u00f4lement",
+                        "valueType": "TIME",
+                    },
+                    {
+                        "attribute": "XPYFFrfVbAd",
+                        "value": "CDLM-00001-45",
+                        "displayName": "Num\u00e9ro Unique",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4uliL",
+                        "value": "Yoda",
+                        "displayName": "Nom",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4ulzone",
+                        "displayName": "Nom",
+                        "value": "OU_DHIS2_ID",
+                        "valueType": "TEXT",
+                    },
+                ],
+                "enrollments": [
+                    {
+                        "trackedEntityType": "54dfg45re",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "PROGRAM_DHIS2_ID",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
+                        "events": [
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE1_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "ACTIVE",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST01DE2_DHIS2_ID",
+                                        "value": "Bounty",
+                                    },
+                                    {
+                                        "dataElement": "ST01DE3_DHIS2_ID",
+                                        "value": "OU_DHIS2_ID",  # use the invoice orgunit
                                     },
                                 ],
                                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
@@ -503,7 +602,7 @@ class DataValueExporterTests(TestCase):
                 "ST01DE2": "Bounty",
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
-                            },
+            },
         )
 
         export_request = ExportRequestBuilder().build_export_request(
@@ -698,7 +797,6 @@ class DataValueExporterTests(TestCase):
                 "ST01DE1": "2019-12-01",
                 "ST01DE2": "Bounty",
                 "ST01DE3": str(self.another_org_unit.id),
-
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
             },

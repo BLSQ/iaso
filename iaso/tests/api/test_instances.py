@@ -8,6 +8,7 @@ from unittest import mock
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
 from iaso.test import APITestCase
+from hat.audit.models import Modification
 
 
 class InstancesAPITestCase(APITestCase):
@@ -20,6 +21,7 @@ class InstancesAPITestCase(APITestCase):
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
+        cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(
             username="yoda", account=star_wars, permissions=["iaso_forms"]
@@ -88,6 +90,7 @@ class InstancesAPITestCase(APITestCase):
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
         cls.project.forms.add(cls.form_2)
+        sw_source.projects.add(cls.project)
         cls.project.save()
 
     @tag("iaso_only")
@@ -387,3 +390,45 @@ class InstancesAPITestCase(APITestCase):
         self.assertHasField(instance_data, "id", int)
         self.assertHasField(instance_data, "status", str)
         self.assertHasField(instance_data, "correlation_id", str, optional=True)
+
+
+    @tag("iaso_only")
+    def test_instance_patch_org_unit_period(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council New New",
+            version= self.sw_version
+        )
+        
+        instance_to_patch = self.form_1.instances.first()
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"org_unit": new_org_unit.id, "period": "202201"},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+        instance_to_patch.refresh_from_db()
+        self.assertEqual(instance_to_patch.org_unit,new_org_unit)
+        self.assertEqual(instance_to_patch.period,"202201")
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertEqual(
+            "202001",
+            modification.past_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            "202201",
+            modification.new_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            self.jedi_council_corruscant.id,
+            modification.past_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(
+            new_org_unit.id,
+            modification.new_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(instance_to_patch, modification.content_object)

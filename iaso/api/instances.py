@@ -20,6 +20,7 @@ from hat.api.export_utils import (
 from iaso.utils import timestamp_to_datetime
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
+from hat.audit.models import log_modification, INSTANCE_API
 
 
 class HasInstancePermission(permissions.BasePermission):
@@ -77,7 +78,6 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
-
         queryset = queryset.for_filters(**filters)
 
         if csv_format is None and xlsx_format is None:
@@ -237,6 +237,18 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
         self.check_object_permissions(request, instance)
         instance.soft_delete(request.user)
+        return Response(instance.as_full_model())
+
+    def patch(self, request, pk=None):
+        original = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
+        org_unit = OrgUnit.objects.filter_for_user_and_app_id( request.user, None).get(pk=request.data.get("org_unit"))
+        instance.org_unit = org_unit # TODO : validate org_unit type (org_unit.org_unit belongs to instance.form.org_unit_types)
+        if (instance.period):
+            instance.period = request.data.get("period") # TODO: Validate period type, prevent patching with quarterly instead of a month (instance.form.period_type)
+        instance.save()
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
 

@@ -1,11 +1,8 @@
 import React from "react";
-import { injectIntl } from "react-intl";
 import { FormattedMessage } from "react-intl";
 import { bindActionCreators } from "redux";
 import PropTypes from "prop-types";
 import { Chip, makeStyles, Box, Typography } from "@material-ui/core";
-
-import { connect } from "react-redux";
 
 import UpdateIcon from "@material-ui/icons/Update";
 import InputComponent from "../../../components/forms/InputComponent";
@@ -35,11 +32,6 @@ const ReAssignInstanceDialogComponent = ({
   onReAssignInstance,
 }) => {
   const classes = useStyles();
-  // can do the useState things here...
-
-  const onClosed = () => {
-    // do something?
-  };
 
   const handleRemoveOrgUnit = () => {
     setFieldValue({
@@ -79,7 +71,6 @@ const ReAssignInstanceDialogComponent = ({
       titleMessage={MESSAGES.reAssignInstance}
       onConfirm={onConfirm}
       confirmMessage={MESSAGES.reAssignInstanceAction}
-      onClosed={onClosed}
       cancelMessage={MESSAGES.cancel}
       maxWidth="xs"
     >
@@ -148,7 +139,8 @@ const ReAssignInstanceDialogComponent = ({
 };
 
 ReAssignInstanceDialogComponent.propTypes = {
-  // props?
+  currentInstance: PropTypes.object.isRequired,
+  onReAssignInstance: PropTypes.func.isRequired,
 };
 
-export default connect()(injectIntl(ReAssignInstanceDialogComponent));
+export default ReAssignInstanceDialogComponent;

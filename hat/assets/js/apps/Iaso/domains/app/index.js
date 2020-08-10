@@ -4,7 +4,7 @@ import { Provider } from 'react-redux';
 import { Router } from 'react-router';
 import { SnackbarProvider } from 'notistack';
 
-import SnackBarContainer from '../../../../components/snackBars/SnackBarContainer';
+import SnackBarContainer from '../../components/snackBars/SnackBarContainer';
 import LocalizedApp from './components/LocalizedAppComponent';
 
 export default function App({ store, routes, history }) {

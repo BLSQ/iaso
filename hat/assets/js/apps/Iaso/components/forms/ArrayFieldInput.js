@@ -16,7 +16,7 @@ import commonStyles from '../../styles/common';
 import {
     addPositionIndex,
     removePositionIndex,
-} from '../../../../utils';
+} from '../../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),

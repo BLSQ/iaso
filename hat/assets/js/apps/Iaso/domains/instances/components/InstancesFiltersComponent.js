@@ -22,7 +22,7 @@ import {
     instanceStatus,
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
-import { createUrl } from '../../../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
 import { getOrgUnitParentsIds } from '../../orgUnits/utils';

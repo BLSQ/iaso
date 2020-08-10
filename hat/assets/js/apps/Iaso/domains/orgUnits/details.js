@@ -23,7 +23,7 @@ import {
 } from './actions';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import {
     fetchOrgUnitsTypes,
     fetchAssociatedDataSources,

@@ -14,8 +14,8 @@ import {
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import InputComponent from '../../../components/forms/InputComponent';
 import FileInputComponent from '../../../components/forms/FileInputComponent';
-import { enqueueSnackbar } from '../../../../../redux/snackBarsReducer';
-import { succesfullSnackBar } from '../../../../../utils/constants/snackBars';
+import { enqueueSnackbar } from '../../../redux/snackBarsReducer';
+import { succesfullSnackBar } from '../../../constants/snackBars';
 import {
     PERIOD_TYPE_MONTH,
     PERIOD_TYPE_QUARTER,

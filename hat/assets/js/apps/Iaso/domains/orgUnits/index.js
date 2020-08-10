@@ -37,7 +37,7 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
 } from './utils';
@@ -54,8 +54,8 @@ import Table from '../../components/tables/TableComponent';
 import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
-import { warningSnackBar } from '../../../../utils/constants/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
+import { warningSnackBar } from '../../constants/snackBars';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 

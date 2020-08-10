@@ -1,4 +1,5 @@
 $fa-font-path: "~font-awesome/fonts";
+
 @import "~font-awesome/scss/font-awesome";
 // @import "~leaflet/dist/leaflet.css";
 @import url('https://unpkg.com/leaflet@1.5.1/dist/leaflet.css');
@@ -8,53 +9,20 @@ $fa-font-path: "~font-awesome/fonts";
 @import "~video.js/dist/video-js.css";
 @import "reset";
 @import "settings";
-@import "fonts";
 @import "mixins";
-@import "layout";
 @import "type-styles";
-@import "buttons";
-@import "tables";
 @import "lists";
-@import "navigation";
-@import "header";
-@import "widget";
-@import "filtering";
+@import "fonts";
+@import "layout";
 @import "login";
-@import "jsonschema";
 @import "maps";
 @import "forms";
-@import "landing-page";
-@import "stats";
-@import "messages";
-@import "modal";
-@import "quality-control";
-@import "images";
 @import "videos";
 @import "iaso";
 @import "customTable";
-@import "vector";
 @import "leafletCluster";
-@import "management";
-@import "dragAndDrop";
-@import "plannings";
-@import "locator";
-@import "search";
-@import "tabs";
-@import "barChart";
-@import "permissions";
-@import "workZones";
-@import "colorPicker";
-@import "participant";
-@import "fileUpload";
-@import "arrayField";
-@import "duplicates";
-@import "dynamicLegend";
-@import "radioComponent";
-@import "manualDuplicates";
-@import "error";
-@import "success";
-@import "cattCard";
-@import "customRadio";
+@import "buttons";
+
 
 
 body {

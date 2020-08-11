@@ -8,17 +8,17 @@ from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
+from django.utils.translation import ugettext_lazy as _
 
 from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
 from .base import Group, SourceVersion
 from .project import Project
 
-GEO_SOURCE_CHOICES = (
-    ("snis", "SNIS"),
-    ("ucla", "UCLA"),
-    ("pnltha", "PNL THA"),
-    ("derivated", "Derivated from actual data"),
+VALIDATION_STATUS = (
+    ("new", _("new")),
+    ("valid", _("valid")),
+    ("rejected", _("rejected")),
 )
 
 
@@ -194,6 +194,7 @@ class OrgUnit(models.Model):
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
     validated = models.BooleanField(default=True, db_index=True)
+    validation_status = models.CharField(max_length=40)
     version = models.ForeignKey(
         "SourceVersion", null=True, blank=True, on_delete=models.CASCADE
     )
@@ -209,8 +210,7 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    sub_source = models.TextField(
-        choices=GEO_SOURCE_CHOICES, null=True, blank=True
+    sub_source = models.TextField(null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
@@ -218,12 +218,11 @@ class OrgUnit(models.Model):
         null=True, blank=True, srid=4326, geography=True
     )
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
-    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
     gps_source = models.TextField(
         null=True, blank=True
-    )  # much more diverse than above GEO_SOURCE_CHOICES
+    )
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

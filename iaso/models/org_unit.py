@@ -15,13 +15,6 @@ from hat.audit import models as audit_models
 from .base import Group, SourceVersion
 from .project import Project
 
-VALIDATION_STATUS = (
-    ("new", _("new")),
-    ("valid", _("valid")),
-    ("rejected", _("rejected")),
-)
-
-
 class OrgUnitTypeQuerySet(models.QuerySet):
     def filter_for_user_and_app_id(
         self, user: typing.Union[User, AnonymousUser, None], app_id: str
@@ -190,11 +183,21 @@ class OrgUnitManager(ManagerWithBulkUpdate):
 
 
 class OrgUnit(models.Model):
+    VALIDATION_NEW = "NEW"
+    VALIDATION_VALID = "VALID"
+    VALIDATION_REJECTED = "REJECTED"
+
+    VALIDATION_STATUS_CHOICES = (
+        (VALIDATION_NEW, _("new")),
+        (VALIDATION_VALID, _("valid")),
+        (VALIDATION_REJECTED, _("rejected")),
+    )
+
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)
-    validation_status = models.CharField(max_length=40)
+    validated = models.BooleanField(default=True, db_index=True)# TO DO : remove in a later migration
+    validation_status = models.CharField(max_length=25,  choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     version = models.ForeignKey(
         "SourceVersion", null=True, blank=True, on_delete=models.CASCADE
     )

@@ -152,7 +152,7 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         user,
         org_unit,
         *,
-        validated,
+        validation_status,
         org_unit_type_id,
         groups_ids_added,
         groups_ids_removed
@@ -160,9 +160,8 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         """Used within the context of a bulk operation"""
 
         original_copy = deepcopy(org_unit)
-
-        if validated is not None:
-            org_unit.validated = validated
+        if validation_status is not None:
+            org_unit.validation_status = validation_status
         if org_unit_type_id is not None:
             org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type

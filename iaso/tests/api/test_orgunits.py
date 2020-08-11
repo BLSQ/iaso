@@ -52,7 +52,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
-            validated=True,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
 
@@ -64,7 +64,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
-            validated=True,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
         cls.jedi_squad_endor = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
@@ -75,7 +75,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
-            validated=True,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
         cls.jedi_squad_endor = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
@@ -86,7 +86,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
-            validated=True,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
         cls.jedi_council_brussels = m.OrgUnit.objects.create(
@@ -97,7 +97,7 @@ class OrgUnitAPITestCase(APITestCase):
             simplified_geom=cls.mock_multipolygon,
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
-            validated=True,
+            validation_status=m.OrgUnit.VALIDATION_VALID,
         )
 
         cls.yoda = cls.create_user_with_profile(
@@ -119,7 +119,7 @@ class OrgUnitAPITestCase(APITestCase):
 
         response = self.client.post(
             f"/api/orgunits/bulkupdate/",
-            data={"select_all": True, "validated": False},
+            data={"select_all": True, "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
         self.assertJSONResponse(response, 403)
@@ -139,7 +139,7 @@ class OrgUnitAPITestCase(APITestCase):
                     self.jedi_council_brussels.pk,
                     self.jedi_council_endor.pk,
                 ],
-                "validated": False,
+                "validation_status": m.OrgUnit.VALIDATION_REJECTED
             },
             format="json",
         )
@@ -152,7 +152,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.jedi_council_corruscant,
         ]:
             jedi_council.refresh_from_db()
-            self.assertTrue(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(0, m.BulkOperation.objects.count())
         self.assertEqual(0, am.Modification.objects.count())
@@ -164,9 +164,10 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.raccoon)
         response = self.client.post(
             f"/api/orgunits/bulkupdate/",
-            data={"select_all": True, "validated": False,},
+            data={"select_all": True,  "validation_status": m.OrgUnit.VALIDATION_REJECTED},
             format="json",
         )
+
         self.assertJSONResponse(response, 201)
         self.assertValidBulkupdateData(response.json())
 
@@ -176,7 +177,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.jedi_council_corruscant,
         ]:
             jedi_council.refresh_from_db()
-            self.assertTrue(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status,  m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(0, m.BulkOperation.objects.count())
         self.assertEqual(0, am.Modification.objects.count())
@@ -193,7 +194,7 @@ class OrgUnitAPITestCase(APITestCase):
                 self.jedi_council_endor.pk,
             ],
             "groups_added": [self.unofficial_group.pk],
-            "validated": False,
+            "validation_status": m.OrgUnit.VALIDATION_REJECTED
         }
         response = self.client.post(
             f"/api/orgunits/bulkupdate/", data=operation_payload, format="json",
@@ -203,11 +204,11 @@ class OrgUnitAPITestCase(APITestCase):
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
             jedi_council.refresh_from_db()
-            self.assertFalse(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_REJECTED)
             self.assertIn(self.unofficial_group, jedi_council.groups.all())
 
         self.jedi_council_corruscant.refresh_from_db()
-        self.assertTrue(self.jedi_council_corruscant.validated)
+        self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_REJECTED)
         self.assertNotIn(
             self.unofficial_group, self.jedi_council_corruscant.groups.all()
         )
@@ -235,8 +236,8 @@ class OrgUnitAPITestCase(APITestCase):
         )
         self.assertEqual(self.yoda, modification_endor.user)
         self.assertEqual(am.ORG_UNIT_API_BULK, modification_endor.source)
-        self.assertEqual(True, modification_endor.past_value[0]["fields"]["validated"])
-        self.assertEqual(False, modification_endor.new_value[0]["fields"]["validated"])
+        self.assertEqual(m.OrgUnit.VALIDATION_VALID, modification_endor.past_value[0]["fields"]["validation_status"])
+        self.assertEqual(m.OrgUnit.VALIDATION_REJECTED, modification_endor.new_value[0]["fields"]["validation_status"])
 
     @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all(self):
@@ -245,7 +246,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/orgunits/bulkupdate/",
-            data={"select_all": True, "validated": False},
+            data={"select_all": True,  "validation_status": m.OrgUnit.VALIDATION_VALID},
             format="json",
         )
         self.assertJSONResponse(response, 201)
@@ -257,7 +258,7 @@ class OrgUnitAPITestCase(APITestCase):
             self.jedi_council_brussels,
         ]:
             jedi_council.refresh_from_db()
-            self.assertFalse(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(5, am.Modification.objects.count())
@@ -271,7 +272,7 @@ class OrgUnitAPITestCase(APITestCase):
             f"/api/orgunits/bulkupdate/",
             data={
                 "select_all": True,
-                "validated": False,
+                "validation_status": m.OrgUnit.VALIDATION_REJECTED,
                 "searches": [{"group": f"{self.elite_group.pk}"}],
             },
             format="json",
@@ -280,11 +281,11 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidBulkupdateData(response.json())
 
         self.jedi_council_corruscant.refresh_from_db()
-        self.assertFalse(self.jedi_council_corruscant.validated)
+        self.assertEqual(self.jedi_council_corruscant.validation_status, m.OrgUnit.VALIDATION_REJECTED)
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:
             jedi_council.refresh_from_db()
-            self.assertTrue(jedi_council.validated)
+            self.assertEqual(jedi_council.validation_status, m.OrgUnit.VALIDATION_VALID)
 
         self.assertEqual(1, m.BulkOperation.objects.count())
         self.assertEqual(1, am.Modification.objects.count())
@@ -299,7 +300,7 @@ class OrgUnitAPITestCase(APITestCase):
             data={
                 "select_all": True,
                 "groups_added": [self.another_group.pk],
-                "searches": [{"validated": "false"}, {"validated": "true"}],
+                "searches": [{"validation_status": "all"}, {"validation_status":  m.OrgUnit.VALIDATION_REJECTED}],
             },
             format="json",
         )
@@ -326,7 +327,7 @@ class OrgUnitAPITestCase(APITestCase):
             f"/api/orgunits/bulkupdate/",
             data={
                 "select_all": True,
-                "validated": False,
+                "validation_status": m.OrgUnit.VALIDATION_REJECTED,
                 "unselected_ids": [
                     self.jedi_council_brussels.pk,
                     self.jedi_council_endor.pk,
@@ -339,7 +340,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertValidBulkupdateData(response.json())
 
         self.jedi_council_corruscant.refresh_from_db()
-        self.assertFalse(self.jedi_council_corruscant.validated)
+        self.assertEqual(self.jedi_council_corruscant.validation_status,  m.OrgUnit.VALIDATION_REJECTED)
         self.assertNotIn(self.elite_group, self.jedi_council_corruscant.groups.all())
 
         for jedi_council in [self.jedi_council_endor, self.jedi_council_brussels]:

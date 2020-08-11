@@ -1,9 +1,6 @@
 
-from rest_framework import viewsets
-from iaso.utils import geojson_queryset
 from rest_framework.response import Response
-from rest_framework import viewsets, status, permissions
-from django.shortcuts import get_object_or_404
+from rest_framework import viewsets, permissions
 from iaso.api.common import safe_api_import
 
 from iaso.models import (
@@ -50,7 +47,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(
             None, self.request.query_params.get("app_id")
-        ).filter(validated=True)
+        ).filter(validation_status=OrgUnit.VALIDATION_VALID)
 
     def list(self, request):
         queryset = self.get_queryset()

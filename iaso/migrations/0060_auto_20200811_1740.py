@@ -6,7 +6,7 @@ from django.db import migrations, models
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('iaso', '0058_orgunit_multipoly'),
+        ('iaso', '0059_auto_20200811_1401'),
     ]
 
     operations = [
@@ -17,7 +17,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='orgunit',
             name='validation_status',
-            field=models.CharField(choices=[('new', 'new'), ('valid', 'valid'), ('rejected', 'rejected')], default='new', max_length=25),
+            field=models.CharField(choices=[('new', 'new'), ('valid', 'valid'), ('rejected', 'rejected')], default='NEW', max_length=25),
             preserve_default=False,
         ),
         migrations.AlterField(

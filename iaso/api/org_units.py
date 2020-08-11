@@ -209,7 +209,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "name",
                 "org_unit_type__name",
                 "version__data_source__name",
-                "validated",
+                "validation_status",
                 "source_ref",
                 "created_at",
                 "updated_at",
@@ -229,7 +229,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("version__data_source__name"),
-                    org_unit.get("validated"),
+                    org_unit.get("validation_status"),
                     org_unit.get("source_ref"),
                     *[org_unit.get(field_name) for field_name in parent_field_names],
                 ]
@@ -277,7 +277,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
-        org_unit.validated = request.data.get("status", True)
+        org_unit.validation_status = request.data.get("status", OrgUnit.VALIDATION_VALID)
         geo_json = request.data.get("geo_json", None)
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
@@ -412,7 +412,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     )
     def bulkupdate(self, request):
         select_all = request.data.get("select_all", None)
-        validated = request.data.get("validated", None)
+        validation_status = request.data.get("validation_status", None)
         org_unit_type_id = request.data.get("org_unit_type", None)
         groups_ids_added = request.data.get("groups_added", None)
         groups_ids_removed = request.data.get("groups_removed", None)
@@ -436,14 +436,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 else:
                     queryset = queryset.union(additional_queryset)
                 search_index += 1
-
         if queryset.count() > 0:
             with transaction.atomic():
                 for org_unit in queryset.iterator():
                     OrgUnit.objects.update_single_unit_from_bulk(
                         request.user,
                         org_unit,
-                        validated=validated,
+                        validation_status=validation_status,
                         org_unit_type_id=org_unit_type_id,
                         groups_ids_added=groups_ids_added,
                         groups_ids_removed=groups_ids_removed,
@@ -455,7 +454,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     operation_type=BulkOperation.OPERATION_TYPE_UPDATE,
                     operation_count=queryset.count(),
                 )
-
         # id is a kind of placeholder for a future job id
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
@@ -477,7 +475,7 @@ def import_data(org_units, user, app_id):
 
         if created:
             org_unit_db.custom = True
-            org_unit_db.validated = False
+            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
             org_unit_db.name = org_unit.get("name", None)
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
@@ -524,7 +522,7 @@ def import_data(org_units, user, app_id):
 
 
 def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_queryset()
-    validated = params.get("validated", "true")
+    validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     search = params.get("search", None)
 
@@ -544,13 +542,8 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     link_source = params.get("linkSource", None)
     link_version = params.get("linkVersion", None)
 
-    if validated == "true":
-        validated = True
-    if validated == "false":
-        validated = False
-
-    if validated != "both":
-        queryset = queryset.filter(validated=validated)
+    if validation_status != "all":
+        queryset = queryset.filter(validation_status=validation_status)
 
     if search:
         queryset = queryset.filter(

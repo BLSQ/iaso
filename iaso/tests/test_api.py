@@ -101,7 +101,7 @@ class BasicAPITestCase(APITestCase):
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(
@@ -210,7 +210,7 @@ class BasicAPITestCase(APITestCase):
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(

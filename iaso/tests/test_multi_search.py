@@ -52,12 +52,14 @@ class MultiSearchTestCase(TestCase):
             org_unit_type=unit_type,
             version=version,
             location=Point(x=4, y=50, z=100),
+            validation_status=OrgUnit.VALIDATION_VALID
         )
         OrgUnit.objects.create(
             name="Kakariko",
             org_unit_type=unit_type,
             version=version,
             location=Point(x=5, y=51, z=101),
+            validation_status=OrgUnit.VALIDATION_VALID
         )
 
     @tag("iaso_only")

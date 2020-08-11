@@ -221,12 +221,6 @@ class OrgUnit(models.Model):
     geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
-    latitude = models.DecimalField(
-        max_digits=10, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
-    longitude = models.DecimalField(
-        max_digits=11, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
     gps_source = models.TextField(
         null=True, blank=True
     )  # much more diverse than above GEO_SOURCE_CHOICES
@@ -305,8 +299,8 @@ class OrgUnit(models.Model):
             "p": self.parent_id,
             "out": self.org_unit_type_id,
             "c_a": self.created_at.timestamp() if self.created_at else None,
-            "lat": self.location.y if self.location else self.latitude,
-            "lon": self.location.x if self.location else self.longitude,
+            "lat": self.location.y if self.location else None,
+            "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
         }
 
@@ -321,8 +315,8 @@ class OrgUnit(models.Model):
             else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
         }
 
@@ -342,8 +336,8 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
@@ -380,8 +374,8 @@ class OrgUnit(models.Model):
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
             "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,

@@ -95,7 +95,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if as_location:
             queryset = queryset.filter(
                 Q(location__isnull=False)
-                | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
                 | Q(simplified_geom__isnull=False)
             )
 
@@ -209,8 +208,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "id",
                 "name",
                 "org_unit_type__name",
-                "latitude",
-                "longitude",
                 "version__data_source__name",
                 "validated",
                 "source_ref",
@@ -590,14 +587,11 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if with_location == "true":
         queryset = queryset.filter(
             Q(location__isnull=False)
-            | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
         )
 
     if with_location == "false":
         queryset = queryset.filter(
             Q(location__isnull=True)
-            & Q(latitude__isnull=True)
-            & Q(longitude__isnull=True)
         )
 
     if parent_id:

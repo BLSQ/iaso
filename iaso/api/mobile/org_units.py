@@ -50,7 +50,7 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     def get_queryset(self):
         return OrgUnit.objects.filter_for_user_and_app_id(
             None, self.request.query_params.get("app_id")
-        )
+        ).filter(validated=True)
 
     def list(self, request):
         queryset = self.get_queryset()

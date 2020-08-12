@@ -70,7 +70,7 @@
   "iaso.instance.period": "Période",
   "iaso.instance.updated_at": "Mise à jour",
   "iaso.instance.warningSoftDeleted": "Cette instance a été marquée comme effacée elle n'apparaitra plus dans les recherches ou les tableaux de complétude.",
-  "iaso.instance.warningSoftDeletedDerived": "Si ce formulaire sert à générer des instances dérivées, celle-ci prendra toujours en compte cette instance, c'est à vous de décider si vous les regénérer.",
+  "iaso.instance.warningSoftDeletedDerived": "Si ce formulaire sert à générer des instances dérivées, celle-ci prendra toujours en compte cette instance, c'est à vous de décider si vous les regénérez.",
   "iaso.instance.warningSoftDeletedExport": "Si l'instance a été exportée précédemment, les données dans dhis2 sont sans doute toujours présentes.",
   "iaso.instances.export": "Exporter vers dhis2",
   "iaso.instances.forceExport": "Forcer l'export des instances déjà exportées",

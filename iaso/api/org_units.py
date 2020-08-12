@@ -277,7 +277,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
-        org_unit.validation_status = request.data.get("status", OrgUnit.VALIDATION_VALID)
+        org_unit.validation_status = request.data.get("validation_status", OrgUnit.VALIDATION_VALID)
         geo_json = request.data.get("geo_json", None)
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)

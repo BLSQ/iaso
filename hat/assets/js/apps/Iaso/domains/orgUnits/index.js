@@ -129,9 +129,9 @@ class OrgUnits extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const validatedChanged = prevProps.params.validated !== this.props.params.validated;
+        const validationStatusChanged = prevProps.params.validation_status !== this.props.params.validation_status;
         const sourceChanged = prevProps.params.source !== this.props.params.source;
-        if (validatedChanged || sourceChanged) {
+        if (validationStatusChanged || sourceChanged) {
             const newParams = {
                 ...this.props.params,
             };
@@ -371,7 +371,7 @@ class OrgUnits extends Component {
                     <DynamicTabsComponent
                         baseLabel={formatMessage(MESSAGES.search)}
                         params={params}
-                        defaultItem={{ validated: 'both', color: getChipColors(0).replace('#', '') }}
+                        defaultItem={{ validation_status: 'all', color: getChipColors(0).replace('#', '') }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}

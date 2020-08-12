@@ -17,21 +17,25 @@ export const search = () => (
 
 export const status = formatMessage => (
     {
-        urlKey: 'validated',
+        urlKey: 'validation_status',
         isMultiSelect: false,
         isClearable: false,
         options: [
             {
-                label: formatMessage(MESSAGES.both),
-                value: 'both',
+                label: formatMessage(MESSAGES.all),
+                value: 'all',
+            },
+            {
+                label: formatMessage(MESSAGES.new),
+                value: 'NEW',
             },
             {
                 label: formatMessage(MESSAGES.validated),
-                value: 'true',
+                value: 'VALID',
             },
-            {
-                label: formatMessage(MESSAGES.notValidated),
-                value: 'false',
+                        {
+                label: formatMessage(MESSAGES.rejected),
+                value: 'REJECTED',
             },
         ],
         label: MESSAGES.status,

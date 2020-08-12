@@ -21,6 +21,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit org unit type',
         id: 'iaso.orgUnits.editOrgUnitType',
     },
+    new: {
+        id: 'iaso.forms.new',
+        defaultMessage: 'new',
+    },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
+    rejected: {
+        id: 'iaso.forms.rejected',
+        defaultMessage: 'rejected',
+    },
     editValidation: {
         defaultMessage: 'Edit validation',
         id: 'iaso.orgUnits.editValidation',
@@ -30,12 +42,8 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.validate',
     },
     valid: {
-        defaultMessage: 'Valid(s)',
+        defaultMessage: 'Valid',
         id: 'iaso.label.valid',
-    },
-    notValid: {
-        defaultMessage: 'Not valid(s)',
-        id: 'iaso.label.notValid',
     },
     validated: {
         id: 'iaso.forms.validated',

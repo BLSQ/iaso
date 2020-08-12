@@ -137,7 +137,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         if (version) {
             url = `${url}&version=${version}`;
         }
-        url = `${url}&validated=both`;
+        url = `${url}&validated=all`;
         return url;
     }
 

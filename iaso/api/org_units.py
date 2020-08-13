@@ -554,6 +554,14 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
             except:
                 queryset = queryset.filter(id__in=[])
                 print("Failed parsing ids in search", search)
+        elif search.startswith("refs:"):
+            s = search.replace("refs:", "")
+            try:
+                refs = [i.strip() for i in s.split(",")]
+                queryset = queryset.filter(source_ref__in=refs)
+            except:
+                queryset = queryset.filter(source_ref__in=[])
+                print("Failed parsing refs in search", search)
         else:
             queryset = queryset.filter(
                 Q(name__icontains=search) | Q(aliases__contains=[search])

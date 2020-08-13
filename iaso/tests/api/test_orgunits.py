@@ -53,6 +53,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="PvtAI4RUMkr"
         )
         cls.jedi_council_corruscant.groups.set([cls.elite_group])
 
@@ -76,6 +77,7 @@ class OrgUnitAPITestCase(APITestCase):
             catchment=cls.mock_multipolygon,
             location=cls.mock_point,
             validation_status=m.OrgUnit.VALIDATION_VALID,
+            source_ref="F9w3VW1cQmb"
         )
         cls.jedi_squad_endor = m.OrgUnit.objects.create(
             parent=cls.jedi_council_endor,
@@ -292,7 +294,19 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_search_with_ids(self):
-        """GET /orgunits/ """
+        """GET /orgunits/ with a search based on refs"""
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"refs%3AF9w3VW1cQmb%2CPvtAI4RUMkr","orgUnitParentId":null}]&limit=50',
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 2)
+
+    @tag("iaso_only")
+    def test_org_unit_search_with_ref(self):
+        """GET /orgunits/ with a search based on ids"""
 
         self.client.force_authenticate(self.yoda)
         endor_id = self.jedi_council_endor.id
@@ -306,7 +320,7 @@ class OrgUnitAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_org_unit_search(self):
-        """GET /orgunits/ """
+        """GET /orgunits/ with a search based on name """
 
         self.client.force_authenticate(self.yoda)
 

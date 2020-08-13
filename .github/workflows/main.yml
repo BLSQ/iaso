@@ -1,8 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches: [ gh_actions2 ]
+on: [push]
 
 jobs:
   build:
@@ -17,7 +15,7 @@ jobs:
           POSTGRES_DB: github_actions
         ports:
           - 5432:5432
-        # needed because the postgres container does not provide a healthcheck
+        # needed because the postgres container does not provide a health check
         options: --health-cmd pg_isready --health-interval 10s --health-timeout 5s --health-retries 5
 
     steps:
@@ -73,31 +71,29 @@ jobs:
       - name: Django tests
         run: |
           python manage.py migrate
-          #python manage.py test
+          python manage.py test
         env:
           CI: true
           SENSE_HAT_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret
-          DEBUG: false
+          DEBUG: true
           DJANGO_SETTINGS_MODULE: hat.settings
           RDS_PASSWORD: postgres
           RDS_HOSTNAME: localhost
           RDS_PORT: 5432
           RDS_USERNAME: postgres
-          REDIS_HOST: localhost
-          REDIS_PORT: 6379
-          FLAVOR: iaso
           CACHE: false
           DEV_SERVER: true
+          AWS_STORAGE_BUCKET_NAME: iaso-dev
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          DEFAULT_FILE_STORAGE: storages.backends.s3boto3.S3Boto3Storage
 
       - name: slack notification
         uses: rtCamp/action-slack-notify@v2.0.2
         env:
+          SLACK_USERNAME: github-actions-main
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
-          SLACK_CHANNEL: @edarchis
+          SLACK_CHANNEL: iaso-dev
           SLACK_TITLE: Iaso build completed
-#      - uses: actions/upload-artifact@v2
-#        with:
-#          name: apk-${{github.run_number}}-${{github.sha}}
-#          path: ./*.apk

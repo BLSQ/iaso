@@ -291,6 +291,34 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertEqual(1, am.Modification.objects.count())
 
     @tag("iaso_only")
+    def test_org_unit_search_with_ids(self):
+        """GET /orgunits/ """
+
+        self.client.force_authenticate(self.yoda)
+        endor_id = self.jedi_council_endor.id
+        corr_id = self.jedi_council_corruscant.id
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"ids%3A' + str(endor_id) + '%2C' + str(corr_id) + '","orgUnitParentId":null}]&limit=50',
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 2)
+
+    @tag("iaso_only")
+    def test_org_unit_search(self):
+        """GET /orgunits/ """
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","search":"corr","orgUnitParentId":null}]&limit=50',
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()["count"], 1)
+        ou_id = response.json()['orgunits'][0]['id']
+        self.assertEqual(ou_id,  self.jedi_council_corruscant.id)
+
+    @tag("iaso_only")
     def test_org_unit_bulkupdate_select_all_with_multiple_searches(self):
         """POST /orgunits/bulkupdate happy path (select all, but with multiple searches)"""
 

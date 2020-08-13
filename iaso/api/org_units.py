@@ -546,9 +546,18 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         queryset = queryset.filter(validation_status=validation_status)
 
     if search:
-        queryset = queryset.filter(
-            Q(name__icontains=search) | Q(aliases__contains=[search])
-        )
+        if search.startswith("ids:"):
+            s = search.replace("ids:", "")
+            try:
+                ids = [i.strip() for i in s.split(",")]
+                queryset = queryset.filter(id__in=ids)
+            except:
+                queryset = queryset.filter(id__in=[])
+                print("Failed parsing ids in search", search)
+        else:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(aliases__contains=[search])
+            )
 
     if group:
         queryset = queryset.filter(groups__in=group.split(","))

@@ -138,10 +138,7 @@ class OrgUnitQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
-                print(
-                    "filter_for_user_and_app_id query orgunits ",
-                    project.account.default_version,
-                )
+
                 if project.account is None:
                     # cannot filter on default version if no project or project has no account
                     return self.none()
@@ -150,7 +147,6 @@ class OrgUnitQuerySet(models.QuerySet):
                     org_unit_type__projects__in=[project],
                     version=project.account.default_version,
                 )
-                print(str(queryset.query))
             except Project.DoesNotExist:
                 return self.none()
 

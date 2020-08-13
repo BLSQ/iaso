@@ -9,7 +9,7 @@ from django.db.models import Q, Count
 from django.core.paginator import Paginator
 from time import gmtime, strftime
 import ntpath
-
+import json
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
     Echo,
@@ -187,7 +187,11 @@ class InstancesViewSet(viewsets.ViewSet):
                     instance_values.append(instance.correlation_id)
 
                 for k in file_content_template:
-                    instance_values.append(idict["file_content"].get(k, None))
+                    v = idict["file_content"].get(k, None)
+                    if type(v) is list:
+                        instance_values.append(json.dumps(v))
+                    else:
+                        instance_values.append(v)
                 return instance_values
 
             queryset.prefetch_related(

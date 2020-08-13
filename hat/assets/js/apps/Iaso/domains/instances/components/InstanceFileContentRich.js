@@ -127,6 +127,10 @@ InstanceFileContentRich.propTypes = {
 
 function FormChild({ descriptor, data }) {
     switch (descriptor.type) {
+        case 'repeat':
+            return data[descriptor.name] ? data[descriptor.name].map((subdata, index) => (
+                <FormGroup key={`repeat-${index}`} descriptor={descriptor} data={subdata} />
+            )) : <></>;
         case 'group':
             return <FormGroup descriptor={descriptor} data={data} />;
         case 'start':

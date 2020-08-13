@@ -1,6 +1,39 @@
 import React from 'react';
 import instancesTableColumns from './config';
 
+const NO_VALUE = '/';
+const hasNoValue = value => !value || value === '';
+
+const KeyValueFields = ({ entry }) => Object.entries(entry).map(([key, value]) => (
+    <>
+        <span>{`${key} : ${hasNoValue(value) ? NO_VALUE : value}`}</span>
+        <br />
+    </>
+));
+
+const renderValue = (settings, c) => {
+    const { key } = c;
+    const { file_content } = settings.original;
+    const value = file_content[key];
+
+    if (hasNoValue(value)) {
+        return <span>{NO_VALUE}</span>;
+    }
+    if (Array.isArray(value)) {
+        return (
+            <pre style={{ textAlign: 'left' }}>
+                {value.map((val, index) => (
+                    <>
+                        <KeyValueFields key={`arr${index}`} entry={val} />
+                        <br />
+                    </>
+                ))}
+            </pre>
+        );
+    }
+    return <span>{value}</span>;
+};
+
 export const getInstancesColumns = (formatMessage, visibleColumns) => {
     const metasColumns = [...instancesTableColumns(formatMessage)];
     let tableColumns = [];
@@ -12,42 +45,46 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
     });
 
     const childrenArray = [];
-    visibleColumns.filter(c => !c.meta).forEach((c) => {
-        if (c.active) {
-            childrenArray.push({
-                class: 'small',
-                sortable: false,
-                accessor: c.key,
-                Header: c.label || c.key,
-                Cell: settings => (
-                    <span>
-                        {!settings.original.file_content[c.key] || settings.original.file_content[c.key] === '' ? '/' : settings.original.file_content[c.key]}
-                    </span>
-                ),
-            });
-        }
-    });
+    visibleColumns
+        .filter(c => !c.meta)
+        .forEach((c) => {
+            if (c.active) {
+                childrenArray.push({
+                    class: 'small',
+                    sortable: false,
+                    accessor: c.key,
+                    Header: c.label || c.key,
+                    Cell: settings => renderValue(settings, c),
+                });
+            }
+        });
     tableColumns = tableColumns.concat(childrenArray);
     return tableColumns;
 };
 
 export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
 
-export const getInstancesVisibleColumns = (formatMessage, instance, {
-    columns = undefined,
-    order,
-}, defaultOrder) => {
+export const getInstancesVisibleColumns = (
+    formatMessage,
+    instance,
+    { columns = undefined, order },
+    defaultOrder,
+) => {
     const activeOrders = (order || defaultOrder).split(',');
-    const metasColumns = [...instancesTableColumns(formatMessage).filter(c => c.accessor !== 'actions')];
-    const newColumns = metasColumns.map(c => (
-        {
-            key: c.accessor,
-            label: c.Header,
-            active: columns !== undefined && columns.includes(c.accessor),
-            meta: true,
-            disabled: activeOrders.indexOf(c.accessor) !== -1 || activeOrders.indexOf(`-${c.accessor}`) !== -1,
-        }
-    ));
+    const metasColumns = [
+        ...instancesTableColumns(formatMessage).filter(
+            c => c.accessor !== 'actions',
+        ),
+    ];
+    const newColumns = metasColumns.map(c => ({
+        key: c.accessor,
+        label: c.Header,
+        active: columns !== undefined && columns.includes(c.accessor),
+        meta: true,
+        disabled:
+      activeOrders.indexOf(c.accessor) !== -1
+      || activeOrders.indexOf(`-${c.accessor}`) !== -1,
+    }));
     if (instance) {
         Object.keys(instance.file_content).forEach((k) => {
             if (k !== 'meta' && k !== 'uuid') {
@@ -62,7 +99,6 @@ export const getInstancesVisibleColumns = (formatMessage, instance, {
     }
     return newColumns;
 };
-
 
 export const getInstancesFilesList = (instances) => {
     const filesList = [];

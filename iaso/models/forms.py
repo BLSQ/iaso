@@ -196,12 +196,23 @@ class FormVersion(models.Model):
     def questions_by_name(self):
         return parsing.to_questions_by_name(self.get_or_save_form_descriptor())
 
+    def repeat_groups(self):
+        questions = self.questions_by_name()
+        repeats = []
+        for key, value in questions.items():
+            if value["type"] == "repeat":
+                repeats.append(value)
+
+        return repeats
+
     def as_dict(self):
         return {
             "id": self.id,
             "version_id": self.version_id,
-            "file": self.file.url,
-            "xls_file": self.xls_file.url if self.xls_file else None,
+            "file": "https://2d90e21b06ed.ngrok.io" + self.file.url,
+            "xls_file": "https://2d90e21b06ed.ngrok.io" + self.xls_file.url
+            if self.xls_file
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
         }

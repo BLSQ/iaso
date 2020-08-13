@@ -469,6 +469,29 @@ class Command(BaseCommand):
                             "is_existing": "0",
                             "last_name": "Skywalker",
                             "_version": 1,
+                            "households_note": "",
+                            "hh_repeat": [
+                                {
+                                    "name": "household 1",
+                                    "gender": "Male"
+                                    if randint(1, 10) < 5
+                                    else "Female",
+                                    "age": randint(18, 65),
+                                    "street": "streeet 1",
+                                    "number": "44b",
+                                    "city": "bxl",
+                                },
+                                {
+                                    "name": "household 2",
+                                    "gender": "Male"
+                                    if randint(1, 10) < 5
+                                    else "Female",
+                                    "age": randint(18, 65),
+                                    "street": "street b",
+                                    "number": "45",
+                                    "city": "Namur",
+                                },
+                            ],
                             "instanceID": "uuid:" + instance.uuid,
                         }
 

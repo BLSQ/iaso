@@ -1,9 +1,13 @@
 from hat.audit.models import Modification, INSTANCE_API
+from django.core.files import File
 from iaso.test import TestCase
 from django.utils.timezone import now
 from django.test import tag
 from django.core.files.uploadedfile import UploadedFile
 from iaso import models as m
+from iaso.odk import parsing
+
+import json
 
 
 class InstanceModelTestCase(TestCase):
@@ -264,6 +268,71 @@ class InstanceModelTestCase(TestCase):
             },
         )
 
+    def test_xml_to_json_with_repeat_group(self):
+
+        instance = m.Instance.objects.create(
+            form=self.form_1,
+            period="202001",
+            org_unit=self.jedi_council_coruscant,
+            file=UploadedFile(
+                open("iaso/tests/fixtures/odk_instance_repeat_group.xml")
+            ),
+        )
+
+        with open(
+            "iaso/tests/fixtures/odk_instance_repeat_group_form.xlsx", "rb"
+        ) as form_1_version_1_file:
+            survey = parsing.parse_xls_form(form_1_version_1_file)
+            form_version = m.FormVersion.objects.create_for_form_and_survey(
+                form=self.form_1, survey=survey, xls_file=File(form_1_version_1_file)
+            )
+            form_version.version_id = (
+                "202008121012"  # force version to match instance files
+            )
+            form_version.save()
+
+        json_instance = instance.get_and_save_json_of_xml()
+        # assert flattened and  lowered case keys
+        self.assertEqual(
+            json_instance,
+            {
+                "uuid": "33fd651edeca4f799ba60bfdec66d4bf",
+                "is_existing": "0",
+                "MMD_PER_NAM": "child",
+                "last_name": "of mine",
+                "gender": "Male",
+                "DE_424405": "",
+                "DE_2008294": "NVP only",
+                "DE_2006098": "4",
+                "DE_391382": "",
+                "DE_2006101": "1",
+                "DE_2006103": "Exclusive",
+                "DE_2006104": "0",
+                "DE_2005736": "2000",
+                "households_note": "",
+                "hh_repeat": [
+                    {
+                        "name": "household 1",
+                        "gender": "Male",
+                        "age": "42",
+                        "street": "streeet 1",
+                        "number": "44b",
+                        "city": "bxl",
+                    },
+                    {
+                        "name": "household 2",
+                        "gender": "Female",
+                        "age": "11",
+                        "street": "street b",
+                        "number": "45",
+                        "city": "Namur",
+                    },
+                ],
+                "instanceID": "uuid:87eefa63-7523-479e-bb91-d21aa27cc6e7",
+                "_version": "202008121012",
+            },
+        )
+
     def test_xml_to_json_should_support_xml_without_version(self):
 
         instance = m.Instance.objects.create(
@@ -331,7 +400,7 @@ class InstanceModelTestCase(TestCase):
             ).count(),
         )
         self.assertEqual(
-            25, m.Instance.objects.for_org_unit_hierarchy([alderaan, sluis]).count(),
+            25, m.Instance.objects.for_org_unit_hierarchy([alderaan, sluis]).count()
         )
         self.assertEqual(
             16,  # providing first_council and second_council should have no effect here
@@ -363,7 +432,7 @@ class InstanceModelTestCase(TestCase):
         )
         sluis = m.OrgUnit.objects.create(org_unit_type=self.sector, name="Sluis Sector")
         dagobah = m.OrgUnit.objects.create(
-            org_unit_type=self.system, parent=sluis, name="Dagobah System",
+            org_unit_type=self.system, parent=sluis, name="Dagobah System"
         )
         first_council = m.OrgUnit.objects.create(
             org_unit_type=self.jedi_council,

@@ -14,7 +14,7 @@ from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
 from hat.audit.models import log_modification, INSTANCE_API
-from iaso.utils import flat_parse_xml_file
+from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from django.db.models import Q
 
 from .device import DeviceOwnership, Device
@@ -51,8 +51,6 @@ STATUS_TYPE_CHOICES = (
     ("SKIPPED", _("Skipped")),
 )
 ALIVE_STATUSES = [QUEUED, RUNNING]
-
-
 
 
 def generate_id_for_dhis_2():
@@ -562,7 +560,7 @@ class InstanceQuerySet(models.QuerySet):
         org_unit_id=None,
         period_ids=None,
         status=None,
-        instance_id=None
+        instance_id=None,
     ):
         queryset = self
         if period_ids:
@@ -736,8 +734,24 @@ class Instance(models.Model):
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            file_content = flat_parse_xml_file(file)
-            self.json = file_content
+            soup = as_soup(file)
+            form_version_id = extract_form_version_id(soup)
+            if form_version_id:
+                form_versions = self.form.form_versions.filter(
+                    version_id=form_version_id
+                )
+                form_version = form_versions.first()
+                if form_version:
+
+                    self.json = flat_parse_xml_soup(
+                        soup, [rg["name"] for rg in form_version.repeat_groups()]
+                    )
+                else:
+                    # warn old form, but keep it working ? or throw error
+                    self.json = flat_parse_xml_soup(soup, [])
+            else:
+                self.json = flat_parse_xml_soup(soup, [])
+            file_content = self.json
             self.save()
         else:
             file_content = {}
@@ -753,12 +767,14 @@ class Instance(models.Model):
 
     def export(self, launcher=None):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
+        from iaso.dhis2.export_request_builder import (
+            ExportRequestBuilder,
+            NothingToExportError,
+        )
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
-                filters={"instance_id": self.id},
-                launcher=None
+                filters={"instance_id": self.id}, launcher=None
             )
 
             DataValueExporter().export_instances(export_request, True)
@@ -850,8 +866,12 @@ class Instance(models.Model):
                     else None,
                     "export_request": {
                         "launcher": {
-                            "full_name": export_status.export_request.launcher.get_full_name() if export_status.export_request.launcher else "AUTO UPLOAD",
-                            "email": export_status.export_request.launcher.email if export_status.export_request.launcher else "AUTO UPLOAD",
+                            "full_name": export_status.export_request.launcher.get_full_name()
+                            if export_status.export_request.launcher
+                            else "AUTO UPLOAD",
+                            "email": export_status.export_request.launcher.email
+                            if export_status.export_request.launcher
+                            else "AUTO UPLOAD",
                         },
                         "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
@@ -998,7 +1018,6 @@ class ExportStatus(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
-
 class FeatureFlag(models.Model):
     INSTANT_EXPORT = "INSTANT_EXPORT"
     TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
@@ -1006,10 +1025,24 @@ class FeatureFlag(models.Model):
     FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
 
     FEATURE_FLAGS = {
-        (INSTANT_EXPORT, "Instant export",  _("Immediate export of instances to DHIS2")),
-        (TAKE_GPS_ON_FORM, "Mobile: take GPS on new form",  _("GPS localization on start of instance on mobile")),
-        (REQUIRE_AUTHENTICATION, "Mobile: authentication required",  _("Require authentication on mobile")),
-        (FORMS_AUTO_UPLOAD, "", _("Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available")),
+        (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
+        (
+            TAKE_GPS_ON_FORM,
+            "Mobile: take GPS on new form",
+            _("GPS localization on start of instance on mobile"),
+        ),
+        (
+            REQUIRE_AUTHENTICATION,
+            "Mobile: authentication required",
+            _("Require authentication on mobile"),
+        ),
+        (
+            FORMS_AUTO_UPLOAD,
+            "",
+            _(
+                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
+            ),
+        ),
     }
 
     code = models.CharField(max_length=30, blank=False)

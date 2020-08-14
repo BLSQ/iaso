@@ -318,6 +318,7 @@ class OrgUnitAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertEqual(response.json()["count"], 2)
 
+
     @tag("iaso_only")
     def test_org_unit_search(self):
         """GET /orgunits/ with a search based on name """

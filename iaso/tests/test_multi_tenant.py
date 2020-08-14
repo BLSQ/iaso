@@ -239,6 +239,20 @@ class MultiTenantTestCase(APITestCase):
         # uploading the xml file should have associated the device id with the project
         self.assertEqual(len(content["devices"]), 0)
 
+        # taking the opportunity to test if the filter on hasInstances is working in the search
+        response = yoda_client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"true","orgUnitParentId":null}]&limit=50',
+        )
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()['orgunits'][0]['name'], 'Kashyyyk')
+
+        response = yoda_client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"false","orgUnitParentId":null}]&limit=50',
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()['count'], 0)
+
     @tag("iaso_only")
     def test_source_access(self):
         response = self.raccoon_client.get(

@@ -579,7 +579,8 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if has_instances is not None:
         ids_with_instances = Instance.objects.filter(
             org_unit__isnull=False
-        ).values_list("org_unit_id", flat=True)
+        ).exclude(file="").values_list("org_unit_id", flat=True)
+
         if has_instances == "true":
             queryset = queryset.filter(id__in=ids_with_instances)
         else:

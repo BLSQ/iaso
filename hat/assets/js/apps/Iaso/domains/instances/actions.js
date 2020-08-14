@@ -105,6 +105,7 @@ export const softDeleteInstance = currentInstance => (dispatch) => {
 
 export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
     dispatch(setInstancesFetching(true));
+    if (!payload.period) delete payload.period
     patchRequest(`/api/instances/${currentInstance.id}/`, payload)
         .then((res) => {
             dispatch(fetchInstanceDetail(currentInstance.id));

@@ -56,6 +56,7 @@ const SpeedDialInstanceActions = (props) => {
                 {actions.map(action => (
                     <SpeedDialAction
                         key={action.id}
+                        tooltipPlacement="bottom"
                         icon={action.icon}
                         tooltipTitle={formatMessage(MESSAGES[action.id])}
                         disabled={action.disabled}

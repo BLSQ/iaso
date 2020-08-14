@@ -63,7 +63,7 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
         nextPeriods = period.nextPeriods(2);
         previousPeriods = period.previousPeriods(3);
     }
-
+    const isPeriodDisabled = !currentInstance.period;
     return (
         <ConfirmCancelDialogComponent
             renderTrigger={({ openDialog }) => <UpdateIcon onClick={openDialog} />}
@@ -72,6 +72,13 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
             confirmMessage={MESSAGES.reAssignInstanceAction}
             cancelMessage={MESSAGES.cancel}
             maxWidth="xs"
+            allowConfirm={
+                fieldValue.orgUnit.value !== undefined
+                && (
+                    isPeriodDisabled
+                    || (!isPeriodDisabled && fieldValue.period.value)
+                )
+            }
         >
             <InputComponent
                 disabled={currentInstance.period === undefined || currentInstance.period === null}
@@ -96,17 +103,22 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
                 required
             />
             <>
-                <OrgUnitSearch
-                    onSelectOrgUnit={ou => setFieldValue({
-                        ...fieldValue,
-                        orgUnit: {
-                            ...fieldValue.orgUnit,
-                            value: ou,
-                        },
-                    })
-                    }
-                    inputLabelObject={MESSAGES.addOrgUnit}
-                />
+                {
+                    !fieldValue.orgUnit.value
+                    && (
+                        <OrgUnitSearch
+                            onSelectOrgUnit={ou => setFieldValue({
+                                ...fieldValue,
+                                orgUnit: {
+                                    ...fieldValue.orgUnit,
+                                    value: ou,
+                                },
+                            })
+                            }
+                            inputLabelObject={MESSAGES.addOrgUnit}
+                        />
+                    )
+                }
                 {fieldValue.orgUnit.value !== undefined && (
                     <Box className={classes.chipList}>
                         <Typography variant="subtitle1" className={classes.chipListTitle}>

@@ -17,6 +17,7 @@ const InstanceDetailsExportRequests = ({
     intl: { formatMessage },
 }) => (
     <WidgetPaper
+        padded
         title={formatMessage(MESSAGES.exportRequests)}
         IconButton={IconButtonComponent}
         iconButtonProps={{
@@ -31,34 +32,41 @@ const InstanceDetailsExportRequests = ({
             valueTitle={null}
             value={formatUnixTimestamp(currentInstance.last_export_success_at)}
         />
-        <Divider />
-        {currentInstance.export_statuses.map((export_status, index) => (
+        {
+            currentInstance.export_statuses && currentInstance.export_statuses.length > 0
+            && <Divider />
+        }
+        {currentInstance.export_statuses.map((exportStatus, index) => (
             <>
                 <InstanceDetailsField
                     label={formatMessage(MESSAGES.exportStatus)}
-                    value={export_status.status}
+                    value={exportStatus.status}
                 />
                 <InstanceDetailsField
                     label={formatMessage(MESSAGES.launcher)}
                     value={[
-                        export_status.export_request.launcher.full_name,
-                        export_status.export_request.launcher.email,
+                        exportStatus.export_request.launcher.full_name,
+                        exportStatus.export_request.launcher.email,
                     ]
                         .filter(c => c && c !== '')
                         .join(' - ')}
                 />
 
-                {export_status.export_request.last_error_message && (
+                {exportStatus.export_request.last_error_message && (
                     <InstanceDetailsField
                         label={formatMessage(MESSAGES.lastErrorMessage)}
-                        value={export_status.export_request.last_error_message}
+                        value={exportStatus.export_request.last_error_message}
                     />
                 )}
                 <InstanceDetailsField
                     label={formatMessage(MESSAGES.when)}
-                    value={formatUnixTimestamp(export_status.created_at)}
+                    value={formatUnixTimestamp(exportStatus.created_at)}
                 />
-                <Divider />
+                {
+                    index !== currentInstance.export_statuses.length - 1
+                    && <Divider />
+                }
+
             </>
         ))}
     </WidgetPaper>

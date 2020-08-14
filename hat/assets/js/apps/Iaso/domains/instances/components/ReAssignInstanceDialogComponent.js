@@ -75,8 +75,8 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
             allowConfirm={
                 fieldValue.orgUnit.value !== undefined
                 && (
-                    isPeriodDisabled
-                    || (!isPeriodDisabled && fieldValue.period.value)
+                    Boolean(isPeriodDisabled)
+                    || (!isPeriodDisabled && Boolean(fieldValue.period.value))
                 )
             }
         >

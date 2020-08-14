@@ -122,9 +122,8 @@ The following are some examples:
 To seed data coming from play.dhis2.org, since the previous commands doesn't run
 in the same container, you need to do a run a docker exec command
 
-`
+.. code:: bash
 docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6
-`
 
 you can then login through http://127.0.0.1:8081/dashboard with :
 

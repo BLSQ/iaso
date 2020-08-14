@@ -8,6 +8,7 @@ from unittest import mock
 from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
 from iaso.test import APITestCase
+from hat.audit.models import Modification
 
 
 class InstancesAPITestCase(APITestCase):
@@ -20,6 +21,7 @@ class InstancesAPITestCase(APITestCase):
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
+        cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(
             username="yoda", account=star_wars, permissions=["iaso_forms"]
@@ -76,6 +78,17 @@ class InstancesAPITestCase(APITestCase):
             period_type="QUARTER",
             single_per_period=True,
         )
+
+        # Form without period
+        cls.form_3 = m.Form.objects.create(
+            name="Hydroponic public survey III",
+            form_id="sample34",
+            device_field="deviceid",
+            location_field="geoloc",
+            # period_type="QUARTER",
+            # single_per_period=True,
+        )
+
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
@@ -85,9 +98,20 @@ class InstancesAPITestCase(APITestCase):
         )
         cls.form_2.save()
 
+
+        # Instance saved without period
+        cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        cls.form_3.org_unit_types.add(cls.jedi_council)
+        cls.create_form_instance(
+            form=cls.form_3, org_unit=cls.jedi_council_corruscant
+        )
+        cls.form_3.save()
+
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
         cls.project.forms.add(cls.form_2)
+        cls.project.forms.add(cls.form_3)
+        sw_source.projects.add(cls.project)
         cls.project.save()
 
     @tag("iaso_only")
@@ -387,3 +411,94 @@ class InstancesAPITestCase(APITestCase):
         self.assertHasField(instance_data, "id", int)
         self.assertHasField(instance_data, "status", str)
         self.assertHasField(instance_data, "correlation_id", str, optional=True)
+
+
+    @tag("iaso_only")
+    def test_instance_patch_org_unit_period(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council New New",
+            version= self.sw_version,
+            org_unit_type = self.jedi_council
+        )
+        instance_to_patch = self.form_2.instances.first()
+
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"org_unit": new_org_unit.id, "period": "2022Q1"},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response,200)
+
+        instance_to_patch.refresh_from_db()
+        self.assertEqual(instance_to_patch.org_unit,new_org_unit)
+        self.assertEqual(instance_to_patch.period,"2022Q1")
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertEqual(
+            "202001",
+            modification.past_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            "2022Q1",
+            modification.new_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            self.jedi_council_corruscant.id,
+            modification.past_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(
+            new_org_unit.id,
+            modification.new_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(instance_to_patch, modification.content_object)
+
+    @tag("iaso_only")
+    def test_instance_patch_org_unit(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council Hospital",
+            version= self.sw_version,
+            org_unit_type = self.jedi_council
+        )
+        instance_to_patch = self.form_3.instances.first()
+
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"org_unit": new_org_unit.id},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response,200)
+
+        instance_to_patch.refresh_from_db()
+        self.assertEqual(instance_to_patch.org_unit,new_org_unit)
+        self.assertEqual(instance_to_patch.period,None)
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertEqual(
+            None,
+            modification.past_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            None,
+            modification.new_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            self.jedi_council_corruscant.id,
+            modification.past_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(
+            new_org_unit.id,
+            modification.new_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(instance_to_patch, modification.content_object)

@@ -137,13 +137,25 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.validated',
         defaultMessage: 'Validated',
     },
+    rejected: {
+        id: 'iaso.forms.rejected',
+        defaultMessage: 'Rejected',
+    },
     notValidated: {
         id: 'iaso.forms.notValidated',
         defaultMessage: 'Not validated',
     },
     both: {
         id: 'iaso.forms.both',
-        defaultMessage: 'Validated and not validated',
+        defaultMessage: 'Validated and not validated'
+    },
+    all: {
+        id: 'iaso.forms.all',
+        defaultMessage: 'All',
+    },
+    new: {
+        id: 'iaso.forms.new',
+        defaultMessage: 'New',
     },
     Prov: {
         id: 'iaso.province',

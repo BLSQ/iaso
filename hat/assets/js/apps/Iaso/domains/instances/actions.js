@@ -1,8 +1,11 @@
 import {
     getRequest, postRequest, putRequest, patchRequest, deleteRequest,
 } from '../../libs/Api';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import {
+    errorSnackBar,
+    succesfullSnackBar,
+} from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
@@ -61,7 +64,7 @@ export const fetchEditUrl = (currentInstance, location) => (dispatch) => {
         })
         .catch((err) => {
             console.log(err);
-            dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError')));
+            dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError', null, err)));
         })
         .then(() => {
             dispatch(setInstancesFetching(false));
@@ -72,7 +75,7 @@ export const fetchFormDetail = formId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/forms/${formId}`)
         .then(res => dispatch(setCurrentForm(res)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
@@ -82,7 +85,7 @@ export const fetchInstanceDetail = instanceId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/instances/${instanceId}`)
         .then(res => dispatch(setCurrentInstance(res)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
@@ -94,7 +97,7 @@ export const softDeleteInstance = currentInstance => (dispatch) => {
         .then((res) => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
@@ -121,8 +124,10 @@ export const createExportRequest = filterParams => (dispatch) => {
             return dispatch(enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')));
         })
         .catch((err) => {
-            const key = err.details ? `createExportRequestError${err.details.code}` : 'createExportRequestError';
-            return dispatch(enqueueSnackbar(errorSnackBar(key)));
+            const key = err.details
+                ? `createExportRequestError${err.details.code}`
+                : 'createExportRequestError';
+            return dispatch(enqueueSnackbar(errorSnackBar(key, null, err)));
         })
         .then(() => dispatch(setInstancesFetching(false)));
 };

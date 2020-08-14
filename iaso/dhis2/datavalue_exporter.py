@@ -50,6 +50,7 @@ def uniquify(seq, idfun=None):
 
     return result
 
+
 class BaseHandler:
     def orgunit_resolver(self, orgunit_id):
         if orgunit_id.isnumeric():
@@ -114,7 +115,9 @@ class AggregateHandler(BaseHandler):
                     raw_value = instance.json[question_key]
                     data_value = {
                         "dataElement": data_element["id"],
-                        "value": format_value(data_element, raw_value, self.orgunit_resolver),
+                        "value": format_value(
+                            data_element, raw_value, self.orgunit_resolver
+                        ),
                         "comment": str(instance.id)
                         + " "
                         + str(raw_value)
@@ -301,14 +304,18 @@ class EventHandler(BaseHandler):
                             boolval = "1" if (value in raw_values) else "0"
                             data_value = {
                                 "dataElement": mapping_de["id"],
-                                "value": format_value(mapping_de, boolval, self.orgunit_resolver)
+                                "value": format_value(
+                                    mapping_de, boolval, self.orgunit_resolver
+                                )
                                 # "debug": str(raw_value) + " " + question_key,
                             }
                             event["dataValues"].append(data_value)
                     else:
                         data_value = {
                             "dataElement": data_element["id"],
-                            "value": format_value(data_element, raw_value, self.orgunit_resolver),
+                            "value": format_value(
+                                data_element, raw_value, self.orgunit_resolver
+                            ),
                             # "debug": str(raw_value) + " " + question_key,
                         }
                         event["dataValues"].append(data_value)
@@ -385,6 +392,15 @@ class EventTrackerHandler(BaseHandler):
 
         return raw_value
 
+    def get_status(self, instance, program_stage_id, form_mapping):
+        status = "COMPLETED"
+        key = f"status_{program_stage_id}"
+
+        if key in instance.json:
+            status = instance.json[key].upper()
+
+        return status
+
     def map_to_values(self, instance, form_mapping, export_status=None):
         question_mappings = form_mapping["question_mappings"]
 
@@ -410,7 +426,7 @@ class EventTrackerHandler(BaseHandler):
                 "programStage": program_stage_id,
                 "orgUnit": instance.org_unit.source_ref,
                 "eventDate": event_date,
-                "status": "COMPLETED",
+                "status": self.get_status(instance, program_stage_id, form_mapping),
                 "dataValues": [],
             }
             if instance.location:
@@ -436,7 +452,9 @@ class EventTrackerHandler(BaseHandler):
 
                                 data_value = {
                                     "dataElement": data_element["id"],
-                                    "value": format_value(data_element, raw_value, self.orgunit_resolver),
+                                    "value": format_value(
+                                        data_element, raw_value, self.orgunit_resolver
+                                    ),
                                 }
 
                                 event["dataValues"].append(data_value)
@@ -474,7 +492,9 @@ class EventTrackerHandler(BaseHandler):
                         )
                         attribute = {
                             "attribute": tea["id"],
-                            "value": format_value(tea, raw_value, self.orgunit_resolver),
+                            "value": format_value(
+                                tea, raw_value, self.orgunit_resolver
+                            ),
                             "displayName": tea["name"],
                             "valueType": tea["valueType"],
                         }

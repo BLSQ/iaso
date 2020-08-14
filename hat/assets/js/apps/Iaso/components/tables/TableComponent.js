@@ -11,9 +11,9 @@ import {
     getSort, getOrderArray, getSimplifiedColumns, defaultSelectionActions, selectionInitialState,
 } from '../../utils/tableUtils';
 
-import { formatThousand } from '../../../../utils';
+import { formatThousand } from '../../utils';
 import commonStyles from '../../styles/common';
-import customTableTranslations from '../../../../utils/constants/customTableTranslations';
+import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
 

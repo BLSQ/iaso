@@ -84,9 +84,6 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
-        # Latitude and longitude are legacy fields that are not filled for new records
-        self.assertIsNone(velpo_model.latitude)
-        self.assertIsNone(velpo_model.longitude)
         # Location should be filled
         self.assertEqual(4.469, velpo_model.location.x)
         self.assertEqual(50.503, velpo_model.location.y)
@@ -104,7 +101,7 @@ class BasicAPITestCase(APITestCase):
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(
@@ -169,10 +166,8 @@ class BasicAPITestCase(APITestCase):
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
-        # No location field should be filled (neither the legacy latitude / longitude fields or the
-        # newer location field)
-        self.assertIsNone(fifre_model.latitude)
-        self.assertIsNone(fifre_model.longitude)
+        # No location field should be filled
+
         self.assertIsNone(fifre_model.location)
 
     @tag("iaso_only")
@@ -215,7 +210,7 @@ class BasicAPITestCase(APITestCase):
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(

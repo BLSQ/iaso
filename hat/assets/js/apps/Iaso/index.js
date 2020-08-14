@@ -11,11 +11,11 @@ import CssBaseline from '@material-ui/core/CssBaseline';
 
 import theme from './utils/theme';
 
-import createStore from '../../redux/createStore';
+import createStore from './redux/createStore';
 
 import appReducer from './domains/app/reducer';
-import { loadReducer } from '../../redux/load';
-import { currentUserReducer, currentUserInitialState } from '../../redux/currentUserReducer';
+import { loadReducer } from './redux/load';
+import { currentUserReducer, currentUserInitialState } from './redux/currentUserReducer';
 import { formsReducer, formsInitialState } from './domains/forms/reducer';
 import { orgUnitsReducer, orgUnitsInitialState } from './domains/orgUnits/reducer';
 import { projectsReducer, projectsInitialState } from './domains/projects/reducer';
@@ -23,7 +23,7 @@ import { mapReducer, mapInitialState } from './redux/mapReducer';
 import { instancesReducer, instancesInitialState } from './domains/instances/reducer';
 import { mappingReducer, mappingsInitialState } from './domains/mappings/reducer';
 import { sidebarMenuReducer, sidebarMenuInitialState } from './redux/sidebarMenuReducer';
-import { snackBarsInitialState, snackBarsReducer } from '../../redux/snackBarsReducer';
+import { snackBarsInitialState, snackBarsReducer } from './redux/snackBarsReducer';
 import { devicesInitialState, devicesReducer } from './redux/devicesReducer';
 import { orgUnitsLevelsInitialState, orgUnitsLevelsReducer } from './redux/orgUnitsLevelsReducer';
 import { routerInitialState, routerReducer } from './redux/routerReducer';
@@ -48,7 +48,7 @@ import { baseUrls } from './constants/urls';
 
 import ProtectedRoute from './domains/users/components/ProtectedRoute';
 
-import * as zoomBar from '../../components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
+import * as zoomBar from './components/leaflet/zoom-bar'; // don't delete - needed to override leaflet zoombar
 
 export default function iasoApp(element, baseUrl) {
     let routes = routeConfigs.map(routeConfig => (
@@ -67,7 +67,7 @@ export default function iasoApp(element, baseUrl) {
 
     routes = routes.concat([
         <Redirect path="/" to={baseUrls.forms} />,
-        <Redirect path={baseUrls.orgUnits} to={`${baseUrls.orgUnits}/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validated":"both", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
+        <Redirect path={baseUrls.orgUnits} to={`${baseUrls.orgUnits}/locationLimit/${locationLimitMax}/order/id/pageSize/50/page/1/searchTabIndex/0/searches/[{"validation_status":"all", "color":"${getChipColors(0).replace('#', '')}"}]`} />,
         <Redirect path={baseUrls.mappings} to={`${baseUrls.mappings}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.users} to={`${baseUrls.users}/order/user__username/pageSize/20/page/1`} />,
         <Redirect path={baseUrls.groups} to={`${baseUrls.groups}/order/name/pageSize/20/page/1`} />,

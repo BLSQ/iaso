@@ -6,7 +6,7 @@ import { Tooltip } from '@material-ui/core';
 import Visibility from '@material-ui/icons/Visibility';
 import VisibilityOff from '@material-ui/icons/VisibilityOff';
 
-import { formatThousand } from '../../../../utils';
+import { formatThousand } from '../../utils';
 import getDisplayName from '../../utils/usersUtils';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';

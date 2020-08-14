@@ -6,7 +6,7 @@ import { withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
-import CustomTableComponent from '../../../../components/CustomTableComponent';
+import CustomTableComponent from '../CustomTableComponent';
 import LoadingSpinner from '../LoadingSpinnerComponent';
 
 import { orgUnitsLogsColumns } from '../../domains/orgUnits/config';

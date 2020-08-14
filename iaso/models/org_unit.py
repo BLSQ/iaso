@@ -8,19 +8,12 @@ from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
 from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
+from django.utils.translation import ugettext_lazy as _
 
 from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
 from .base import Group, SourceVersion
 from .project import Project
-
-GEO_SOURCE_CHOICES = (
-    ("snis", "SNIS"),
-    ("ucla", "UCLA"),
-    ("pnltha", "PNL THA"),
-    ("derivated", "Derivated from actual data"),
-)
-
 
 class OrgUnitTypeQuerySet(models.QuerySet):
     def filter_for_user_and_app_id(
@@ -159,7 +152,7 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         user,
         org_unit,
         *,
-        validated,
+        validation_status,
         org_unit_type_id,
         groups_ids_added,
         groups_ids_removed
@@ -167,9 +160,8 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         """Used within the context of a bulk operation"""
 
         original_copy = deepcopy(org_unit)
-
-        if validated is not None:
-            org_unit.validated = validated
+        if validation_status is not None:
+            org_unit.validation_status = validation_status
         if org_unit_type_id is not None:
             org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
@@ -190,10 +182,21 @@ class OrgUnitManager(ManagerWithBulkUpdate):
 
 
 class OrgUnit(models.Model):
+    VALIDATION_NEW = "NEW"
+    VALIDATION_VALID = "VALID"
+    VALIDATION_REJECTED = "REJECTED"
+
+    VALIDATION_STATUS_CHOICES = (
+        (VALIDATION_NEW, _("new")),
+        (VALIDATION_VALID, _("valid")),
+        (VALIDATION_REJECTED, _("rejected")),
+    )
+
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)
+    validated = models.BooleanField(default=True, db_index=True)# TO DO : remove in a later migration
+    validation_status = models.CharField(max_length=25,  choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     version = models.ForeignKey(
         "SourceVersion", null=True, blank=True, on_delete=models.CASCADE
     )
@@ -209,8 +212,7 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    sub_source = models.TextField(
-        choices=GEO_SOURCE_CHOICES, null=True, blank=True
+    sub_source = models.TextField(null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
@@ -218,18 +220,11 @@ class OrgUnit(models.Model):
         null=True, blank=True, srid=4326, geography=True
     )
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
-    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
-    latitude = models.DecimalField(
-        max_digits=10, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
-    longitude = models.DecimalField(
-        max_digits=11, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
     gps_source = models.TextField(
         null=True, blank=True
-    )  # much more diverse than above GEO_SOURCE_CHOICES
+    )
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -305,8 +300,8 @@ class OrgUnit(models.Model):
             "p": self.parent_id,
             "out": self.org_unit_type_id,
             "c_a": self.created_at.timestamp() if self.created_at else None,
-            "lat": self.location.y if self.location else self.latitude,
-            "lon": self.location.x if self.location else self.longitude,
+            "lat": self.location.y if self.location else None,
+            "lon": self.location.x if self.location else None,
             "alt": self.location.z if self.location else None,
         }
 
@@ -321,8 +316,8 @@ class OrgUnit(models.Model):
             else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
         }
 
@@ -341,9 +336,9 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "validation_status": self.validation_status,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
@@ -367,6 +362,7 @@ class OrgUnit(models.Model):
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
             "parent": self.parent.as_dict_with_parents() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
@@ -379,9 +375,8 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
@@ -393,6 +388,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "id": self.id,
             "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
             "source": self.version.data_source.name if self.version else None,
             "source_ref": self.source_ref,

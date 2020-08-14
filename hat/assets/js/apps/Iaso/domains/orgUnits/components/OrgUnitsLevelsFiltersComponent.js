@@ -7,7 +7,7 @@ import PropTypes from 'prop-types';
 import OrgUnitLevelFilterComponent from './OrgUnitLevelFilterComponent';
 
 import { fetchOrgUnits } from '../../../utils/requests';
-import { createUrl } from '../../../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import { fetchLatestOrgUnitLevelId, decodeSearch } from '../utils';
 
 import { setOrgUnitsLevel } from '../../../redux/orgUnitsLevelsReducer';
@@ -137,7 +137,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         if (version) {
             url = `${url}&version=${version}`;
         }
-        url = `${url}&validated=both`;
+        url = `${url}&validation_status=all`;
         return url;
     }
 

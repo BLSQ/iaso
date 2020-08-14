@@ -4,7 +4,7 @@ import GroupsDialog from './components/GroupsDialog';
 import DeleteDialog from '../../../components/dialogs/DeleteDialogComponent';
 import ColumnTextComponent from '../../../components/tables/ColumnTextComponent';
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
-import { formatThousand } from '../../../../../utils';
+import { formatThousand } from '../../../utils';
 import MESSAGES from './messages';
 
 const TableColumns = (formatMessage, component) => [

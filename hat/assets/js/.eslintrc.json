@@ -1,11 +1,11 @@
 {
-    "extends": "airbnb",
     "env": {
         "browser": true,
         "commonjs": true,
         "es6": true,
         "node": true
     },
+    "extends": "airbnb",
     "parserOptions": {
         "ecmaFeatures": {
             "jsx": true
@@ -13,43 +13,76 @@
         "sourceType": "module"
     },
     "rules": {
-        "linebreak-style": "off",
-        "no-const-assign": "warn",
-        "no-this-before-super": "warn",
-        "no-undef": "warn",
-        "no-unreachable": "warn",
-        "no-unused-vars": "warn",
-        "constructor-super": "warn",
-        "valid-typeof": "warn",
-        "indent": ["error", 4, {"SwitchCase": 1}],
-        "react/jsx-indent": ["error", 4],
-        "react/jsx-indent-props": ["error", 4],
-        "react/no-unused-prop-types": "warn",
-        "jsx-a11y/href-no-hash": "off",
-        "no-underscore-dangle": "off",
-        "import/no-extraneous-dependencies": "off",
-        "react/jsx-filename-extension": [1, { "extensions": [".js", ".jsx"] }],
-        "react/prefer-stateless-function": [0, { "ignorePureComponents": true }],
-        "react/forbid-prop-types": [0],
-        "jsx-a11y/no-noninteractive-element-interactions": "off",
-        "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
-        "jsx-a11y/click-events-have-key-events": "off",
-        "no-nested-ternary" : "warn",
         "camelcase": "warn",
-        "no-restricted-syntax": "warn",
-        "no-case-declarations": "warn",
-        "no-bitwise": "warn",
-        "no-continue": "warn",
-        "no-prototype-builtins": "warn",
-        "jsx-a11y/label-has-for": "warn",
-        "react/no-array-index-key": "warn",
+        "constructor-super": "warn",
+        "import/no-extraneous-dependencies": "off",
+        "import/no-named-as-default": "warn",
+        "import/prefer-default-export": "off",
+        "indent": [
+            "error",
+            4,
+            {
+                "SwitchCase": 1
+            }
+        ],
         "jsx-a11y/anchor-is-valid": "off",
+        "jsx-a11y/click-events-have-key-events": "off",
+        "jsx-a11y/href-no-hash": "off",
         "jsx-a11y/jsx-wrap-multilines": "off",
         "jsx-a11y/label-has-associated-control": "off",
-        "react/no-access-state-in-setstate": "off",
-        "react/destructuring-assignment": "off",
+        "jsx-a11y/label-has-for": "warn",
+        "jsx-a11y/no-noninteractive-element-interactions": "off",
+        "jsx-a11y/no-noninteractive-element-to-interactive-role": "off",
+        "linebreak-style": "off",
+        "max-len": [
+            "warn",
+            {
+                "code": 200
+            }
+        ],
+        "no-bitwise": "warn",
+        "no-case-declarations": "warn",
+        "no-const-assign": "warn",
+        "no-continue": "warn",
+        "no-nested-ternary": "warn",
+        "no-prototype-builtins": "warn",
+        "no-restricted-syntax": "warn",
+        "no-this-before-super": "warn",
+        "no-undef": "warn",
+        "no-underscore-dangle": "off",
+        "no-unreachable": "warn",
+        "no-unused-vars": "warn",
         "react/button-has-type": "off",
-        "max-len": ["warn", { "code": 200 }],
-        "import/prefer-default-export": "off"
+        "react/destructuring-assignment": "off",
+        "react/forbid-prop-types": [
+            0
+        ],
+        "react/jsx-filename-extension": [
+            1,
+            {
+                "extensions": [
+                    ".js",
+                    ".jsx"
+                ]
+            }
+        ],
+        "react/jsx-indent": [
+            "error",
+            4
+        ],
+        "react/jsx-indent-props": [
+            "error",
+            4
+        ],
+        "react/no-access-state-in-setstate": "off",
+        "react/no-array-index-key": "warn",
+        "react/no-unused-prop-types": "warn",
+        "react/prefer-stateless-function": [
+            0,
+            {
+                "ignorePureComponents": true
+            }
+        ],
+        "valid-typeof": "warn"
     }
 }

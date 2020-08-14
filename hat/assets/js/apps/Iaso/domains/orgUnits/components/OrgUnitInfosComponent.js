@@ -70,21 +70,25 @@ function OrgUnitInfosComponent(props) {
                     label={MESSAGES.groups}
                 />
                 <InputComponent
-                    keyValue="status"
+                    keyValue="validation_status"
                     isClearable={false}
                     onChange={onChangeInfo}
-                    value={orgUnit.status}
+                    value={orgUnit.validation_status}
                     type="select"
                     label={MESSAGES.status}
                     options={
                         [
                             {
-                                label: formatMessage(MESSAGES.validated),
-                                value: true,
+                                label: formatMessage(MESSAGES.new),
+                                value: "NEW",
                             },
                             {
-                                label: formatMessage(MESSAGES.notValidated),
-                                value: false,
+                                label: formatMessage(MESSAGES.validated),
+                                value: "VALID",
+                            },
+                            {
+                                label: formatMessage(MESSAGES.rejected),
+                                value: "REJECTED",
                             },
                         ]
                     }

@@ -32,12 +32,12 @@ import {
 
 import { linksTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import getTableUrl from '../../utils/tableUtils';
 
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../../../components/CustomTableComponent';
+import CustomTableComponent from '../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import LinksFiltersComponent from './components/LinksFiltersComponent';
 import LinksDetails from './components/LinksDetailsComponent';

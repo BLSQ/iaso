@@ -16,7 +16,7 @@ import {
 import {
     saveMultiEdit as saveMultiEditAction,
 } from '../actions';
-import { formatThousand } from '../../../../../utils';
+import { formatThousand } from '../../../utils';
 import {
     selectionInitialState,
 } from '../../../utils/tableUtils';
@@ -69,11 +69,11 @@ const OrgUnitsMultiActionsDialog = ({
     const [editOrgUnitType, setEditOrgUnitType] = React.useState(false);
     const [orgUnitType, setOrgUnitType] = React.useState(null);
     const [editValidation, setEditValidation] = React.useState(false);
-    const [isValid, setIsValid] = React.useState(null);
+    const [validationStatus, setValidationStatus] = React.useState(null);
     const isSaveDisabled = () => (
         (editGroups && (groupsAdded.length === 0 && groupsRemoved.length === 0))
         || (editOrgUnitType && !orgUnitType)
-        || (editValidation && isValid === null)
+        || (editValidation && validationStatus === null)
         || (!editGroups && !editOrgUnitType && !editValidation)
     );
     const groupsWithoutAdded = [...groups].filter(g => groupsAdded.indexOf(g.id) === -1);
@@ -92,7 +92,7 @@ const OrgUnitsMultiActionsDialog = ({
     };
     const handleSetEditValidation = (editEnabled) => {
         if (!editEnabled) {
-            setIsValid(null);
+            setValidationStatus(null);
         }
         setEditValidation(editEnabled);
     };
@@ -103,7 +103,7 @@ const OrgUnitsMultiActionsDialog = ({
         setEditOrgUnitType(false);
         setOrgUnitType(null);
         setEditValidation(false);
-        setIsValid(null);
+        setValidationStatus(null);
         closeDialog();
     };
     const saveAndReset = () => {
@@ -120,7 +120,7 @@ const OrgUnitsMultiActionsDialog = ({
             data.org_unit_type = orgUnitType;
         }
         if (editValidation) {
-            data.validated = isValid === 'true';
+            data.validation_status = validationStatus;
         }
         if (!selectAll) {
             data.selected_ids = selectedItems.map(i => i.id);
@@ -256,17 +256,21 @@ const OrgUnitsMultiActionsDialog = ({
                                 <div className={classes.marginLeft}>
                                     <InputComponent
                                         keyValue="isValid"
-                                        onChange={(key, value) => setIsValid(value)}
-                                        value={isValid}
+                                        onChange={(key, value) => setValidationStatus(value)}
+                                        value={validationStatus}
                                         type="radio"
                                         options={[
                                             {
-                                                value: 'true',
+                                                value: 'NEW',
+                                                label: <FormattedMessage {...MESSAGES.new} />,
+                                            },
+                                            {
+                                                value: 'VALID',
                                                 label: <FormattedMessage {...MESSAGES.valid} />,
                                             },
                                             {
-                                                value: 'false',
-                                                label: <FormattedMessage {...MESSAGES.notValid} />,
+                                                value: 'REJECTED',
+                                                label: <FormattedMessage {...MESSAGES.rejected} />,
                                             },
                                         ]}
                                     />

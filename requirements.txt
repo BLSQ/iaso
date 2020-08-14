@@ -25,7 +25,7 @@ snaql==0.4.2
 django-ltree==0.5
 
 # webpack loader
-django-webpack-loader==0.6.0
+-e git+https://github.com/BLSQ/django-webpack-loader@e94f76d0f8372193f0b662e2a1aba01a9deffb20#egg=django_webpack_loader
 
 # importing tools
 jsonschema==3.2.0

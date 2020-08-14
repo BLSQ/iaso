@@ -20,6 +20,37 @@ from hat.api.export_utils import (
 from iaso.utils import timestamp_to_datetime
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
+from hat.audit.models import log_modification, INSTANCE_API
+from rest_framework import serializers
+import iaso.periods as periods
+
+class InstanceSerializer(serializers.ModelSerializer):
+    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
+    period = serializers.CharField(max_length=6, allow_blank=True)
+
+    class Meta:
+        model = Instance
+        fields = ['org_unit', 'period']
+
+    def validate_org_unit(self, value):
+        """
+        Check if user has acces to this org_unit.
+        """
+        if value.org_unit_type in self.instance.form.org_unit_types.all():
+            try:
+                return OrgUnit.objects.filter_for_user_and_app_id( self.context["request"].user, None).get(pk=value.pk)
+            except OrgUnit.DoesNotExist:
+                pass  # that way, if the condition is false, the exception is raised as well
+        raise serializers.ValidationError("Org unit type not assigned to this form or not accessible to this user")
+
+    def validate_period(self, value):
+        """
+        Check if period is of self.instance.form.period_type.
+        """
+
+        if self.instance.period and (periods.detect(value) == self.instance.form.period_type):
+            return value
+        raise serializers.ValidationError("Wrong period type")
 
 
 class HasInstancePermission(permissions.BasePermission):
@@ -33,7 +64,7 @@ class HasInstancePermission(permissions.BasePermission):
 
     def has_object_permission(self, request: Request, view, obj: Instance):
         # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
-        return request.user.iaso_profile.account == obj.project.account
+        return request.user.iaso_profile.account in [p.account for p in obj.form.projects.all()]
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -77,7 +108,6 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
-
         queryset = queryset.for_filters(**filters)
 
         if csv_format is None and xlsx_format is None:
@@ -237,6 +267,18 @@ class InstancesViewSet(viewsets.ViewSet):
         instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
         self.check_object_permissions(request, instance)
         instance.soft_delete(request.user)
+        return Response(instance.as_full_model())
+
+    def patch(self, request, pk=None):
+        original = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
+
+        instance_serializer = InstanceSerializer(instance, data=request.data, partial=True, context={"request": self.request})
+        instance_serializer.is_valid(raise_exception=True)
+        instance_serializer.save()
+
+        log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 
 

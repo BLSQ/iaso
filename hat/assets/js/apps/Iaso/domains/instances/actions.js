@@ -1,8 +1,5 @@
 import {
-    getRequest,
-    postRequest,
-    putRequest,
-    deleteRequest,
+    getRequest, postRequest, putRequest, patchRequest, deleteRequest,
 } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import {
@@ -74,7 +71,6 @@ export const fetchEditUrl = (currentInstance, location) => (dispatch) => {
         });
 };
 
-
 export const fetchFormDetail = formId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/forms/${formId}`)
@@ -107,15 +103,25 @@ export const softDeleteInstance = currentInstance => (dispatch) => {
         });
 };
 
+export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
+    dispatch(setInstancesFetching(true));
+    patchRequest(`/api/instances/${currentInstance.id}/`, payload)
+        .then((res) => {
+            dispatch(fetchInstanceDetail(currentInstance.id));
+        })
+        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .then(() => {
+            dispatch(setInstancesFetching(false));
+        });
+};
+
 export const createExportRequest = filterParams => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return postRequest('/api/exportrequests/', filterParams)
         .then((exportRequest) => {
             putRequest(`/api/exportrequests/${exportRequest.id}/`);
             // fire and forget to run the export
-            return dispatch(
-                enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')),
-            );
+            return dispatch(enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')));
         })
         .catch((err) => {
             const key = err.details

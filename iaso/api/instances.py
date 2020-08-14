@@ -278,13 +278,6 @@ class InstancesViewSet(viewsets.ViewSet):
         instance_serializer.is_valid(raise_exception=True)
         instance_serializer.save()
 
-
-        # org_unit = OrgUnit.objects.filter_for_user_and_app_id( request.user, None).get(pk=instance_serializer.data.org_unit)
-        # instance.org_unit = instance_serializer.data['org_unit'] # TODO : validate org_unit type (org_unit.org_unit_type belongs to instance.form.org_unit_types)
-        # if (instance.period):
-            # instance.period = instance_serializer.data['period'] # TODO: Validate period type, prevent patching with quarterly instead of a month (instance.form.period_type)
-
-        # instance.save()
         log_modification(original, instance, INSTANCE_API, user=request.user)
         return Response(instance.as_full_model())
 

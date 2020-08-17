@@ -110,7 +110,7 @@ export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
         .then((res) => {
             dispatch(fetchInstanceDetail(currentInstance.id));
         })
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('assignInstanceError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });

@@ -105,6 +105,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchInstanceError',
         defaultMessage: 'An error occurred while fetching instance detail',
     },
+    assignInstanceError: {
+        id: 'iaso.snackBar.assignInstanceError',
+        defaultMessage: 'An error occured while saving the instance',
+    },
     createExportRequestErrorNothingToExportError: {
         id: 'iaso.snackBar.createExportRequestErrorNothingToExportError',
         defaultMessage: 'We found nothing to export, change your filter or force the re-export',

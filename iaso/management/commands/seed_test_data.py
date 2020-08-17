@@ -472,24 +472,24 @@ class Command(BaseCommand):
                             "households_note": "",
                             "hh_repeat": [
                                 {
-                                    "name": "household 1",
-                                    "gender": "Male"
+                                    "hh_name": "household 1",
+                                    "hh_gender": "Male"
                                     if randint(1, 10) < 5
                                     else "Female",
-                                    "age": randint(18, 65),
-                                    "street": "streeet 1",
-                                    "number": "44b",
-                                    "city": "bxl",
+                                    "hh_age": randint(18, 65),
+                                    "hh_street": "streeet 1",
+                                    "hh_number": "44b",
+                                    "hh_city": "bxl",
                                 },
                                 {
-                                    "name": "household 2",
-                                    "gender": "Male"
+                                    "hh_name": "household 2",
+                                    "hh_gender": "Male"
                                     if randint(1, 10) < 5
                                     else "Female",
-                                    "age": randint(18, 65),
-                                    "street": "street b",
-                                    "number": "45",
-                                    "city": "Namur",
+                                    "hh_age": randint(18, 65),
+                                    "hh_street": "street b",
+                                    "hh_number": "45",
+                                    "hh_city": "Namur",
                                 },
                             ],
                             "instanceID": "uuid:" + instance.uuid,

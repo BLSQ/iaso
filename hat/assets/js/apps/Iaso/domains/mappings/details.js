@@ -23,6 +23,7 @@ import DerivedQuestionMappingForm from './components/DerivedQuestionMappingForm'
 import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
+import Descriptor from './descriptor';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -95,6 +96,8 @@ class MappingDetails extends Component {
             );
         };
         const isDataElementMappable = currentMappingVersion && currentMappingVersion.mapping.mapping_type !== 'DERIVED';
+        const indexedQuestions = currentFormVersion && Descriptor.indexQuestions(currentFormVersion.descriptor);
+
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -126,6 +129,7 @@ class MappingDetails extends Component {
                                     <RecursiveTreeView
                                         formVersion={currentFormVersion}
                                         mappingVersion={currentMappingVersion}
+                                        currentQuestion={currentQuestion}
                                         onQuestionSelected={onQuestionSelected}
                                     />
                                 </Grid>
@@ -141,6 +145,7 @@ class MappingDetails extends Component {
                                             mapping={currentMappingVersion}
                                             question={currentQuestion}
                                             mappingVersion={currentMappingVersion}
+                                            indexedQuestions={indexedQuestions}
                                             onConfirmedQuestionMapping={onConfirmedQuestionMapping}
                                             onUnmapQuestionMapping={onUnmapQuestionMapping}
                                             onNeverMapQuestionMapping={onNeverMapQuestionMapping}

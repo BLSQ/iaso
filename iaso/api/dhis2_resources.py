@@ -72,4 +72,13 @@ class ProgramsViewSet(Dhis2ViewSet):
     resource = "programs"
 
 
-DHIS2_VIEWSETS = (DataElementsViewSet, DataSetsViewSet, ProgramsViewSet)
+class RelationshipTypesSet(Dhis2ViewSet):
+    resource = "relationshipTypes"
+
+
+DHIS2_VIEWSETS = (
+    DataElementsViewSet,
+    DataSetsViewSet,
+    ProgramsViewSet,
+    RelationshipTypesSet,
+)

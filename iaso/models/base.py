@@ -989,6 +989,19 @@ class ExportRequest(models.Model):
     # backend ended processing the export
     ended_at = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return (
+            str(self.id)
+            + " ("
+            + self.status
+            + ") "
+            + str(self.params)
+            + " "
+            + str(self.last_error_message)
+            + " "
+            + str(self.launcher)
+        )
+
 
 class ExportLog(models.Model):
     id = models.BigAutoField(
@@ -1000,6 +1013,20 @@ class ExportLog(models.Model):
 
     http_status = models.IntegerField(null=True, blank=True)
     url = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return (
+            "ExportLog("
+            + str(self.id)
+            + "): "
+            + str(self.url)
+            + " got "
+            + str(self.http_status)
+            + " received: "
+            + str(self.received)
+            + " sent: "
+            + str(self.sent)
+        )
 
 
 class ExportStatus(models.Model):
@@ -1016,6 +1043,9 @@ class ExportStatus(models.Model):
     last_error_message = models.TextField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return "ExportStatus " + str(self.id)
 
 
 class FeatureFlag(models.Model):

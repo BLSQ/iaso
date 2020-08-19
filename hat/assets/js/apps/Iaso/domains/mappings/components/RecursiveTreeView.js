@@ -66,7 +66,7 @@ const RecursiveTreeView = (props) => {
                             : node.type
                     })`
                 }
-
+                title={Descriptor.getHumanLabel(node)}
                 className={className}
             >
                 {Descriptor.hasChildren(node) ? node.children.map(n => renderTree(n)) : null}
@@ -79,7 +79,7 @@ const RecursiveTreeView = (props) => {
             <TreeView
                 className={classes.root}
                 defaultCollapseIcon={<ExpandMoreIcon />}
-                defaultExpanded={[descriptor.title]}
+                defaultExpanded={[descriptor.name]}
                 defaultExpandIcon={<ChevronRightIcon />}
                 onNodeSelect={onNodeSelected}
             >

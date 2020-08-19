@@ -243,6 +243,7 @@
   "iaso.mappings.create": "Create Mapping",
   "iaso.mappings.mapped_questions": "Mapped questions",
   "iaso.mappings.total_questions": "Total questions",
+  "iaso.mappings.trackerEntityIdentifier": "Tracked entity identitifier",
   "iaso.matching.title": "Matching",
   "iaso.orgUnits.add": "Add org unit",
   "iaso.orgUnits.addForm": "Add form",

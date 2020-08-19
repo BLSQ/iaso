@@ -18,7 +18,7 @@ class Descriptor {
 
     static getCoverage(indexedQuestions, mappingVersion, node) {
         let questions = [];
-        if (node.type === 'survey' || node.type === 'group') {
+        if (node.type === 'survey' || node.type === 'group' || node.type === 'repeat') {
             const childrenNames = node.children.map(c => c.name);
             questions = Object.values(indexedQuestions).filter(q => q.path && q.path.some(p => childrenNames.includes(p)));
         }
@@ -36,6 +36,13 @@ class Descriptor {
         return (
             node.title || this.getLabel(node, language) || node.hint || node.name
         );
+    }
+
+    static withinRepeatGroup(node, indexedQuestions) {
+        if (node.path === undefined) {
+            return null;
+        }
+        return node.path.find(questionName => indexedQuestions[questionName] && indexedQuestions[questionName].type == "repeat")
     }
 
     static recursiveIndex(node, acc, path) {

@@ -69,6 +69,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.mappings.create',
         defaultMessage: 'Create Mapping',
     },
+    trackerEntityIdentifier: {
+        id: 'iaso.mappings.trackerEntityIdentifier',
+        defaultMessage: 'Tracked entity identitifier',
+    },
 });
 
 export default MESSAGES;

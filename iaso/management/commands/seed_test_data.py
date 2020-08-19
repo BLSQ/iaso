@@ -84,6 +84,16 @@ class Command(BaseCommand):
             user.iaso_profile = iaso_profile
         self.user = user
 
+        # make it a superuser to have access to django admin
+        from django.contrib.auth import get_user_model
+
+        UserAdmin = get_user_model()
+        adminuser = UserAdmin.objects.get(username=user.username)
+        adminuser.is_staff = True
+        adminuser.is_admin = True
+        adminuser.is_superuser = True
+        adminuser.save()
+
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
             url="https://play.dhis2.org/" + dhis2_version,

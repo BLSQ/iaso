@@ -243,6 +243,7 @@
   "iaso.mappings.create": "Ajouter une correspondance",
   "iaso.mappings.mapped_questions": "Nombre de questions avec lien",
   "iaso.mappings.total_questions": "Nombre de questions",
+  "iaso.mappings.trackerEntityIdentifier":"Identifiant de l'entité trackée",
   "iaso.matching.title": "Correspondances sources",
   "iaso.orgUnits.add": "Ajouter une unité d'organisation",
   "iaso.orgUnits.addForm": "Ajouter un Formulaire",

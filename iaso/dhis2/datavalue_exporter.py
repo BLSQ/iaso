@@ -614,7 +614,11 @@ class EventTrackerHandler(BaseHandler):
                         subform_mapping["question_mappings"] = {}
                         for question_name in question_mappings:
                             question_mapping = question_mappings[question_name]
-                            if question_mapping[0].get("parent") == repeat_group_name:
+                            if (
+                                question_mapping != {"type": "neverMapped"}
+                                and question_mapping[0].get("parent")
+                                == repeat_group_name
+                            ):
                                 subform_mapping["question_mappings"][
                                     question_name
                                 ] = question_mapping
@@ -673,7 +677,11 @@ class EventTrackerHandler(BaseHandler):
                 resp = json.loads(dhis2_exception.description)
 
                 exception = self.handle_exception(resp, message)
-
+                export_logs = api.pop_export_logs()
+                for export_log in export_logs:
+                    export_log.save()
+                export_status.export_logs.add(export_log)
+                export_status.save()
                 self.flag_as_errored(export_status, exception.message, stats)
 
         return []
@@ -765,6 +773,10 @@ class EventTrackerHandler(BaseHandler):
         export_request.save()
 
     def handle_exception(self, resp, message):
+        if not "response" in resp and resp["status"] == "ERROR":
+            final_message = message + resp["message"]
+            return InstanceExportError(final_message, {}, [final_message])
+
         response = resp["response"]
 
         if response["status"] == "ERROR":

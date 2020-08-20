@@ -404,7 +404,7 @@ class Command(BaseCommand):
                 org_unit.sub_source = source_name
                 org_unit.version = version
                 org_unit.source_ref = row["id"].strip()
-                org_unit.validated = validate
+                org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
 
                 self.map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
                 self.map_parent(row, org_unit, unit_dict)

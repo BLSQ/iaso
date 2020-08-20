@@ -175,6 +175,7 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         "last_error_message",
         "export_request",
         "instance",
+        "mapping_version",
         "http_requests",
     )
     list_filter = ("status",)

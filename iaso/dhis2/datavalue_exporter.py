@@ -665,23 +665,24 @@ class EventTrackerHandler(BaseHandler):
                                     }
                                     api.post("relationships", relation_ship)
 
-                # TODO export logs
                 export_logs = api.pop_export_logs()
 
                 self.flag_as_exported(export_status, stats, export_logs)
 
             except RequestException as dhis2_exception:
 
+                export_logs = api.pop_export_logs()
+                for export_log in export_logs:
+                    export_log.save()
+                    export_status.export_logs.add(export_log)
+
+                export_status.save()
+
                 message = "ERROR while processing " + prefix
 
                 resp = json.loads(dhis2_exception.description)
 
                 exception = self.handle_exception(resp, message)
-                export_logs = api.pop_export_logs()
-                for export_log in export_logs:
-                    export_log.save()
-                export_status.export_logs.add(export_log)
-                export_status.save()
                 self.flag_as_errored(export_status, exception.message, stats)
 
         return []

@@ -360,10 +360,9 @@ class Instances extends Component {
                         )
                     }
                     {
-                        !fetching
-                        && tab === 'map' && (
+                        tab === 'map' && (
                             <div className={classes.containerMarginNeg}>
-                                <InstancesMap instances={instancesSmall} />
+                                <InstancesMap />
                             </div>
                         )
                     }

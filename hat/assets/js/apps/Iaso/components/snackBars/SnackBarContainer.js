@@ -54,8 +54,8 @@ class SnackBarContainer extends Component {
         if (notification.errorLog) {
             options.action = (
                 <SnackBarErrorMessage
-                    messageKey={notification.messageKey}
                     errorLog={notification.errorLog}
+                    id={notification.id}
                 />
             );
         }

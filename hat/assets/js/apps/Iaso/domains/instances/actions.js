@@ -75,10 +75,7 @@ export const fetchFormDetail = formId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/forms/${formId}`)
         .then(res => dispatch(setCurrentForm(res)))
-        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError', null, err))))
-        .then(() => {
-            dispatch(setInstancesFetching(false));
-        });
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError', null, err))));
 };
 
 export const fetchInstanceDetail = instanceId => (dispatch) => {
@@ -105,7 +102,7 @@ export const softDeleteInstance = currentInstance => (dispatch) => {
 
 export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
     dispatch(setInstancesFetching(true));
-    if (!payload.period) delete payload.period
+    if (!payload.period) delete payload.period;
     patchRequest(`/api/instances/${currentInstance.id}/`, payload)
         .then((res) => {
             dispatch(fetchInstanceDetail(currentInstance.id));

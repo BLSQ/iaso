@@ -1,4 +1,4 @@
-import React, { useRef } from 'react';
+import React from 'react';
 import {
     Button,
     Tooltip,
@@ -35,21 +35,19 @@ const useStyles = makeStyles(theme => ({
 const SnackBarErrorMessage = (
     {
         errorLog,
-        messageKey,
+        id,
         intl: { formatMessage },
     },
 ) => {
     if (!errorLog || errorLog === '') return null;
     const classes = useStyles();
+    const errorMessage = typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
     const dispatch = useDispatch();
-    const textAreaRef = useRef(null);
     const handleClick = (e) => {
-        textAreaRef.current.select();
-        document.execCommand('copy');
+        navigator.clipboard.writeText(errorMessage);
         e.target.focus();
     };
-    const errorMessage = typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
-    const handleClose = () => dispatch(closeFixedSnackbar(messageKey));
+    const handleClose = () => dispatch(closeFixedSnackbar(id));
     return (
         <>
 
@@ -79,7 +77,6 @@ const SnackBarErrorMessage = (
             <textarea
                 onChange={() => null}
                 className={classes.textarea}
-                ref={textAreaRef}
                 value={errorMessage}
             />
         </>
@@ -88,10 +85,11 @@ const SnackBarErrorMessage = (
 
 SnackBarErrorMessage.defaultProps = {
     errorLog: null,
+    id: null,
 };
 SnackBarErrorMessage.propTypes = {
     errorLog: PropTypes.any,
-    messageKey: PropTypes.string.isRequired,
+    id: PropTypes.any,
     intl: PropTypes.object.isRequired,
 };
 

@@ -9,7 +9,7 @@ from xlsxwriter.utility import xl_rowcol_to_cell
 from hat.common.utils import queryset_iterator
 
 
-def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
+def write_sheet(wb, sheet_name, col_descs, queryset, get_row, sub_columns=None):
     ws = wb.add_worksheet(sheet_name)
 
     bold = wb.add_format({"bold": True})
@@ -33,6 +33,10 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
     col_titles = [cd["title"] for cd in col_descs]
     ws.write_row("A" + str(row_num), col_titles, bold)
 
+    if sub_columns:
+        row_num += 1
+        ws.write_row("A" + str(row_num), sub_columns)
+
     for item in queryset:
         row_num += 1
         if row_num % 1000 == 0 and settings.DEBUG:
@@ -54,7 +58,7 @@ def write_sheet(wb, sheet_name, col_descs, queryset, get_row):
                     ws.write(cell, column)
 
 
-def generate_xlsx(sheet_name, columns, queryset, get_row):
+def generate_xlsx(sheet_name, columns, queryset, get_row, sub_columns = None):
     """
     Generate an XLSX file with the provided parameters.
     The with_link parameter is deprecated. To force
@@ -82,7 +86,7 @@ def generate_xlsx(sheet_name, columns, queryset, get_row):
             write_sheet(wb, sheet, columns[i], queryset[i], get_row[i])
             i += 1
     else:
-        write_sheet(wb, sheet_name, columns, queryset, get_row)
+        write_sheet(wb, sheet_name, columns, queryset, get_row, sub_columns)
 
     wb.close()
 

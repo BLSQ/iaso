@@ -138,7 +138,6 @@ class FormsViewSet(ModelViewSet):
     permission_classes = [HasFormPermission]
     serializer_class = FormSerializer
     results_key = "forms"
-    queryset = Form.objects.all()
 
     EXPORT_TABLE_COLUMNS = (
         {"title": "ID du formulaire", "width": 20},
@@ -152,29 +151,20 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.all()
+        queryset = Form.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
             instances_count=Count(
                 "instances",
                 filter=(
-                    ~Q(instances__file="") & ~Q(instances__device__test_device=True)
+                    ~Q(instances__file="")
+                    & ~Q(instances__device__test_device=True)
+                    & ~Q(instances__deleted=True)
                 ),
             )
         )
-
-        # The way this endpoint has been structured is due to the fact that the first mobile application
-        # we did was anonymous and just downloaded everything from /api/forms. But once we introduced other applications
-        # the /api/forms/ endpoint could not show all forms of the database, so, we decided that per default /api/forms/
-        # would send back the forms for the app_id org.bluesquarehub.iaso
-        # Once the org.bluesquarehub.iaso, we should switch to an API that will not assume it's the default
-        if self.request.user and not self.request.user.is_anonymous:
-            profile = self.request.user.iaso_profile
-            queryset = queryset.filter(projects__account=profile.account)
-        else:
-            app_id = self.request.query_params.get("app_id", "org.bluesquarehub.iaso")
-            queryset = queryset.filter(projects__app_id=app_id)
-            queryset = queryset.exclude(derived=True)
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
@@ -206,8 +196,8 @@ class FormsViewSet(ModelViewSet):
         # TODO: use accept header to determine format - or at least the standard "format" parameter
         # DRF also provides a mechanic for custom renderer
         # see https://www.django-rest-framework.org/api-guide/renderers/
-        csv_format = bool(request.query_params.get("csv", None))
-        xlsx_format = bool(request.query_params.get("xlsx", None))
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
 
         if csv_format:
             return self.list_to_csv()
@@ -223,7 +213,7 @@ class FormsViewSet(ModelViewSet):
                     self.get_queryset(),
                     Echo(),
                     self.EXPORT_TABLE_COLUMNS,
-                    self.get_table_row,
+                    self._get_table_row,
                 )
             ),
             content_type="text/csv",
@@ -240,7 +230,7 @@ class FormsViewSet(ModelViewSet):
                 "Forms",
                 self.EXPORT_TABLE_COLUMNS,
                 self.get_queryset(),
-                self.get_table_row,
+                self._get_table_row,
             ),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
@@ -250,7 +240,7 @@ class FormsViewSet(ModelViewSet):
 
         return response
 
-    def get_table_row(self, form: Form, **kwargs):  # TODO: use serializer
+    def _get_table_row(self, form: typing.Mapping, **kwargs):  # TODO: use serializer
         form_data = self.get_serializer(form).data
         created_at = timestamp_to_datetime(form_data.get("created_at"))
         updated_at = (

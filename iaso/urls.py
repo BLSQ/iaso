@@ -1,6 +1,9 @@
 from django.conf.urls import url, include
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
+
+from .api.logs import LogsViewSet
+from .api.mobile.org_units import MobileOrgUnitViewSet
 from .api.org_units import OrgUnitViewSet
 from .api.org_unit_types import OrgUnitTypeViewSet
 from .api.apps import AppsViewSet
@@ -34,41 +37,39 @@ import pkgutil
 
 router = routers.DefaultRouter()
 
-router.register(r"orgunits", OrgUnitViewSet, base_name="orgunits")
-router.register(r"orgunittypes", OrgUnitTypeViewSet, base_name="orgunittypes")
-router.register(r"apps", AppsViewSet, base_name="apps")
-router.register(r"projects", ProjectsViewSet, base_name="projects")
-router.register(r"instances", InstancesViewSet, base_name="instances")
-router.register(r"forms", FormsViewSet, base_name="forms")
-router.register(r"formversions", FormVersionsViewSet, base_name="formversions")
-router.register(r"periods", PeriodsViewSet, base_name="periods")
-router.register(r"devices", DevicesViewSet, base_name="devices")
-router.register(
-    r"devicesownership",
-    DevicesOwnershipViewSet,
-    base_name="devicesownership",
-)
-router.register(
-    r"devicesposition",
-    DevicesPositionViewSet,
-    base_name="devicesposition",
-)
-router.register(r"datasources", DataSourceViewSet, base_name="datasources")
-router.register(r"sourceversions", SourceVersionViewSet, base_name="sourceversion")
-router.register(r"links", LinkViewSet, base_name="links")
-router.register(r"profiles", ProfilesViewSet, base_name="profiles")
-router.register(r"algorithms", AlgorithmsViewSet, base_name="algorithms")
-router.register(r"algorithmsruns", AlgorithmsRunsViewSet, base_name="algorithmsruns")
-router.register(r"groups", GroupsViewSet, base_name="groups")
-router.register(r"completeness", CompletenessViewSet, base_name="completeness")
-router.register(r"exportrequests", ExportRequestsViewSet, base_name="exportrequests")
-router.register(r"mappings", MappingsViewSet, base_name="mappings")
-router.register(r"mappingversions", MappingVersionsViewSet, base_name="mappingversions")
-router.register(r"permissions", PermissionsViewSet, base_name="permissions")
-router.register(
-    r"derivedinstances", DerivedInstancesViewSet, base_name="derivedinstances"
-)
+router.register(r"orgunits", OrgUnitViewSet, basename="orgunits")
 
+router.register(r"orgunittypes", OrgUnitTypeViewSet, basename="orgunittypes")
+router.register(r"apps", AppsViewSet, basename="apps")
+router.register(r"projects", ProjectsViewSet, basename="projects")
+router.register(r"instances", InstancesViewSet, basename="instances")
+router.register(r"forms", FormsViewSet, basename="forms")
+router.register(r"formversions", FormVersionsViewSet, basename="formversions")
+router.register(r"periods", PeriodsViewSet, basename="periods")
+router.register(r"devices", DevicesViewSet, basename="devices")
+router.register(
+    r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership",
+)
+router.register(
+    r"devicesposition", DevicesPositionViewSet, basename="devicesposition",
+)
+router.register(r"datasources", DataSourceViewSet, basename="datasources")
+router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
+router.register(r"links", LinkViewSet, basename="links")
+router.register(r"logs", LogsViewSet, basename="links")
+router.register(r"profiles", ProfilesViewSet, basename="profiles")
+router.register(r"algorithms", AlgorithmsViewSet, basename="algorithms")
+router.register(r"algorithmsruns", AlgorithmsRunsViewSet, basename="algorithmsruns")
+router.register(r"groups", GroupsViewSet, basename="groups")
+router.register(r"completeness", CompletenessViewSet, basename="completeness")
+router.register(r"exportrequests", ExportRequestsViewSet, basename="exportrequests")
+router.register(r"mappings", MappingsViewSet, basename="mappings")
+router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
+router.register(r"permissions", PermissionsViewSet, basename="permissions")
+router.register(
+    r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances"
+)
+router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 
 urlpatterns = [
     url(
@@ -76,11 +77,7 @@ urlpatterns = [
         view=enketo_edit_url,
         name="enketo-edit-url",
     ),
-    url(
-        r"^enketo/formList$",
-        view=enketo_form_list,
-        name="enketo-form-list",
-    ),
+    url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list",),
     url(
         r"^enketo/submission$",
         view=EnketoSubmissionAPIView.as_view(),
@@ -106,6 +103,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
             name=resource_name,
         )
     )
+
 
 urlpatterns = urlpatterns + [
     url("^token/$", TokenObtainPairView.as_view(), name="token_obtain_pair"),

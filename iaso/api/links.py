@@ -9,7 +9,7 @@ from hat.audit.models import log_modification, ORG_UNIT_API
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
-from hat.geo.geojson import geojson_queryset
+from iaso.utils import geojson_queryset
 from .common import HasPermission
 
 

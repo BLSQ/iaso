@@ -7,6 +7,8 @@ from ..models import (
     OrgUnitType,
     Account,
     Project,
+    SourceVersion,
+    DataSource,
 )
 from math import floor
 from rest_framework.test import APIClient
@@ -17,10 +19,16 @@ import typing
 
 class BasicAPITestCase(APITestCase):
     def setUp(self):
-        account = Account(name="Les Inconnus")
+        source = DataSource.objects.create(name="Source")
+        old_version = SourceVersion.objects.create(number=1, data_source=source)
+        default_version = SourceVersion.objects.create(number=2, data_source=source)
+
+        account = Account(name="Les Inconnus", default_version=default_version)
         account.save()
 
-        self.project = Project(name="Le spectacle", app_id="org.bluesquarehub.iaso")
+        self.project = Project(
+            name="Le spectacle", app_id="org.inconnus.spectacle", account=account
+        )
         self.project.save()
 
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
@@ -32,6 +40,10 @@ class BasicAPITestCase(APITestCase):
 
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
+
+        OrgUnit.objects.create(
+            version=old_version, name="Odd org unit", org_unit_type=unit_type
+        )
 
         self.form_1 = Form.objects.create(name="Hydroponics study")
         self.form_2 = Form.objects.create(name="Another hydroponics study")
@@ -64,13 +76,14 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/orgunits/", data=unit_body, format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=unit_body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
-        # Latitude and longitude are legacy fields that are not filled for new records
-        self.assertIsNone(velpo_model.latitude)
-        self.assertIsNone(velpo_model.longitude)
         # Location should be filled
         self.assertEqual(4.469, velpo_model.location.x)
         self.assertEqual(50.503, velpo_model.location.y)
@@ -79,24 +92,29 @@ class BasicAPITestCase(APITestCase):
         # make sure APIImport record has been created
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
-        response = c.get("/api/orgunits/", accept="application/json")
+        response = c.get(
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/", accept="application/json"
-        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         content_1 = response.content
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
+        self.assertEqual(
+            1, len(units)
+        )  # two org units but only one for default version
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
         self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
@@ -109,7 +127,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should be the same result as without the app_id
         content_2 = response.content
         self.assertEqual(content_1, content_2)
@@ -139,15 +157,17 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body_2],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
-        # No location field should be filled (neither the legacy latitude / longitude fields or the
-        # newer location field)
-        self.assertIsNone(fifre_model.latitude)
-        self.assertIsNone(fifre_model.longitude)
+        # No location field should be filled
+
         self.assertIsNone(fifre_model.location)
 
     @tag("iaso_only")
@@ -157,37 +177,45 @@ class BasicAPITestCase(APITestCase):
         hospital_unit_type = OrgUnitType.objects.get(name="Hospital")
         uuid = "w5dg2671-aa59-4fb2-a4a0-4af80573e2de"
         name = "Hopital Saint-André"
-        unit_body = {
-            "id": uuid,
-            "latitude": 0,
-            "created_at": 1565194077692,
-            "updated_at": 1565194077693,
-            "org_unit_type_id": hospital_unit_type.id,
-            "parent_id": None,
-            "longitude": 0,
-            "accuracy": 0,
-            "time": 0,
-            "name": name,
-        }
+        unit_body = [
+            {
+                "id": uuid,
+                "latitude": 0,
+                "created_at": 1565194077692,
+                "updated_at": 1565194077693,
+                "org_unit_type_id": hospital_unit_type.id,
+                "parent_id": None,
+                "longitude": 0,
+                "accuracy": 0,
+                "time": 0,
+                "name": name,
+            }
+        ]
 
-        response = c.post("/api/orgunits/", data=[unit_body], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=unit_body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
 
-        response = c.get("/api/orgunits/", accept="application/json")
+        response = c.get(
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
         self.assertEqual(len(units), 0)
 
-        velpo_model.validated = True
+        velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
         response = c.get(
-            "/api/orgunits/", accept="application/json"
-        )  # by default, the endpoint will answer with the orgunits of the org.bluesquarehub.iaso app_id
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
+        )
 
         content_1 = response.content
         json_response = json.loads(response.content)
@@ -205,7 +233,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(velpo_json["id"], velpo_model.id)
 
         response = c.get(
-            "/api/orgunits/?app_id=org.bluesquarehub.iaso", accept="application/json"
+            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should be the same result as without the app_id
         content_2 = response.content
         self.assertEqual(content_1, content_2)
@@ -219,25 +247,53 @@ class BasicAPITestCase(APITestCase):
         # inserting a child org_unit
         uuid2 = "61e1dbfe-a0fc-4075-bfa2-5f3201c918f3"
         name2 = "Hopital Sous Fifre"
-        unit_body_2 = {
-            "id": uuid2,
-            "latitude": 0,
-            "created_at": 1565194077699,
-            "updated_at": 1565194077800,
-            "orgUnitTypeId": hospital_unit_type.id,
-            "parentId": uuid,
-            "longitude": 0,
-            "accuracy": 0,
-            "altitude": 0,
-            "time": 0,
-            "name": name2,
-        }
+        unit_body_2 = [
+            {
+                "id": uuid2,
+                "latitude": 0,
+                "created_at": 1565194077699,
+                "updated_at": 1565194077800,
+                "orgUnitTypeId": hospital_unit_type.id,
+                "parentId": uuid,
+                "longitude": 0,
+                "accuracy": 0,
+                "altitude": 0,
+                "time": 0,
+                "name": name2,
+            }
+        ]
 
-        response = c.post("/api/orgunits/", data=[unit_body_2], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=unit_body_2,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
+
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = c.post("/api/orgunits/", data=unit_body_2, format="json",)
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body_2,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = c.post(
+            "/api/orgunits/?app_id=1234", data=unit_body_2, format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "orgUnit",
+            request_body=unit_body_2,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
 
     @tag("iaso_only")
     def test_instance_insertion(self):
@@ -260,7 +316,12 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        c.post("/api/orgunits/", data=[unit_body], format="json")
+        response = c.post(
+            "/api/orgunits/?app_id=org.inconnus.spectacle",
+            data=[unit_body],
+            format="json",
+        )
+        self.assertJSONResponse(response, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
         name = "Questionnaire CDS"
@@ -283,7 +344,11 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post("/api/instances/", data=instance_body, format="json")
+        response = c.post(
+            "/api/instances/?app_id=org.inconnus.spectacle",
+            data=instance_body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         instance = Instance.objects.get(uuid=uuid)
@@ -296,6 +361,28 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(instance.location.z, 100)
 
         self.assertAPIImport("instance", request_body=instance_body, has_problems=False)
+
+        # No app id - An APIImport record with has_problem set to True should be created
+        response = c.post("/api/instances/", data=instance_body, format="json",)
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "instance",
+            request_body=instance_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
+
+        # Wrong app id - An APIImport record with has_problem set to True should be created
+        response = c.post(
+            "/api/instances/?app_id=9876", data=instance_body, format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertAPIImport(
+            "instance",
+            request_body=instance_body,
+            has_problems=True,
+            exception_contains_string="Could not find project for user",
+        )
 
     @tag("iaso_only")
     def test_fetch_org_unit_type(self):
@@ -311,7 +398,7 @@ class BasicAPITestCase(APITestCase):
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(
-            "/api/orgunittypes/?app_id=org.bluesquarehub.iaso",
+            "/api/orgunittypes/?app_id=org.inconnus.spectacle",
             accept="application/json",
         )  # this should have 2 results
         json_response = json.loads(response.content)

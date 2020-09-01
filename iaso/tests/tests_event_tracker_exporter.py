@@ -25,6 +25,8 @@ from iaso.models import (
     ERRORED,
     EXPORTED,
 )
+from iaso.odk import parsing
+from django.core.files import File
 
 import os
 from datetime import datetime
@@ -152,6 +154,94 @@ def build_form_mapping():
                     },
                 }
             ],
+            # this format ? or a complete nested "mapping"
+            # "hh_repeat": [
+            #    {
+            #        "type": "repeat",
+            #        "program_id": "related_program_id",
+            #        "tracked_entity_identifier": "lZGmxYbs97q",
+            #        "tracked_entity_type": "nEenWmSyUEp",
+            #        "question_mappings": {
+            #             "hh_unique_number": [ {...}],
+            #             "hh_name": [ {...}],
+            #             "hh_gender": [ {...}],
+            #             "hh_weight": [ {...}],
+            #     }
+            #    }
+            # the GOOD, coverage works, screens nearly works the same
+            # the bad might interfere with main program mapping, not sure the names are "unique"
+            #
+            "hh_repeat": [
+                {
+                    "type": "repeat",
+                    "program_id": "related_program_id",
+                    "tracked_entity_identifier": "lZGmxYbs97q",
+                    "tracked_entity_type": "nEenWmSyUEp",
+                    "relationship_type": "parent-child-reltype-id",
+                }
+            ],
+            "hh_unique_number": [
+                {
+                    "parent": "hh_repeat",
+                    "trackedEntityAttribute": {
+                        "code": "unique_number",
+                        "name": "Numéro Unique",
+                        "id": "XPYFFrfVbAd",
+                        "valueType": "TEXT",
+                    },
+                }
+            ],
+            "hh_name": [
+                {
+                    "parent": "hh_repeat",
+                    "trackedEntityAttribute": {
+                        "code": "MMD_PER_NAM",
+                        "name": "First name",
+                        "id": "w75KJ2mc4zz",
+                        "generated": False,
+                        "valueType": "TEXT",
+                    },
+                }
+            ],
+            "hh_gender": [
+                {
+                    "parent": "hh_repeat",
+                    "trackedEntityAttribute": {
+                        "name": "Gender",
+                        "id": "cejWyOfXge6",
+                        "generated": False,
+                        "valueType": "TEXT",
+                        "optionSet": {
+                            "name": "Gender",
+                            "id": "pC3N9N77UmT",
+                            "options": [
+                                {"code": "Male", "name": "Male", "id": "rBvjJYbMCVx",},
+                                {
+                                    "code": "Female",
+                                    "name": "Female",
+                                    "id": "Mnp3oXrpAbK",
+                                },
+                            ],
+                        },
+                    },
+                }
+            ],
+            "hh_age": [
+                {
+                    "parent": "hh_repeat",
+                    "program": "related_program_id",
+                    "programStage": "STAGE_RELATED_DHIS2_ID",
+                    "compulsory": False,
+                    "dataElement": {
+                        "code": "ST_REL_DE",
+                        "name": "age",
+                        "id": "ST_REL_DE_DHIS2_ID",
+                        "shortName": "RL - Poids",
+                        "formName": "Poids",
+                        "valueType": "NUMBER",
+                    },
+                }
+            ],
         },
     }
 
@@ -219,9 +309,15 @@ class DataValueExporterTests(TestCase):
         )
         self.form = form
 
-        form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id="1"
-        )
+        with open(
+            "iaso/tests/fixtures/odk_instance_repeat_group_form.xlsx", "rb"
+        ) as form_version_file:
+            survey = parsing.parse_xls_form(form_version_file)
+            form_version = FormVersion.objects.create_for_form_and_survey(
+                form=self.form, survey=survey, xls_file=File(form_version_file)
+            )
+            form_version.version_id = "1"  # force version to match instance files
+            form_version.save()
 
         self.form = form
         self.form_version = form_version
@@ -261,12 +357,22 @@ class DataValueExporterTests(TestCase):
         datasource.projects.add(self.project)
 
         org_unit = OrgUnit()
+        org_unit.name = "instance orgunit"
         org_unit.validated = True
         org_unit.source_ref = "OU_DHIS2_ID"
         org_unit.version = source_version
         org_unit.save()
 
         self.org_unit = org_unit
+
+        another_org_unit = OrgUnit()
+        another_org_unit.name = "another_org_unit"
+        another_org_unit.validated = True
+        another_org_unit.source_ref = "ANOTHER_OU_DHIS2_ID"
+        another_org_unit.version = source_version
+        another_org_unit.save()
+
+        self.another_org_unit = another_org_unit
 
         mapping = Mapping(form=form, data_source=datasource, mapping_type=EVENT_TRACKER)
         mapping.save()
@@ -285,7 +391,7 @@ class DataValueExporterTests(TestCase):
                 "ST01DE2": "Bounty",
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
-                "ST01DE3": 1,
+                "ST01DE3": str(self.another_org_unit.id),
             },
         )
 
@@ -345,7 +451,206 @@ class DataValueExporterTests(TestCase):
                                     },
                                     {
                                         "dataElement": "ST01DE3_DHIS2_ID",
-                                        "value": "OU_DHIS2_ID",
+                                        "value": "OU_DHIS2_ID",  # use the invoice orgunit
+                                    },
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE2_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST02DE2_DHIS2_ID",
+                                        "value": "Raider",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                        ],
+                    }
+                ],
+            },
+            trackedentity[2],
+        )
+
+    def test_event_mapping_works_event_status(self):
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_unique_number": "CDLM-00001-45",
+                "tea_name": "Yoda",
+                "tea_zone": "1",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+                "ST01DE3": str(self.another_org_unit.id),
+                "status_STAGE1_DHIS2_ID": "active",
+            },
+        )
+
+        trackedentity, errors = EventTrackerHandler().map_to_values(
+            instance, build_form_mapping()
+        )
+
+        self.assertEquals(
+            {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "54dfg45re",
+                "attributes": [
+                    {
+                        "attribute": "GEVwwkMbGKz",
+                        "value": "15:17",
+                        "displayName": "Heure d'enr\u00f4lement",
+                        "valueType": "TIME",
+                    },
+                    {
+                        "attribute": "XPYFFrfVbAd",
+                        "value": "CDLM-00001-45",
+                        "displayName": "Num\u00e9ro Unique",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4uliL",
+                        "value": "Yoda",
+                        "displayName": "Nom",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4ulzone",
+                        "displayName": "Nom",
+                        "value": "OU_DHIS2_ID",
+                        "valueType": "TEXT",
+                    },
+                ],
+                "enrollments": [
+                    {
+                        "trackedEntityType": "54dfg45re",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "PROGRAM_DHIS2_ID",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
+                        "events": [
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE1_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "ACTIVE",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST01DE2_DHIS2_ID",
+                                        "value": "Bounty",
+                                    },
+                                    {
+                                        "dataElement": "ST01DE3_DHIS2_ID",
+                                        "value": "OU_DHIS2_ID",  # use the invoice orgunit
+                                    },
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE2_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST02DE2_DHIS2_ID",
+                                        "value": "Raider",
+                                    }
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            },
+                        ],
+                    }
+                ],
+            },
+            trackedentity[2],
+        )
+
+    def test_event_mapping_orgunit_intent_works(self):
+        instance = self.build_instance(
+            self.form,
+            {
+                "tea_heure_d_enrolement": "15:17",
+                "tea_unique_number": "CDLM-00001-45",
+                "tea_name": "Yoda",
+                "tea_zone": "1",
+                "ST01DE1": "2019-12-01",
+                "ST01DE2": "Bounty",
+                "ST02DE1": "2019-12-02",
+                "ST02DE2": "Raider",
+                "ST01DE3": str(self.another_org_unit.id),
+            },
+        )
+        mapping_json = build_form_mapping()
+        del mapping_json["question_mappings"]["ST01DE3"][0]["iaso_field"]
+
+        trackedentity, errors = EventTrackerHandler().map_to_values(
+            instance, mapping_json
+        )
+
+        self.assertEquals(
+            {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "54dfg45re",
+                "attributes": [
+                    {
+                        "attribute": "GEVwwkMbGKz",
+                        "value": "15:17",
+                        "displayName": "Heure d'enr\u00f4lement",
+                        "valueType": "TIME",
+                    },
+                    {
+                        "attribute": "XPYFFrfVbAd",
+                        "value": "CDLM-00001-45",
+                        "displayName": "Num\u00e9ro Unique",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4uliL",
+                        "value": "Yoda",
+                        "displayName": "Nom",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "pxSXrL4ulzone",
+                        "displayName": "Nom",
+                        "value": "OU_DHIS2_ID",
+                        "valueType": "TEXT",
+                    },
+                ],
+                "enrollments": [
+                    {
+                        "trackedEntityType": "54dfg45re",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "PROGRAM_DHIS2_ID",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
+                        "events": [
+                            {
+                                "program": "PROGRAM_DHIS2_ID",
+                                "programStage": "STAGE1_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {
+                                        "dataElement": "ST01DE2_DHIS2_ID",
+                                        "value": "Bounty",
+                                    },
+                                    {
+                                        "dataElement": "ST01DE3_DHIS2_ID",
+                                        "value": "ANOTHER_OU_DHIS2_ID",
                                     },
                                 ],
                                 "coordinate": {"latitude": 7.3, "longitude": 1.5},
@@ -436,7 +741,9 @@ class DataValueExporterTests(TestCase):
         self.assertIsNotNone(instance.last_export_success_at)
 
     @responses.activate
-    def test_event_export_works_on_non_existing_tracked_entity(self):
+    def test_event_export_works_on_non_existing_tracked_entity_with_related_program(
+        self,
+    ):
 
         mapping_version = MappingVersion(
             name="event tracker",
@@ -456,6 +763,24 @@ class DataValueExporterTests(TestCase):
                 "ST01DE2": "Bounty",
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
+                "hh_repeat": [
+                    {
+                        "hh_name": "household 1",
+                        "hh_gender": "Male",
+                        "hh_age": "42",
+                        "hh_street": "streeet 1",
+                        "hh_number": "44b",
+                        "hh_city": "bxl",
+                    },
+                    {
+                        "hh_name": "household 2",
+                        "hh_gender": "Female",
+                        "hh_age": "11",
+                        "hh_street": "street b",
+                        "hh_number": "45",
+                        "hh_city": "Namur",
+                    },
+                ],
             },
         )
 
@@ -472,6 +797,7 @@ class DataValueExporterTests(TestCase):
             status=200,
         )
 
+        # main event tracked entity
         responses.add(
             responses.GET,
             "https://dhis2.com/api/trackedEntityAttributes/XPYFFrfVbAd/generate.json?ORG_UNIT_CODE=47897",
@@ -479,20 +805,72 @@ class DataValueExporterTests(TestCase):
             status=200,
         )
 
+        # related program event tracked entity
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/trackedEntityAttributes/lZGmxYbs97q/generate.json?ORG_UNIT_CODE=47897",
+            json={
+                "ownerObject": "TRACKEDENTITYATTRIBUTE",
+                "ownerUid": "rSudwSeXTKQ",
+                "key": "787RANDOM(X####)",
+                "value": "787T8701",
+                "created": "2020-06-11T12:42:56.625",
+                "expiryDate": "2020-06-14T12:42:56.625",
+            },
+            status=200,
+        )
+
+        responses.add(
+            responses.GET,
+            "https://dhis2.com/api/trackedEntityAttributes/lZGmxYbs97q/generate.json?ORG_UNIT_CODE=47897",
+            json={
+                "ownerObject": "TRACKEDENTITYATTRIBUTE",
+                "ownerUid": "rSudwSeXTKQ",
+                "key": "787RANDOM(X####)",
+                "value": "787T8702",
+                "created": "2020-06-11T12:42:56.625",
+                "expiryDate": "2020-06-14T12:42:56.625",
+            },
+            status=200,
+        )
+
         sent_create = []
 
         def request_callback(request):
+            request_payload = json.loads(request.body)
             sent_create.append(json.loads(request.body))
+            resp = load_dhis2_fixture("event-tracker-tei-create.json")
+            resp["response"]["importSummaries"][0]["reference"] = "TEI-" + str(
+                len(sent_create)
+            )
             return (
                 200,
                 {},
-                load_dhis2_fixture_as_string("tracked_entity_with_enrollments.json"),
+                json.dumps(resp),
             )
 
         responses.add_callback(
             responses.POST,
             "https://dhis2.com/api/trackedEntityInstances",
             callback=request_callback,
+        )
+
+        sent_relation_ship_create = []
+
+        def request_relation_ship_callback(request):
+            request_payload = json.loads(request.body)
+            sent_relation_ship_create.append(request_payload)
+            resp = load_dhis2_fixture("event-tracker-tei-create.json")
+            return (
+                200,
+                {},
+                json.dumps(resp),
+            )
+
+        responses.add_callback(
+            responses.POST,
+            "https://dhis2.com/api/relationships",
+            callback=request_relation_ship_callback,
         )
 
         # excercice
@@ -568,6 +946,121 @@ class DataValueExporterTests(TestCase):
             sent_create[0],
         )
 
+        self.assertEqual(len(sent_create), 3)
+
+        print(sent_create[1])
+        self.assertEqual(
+            {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "nEenWmSyUEp",
+                "attributes": [
+                    {
+                        "attribute": "w75KJ2mc4zz",
+                        "value": "household 1",
+                        "displayName": "First name",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "cejWyOfXge6",
+                        "value": "Male",
+                        "displayName": "Gender",
+                        "valueType": "TEXT",
+                    },
+                    {"attribute": "lZGmxYbs97q", "value": "787T8701"},
+                ],
+                "enrollments": [
+                    {
+                        "trackedEntityType": "nEenWmSyUEp",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "related_program_id",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
+                        "events": [
+                            {
+                                "program": "related_program_id",
+                                "programStage": "STAGE_RELATED_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {"dataElement": "ST_REL_DE_DHIS2_ID", "value": 42}
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            }
+                        ],
+                    }
+                ],
+            },
+            sent_create[1],
+        )
+
+        self.assertEqual(
+            {
+                "orgUnit": "OU_DHIS2_ID",
+                "trackedEntityType": "nEenWmSyUEp",
+                "attributes": [
+                    {
+                        "attribute": "w75KJ2mc4zz",
+                        "value": "household 2",
+                        "displayName": "First name",
+                        "valueType": "TEXT",
+                    },
+                    {
+                        "attribute": "cejWyOfXge6",
+                        "value": "Female",
+                        "displayName": "Gender",
+                        "valueType": "TEXT",
+                    },
+                    {"attribute": "lZGmxYbs97q", "value": "787T8702"},
+                ],
+                "enrollments": [
+                    {
+                        "trackedEntityType": "nEenWmSyUEp",
+                        "enrollmentDate": "2018-02-16",
+                        "program": "related_program_id",
+                        "deleted": False,
+                        "incidentDate": "2018-02-16",
+                        "orgUnit": "OU_DHIS2_ID",
+                        "events": [
+                            {
+                                "program": "related_program_id",
+                                "programStage": "STAGE_RELATED_DHIS2_ID",
+                                "orgUnit": "OU_DHIS2_ID",
+                                "eventDate": "2018-02-16",
+                                "status": "COMPLETED",
+                                "dataValues": [
+                                    {"dataElement": "ST_REL_DE_DHIS2_ID", "value": 11}
+                                ],
+                                "coordinate": {"latitude": 7.3, "longitude": 1.5},
+                            }
+                        ],
+                    }
+                ],
+            },
+            sent_create[2],
+        )
+
+        self.assertEqual(
+            [
+                {
+                    "from": {
+                        "trackedEntityInstance": {"trackedEntityInstance": "TEI-1"}
+                    },
+                    "relationshipType": "parent-child-reltype-id",
+                    "to": {"trackedEntityInstance": {"trackedEntityInstance": "TEI-2"}},
+                },
+                {
+                    "from": {
+                        "trackedEntityInstance": {"trackedEntityInstance": "TEI-1"}
+                    },
+                    "relationshipType": "parent-child-reltype-id",
+                    "to": {"trackedEntityInstance": {"trackedEntityInstance": "TEI-3"}},
+                },
+            ],
+            sent_relation_ship_create,
+        )
+
     @responses.activate
     def test_event_export_handle_409_error(self):
 
@@ -587,6 +1080,7 @@ class DataValueExporterTests(TestCase):
                 "tea_name": "Yoda",
                 "ST01DE1": "2019-12-01",
                 "ST01DE2": "Bounty",
+                "ST01DE3": str(self.another_org_unit.id),
                 "ST02DE1": "2019-12-02",
                 "ST02DE2": "Raider",
             },

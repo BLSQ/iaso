@@ -34,7 +34,7 @@ import {
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
-import { createUrl } from '../../../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
 import MESSAGES from '../messages';
 

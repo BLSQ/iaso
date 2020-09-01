@@ -153,7 +153,7 @@ class ProfilesViewSet(viewsets.ViewSet):
         # Create a iaso profile for the new user and attach it to the same account
         # as the currently authenticated user
         current_profile = request.user.iaso_profile
-        Profile.objects.create(user=user, account=current_profile.account)
+        user.profile = Profile.objects.create(user=user, account=current_profile.account)
 
         return Response(user.profile.as_dict())
 

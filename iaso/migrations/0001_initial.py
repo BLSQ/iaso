@@ -5,6 +5,9 @@ import django.contrib.postgres.fields
 import django.contrib.postgres.fields.citext
 from django.db import migrations, models
 import django.db.models.deletion
+from django.contrib.postgres.operations import CreateExtension, TrigramExtension
+from django.db import migrations
+from django.contrib.postgres.operations import CITextExtension
 
 
 class Migration(migrations.Migration):
@@ -14,6 +17,9 @@ class Migration(migrations.Migration):
     dependencies = []
 
     operations = [
+        CreateExtension("postgis"),
+        TrigramExtension(),
+        CITextExtension(),
         migrations.CreateModel(
             name="OrgLevel",
             fields=[

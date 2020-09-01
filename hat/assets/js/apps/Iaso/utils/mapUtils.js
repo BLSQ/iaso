@@ -3,7 +3,7 @@ import L from 'leaflet';
 import Color from 'color';
 import orderBy from 'lodash/orderBy';
 
-import { MESSAGES } from '../../../utils/map/mapUtils';
+import { MESSAGES } from './map/mapUtils';
 import theme from './theme';
 
 

@@ -1,4 +1,3 @@
-
 /* colours */
 $gray: #ccc;
 $background-gray: #efefef;
@@ -31,7 +30,12 @@ $success: $green;
 $text-color: $dark-blue;
 
 /* type */
-$body-font-family: "Lato", "Helvetica Neue", "Helvetica", Helvetica, Arial, sans-serif;
+$body-font-family: "Lato",
+"Helvetica Neue",
+"Helvetica",
+Helvetica,
+Arial,
+sans-serif;
 $icon-font: FontAwesome;
 
 $font-size-xs: 0.75rem; // 12px
@@ -51,3 +55,5 @@ $banner-height: 38px;
 /* z-index stack */
 $z-index-triangle-mixin: 2;
 $z-index-banner--stage-warning: 3;
+
+$map-sidebar-width: 260px;

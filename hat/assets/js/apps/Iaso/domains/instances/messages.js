@@ -13,6 +13,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Export',
         id: 'iaso.label.export',
     },
+    reAssignInstance: {
+        defaultMessage: 'Re-assign instance',
+        id: 'iaso.label.reAssignInstance',
+    },
+    reAssignInstanceAction: {
+        defaultMessage: 'Re-assign',
+        id: 'iaso.label.reAssignInstanceAction',
+    },
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',
@@ -95,11 +103,12 @@ const MESSAGES = defineMessages({
     },
     question: {
         id: 'iaso.label.useOrgUnitLocation.question',
-        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
+        defaultMessage:
+      'Are you sure you want to use this location for the current org unit ?',
     },
     message: {
         id: 'iaso.label.useOrgUnitLocation.message',
-        defaultMessage: 'Don\'t forget to save',
+        defaultMessage: "Don't forget to save",
     },
     actions: {
         defaultMessage: 'Action(s)',
@@ -108,6 +117,10 @@ const MESSAGES = defineMessages({
     org_unit: {
         defaultMessage: 'Org unit',
         id: 'iaso.instance.org_unit',
+    },
+    selectedOrgUnit: {
+        id: 'iaso.instance.selectedOrgUnit',
+        defaultMessage: 'Selected Org unit',
     },
     period: {
         defaultMessage: 'Period',
@@ -186,15 +199,18 @@ const MESSAGES = defineMessages({
         id: 'iaso.exporStatus.createdAt',
     },
     warningSoftDeleted: {
-        defaultMessage: 'This instance has been soft-deleted and won\'t appear in instance search or completeness counts.',
+        defaultMessage:
+      "This instance has been soft-deleted and won't appear in instance search or completeness counts.",
         id: 'iaso.instance.warningSoftDeleted',
     },
     warningSoftDeletedExport: {
-        defaultMessage: 'If this instance was exported, this doesn\'t mean these data has been deleted from dhis2.',
+        defaultMessage:
+      "If this instance was exported, this doesn't mean these data has been deleted from dhis2.",
         id: 'iaso.instance.warningSoftDeletedExport',
     },
     warningSoftDeletedDerived: {
-        defaultMessage: 'If this form generates other derived instances, they might not be updated either.',
+        defaultMessage:
+      'If this form generates other derived instances, they might not be updated either.',
         id: 'iaso.instance.warningSoftDeletedDerived',
     },
     images: {
@@ -228,8 +244,7 @@ const MESSAGES = defineMessages({
     instanceReAssignAction: {
         defaultMessage: 'Edit orgUnit or period',
         id: 'iaso.instance.instanceReAssignAction',
-    }
-
+    },
 });
 
 export default MESSAGES;

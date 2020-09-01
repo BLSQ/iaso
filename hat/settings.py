@@ -15,7 +15,7 @@ from datetime import timedelta
 
 STAGING = os.environ.get("STAGING", "").lower() == "true"
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-FLAVOR = os.environ.get("FLAVOR", "trypelim")  # alternative is "iaso"
+FLAVOR = "iaso"
 print("FLAVOR", FLAVOR)
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -29,9 +29,6 @@ USE_CACHE = os.environ.get("CACHE", "").lower() == "true"
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", "development").lower()
 
-
-# SECURITY WARNING: this should also be considered a secret:
-GOOGLE_CLIENT_ID = os.environ.get("GOOGLE_CLIENT_ID", "")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -58,14 +55,14 @@ if TESTING:
     # We don't want to see log output when running tests
     LOGGING_LEVEL = "CRITICAL"
 
-if FLAVOR == "iaso":
-    ENKETO = {
-        "ENKETO_DEV": os.getenv("ENKETO_DEV"),
-        "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
-        "ENKETO_URL": os.getenv("ENKETO_URL"),
-        "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
-        "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
-    }
+
+ENKETO = {
+    "ENKETO_DEV": os.getenv("ENKETO_DEV"),
+    "ENKETO_API_TOKEN": os.getenv("ENKETO_API_TOKEN"),
+    "ENKETO_URL": os.getenv("ENKETO_URL"),
+    "ENKETO_API_SURVEY_PATH": "/api_v2/survey",
+    "ENKETO_API_INSTANCE_PATH": "/api_v2/instance",
+}
 
 TEST_RUNNER = "redgreenunittest.django.runner.RedGreenDiscoverRunner"
 
@@ -128,23 +125,8 @@ INSTALLED_APPS = [
     "rest_framework",
     "webpack_loader",
     "django_ltree",
-    "hat.users",
-    "hat.api",
-    "hat.cases",
-    "hat.common",
-    "hat.couchdb",
-    "hat.dashboard",
-    "hat.quality",
-    "hat.import_export",
-    "hat.integration_tests",
-    "hat.maintenance",
     "hat.sync",
-    "hat.tasks",
-    "hat.geo",
-    "hat.planning",
-    "hat.patient",
     "hat.vector_control",
-    "hat.metrics",
     "hat.audit",
     "hat.menupermissions",
     "iaso",
@@ -250,41 +232,11 @@ PROJECT_ROOT = os.path.dirname(os.path.abspath(__file__))
 LOGIN_URL = "/login"
 LOGIN_REDIRECT_URL = "/"
 
-COUCHDB_URL = os.environ.get("COUCHDB_URL", "http://couchdb:5984")
-COUCHDB_USER = os.environ.get("COUCHDB_USER", None)
-COUCHDB_PASSWORD = os.environ.get("COUCHDB_PASSWORD", None)
-COUCHDB_DIR = "./couchdb"
-
-REDIS_HOST = os.environ.get("REDIS_HOST", "redis")
-REDIS_PORT = 6379
-REDIS_DB = 0
-REDIS_PASSWORD = os.environ.get("REDIS_PASSWORD", None)
-REDIS_CACHE_DB = 1
-
-# RQ
-
-RQ_QUEUES = {
-    "default": {
-        "HOST": REDIS_HOST,
-        "PORT": REDIS_PORT,
-        "DB": REDIS_DB,
-        "PASSWORD": REDIS_PASSWORD,
-        "DEFAULT_TIMEOUT": 360,
-    }
-}
-RQ_SHOW_ADMIN_LINK = True
-
-
 # Files
 
 SHARED_DIR = "/opt/shared"
 
-
-MOBILE_KEY = os.environ.get("HAT_MOBILE_KEY", None)
-
-
 # Version Display
-HAT_COMMIT = os.environ.get("HAT_COMMIT", None)
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/1.9/howto/static-files/
@@ -349,20 +301,7 @@ AWS_S3_SIGNATURE_VERSION = "s3v4"
 AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
 AWS_S3_REGION_NAME = "eu-central-1"
 
-
-REDIS_CACHE_LOCATION = "redis://%s:%s/%s" % (REDIS_HOST, REDIS_PORT, REDIS_CACHE_DB)
-
-
-if not USE_CACHE:
-    CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
-else:
-    CACHES = {
-        "default": {
-            "BACKEND": "django_redis.cache.RedisCache",
-            "LOCATION": REDIS_CACHE_LOCATION,
-            "OPTIONS": {"CLIENT_CLASS": "django_redis.client.DefaultClient"},
-        }
-    }
+CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"

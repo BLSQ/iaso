@@ -40,6 +40,42 @@ class AppsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 404)
 
     @tag("iaso_only")
+    def test_apps_retrieve_current_not_found(self):
+        """GET /apps/current/?app_id= with wrong app id"""
+
+        response = self.client.get(f"/api/apps/current/?app_id=notanappid")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_apps_retrieve_current_no_app_id(self):
+        """GET /apps/current/?app_id= without app id"""
+
+        response = self.client.get(f"/api/apps/current/")
+        self.assertJSONResponse(response, 404)
+
+    @tag("iaso_only")
+    def test_apps_retrieve_current_ok_1(self):
+        """GET /apps/current/?app_id= happy path"""
+
+        response = self.client.get(f"/api/apps/current/?app_id={self.project_1.app_id}")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertEqual([], response_data["feature_flags"])
+
+    @tag("iaso_only")
+    def test_apps_retrieve_current_ok_2(self):
+        """GET /apps/current/?app_id= happy path (with feature flags)"""
+
+        response = self.client.get(f"/api/apps/current/?app_id={self.project_2.app_id}")
+        self.assertJSONResponse(response, 200)
+
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertEqual(2, len(response_data["feature_flags"]))
+
+    @tag("iaso_only")
     def test_apps_retrieve_not_found(self):
         """GET /apps/<app_id>/ with wrong app id"""
 
@@ -48,7 +84,7 @@ class AppsAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_apps_retrieve_ok_1(self):
-        """GET /apps/<app_id>/ happy path"""
+        """GET /apps/<app_id>/ happy path - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_1.app_id}/")
         self.assertJSONResponse(response, 200)
@@ -59,7 +95,7 @@ class AppsAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_apps_retrieve_ok_2(self):
-        """GET /apps/<app_id>/ happy path (with feature flags)"""
+        """GET /apps/<app_id>/ happy path (with feature flags) - standard detail endpoint, without ?app_id="""
 
         response = self.client.get(f"/api/apps/{self.project_2.app_id}/")
         self.assertJSONResponse(response, 200)

@@ -11,7 +11,7 @@ import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
     PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPES,
 } from '../periods/constants';
-import { formatThousand } from '../../../../utils';
+import { formatThousand } from '../../utils';
 import { INSTANCE_STATUSES } from '../instances/constants';
 import { textPlaceholder } from '../../constants/uiConstants';
 

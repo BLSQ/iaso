@@ -1,22 +1,40 @@
+import operator
 import typing
 from copy import deepcopy
+from functools import reduce
 from django.db import models, transaction
 from django.contrib.postgres.indexes import GistIndex
-from django.contrib.gis.db.models.fields import PointField, PolygonField
+from django.contrib.gis.db.models.fields import PointField, MultiPolygonField
 from django.contrib.postgres.fields import ArrayField, CITextField
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, AnonymousUser
 from django_ltree.fields import PathField
+from django.utils.translation import ugettext_lazy as _
 
 from ..db import ManagerWithBulkUpdate
 from hat.audit import models as audit_models
-from .base import Group
+from .base import Group, SourceVersion
+from .project import Project
 
-GEO_SOURCE_CHOICES = (
-    ("snis", "SNIS"),
-    ("ucla", "UCLA"),
-    ("pnltha", "PNL THA"),
-    ("derivated", "Derivated from actual data"),
-)
+class OrgUnitTypeQuerySet(models.QuerySet):
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: str
+    ):
+        if user and user.is_anonymous and app_id is None:
+            return self.none()
+
+        queryset = self.all()
+
+        if user and user.is_authenticated:
+            queryset = queryset.filter(projects__account=user.iaso_profile.account)
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+                queryset = queryset.filter(projects__in=[project])
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
 
 
 class OrgUnitType(models.Model):
@@ -30,6 +48,8 @@ class OrgUnitType(models.Model):
 
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
+
+    objects = OrgUnitTypeQuerySet.as_manager()
 
     def __str__(self):
         return "%s" % self.name
@@ -59,17 +79,71 @@ class OrgUnitType(models.Model):
 
 class OrgUnitQuerySet(models.QuerySet):
     def children(self, org_unit):
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(
-            path__descendants=org_unit.path, path__depth=len(org_unit.path) + 1
+            path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1
         )
 
     def hierarchy(self, org_unit):
-        return self.filter(path__descendants=org_unit.path)
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
+        if isinstance(org_unit, (list, models.QuerySet)):
+            query = reduce(
+                operator.or_,
+                [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)],
+            )
+        else:
+            query = models.Q(path__descendants=str(org_unit.path))
+
+        return self.filter(query)
 
     def descendants(self, org_unit):
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         return self.filter(
-            path__descendants=org_unit.path, path__depth__gt=len(org_unit.path)
+            path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path)
         )
+
+    def filter_for_user_and_app_id(
+        self, user: typing.Union[User, AnonymousUser, None], app_id: str
+    ):
+        if user and user.is_anonymous and app_id is None:
+            return self.none()
+
+        queryset = self.all()
+
+        if user and user.is_authenticated:
+            account = user.iaso_profile.account
+
+            # Filter on version ids (linked to the account)
+            version_ids = (
+                SourceVersion.objects.filter(data_source__projects__account=account)
+                .values_list("id", flat=True)
+                .distinct()
+            )
+            queryset = queryset.filter(version_id__in=version_ids)
+
+            # If applicable, filter on the org units associated to the user
+            if user.iaso_profile.org_units.count() > 0:
+                queryset = queryset.hierarchy(user.iaso_profile.org_units.all())
+
+        if app_id is not None:
+            try:
+                project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+                if project.account is None:
+                    # cannot filter on default version if no project or project has no account
+                    return self.none()
+
+                queryset = queryset.filter(
+                    org_unit_type__projects__in=[project],
+                    version=project.account.default_version,
+                )
+            except Project.DoesNotExist:
+                return self.none()
+
+        return queryset
 
 
 class OrgUnitManager(ManagerWithBulkUpdate):
@@ -78,7 +152,7 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         user,
         org_unit,
         *,
-        validated,
+        validation_status,
         org_unit_type_id,
         groups_ids_added,
         groups_ids_removed
@@ -86,9 +160,8 @@ class OrgUnitManager(ManagerWithBulkUpdate):
         """Used within the context of a bulk operation"""
 
         original_copy = deepcopy(org_unit)
-
-        if validated is not None:
-            org_unit.validated = validated
+        if validation_status is not None:
+            org_unit.validation_status = validation_status
         if org_unit_type_id is not None:
             org_unit_type = OrgUnitType.objects.get(pk=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
@@ -109,10 +182,21 @@ class OrgUnitManager(ManagerWithBulkUpdate):
 
 
 class OrgUnit(models.Model):
+    VALIDATION_NEW = "NEW"
+    VALIDATION_VALID = "VALID"
+    VALIDATION_REJECTED = "REJECTED"
+
+    VALIDATION_STATUS_CHOICES = (
+        (VALIDATION_NEW, _("new")),
+        (VALIDATION_VALID, _("valid")),
+        (VALIDATION_REJECTED, _("rejected")),
+    )
+
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)
+    validated = models.BooleanField(default=True, db_index=True)# TO DO : remove in a later migration
+    validation_status = models.CharField(max_length=25,  choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
     version = models.ForeignKey(
         "SourceVersion", null=True, blank=True, on_delete=models.CASCADE
     )
@@ -128,26 +212,20 @@ class OrgUnit(models.Model):
         OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
     )
 
-    sub_source = models.TextField(
-        choices=GEO_SOURCE_CHOICES, null=True, blank=True
+    sub_source = models.TextField(null=True, blank=True
     )  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
-    geom = PolygonField(srid=4326, null=True, blank=True)
-    simplified_geom = PolygonField(srid=4326, null=True, blank=True)
-    catchment = PolygonField(srid=4326, null=True, blank=True)
-    geom_source = models.TextField(choices=GEO_SOURCE_CHOICES, null=True, blank=True)
+    geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
+    simplified_geom = MultiPolygonField(
+        null=True, blank=True, srid=4326, geography=True
+    )
+    catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
-    latitude = models.DecimalField(
-        max_digits=10, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
-    longitude = models.DecimalField(
-        max_digits=11, decimal_places=8, null=True, blank=True
-    )  # TODO: deprecated, remove me (location should be use instead)
     gps_source = models.TextField(
         null=True, blank=True
-    )  # much more diverse than above GEO_SOURCE_CHOICES
-    location = PointField(null=True, blank=True, dim=3, srid=4326)
+    )
+    location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     creator = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
@@ -213,7 +291,19 @@ class OrgUnit(models.Model):
         return updated_records
 
     def __str__(self):
-        return "%s %s %d" % (self.org_unit_type, self.name, self.id)
+        return "%s %s %d" % (self.org_unit_type, self.name, self.id if self.id else -1)
+
+    def as_dict_for_mobile_lite(self):
+        return {
+            "n": self.name,
+            "id": self.id,
+            "p": self.parent_id,
+            "out": self.org_unit_type_id,
+            "c_a": self.created_at.timestamp() if self.created_at else None,
+            "lat": self.location.y if self.location else None,
+            "lon": self.location.x if self.location else None,
+            "alt": self.location.z if self.location else None,
+        }
 
     def as_dict_for_mobile(self):
         return {
@@ -226,8 +316,8 @@ class OrgUnit(models.Model):
             else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
         }
 
@@ -246,9 +336,9 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "validation_status": self.validation_status,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
@@ -272,6 +362,7 @@ class OrgUnit(models.Model):
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
             "parent": self.parent.as_dict_with_parents() if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
@@ -284,9 +375,8 @@ class OrgUnit(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
-            "status": False if self.validated is None else self.validated,
-            "latitude": self.location.y if self.location else self.latitude,
-            "longitude": self.location.x if self.location else self.longitude,
+            "latitude": self.location.y if self.location else None,
+            "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "version": self.version.number if self.version else None,
@@ -298,6 +388,7 @@ class OrgUnit(models.Model):
             "name": self.name,
             "id": self.id,
             "parent_id": self.parent_id,
+            "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
             "source": self.version.data_source.name if self.version else None,
             "source_ref": self.source_ref,

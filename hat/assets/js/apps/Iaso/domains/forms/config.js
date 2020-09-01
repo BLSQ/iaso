@@ -21,6 +21,20 @@ const formsTableColumns = (formatMessage, component) => (
             Cell: settings => <ColumnTextComponent text={settings.original.name} />,
         },
         {
+            Header: formatMessage(MESSAGES.created_at),
+            accessor: 'created_at',
+            Cell: settings => (
+                <ColumnTextComponent text={moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')} />
+            ),
+        },
+        {
+            Header: formatMessage(MESSAGES.updated_at),
+            accessor: 'updated_at',
+            Cell: settings => (
+                <ColumnTextComponent text={moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')} />
+            ),
+        },
+        {
             Header: formatMessage(MESSAGES.instance_updated_at),
             accessor: 'instance_updated_at',
             Cell: (settings) => {
@@ -30,13 +44,6 @@ const formsTableColumns = (formatMessage, component) => (
 
                 return <ColumnTextComponent text={dateText} />;
             },
-        },
-        {
-            Header: formatMessage(MESSAGES.created_at),
-            accessor: 'created_at',
-            Cell: settings => (
-                <ColumnTextComponent text={moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')} />
-            ),
         },
         {
             Header: formatMessage(MESSAGES.type),
@@ -72,16 +79,18 @@ const formsTableColumns = (formatMessage, component) => (
                           <Grid item>
                               <ColumnTextComponent text={settings.original.latest_form_version.version_id} />
                           </Grid>
-                          {
-                              settings.original.latest_form_version.xls_file
-                            && (
-                                <Grid item>
-                                    <Link download href={settings.original.latest_form_version.xls_file}>XLS</Link>
-                                </Grid>
-                            )
-                          }
-                          <Grid item>
-                              <Link download href={settings.original.latest_form_version.file}>XML</Link>
+                          <Grid container spacing={1} justify="center">
+                              {
+                                  settings.original.latest_form_version.xls_file
+                                  && (
+                                      <Grid item>
+                                          <Link download href={settings.original.latest_form_version.xls_file}>XLS</Link>
+                                      </Grid>
+                                  )
+                              }
+                              <Grid item>
+                                  <Link download href={settings.original.latest_form_version.file}>XML</Link>
+                              </Grid>
                           </Grid>
                       </Grid>
                   )
@@ -91,6 +100,7 @@ const formsTableColumns = (formatMessage, component) => (
             Header: formatMessage(MESSAGES.actions),
             resizable: false,
             sortable: false,
+            width: 150,
             Cell: settings => (
                 <section>
                     {

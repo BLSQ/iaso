@@ -1,9 +1,11 @@
-import { getRequest, postRequest, putRequest } from '../../libs/Api';
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
+import {
+    getRequest, postRequest, putRequest, patchRequest, deleteRequest,
+} from '../../libs/Api';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import {
     errorSnackBar,
     succesfullSnackBar,
-} from '../../../../utils/constants/snackBars';
+} from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
@@ -62,8 +64,9 @@ export const fetchEditUrl = (currentInstance, location) => (dispatch) => {
         })
         .catch((err) => {
             console.log(err);
-            dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError')));
-        }).then(() => {
+            dispatch(enqueueSnackbar(errorSnackBar('fetchEnketoError', null, err)));
+        })
+        .then(() => {
             dispatch(setInstancesFetching(false));
         });
 };
@@ -72,7 +75,7 @@ export const fetchFormDetail = formId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/forms/${formId}`)
         .then(res => dispatch(setCurrentForm(res)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchFormError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
@@ -82,7 +85,32 @@ export const fetchInstanceDetail = instanceId => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return getRequest(`/api/instances/${instanceId}`)
         .then(res => dispatch(setCurrentInstance(res)))
-        .catch(() => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError'))))
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err))))
+        .then(() => {
+            dispatch(setInstancesFetching(false));
+        });
+};
+
+export const softDeleteInstance = currentInstance => (dispatch) => {
+    dispatch(setInstancesFetching(true));
+    deleteRequest(`/api/instances/${currentInstance.id}`)
+        .then((res) => {
+            dispatch(fetchInstanceDetail(currentInstance.id));
+        })
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchInstanceError', null, err))))
+        .then(() => {
+            dispatch(setInstancesFetching(false));
+        });
+};
+
+export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
+    dispatch(setInstancesFetching(true));
+    if (!payload.period) delete payload.period
+    patchRequest(`/api/instances/${currentInstance.id}/`, payload)
+        .then((res) => {
+            dispatch(fetchInstanceDetail(currentInstance.id));
+        })
+        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('assignInstanceError', null, err))))
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
@@ -94,15 +122,13 @@ export const createExportRequest = filterParams => (dispatch) => {
         .then((exportRequest) => {
             putRequest(`/api/exportrequests/${exportRequest.id}/`);
             // fire and forget to run the export
-            return dispatch(
-                enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')),
-            );
+            return dispatch(enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')));
         })
         .catch((err) => {
-            const key = err.details ? `createExportRequestError${err.details.code}` : 'createExportRequestError';
-            return dispatch(
-                enqueueSnackbar(errorSnackBar(key)),
-            );
+            const key = err.details
+                ? `createExportRequestError${err.details.code}`
+                : 'createExportRequestError';
+            return dispatch(enqueueSnackbar(errorSnackBar(key, null, err)));
         })
         .then(() => dispatch(setInstancesFetching(false)));
 };

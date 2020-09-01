@@ -1,8 +1,10 @@
 import random
 import operator
+import typing
+from copy import copy
 from urllib.request import urlopen
 from functools import reduce
-from django.db import models
+from django.db import models, transaction
 from django.core.paginator import Paginator
 from django.contrib.gis.db.models.fields import PointField
 from django.contrib.postgres.aggregates import ArrayAgg
@@ -11,7 +13,8 @@ from django.contrib.auth.models import User
 from django.contrib.gis.geos import Point
 from django.shortcuts import get_object_or_404
 from django.utils.translation import ugettext_lazy as _
-from iaso.utils import flat_parse_xml_file
+from hat.audit.models import log_modification, INSTANCE_API
+from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from django.db.models import Q
 
 from .device import DeviceOwnership, Device
@@ -80,28 +83,12 @@ class Account(models.Model):
         return "%s " % (self.name,)
 
 
-class Project(models.Model):
-    """A data collection project, associated with a single mobile application"""
-
-    name = models.TextField(null=True, blank=True)
-    forms = models.ManyToManyField("Form", blank=True, related_name="projects")
-    account = models.ForeignKey(
-        Account, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
-    app_id = models.TextField(null=True, blank=True)
-    needs_authentication = models.BooleanField(default=False)
-    feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return "%s " % (self.name,)
-
-
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
     read_only = models.BooleanField(default=True)
-    projects = models.ManyToManyField(Project, related_name="data_sources", blank=True)
+    projects = models.ManyToManyField(
+        "Project", related_name="data_sources", blank=True
+    )
     credentials = models.ForeignKey(
         "ExternalCredentials",
         on_delete=models.SET_NULL,
@@ -199,7 +186,9 @@ class SourceVersion(models.Model):
 
 
 class RecordType(models.Model):
-    projects = models.ManyToManyField(Project, related_name="record_types", blank=True)
+    projects = models.ManyToManyField(
+        "Project", related_name="record_types", blank=True
+    )
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -571,10 +560,14 @@ class InstanceQuerySet(models.QuerySet):
         org_unit_id=None,
         period_ids=None,
         status=None,
+        instance_id=None,
     ):
         queryset = self
         if period_ids:
             queryset = queryset.filter(period__in=period_ids.split(","))
+
+        if instance_id:
+            queryset = queryset.filter(id=instance_id)
 
         if org_unit_type_id:
             queryset = queryset.filter(
@@ -636,13 +629,15 @@ class InstanceQuerySet(models.QuerySet):
     def for_org_unit_hierarchy(self, org_unit):
         # TODO: we could write our own descendants lookup instead of using the one provided in django-ltree
         # TODO: as it does not handle arrays of path (ltree does)
+        # We need to cast PathValue instances to strings - this could be fixed upstream
+        # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, list):
             query = reduce(
                 operator.or_,
-                [Q(org_unit__path__descendants=ou.path) for ou in org_unit],
+                [Q(org_unit__path__descendants=str(ou.path)) for ou in org_unit],
             )
         else:
-            query = Q(org_unit__path__descendants=org_unit.path)
+            query = Q(org_unit__path__descendants=str(org_unit.path))
 
         return self.filter(query)
 
@@ -676,7 +671,7 @@ class Instance(models.Model):
         related_name="instances",
     )
     project = models.ForeignKey(
-        Project, blank=True, null=True, on_delete=models.DO_NOTHING
+        "Project", blank=True, null=True, on_delete=models.DO_NOTHING
     )
     json = JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
@@ -739,8 +734,24 @@ class Instance(models.Model):
                 file = urlopen(self.file.url)
             else:
                 file = self.file
-            file_content = flat_parse_xml_file(file)
-            self.json = file_content
+            soup = as_soup(file)
+            form_version_id = extract_form_version_id(soup)
+            if form_version_id:
+                form_versions = self.form.form_versions.filter(
+                    version_id=form_version_id
+                )
+                form_version = form_versions.first()
+                if form_version:
+
+                    self.json = flat_parse_xml_soup(
+                        soup, [rg["name"] for rg in form_version.repeat_groups()]
+                    )
+                else:
+                    # warn old form, but keep it working ? or throw error
+                    self.json = flat_parse_xml_soup(soup, [])
+            else:
+                self.json = flat_parse_xml_soup(soup, [])
+            file_content = self.json
             self.save()
         else:
             file_content = {}
@@ -750,9 +761,25 @@ class Instance(models.Model):
         json = self.get_and_save_json_of_xml()
 
         try:
-            return self.form.form_versions.get(version_id=json['_version'])
+            return self.form.form_versions.get(version_id=json["_version"])
         except (KeyError, FormVersion.DoesNotExist):
             return None
+
+    def export(self, launcher=None):
+        from iaso.dhis2.datavalue_exporter import DataValueExporter
+        from iaso.dhis2.export_request_builder import (
+            ExportRequestBuilder,
+            NothingToExportError,
+        )
+
+        try:
+            export_request = ExportRequestBuilder().build_export_request(
+                filters={"instance_id": self.id}, launcher=None
+            )
+
+            DataValueExporter().export_instances(export_request, True)
+        except NothingToExportError as error:
+            print("Export failed for instance", self)
 
     def __str__(self):
         return "%s %s" % (self.form, self.name)
@@ -812,7 +839,9 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
             "form_name": self.form.name,
-            "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
+            "form_descriptor": form_version.get_or_save_form_descriptor()
+            if form_version is not None
+            else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents() if self.org_unit else None,
@@ -837,8 +866,12 @@ class Instance(models.Model):
                     else None,
                     "export_request": {
                         "launcher": {
-                            "full_name": export_status.export_request.launcher.get_full_name(),
-                            "email": export_status.export_request.launcher.email,
+                            "full_name": export_status.export_request.launcher.get_full_name()
+                            if export_status.export_request.launcher
+                            else "AUTO UPLOAD",
+                            "email": export_status.export_request.launcher.email
+                            if export_status.export_request.launcher
+                            else "AUTO UPLOAD",
                         },
                         "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
@@ -866,6 +899,13 @@ class Instance(models.Model):
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
         }
+
+    def soft_delete(self, user: typing.Optional[User] = None):
+        with transaction.atomic():
+            original = copy(self)
+            self.deleted = True
+            self.save()
+            log_modification(original, self, INSTANCE_API, user=user)
 
 
 class InstanceFile(models.Model):
@@ -949,6 +989,19 @@ class ExportRequest(models.Model):
     # backend ended processing the export
     ended_at = models.DateTimeField(null=True, blank=True)
 
+    def __str__(self):
+        return (
+            str(self.id)
+            + " ("
+            + self.status
+            + ") "
+            + str(self.params)
+            + " "
+            + str(self.last_error_message)
+            + " "
+            + str(self.launcher)
+        )
+
 
 class ExportLog(models.Model):
     id = models.BigAutoField(
@@ -960,6 +1013,20 @@ class ExportLog(models.Model):
 
     http_status = models.IntegerField(null=True, blank=True)
     url = models.TextField(null=True, blank=True)
+
+    def __str__(self):
+        return (
+            "ExportLog("
+            + str(self.id)
+            + "): "
+            + str(self.url)
+            + " got "
+            + str(self.http_status)
+            + " received: "
+            + str(self.received)
+            + " sent: "
+            + str(self.sent)
+        )
 
 
 class ExportStatus(models.Model):
@@ -977,8 +1044,37 @@ class ExportStatus(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
 
+    def __str__(self):
+        return "ExportStatus " + str(self.id)
+
 
 class FeatureFlag(models.Model):
+    INSTANT_EXPORT = "INSTANT_EXPORT"
+    TAKE_GPS_ON_FORM = "TAKE_GPS_ON_FORM"
+    REQUIRE_AUTHENTICATION = "REQUIRE_AUTHENTICATION"
+    FORMS_AUTO_UPLOAD = "FORMS_AUTO_UPLOAD"
+
+    FEATURE_FLAGS = {
+        (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
+        (
+            TAKE_GPS_ON_FORM,
+            "Mobile: take GPS on new form",
+            _("GPS localization on start of instance on mobile"),
+        ),
+        (
+            REQUIRE_AUTHENTICATION,
+            "Mobile: authentication required",
+            _("Require authentication on mobile"),
+        ),
+        (
+            FORMS_AUTO_UPLOAD,
+            "",
+            _(
+                "Saving a form as finalized on mobile triggers an upload attempt immediately + everytime network becomes available"
+            ),
+        ),
+    }
+
     code = models.CharField(max_length=30, blank=False)
     name = models.CharField(max_length=100, blank=False)
     description = models.TextField(blank=True)

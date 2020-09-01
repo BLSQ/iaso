@@ -1,5 +1,5 @@
-import { enqueueSnackbar } from '../../../../redux/snackBarsReducer';
-import { errorSnackBar, succesfullSnackBar } from '../../../../utils/constants/snackBars';
+import { enqueueSnackbar } from '../../redux/snackBarsReducer';
+import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
@@ -131,7 +131,7 @@ export const saveMultiEdit = data => (dispatch) => {
             return res;
         })
         .catch((error) => {
-            dispatch(enqueueSnackbar(errorSnackBar('saveMultiEditOrgUnitsError')));
+            dispatch(enqueueSnackbar(errorSnackBar('saveMultiEditOrgUnitsError', null, error)));
             dispatch(setOrgUnitsListFetching(false));
             throw error;
         }));

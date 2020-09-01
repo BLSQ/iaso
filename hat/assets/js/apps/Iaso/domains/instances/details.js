@@ -3,7 +3,6 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
-import UpdateIcon from '@material-ui/icons/Update';
 import Alert from '@material-ui/lab/Alert';
 import { withStyles, Box, Grid } from '@material-ui/core';
 
@@ -13,6 +12,8 @@ import {
     setCurrentInstance as setCurrentInstanceAction,
     fetchInstanceDetail as fetchInstanceDetailAction,
     fetchEditUrl as fetchEditUrlAction,
+    softDeleteInstance as softDeleteAction,
+    reAssignInstance as reAssignInstanceAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -20,6 +21,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
+import ReAssignInstanceDialogComponent from './components/ReAssignInstanceDialogComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
@@ -42,30 +44,33 @@ const styles = theme => ({
     },
 });
 
-const actions = [
+const actions = (currentInstance, reAssignInstance) => [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
-        disabled: false,
+        disabled: currentInstance && currentInstance.deleted,
     },
     {
         id: 'instanceReAssignAction',
-        icon: <UpdateIcon />,
-        disabled: true,
+        icon: (
+            <ReAssignInstanceDialogComponent
+                currentInstance={currentInstance}
+                onReAssignInstance={reAssignInstance}
+            />
+        ),
+        disabled: currentInstance && currentInstance.deleted,
     },
     {
         id: 'instanceDeleteAction',
         icon: <DeleteIcon />,
-        disabled: true,
+        disabled: currentInstance && currentInstance.deleted,
     },
 ];
 
 class InstanceDetails extends Component {
     constructor(props) {
         super(props);
-        this.state = {};
         props.setCurrentInstance(null);
-        this.onActionSelected = this.onActionSelected.bind(this);
     }
 
     componentDidMount() {
@@ -80,6 +85,13 @@ class InstanceDetails extends Component {
         if (action.id === 'instanceEditAction' && this.props.currentInstance) {
             this.props.fetchEditUrl(this.props.currentInstance, window.location);
         }
+
+        if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
+            this.props.softDelete(this.props.currentInstance);
+        }
+
+        // if (action.id === 'instanceReAssignAction' && this.props.currentInstance) {
+        // }
     }
 
     render() {
@@ -87,11 +99,13 @@ class InstanceDetails extends Component {
             classes,
             fetching,
             currentInstance,
+            reAssignInstance,
             intl: { formatMessage },
             router,
             prevPathname,
             redirectToReplace,
         } = this.props;
+
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -113,74 +127,63 @@ class InstanceDetails extends Component {
                         }
                     }}
                 />
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
-                {
-                    currentInstance
-                    && (
-                        <Box className={classes.containerFullHeightNoTabPadded}>
-                            <SpeedDialInstanceActions
-                                actions={actions}
-                                onActionSelected={this.onActionSelected}
-                            />
-                            <Grid container spacing={4}>
-
-                                <Grid xs={12} md={5} item>
-                                    {currentInstance.deleted && (
-                                        <Alert severity="warning" className={classes.alert}>
-                                            {formatMessage(MESSAGES.warningSoftDeleted)}
-                                            <br />
-                                            {formatMessage(MESSAGES.warningSoftDeletedExport)}
-                                            <br />
-                                            {formatMessage(MESSAGES.warningSoftDeletedDerived)}
-                                            <br />
-                                        </Alert>
-                                    )}
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.infos)}
-                                        padded
-                                    >
-                                        <InstanceDetailsInfos currentInstance={currentInstance} />
+                {fetching && <LoadingSpinner />}
+                {currentInstance && (
+                    <Box className={classes.containerFullHeightNoTabPadded}>
+                        <SpeedDialInstanceActions
+                            actions={actions(currentInstance, reAssignInstance)}
+                            onActionSelected={action => this.onActionSelected(action)}
+                        />
+                        <Grid container spacing={4}>
+                            <Grid xs={12} md={5} item>
+                                {currentInstance.deleted && (
+                                    <Alert severity="warning" className={classes.alert}>
+                                        {formatMessage(MESSAGES.warningSoftDeleted)}
+                                        <br />
+                                        {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                        <br />
+                                        {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                        <br />
+                                    </Alert>
+                                )}
+                                <WidgetPaper title={formatMessage(MESSAGES.infos)} padded>
+                                    <InstanceDetailsInfos currentInstance={currentInstance} />
+                                </WidgetPaper>
+                                <WidgetPaper title={formatMessage(MESSAGES.location)}>
+                                    <InstanceDetailsLocation currentInstance={currentInstance} />
+                                </WidgetPaper>
+                                <InstanceDetailsExportRequests
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
+                                {currentInstance.files.length > 0 && (
+                                    <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
+                                        <InstancesFilesList
+                                            fetchDetails={false}
+                                            instanceDetail={currentInstance}
+                                            files={getInstancesFilesList([currentInstance])}
+                                        />
                                     </WidgetPaper>
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.location)}
-                                    >
-                                        <InstanceDetailsLocation currentInstance={currentInstance} />
-                                    </WidgetPaper>
-                                    <InstanceDetailsExportRequests
-                                        currentInstance={currentInstance}
-                                        classes={classes}
-                                    />
-                                    {currentInstance.files.length > 0 && (
-                                        <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                            <InstancesFilesList
-                                                fetchDetails={false}
-                                                instanceDetail={currentInstance}
-                                                files={getInstancesFilesList([currentInstance])}
-                                            />
-                                        </WidgetPaper>
-                                    )}
-                                </Grid>
-
-                                <Grid xs={12} md={7} item>
-                                    <WidgetPaper
-                                        title={formatMessage(MESSAGES.form)}
-                                        IconButton={IconButtonComponent}
-                                        iconButtonProps={{
-                                            onClick: () => window.open(currentInstance.file_url, '_blank'),
-                                            icon: 'xml',
-                                            color: 'secondary',
-                                            tooltipMessage: MESSAGES.downloadXml,
-                                        }}
-                                    >
-                                        <InstanceFileContent instance={currentInstance} />
-                                    </WidgetPaper>
-                                </Grid>
+                                )}
                             </Grid>
-                        </Box>
-                    )}
+
+                            <Grid xs={12} md={7} item>
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.form)}
+                                    IconButton={IconButtonComponent}
+                                    iconButtonProps={{
+                                        onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                        icon: 'xml',
+                                        color: 'secondary',
+                                        tooltipMessage: MESSAGES.downloadXml,
+                                    }}
+                                >
+                                    <InstanceFileContent instance={currentInstance} />
+                                </WidgetPaper>
+                            </Grid>
+                        </Grid>
+                    </Box>
+                )}
             </section>
         );
     }
@@ -203,6 +206,8 @@ InstanceDetails.propTypes = {
     fetchInstanceDetail: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     fetchEditUrl: PropTypes.func.isRequired,
+    softDelete: PropTypes.func.isRequired,
+    reAssignInstance: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -216,8 +221,10 @@ const MapDispatchToProps = dispatch => ({
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
             fetchEditUrl: fetchEditUrlAction,
+            softDelete: softDeleteAction,
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
+            reAssignInstance: reAssignInstanceAction,
         },
         dispatch,
     ),

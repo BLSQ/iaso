@@ -1,15 +1,15 @@
+from django.utils import timezone
 from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.response import Response
 from rest_framework.decorators import action
 
 from iaso.api.common import safe_api_import
+from iaso.gpkg import org_units_to_gpkg
 from iaso.models import (
     OrgUnit,
     OrgUnitType,
     Instance,
-    SourceVersion,
     Group,
     Project,
     BulkOperation,
@@ -17,7 +17,7 @@ from iaso.models import (
 from django.contrib.gis.geos import Point
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
-from hat.geo.geojson import geojson_queryset
+from iaso.utils import geojson_queryset
 from django.db import transaction
 from django.db.models import Q
 from copy import deepcopy
@@ -32,13 +32,9 @@ from hat.api.export_utils import (
 )
 import json
 from django.db.models import Value, IntegerField
-from hat.common.utils import queryset_iterator
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
-    def has_permission(self, request, view):
-        return True
-
     def has_object_permission(self, request, view, obj):
         if not (
             request.user.is_authenticated
@@ -72,32 +68,36 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     permission_classes = [HasOrgUnitPermission]
 
+    def get_queryset(self):
+        return OrgUnit.objects.filter_for_user_and_app_id(
+            self.request.user, self.request.query_params.get("app_id")
+        )
+
     def list(self, request):
-        queryset = OrgUnit.objects.all()
-        if not request.user.is_anonymous:
-            account = request.user.iaso_profile.account
-            version_ids = (
-                SourceVersion.objects.filter(data_source__projects__account=account)
-                .values_list("id", flat=True)
-                .distinct()
-            )
-            queryset = queryset.filter(version_id__in=version_ids)
-            default_app_id = None
-        else:
-            default_app_id = "org.bluesquarehub.iaso"
+        queryset = self.get_queryset()
 
         limit = request.GET.get("limit", None)
         page_offset = request.GET.get("page", 1)
         order = request.GET.get("order", "name").split(",")
-        csv_format = request.GET.get("csv", None)
-        xlsx_format = request.GET.get("xlsx", None)
+
+        csv_format = bool(request.query_params.get("csv"))
+        xlsx_format = bool(request.query_params.get("xlsx"))
+        gpkg_format = bool(request.query_params.get("gpkg"))
+        is_export = any([csv_format, xlsx_format, gpkg_format])
 
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
-        app_id = request.GET.get("app_id", default_app_id)
-        if app_id:
-            queryset = queryset.filter(org_unit_type__projects__app_id=app_id)
+
+        if not is_export and limit and not as_location:
+            queryset.prefetch_related("group_set")
+
+        if as_location:
+            queryset = queryset.filter(
+                Q(location__isnull=False)
+                | Q(simplified_geom__isnull=False)
+            )
+
         searches = request.GET.get("searches", None)
         counts = []
         if searches:
@@ -117,11 +117,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 search_index += 1
         else:
             queryset = build_org_units_queryset(queryset, request.GET)
+
         queryset = queryset.order_by(*order)
 
-        if csv_format is None and xlsx_format is None:
+        if not is_export:
             if limit and not as_location:
-                queryset.prefetch_related("group_set")
                 limit = int(limit)
                 page_offset = int(page_offset)
                 paginator = Paginator(queryset, limit)
@@ -147,7 +147,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(
+                        shape_queryset = self.get_queryset().filter(
                             id=temp_org_unit["id"]
                         )
                         temp_org_unit["geo_json"] = geojson_queryset(
@@ -157,12 +157,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response({"orgUnits": org_units})
             elif as_location:
                 limit = int(limit)
-                queryset = queryset.filter(
-                    Q(location__isnull=False)
-                    | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
-                    | Q(simplified_geom__isnull=False)
-                )
-
                 paginator = Paginator(queryset, limit)
                 page = paginator.page(1)
                 org_units = []
@@ -170,7 +164,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_location()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = OrgUnit.objects.all().filter(
+                        shape_queryset = self.get_queryset().filter(
                             id=temp_org_unit["id"]
                         )
                         temp_org_unit["geo_json"] = geojson_queryset(
@@ -183,6 +177,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 return Response(
                     {"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]}
                 )
+        elif gpkg_format:
+            return self.list_to_gpkg(queryset)
         else:
             columns = [
                 {"title": "ID", "width": 10},
@@ -212,14 +208,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "id",
                 "name",
                 "org_unit_type__name",
-                "latitude",
-                "longitude",
                 "version__data_source__name",
-                "validated",
+                "validation_status",
                 "source_ref",
                 "created_at",
                 "updated_at",
-                *parent_field_names
+                *parent_field_names,
             )
 
             filename = "org_units"
@@ -235,7 +229,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("version__data_source__name"),
-                    org_unit.get("validated"),
+                    org_unit.get("validation_status"),
                     org_unit.get("source_ref"),
                     *[org_unit.get(field_name) for field_name in parent_field_names],
                 ]
@@ -264,58 +258,73 @@ class OrgUnitViewSet(viewsets.ViewSet):
             response["Content-Disposition"] = "attachment; filename=%s" % filename
             return response
 
+    def list_to_gpkg(self, queryset):
+        queryset = queryset.prefetch_related("parent", "org_unit_type")
+
+        response = HttpResponse(
+            org_units_to_gpkg(queryset), content_type="application/octet-stream",
+        )
+        filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
+        response["Content-Disposition"] = f"attachment; filename={filename}"
+
+        return response
+
     def partial_update(self, request, pk=None):
-        org_unit = get_object_or_404(OrgUnit, id=pk)
+        org_unit = get_object_or_404(self.get_queryset(), id=pk)
         self.check_object_permissions(request, org_unit)
 
         original_copy = deepcopy(org_unit)
         org_unit.name = request.data.get("name", "")
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
-        org_unit.validated = request.data.get("status", True)
+        org_unit.validation_status = request.data.get("validation_status", OrgUnit.VALIDATION_VALID)
         geo_json = request.data.get("geo_json", None)
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
         groups = request.data.get("groups")
-        if (
-            geo_json
-            and geo_json["features"][0]["geometry"]
-            and geo_json["features"][0]["geometry"]["coordinates"]
-        ):
-            if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                org_unit.simplified_geom = Polygon(
-                    geo_json["features"][0]["geometry"]["coordinates"][0]
-                )
-            else:
-                # DB has a single Polygon, refuse if we have more, or less.
-                return Response(
-                    "Only one polygon should be saved in the geo_json shape",
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        elif simplified_geom:
-            org_unit.simplified_geom = simplified_geom
-        else:
-            org_unit.simplified_geom = None
 
-        if (
-            catchment
-            and catchment["features"][0]["geometry"]
-            and catchment["features"][0]["geometry"]["coordinates"]
-        ):
-            if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
-                org_unit.catchment = Polygon(
-                    catchment["features"][0]["geometry"]["coordinates"][0]
-                )
+        if False:  # simplified geom shape editing is currently disabled
+            if (
+                geo_json
+                and geo_json["features"][0]["geometry"]
+                and geo_json["features"][0]["geometry"]["coordinates"]
+            ):
+                if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
+                    org_unit.simplified_geom = Polygon(
+                        geo_json["features"][0]["geometry"]["coordinates"][0]
+                    )
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response(
+                        "Only one polygon should be saved in the geo_json shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            elif simplified_geom:
+                org_unit.simplified_geom = simplified_geom
             else:
-                # DB has a single Polygon, refuse if we have more, or less.
-                return Response(
-                    "Only one polygon should be saved in the catchment shape",
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-        else:
-            org_unit.catchment = None
+                org_unit.simplified_geom = None
+
+        if False:  # catchment shape editing is currently disabled
+            if (
+                catchment
+                and catchment["features"][0]["geometry"]
+                and catchment["features"][0]["geometry"]["coordinates"]
+            ):
+                if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
+                    org_unit.catchment = Polygon(
+                        catchment["features"][0]["geometry"]["coordinates"][0]
+                    )
+                else:
+                    # DB has a single Polygon, refuse if we have more, or less.
+                    return Response(
+                        "Only one polygon should be saved in the catchment shape",
+                        status=status.HTTP_400_BAD_REQUEST,
+                    )
+            else:
+                org_unit.catchment = None
+
         latitude = request.data.get("latitude", None)
         longitude = request.data.get("longitude", None)
 
@@ -339,7 +348,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
         if parent_id:
-            parent_org_unit = get_object_or_404(OrgUnit, id=parent_id)
+            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
             org_unit.parent = parent_org_unit
         else:
             org_unit.parent = None
@@ -357,7 +366,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:
-            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(
                     queryset, geometry_field="simplified_geom"
@@ -370,28 +379,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return Response(res)
 
     @safe_api_import("orgUnit")
-    def create(self, api_import, request):
-        app_id = request.GET.get("app_id")
-        new_org_units = import_data(request.data, request.user, api_import, app_id)
+    def create(self, _, request):
+        new_org_units = import_data(
+            request.data, request.user, request.query_params.get("app_id")
+        )
 
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
-        org_unit = get_object_or_404(OrgUnit, pk=pk)
+        org_unit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
 
         res = org_unit.as_dict_with_parents()
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:
-            queryset = OrgUnit.objects.all().filter(id=org_unit.id)
+            geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:
                 res["geo_json"] = geojson_queryset(
-                    queryset, geometry_field="simplified_geom"
+                    geo_queryset, geometry_field="simplified_geom"
                 )
             if org_unit.catchment:
                 res["catchment"] = geojson_queryset(
-                    queryset, geometry_field="catchment"
+                    geo_queryset, geometry_field="catchment"
                 )
         return Response(res)
 
@@ -402,7 +412,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     )
     def bulkupdate(self, request):
         select_all = request.data.get("select_all", None)
-        validated = request.data.get("validated", None)
+        validation_status = request.data.get("validation_status", None)
         org_unit_type_id = request.data.get("org_unit_type", None)
         groups_ids_added = request.data.get("groups_added", None)
         groups_ids_removed = request.data.get("groups_removed", None)
@@ -411,9 +421,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         searches = request.data.get("searches", [])
 
         # Restrict qs to org units accessible to the authenticated user
-        queryset = OrgUnit.objects.filter(
-            version__data_source__projects__account__id=request.user.iaso_profile.account.id
-        )
+        queryset = self.get_queryset()
 
         if not select_all:
             queryset = queryset.filter(pk__in=selected_ids)
@@ -428,14 +436,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 else:
                     queryset = queryset.union(additional_queryset)
                 search_index += 1
-
         if queryset.count() > 0:
             with transaction.atomic():
                 for org_unit in queryset.iterator():
                     OrgUnit.objects.update_single_unit_from_bulk(
                         request.user,
                         org_unit,
-                        validated=validated,
+                        validation_status=validation_status,
                         org_unit_type_id=org_unit_type_id,
                         groups_ids_added=groups_ids_added,
                         groups_ids_removed=groups_ids_removed,
@@ -447,25 +454,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     operation_type=BulkOperation.OPERATION_TYPE_UPDATE,
                     operation_count=queryset.count(),
                 )
-
         # id is a kind of placeholder for a future job id
         return Response({"id": 1}, status=status.HTTP_201_CREATED)
 
 
-def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
+def import_data(org_units, user, app_id):
     new_org_units = []
-    version = None
-    if not user.is_anonymous:
-        version = user.iaso_profile.account.default_version
-        project = Project.objects.filter(app_id=app_id).first()
-        if project and project.needs_authentication:
-            if not user or user.iaso_profile.account.id != project.account.id:
-                raise PermissionDenied("User permissions problem")
-    elif app_id is not None:
-        project = Project.objects.get(app_id=app_id)
-        if project.needs_authentication:
-            raise PermissionDenied("User permissions problem")
-        version = project.account.default_version
+    project = Project.objects.get_for_user_and_app_id(user, app_id)
 
     for org_unit in org_units:
         uuid = org_unit.get("id", None)
@@ -480,7 +475,7 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
 
         if created:
             org_unit_db.custom = True
-            org_unit_db.validated = False
+            org_unit_db.validation_status = OrgUnit.VALIDATION_NEW
             org_unit_db.name = org_unit.get("name", None)
             org_unit_db.accuracy = org_unit.get("accuracy", None)
             parent_id = org_unit.get("parentId", None)
@@ -521,13 +516,13 @@ def import_data(org_units, user, api_import, app_id="org.bluesquarehub.iaso"):
                 org_unit_db.location = org_unit_location
 
             new_org_units.append(org_unit_db)
-            org_unit_db.version = version
+            org_unit_db.version = project.account.default_version
             org_unit_db.save()
     return new_org_units
 
 
 def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_queryset()
-    validated = params.get("validated", "true")
+    validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     search = params.get("search", None)
 
@@ -547,18 +542,30 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     link_source = params.get("linkSource", None)
     link_version = params.get("linkVersion", None)
 
-    if validated == "true":
-        validated = True
-    if validated == "false":
-        validated = False
-
-    if validated != "both":
-        queryset = queryset.filter(validated=validated)
+    if validation_status != "all":
+        queryset = queryset.filter(validation_status=validation_status)
 
     if search:
-        queryset = queryset.filter(
-            Q(name__icontains=search) | Q(aliases__contains=[search])
-        )
+        if search.startswith("ids:"):
+            s = search.replace("ids:", "")
+            try:
+                ids = [i.strip() for i in s.split(",")]
+                queryset = queryset.filter(id__in=ids)
+            except:
+                queryset = queryset.filter(id__in=[])
+                print("Failed parsing ids in search", search)
+        elif search.startswith("refs:"):
+            s = search.replace("refs:", "")
+            try:
+                refs = [i.strip() for i in s.split(",")]
+                queryset = queryset.filter(source_ref__in=refs)
+            except:
+                queryset = queryset.filter(source_ref__in=[])
+                print("Failed parsing refs in search", search)
+        else:
+            queryset = queryset.filter(
+                Q(name__icontains=search) | Q(aliases__contains=[search])
+            )
 
     if group:
         queryset = queryset.filter(groups__in=group.split(","))
@@ -572,7 +579,8 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if has_instances is not None:
         ids_with_instances = Instance.objects.filter(
             org_unit__isnull=False
-        ).values_list("org_unit_id", flat=True)
+        ).exclude(file="").values_list("org_unit_id", flat=True)
+
         if has_instances == "true":
             queryset = queryset.filter(id__in=ids_with_instances)
         else:
@@ -590,14 +598,11 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if with_location == "true":
         queryset = queryset.filter(
             Q(location__isnull=False)
-            | (Q(latitude__isnull=False) & Q(longitude__isnull=False))
         )
 
     if with_location == "false":
         queryset = queryset.filter(
             Q(location__isnull=True)
-            & Q(latitude__isnull=True)
-            & Q(longitude__isnull=True)
         )
 
     if parent_id:

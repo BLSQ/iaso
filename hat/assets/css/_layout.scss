@@ -17,6 +17,18 @@ article {
     padding-top: $banner-height;
 }
 
+@mixin text--error {
+    color: $red;
+}
+
+@mixin text--warning {
+    color: $orange;
+}
+
+@mixin text--success {
+    color: $green;
+}
+
 .banner--stage-warning,
 #banner--warning {
     position: fixed;

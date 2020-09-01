@@ -1,13 +1,14 @@
 import typing
-
+from uuid import uuid4
+from django.contrib.gis.geos import Point
 from django.test import tag
 from django.core.files import File
 from unittest import mock
 
+from hat.api.export_utils import timestamp_to_utc_datetime
 from iaso import models as m
 from iaso.test import APITestCase
-
-import hat.vector_control.models as hatmodels
+from hat.audit.models import Modification
 
 
 class InstancesAPITestCase(APITestCase):
@@ -20,6 +21,7 @@ class InstancesAPITestCase(APITestCase):
         sw_version = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         star_wars.default_version = sw_version
         star_wars.save()
+        cls.sw_version = sw_version
 
         cls.yoda = cls.create_user_with_profile(
             username="yoda", account=star_wars, permissions=["iaso_forms"]
@@ -76,6 +78,17 @@ class InstancesAPITestCase(APITestCase):
             period_type="QUARTER",
             single_per_period=True,
         )
+
+        # Form without period
+        cls.form_3 = m.Form.objects.create(
+            name="Hydroponic public survey III",
+            form_id="sample34",
+            device_field="deviceid",
+            location_field="geoloc",
+            # period_type="QUARTER",
+            # single_per_period=True,
+        )
+
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
@@ -85,9 +98,20 @@ class InstancesAPITestCase(APITestCase):
         )
         cls.form_2.save()
 
+
+        # Instance saved without period
+        cls.form_3.form_versions.create(file=form_2_file_mock, version_id="2020022401")
+        cls.form_3.org_unit_types.add(cls.jedi_council)
+        cls.create_form_instance(
+            form=cls.form_3, org_unit=cls.jedi_council_corruscant
+        )
+        cls.form_3.save()
+
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
         cls.project.forms.add(cls.form_2)
+        cls.project.forms.add(cls.form_3)
+        sw_source.projects.add(cls.project)
         cls.project.save()
 
     @tag("iaso_only")
@@ -104,12 +128,75 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
-    def test_instance_create_works_when_anonymous(self):
-        """CREATE /instances/"""
+    def test_instance_create_anonymous(self):
+        """POST /api/instances/ happy path (anonymous)"""
 
+        instance_uuid = str(uuid4())
         body = [
             {
-                "id": "uuid",
+                "id": instance_uuid,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153709,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "period": "202002",
+                "latitude": 50.2,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "1",
+            }
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=body,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        last_instance = m.Instance.objects.last()
+        self.assertEqual(instance_uuid, last_instance.uuid)
+        self.assertEquals(
+            "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name
+        )
+        self.assertEqual("202002", last_instance.period)
+        self.assertIsInstance(last_instance.location, Point)
+        self.assertEqual(10, last_instance.accuracy)
+        self.assertEqual(4.4, last_instance.location.x)
+        self.assertEqual(50.2, last_instance.location.y)
+        self.assertEqual(self.jedi_council_corruscant, last_instance.org_unit)
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertEqual(
+            timestamp_to_utc_datetime(1565258153704), last_instance.created_at
+        )
+        # TODO: the assertion below will fail because our API does not store properly the updated_at property
+        # TODO: (See IA-278: https://bluesquare.atlassian.net/browse/IA-278)
+        # self.assertEqual(
+        #     timestamp_to_utc_datetime(1565258153709), last_instance.updated_at
+        # )
+        self.assertEqual(self.form_1, last_instance.form)
+        self.assertIsNotNone(last_instance.project)
+
+    @tag("iaso_only")
+    def test_instance_create_pre_existing(self):
+        """POST /api/instances/ with pre-existing, deleted instance"""
+
+        instance_uuid = str(uuid4())
+        pre_existing_instance = self.create_form_instance(
+            form=self.form_1,
+            name="Pre-existing name",
+            period="202001",
+            org_unit=self.jedi_council_corruscant,
+            uuid=instance_uuid,
+            deleted=True,
+        )
+        pre_existing_instance_count = m.Instance.objects.count()
+        body = [
+            {
+                "id": instance_uuid,
                 "latitude": 4.4,
                 "created_at": 1565258153704,
                 "updated_at": 1565258153704,
@@ -119,24 +206,119 @@ class InstancesAPITestCase(APITestCase):
                 "accuracy": 10,
                 "altitude": 100,
                 "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
-                "name": "1",
+                "name": "Mobile app name",
             }
         ]
-        response = self.client.post(f"/api/instances/", data=body, format="json")
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=body,
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
-        last_import = hatmodels.APIImport.objects.all().last()
-        self.assertEquals(last_import.import_type, "instance")
-        self.assertEquals(last_import.has_problem, False)
-        self.assertEquals(last_import.json_body, body)
-        self.assertEquals(last_import.user, None)
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
 
-        last_instance = m.Instance.objects.last()
+        self.assertEqual(
+            pre_existing_instance_count, m.Instance.objects.count()
+        )  # No added instance
+        pre_existing_instance.refresh_from_db()
+        self.assertTrue(pre_existing_instance.deleted)
+        self.assertEqual("Pre-existing name", pre_existing_instance.name)
 
-        self.assertEquals(
-            "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml", last_instance.file_name
+    @tag("iaso_only")
+    def test_instance_create_two_one_is_pre_existing(self):
+        """POST /api/instances/ with one pre-existing instance and a new one"""
+
+        instance_uuid = str(uuid4())
+        pre_existing_instance = self.create_form_instance(
+            form=self.form_1,
+            name="Pre-existing name",
+            period="202002",
+            org_unit=self.jedi_council_corruscant,
+            uuid=instance_uuid,
         )
-        self.assertEquals(None, last_instance.project)
+        pre_existing_instance_count = m.Instance.objects.count()
+        body = [
+            {
+                "id": str(uuid4()),
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "Mobile app name i1",
+            },
+            {
+                "id": instance_uuid,
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "Mobile app name i2",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=body,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertAPIImport("instance", request_body=body, has_problems=False)
+
+        self.assertEqual(
+            pre_existing_instance_count + 1, m.Instance.objects.count()
+        )  # One added instance
+        pre_existing_instance.refresh_from_db()
+        self.assertEqual("Pre-existing name", pre_existing_instance.name)
+
+    @tag("iaso_only")
+    def test_instance_create_after_sync(self):
+        """POST /api/instances/ with one pre-existing instance (created by the /sync view, with a filename only)"""
+
+        instance_filename = "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml"
+        pre_existing_instance = self.create_form_instance(file_name=instance_filename)
+        pre_existing_instance_count = m.Instance.objects.count()
+        body = [
+            {
+                "id": str(uuid4()),
+                "latitude": 4.4,
+                "created_at": 1565258153704,
+                "updated_at": 1565258153704,
+                "orgUnitId": self.jedi_council_corruscant.id,
+                "formId": self.form_1.id,
+                "longitude": 4.4,
+                "accuracy": 10,
+                "altitude": 100,
+                "file": "\/storage\/emulated\/0\/odk\/instances\/RDC Collecte Data DPS_2_2019-08-08_11-54-46\/RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+                "name": "Mobile app name",
+            },
+        ]
+        response = self.client.post(
+            f"/api/instances/?app_id=stars.empire.agriculture.hydroponics",
+            data=body,
+            format="json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            pre_existing_instance_count, m.Instance.objects.count()
+        )  # No-added instance
+        pre_existing_instance.refresh_from_db()
+        self.assertEqual(
+            "RDC Collecte Data DPS_2_2019-08-08_11-54-46.xml",
+            pre_existing_instance.file_name,
+        )
+        self.assertEqual("Mobile app name", pre_existing_instance.name)
 
     @tag("iaso_only")
     def test_instance_list_by_form_id_ok(self):
@@ -181,6 +363,25 @@ class InstancesAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
 
     @tag("iaso_only")
+    def test_soft_delete_an_instance(self):
+        """DELETE /instances/{instanceid}/"""
+
+        soft_deleted_instance = self.form_1.instances.first()
+
+        self.client.force_authenticate(self.yoda)
+
+        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertFalse(response.json()["deleted"])
+
+        response = self.client.delete(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+
+        response = self.client.get(f"/api/instances/{soft_deleted_instance.id}/")
+        self.assertJSONResponse(response, 200)
+        self.assertTrue(response.json()["deleted"])
+
+    @tag("iaso_only")
     def test_instance_list_by_form_id_and_status_ok(self):
         """GET /instances/?form_id=form_id&status="""
         self.client.force_authenticate(self.yoda)
@@ -210,3 +411,94 @@ class InstancesAPITestCase(APITestCase):
         self.assertHasField(instance_data, "id", int)
         self.assertHasField(instance_data, "status", str)
         self.assertHasField(instance_data, "correlation_id", str, optional=True)
+
+
+    @tag("iaso_only")
+    def test_instance_patch_org_unit_period(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council New New",
+            version= self.sw_version,
+            org_unit_type = self.jedi_council
+        )
+        instance_to_patch = self.form_2.instances.first()
+
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"org_unit": new_org_unit.id, "period": "2022Q1"},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response,200)
+
+        instance_to_patch.refresh_from_db()
+        self.assertEqual(instance_to_patch.org_unit,new_org_unit)
+        self.assertEqual(instance_to_patch.period,"2022Q1")
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertEqual(
+            "202001",
+            modification.past_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            "2022Q1",
+            modification.new_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            self.jedi_council_corruscant.id,
+            modification.past_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(
+            new_org_unit.id,
+            modification.new_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(instance_to_patch, modification.content_object)
+
+    @tag("iaso_only")
+    def test_instance_patch_org_unit(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+        new_org_unit = m.OrgUnit.objects.create(
+            name="Corruscant Jedi Council Hospital",
+            version= self.sw_version,
+            org_unit_type = self.jedi_council
+        )
+        instance_to_patch = self.form_3.instances.first()
+
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"org_unit": new_org_unit.id},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response,200)
+
+        instance_to_patch.refresh_from_db()
+        self.assertEqual(instance_to_patch.org_unit,new_org_unit)
+        self.assertEqual(instance_to_patch.period,None)
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertEqual(
+            None,
+            modification.past_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            None,
+            modification.new_value[0]["fields"]["period"],
+        )
+        self.assertEqual(
+            self.jedi_council_corruscant.id,
+            modification.past_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(
+            new_org_unit.id,
+            modification.new_value[0]["fields"]["org_unit"],
+        )
+        self.assertEqual(instance_to_patch, modification.content_object)

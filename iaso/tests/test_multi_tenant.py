@@ -87,7 +87,11 @@ class MultiTenantTestCase(APITestCase):
             "name": name,
         }
 
-        response = yoda_client.post("/api/orgunits/", data=[unit_body], format="json")
+        response = yoda_client.post(
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=[unit_body],
+            format="json",
+        )
         self.assertEqual(response.status_code, 200)
 
         json_response = json.loads(response.content)
@@ -103,7 +107,7 @@ class MultiTenantTestCase(APITestCase):
             "/api/orgunits/%s/" % coruscant_id, accept="application/json"
         )
         self.assertEqual(
-            response.status_code, 403
+            response.status_code, 404
         )  # raccoon not authorized to see Star Wars data
 
         response = yoda_client.get(
@@ -116,6 +120,7 @@ class MultiTenantTestCase(APITestCase):
     @tag("iaso_only")
     def test_instance_access(self):
         """Checking access to org units based on account"""
+
         yoda_client = self.yoda_client
         raccoon_client = self.raccoon_client
         c = APIClient()
@@ -137,7 +142,11 @@ class MultiTenantTestCase(APITestCase):
             "name": name,
         }
 
-        c.post("/api/orgunits/", data=[unit_body], format="json")
+        c.post(
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
+            data=[unit_body],
+            format="json",
+        )
         instance_uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b4"
         name = "Wooooh wooooh woo riii"
 
@@ -229,6 +238,20 @@ class MultiTenantTestCase(APITestCase):
 
         # uploading the xml file should have associated the device id with the project
         self.assertEqual(len(content["devices"]), 0)
+
+        # taking the opportunity to test if the filter on hasInstances is working in the search
+        response = yoda_client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"true","orgUnitParentId":null}]&limit=50',
+        )
+
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()['orgunits'][0]['name'], 'Kashyyyk')
+
+        response = yoda_client.get(
+            '/api/orgunits/?&order=id&page=1&searchTabIndex=0&searches=[{"validation_status":"all","color":"4dd0e1","hasInstances":"false","orgUnitParentId":null}]&limit=50',
+        )
+        self.assertJSONResponse(response, 200)
+        self.assertEqual(response.json()['count'], 0)
 
     @tag("iaso_only")
     def test_source_access(self):

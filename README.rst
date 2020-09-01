@@ -4,12 +4,7 @@ Introduction & Settings
 
 Introduction
 ============
-
-Trypelim Dashboard is an online tool to see and manage data related to
-Human African Trypanosomiasis and the activities undertaken by different
-organisations to eradicate it.
-
-The dashboard presents data from historical data sets and the mobile application.
+Iaso is a georegistry and data collection platform structured around org unit trees (also known a master lists)
 
 
 .. note:: The dashboard is optimized for Chrome and must be compatible with
@@ -55,7 +50,7 @@ Run in project directory:
 
 .. code:: bash
 
-    docker-compose run hat manage migrate
+    docker-compose run iaso manage migrate
 
 4. Start the server
 -------------------
@@ -70,26 +65,11 @@ Run in project directory:
 This will build and download the containers and start them. The ``docker-compose.yml``
 file describes the setup of the containers.
 
-The web server should be reachable at ``https://<docker-host>:8443``.
-
-Because the https connection uses a self signed cert in development, that needs
-to be accepted manually. If you see no styles in the browser, have a look in the
-js-console if the requests to webpack fail. If they fail, try to open the webpack
-url once and accept the self signed cert there as well.
-
-It will load some users via fixtures. See the `user name/password <#fixtures>`__
-combos further down.
-
-`Jupyter <http://jupyter.org/>`__ iPython notebook server is run at port ``8888``
-as well, that can be used for exploration in development.
-
-We use `Sphinx <http://www.sphinx-doc.org/en/stable/>`__ to generate app
-documentation. This documentation should be reachable at
-``https://<docker-host>:8443/static/docs/index.html``.
+The web server should be reachable at ``http://localhost:8081``.
 
 .. code:: bash
 
-    docker-compose run hat gen_docs
+    docker-compose run iaso gen_docs
 
 
 Create a user
@@ -99,50 +79,11 @@ To login to the app or the django admin, a superuser needs to be created with:
 
 .. code:: bash
 
-    docker-compose run hat manage createsuperuser
+    docker-compose run iaso manage createsuperuser
 
 
 Then additional users with custom groups and permissions can be added through
-the django admin at ``https://<docker-host>:8443/admin`` or loaded via fixtures.
-
-
-Import mobile backups
-=====================
-
-For the app to be able to decrypt mobile backups, it needs a private key.
-The key must be exported as env var ``$HAT_MOBILE_KEY`` and will be picked up by
-docker-compose. The key is also needed to run the tests.
-
-The mobile app can write encrypted backups to a usb storage device.
-The data is encrypted using `JSON Web Encryption <https://tools.ietf.org/html/rfc7516>`__.
-It uses RSA-OAEP-256 for the asymetric part and A256GCM for the symmetric
-encryption from `JSON Web Algorithms <https://tools.ietf.org/html/rfc7518>`__.
-
-The public RSA key will be bundled with the mobile app. During a backup, the app
-will generate a new AES key to encrypt the data. The AES key will then be
-encrypted using the RSA public key. The encrypted data will be bundled with a
-header containing the encrypted AES key, iv, the authentication Tag and some extra
-info and encoded in base64. This process is done by a library which uses the
-native browser webcrypto api. Eventually the encryption bundle will be written
-to a file on the usb storage. The app will also write a second file containing
-a date stamp and some info in cleartext.
-
-Keys are stored in `JSON Web Key <https://tools.ietf.org/html/rfc7517>`__ format.
-The public key is bundled with the app.
-
-
-A backup can be decrypted using the decrypt script and the private key, e.g.:
-
-.. code:: bash
-
-    ./scripts/decrypt_mobilebackup.js '$HAT_MOBILE_KEY' data.backup.enc > data.json
-
-
-If you'd need to ENCRYPT a file, you can use the encrypt script.
-
-.. code:: bash
-
-    ./scripts/encrypt_mobilebackup.js data.json > data.backup.enc
+the django admin at ``/admin`` or loaded via fixtures.
 
 
 Run commands on the server
@@ -159,44 +100,82 @@ The following are some examples:
 +-------------------------------------+----------------------------------------------------------+
 | Action                              | Command                                                  |
 +=====================================+==========================================================+
-| Generate documentation              | ``docker-compose run hat gen_docs``                      |
+| Run tests                           | ``docker-compose run iaso test``                          |
 +-------------------------------------+----------------------------------------------------------+
-| Run tests                           | ``docker-compose run hat test``                          |
+| Create a shell inside the container | ``docker-compose run iaso bash``                          |
 +-------------------------------------+----------------------------------------------------------+
-| Run JS tests                        | ``docker-compose run hat test_js``                       |
+| Run a shell command                 | ``docker-compose run iaso eval curl http://google.com `` |
 +-------------------------------------+----------------------------------------------------------+
-| Run JS tests without Lint           | ``docker-compose run hat mocha``                         |
+| Run django manage.py                | ``docker-compose run iaso manage help``                   |
 +-------------------------------------+----------------------------------------------------------+
-| Run integration tests               | ``docker-compose run hat test_integration``              |
+| Create a python shell               | ``docker-compose run iaso manage shell``                  |
 +-------------------------------------+----------------------------------------------------------+
-| Create a shell inside the container | ``docker-compose run hat bash``                          |
+| Create a postgresql shell           | ``docker-compose run iaso manage dbshell``                |
 +-------------------------------------+----------------------------------------------------------+
-| Run a shell command                 | ``docker-compose run hat eval curl http://couchdb:5984`` |
+| Create pending ORM migration files  | ``docker-compose run iaso manage makemigrations``         |
 +-------------------------------------+----------------------------------------------------------+
-| Run django manage.py                | ``docker-compose run hat manage help``                   |
+| Apply pending ORM migrations        | ``docker-compose run iaso manage migrate``                |
 +-------------------------------------+----------------------------------------------------------+
-| Create a python shell               | ``docker-compose run hat manage shell``                  |
-+-------------------------------------+----------------------------------------------------------+
-| Create a postgresql shell           | ``docker-compose run hat manage dbshell``                |
-+-------------------------------------+----------------------------------------------------------+
-| Create pending ORM migration files  | ``docker-compose run hat manage makemigrations``         |
-+-------------------------------------+----------------------------------------------------------+
-| Apply pending ORM migrations        | ``docker-compose run hat manage migrate``                |
-+-------------------------------------+----------------------------------------------------------+
-| Show ORM migrations                 | ``docker-compose run hat manage showmigrations``         |
+| Show ORM migrations                 | ``docker-compose run iaso manage showmigrations``         |
 +-------------------------------------+----------------------------------------------------------+
 
 To seed data coming from play.dhis2.org, since the previous commands doesn't run
 in the same container, you need to do a run a docker exec command
 
-`
-docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.31.8'
-`
+.. code:: bash
+docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6
 
 you can then login through http://127.0.0.1:8081/dashboard with :
 
  - user : testemail2.31.8
  - password: testemail2.31.8
+
+Running Django 3 on Elastic Beanstalk
+=====================================
+
+Django 3 requires version 2+ of the gdal library. Sadly, Beanstalk is based on Amazon Linux that can only install
+gdal 1 from the epel repository. To be able to use gdal 2, first identify the AMI of the Elastic Beanstalk EC2 server.
+In EC2, launch a new instance based on that AMI. In the instance, run
+(based on https://stackoverflow.com/questions/49637407/deploying-a-geodjango-application-on-aws-elastic-beanstalk
+and adapted to use /usr instead of /usr/local): (For Amazon Linux 2, use geos-3.5.2)
+
+    wget http://download.osgeo.org/geos/geos-3.4.2.tar.bz2
+    tar xjf geos-3.4.2.tar.bz2
+    cd geos-3.4.2
+    ./configure --prefix=/usr
+    make
+    sudo make install
+    cd ..
+
+    wget http://download.osgeo.org/proj/proj-4.9.1.tar.gz
+    wget http://download.osgeo.org/proj/proj-datumgrid-1.5.tar.gz
+    tar xzf proj-4.9.1.tar.gz
+    cd proj-4.9.1/nad
+    tar xzf ../../proj-datumgrid-1.5.tar.gz
+    cd ..
+    ./configure --prefix=/usr
+    make
+    sudo make install
+    cd ..
+
+    sudo yum-config-manager --enable epel
+    sudo yum -y update
+
+    sudo yum install make automake gcc gcc-c++ libcurl-devel proj-devel geos-devel autoconf automake gdal
+    cd /tmp
+
+    curl -L http://download.osgeo.org/gdal/2.2.3/gdal-2.2.3.tar.gz | tar zxf -
+    cd gdal-2.2.3/
+    ./configure --prefix=/usr --without-python
+
+    make -j4
+    sudo make install
+
+    sudo ldconfig
+
+Then go to Actions -> Image -> Create Image
+When it's ready, go to the Beanstalk Instance Settings and specify the AMI reference of the image we just created.
+
 
 Containers and services
 =======================
@@ -206,21 +185,15 @@ The list of the main containers:
 +-----------+-------------------------------------------------------------------------+
 | Container | Description                                                             |
 +===========+=========================================================================+
-| hat       | `Django <https://www.djangoproject.com/>`__                             |
+| iaso       | `Django <https://www.djangoproject.com/>`__                             |
 +-----------+-------------------------------------------------------------------------+
 | db        | `PostgreSQL <https://www.postgresql.org/>`__ database                   |
 +-----------+-------------------------------------------------------------------------+
-| couchdb   | `CouchDB <http://couchdb.apache.org/>`__ database for sync              |
-+-----------+-------------------------------------------------------------------------+
-| rq        | `RQ python <http://python-rq.org/>`__ task runner to perform jobs       |
-+-----------+-------------------------------------------------------------------------+
-| redis     | `Redis <https://redis.io/>`__ for task queueing and task result storage |
-+-----------+-------------------------------------------------------------------------+
+
 
 All of the container definitions for development can be found in the ``docker-compose.yml``.
 
 .. note:: Postgresql uses Django ORM models for table configuration and migrations.
-.. note:: CouchDB can be setup by a custom Django management command ``manage setupcouchdb``.
 
 
 Tests and linting
@@ -230,12 +203,7 @@ Tests can be executed with
 
 .. code:: bash
 
-    docker-compose run hat test
-
-
-This also runs `flake8 <http://flake8.pycqa.org/en/latest/>`__ to check the code.
-
-.. warning:: The tests need the ``HAT_MOBILE_KEY`` to be set.
+    docker-compose run iaso test
 
 Fixtures
 --------
@@ -244,7 +212,6 @@ User fixtures can be loaded when testing. This is the list (<name>:<password>) o
 
 - ``admin:adminadmin``
 - ``supervisor:supervisorsupervisor``
-- ``supervisor-mosango:supervisorsupervisor`` (to test restrictions by location)
 - ``importer:importerimporter``
 - ``full-exporter:exporterexporter``
 - ``anon-exporter:exporterexporter``
@@ -253,39 +220,21 @@ To export some data from the database to create fixtures run e.g.:
 
 .. code:: bash
 
-    docker-compose run hat manage dumpdata auth.User --indent 2
+    docker-compose run iaso manage dumpdata auth.User --indent 2
 
 To load some fixture into the database manually run e.g.:
 
 .. code:: bash
 
-    docker-compose run hat manage loaddata users
+    docker-compose run iaso manage loaddata users
 
 
 Code reloading
 ==============
 
 In development the django dev server will restart when it detects a file change.
-The task runner currently doesn't detect changes and will not automatically restart.
 
-Restart the ``redis`` and ``rq`` containers to load the new code:
-
-.. code:: bash
-
-    docker-compose restart redis rq
-
-
-Unfortunately, neither the SQL queries are refreshed so for now you need
-to restart the container after adding or changing them.
-
-Restart the ``hat`` container to load the new SQL queries:
-
-.. code:: shell
-
-    docker-compose restart hat
-
-
-If everything fails� **be drastic!**
+If everything fails **be drastic!**
 
 .. code:: shell
 
@@ -298,14 +247,14 @@ If everything fails� **be drastic!**
 
     # kill containers
     docker-compose kill
-    # remove `hat` container
-    docker-compose rm -f hat
+    # remove `iaso` container
+    docker-compose rm -f iaso
     # build containers
     docker-compose build
     # start-up containers
     docker-compose up
 
-.. warning:: NEVER remove **db** or **couchdb** containers without backup or
+.. warning:: NEVER remove **db** container without backup or
              you'll loose all the data!!!
 
 Code formatting
@@ -392,4 +341,4 @@ If you need usable instances:
 .. code:: shell
 
     docker-compose up
-    docker exec -it sense-hat_hat_1 bash -c './manage.py seed_test_data --mode=seed --dhis2version=2.33.4'
+    docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6

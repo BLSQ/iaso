@@ -628,6 +628,7 @@ $color in $types {
 
 .map__tooltip {
     min-width: 250px;
+
     &.microplanning {
         min-height: 300px;
     }
@@ -671,6 +672,7 @@ $color in $types {
             color: $red;
         }
     }
+
     .loading-map__tooltip {
         position: absolute;
         top: 0;
@@ -944,7 +946,7 @@ path.map-marker {
 }
 
 
-.map__selection__container{
+.map__selection__container {
     padding: $padding-unit/4 $padding-unit/3;
     height: 100%;
 
@@ -953,6 +955,7 @@ path.map-marker {
         flex-direction: column;
         height: 100%;
     }
+
     .loading-small {
         justify-content: center;
     }
@@ -1114,19 +1117,6 @@ path.map-marker {
         width: 32px;
         font-weight: bold;
         padding: 0.4em 0.25em;
-    }
-}
-
-.map__control__button--highlight {
-    @include button($mid-gray);
-    color: white;
-    font-size: $font-size-xs;
-    padding: 6px;
-    margin-bottom: 10px;
-
-    &:hover {
-        background-color: $red;
-        color: white;
     }
 }
 

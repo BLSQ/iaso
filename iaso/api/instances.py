@@ -1,6 +1,5 @@
 from django.contrib.gis.geos import Point
 from rest_framework import viewsets, permissions
-from rest_framework.exceptions import PermissionDenied
 from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 from rest_framework.response import Response
@@ -8,7 +7,9 @@ from hat.common.utils import queryset_iterator
 from iaso.models import Instance, OrgUnit, Form, Project
 from django.db.models import Q, Count
 from django.core.paginator import Paginator
-
+from time import gmtime, strftime
+import ntpath
+import json
 from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import (
     Echo,
@@ -17,12 +18,39 @@ from hat.api.export_utils import (
     timestamp_to_utc_datetime,
 )
 from iaso.utils import timestamp_to_datetime
-
-from time import gmtime, strftime
-import ntpath
-
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
+from hat.audit.models import log_modification, INSTANCE_API
+from rest_framework import serializers
+import iaso.periods as periods
+
+class InstanceSerializer(serializers.ModelSerializer):
+    org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
+    period = serializers.CharField(max_length=6, allow_blank=True)
+
+    class Meta:
+        model = Instance
+        fields = ['org_unit', 'period']
+
+    def validate_org_unit(self, value):
+        """
+        Check if user has acces to this org_unit.
+        """
+        if value.org_unit_type in self.instance.form.org_unit_types.all():
+            try:
+                return OrgUnit.objects.filter_for_user_and_app_id( self.context["request"].user, None).get(pk=value.pk)
+            except OrgUnit.DoesNotExist:
+                pass  # that way, if the condition is false, the exception is raised as well
+        raise serializers.ValidationError("Org unit type not assigned to this form or not accessible to this user")
+
+    def validate_period(self, value):
+        """
+        Check if period is of self.instance.form.period_type.
+        """
+
+        if self.instance.period and (periods.detect(value) == self.instance.form.period_type):
+            return value
+        raise serializers.ValidationError("Wrong period type")
 
 
 class HasInstancePermission(permissions.BasePermission):
@@ -36,7 +64,7 @@ class HasInstancePermission(permissions.BasePermission):
 
     def has_object_permission(self, request: Request, view, obj: Instance):
         # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
-        return request.user.iaso_profile.account == obj.project.account
+        return request.user.iaso_profile.account in [p.account for p in obj.form.projects.all()]
 
 
 class InstancesViewSet(viewsets.ViewSet):
@@ -47,6 +75,7 @@ class InstancesViewSet(viewsets.ViewSet):
 
     GET /api/instances/
     GET /api/instances/<id>
+    DELETE /api/instances/<id>
     POST /api/instances/
     """
 
@@ -79,7 +108,6 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
         queryset = queryset.prefetch_related("form")
-
         queryset = queryset.for_filters(**filters)
 
         if csv_format is None and xlsx_format is None:
@@ -142,15 +170,23 @@ class InstancesViewSet(viewsets.ViewSet):
                 if form.correlatable:
                     columns.append({"title": "correlation id", "width": 20})
 
-            if form and form.fields:
-                file_content_template = form.fields
+            sub_columns = ["" for __ in columns]
+            latest_form_version = form.form_versions.order_by("id").last()
+            questions_by_name = latest_form_version.questions_by_name()
+            if form and form.latest_version:
+                file_content_template = form.latest_version.questions_by_name()
                 for title in file_content_template:
+                    sub_columns.append(
+                        file_content_template.get(title, {}).get("label", "")
+                    )
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
-
+                    sub_columns.append(
+                        questions_by_name.get(title, {}).get("label", "")
+                    )
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
@@ -181,7 +217,11 @@ class InstancesViewSet(viewsets.ViewSet):
                     instance_values.append(instance.correlation_id)
 
                 for k in file_content_template:
-                    instance_values.append(idict["file_content"].get(k, None))
+                    v = idict["file_content"].get(k, None)
+                    if type(v) is list:
+                        instance_values.append(json.dumps(v))
+                    else:
+                        instance_values.append(v)
                 return instance_values
 
             queryset.prefetch_related(
@@ -198,7 +238,11 @@ class InstancesViewSet(viewsets.ViewSet):
                 filename = filename + ".xlsx"
                 response = HttpResponse(
                     generate_xlsx(
-                        "Forms", columns, queryset_iterator(queryset, 100), get_row
+                        "Forms",
+                        columns,
+                        queryset_iterator(queryset, 100),
+                        get_row,
+                        sub_columns,
                     ),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
@@ -212,9 +256,8 @@ class InstancesViewSet(viewsets.ViewSet):
             return response
 
     @safe_api_import("instance")
-    def create(self, api_import, request):
-        app_id = request.GET.get("app_id", "org.bluesquarehub.iaso")
-        import_data(request.data, api_import, app_id)
+    def create(self, _, request):
+        import_data(request.data, request.user, request.query_params.get("app_id"))
 
         return Response({"res": "ok"})
 
@@ -224,69 +267,73 @@ class InstancesViewSet(viewsets.ViewSet):
 
         return Response(instance.as_full_model())
 
+    def delete(self, request, pk=None):
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
+        instance.soft_delete(request.user)
+        return Response(instance.as_full_model())
 
-def import_data(instances, api_import, app_id=None):
-    try:
-        project = Project.objects.get(app_id=app_id)
-    except Project.DoesNotExist:
-        project = None
+    def patch(self, request, pk=None):
+        original = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
+        self.check_object_permissions(request, instance)
 
-    if project and project.needs_authentication:
-        user = api_import.user
-        if (
-            not user
-            or user.is_anonymous
-            or project.account.id != user.iaso_profile.account.id
-        ):
-            raise PermissionDenied("User permissions problem")
+        instance_serializer = InstanceSerializer(instance, data=request.data, partial=True, context={"request": self.request})
+        instance_serializer.is_valid(raise_exception=True)
+        instance_serializer.save()
 
-    for instance in instances:
-        file_name = ntpath.basename(instance.get("file", None))
-        uuid = instance.get("id", None)
-        latitude = instance.get("latitude", None)
-        longitude = instance.get("longitude", None)
-        org_unit_location = None
+        log_modification(original, instance, INSTANCE_API, user=request.user)
+        return Response(instance.as_full_model())
 
-        if latitude and longitude:
-            altitude = instance.get("altitude", 0)
-            org_unit_location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
-        instances = Instance.objects.filter(uuid=uuid)
-        if len(instances) == 1:
-            instance_db = instances[0]
-            instance_db.file_name = file_name
-        elif len(instances) == 0:
-            instance_db, _ = Instance.objects.get_or_create(file_name=file_name)
-            instance_db.uuid = uuid
-        else:
-            return Response({"res": "Problem: multiple instances exist with that uuid"})
-        instance_db.name = instance.get("name", None)
-        instance_db.period = instance.get("period", None)
-        instance_db.accuracy = instance.get("accuracy", None)
-        instance_db.parent_id = instance.get("parentId", None)
-        tentative_org_unit_id = instance.get("orgUnitId", None)
+def import_data(instances, user, app_id):
+    project = Project.objects.get_for_user_and_app_id(user, app_id)
+
+    for instance_data in instances:
+        uuid = instance_data.get("id", None)
+
+        if Instance.objects.filter(uuid=uuid).exists():
+            continue
+
+        # Get or create instance based on file_name - this "get or create" logic is important:
+        # it is possible (although it won't happen often) that the instance has already been created by the
+        # POST /sync/ endpoint.
+        file_name = ntpath.basename(instance_data.get("file", None))
+        instance, _ = Instance.objects.get_or_create(file_name=file_name)
+
+        instance.uuid = uuid
+        instance.project = project
+        instance.name = instance_data.get("name", None)
+        instance.period = instance_data.get("period", None)
+        instance.accuracy = instance_data.get("accuracy", None)
+
+        tentative_org_unit_id = instance_data.get("orgUnitId", None)
         if str(tentative_org_unit_id).isdigit():
-            instance_db.org_unit_id = tentative_org_unit_id
+            instance.org_unit_id = tentative_org_unit_id
         else:
             org_unit = OrgUnit.objects.get(uuid=tentative_org_unit_id)
-            instance_db.org_unit = org_unit
+            instance.org_unit = org_unit
 
-        instance_db.form_id = instance.get("formId")
+        instance.form_id = instance_data.get("formId")
 
-        t = instance.get("created_at", None)
-        if t:
-            instance_db.created_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.created_at = instance.get("created_at", None)
+        created_at_ts = instance_data.get("created_at", None)
+        instance.created_at = (
+            timestamp_to_utc_datetime(int(created_at_ts))
+            if created_at_ts is not None
+            else None
+        )
 
-        t = instance.get("updated_at", None)
-        if t:
-            instance_db.updated_at = timestamp_to_utc_datetime(int(t))
-        else:
-            instance_db.updated_at = instance.get("created_at", None)
+        updated_at_ts = instance_data.get("updated_at", None)
+        instance.updated_at = (
+            timestamp_to_utc_datetime(int(updated_at_ts))
+            if updated_at_ts is not None
+            else instance.created_at
+        )
 
-        instance_db.source = "API"
-        if org_unit_location:
-            instance_db.location = org_unit_location
-        instance_db.project = project
-        instance_db.save()
+        latitude = instance_data.get("latitude", None)
+        longitude = instance_data.get("longitude", None)
+        if latitude and longitude:
+            altitude = instance_data.get("altitude", 0)
+            instance.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
+
+        instance.save()

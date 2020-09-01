@@ -1,5 +1,6 @@
 from django.http import Http404
 from rest_framework import permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.request import Request
 
 from .serializers import AppSerializer
@@ -18,6 +19,7 @@ class AppsViewSet(ModelViewSet):
 
     This API is open to anonymous users.
 
+    GET /api/apps/current/?app_id=some.app.id
     GET /api/apps/<app_id>/
     """
 
@@ -28,6 +30,15 @@ class AppsViewSet(ModelViewSet):
     http_method_names = ["get", "head", "options", "trace"]
     queryset = Project.objects.all()
     results_key = "apps"
+
+    def get_object(self):
+        """Override to handle GET /api/app/current/?app_id=some.app.id"""
+        if self.kwargs["app_id"] == "current":
+            return get_object_or_404(
+                self.get_queryset(), app_id=self.request.query_params.get("app_id")
+            )
+
+        return super().get_object()
 
     def list(self, request: Request, *args, **kwargs):
         raise Http404

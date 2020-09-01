@@ -1,9 +1,7 @@
 from io import StringIO
-import re
 from django.test import TestCase
 from django.core import management
-from django.core.management.base import CommandError
-from django.contrib.gis.geos import Point, Polygon
+from django.contrib.gis.geos import Point, Polygon, MultiPolygon
 
 from os import environ
 import responses
@@ -75,8 +73,8 @@ class CommandTests(TestCase):
         org_unit_chief.source_ref = None
         org_unit_chief.validated = False
         org_unit_chief.parent = parent
-        org_unit_chief.simplified_geom = Polygon(
-            [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
+        org_unit_chief.simplified_geom = MultiPolygon(
+            [Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])]
         )
         org_unit_chief.save()
 
@@ -196,13 +194,13 @@ class CommandTests(TestCase):
                     "openingDate": "1960-08-03T00:00:00.000",
                     "parent": {"id": "kJq2mPyFEHo"},
                     "geometry": {
-                        "type": "Polygon",
+                        "type": "MultiPolygon",
                         "coordinates": [
-                            [[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]
+                            [[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]
                         ],
                     },
-                    "coordinates": "[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]",
-                    "featureType": "POLYGON",
+                    "coordinates": "[[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]]",
+                    "featureType": "MULTI_POLYGON",
                 },
                 {
                     "id": new_children.source_ref,

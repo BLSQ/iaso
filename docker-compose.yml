@@ -1,16 +1,15 @@
 version: '3'
 services:
-  hat:
+  iaso:
     stdin_open: true
     tty: true
     build:
       context: .
       args:
         NODE_ENV: ""
-    image: sense-hat
-    # The site is proxied via nginx and the port by nginx should be used: https://localhost:8443
+    image: iaso
     ports:
-      - "8080:8080"
+      - "8081:8080"
     volumes: &hat_volumes
       - ./hat:/opt/app/hat
       - ./iaso:/opt/app/iaso
@@ -29,28 +28,16 @@ services:
       - ./notebooks:/opt/notebooks
     links: &hat_links
       - db
-      - couchdb
-      - redis
     environment: &hat_environment
       SENSE_HAT_ENVIRONMENT: 'development'
-      FLAVOR:  # set to "iaso" or "trypelim" using your .env file
+      FLAVOR: iaso
       RDS_HOSTNAME: db
-      RDS_DB_NAME: # set to "iaso" or "postgres" or "hat" using your .env file
+      RDS_DB_NAME: iaso
       RDS_USERNAME: postgres
       DEBUG: 'true'
       TEST_PROD:
       SECRET_KEY: secret
       GOOGLE_CLIENT_ID:
-      COUCHDB_URL: "http://couchdb:5984"
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
-      HAT_MOBILE_KEY:
-      SAUCE_USERNAME:
-      SAUCE_ACCESS_KEY:
-      # This is needed to connect to the tunnel on Saucelabs
-      TRAVIS_JOB_NUMBER:
-      # This is needed to group our build on Saucelabs
-      TRAVIS_BUILD_NUMBER:
       AWS_STORAGE_BUCKET_NAME:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:
@@ -77,54 +64,14 @@ services:
       POSTGRES_DB: ${RDS_DB_NAME}
       POSTGRES_USER: postgres
 
-  couchdb:
-    image: couchdb:1.7
-    ports:
-      - "5984:5984"
-    volumes:
-      # enable cors for mobile app in-browser development:
-      - ./couchdb/config-dev.ini:/usr/local/etc/couchdb/local.ini
-    environment:
-      COUCHDB_USER: admin
-      COUCHDB_PASSWORD: secret
-    logging: *hat_logging
-
-  redis:
-    image: redis:3.2
-    ports:
-      - "6379:6379"
-    logging: *hat_logging
-
-  nginx:
-    depends_on:
-      - hat
-    image: sense-hat
-    ports:
-      - "8081:80"
-    volumes: *hat_volumes
-    environment: *hat_environment
-    logging: *hat_logging
-    command: start_dev_nginx
-
   # the webpack dev server
   webpack:
     depends_on:
-      - hat
-    image: sense-hat
+      - iaso
+    image: iaso
     ports:
       - "3000:3000"
     volumes: *hat_volumes
     environment: *hat_environment
     logging: *hat_logging
     command: start_webpack
-
-  # the worker container of the task runner
-  # rq:
-  #   depends_on:
-  #     - hat
-  #   image: sense-hat
-  #   volumes: *hat_volumes
-  #   links: *hat_links
-  #   environment: *hat_environment
-  #   logging: *hat_logging
-  #   command: start_dev_rq

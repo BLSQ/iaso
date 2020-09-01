@@ -4,7 +4,7 @@ import json
 import time
 
 from django.core.management.base import BaseCommand
-from django.contrib.gis.geos import Point
+from django.contrib.gis.geos import Point, MultiPolygon
 from django.contrib.gis.geos import Polygon
 from django.db import transaction
 
@@ -89,6 +89,12 @@ class Command(BaseCommand):
             action="store_true",
             help="Continue import even if an error occurred for one org unit",
         )
+        parser.add_argument(
+            "--page-size",
+            type=int,
+            default=500,
+            help="Continue import even if an error occurred for one org unit",
+        )
 
     def get_group(self, dhis2_group, group_dict, source_version):
         name = dhis2_group["name"]
@@ -145,11 +151,12 @@ class Command(BaseCommand):
 
         for page in api.get_paged(
             "organisationUnits",
-            page_size=500,
+            page_size=options.get("page_size", 500),
             params={
                 "fields": "id,name,path,coordinates,geometry,parent,organisationUnitGroups[id,name]"
             },
         ):
+
             orgunits.extend(page["organisationUnits"])
             self.iaso_logger.info(
                 "fetched ",
@@ -163,7 +170,9 @@ class Command(BaseCommand):
                 "records)",
             )
 
-        return sorted(orgunits, key=lambda ou: ou["path"])
+        orgunits_sorted = sorted(orgunits, key=lambda ou: ou["path"])
+
+        return orgunits_sorted
 
     def map_coordinates(self, row, org_unit):
         if "coordinates" in row:
@@ -189,7 +198,7 @@ class Command(BaseCommand):
             if feature_type == "POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0])
+                    org_unit.geom = MultiPolygon(Polygon(j[0]))
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
@@ -197,11 +206,13 @@ class Command(BaseCommand):
             if feature_type == "MULTI_POLYGON" and coordinates:
                 try:
                     j = json.loads(coordinates)
-                    org_unit.simplified_geom = Polygon(j[0][0])
+                    org_unit.geom = MultiPolygon(*[Polygon(i) for i in j[0]])
                 except Exception as bad_polygon:
                     self.iaso_logger.error(
                         "failed at importing POLYGON", coordinates, bad_polygon, row
                     )
+
+            org_unit.simplified_geom = org_unit.geom
 
     def map_geometry(self, row, org_unit):
         if "geometry" in row:
@@ -220,10 +231,12 @@ class Command(BaseCommand):
 
             try:
                 if feature_type == "Polygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0])
+                    org_unit.geom = MultiPolygon(Polygon(coordinates[0]))
 
                 if feature_type == "MultiPolygon" and coordinates:
-                    org_unit.simplified_geom = Polygon(coordinates[0][0])
+                    org_unit.geom = MultiPolygon(*[Polygon(i) for i in coordinates[0]])
+
+                org_unit.simplified_geom = org_unit.geom
 
             except Exception as bad_coord:
                 self.iaso_logger.error(
@@ -273,7 +286,7 @@ class Command(BaseCommand):
         )
         self.iaso_logger.info(
             "areas with polygon\t",
-            len([p for p in unit_dict.values() if p.simplified_geom]),
+            len([p for p in unit_dict.values() if p.geom]),
         )
         self.iaso_logger.info(
             "orgunits with unknown type\t",
@@ -391,7 +404,7 @@ class Command(BaseCommand):
                 org_unit.sub_source = source_name
                 org_unit.version = version
                 org_unit.source_ref = row["id"].strip()
-                org_unit.validated = validate
+                org_unit.validation_status = OrgUnit.VALIDATION_VALID if validate else OrgUnit.VALIDATION_NEW
 
                 self.map_org_unit_type(row, org_unit, type_dict, unknown_unit_type)
                 self.map_parent(row, org_unit, unit_dict)

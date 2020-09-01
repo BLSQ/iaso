@@ -84,6 +84,16 @@ class Command(BaseCommand):
             user.iaso_profile = iaso_profile
         self.user = user
 
+        # make it a superuser to have access to django admin
+        from django.contrib.auth import get_user_model
+
+        UserAdmin = get_user_model()
+        adminuser = UserAdmin.objects.get(username=user.username)
+        adminuser.is_staff = True
+        adminuser.is_admin = True
+        adminuser.is_superuser = True
+        adminuser.save()
+
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
             name="Test export api",
             url="https://play.dhis2.org/" + dhis2_version,
@@ -232,6 +242,7 @@ class Command(BaseCommand):
                 org_unit_type_csv_file="./iaso/tests/fixtures/empty_unit_types.csv",
                 force=True,
                 validate=True,
+                page_size=5000,
             )
 
             print("********* generating instances")
@@ -468,6 +479,30 @@ class Command(BaseCommand):
                             "is_existing": "0",
                             "last_name": "Skywalker",
                             "_version": 1,
+                            "households_note": "",
+                            "hh_repeat": [
+                                {
+                                    "hh_name": "household 1",
+                                    "hh_gender": "Male"
+                                    if randint(1, 10) < 5
+                                    else "Female",
+                                    "hh_age": randint(18, 65),
+                                    "hh_street": "streeet 1",
+                                    "hh_number": "44b",
+                                    "hh_city": "bxl",
+                                },
+                                {
+                                    "hh_name": "household 2",
+                                    "hh_gender": "Male"
+                                    if randint(1, 10) < 5
+                                    else "Female",
+                                    "hh_age": randint(18, 65),
+                                    "hh_street": "street b",
+                                    "hh_number": "45",
+                                    "hh_city": "Namur",
+                                },
+                            ],
+                            "instanceID": "uuid:" + instance.uuid,
                         }
 
                         self.generate_xml_file(instance, form.latest_version)
@@ -520,7 +555,7 @@ class Command(BaseCommand):
 
         for k in instance.json.keys():
             # another child with text
-            if k != "_version":
+            if k != "version" and k != "_version" and k != "instanceID":
                 child = etree.Element(k)
                 child.text = str(instance.json[k])
                 root.append(child)

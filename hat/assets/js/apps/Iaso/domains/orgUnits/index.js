@@ -37,7 +37,7 @@ import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { orgUnitsTableColumns } from './config';
 
-import { createUrl } from '../../../../utils/fetchData';
+import { createUrl } from '../../utils/fetchData';
 import {
     fetchLatestOrgUnitLevelId, decodeSearch, mapOrgUnitByLocation, encodeUriParams, encodeUriSearches,
 } from './utils';
@@ -54,8 +54,8 @@ import Table from '../../components/tables/TableComponent';
 import commonStyles from '../../styles/common';
 import { getChipColors } from '../../constants/chipColors';
 
-import { warningSnackBar } from '../../../../utils/constants/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../../redux/snackBarsReducer';
+import { warningSnackBar } from '../../constants/snackBars';
+import { enqueueSnackbar, closeFixedSnackbar } from '../../redux/snackBarsReducer';
 
 import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
@@ -129,9 +129,9 @@ class OrgUnits extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const validatedChanged = prevProps.params.validated !== this.props.params.validated;
+        const validationStatusChanged = prevProps.params.validation_status !== this.props.params.validation_status;
         const sourceChanged = prevProps.params.source !== this.props.params.source;
-        if (validatedChanged || sourceChanged) {
+        if (validationStatusChanged || sourceChanged) {
             const newParams = {
                 ...this.props.params,
             };
@@ -371,7 +371,7 @@ class OrgUnits extends Component {
                     <DynamicTabsComponent
                         baseLabel={formatMessage(MESSAGES.search)}
                         params={params}
-                        defaultItem={{ validated: 'both', color: getChipColors(0).replace('#', '') }}
+                        defaultItem={{ validation_status: 'all', color: getChipColors(0).replace('#', '') }}
                         paramKey="searches"
                         tabParamKey="searchTabIndex"
                         baseUrl={baseUrl}
@@ -465,6 +465,7 @@ class OrgUnits extends Component {
                                                     <DownloadButtonsComponent
                                                         csvUrl={this.getEndpointUrl(true, 'csv')}
                                                         xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                                        gpkgUrl={this.getEndpointUrl(true, 'gpkg')}
                                                     />
                                                 </div>
                                             </Grid>

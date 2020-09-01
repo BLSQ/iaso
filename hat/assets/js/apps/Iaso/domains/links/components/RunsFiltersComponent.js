@@ -23,7 +23,7 @@ import {
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
-import { createUrl } from '../../../../../utils/fetchData';
+import { createUrl } from '../../../utils/fetchData';
 
 import MESSAGES from '../messages';
 

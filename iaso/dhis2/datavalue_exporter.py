@@ -51,7 +51,21 @@ def uniquify(seq, idfun=None):
     return result
 
 
-class AggregateHandler:
+class BaseHandler:
+    def __init__(self, *args):
+        self.logger = logger
+
+    def orgunit_resolver(self, orgunit_id):
+        if orgunit_id.isnumeric():
+            # should we enforce accounts ?
+            # if it's a number then look up by id
+            return OrgUnit.objects.filter(id=orgunit_id).first().source_ref
+
+        # keep old behaviour eg : entity attribute generated based on instance.org_unit
+        return orgunit_id
+
+
+class AggregateHandler(BaseHandler):
     def handle_exception(self, resp, message):
         response = resp["response"]
         counts = {}
@@ -68,7 +82,7 @@ class AggregateHandler:
             descriptions = [m["value"] for m in response["conflicts"]]
         descriptions = uniquify(descriptions)
         if len(descriptions) > 0:
-            logger.warn(
+            self.logger.warn(
                 "----------------------- aggregate EXPORT ERROR --------------------\n"
                 + "Failed to create dataValueSets got {} {} {}".format(
                     message, counts, descriptions
@@ -78,7 +92,9 @@ class AggregateHandler:
 
         return None
 
-    def map_to_values(self, instance, form_mapping, export_status=None):
+    def map_to_values(
+        self, instance, form_mapping, export_status=None, related_data=None
+    ):
         data_set_entry = {
             "dataSet": form_mapping["data_set_id"],
             "completeDate": instance.created_at.strftime("%Y-%m-%d"),
@@ -87,10 +103,12 @@ class AggregateHandler:
             "dataValues": [],
         }
 
+        answers = related_data if related_data else instance.json
+
         errored = False
         mapping_errors = []
         question_mappings = form_mapping["question_mappings"]
-        for question_key in instance.json.keys():
+        for question_key in answers.keys():
             if question_key in question_mappings:
                 try:
                     data_element = question_mappings[question_key]
@@ -101,10 +119,12 @@ class AggregateHandler:
                         continue
 
                     data_element["question_key"] = question_key
-                    raw_value = instance.json[question_key]
+                    raw_value = answers[question_key]
                     data_value = {
                         "dataElement": data_element["id"],
-                        "value": format_value(data_element, raw_value),
+                        "value": format_value(
+                            data_element, raw_value, self.orgunit_resolver
+                        ),
                         "comment": str(instance.id)
                         + " "
                         + str(raw_value)
@@ -124,7 +144,7 @@ class AggregateHandler:
                 except Exception as error:
                     errored = True
                     mapping_errors.append([question_key, error])
-                    logger.warn("ERROR Mapping {} {}".format(error, question_key))
+                    self.logger.warn("ERROR Mapping {} {}".format(error, question_key))
         if errored:
             return (None, mapping_errors)
         else:
@@ -232,7 +252,7 @@ class AggregateHandler:
             raise exception
 
 
-class EventHandler:
+class EventHandler(BaseHandler):
     def map_to_values(self, instance, form_mapping, export_status=None):
 
         event = {
@@ -291,14 +311,18 @@ class EventHandler:
                             boolval = "1" if (value in raw_values) else "0"
                             data_value = {
                                 "dataElement": mapping_de["id"],
-                                "value": format_value(mapping_de, boolval)
+                                "value": format_value(
+                                    mapping_de, boolval, self.orgunit_resolver
+                                )
                                 # "debug": str(raw_value) + " " + question_key,
                             }
                             event["dataValues"].append(data_value)
                     else:
                         data_value = {
                             "dataElement": data_element["id"],
-                            "value": format_value(data_element, raw_value),
+                            "value": format_value(
+                                data_element, raw_value, self.orgunit_resolver
+                            ),
                             # "debug": str(raw_value) + " " + question_key,
                         }
                         event["dataValues"].append(data_value)
@@ -366,16 +390,30 @@ class EventHandler:
             return InstanceExportError(message, counts, descriptions)
 
 
-class EventTrackerHandler:
-    def get_instance_value(self, instance, question_key, mapping):
-        raw_value = instance.json[question_key]
+class EventTrackerHandler(BaseHandler):
+    def get_instance_value(self, instance, question_key, mapping, answers):
+        raw_value = answers[question_key]
         if "iaso_field" in mapping:
             if mapping["iaso_field"] == "instance.org_unit.source_ref":
                 raw_value = instance.org_unit.source_ref
 
         return raw_value
 
-    def map_to_values(self, instance, form_mapping, export_status=None):
+    def get_status(self, instance, program_stage_id, form_mapping):
+        status = "COMPLETED"
+        key = f"status_{program_stage_id}"
+
+        if key in instance.json:
+            status = instance.json[key].upper()
+
+        return status
+
+    def map_to_values(
+        self, instance, form_mapping, export_status=None, related_data=None
+    ):
+
+        answers = related_data if related_data else instance.json
+
         question_mappings = form_mapping["question_mappings"]
 
         program_id = form_mapping["program_id"]
@@ -400,7 +438,7 @@ class EventTrackerHandler:
                 "programStage": program_stage_id,
                 "orgUnit": instance.org_unit.source_ref,
                 "eventDate": event_date,
-                "status": "COMPLETED",
+                "status": self.get_status(instance, program_stage_id, form_mapping),
                 "dataValues": [],
             }
             if instance.location:
@@ -412,7 +450,7 @@ class EventTrackerHandler:
             event_errors = []
 
             for question_key in form_mapping["question_mappings"]:
-                if question_key in instance.json.keys():
+                if question_key in answers.keys():
                     for mapping in question_mappings[question_key]:
                         if (
                             "programStage" in mapping
@@ -421,13 +459,16 @@ class EventTrackerHandler:
                             if "dataElement" in mapping:
                                 data_element = mapping["dataElement"]
                                 raw_value = self.get_instance_value(
-                                    instance, question_key, mapping
+                                    instance, question_key, mapping, answers
                                 )
 
                                 data_value = {
                                     "dataElement": data_element["id"],
-                                    "value": format_value(data_element, raw_value),
+                                    "value": format_value(
+                                        data_element, raw_value, self.orgunit_resolver
+                                    ),
                                 }
+
                                 event["dataValues"].append(data_value)
             if len(event["dataValues"]) > 0:
                 events.append(event)
@@ -454,16 +495,18 @@ class EventTrackerHandler:
         }
 
         for question_key in form_mapping["question_mappings"]:
-            if question_key in instance.json.keys():
+            if question_key in answers.keys():
                 for mapping in question_mappings[question_key]:
                     if "trackedEntityAttribute" in mapping:
                         tea = mapping["trackedEntityAttribute"]
                         raw_value = self.get_instance_value(
-                            instance, question_key, mapping
+                            instance, question_key, mapping, answers
                         )
                         attribute = {
                             "attribute": tea["id"],
-                            "value": format_value(tea, raw_value),
+                            "value": format_value(
+                                tea, raw_value, self.orgunit_resolver
+                            ),
                             "displayName": tea["name"],
                             "valueType": tea["valueType"],
                         }
@@ -551,83 +594,166 @@ class EventTrackerHandler:
                 unique_number_attribute_id = form_mapping["tracked_entity_identifier"]
                 country_dhis2_id = instance.org_unit.source_path().split("/")[1]
 
-                unique_number = self.get_first(
-                    [
-                        attribute["value"]
-                        for attribute in tracked_entity_iaso["attributes"]
-                        if attribute["attribute"] == unique_number_attribute_id
-                    ]
-                )
-                print(
-                    "looking for",
+                parent_tei_uid = self.export_record(
+                    api,
+                    instance,
+                    form_mapping,
+                    tracked_entity_iaso,
+                    export_status,
                     unique_number_attribute_id,
-                    "in ",
-                    tracked_entity_iaso["attributes"],
+                    country_dhis2_id,
                 )
-                print(instance.id, "unique number ?", unique_number)
-                if unique_number:
-                    tracked_entity_dhis2 = self.find_tracked_entity(
-                        api,
-                        country_dhis2_id,
-                        form_mapping["tracked_entity_type"],
-                        unique_number_attribute_id,
-                        unique_number,
-                    )
-                    if tracked_entity_dhis2:
 
-                        # copy the new events in the first enrollment
-                        for event in tracked_entity_iaso["enrollments"][0]["events"]:
-                            tracked_entity_dhis2["enrollments"][0]["events"].append(
-                                event
-                            )
-                        self.update_tracked_entity(api, tracked_entity_dhis2)
-                    else:
-                        raise Exception(
-                            f"error : no tracked entity with unique number : {unique_number}"
-                        )
-                else:
+                question_mappings = form_mapping["question_mappings"]
+                for (
+                    repeat_group
+                ) in export_status.mapping_version.form_version.repeat_groups():
+                    repeat_group_name = repeat_group["name"]
+                    if repeat_group_name in question_mappings:
+                        subform_mapping = question_mappings[repeat_group_name][0]
+                        subform_mapping["question_mappings"] = {}
+                        for question_name in question_mappings:
+                            question_mapping = question_mappings[question_name]
+                            if (
+                                question_mapping != {"type": "neverMapped"}
+                                and question_mapping[0].get("parent")
+                                == repeat_group_name
+                            ):
+                                subform_mapping["question_mappings"][
+                                    question_name
+                                ] = question_mapping
 
-                    unique_number = self.generate_unique_number(
-                        api, unique_number_attribute_id, instance.org_unit
-                    )
+                        if repeat_group_name in instance.json:
+                            for related_data in instance.json[repeat_group_name]:
+                                mapped = self.map_to_values(
+                                    instance,
+                                    subform_mapping,
+                                    export_status=export_status,
+                                    related_data=related_data,
+                                )
+                                unique_number_attribute_id = subform_mapping[
+                                    "tracked_entity_identifier"
+                                ]
+                                tracked_entity_iaso = mapped[0][2]
+                                print("SUB form mapped to ", tracked_entity_iaso)
+                                # export_record
+                                related_tei_uid = self.export_record(
+                                    api,
+                                    instance,
+                                    subform_mapping,
+                                    tracked_entity_iaso,
+                                    export_status,
+                                    unique_number_attribute_id,
+                                    country_dhis2_id,
+                                )
+                                # create relation ship
+                                if "relationship_type" in subform_mapping:
+                                    relation_ship = {
+                                        "relationshipType": subform_mapping[
+                                            "relationship_type"
+                                        ],
+                                        "from": {
+                                            "trackedEntityInstance": {
+                                                "trackedEntityInstance": parent_tei_uid
+                                            }
+                                        },
+                                        "to": {
+                                            "trackedEntityInstance": {
+                                                "trackedEntityInstance": related_tei_uid
+                                            }
+                                        },
+                                    }
+                                    api.post("relationships", relation_ship)
 
-                    print(instance.id, "unique number ?", unique_number)
-
-                    unique_number_attribute = self.get_first(
-                        [
-                            attribute
-                            for attribute in tracked_entity_iaso["attributes"]
-                            if attribute["attribute"] == unique_number_attribute_id
-                        ]
-                    )
-                    if unique_number_attribute:
-                        unique_number_attribute["value"] = unique_number
-                    else:
-                        tracked_entity_iaso["attributes"].append(
-                            {
-                                "attribute": unique_number_attribute_id,
-                                "value": unique_number,
-                            }
-                        )
-
-                    self.create_tracked_entity(api, tracked_entity_iaso)
-
-                # TODO export logs
                 export_logs = api.pop_export_logs()
 
                 self.flag_as_exported(export_status, stats, export_logs)
 
             except RequestException as dhis2_exception:
 
+                export_logs = api.pop_export_logs()
+                for export_log in export_logs:
+                    export_log.save()
+                    export_status.export_logs.add(export_log)
+
+                export_status.save()
+
                 message = "ERROR while processing " + prefix
 
                 resp = json.loads(dhis2_exception.description)
 
                 exception = self.handle_exception(resp, message)
-
                 self.flag_as_errored(export_status, exception.message, stats)
 
         return []
+
+    def export_record(
+        self,
+        api,
+        instance,
+        form_mapping,
+        tracked_entity_iaso,
+        export_status,
+        unique_number_attribute_id,
+        country_dhis2_id,
+    ):
+        unique_number = self.get_first(
+            [
+                attribute["value"]
+                for attribute in tracked_entity_iaso["attributes"]
+                if attribute["attribute"] == unique_number_attribute_id
+            ]
+        )
+        print(
+            "looking for",
+            unique_number_attribute_id,
+            "in ",
+            tracked_entity_iaso["attributes"],
+        )
+        print(instance.id, "unique number ?", unique_number)
+        if unique_number:
+            tracked_entity_dhis2 = self.find_tracked_entity(
+                api,
+                country_dhis2_id,
+                form_mapping["tracked_entity_type"],
+                unique_number_attribute_id,
+                unique_number,
+            )
+            if tracked_entity_dhis2:
+
+                # copy the new events in the first enrollment
+                for event in tracked_entity_iaso["enrollments"][0]["events"]:
+                    tracked_entity_dhis2["enrollments"][0]["events"].append(event)
+                self.update_tracked_entity(api, tracked_entity_dhis2)
+                return tracked_entity_dhis2["trackedEntityInstance"]
+            else:
+                raise Exception(
+                    f"error : no tracked entity with unique number : {unique_number}"
+                )
+        else:
+
+            unique_number = self.generate_unique_number(
+                api, unique_number_attribute_id, instance.org_unit
+            )
+
+            print(instance.id, "unique number ?", unique_number)
+
+            unique_number_attribute = self.get_first(
+                [
+                    attribute
+                    for attribute in tracked_entity_iaso["attributes"]
+                    if attribute["attribute"] == unique_number_attribute_id
+                ]
+            )
+            if unique_number_attribute:
+                unique_number_attribute["value"] = unique_number
+            else:
+                tracked_entity_iaso["attributes"].append(
+                    {"attribute": unique_number_attribute_id, "value": unique_number,}
+                )
+
+            tracked_entity_resp = self.create_tracked_entity(api, tracked_entity_iaso)
+            return tracked_entity_resp["response"]["importSummaries"][0]["reference"]
 
     def flag_as_exported(self, export_status, stats, export_logs):
         export_request = export_status.export_request
@@ -648,6 +774,10 @@ class EventTrackerHandler:
         export_request.save()
 
     def handle_exception(self, resp, message):
+        if not "response" in resp and resp["status"] == "ERROR":
+            final_message = message + resp["message"]
+            return InstanceExportError(final_message, {}, [final_message])
+
         response = resp["response"]
 
         if response["status"] == "ERROR":

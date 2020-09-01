@@ -19,6 +19,7 @@ function DownloadButtonsComponent(props) {
     const {
         csvUrl,
         xlsxUrl,
+        gpkgUrl,
         classes,
     } = props;
 
@@ -46,6 +47,22 @@ function DownloadButtonsComponent(props) {
                 <i className="fa fa-file-excel-o" />
                 XLSX
             </Button>
+            {
+                gpkgUrl !== null
+                && (
+                    <Button
+                        variant="contained"
+                        className={classes.button}
+                        color="primary"
+                        onClick={() => {
+                            window.location.href = gpkgUrl;
+                        }}
+                    >
+                        <i className="fa fa-globe" />
+                        GPKG
+                    </Button>
+                )
+            }
         </Fragment>
     );
 }
@@ -53,11 +70,13 @@ function DownloadButtonsComponent(props) {
 DownloadButtonsComponent.defaultProps = {
     csvUrl: '',
     xlsxUrl: '',
+    gpkgUrl: null,
 };
 
 DownloadButtonsComponent.propTypes = {
     csvUrl: PropTypes.string,
     xlsxUrl: PropTypes.string,
+    gpkgUrl: PropTypes.string,
     classes: PropTypes.object.isRequired,
 };
 

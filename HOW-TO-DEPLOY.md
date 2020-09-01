@@ -32,7 +32,6 @@ git push
 Troubleshooting :
 
  - npm install : might be needed
- - react intl : might fails see this PR for some sort of [solution](https://bitbucket.org/bluesquare_org/sense-hat/pull-requests/408)
 
 # 2. Deploy to staging
 
@@ -82,7 +81,7 @@ Note jupyter is currently using the development branch too.
 
 ```
 ssh -i ~/.ssh/lightsail.pem ubuntu@18.196.197.98
-cd sense-hat
+cd iaso
 git pull
 source bin/activate
 pip install -r requirements.txt

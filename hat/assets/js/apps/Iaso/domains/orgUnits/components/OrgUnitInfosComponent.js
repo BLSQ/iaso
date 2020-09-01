@@ -19,7 +19,6 @@ function OrgUnitInfosComponent(props) {
         orgUnit,
         onChangeInfo,
         orgUnitTypes,
-        sourceTypes,
         intl: {
             formatMessage,
         },
@@ -75,34 +74,25 @@ function OrgUnitInfosComponent(props) {
                     label={MESSAGES.groups}
                 />
                 <InputComponent
-                    keyValue="sub_source"
-                    onChange={setFieldValue}
-                    value={formState.sub_source.value}
-                    type="select"
-                    options={
-                        sourceTypes.map(s => ({
-                            label: formatMessage(MESSAGES[s[0]]),
-                            value: s[0],
-                        }))
-                    }
-                    label={MESSAGES.subSource}
-                />
-                <InputComponent
-                    keyValue="status"
+                    keyValue="validation_status"
                     isClearable={false}
-                    onChange={setFieldValue}
-                    value={formState.status.value}
+                    onChange={onChangeInfo}
+                    value={orgUnit.validation_status}
                     type="select"
                     label={MESSAGES.status}
                     options={
                         [
                             {
-                                label: formatMessage(MESSAGES.validated),
-                                value: true,
+                                label: formatMessage(MESSAGES.new),
+                                value: "NEW",
                             },
                             {
-                                label: formatMessage(MESSAGES.notValidated),
-                                value: false,
+                                label: formatMessage(MESSAGES.validated),
+                                value: "VALID",
+                            },
+                            {
+                                label: formatMessage(MESSAGES.rejected),
+                                value: "REJECTED",
                             },
                         ]
                     }
@@ -172,7 +162,7 @@ OrgUnitInfosComponent.propTypes = {
     intl: PropTypes.object.isRequired,
     orgUnit: PropTypes.object,
     orgUnitTypes: PropTypes.array.isRequired,
-    sourceTypes: PropTypes.array.isRequired,
+    sources: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };

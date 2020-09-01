@@ -67,13 +67,13 @@ export const orgUnitsTableColumns = (
         },
         {
             Header: formatMessage(MESSAGES.status),
-            accessor: 'status',
+            accessor: 'validation_status',
             Cell: settings => (
                 <span>
                     {
-                        settings.original.status
-                            ? formatMessage(MESSAGES.validated)
-                            : formatMessage(MESSAGES.notValidated)
+                        settings.original.validation_status === 'NEW'
+                            ? formatMessage(MESSAGES.new)
+                            : (settings.original.validation_status === 'REJECTED' ? formatMessage(MESSAGES.rejected) : formatMessage(MESSAGES.validated))
                     }
                 </span>
             ),

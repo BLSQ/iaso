@@ -1,6 +1,10 @@
+import mapValues from 'lodash/mapValues';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
+import {
+    saveAction, createAction, deleteAction,
+} from '../../redux/actions/formsActions';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
@@ -136,3 +140,34 @@ export const saveMultiEdit = data => (dispatch) => {
             throw error;
         }));
 };
+
+const apiKey = 'orgunits';
+export const saveOrgUnit = orgUnitData => dispatch => saveAction(
+    dispatch,
+    mapValues(orgUnitData, v => v),
+    apiKey,
+    'saveOrgUnitSuccesfull',
+    'saveOrgUnitError',
+    setFetchingDetail,
+);
+
+export const createOrgUnit = orgUnitData => dispatch => createAction(
+    dispatch,
+    mapValues(orgUnitData, v => v.value),
+    apiKey,
+    'saveOrgUnitSuccesfull',
+    'saveOrgUnitError',
+    setFetchingDetail,
+);
+
+// export const deleteOrgUnit = (orgUnit, params) => dispatch => deleteAction(
+//     dispatch,
+//     orgUnit,
+//     apiKey,
+//     setOrgUnits,
+//     'deleteOrgUnitSuccesfull',
+//     'deleteOrgUnitError',
+//     'orgUnits',
+//     params,
+//     setIsFetching,
+// );

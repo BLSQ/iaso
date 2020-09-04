@@ -2,6 +2,7 @@ import { useCallback, useReducer } from 'react';
 
 const SET_FIELD_VALUE = 'SET_FIELD_VALUE';
 const SET_FIELD_ERRORS = 'SET_FIELD_ERRORS';
+const SET_FORM_STATE = 'SET_FORM_STATE';
 
 function formStateReducer(state, action) {
     const { type, payload } = action;
@@ -20,6 +21,8 @@ function formStateReducer(state, action) {
                     errors: payload.errors,
                 },
             };
+        case SET_FORM_STATE:
+            return payload;
         default:
             return state;
     }
@@ -56,9 +59,14 @@ export function useFormState(initialValues) {
             : transformer(value);
         dispatch({ type: SET_FIELD_VALUE, payload: { name, value: transformedValue } });
     }, [dispatch]);
+
+    const setFormState = useCallback((newFormState) => {
+        dispatch({ type: SET_FORM_STATE, payload: formStateInitializer(newFormState) });
+    }, [dispatch]);
+
     const setFieldErrors = useCallback((name, errors) => {
         dispatch({ type: SET_FIELD_ERRORS, payload: { name, errors } });
     }, [dispatch]);
 
-    return [formState, setFieldValue, setFieldErrors];
+    return [formState, setFieldValue, setFieldErrors, setFormState];
 }

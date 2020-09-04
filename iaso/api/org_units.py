@@ -354,7 +354,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.parent = None
         new_groups = []
         for group in groups:
-            temp_group = get_object_or_404(Group, id=group["id"])
+            temp_group = get_object_or_404(Group, id=group)
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
         audit_models.log_modification(

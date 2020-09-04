@@ -65,6 +65,14 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchGroupsError',
         defaultMessage: 'An error occurred while fetching groups list',
     },
+    saveOrgUnitError: {
+        id: 'iaso.snackBar.saveOrgUnitError',
+        defaultMessage: 'An error occurred while saving org unit',
+    },
+    saveOrgUnitSuccesfull: {
+        id: 'iaso.snackBar.saveOrgUnitSuccesfull',
+        defaultMessage: 'Org unit saved successfully',
+    },
     fetchOrgUnitTypesError: {
         id: 'iaso.snackBar.fetchOrgUnitTypesError',
         defaultMessage: 'An error occurred while fetching org unit types list',

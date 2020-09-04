@@ -28,7 +28,6 @@ const OrgUnitForm = ({
     orgUnit,
     classes,
     orgUnitTypes,
-    sources,
     groups,
     saveOrgUnit,
     params,
@@ -38,12 +37,17 @@ const OrgUnitForm = ({
     const [formState, setFieldValue, setFieldErrors, setFormState] = useFormState(initialFormState(orgUnit));
 
     const [orgUnitModified, setOrgUnitModified] = React.useState(false);
-    const handleSaveOrgunit = () => {
+    const handleSave = () => {
         const newOrgUnit = mapValues(formState, v => (Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v));
-        saveOrgUnit(newOrgUnit).then()
+        saveOrgUnit(newOrgUnit).then((savedOrgUnit) => {
+            setOrgUnitModified(false);
+            setFormState(initialFormState(savedOrgUnit));
+        })
             .catch((error) => {
                 if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => setFieldErrors(entry[0], entry[1]));
+                    error.details.forEach((entry) => {
+                        setFieldErrors(entry.errorKey, [entry.errorMessage]);
+                    });
                 }
             });
     };
@@ -53,12 +57,13 @@ const OrgUnitForm = ({
         setFieldValue(key, value);
     };
 
-    const reset = () => {
+    const handleReset = () => {
         setOrgUnitModified(false);
         setFormState(initialFormState(orgUnit));
         onResetOrgUnit();
     };
 
+    const isNewOrgunit = orgUnit && !orgUnit.id;
     return (
         <>
             <OrgUnitInfos
@@ -69,26 +74,30 @@ const OrgUnitForm = ({
                     ...formState,
                 }}
                 orgUnitTypes={orgUnitTypes}
-                sources={sources}
                 groups={groups}
                 onChangeInfo={handleChangeInfo}
             />
             <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
                 <Grid xs={12} item className={classes.textAlignRight}>
-                    <Button
-                        className={classes.marginLeft}
-                        disabled={!orgUnitModified}
-                        variant="contained"
-                        onClick={() => reset()}
-                    >
-                        <FormattedMessage {...MESSAGES.cancel} />
-                    </Button>
+                    {
+                        !isNewOrgunit
+                        && (
+                            <Button
+                                className={classes.marginLeft}
+                                disabled={!orgUnitModified}
+                                variant="contained"
+                                onClick={() => handleReset()}
+                            >
+                                <FormattedMessage {...MESSAGES.cancel} />
+                            </Button>
+                        )
+                    }
                     <Button
                         disabled={!orgUnitModified}
                         variant="contained"
                         className={classes.marginLeft}
                         color="primary"
-                        onClick={() => handleSaveOrgunit()}
+                        onClick={() => handleSave()}
                     >
                         <FormattedMessage {...MESSAGES.save} />
                     </Button>
@@ -98,17 +107,11 @@ const OrgUnitForm = ({
     );
 };
 
-
-OrgUnitForm.defaultProps = {
-    sources: [],
-};
-
 OrgUnitForm.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     groups: PropTypes.array.isRequired,
     classes: PropTypes.object.isRequired,
-    sources: PropTypes.array,
     saveOrgUnit: PropTypes.func.isRequired,
     onResetOrgUnit: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,

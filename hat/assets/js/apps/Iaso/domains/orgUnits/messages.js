@@ -1,6 +1,10 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    newOrgUnit: {
+        defaultMessage: 'Create a org unit',
+        id: 'iaso.orgUnits.new',
+    },
     action: {
         defaultMessage: 'Actions',
         id: 'iaso.label.actions',

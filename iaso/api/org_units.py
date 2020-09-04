@@ -3,6 +3,7 @@ from rest_framework import viewsets, status, permissions
 from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
+from django.utils.translation import gettext as _
 
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
@@ -270,14 +271,26 @@ class OrgUnitViewSet(viewsets.ViewSet):
         return response
 
     def partial_update(self, request, pk=None):
+        errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
         self.check_object_permissions(request, org_unit)
 
         original_copy = deepcopy(org_unit)
-        org_unit.name = request.data.get("name", "")
+        name = request.data.get("name", None)
+
+        if not name:
+            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
+
+        org_unit.name = name
+
         org_unit.short_name = request.data.get("short_name", "")
         org_unit.source = request.data.get("source", "")
-        org_unit.validation_status = request.data.get("validation_status", OrgUnit.VALIDATION_VALID)
+
+        validation_status = request.data.get("validation_status", None)
+        if validation_status is None:
+            org_unit.validation_status = OrgUnit.VALIDATION_NEW
+        else:
+            org_unit.validation_status = validation_status
         geo_json = request.data.get("geo_json", None)
         catchment = request.data.get("catchment", None)
         simplified_geom = request.data.get("simplified_geom", None)
@@ -342,11 +355,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
         else:
             org_unit.location = None
+
         org_unit.aliases = request.data.get("aliases", "")
 
         if org_unit_type_id:
             org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
             org_unit.org_unit_type = org_unit_type
+        else:
+            errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
         if parent_id:
             parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
             org_unit.parent = parent_org_unit
@@ -360,22 +377,92 @@ class OrgUnitViewSet(viewsets.ViewSet):
         audit_models.log_modification(
             original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
         )
+        if not errors:
+            org_unit.save()
+
+            res = org_unit.as_dict_with_parents()
+            res["geo_json"] = None
+            res["catchment"] = None
+            if org_unit.simplified_geom or org_unit.catchment:
+                queryset = self.get_queryset().filter(id=org_unit.id)
+                if org_unit.simplified_geom:
+                    res["geo_json"] = geojson_queryset(
+                        queryset, geometry_field="simplified_geom"
+                    )
+                if org_unit.catchment:
+                    res["catchment"] = geojson_queryset(
+                        queryset, geometry_field="catchment"
+                    )
+
+            return Response(res)
+        else :
+            return Response(
+                errors,
+                status=400,
+            )
+
+    @action(
+        detail=False,
+        methods=["POST"],
+        permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission],
+    )
+    def create_org_unit(self, request):
+        errors = []
+        org_unit = OrgUnit()
+
+        profile = request.user.iaso_profile
+        org_unit.version = profile.account.default_version
+        name = request.data.get("name", None)
+        if not name:
+            errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
+
+        org_unit.name = name
+
+        org_unit.short_name = request.data.get("short_name", "")
+        org_unit.source = request.data.get("source", "")
+
+        validation_status = request.data.get("validation_status", None)
+        if validation_status is None:
+            org_unit.validation_status = OrgUnit.VALIDATION_NEW
+        else:
+            org_unit.validation_status = validation_status
+
+        org_unit_type_id = request.data.get("org_unit_type_id", None)
+        parent_id = request.data.get("parent_id", None)
+        groups = request.data.get("groups")
+
+        org_unit.aliases = request.data.get("aliases", "")
+
+        if not org_unit_type_id:
+            errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
+
+        if not errors:
+            org_unit.save()
+        else :
+            return Response(
+                errors,
+                status=400,
+            )
+        org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
+        org_unit.org_unit_type = org_unit_type
+
+        if parent_id:
+            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
+            org_unit.parent = parent_org_unit
+        else:
+            org_unit.parent = None
+
+        new_groups = []
+        for group in groups:
+            temp_group = get_object_or_404(Group, id=group)
+            new_groups.append(temp_group)
+        org_unit.groups.set(new_groups)
+        audit_models.log_modification(
+            None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
+        )
         org_unit.save()
 
         res = org_unit.as_dict_with_parents()
-        res["geo_json"] = None
-        res["catchment"] = None
-        if org_unit.simplified_geom or org_unit.catchment:
-            queryset = self.get_queryset().filter(id=org_unit.id)
-            if org_unit.simplified_geom:
-                res["geo_json"] = geojson_queryset(
-                    queryset, geometry_field="simplified_geom"
-                )
-            if org_unit.catchment:
-                res["catchment"] = geojson_queryset(
-                    queryset, geometry_field="catchment"
-                )
-
         return Response(res)
 
     @safe_api_import("orgUnit")
@@ -383,7 +470,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
         new_org_units = import_data(
             request.data, request.user, request.query_params.get("app_id")
         )
-
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):

@@ -28,14 +28,18 @@ const OrgUnitInfosComponent = ({
         <Grid item xs={orgUnit.id ? 4 : 6}>
             <InputComponent
                 keyValue="name"
+                required
                 onChange={onChangeInfo}
                 value={orgUnit.name.value}
+                errors={orgUnit.name.errors}
                 label={MESSAGES.name}
             />
             <InputComponent
                 keyValue="org_unit_type_id"
                 onChange={onChangeInfo}
+                required
                 value={orgUnit.org_unit_type_id.value}
+                errors={orgUnit.org_unit_type_id.errors}
                 type="select"
                 options={
                     orgUnitTypes.map(t => ({
@@ -50,6 +54,7 @@ const OrgUnitInfosComponent = ({
                 onChange={(name, value) => onChangeInfo(name, commaSeparatedIdsToArray(value))}
                 multi
                 value={orgUnit.groups.value.length > 0 ? orgUnit.groups.value : null}
+                errors={orgUnit.groups.errors}
                 type="select"
                 options={
                     groups.map(g => ({
@@ -63,6 +68,7 @@ const OrgUnitInfosComponent = ({
                 keyValue="validation_status"
                 isClearable={false}
                 onChange={onChangeInfo}
+                errors={orgUnit.validation_status.errors}
                 value={orgUnit.validation_status.value}
                 type="select"
                 label={MESSAGES.status}
@@ -106,32 +112,31 @@ const OrgUnitInfosComponent = ({
         </Grid>
         {
             orgUnit.id
-                && (
-                    <Grid item xs={4}>
-                        <InputComponent
-                            keyValue="source"
-                            value={orgUnit.source}
-                            disabled
-                            label={MESSAGES.source}
-                        />
-                        <InputComponent
-                            keyValue="source_ref"
-                            value={orgUnit.source_ref}
-                            disabled
-                        />
-                        <InputComponent
-                            keyValue="created_at"
-                            value={moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm')}
-                            disabled
-                        />
-                        <InputComponent
-                            keyValue="updated_at"
-                            value={moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm')}
-                            disabled
-                        />
+                    && (
+                        <Grid item xs={4}>
+                            <InputComponent
+                                keyValue="source"
+                                value={orgUnit.source}
+                                disabled
+                                label={MESSAGES.source}
+                            />
+                            <InputComponent
+                                keyValue="source_ref"
+                                value={orgUnit.source_ref}
+                                disabled
+                            />
+                            <InputComponent
+                                keyValue="created_at"
+                                value={moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm')}
+                                disabled
+                            />
+                            <InputComponent
+                                keyValue="updated_at"
+                                value={moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm')}
+                                disabled
+                            />
+                        </Grid>
                     )
-                    </Grid>
-                )
         }
     </Grid>
 );

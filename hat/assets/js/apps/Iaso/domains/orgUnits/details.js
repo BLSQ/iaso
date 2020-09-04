@@ -22,7 +22,7 @@ import {
     setFetching,
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
-    // createOrgUnit as createOrgUnitAction,
+    createOrgUnit as createOrgUnitAction,
 } from './actions';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
@@ -32,7 +32,6 @@ import {
     fetchAssociatedDataSources,
     fetchOrgUnitDetail,
     fetchForms,
-    // saveOrgUnit,
     fetchGroups,
     fetchSources,
 } from '../../utils/requests';
@@ -143,7 +142,7 @@ class OrgUnitDetail extends Component {
         const {
             params,
         } = this.props;
-        if (params.orgUnitId !== prevProps.params.orgUnitId) {
+        if (params.orgUnitId !== prevProps.params.orgUnitId && prevProps.params.orgUnitId !== '0') {
             this.resetCurrentOrgUnit();
             this.fetchDetail();
         }
@@ -251,9 +250,21 @@ class OrgUnitDetail extends Component {
         const {
             currentOrgUnit,
         } = this.state;
-        const orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit }, 'altitude');
-        const { saveOrgUnit } = this.props;
-        return saveOrgUnit(orgUnitPayload).then(
+        let orgUnitPayload = omit({ ...currentOrgUnit, ...newOrgUnit }, 'altitude');
+        orgUnitPayload = {
+            ...orgUnitPayload,
+            groups: orgUnitPayload.groups.length > 0 && !orgUnitPayload.groups[0].id
+                ? orgUnitPayload.groups : orgUnitPayload.groups.map(g => g.id),
+        };
+        const {
+            saveOrgUnit, createOrgUnit, redirectTo, params,
+        } = this.props;
+
+        const isNewOrgunit = currentOrgUnit && !currentOrgUnit.id;
+        const savePromise = isNewOrgunit
+            ? createOrgUnit(orgUnitPayload)
+            : saveOrgUnit(orgUnitPayload);
+        return savePromise.then(
             (savedOrgUnit) => {
                 this.setState({
                     orgUnitLocationModified: false,
@@ -261,8 +272,15 @@ class OrgUnitDetail extends Component {
                 });
                 this.props.resetOrgUnits();
                 this.props.setCurrentOrgUnit(savedOrgUnit);
+                if (isNewOrgunit) {
+                    redirectTo(baseUrl, {
+                        ...params,
+                        orgUnitId: savedOrgUnit.id,
+                    });
+                }
+                return savedOrgUnit;
             },
-        );
+        ).catch((err) => { throw err; });
     }
 
     handleResetOrgUnit() {
@@ -305,7 +323,6 @@ class OrgUnitDetail extends Component {
                 formatMessage,
             },
             orgUnitTypes,
-            sources,
             groups,
             params,
             router,
@@ -319,9 +336,13 @@ class OrgUnitDetail extends Component {
             orgUnitLocationModified,
             fetchingFilters,
         } = this.state;
-        let title = currentOrgUnit ? currentOrgUnit.name : '';
+        const isNewOrgunit = currentOrgUnit && !currentOrgUnit.id;
+        let title = '';
         if (currentOrgUnit) {
-            title = `${title}${currentOrgUnit.org_unit_type_name ? ` - ${currentOrgUnit.org_unit_type_name}` : ''}`;
+            title = !isNewOrgunit ? currentOrgUnit.name : formatMessage(MESSAGES.newOrgUnit);
+            if (!isNewOrgunit) {
+                title = `${title}${currentOrgUnit.org_unit_type_name ? ` - ${currentOrgUnit.org_unit_type_name}` : ''}`;
+            }
         }
         return (
             <Fragment>
@@ -339,30 +360,33 @@ class OrgUnitDetail extends Component {
                         }
                     }}
                 >
-                    <Tabs
-                        value={tab}
-                        classes={{
-                            root: classes.tabs,
-                            indicator: classes.indicator,
-                        }}
-                        onChange={(event, newtab) => this.handleChangeTab(newtab)
-                        }
-                    >
-                        <Tab
-                            value="infos"
-                            label={formatMessage(MESSAGES.infos)}
-                        />
-                        <Tab
-                            value="map"
-                            label={formatMessage(MESSAGES.map)}
-                            disabled={!currentOrgUnit}
-                        />
-                        <Tab
-                            value="history"
-                            label={formatMessage(MESSAGES.history)}
-                            disabled={!currentOrgUnit}
-                        />
-                    </Tabs>
+                    {
+                        !isNewOrgunit
+                        && (
+                            <Tabs
+                                value={tab}
+                                classes={{
+                                    root: classes.tabs,
+                                    indicator: classes.indicator,
+                                }}
+                                onChange={(event, newtab) => this.handleChangeTab(newtab)
+                                }
+                            >
+                                <Tab
+                                    value="infos"
+                                    label={formatMessage(MESSAGES.infos)}
+                                />
+                                <Tab
+                                    value="map"
+                                    label={formatMessage(MESSAGES.map)}
+                                />
+                                <Tab
+                                    value="history"
+                                    label={formatMessage(MESSAGES.history)}
+                                />
+                            </Tabs>
+                        )
+                    }
                 </TopBar>
                 {
                     (fetching || fetchingSubOrgUnits) && <LoadingSpinner />
@@ -377,7 +401,6 @@ class OrgUnitDetail extends Component {
                                             orgUnit={currentOrgUnit}
                                             orgUnitTypes={orgUnitTypes}
                                             groups={groups}
-                                            sources={sources}
                                             onResetOrgUnit={() => this.handleResetOrgUnit()}
                                             saveOrgUnit={newOrgUnit => this.handleSaveOrgUnit(newOrgUnit)}
                                             params={params}
@@ -451,6 +474,7 @@ OrgUnitDetail.propTypes = {
     groups: PropTypes.array.isRequired,
     setGroups: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
+    createOrgUnit: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -478,6 +502,7 @@ const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             saveOrgUnit: saveOrgUnitAction,
+            createOrgUnit: createOrgUnitAction,
         },
         dispatch,
     ),

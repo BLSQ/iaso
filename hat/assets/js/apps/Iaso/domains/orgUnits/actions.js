@@ -144,7 +144,7 @@ export const saveMultiEdit = data => (dispatch) => {
 const apiKey = 'orgunits';
 export const saveOrgUnit = orgUnitData => dispatch => saveAction(
     dispatch,
-    mapValues(orgUnitData, v => v),
+    orgUnitData,
     apiKey,
     'saveOrgUnitSuccesfull',
     'saveOrgUnitError',
@@ -153,8 +153,11 @@ export const saveOrgUnit = orgUnitData => dispatch => saveAction(
 
 export const createOrgUnit = orgUnitData => dispatch => createAction(
     dispatch,
-    mapValues(orgUnitData, v => v.value),
-    apiKey,
+    {
+        ...orgUnitData,
+        creation_source: 'dashboard',
+    },
+    `${apiKey}/create_org_unit`,
     'saveOrgUnitSuccesfull',
     'saveOrgUnitError',
     setFetchingDetail,

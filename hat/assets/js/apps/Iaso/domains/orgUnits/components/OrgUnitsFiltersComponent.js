@@ -10,7 +10,9 @@ import { CirclePicker } from 'react-color';
 import { withStyles, FormLabel } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
+import classNames from 'classnames';
 
 import commonStyles from '../../../styles/common';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
@@ -36,6 +38,7 @@ import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
+import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -50,6 +53,9 @@ const styles = theme => ({
     marginBottom: {
         marginBottom: theme.spacing(2),
         display: 'block',
+    },
+    marginRight: {
+        marginRight: theme.spacing(2),
     },
 });
 
@@ -127,6 +133,7 @@ class OrgUnitsFiltersComponent extends Component {
             filtersUpdated,
             groups,
             searchIndex,
+            redirectTo,
         } = this.props;
         const searches = [...decodeSearch(params.searches)];
         const searchParams = searches[searchIndex];
@@ -196,7 +203,19 @@ class OrgUnitsFiltersComponent extends Component {
                     </Grid>
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
-                    <Grid item xs={2} container justify="flex-end" alignItems="center">
+                    <Grid item xs={4} container justify="flex-end" alignItems="center">
+                        <Button
+                            variant="contained"
+                            className={classNames(
+                                classes.button,
+                                classes.marginRight,
+                            )}
+                            color="primary"
+                            onClick={() => redirectTo(baseUrls.orgUnitDetails, { orgUnitId: '0' })}
+                        >
+                            <Add className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.create} />
+                        </Button>
                         <Button
                             disabled={!filtersUpdated && Boolean(params.searchActive)}
                             variant="contained"

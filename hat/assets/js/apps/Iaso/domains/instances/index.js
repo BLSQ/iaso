@@ -274,6 +274,7 @@ class Instances extends Component {
             tableColumns,
             visibleColumns,
         } = this.state;
+        const filesList = instancesSmall ? getInstancesFilesList(instancesSmall) : null;
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -328,7 +329,7 @@ class Instances extends Component {
                     </Grid>
                 </TopBar>
                 {
-                    fetching
+                    (fetching || !instancesSmall)
                     && <LoadingSpinner />
                 }
                 <Box className={classes.containerFullHeightPadded}>
@@ -370,7 +371,7 @@ class Instances extends Component {
                     {
                         tab === 'files' && (
                             <InstancesFilesList
-                                files={getInstancesFilesList(instancesSmall)}
+                                files={filesList}
                             />
                         )
                     }
@@ -397,13 +398,14 @@ Instances.defaultProps = {
     reduxPage: undefined,
     currentForm: undefined,
     prevPathname: null,
+    instancesSmall: null,
 };
 
 Instances.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     reduxPage: PropTypes.object,
-    instancesSmall: PropTypes.array.isRequired,
+    instancesSmall: PropTypes.any,
     params: PropTypes.object.isRequired,
     setInstances: PropTypes.func.isRequired,
     setInstancesSmallDict: PropTypes.func.isRequired,

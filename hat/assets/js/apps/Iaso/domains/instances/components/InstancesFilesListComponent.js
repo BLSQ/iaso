@@ -55,7 +55,7 @@ class InstancesFilesList extends Component {
         this.state = {
             currentImageIndex: 0,
             viewerIsOpen: false,
-            sortedFiles: sortFilesType(props.files),
+            sortedFiles: sortFilesType(props.files ? props.files : []),
             instanceDetail: props.instanceDetail,
             tab: 'images',
         };
@@ -65,14 +65,14 @@ class InstancesFilesList extends Component {
         const {
             files,
         } = this.props;
-        if (!isEqual(prevProps.files, files)) {
+        if (files && !isEqual(prevProps.files, files)) {
             this.setFiles(files);
         }
     }
 
     setFiles(files) {
         this.setState({
-            sortedFiles: sortFilesType(files),
+            sortedFiles: files ? sortFilesType(files) : [],
         });
     }
 
@@ -146,7 +146,7 @@ class InstancesFilesList extends Component {
             instanceDetail,
             tab,
         } = this.state;
-        if (fetching) return null;
+        if (fetching || !files) return null;
         if (files.length === 0) {
             return (
                 <Grid container spacing={0}>
@@ -242,10 +242,11 @@ class InstancesFilesList extends Component {
 InstancesFilesList.defaultProps = {
     fetchDetails: true,
     instanceDetail: null,
+    files: null,
 };
 
 InstancesFilesList.propTypes = {
-    files: PropTypes.array.isRequired,
+    files: PropTypes.any,
     classes: PropTypes.object.isRequired,
     intl: intlShape.isRequired,
     fetching: PropTypes.bool.isRequired,

@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
-
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -14,59 +13,57 @@ import Search from '@material-ui/icons/Search';
 import commonStyles from '../../../styles/common';
 
 import {
-    orgUnitType,
-    location,
-    device,
-    deviceOwnership,
-    periods,
-    instanceStatus,
+    search, orgUnitType, location, device, deviceOwnership, periods, instanceStatus,
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
+
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import { getOrgUnitParentsIds } from '../../orgUnits/utils';
-
+import { getOrgUnitParentsIds, decodeSearch, encodeUriSearches } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
 
-export const instanceStatusOptions = INSTANCE_STATUSES.map(status => (
-    {
-        value: status,
-        label: MESSAGES[status.toLowerCase()],
-    }
-));
+export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
+    value: status,
+    label: MESSAGES[status.toLowerCase()],
+}));
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
+const extendFilter = (searchParams, filter, onChange) => ({
+    // should be moved from here to a common location
+    ...filter,
+    uid: `${filter.urlKey}`,
+    value: searchParams[filter.urlKey],
+    callback: (value, urlKey) => onChange(value, urlKey),
+});
+
 class InstancesFiltersComponent extends Component {
     onSearch() {
         const {
-            isInstancesFilterUpdated,
-            setInstancesFilterUpdated,
+            params, isInstancesFilterUpdated, setInstancesFilterUpdated, onSearch, redirectTo, baseUrl,
         } = this.props;
 
         if (isInstancesFilterUpdated) {
             setInstancesFilterUpdated(false);
             const tempParams = {
-                ...this.props.params,
+                ...params,
+                searches: encodeUriSearches([...decodeSearch(params.searches)]),
             };
             tempParams.page = 1;
-            this.props.redirectTo(this.props.baseUrl, tempParams);
+            redirectTo(baseUrl, tempParams);
         }
-        this.props.onSearch();
+        onSearch();
     }
 
     onSelectOrgUnit(orgUnit) {
         const {
-            redirectTo,
-            params,
-            baseUrl,
-            setInstancesFilterUpdated,
+            redirectTo, params, baseUrl, setInstancesFilterUpdated,
         } = this.props;
         const parentIds = getOrgUnitParentsIds(orgUnit);
         parentIds.push(orgUnit.id);
@@ -79,14 +76,29 @@ class InstancesFiltersComponent extends Component {
         setInstancesFilterUpdated(true);
     }
 
+    onChange(value, urlKey) {
+        const {
+            params, setInstancesFilterUpdated, redirectTo, baseUrl,
+        } = this.props;
+        setInstancesFilterUpdated(true);
+        const searches = params.searches !== undefined ? [...decodeSearch(params.searches)] : [{ search: value }];
+        searches[0] = {
+            ...searches[0],
+            [urlKey]: value,
+        };
+        const tempParams = {
+            ...params,
+            searches: encodeUriSearches(searches),
+        };
+        redirectTo(baseUrl, tempParams);
+    }
+
     render() {
         const {
             params,
             classes,
             baseUrl,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             orgUnitTypes,
             devices,
             devicesOwnerships,
@@ -95,6 +107,9 @@ class InstancesFiltersComponent extends Component {
             setInstancesFilterUpdated,
         } = this.props;
 
+        const searchParams = params.searches !== undefined ? [...decodeSearch(params.searches)] : [{}];
+        // const searchParams = searches[searchIndex];
+        // const searchParams = searches;
 
         return (
             <div className={classes.marginBottomBig}>
@@ -104,11 +119,7 @@ class InstancesFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             onFilterChanged={() => setInstancesFilterUpdated(true)}
-                            filters={[
-                                periods(periodsList),
-                                location(formatMessage),
-                                orgUnitType(orgUnitTypes),
-                            ]}
+                            filters={[periods(periodsList), location(formatMessage), orgUnitType(orgUnitTypes)]}
                         />
                     </Grid>
                     <Grid item xs={4}>
@@ -116,31 +127,24 @@ class InstancesFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             onFilterChanged={() => setInstancesFilterUpdated(true)}
-                            filters={[
-                                instanceStatus(instanceStatusOptions),
-                                device(devices),
-                                deviceOwnership(devicesOwnerships),
-                            ]}
+                            filters={[instanceStatus(instanceStatusOptions), device(devices), deviceOwnership(devicesOwnerships)]}
                         />
                     </Grid>
                     <Grid item xs={4}>
-                        <OrgUnitSearch onSelectOrgUnit={ou => this.onSelectOrgUnit(ou)} />
-                        <OrgUnitsLevelsFiltersComponent
-                            onLatestIdChanged={() => setInstancesFilterUpdated(true)}
+                        <FiltersComponent
                             params={params}
                             baseUrl={baseUrl}
+                            onFilterChanged={() => setInstancesFilterUpdated(true)}
+                            filters={[extendFilter(searchParams[0], search(), (value, urlKey) => this.onChange(value, urlKey))]}
+                            onEnterPressed={() => this.onSearch()}
                         />
+                        <OrgUnitSearch onSelectOrgUnit={ou => this.onSelectOrgUnit(ou)} />
+                        <OrgUnitsLevelsFiltersComponent onLatestIdChanged={() => setInstancesFilterUpdated(true)} params={params} baseUrl={baseUrl} />
                     </Grid>
                 </Grid>
                 <Grid container spacing={4} justify="flex-end" alignItems="center">
                     <Grid item xs={2} container justify="flex-end" alignItems="center">
-                        <Button
-                            disabled={!isInstancesFilterUpdated}
-                            variant="contained"
-                            className={classes.button}
-                            color="primary"
-                            onClick={() => this.onSearch()}
-                        >
+                        <Button disabled={!isInstancesFilterUpdated} variant="contained" className={classes.button} color="primary" onClick={() => this.onSearch()}>
                             <Search className={classes.buttonIcon} />
                             <FormattedMessage {...MESSAGES.search} />
                         </Button>

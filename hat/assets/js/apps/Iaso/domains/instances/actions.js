@@ -2,10 +2,7 @@ import {
     getRequest, postRequest, putRequest, patchRequest, deleteRequest,
 } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
-import {
-    errorSnackBar,
-    succesfullSnackBar,
-} from '../../constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
@@ -105,7 +102,7 @@ export const softDeleteInstance = currentInstance => (dispatch) => {
 
 export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
     dispatch(setInstancesFetching(true));
-    if (!payload.period) delete payload.period
+    if (!payload.period) delete payload.period;
     patchRequest(`/api/instances/${currentInstance.id}/`, payload)
         .then((res) => {
             dispatch(fetchInstanceDetail(currentInstance.id));
@@ -114,6 +111,11 @@ export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
         .then(() => {
             dispatch(setInstancesFetching(false));
         });
+};
+
+export const exportInstance = () => (dispatch) => {
+    dispatch(setInstancesFetching(true));
+    alert('ddd');
 };
 
 export const createExportRequest = filterParams => (dispatch) => {
@@ -125,9 +127,7 @@ export const createExportRequest = filterParams => (dispatch) => {
             return dispatch(enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')));
         })
         .catch((err) => {
-            const key = err.details
-                ? `createExportRequestError${err.details.code}`
-                : 'createExportRequestError';
+            const key = err.details ? `createExportRequestError${err.details.code}` : 'createExportRequestError';
             return dispatch(enqueueSnackbar(errorSnackBar(key, null, err)));
         })
         .then(() => dispatch(setInstancesFetching(false)));

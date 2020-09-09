@@ -14,6 +14,7 @@ import {
     fetchEditUrl as fetchEditUrlAction,
     softDeleteInstance as softDeleteAction,
     reAssignInstance as reAssignInstanceAction,
+    exportInstance as exportInstanceAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -29,6 +30,7 @@ import InstanceDetailsExportRequests from './components/InstanceDetailsExportReq
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 
@@ -44,20 +46,20 @@ const styles = theme => ({
     },
 });
 
-const actions = (currentInstance, reAssignInstance) => [
+const actions = (currentInstance, reAssignInstance, exportInstance) => [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
         disabled: currentInstance && currentInstance.deleted,
     },
     {
+        id: 'instanceExportAction',
+        icon: <ExportInstancesDialogComponent getFilters={() => {}} batchExport={false} />,
+        disabled: currentInstance && currentInstance.deleted,
+    },
+    {
         id: 'instanceReAssignAction',
-        icon: (
-            <ReAssignInstanceDialogComponent
-                currentInstance={currentInstance}
-                onReAssignInstance={reAssignInstance}
-            />
-        ),
+        icon: <ReAssignInstanceDialogComponent currentInstance={currentInstance} onReAssignInstance={reAssignInstance} />,
         disabled: currentInstance && currentInstance.deleted,
     },
     {
@@ -90,7 +92,8 @@ class InstanceDetails extends Component {
             this.props.softDelete(this.props.currentInstance);
         }
 
-        // if (action.id === 'instanceReAssignAction' && this.props.currentInstance) {
+        // if (action.id === 'instanceExportAction' && this.props.currentInstance) {
+        // console.log('Can export');
         // }
     }
 
@@ -100,6 +103,7 @@ class InstanceDetails extends Component {
             fetching,
             currentInstance,
             reAssignInstance,
+            exportInstance,
             intl: { formatMessage },
             router,
             prevPathname,
@@ -109,13 +113,7 @@ class InstanceDetails extends Component {
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={
-                        currentInstance
-                            ? `${
-                                currentInstance.form_name
-                            }: ${currentInstance.file_name.replace('.xml', '')}`
-                            : ''
-                    }
+                    title={currentInstance ? `${currentInstance.form_name}: ${currentInstance.file_name.replace('.xml', '')}` : ''}
                     displayBackButton
                     goBack={() => {
                         if (prevPathname || !currentInstance) {
@@ -130,10 +128,7 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions
-                            actions={actions(currentInstance, reAssignInstance)}
-                            onActionSelected={action => this.onActionSelected(action)}
-                        />
+                        <SpeedDialInstanceActions actions={actions(currentInstance, reAssignInstance, exportInstance)} onActionSelected={action => this.onActionSelected(action)} />
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
@@ -152,17 +147,10 @@ class InstanceDetails extends Component {
                                 <WidgetPaper title={formatMessage(MESSAGES.location)}>
                                     <InstanceDetailsLocation currentInstance={currentInstance} />
                                 </WidgetPaper>
-                                <InstanceDetailsExportRequests
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
+                                <InstanceDetailsExportRequests currentInstance={currentInstance} classes={classes} />
                                 {currentInstance.files.length > 0 && (
                                     <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                        <InstancesFilesList
-                                            fetchDetails={false}
-                                            instanceDetail={currentInstance}
-                                            files={getInstancesFilesList([currentInstance])}
-                                        />
+                                        <InstancesFilesList fetchDetails={false} instanceDetail={currentInstance} files={getInstancesFilesList([currentInstance])} />
                                     </WidgetPaper>
                                 )}
                             </Grid>
@@ -208,6 +196,7 @@ InstanceDetails.propTypes = {
     fetchEditUrl: PropTypes.func.isRequired,
     softDelete: PropTypes.func.isRequired,
     reAssignInstance: PropTypes.func.isRequired,
+    exportInstance: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -225,11 +214,10 @@ const MapDispatchToProps = dispatch => ({
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
             reAssignInstance: reAssignInstanceAction,
+            exportInstance: exportInstanceAction,
         },
         dispatch,
     ),
 });
 
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)),
-);
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)));

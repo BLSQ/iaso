@@ -30,7 +30,6 @@ const paginationPathParams = [
     },
 ];
 
-
 export const getPath = (path) => {
     let url = `/${path.baseUrl}`;
     path.params.forEach((p) => {
@@ -46,9 +45,7 @@ export const getPath = (path) => {
 export const formsPath = {
     baseUrl: baseUrls.forms,
     permission: 'iaso_forms',
-    params: [
-        ...paginationPathParams,
-    ],
+    params: [...paginationPathParams],
     component: props => <Forms {...props} />,
     isRootUrl: true,
 };
@@ -66,7 +63,6 @@ export const mappingsPath = {
             ...p,
             isRequired: true,
         })),
-
     ],
 };
 
@@ -85,7 +81,6 @@ export const mappingDetailPath = {
         },
     ],
 };
-
 
 export const instancesPath = {
     baseUrl: baseUrls.instances,
@@ -132,6 +127,10 @@ export const instancesPath = {
         {
             isRequired: false,
             key: 'columns',
+        },
+        {
+            isRequired: false,
+            key: 'searches',
         },
     ],
 };
@@ -370,7 +369,6 @@ export const page500 = {
     component: () => <PageError errorCode="500" />,
     params: [],
 };
-
 
 export const routeConfigs = [
     formsPath,

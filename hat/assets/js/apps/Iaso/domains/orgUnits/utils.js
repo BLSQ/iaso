@@ -2,7 +2,11 @@ import orderBy from 'lodash/orderBy';
 import { textPlaceholder } from '../../constants/uiConstants';
 
 export const getPolygonPositionsFromSimplifiedGeom = (field) => {
-    const positionsArrays = field.split('((')[1].replace('))', '').replace(/, /gi, ',').split(',');
+    const positionsArrays = field
+        .split('((')[1]
+        .replace('))', '')
+        .replace(/, /gi, ',')
+        .split(',');
     const polygonPositions = [];
     positionsArrays.forEach((pos) => {
         const lat = pos.split(' ')[0];
@@ -24,10 +28,7 @@ export const fetchLatestOrgUnitLevelId = (levels) => {
 export const getOrgUnitsTree = (orgUnit) => {
     let tree = [orgUnit];
     const orgUnitLoop = (parent, tempTree) => {
-        let treeCopy = [
-            parent,
-            ...tempTree,
-        ];
+        let treeCopy = [parent, ...tempTree];
         if (parent.parent) {
             treeCopy = orgUnitLoop(parent.parent, treeCopy);
         }
@@ -40,7 +41,11 @@ export const getOrgUnitsTree = (orgUnit) => {
     return tree;
 };
 
-export const getAliasesArrayFromString = aliasString => aliasString.replace('[', '').replace(']', '').replace(/"/gi, '').split(',');
+export const getAliasesArrayFromString = aliasString => aliasString
+    .replace('[', '')
+    .replace(']', '')
+    .replace(/"/gi, '')
+    .split(',');
 
 export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => {
     const sources = [];
@@ -51,7 +56,6 @@ export const getSourcesWithoutCurrentSource = (sourcesList, currentSourceId) => 
     });
     return sources;
 };
-
 
 export const getOrgunitMessage = (orgUnit, withType) => {
     let message = textPlaceholder;
@@ -64,7 +68,6 @@ export const getOrgunitMessage = (orgUnit, withType) => {
     return message;
 };
 
-
 const mapOrgUnitBySearch = (orgUnits, searches) => {
     const mappedOrgunits = [];
     searches.forEach((search, i) => {
@@ -73,12 +76,7 @@ const mapOrgUnitBySearch = (orgUnits, searches) => {
     return mappedOrgunits;
 };
 
-const orderOrgUnitsByDepthAndSearch = orgUnits => orderBy(
-    orgUnits,
-    [o => o.org_unit_type_depth],
-    [o => o.search_index],
-    ['asc', 'asc'],
-);
+const orderOrgUnitsByDepthAndSearch = orgUnits => orderBy(orgUnits, [o => o.org_unit_type_depth], [o => o.search_index], ['asc', 'asc']);
 
 export const mapOrgUnitByLocation = (orgUnits, searches) => {
     let shapes = orgUnits.filter(o => Boolean(o.geo_json));
@@ -103,10 +101,11 @@ export const decodeSearch = search => JSON.parse(search);
 
 export const encodeUriSearches = (searches) => {
     const newSearches = [...searches];
+
     newSearches.forEach((s, i) => {
         Object.keys(s).forEach((key) => {
             const value = s[key];
-            newSearches[i][key] = (key === 'search' ? encodeURIComponent(value) : value);
+            newSearches[i][key] = key === 'search' ? encodeURIComponent(value) : value;
         });
     });
     return JSON.stringify(newSearches);
@@ -133,7 +132,10 @@ export const getOrgUnitParents = (orgUnit, parents = []) => {
 };
 
 export const getOrgUnitParentsString = orgUnit => getOrgUnitParents(orgUnit)
-    .map(ou => (ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name)).reverse().join(' > ');
+    .map(ou => (ou.parent_name !== '' ? ou.parent_name : ou.org_unit_type_name))
+    .reverse()
+    .join(' > ');
 
 export const getOrgUnitParentsIds = orgUnit => getOrgUnitParents(orgUnit)
-    .map(ou => (ou.parent_id)).reverse();
+    .map(ou => ou.parent_id)
+    .reverse();

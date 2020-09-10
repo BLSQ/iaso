@@ -10,5 +10,6 @@ def parse_instance_filters(req):
         "period_ids": req.get(
             "period_ids", req.get("periods", req.get("period", None))
         ),
+        "search": req.get("search", None),
         "status": req.get("status", None),
     }

@@ -23,7 +23,6 @@ from .instance_filters import parse_instance_filters
 from hat.audit.models import log_modification, INSTANCE_API
 from rest_framework import serializers
 import iaso.periods as periods
-import pdb
 
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
@@ -97,19 +96,6 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
 
         queryset = Instance.objects.order_by("-id")
-        if search:
-            if search.startswith("ids:"):
-                ids_str = search.replace("ids:", "")
-                try:
-                    ids = [int(i.strip()) for i in ids_str.split(",")]
-                    queryset = queryset.filter(id__in=ids)
-                except:
-                    queryset = queryset.filter(id__in=[])
-                    print("Failed parsing ids in search", search)
-            else:
-                queryset = queryset.filter(
-                    Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
-                )
 
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)

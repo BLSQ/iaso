@@ -14,7 +14,6 @@ import {
     fetchEditUrl as fetchEditUrlAction,
     softDeleteInstance as softDeleteAction,
     reAssignInstance as reAssignInstanceAction,
-    exportInstance as exportInstanceAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
@@ -39,14 +38,14 @@ import MESSAGES from './messages';
 import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
-const styles = theme => ({
+const styles = (theme) => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
     },
 });
 
-const actions = (currentInstance, reAssignInstance, exportInstance) => [
+const actions = (currentInstance, reAssignInstance) => [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
@@ -54,7 +53,15 @@ const actions = (currentInstance, reAssignInstance, exportInstance) => [
     },
     {
         id: 'instanceExportAction',
-        icon: <ExportInstancesDialogComponent getFilters={() => {}} batchExport={false} />,
+        icon: (
+            <ExportInstancesDialogComponent
+                getFilters={() => ({
+                    form_id: currentInstance.form_id,
+                    search: `ids:${currentInstance.id}`,
+                })}
+                batchExport={false}
+            />
+        ),
         disabled: currentInstance && currentInstance.deleted,
     },
     {
@@ -91,10 +98,6 @@ class InstanceDetails extends Component {
         if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
             this.props.softDelete(this.props.currentInstance);
         }
-
-        // if (action.id === 'instanceExportAction' && this.props.currentInstance) {
-        // console.log('Can export');
-        // }
     }
 
     render() {
@@ -103,7 +106,6 @@ class InstanceDetails extends Component {
             fetching,
             currentInstance,
             reAssignInstance,
-            exportInstance,
             intl: { formatMessage },
             router,
             prevPathname,
@@ -128,7 +130,7 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions actions={actions(currentInstance, reAssignInstance, exportInstance)} onActionSelected={action => this.onActionSelected(action)} />
+                        <SpeedDialInstanceActions actions={actions(currentInstance, reAssignInstance)} onActionSelected={(action) => this.onActionSelected(action)} />
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
@@ -196,16 +198,15 @@ InstanceDetails.propTypes = {
     fetchEditUrl: PropTypes.func.isRequired,
     softDelete: PropTypes.func.isRequired,
     reAssignInstance: PropTypes.func.isRequired,
-    exportInstance: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
+const MapStateToProps = (state) => ({
     fetching: state.instances.fetching,
     currentInstance: state.instances.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = (dispatch) => ({
     ...bindActionCreators(
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
@@ -214,7 +215,6 @@ const MapDispatchToProps = dispatch => ({
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
             reAssignInstance: reAssignInstanceAction,
-            exportInstance: exportInstanceAction,
         },
         dispatch,
     ),

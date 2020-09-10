@@ -88,12 +88,12 @@ class OrgUnits extends Component {
         this.props.resetOrgUnitsLevels();
 
         dispatch(this.props.setFetchingOrgUnitTypes(true));
-        fetchOrgUnitsTypes(dispatch).then((orgUnitTypes) => {
+        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes => {
             this.props.setOrgUnitTypes(orgUnitTypes);
             dispatch(this.props.setFetchingOrgUnitTypes(false));
         });
 
-        fetchSources(dispatch).then((data) => {
+        fetchSources(dispatch).then(data => {
             const sources = [];
             data.forEach((s, i) => {
                 sources.push({
@@ -219,7 +219,7 @@ class OrgUnits extends Component {
         const { dispatch, params } = this.props;
         dispatch(this.props.setOrgUnitsListFetching(true));
         const urlLocation = this.getEndpointUrl(false, '', true);
-        fetchOrgUnitsList(dispatch, urlLocation).then((orgUnits) => {
+        fetchOrgUnitsList(dispatch, urlLocation).then(orgUnits => {
             this.props.setOrgUnitsLocations(mapOrgUnitByLocation(orgUnits, decodeSearch(params.searches)));
             dispatch(this.props.setOrgUnitsListFetching(false));
         });
@@ -237,7 +237,7 @@ class OrgUnits extends Component {
             const urlLocation = this.getEndpointUrl(false, '', true);
             promises.push(fetchOrgUnitsList(dispatch, urlLocation));
         }
-        Promise.all(promises).then((data) => {
+        Promise.all(promises).then(data => {
             if (!params.searchActive) {
                 const newParams = encodeUriParams(params);
                 newParams.searchActive = true;
@@ -291,7 +291,7 @@ class OrgUnits extends Component {
             },
         ];
         return (
-            <Fragment>
+            <>
                 {fetchingList && <LoadingSpinner />}
                 <OrgUnitsMultiActionsDialog
                     open={multiActionPopupOpen}
@@ -326,7 +326,7 @@ class OrgUnits extends Component {
                         );
                     })}
                     {params.searchActive && (
-                        <Fragment>
+                        <>
                             <Tabs
                                 value={tab}
                                 classes={{
@@ -375,10 +375,10 @@ class OrgUnits extends Component {
                                     </Grid>
                                 </Grid>
                             )}
-                        </Fragment>
+                        </>
                     )}
                 </Box>
-            </Fragment>
+            </>
         );
     }
 }

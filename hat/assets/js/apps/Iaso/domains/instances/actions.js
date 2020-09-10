@@ -113,11 +113,6 @@ export const reAssignInstance = (currentInstance, payload) => (dispatch) => {
         });
 };
 
-export const exportInstance = () => (dispatch) => {
-    dispatch(setInstancesFetching(true));
-    alert('ddd');
-};
-
 export const createExportRequest = filterParams => (dispatch) => {
     dispatch(setInstancesFetching(true));
     return postRequest('/api/exportrequests/', filterParams)

@@ -20,7 +20,7 @@ import { createUrl } from '../../../utils/fetchData';
 
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
 import OrgUnitSearch from '../../orgUnits/components/OrgUnitSearch';
-import { getOrgUnitParentsIds, decodeSearch, encodeUriSearches } from '../../orgUnits/utils';
+import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
@@ -53,8 +53,6 @@ class InstancesFiltersComponent extends Component {
             setInstancesFilterUpdated(false);
             const tempParams = {
                 ...params,
-                // search: encodeUriSearches([...decodeSearch(params.search)]),
-                search: params.search,
             };
             tempParams.page = 1;
             redirectTo(baseUrl, tempParams);
@@ -83,17 +81,8 @@ class InstancesFiltersComponent extends Component {
         } = this.props;
         setInstancesFilterUpdated(true);
 
-        // const searches = params.search !== undefined ? [...decodeSearch({ search: params.search })] : [{ search: value }];
-        // const searches = [{ `${urlKey}`: value }];
-
-        // debugger;
-        // searches[0] = {
-        //     ...searches[0],
-        //     [urlKey]: value,
-        // };
         const tempParams = {
             ...params,
-            // search: encodeUriSearches(searches),
             [urlKey]: value,
         };
 
@@ -113,9 +102,7 @@ class InstancesFiltersComponent extends Component {
             isInstancesFilterUpdated,
             setInstancesFilterUpdated,
         } = this.props;
-        // debugger;
-        // const searchParams = params.search !== undefined ? [...decodeSearch({ search: params.search })] : [{}];
-        // const searchParams = searches[searchIndex];
+
         const searchParams = [{ search: params.search }];
 
         return (

@@ -53,7 +53,8 @@ class InstancesFiltersComponent extends Component {
             setInstancesFilterUpdated(false);
             const tempParams = {
                 ...params,
-                searches: encodeUriSearches([...decodeSearch(params.searches)]),
+                // search: encodeUriSearches([...decodeSearch(params.search)]),
+                search: params.search,
             };
             tempParams.page = 1;
             redirectTo(baseUrl, tempParams);
@@ -81,15 +82,21 @@ class InstancesFiltersComponent extends Component {
             params, setInstancesFilterUpdated, redirectTo, baseUrl,
         } = this.props;
         setInstancesFilterUpdated(true);
-        const searches = params.searches !== undefined ? [...decodeSearch(params.searches)] : [{ search: value }];
-        searches[0] = {
-            ...searches[0],
-            [urlKey]: value,
-        };
+
+        // const searches = params.search !== undefined ? [...decodeSearch({ search: params.search })] : [{ search: value }];
+        // const searches = [{ `${urlKey}`: value }];
+
+        // debugger;
+        // searches[0] = {
+        //     ...searches[0],
+        //     [urlKey]: value,
+        // };
         const tempParams = {
             ...params,
-            searches: encodeUriSearches(searches),
+            // search: encodeUriSearches(searches),
+            [urlKey]: value,
         };
+
         redirectTo(baseUrl, tempParams);
     }
 
@@ -106,10 +113,10 @@ class InstancesFiltersComponent extends Component {
             isInstancesFilterUpdated,
             setInstancesFilterUpdated,
         } = this.props;
-
-        const searchParams = params.searches !== undefined ? [...decodeSearch(params.searches)] : [{}];
+        // debugger;
+        // const searchParams = params.search !== undefined ? [...decodeSearch({ search: params.search })] : [{}];
         // const searchParams = searches[searchIndex];
-        // const searchParams = searches;
+        const searchParams = [{ search: params.search }];
 
         return (
             <div className={classes.marginBottomBig}>
@@ -135,7 +142,7 @@ class InstancesFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             onFilterChanged={() => setInstancesFilterUpdated(true)}
-                            filters={[extendFilter(searchParams[0], search(), (value, urlKey) => this.onChange(value, urlKey))]}
+                            filters={[extendFilter(searchParams, search(), (value, urlKey) => this.onChange(value, urlKey))]}
                             onEnterPressed={() => this.onSearch()}
                         />
                         <OrgUnitSearch onSelectOrgUnit={ou => this.onSelectOrgUnit(ou)} />

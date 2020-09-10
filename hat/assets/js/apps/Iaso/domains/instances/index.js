@@ -140,7 +140,7 @@ class Instances extends Component {
             periods: params.periods,
             status: asBackendStatus(params.status),
             deviceOwnershipId: params.deviceOwnershipId,
-            search: params.searches,
+            search: params.search,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
     }

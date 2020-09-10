@@ -130,7 +130,7 @@ export const instancesPath = {
         },
         {
             isRequired: false,
-            key: 'searches',
+            key: 'search',
         },
     ],
 };

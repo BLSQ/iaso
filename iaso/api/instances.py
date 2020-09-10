@@ -23,6 +23,7 @@ from .instance_filters import parse_instance_filters
 from hat.audit.models import log_modification, INSTANCE_API
 from rest_framework import serializers
 import iaso.periods as periods
+import pdb
 
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
@@ -88,7 +89,7 @@ class InstancesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-
+        search = request.GET.get("search", None)
         filters = parse_instance_filters(request.GET)
 
         form_id = filters["form_id"]
@@ -110,8 +111,17 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
 
-        if csv_format is None and xlsx_format is None:
+        if search:
+            if search.startswith("ids:"):
+                ids_str = search.replace("ids:", "")
+                ids = [int(i.strip()) for i in ids_str.split(",")]
+                queryset = queryset.filter(id__in=ids)
 
+            queryset = queryset.filter(
+                Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
+            )
+
+        if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

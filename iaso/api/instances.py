@@ -97,8 +97,23 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
 
         queryset = Instance.objects.order_by("-id")
+        if search:
+            if search.startswith("ids:"):
+                ids_str = search.replace("ids:", "")
+                try:
+                    ids = [int(i.strip()) for i in ids_str.split(",")]
+                    queryset = queryset.filter(id__in=ids)
+                except:
+                    queryset = queryset.filter(id__in=[])
+                    print("Failed parsing ids in search", search)
+            else:
+                queryset = queryset.filter(
+                    Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
+                )
+
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
+
 
         queryset = (
             queryset.exclude(file="")
@@ -111,15 +126,7 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
 
-        if search:
-            if search.startswith("ids:"):
-                ids_str = search.replace("ids:", "")
-                ids = [int(i.strip()) for i in ids_str.split(",")]
-                queryset = queryset.filter(id__in=ids)
 
-            queryset = queryset.filter(
-                Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
-            )
 
         if csv_format is None and xlsx_format is None:
             if limit:

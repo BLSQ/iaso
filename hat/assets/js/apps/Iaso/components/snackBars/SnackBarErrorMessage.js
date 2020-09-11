@@ -89,7 +89,7 @@ SnackBarErrorMessage.defaultProps = {
 };
 SnackBarErrorMessage.propTypes = {
     errorLog: PropTypes.any,
-    id: PropTypes.any,
+    id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     intl: PropTypes.object.isRequired,
 };
 

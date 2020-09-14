@@ -30,51 +30,60 @@ import { fetchInstanceDetail } from '../../../utils/requests';
 
 const boundsOptions = { padding: [50, 50] };
 
+const snackbarKey = 'noInstancesOnMap';
+
 class InstancesMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            warningDisplayed: false,
+            zoomBar: null,
         };
     }
 
-    componentDidMount() {
+    componentDidUpdate() {
         const {
             intl: {
                 formatMessage,
             },
         } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
-    }
-
-    componentDidUpdate() {
-        const {
-            instances,
-            dispatch,
-            fetching,
-        } = this.props;
-        const bounds = getLatLngBounds(instances);
-        const { warningDisplayed } = this.state;
-        if (!fetching && instances.length > 0) {
-            if (!bounds && !warningDisplayed) {
-                this.toggleWarning(true);
-                dispatch(enqueueSnackbar(warningSnackBar('noInstancesOnMap')));
-            } else if (bounds && warningDisplayed) {
-                this.toggleWarning(false);
-                dispatch(closeFixedSnackbar('noInstancesOnMap'));
-            }
+        this.setWarning();
+        const { zoomBar } = this.state;
+        if (!zoomBar && this.map) {
+            const newZoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
+            newZoomBar.addTo(this.map.leafletElement);
+            this.setZoomBar(newZoomBar);
         }
     }
 
     componentWillUnmount() {
+        const { dispatch, notifications } = this.props;
+        const warningDisplayed = notifications.find(n => n.id === snackbarKey);
         this.props.resetMapReducer();
+        if (warningDisplayed) {
+            dispatch(closeFixedSnackbar(snackbarKey));
+        }
     }
 
-    toggleWarning(warningDisplayed) {
+    setZoomBar(zoomBar) {
         this.setState({
-            warningDisplayed,
+            zoomBar,
         });
+    }
+
+    setWarning() {
+        const {
+            instances,
+            dispatch,
+            notifications,
+            fetching,
+        } = this.props;
+        const bounds = getLatLngBounds(instances);
+        const warningDisplayed = notifications.find(n => n.id === snackbarKey);
+        if (!fetching && instances.length === 0 && !bounds && !warningDisplayed) {
+            dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
+        } else if (bounds && warningDisplayed) {
+            dispatch(closeFixedSnackbar(snackbarKey));
+        }
     }
 
     fetchDetail(instance) {
@@ -176,12 +185,15 @@ InstancesMap.propTypes = {
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
+    notifications: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
     fetching: state.instances.fetching,
+    instances: state.instances.instancesSmall,
+    notifications: state.snackBar ? state.snackBar.notifications : [],
 });
 
 const MapDispatchToProps = dispatch => ({

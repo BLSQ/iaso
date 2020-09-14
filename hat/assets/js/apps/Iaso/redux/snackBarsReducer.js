@@ -15,9 +15,9 @@ export const removeSnackbar = key => ({
     key,
 });
 
-export const closeFixedSnackbar = key => ({
+export const closeFixedSnackbar = id => ({
     type: CLOSE_FIXED_SNACKBAR,
-    key,
+    id,
 });
 
 export const snackBarsInitialState = {
@@ -42,7 +42,7 @@ export const snackBarsReducer = (state = snackBarsInitialState, action = {}) => 
                 ...state,
                 notifications: state.notifications.filter(
                     notification => notification.options.persist
-                        && (!notification.messageKey || notification.messageKey !== action.key),
+                    && notification.id !== action.id,
                 ),
             };
 

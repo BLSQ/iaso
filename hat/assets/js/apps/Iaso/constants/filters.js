@@ -33,7 +33,7 @@ export const status = formatMessage => (
                 label: formatMessage(MESSAGES.validated),
                 value: 'VALID',
             },
-                        {
+            {
                 label: formatMessage(MESSAGES.rejected),
                 value: 'REJECTED',
             },

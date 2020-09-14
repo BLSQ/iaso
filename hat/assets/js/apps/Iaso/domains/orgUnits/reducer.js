@@ -16,6 +16,7 @@ import {
     SET_FETCHING_ORG_UNITS_TYPES,
     SET_FILTERS_UPDATED,
     SET_SUB_ORG_UNIT,
+    SET_FETCHING_DETAIL,
 } from './actions';
 
 export const orgUnitsInitialState = {
@@ -117,6 +118,12 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
             const fetchingSubOrgUnits = action.payload;
             return { ...state, fetchingSubOrgUnits };
         }
+
+        case SET_FETCHING_DETAIL: {
+            const fetchingDetail = action.payload;
+            return { ...state, fetchingDetail };
+        }
+
 
         case SET_SUB_ORG_UNITS_TYPES_SELECTED: {
             const {

@@ -91,6 +91,13 @@ class Users extends Component {
                         params={params}
                         onSearch={() => fetchUsersProfiles(params)}
                     />
+                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                        <UsersDialog
+                            titleMessage={MESSAGES.create}
+                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            params={params}
+                        />
+                    </Grid>
                     <Table
                         data={profiles}
                         pages={pages}
@@ -103,13 +110,6 @@ class Users extends Component {
                         params={params}
                         redirectTo={redirectTo}
                     />
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
-                        <UsersDialog
-                            titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
-                            params={params}
-                        />
-                    </Grid>
                 </Box>
             </>
         );

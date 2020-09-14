@@ -80,10 +80,11 @@ class UserDialogComponent extends Component {
         } else {
             saveUser = createUserProFile(currentUser);
         }
-        saveUser.then((newProfile) => {
+        saveUser.then(() => {
             closeDialog();
+            this.handleChangeTab('infos');
             this.setState({
-                user: this.initialUser(newProfile),
+                user: this.initialUser(),
             });
             fetchUsersProfiles(params);
         })
@@ -93,6 +94,11 @@ class UserDialogComponent extends Component {
                     this.setFieldErrors(error.details.errorKey, error.details.errorMessage);
                 }
             });
+    }
+
+    onClosed() {
+        this.setState({ user: this.initialUser() });
+        this.handleChangeTab('infos');
     }
 
     setFieldValue(fieldName, fieldValue) {
@@ -168,7 +174,7 @@ class UserDialogComponent extends Component {
                 onConfirm={closeDialog => this.onConfirm(closeDialog)}
                 cancelMessage={MESSAGES.cancel}
                 confirmMessage={MESSAGES.save}
-                onClosed={() => this.setState({ user: this.initialUser() })}
+                onClosed={() => this.onClosed()}
                 renderTrigger={renderTrigger}
                 maxWidth="xs"
                 dialogProps={{

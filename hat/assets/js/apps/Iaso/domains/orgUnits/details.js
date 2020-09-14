@@ -342,7 +342,7 @@ class OrgUnitDetail extends Component {
             orgUnitLocationModified,
             fetchingFilters,
         } = this.state;
-        const isNewOrgunit = currentOrgUnit && !currentOrgUnit.id;
+        const isNewOrgunit = params.orgUnitId === '0';
         let title = '';
         if (currentOrgUnit) {
             title = !isNewOrgunit
@@ -402,7 +402,13 @@ class OrgUnitDetail extends Component {
                 {currentOrgUnit && (
                     <section>
                         {tab === 'infos' && (
-                            <Box className={classes.containerFullHeightPadded}>
+                            <Box
+                                className={
+                                    isNewOrgunit
+                                        ? classes.containerFullHeightNoTabPadded
+                                        : classes.containerFullHeightPadded
+                                }
+                            >
                                 <OrgUnitForm
                                     orgUnit={currentOrgUnit}
                                     orgUnitTypes={orgUnitTypes}

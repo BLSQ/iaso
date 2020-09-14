@@ -10,7 +10,7 @@ import {
 
 export const instancesInitialState = {
     fetching: true,
-    instancesSmall: [],
+    instancesSmall: null,
     instancesPage: {
         list: null,
         showPagination: false,

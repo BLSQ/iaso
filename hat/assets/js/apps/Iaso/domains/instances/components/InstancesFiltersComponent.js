@@ -3,7 +3,7 @@ import { injectIntl, FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import { push } from 'react-router-redux';
+import { push, replace } from 'react-router-redux';
 
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
@@ -56,7 +56,7 @@ class InstancesFiltersComponent extends Component {
             isInstancesFilterUpdated,
             setInstancesFilterUpdated,
             onSearch,
-            redirectTo,
+            redirectToReplace,
             baseUrl,
         } = this.props;
 
@@ -66,7 +66,7 @@ class InstancesFiltersComponent extends Component {
                 ...params,
             };
             tempParams.page = 1;
-            redirectTo(baseUrl, tempParams);
+            redirectToReplace(baseUrl, tempParams);
         }
         onSearch();
     }
@@ -93,7 +93,7 @@ class InstancesFiltersComponent extends Component {
         const {
             params,
             setInstancesFilterUpdated,
-            redirectTo,
+            redirectToReplace,
             baseUrl,
         } = this.props;
         setInstancesFilterUpdated(true);
@@ -103,7 +103,7 @@ class InstancesFiltersComponent extends Component {
             [urlKey]: value,
         };
 
-        redirectTo(baseUrl, tempParams);
+        redirectToReplace(baseUrl, tempParams);
     }
 
     render() {
@@ -225,6 +225,7 @@ InstancesFiltersComponent.propTypes = {
     devices: PropTypes.array.isRequired,
     devicesOwnerships: PropTypes.array.isRequired,
     redirectTo: PropTypes.func.isRequired,
+    redirectToReplace: PropTypes.func.isRequired,
     periodsList: PropTypes.array.isRequired,
     isInstancesFilterUpdated: PropTypes.bool.isRequired,
     setInstancesFilterUpdated: PropTypes.func.isRequired,
@@ -242,6 +243,8 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectToReplace: (key, params) =>
+        dispatch(replace(`${key}${createUrl(params, '')}`)),
     setInstancesFilterUpdated: isInstancesFilterUpdated =>
         dispatch(setInstancesFilterAction(isInstancesFilterUpdated)),
 });

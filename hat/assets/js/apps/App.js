@@ -5,6 +5,8 @@ import { IntlProvider, addLocaleData } from 'react-intl';
 import { Provider } from 'react-redux';
 import { Router } from 'react-router';
 import { SnackbarProvider } from 'notistack';
+import { MuiPickersUtilsProvider } from '@material-ui/pickers';
+import MomentUtils from '@date-io/moment';
 
 // the intl paths get rewritten by webpack depending on the locale
 import fr from '__intl/messages/fr'; // eslint-disable-line
@@ -25,24 +27,26 @@ class App extends Component {
     render() {
         const { store, routes, history } = this.props;
         return (
-            <IntlProvider locale={locale} messages={messages[locale]}>
-                <Provider store={store}>
-                    <SnackbarProvider
-                        maxSnack={3}
-                        autoHideDuration={4000}
-                        anchorOrigin={{
-                            vertical: 'bottom',
-                            horizontal: 'center',
-                        }}
-                    >
-                        <SnackBarContainer />
-                        <Router
-                            routes={routes}
-                            history={history}
-                        />
-                    </SnackbarProvider>
-                </Provider>
-            </IntlProvider>
+            <MuiPickersUtilsProvider utils={MomentUtils}>
+                <IntlProvider locale={locale} messages={messages[locale]}>
+                    <Provider store={store}>
+                        <SnackbarProvider
+                            maxSnack={3}
+                            autoHideDuration={4000}
+                            anchorOrigin={{
+                                vertical: 'bottom',
+                                horizontal: 'center',
+                            }}
+                        >
+                            <SnackBarContainer />
+                            <Router
+                                routes={routes}
+                                history={history}
+                            />
+                        </SnackbarProvider>
+                    </Provider>
+                </IntlProvider>
+            </MuiPickersUtilsProvider>
         );
     }
 }

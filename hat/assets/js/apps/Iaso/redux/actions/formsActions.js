@@ -105,6 +105,7 @@ export const retrieveAction = (
  * @param {String} successKeyMessage The key of the success message used by the snackbar
  * @param {String} errorKeyMessage The key of the error message used by the snackbar
  * @param {Function} setIsLoading The loading action to display the loading state
+ * @param {Array} ignoredErrorCodes array of status error code to ignore while displaying snackbars
  */
 export const saveAction = (
     dispatch,
@@ -113,6 +114,7 @@ export const saveAction = (
     successKeyMessage,
     errorKeyMessage,
     setIsLoading = null,
+    ignoredErrorCodes,
 ) => {
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
@@ -123,9 +125,14 @@ export const saveAction = (
             return res;
         })
         .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
-            );
+            if (
+                !ignoredErrorCodes ||
+                (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
+            ) {
+                dispatch(
+                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                );
+            }
             throw err;
         })
         .finally(() => {
@@ -143,6 +150,7 @@ export const saveAction = (
  * @param {String} successKeyMessage The key of the success message used by the snackbar
  * @param {String} errorKeyMessage The key of the error message used by the snackbar
  * @param {Function} setIsLoading The loading action to display the loading state
+ * @param {Array} ignoredErrorCodes array of status error code to ignore while displaying snackbars
  */
 export const createAction = (
     dispatch,
@@ -151,6 +159,7 @@ export const createAction = (
     successKeyMessage,
     errorKeyMessage,
     setIsLoading = null,
+    ignoredErrorCodes,
 ) => {
     if (setIsLoading !== null) {
         dispatch(setIsLoading(true));
@@ -161,9 +170,14 @@ export const createAction = (
             return res;
         })
         .catch(err => {
-            dispatch(
-                enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
-            );
+            if (
+                !ignoredErrorCodes ||
+                (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
+            ) {
+                dispatch(
+                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                );
+            }
             throw err;
         })
         .finally(() => {

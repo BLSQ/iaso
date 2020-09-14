@@ -168,6 +168,7 @@ export const saveOrgUnit = orgUnitData => dispatch =>
         'saveOrgUnitSuccesfull',
         'saveOrgUnitError',
         setFetchingDetail,
+        [400],
     );
 
 export const createOrgUnit = orgUnitData => dispatch =>
@@ -181,6 +182,7 @@ export const createOrgUnit = orgUnitData => dispatch =>
         'saveOrgUnitSuccesfull',
         'saveOrgUnitError',
         setFetchingDetail,
+        [400],
     );
 
 // export const deleteOrgUnit = (orgUnit, params) => dispatch => deleteAction(

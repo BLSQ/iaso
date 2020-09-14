@@ -169,8 +169,8 @@ class OrgUnits extends Component {
     }
 
     onTabsDeleted() {
-        this.props.setFiltersUpdated(true);
         this.props.resetOrgUnits();
+        this.props.setFiltersUpdated(true);
     }
 
     onSearch(withLocations) {

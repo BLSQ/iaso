@@ -105,7 +105,11 @@ export const orgUnitsReducer = (state = orgUnitsInitialState, action = {}) => {
         }
 
         case RESET_ORG_UNITS: {
-            return { ...state, orgUnitsPage: orgUnitsInitialState.orgUnitsPage };
+            return {
+                ...state,
+                orgUnitsPage: orgUnitsInitialState.orgUnitsPage,
+                orgUnitsLocations: orgUnitsInitialState.orgUnitsLocations,
+            };
         }
 
         case SET_ORG_UNITS_LIST_FETCHING: {

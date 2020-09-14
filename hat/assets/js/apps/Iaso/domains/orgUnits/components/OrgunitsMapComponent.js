@@ -146,7 +146,7 @@ class OrgunitsMap extends Component {
             currentColor = currentSearch.color;
         }
         if (!currentColor) {
-            [currentColor] = getChipColors(0);
+            currentColor = getChipColors(0);
         } else {
             currentColor = `#${currentColor}`;
         }

@@ -30,40 +30,55 @@ const styles = theme => ({
     },
 });
 
-const InstanceFileContentBasic = ({
-    classes,
-    fileContent,
-}) => (
+const InstanceFileContentBasic = ({ classes, fileContent }) => (
     <Table>
         <TableHead>
             <TableRow>
                 <TableCell width={150} className={classes.tableCellHead}>
                     <FormattedMessage {...MESSAGES.field} />
                 </TableCell>
-                <TableCell width={150} align="right" className={classes.tableCellHead}>
+                <TableCell
+                    width={150}
+                    align="right"
+                    className={classes.tableCellHead}
+                >
                     <FormattedMessage {...MESSAGES.key} />
                 </TableCell>
-                <TableCell width={250} align="right" className={classes.tableCellHead}>
+                <TableCell
+                    width={250}
+                    align="right"
+                    className={classes.tableCellHead}
+                >
                     <FormattedMessage {...MESSAGES.value} />
                 </TableCell>
             </TableRow>
         </TableHead>
         <TableBody>
-            {
-                Object.keys(fileContent).map((k) => {
-                    if (k !== 'meta' && k !== 'uuid') {
-                        return (
-                            <TableRow key={k}>
-                                {/* TO-DO: get field label from API */}
-                                <TableCell className={classes.tableCell}>{k}</TableCell>
-                                <TableCell className={classes.tableCell} align="right">{k}</TableCell>
-                                <TableCell className={classes.tableCell} align="right">{fileContent[k] || textPlaceholder}</TableCell>
-                            </TableRow>
-                        );
-                    }
-                    return null;
-                })
-            }
+            {Object.keys(fileContent).map(k => {
+                if (k !== 'meta' && k !== 'uuid') {
+                    return (
+                        <TableRow key={k}>
+                            {/* TO-DO: get field label from API */}
+                            <TableCell className={classes.tableCell}>
+                                {k}
+                            </TableCell>
+                            <TableCell
+                                className={classes.tableCell}
+                                align="right"
+                            >
+                                {k}
+                            </TableCell>
+                            <TableCell
+                                className={classes.tableCell}
+                                align="right"
+                            >
+                                {fileContent[k] || textPlaceholder}
+                            </TableCell>
+                        </TableRow>
+                    );
+                }
+                return null;
+            })}
         </TableBody>
     </Table>
 );
@@ -72,6 +87,5 @@ InstanceFileContentBasic.propTypes = {
     classes: PropTypes.object.isRequired,
     fileContent: PropTypes.object.isRequired,
 };
-
 
 export default withStyles(styles)(InstanceFileContentBasic);

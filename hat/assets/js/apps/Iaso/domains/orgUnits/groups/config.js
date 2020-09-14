@@ -18,17 +18,20 @@ const TableColumns = (formatMessage, component) => [
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
-            <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
+            <span>
+                {displayDateFromTimestamp(settings.original.updated_at)}
+            </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.sourceVersion),
         accessor: 'source_version',
-        Cell: (settings) => {
+        Cell: settings => {
             const { source_version } = settings.original;
-            const text = source_version !== null
-                ? `${source_version.data_source.name} - ${source_version.number}`
-                : '-';
+            const text =
+                source_version !== null
+                    ? `${source_version.data_source.name} - ${source_version.number}`
+                    : '-';
 
             return <ColumnTextComponent text={text} />;
         },
@@ -63,7 +66,11 @@ const TableColumns = (formatMessage, component) => [
                     disabled={settings.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
-                    onConfirm={closeDialog => component.deleteGroup(settings.original).then(closeDialog)}
+                    onConfirm={closeDialog =>
+                        component
+                            .deleteGroup(settings.original)
+                            .then(closeDialog)
+                    }
                 />
             </section>
         ),

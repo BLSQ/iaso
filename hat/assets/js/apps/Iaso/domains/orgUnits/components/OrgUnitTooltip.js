@@ -1,9 +1,6 @@
-
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    Tooltip,
-} from '@material-ui/core';
+import { Tooltip } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import OrgUnitsSmallInfos from './OrgUnitsSmallInfos';
 
@@ -36,6 +33,5 @@ OrgUnitTooltip.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     children: PropTypes.object,
 };
-
 
 export default OrgUnitTooltip;

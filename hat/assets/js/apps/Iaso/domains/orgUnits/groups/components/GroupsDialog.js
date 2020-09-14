@@ -39,7 +39,7 @@ class GroupDialogComponent extends Component {
             initialData,
         } = this.props;
         const currentGroup = {};
-        Object.keys(this.state).forEach((key) => {
+        Object.keys(this.state).forEach(key => {
             currentGroup[key] = this.state[key].value;
         });
 
@@ -50,16 +50,19 @@ class GroupDialogComponent extends Component {
         } else {
             saveGroupTemp = createGroup(currentGroup);
         }
-        saveGroupTemp.then((newGroup) => {
-            closeDialog();
-            this.setState(this.initialState(newGroup));
-            fetchGroups(params);
-        })
-            .catch((error) => {
+        saveGroupTemp
+            .then(newGroup => {
+                closeDialog();
+                this.setState(this.initialState(newGroup));
+                fetchGroups(params);
+            })
+            .catch(error => {
                 if (error.status === 400) {
-                    Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
-                        this.setFieldErrors(errorKey, errorMessages);
-                    });
+                    Object.entries(error.details).forEach(
+                        ([errorKey, errorMessages]) => {
+                            this.setFieldErrors(errorKey, errorMessages);
+                        },
+                    );
                 }
             });
     }
@@ -69,7 +72,12 @@ class GroupDialogComponent extends Component {
     }
 
     setFieldErrors(fieldName, fieldErrors) {
-        this.setState({ [fieldName]: { value: this.state[fieldName].value, errors: fieldErrors } });
+        this.setState({
+            [fieldName]: {
+                value: this.state[fieldName].value,
+                errors: fieldErrors,
+            },
+        });
     }
 
     setInitialState() {
@@ -88,9 +96,7 @@ class GroupDialogComponent extends Component {
     }
 
     render() {
-        const {
-            titleMessage, renderTrigger,
-        } = this.props;
+        const { titleMessage, renderTrigger } = this.props;
 
         return (
             <ConfirmCancelDialogComponent
@@ -106,7 +112,9 @@ class GroupDialogComponent extends Component {
                     <Grid xs={12} item>
                         <InputComponent
                             keyValue="name"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.name.value}
                             errors={this.state.name.errors}
                             type="text"
@@ -134,20 +142,23 @@ GroupDialogComponent.propTypes = {
     params: PropTypes.object.isRequired,
 };
 
-
 const MapStateToProps = state => ({
     count: state.groups.count,
     pages: state.groups.pages,
     fetching: state.groups.fetching,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             fetchGroups: fetchGroupsAction,
             saveGroup: saveGroupAction,
             createGroup: createGroupAction,
-        }, dispatch),
-    }
-);
-export default connect(MapStateToProps, mapDispatchToProps)(GroupDialogComponent);
+        },
+        dispatch,
+    ),
+});
+export default connect(
+    MapStateToProps,
+    mapDispatchToProps,
+)(GroupDialogComponent);

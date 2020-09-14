@@ -8,11 +8,13 @@ export const DuplicateHint = ({ mapping, mappingVersion }) => {
         return null;
     }
     const duplicates = [];
-    Object.keys(mappingVersion.question_mappings).forEach((questionName) => {
+    Object.keys(mappingVersion.question_mappings).forEach(questionName => {
         const qmap = mappingVersion.question_mappings[questionName];
         if (!Array.isArray(qmap)) {
-            if (mapping.id === qmap.id
-                && mapping.categoryOptionCombo === qmap.categoryOptionCombo) {
+            if (
+                mapping.id === qmap.id &&
+                mapping.categoryOptionCombo === qmap.categoryOptionCombo
+            ) {
                 duplicates.push(questionName);
             }
         }
@@ -22,9 +24,7 @@ export const DuplicateHint = ({ mapping, mappingVersion }) => {
     }
     return (
         <Alert severity="error">
-        Duplicate mapping ! will be used in both
-            {' '}
-            {duplicates.join(' , ')}
+            Duplicate mapping ! will be used in both {duplicates.join(' , ')}
         </Alert>
     );
 };

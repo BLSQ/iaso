@@ -36,36 +36,30 @@ const styles = theme => ({
 
 class Groups extends Component {
     componentDidMount() {
-        const {
-            params,
-            fetchGroups,
-        } = this.props;
+        const { params, fetchGroups } = this.props;
         fetchGroups(params);
     }
 
     componentDidUpdate(prevProps) {
         const { params, fetchGroups } = this.props;
-        if ((prevProps.params.pageSize !== params.pageSize)
-        || (prevProps.params.order !== params.order)
-        || (prevProps.params.page !== params.page)) {
+        if (
+            prevProps.params.pageSize !== params.pageSize ||
+            prevProps.params.order !== params.order ||
+            prevProps.params.page !== params.page
+        ) {
             fetchGroups(params);
         }
     }
 
     deleteGroup(group) {
-        const {
-            params,
-            deleteGroup,
-        } = this.props;
+        const { params, deleteGroup } = this.props;
         return deleteGroup(group, params);
     }
 
     render() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             groups,
             count,
             pages,
@@ -76,10 +70,7 @@ class Groups extends Component {
         } = this.props;
         return (
             <>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
+                {fetching && <LoadingSpinner />}
                 <TopBar
                     title={formatMessage(MESSAGES.groups)}
                     displayBackButton={false}
@@ -93,19 +84,25 @@ class Groups extends Component {
                     <Table
                         data={groups}
                         pages={pages}
-                        defaultSorted={[
-                            { id: 'name', desc: false },
-                        ]}
+                        defaultSorted={[{ id: 'name', desc: false }]}
                         columns={tableColumns(formatMessage, this)}
                         count={count}
                         baseUrl={baseUrl}
                         params={params}
                         redirectTo={redirectTo}
                     />
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    >
                         <GroupsDialog
                             titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent onClick={openDialog} />
+                            )}
                             params={params}
                         />
                     </Grid>
@@ -139,14 +136,17 @@ const MapStateToProps = state => ({
     fetching: state.groups.fetching,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             fetchGroups: fetchGroupsAction,
             deleteGroup: deleteGroupAction,
             redirectTo: redirectToAction,
-        }, dispatch),
-    }
-);
+        },
+        dispatch,
+    ),
+});
 
-export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(Groups)));
+export default withStyles(styles)(
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Groups)),
+);

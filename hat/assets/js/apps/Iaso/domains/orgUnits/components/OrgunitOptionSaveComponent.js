@@ -1,9 +1,7 @@
 import React, { Fragment } from 'react';
 import { FormattedMessage } from 'react-intl';
 
-import {
-    withStyles, Button,
-} from '@material-ui/core';
+import { withStyles, Button } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -18,7 +16,6 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
     },
 });
-
 
 function OrgunitOptionSaveComponent(props) {
     const {
@@ -53,7 +50,11 @@ function OrgunitOptionSaveComponent(props) {
                 <FormattedMessage {...MESSAGES.cancel} />
             </Button>
             <Button
-                disabled={!orgUnitLocationModified || editLocationEnabled || editCatchmentEnabled}
+                disabled={
+                    !orgUnitLocationModified ||
+                    editLocationEnabled ||
+                    editCatchmentEnabled
+                }
                 variant="contained"
                 className={classes.button}
                 color="primary"

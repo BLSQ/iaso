@@ -1,14 +1,12 @@
 import React from 'react';
 
-import {
-    Marker,
-} from 'react-leaflet';
+import { Marker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
 
 import { customMarker, isValidCoordinate } from '../../../utils/mapUtils';
 
-const MarkerComponent = (props) => {
+const MarkerComponent = props => {
     const {
         item,
         onClick,
@@ -19,7 +17,13 @@ const MarkerComponent = (props) => {
         markerProps,
         popupProps,
     } = props;
-    if (!item || !item.latitude || !item.longitude || !isValidCoordinate(item.latitude, item.longitude)) return null;
+    if (
+        !item ||
+        !item.latitude ||
+        !item.longitude ||
+        !isValidCoordinate(item.latitude, item.longitude)
+    )
+        return null;
     return (
         <Marker
             draggable={draggable}
@@ -29,9 +33,7 @@ const MarkerComponent = (props) => {
             onDragend={e => onDragend(e.target)}
             {...markerProps(item)}
         >
-            {
-                PopupComponent && <PopupComponent {...popupProps} />
-            }
+            {PopupComponent && <PopupComponent {...popupProps} />}
         </Marker>
     );
 };

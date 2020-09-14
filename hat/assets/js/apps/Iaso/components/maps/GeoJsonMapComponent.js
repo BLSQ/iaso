@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
-import {
-    Map, TileLayer, GeoJSON,
-} from 'react-leaflet';
+import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import { injectIntl, intlShape } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
@@ -41,20 +39,17 @@ class GeoJsonMap extends Component {
 
     componentDidMount() {
         const {
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
     }
 
     fitToBounds() {
-        const {
-            bounds,
-        } = this.state;
+        const { bounds } = this.state;
         this.map.leafletElement.fitBounds(bounds, {
-            maxZoom: tiles.osm.maxZoom, padding: boundsOptions.padding,
+            maxZoom: tiles.osm.maxZoom,
+            padding: boundsOptions.padding,
         });
     }
 
@@ -71,21 +66,22 @@ class GeoJsonMap extends Component {
                     center={[0, 0]}
                     bounds={bounds}
                     boundsOptions={boundsOptions}
-                    ref={(ref) => {
+                    ref={ref => {
                         this.map = ref;
                     }}
                     zoomControl={false}
                     zoomSnap={0.1}
                 >
                     <TileLayer
-                        attribution={currentTile.attribution ? currentTile.attribution : ''}
+                        attribution={
+                            currentTile.attribution
+                                ? currentTile.attribution
+                                : ''
+                        }
                         url={currentTile.url}
                     />
 
-                    <GeoJSON
-                        className="secondary"
-                        data={geoJson}
-                    />
+                    <GeoJSON className="secondary" data={geoJson} />
                 </Map>
             </div>
         );

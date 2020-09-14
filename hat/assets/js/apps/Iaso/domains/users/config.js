@@ -15,18 +15,28 @@ const usersTableColumns = (formatMessage, component) => [
     {
         Header: formatMessage(MESSAGES.firstName),
         accessor: 'user__first_name',
-        Cell: settings => <span>{settings.original.first_name || textPlaceholder}</span>,
+        Cell: settings => (
+            <span>{settings.original.first_name || textPlaceholder}</span>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.lastName),
         accessor: 'user__last_name',
-        Cell: settings => <span>{settings.original.last_name || textPlaceholder}</span>,
+        Cell: settings => (
+            <span>{settings.original.last_name || textPlaceholder}</span>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.email),
         accessor: 'user__email',
-        Cell: settings => (settings.original.email
-            ? <a href={`mailto:${settings.original.email}`}>{settings.original.email}</a> : textPlaceholder),
+        Cell: settings =>
+            settings.original.email ? (
+                <a href={`mailto:${settings.original.email}`}>
+                    {settings.original.email}
+                </a>
+            ) : (
+                textPlaceholder
+            ),
     },
     {
         Header: formatMessage(MESSAGES.actions),
@@ -51,7 +61,11 @@ const usersTableColumns = (formatMessage, component) => [
                     disabled={settings.original.instances_count > 0}
                     titleMessage={MESSAGES.deleteUserTitle}
                     message={MESSAGES.deleteUserText}
-                    onConfirm={closeDialog => component.deleteUser(settings.original).then(closeDialog)}
+                    onConfirm={closeDialog =>
+                        component
+                            .deleteUser(settings.original)
+                            .then(closeDialog)
+                    }
                 />
             </section>
         ),

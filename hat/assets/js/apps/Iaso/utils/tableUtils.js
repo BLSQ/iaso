@@ -28,10 +28,9 @@ const getTableUrl = (
         delete clonedParams.page;
     }
 
-
     delete clonedParams.locationLimit;
 
-    Object.keys(clonedParams).forEach((key) => {
+    Object.keys(clonedParams).forEach(key => {
         const value = clonedParams[key];
         if (value && !url.includes(key)) {
             url += `&${key}=${value}`;
@@ -45,7 +44,7 @@ export default getTableUrl;
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 
-export const getSort = (sortList) => {
+export const getSort = sortList => {
     let orderTemp = '';
     sortList.map((sort, index) => {
         orderTemp += `${index > 0 ? ',' : ''}${getOrderValue(sort)}`;
@@ -54,15 +53,15 @@ export const getSort = (sortList) => {
     return orderTemp;
 };
 
-export const getOrderArray = orders => (orders.split(',').map(stringValue => ({
-    id: stringValue.replace('-', ''),
-    desc: stringValue.indexOf('-') !== -1,
-})));
+export const getOrderArray = orders =>
+    orders.split(',').map(stringValue => ({
+        id: stringValue.replace('-', ''),
+        desc: stringValue.indexOf('-') !== -1,
+    }));
 
-
-export const getSimplifiedColumns = (columns) => {
+export const getSimplifiedColumns = columns => {
     const newColumns = [];
-    columns.forEach((c) => {
+    columns.forEach(c => {
         if (c.accessor) {
             newColumns.push(c.accessor);
         }
@@ -70,26 +69,25 @@ export const getSimplifiedColumns = (columns) => {
     return newColumns;
 };
 
-
-export const defaultSelectionActions = (selectAll, unSelectAll, formatMessage) => [
+export const defaultSelectionActions = (
+    selectAll,
+    unSelectAll,
+    formatMessage,
+) => [
     {
         icon: <AddIcon />,
-        label: formatMessage(
-            {
-                id: 'iaso.label.selectAll',
-                defaultMessage: 'Select all',
-            },
-        ),
+        label: formatMessage({
+            id: 'iaso.label.selectAll',
+            defaultMessage: 'Select all',
+        }),
         onClick: () => selectAll(),
     },
     {
         icon: <RemoveIcon />,
-        label: formatMessage(
-            {
-                id: 'iaso.label.unSelectAll',
-                defaultMessage: 'Un select all',
-            },
-        ),
+        label: formatMessage({
+            id: 'iaso.label.unSelectAll',
+            defaultMessage: 'Un select all',
+        }),
         onClick: () => unSelectAll(),
     },
 ];
@@ -101,7 +99,12 @@ export const selectionInitialState = {
     selectCount: 0,
 };
 
-export const setTableSelection = (selection, selectionType, items = [], totalCount = 0) => {
+export const setTableSelection = (
+    selection,
+    selectionType,
+    items = [],
+    totalCount = 0,
+) => {
     let newSelection;
     switch (selectionType) {
         case 'select':

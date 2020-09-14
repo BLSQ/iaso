@@ -50,41 +50,46 @@ export function substituteVars(obj, subs, transform = x => x) {
     // e.g. `{foo: "${bar}"} => {foo: "baz"}` if `subs = {bar: "baz"}`
     // We use json.stringify -> json.parse to clone the object and replace values.
     // See the test for a complete example.
-    return JSON.parse(JSON.stringify(obj, (key, value) => {
-        if (typeof value === 'string') {
-            const match = value.match(/\$\{([a-zA-Z0-9_-]+)\}/);
-            if (match) {
-                const k = match[1];
-                if (!subs.hasOwnProperty(k)) {
-                    console.warn('Cannot find match in substitudes for value:', value);
-                } else {
-                    return transform(subs[k]);
+    return JSON.parse(
+        JSON.stringify(obj, (key, value) => {
+            if (typeof value === 'string') {
+                const match = value.match(/\$\{([a-zA-Z0-9_-]+)\}/);
+                if (match) {
+                    const k = match[1];
+                    if (!subs.hasOwnProperty(k)) {
+                        console.warn(
+                            'Cannot find match in substitudes for value:',
+                            value,
+                        );
+                    } else {
+                        return transform(subs[k]);
+                    }
                 }
             }
-        }
-        return value;
-    }));
+            return value;
+        }),
+    );
 }
 
-export const capitalize = text => (
+export const capitalize = text =>
     text
         .split(' ')
-        .map(word => (
-            word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase()
-        ))
-        .join(' ')
-);
+        .map(
+            word =>
+                word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase(),
+        )
+        .join(' ');
 
-export const formatThousand = (number) => {
+export const formatThousand = number => {
     if (number) {
         return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
     }
     return '0';
 };
 
-export const arrayToObject = (arrayElement) => {
+export const arrayToObject = arrayElement => {
     const tempResult = {};
-    arrayElement.map((element) => {
+    arrayElement.map(element => {
         tempResult[Object.keys(element)[0]] = element[Object.keys(element)[0]];
         return true;
     });
@@ -101,9 +106,11 @@ export const getPossibleYears = () => {
     return possibleYears;
 };
 
-export const getYears = (yearsCount) => {
+export const getYears = yearsCount => {
     const currentYear = new Date().getFullYear();
-    const years = Array(yearsCount).fill().map((y, i) => currentYear - i);
+    const years = Array(yearsCount)
+        .fill()
+        .map((y, i) => currentYear - i);
     return years;
 };
 
@@ -121,7 +128,7 @@ export const NormalizeBarChartDatas = (settings, d) => {
             });
         } else {
             let previousValue = 0;
-            setting.datas.map((subSetting) => {
+            setting.datas.map(subSetting => {
                 const value = d[subSetting.key] ? d[subSetting.key] : 0;
                 newDatas.push({
                     key: subSetting.key,
@@ -143,10 +150,10 @@ export const NormalizeBarChartDatas = (settings, d) => {
 
 export const getBarChartMax = (settings, d) => {
     let higherValue = 0;
-    settings.map((setting) => {
+    settings.map(setting => {
         if (setting.datas) {
             let subTotal = 0;
-            setting.datas.map((subSetting) => {
+            setting.datas.map(subSetting => {
                 subTotal += d[subSetting.key];
                 return null;
             });
@@ -161,13 +168,16 @@ export const getBarChartMax = (settings, d) => {
     return higherValue;
 };
 
-export const getPercentage = (totalCount, count) => (totalCount !== 0 ? (count * (100 / totalCount)).toFixed(2) : 0);
+export const getPercentage = (totalCount, count) =>
+    totalCount !== 0 ? (count * (100 / totalCount)).toFixed(2) : 0;
 
 export const getZsName = (zoneId, zones) => {
     if (zoneId && zones.length > 0) {
-        const zoneObj = zones.filter(z => parseInt(z.properties.pk, 10) === zoneId)[0];
+        const zoneObj = zones.filter(
+            z => parseInt(z.properties.pk, 10) === zoneId,
+        )[0];
         if (zoneObj) {
-            return (zoneObj.properties.name);
+            return zoneObj.properties.name;
         }
     }
     return '';
@@ -177,14 +187,13 @@ export const getWorkZoneName = (workzoneId, workzones) => {
     if (workzoneId && workzones.length > 0) {
         const workZoneObj = workzones.filter(w => w.id === workzoneId)[0];
         if (workZoneObj) {
-            return (workZoneObj.name);
+            return workZoneObj.name;
         }
     }
     return '';
 };
 
-
-export const addPositionIndex = (array) => {
+export const addPositionIndex = array => {
     const tempArray = [];
     if (array) {
         array.forEach((e, index) => {
@@ -197,10 +206,10 @@ export const addPositionIndex = (array) => {
     return tempArray;
 };
 
-export const removePositionIndex = (array) => {
+export const removePositionIndex = array => {
     const tempArray = [];
     if (array) {
-        array.forEach((e) => {
+        array.forEach(e => {
             tempArray.push(e.value);
         });
     }
@@ -221,7 +230,6 @@ export const scrollTo = (selectorId, headerOffset = 0) => {
     }, 500);
 };
 
-
 export const scrollToTop = () => {
     setTimeout(() => {
         window.scrollTo({
@@ -231,11 +239,10 @@ export const scrollToTop = () => {
     }, 500);
 };
 
-export const isCaseLocalised = kase => (
-    kase.location.normalized
-    && kase.location.normalized.as !== undefined
-    && kase.location.normalized.village !== undefined
-);
+export const isCaseLocalised = kase =>
+    kase.location.normalized &&
+    kase.location.normalized.as !== undefined &&
+    kase.location.normalized.village !== undefined;
 
 export const userHasPermission = (
     permissions,
@@ -245,16 +252,19 @@ export const userHasPermission = (
 ) => {
     let hasPermission = false;
     if (
-        currentUser
-        && permissions
-        && Object.getOwnPropertyNames(currentUser).length !== 0
-        && permissions.length > 0
+        currentUser &&
+        permissions &&
+        Object.getOwnPropertyNames(currentUser).length !== 0 &&
+        permissions.length > 0
     ) {
-        const currentPermission = permissions.find(p => p.codename === permissionKey);
+        const currentPermission = permissions.find(
+            p => p.codename === permissionKey,
+        );
         // TODO: the API is now filtering the user permissions list so the second .find below is unnecessary
         if (
-            (currentUser.is_superuser && allowSuperUser)
-            || (currentPermission && currentUser.permissions.find(p => p === currentPermission.id))
+            (currentUser.is_superuser && allowSuperUser) ||
+            (currentPermission &&
+                currentUser.permissions.find(p => p === currentPermission.id))
         ) {
             hasPermission = true;
         }
@@ -271,45 +281,33 @@ export const renderCountCell = (total, value, formatMessage) => {
     const pourcentage = getPourcentage(total, value);
     return (
         <span>
-            {formatThousand(total)}
-            {' '}
-            {
-                pourcentage !== 0
-                && total !== 0
-                && (
-                    <span>
-                        <br />
-                        <span style={{ fontSize: '85%' }}>
-                    (
-                            {parseFloat(pourcentage).toFixed(2)}
-%
-                            {' '}
-                            {formatMessage({
-                                defaultMessage: 'positives',
-                                id: 'monitoring.label.positive',
-                            })}
-)
-                        </span>
+            {formatThousand(total)}{' '}
+            {pourcentage !== 0 && total !== 0 && (
+                <span>
+                    <br />
+                    <span style={{ fontSize: '85%' }}>
+                        ({parseFloat(pourcentage).toFixed(2)}%{' '}
+                        {formatMessage({
+                            defaultMessage: 'positives',
+                            id: 'monitoring.label.positive',
+                        })}
+                        )
                     </span>
-                )
-            }
-            {
-                pourcentage === 0
-                && total !== 0
-                && (
-                    <span>
-                        <br />
-                        <span style={{ fontSize: '85%' }}>
-                    (
-                            {formatMessage({
-                                defaultMessage: '0 positive',
-                                id: 'monitoring.label.no_positve',
-                            })}
-)
-                        </span>
+                </span>
+            )}
+            {pourcentage === 0 && total !== 0 && (
+                <span>
+                    <br />
+                    <span style={{ fontSize: '85%' }}>
+                        (
+                        {formatMessage({
+                            defaultMessage: '0 positive',
+                            id: 'monitoring.label.no_positve',
+                        })}
+                        )
                     </span>
-                )
-            }
+                </span>
+            )}
         </span>
     );
 };
@@ -317,7 +315,10 @@ export const renderCountCell = (total, value, formatMessage) => {
 export const isMediumUser = userLevel => userLevel > 10 && userLevel <= 30;
 export const isSuperUser = userLevel => userLevel >= 40;
 
+export const getAgeFromYear = year =>
+    moment().format('YYYY') - parseInt(year, 10);
 
-export const getAgeFromYear = year => moment().format('YYYY') - parseInt(year, 10);
-
-export const isFixedStructure = currentCase => currentCase.user_type !== null && (currentCase.user_type === 'CDTC' || currentCase.user_type === 'fixed_structure');
+export const isFixedStructure = currentCase =>
+    currentCase.user_type !== null &&
+    (currentCase.user_type === 'CDTC' ||
+        currentCase.user_type === 'fixed_structure');

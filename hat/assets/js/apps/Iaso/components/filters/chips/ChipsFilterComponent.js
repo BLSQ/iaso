@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    withStyles,
-    Box,
-    Chip,
-} from '@material-ui/core';
+import { withStyles, Box, Chip } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -26,17 +22,13 @@ const styles = theme => ({
     },
 });
 
-
 class ChipsFilterComponent extends Component {
     componentWillUnmount() {
         this.props.setSelectedItems([]);
     }
 
     onAdd(itemId) {
-        const {
-            selectedItems,
-            currentItems,
-        } = this.props;
+        const { selectedItems, currentItems } = this.props;
         const newSelectedItems = [...selectedItems];
         const item = currentItems.find(i => i.id === itemId);
         if (!newSelectedItems.includes(item)) {
@@ -46,9 +38,7 @@ class ChipsFilterComponent extends Component {
     }
 
     onDelete(item) {
-        const {
-            selectedItems,
-        } = this.props;
+        const { selectedItems } = this.props;
         const newSelectedItems = [...selectedItems];
         if (newSelectedItems.includes(item)) {
             newSelectedItems.splice(newSelectedItems.indexOf(item), 1);
@@ -57,23 +47,18 @@ class ChipsFilterComponent extends Component {
     }
 
     updateItems(selectedItems) {
-        const {
-            fetchDetails,
-            locationsKey,
-        } = this.props;
+        const { fetchDetails, locationsKey } = this.props;
         const promisesArray = [];
         const oldItems = [];
-        selectedItems.forEach((i) => {
+        selectedItems.forEach(i => {
             if (!i[locationsKey]) {
-                promisesArray.push(
-                    fetchDetails(i),
-                );
+                promisesArray.push(fetchDetails(i));
             } else {
                 oldItems.push(i);
             }
         });
         this.props.setFetching(true);
-        Promise.all(promisesArray).then((items) => {
+        Promise.all(promisesArray).then(items => {
             const itemsWithData = oldItems.concat(items);
             this.props.setSelectedItems(itemsWithData);
             this.props.setFetching(false);
@@ -92,51 +77,53 @@ class ChipsFilterComponent extends Component {
         } = this.props;
         let notSelectedItems = [];
         if (currentItems) {
-            notSelectedItems = currentItems.filter(f => !selectedItems.find(fo => fo.id === f.id));
+            notSelectedItems = currentItems.filter(
+                f => !selectedItems.find(fo => fo.id === f.id),
+            );
         }
         return (
-            <Box
-                className={classes.content}
-                component="div"
-            >
-                {
-                    selectedItems.length > 0 && (
-                        selectedItems.map(f => (
-                            <Chip
-                                key={f.id}
-                                icon={chipIconUrl !== ''
-                                    ? <img src={chipIconUrl} className={classes.svgChipIcon} alt="item" />
-                                    : null}
-                                label={`${f.name} ${displayTotal ? `- ${f[locationsKey].length}` : ''}`}
-                                clickable
-                                className={classes.chip}
-                                onDelete={() => this.onDelete(f)}
-                                style={{
-                                    backgroundColor: f.color,
-                                    color: 'white',
-                                }}
-                            />
-                        ))
-                    )
-                }
-                {
-                    notSelectedItems.length > 0 && (
-                        <InputComponent
-                            withMarginTop={false}
-                            keyValue="form_id"
-                            onChange={(key, formId) => this.onAdd(formId)}
-                            value={null}
-                            type="select"
-                            options={
-                                notSelectedItems.map(t => ({
-                                    label: t.name,
-                                    value: t.id,
-                                }))
+            <Box className={classes.content} component="div">
+                {selectedItems.length > 0 &&
+                    selectedItems.map(f => (
+                        <Chip
+                            key={f.id}
+                            icon={
+                                chipIconUrl !== '' ? (
+                                    <img
+                                        src={chipIconUrl}
+                                        className={classes.svgChipIcon}
+                                        alt="item"
+                                    />
+                                ) : null
                             }
-                            label={selectLabelMessage}
+                            label={`${f.name} ${
+                                displayTotal
+                                    ? `- ${f[locationsKey].length}`
+                                    : ''
+                            }`}
+                            clickable
+                            className={classes.chip}
+                            onDelete={() => this.onDelete(f)}
+                            style={{
+                                backgroundColor: f.color,
+                                color: 'white',
+                            }}
                         />
-                    )
-                }
+                    ))}
+                {notSelectedItems.length > 0 && (
+                    <InputComponent
+                        withMarginTop={false}
+                        keyValue="form_id"
+                        onChange={(key, formId) => this.onAdd(formId)}
+                        value={null}
+                        type="select"
+                        options={notSelectedItems.map(t => ({
+                            label: t.name,
+                            value: t.id,
+                        }))}
+                        label={selectLabelMessage}
+                    />
+                )}
             </Box>
         );
     }
@@ -161,11 +148,13 @@ ChipsFilterComponent.propTypes = {
     displayTotal: PropTypes.bool,
 };
 
-const MapStateToProps = () => ({
-});
+const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     setFetching: fetching => dispatch(setFetching(fetching)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(ChipsFilterComponent));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(ChipsFilterComponent));

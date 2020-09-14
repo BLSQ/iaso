@@ -4,15 +4,15 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 import {
-    withStyles, FormControlLabel, Switch, Typography,
+    withStyles,
+    FormControlLabel,
+    Switch,
+    Typography,
 } from '@material-ui/core';
 
-import {
-    fetchPermissions as fetchPermissionsAction,
-} from '../actions';
+import { fetchPermissions as fetchPermissionsAction } from '../actions';
 
 import MESSAGES from '../messages';
-
 
 const styles = theme => ({
     admin: {
@@ -22,20 +22,14 @@ const styles = theme => ({
 
 class PermissionsSwitches extends Component {
     componentDidMount() {
-        const {
-            fetchPermissions,
-            permissions,
-        } = this.props;
+        const { fetchPermissions, permissions } = this.props;
         if (permissions.length === 0) {
             fetchPermissions();
         }
     }
 
     setPermissions(codeName, isChecked) {
-        const {
-            currentUser,
-            handleChange,
-        } = this.props;
+        const { currentUser, handleChange } = this.props;
         const newUserPerms = [...currentUser.permissions.value];
         if (!isChecked) {
             const permIndex = newUserPerms.indexOf(codeName);
@@ -47,44 +41,39 @@ class PermissionsSwitches extends Component {
     }
 
     render() {
-        const {
-            classes,
-            permissions,
-            currentUser,
-            isSuperUser,
-        } = this.props;
+        const { classes, permissions, currentUser, isSuperUser } = this.props;
         return (
             <>
-                {
-                    isSuperUser
-                    && (
-                        <Typography variant="body1" className={classes.admin}>
-                            <FormattedMessage {...MESSAGES.isSuperUser} />
-                        </Typography>
-                    )
-                }
-                {
-                    !isSuperUser
-                    && (
-                        permissions.map(p => (
-                            <div
-                                key={p.id}
-                            >
-                                <FormControlLabel
-                                    control={(
-                                        <Switch
-                                            checked={Boolean(currentUser.permissions.value.find(up => up === p.codename))}
-                                            onChange={e => this.setPermissions(p.codename, e.target.checked)}
-                                            name={p.codename}
-                                            color="primary"
-                                        />
-                                    )}
-                                    label={p.name}
-                                />
-                            </div>
-                        ))
-                    )
-                }
+                {isSuperUser && (
+                    <Typography variant="body1" className={classes.admin}>
+                        <FormattedMessage {...MESSAGES.isSuperUser} />
+                    </Typography>
+                )}
+                {!isSuperUser &&
+                    permissions.map(p => (
+                        <div key={p.id}>
+                            <FormControlLabel
+                                control={
+                                    <Switch
+                                        checked={Boolean(
+                                            currentUser.permissions.value.find(
+                                                up => up === p.codename,
+                                            ),
+                                        )}
+                                        onChange={e =>
+                                            this.setPermissions(
+                                                p.codename,
+                                                e.target.checked,
+                                            )
+                                        }
+                                        name={p.codename}
+                                        color="primary"
+                                    />
+                                }
+                                label={p.name}
+                            />
+                        </div>
+                    ))}
             </>
         );
     }
@@ -107,12 +96,15 @@ const MapStateToProps = state => ({
     permissions: state.users.permissions,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             fetchPermissions: fetchPermissionsAction,
-        }, dispatch),
-    }
-);
+        },
+        dispatch,
+    ),
+});
 
-export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(PermissionsSwitches));
+export default withStyles(styles)(
+    connect(MapStateToProps, mapDispatchToProps)(PermissionsSwitches),
+);

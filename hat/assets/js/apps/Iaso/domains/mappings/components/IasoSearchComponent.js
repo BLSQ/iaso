@@ -6,7 +6,7 @@ import Autocomplete from '@material-ui/lab/Autocomplete';
 
 import throttle from 'lodash/throttle';
 
-const IasoSearchComponent = (props) => {
+const IasoSearchComponent = props => {
     const {
         resourceName,
         collectionName,
@@ -22,22 +22,29 @@ const IasoSearchComponent = (props) => {
 
     const [options, setOptions] = React.useState([]);
     const [selectedOption, setSelectedOption] = React.useState([]);
-    const handleChange = (event) => {
+    const handleChange = event => {
         setInputValue(event.target.value);
     };
 
     const fetchMemo = React.useMemo(
-        () => throttle((input, callback) => fetch(
-            `/api/${resourceName}.json?search_name=${input.input}${
-                fields ? `&fields=${fields}` : ''
-            }`,
-        )
-            .then(resp => resp.json())
-            .then((f) => {
-                const union = f[collectionName || resourceName];
-                const finalOptions = mapOptions ? mapOptions(union) : union;
-                setOptions(finalOptions);
-            }), 200),
+        () =>
+            throttle(
+                (input, callback) =>
+                    fetch(
+                        `/api/${resourceName}.json?search_name=${input.input}${
+                            fields ? `&fields=${fields}` : ''
+                        }`,
+                    )
+                        .then(resp => resp.json())
+                        .then(f => {
+                            const union = f[collectionName || resourceName];
+                            const finalOptions = mapOptions
+                                ? mapOptions(union)
+                                : union;
+                            setOptions(finalOptions);
+                        }),
+                200,
+            ),
         [],
     );
     React.useEffect(() => {
@@ -50,7 +57,7 @@ const IasoSearchComponent = (props) => {
             return undefined;
         }
 
-        fetchMemo({ input: inputValue }, (results) => {
+        fetchMemo({ input: inputValue }, results => {
             if (active) {
                 setOptions(results || []);
             }
@@ -69,7 +76,10 @@ const IasoSearchComponent = (props) => {
     return (
         <Autocomplete
             style={style}
-            getOptionLabel={option => (typeof option === 'string' ? option : option.displayName || option.name)
+            getOptionLabel={option =>
+                typeof option === 'string'
+                    ? option
+                    : option.displayName || option.name
             }
             filterOptions={x => x}
             options={options}
@@ -90,7 +100,9 @@ const IasoSearchComponent = (props) => {
                     value={inputValue}
                 />
             )}
-            renderOption={option => <span name={name}>{option.displayName || option.name}</span>}
+            renderOption={option => (
+                <span name={name}>{option.displayName || option.name}</span>
+            )}
         />
     );
 };

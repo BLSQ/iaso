@@ -16,12 +16,7 @@ const styles = theme => ({
 });
 
 function DownloadButtonsComponent(props) {
-    const {
-        csvUrl,
-        xlsxUrl,
-        gpkgUrl,
-        classes,
-    } = props;
+    const { csvUrl, xlsxUrl, gpkgUrl, classes } = props;
 
     return (
         <Fragment>
@@ -47,22 +42,19 @@ function DownloadButtonsComponent(props) {
                 <i className="fa fa-file-excel-o" />
                 XLSX
             </Button>
-            {
-                gpkgUrl !== null
-                && (
-                    <Button
-                        variant="contained"
-                        className={classes.button}
-                        color="primary"
-                        onClick={() => {
-                            window.location.href = gpkgUrl;
-                        }}
-                    >
-                        <i className="fa fa-globe" />
-                        GPKG
-                    </Button>
-                )
-            }
+            {gpkgUrl !== null && (
+                <Button
+                    variant="contained"
+                    className={classes.button}
+                    color="primary"
+                    onClick={() => {
+                        window.location.href = gpkgUrl;
+                    }}
+                >
+                    <i className="fa fa-globe" />
+                    GPKG
+                </Button>
+            )}
         </Fragment>
     );
 }

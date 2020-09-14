@@ -1,9 +1,7 @@
 import React from 'react';
 import { FormattedMessage } from 'react-intl';
 import PropTypes from 'prop-types';
-import {
-    Chip, makeStyles, Box, Typography,
-} from '@material-ui/core';
+import { Chip, makeStyles, Box, Typography } from '@material-ui/core';
 
 import UpdateIcon from '@material-ui/icons/Update';
 import InputComponent from '../../../components/forms/InputComponent';
@@ -28,7 +26,10 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }) => {
+const ReAssignInstanceDialogComponent = ({
+    currentInstance,
+    onReAssignInstance,
+}) => {
     const classes = useStyles();
 
     const [fieldValue, setFieldValue] = React.useState({
@@ -46,7 +47,7 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
         });
     };
 
-    const onConfirm = (closeDialog) => {
+    const onConfirm = closeDialog => {
         onReAssignInstance(currentInstance, {
             period: fieldValue.period.value,
             org_unit: fieldValue.orgUnit.value.id,
@@ -58,7 +59,10 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
     let period;
     let nextPeriods;
     let previousPeriods = [];
-    if (currentInstance.period !== undefined && currentInstance.period !== null) {
+    if (
+        currentInstance.period !== undefined &&
+        currentInstance.period !== null
+    ) {
         period = new Period(currentInstance.period);
         nextPeriods = period.nextPeriods(2);
         previousPeriods = period.previousPeriods(3);
@@ -66,31 +70,35 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
     const isPeriodDisabled = !currentInstance.period;
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) => <UpdateIcon onClick={openDialog} />}
+            renderTrigger={({ openDialog }) => (
+                <UpdateIcon onClick={openDialog} />
+            )}
             titleMessage={MESSAGES.reAssignInstance}
             onConfirm={onConfirm}
             confirmMessage={MESSAGES.reAssignInstanceAction}
             cancelMessage={MESSAGES.cancel}
             maxWidth="xs"
             allowConfirm={
-                fieldValue.orgUnit.value !== undefined
-                && (
-                    Boolean(isPeriodDisabled)
-                    || (!isPeriodDisabled && Boolean(fieldValue.period.value))
-                )
+                fieldValue.orgUnit.value !== undefined &&
+                (Boolean(isPeriodDisabled) ||
+                    (!isPeriodDisabled && Boolean(fieldValue.period.value)))
             }
         >
             <InputComponent
-                disabled={currentInstance.period === undefined || currentInstance.period === null}
+                disabled={
+                    currentInstance.period === undefined ||
+                    currentInstance.period === null
+                }
                 clearable={false}
                 keyValue="period"
-                onChange={(key, value) => setFieldValue({
-                    ...fieldValue,
-                    period: {
-                        ...fieldValue.period,
-                        value,
-                    },
-                })
+                onChange={(key, value) =>
+                    setFieldValue({
+                        ...fieldValue,
+                        period: {
+                            ...fieldValue.period,
+                            value,
+                        },
+                    })
                 }
                 value={fieldValue.period.value}
                 errors={fieldValue.period.errors}
@@ -103,30 +111,40 @@ const ReAssignInstanceDialogComponent = ({ currentInstance, onReAssignInstance }
                 required
             />
             <>
-                {
-                    !fieldValue.orgUnit.value
-                    && (
-                        <OrgUnitSearch
-                            onSelectOrgUnit={ou => setFieldValue({
+                {!fieldValue.orgUnit.value && (
+                    <OrgUnitSearch
+                        onSelectOrgUnit={ou =>
+                            setFieldValue({
                                 ...fieldValue,
                                 orgUnit: {
                                     ...fieldValue.orgUnit,
                                     value: ou,
                                 },
                             })
-                            }
-                            inputLabelObject={MESSAGES.addOrgUnit}
-                        />
-                    )
-                }
+                        }
+                        inputLabelObject={MESSAGES.addOrgUnit}
+                    />
+                )}
                 {fieldValue.orgUnit.value !== undefined && (
                     <Box className={classes.chipList}>
-                        <Typography variant="subtitle1" className={classes.chipListTitle}>
-                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />
-:
+                        <Typography
+                            variant="subtitle1"
+                            className={classes.chipListTitle}
+                        >
+                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />:
                         </Typography>
-                        <OrgUnitTooltip orgUnit={fieldValue.orgUnit.value} key={fieldValue.orgUnit.value.id}>
-                            <Chip label={getOrgunitMessage(fieldValue.orgUnit.value)} onDelete={() => handleRemoveOrgUnit()} className={classes.chip} color="primary" />
+                        <OrgUnitTooltip
+                            orgUnit={fieldValue.orgUnit.value}
+                            key={fieldValue.orgUnit.value.id}
+                        >
+                            <Chip
+                                label={getOrgunitMessage(
+                                    fieldValue.orgUnit.value,
+                                )}
+                                onDelete={() => handleRemoveOrgUnit()}
+                                className={classes.chip}
+                                color="primary"
+                            />
                         </OrgUnitTooltip>
                     </Box>
                 )}

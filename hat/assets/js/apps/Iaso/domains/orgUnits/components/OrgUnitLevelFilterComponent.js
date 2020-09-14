@@ -11,9 +11,7 @@ class OrgUnitLevelFilterComponent extends Component {
     render() {
         const {
             orgUnits,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             onFilterChanged,
             levelId,
             levelIndex,
@@ -28,7 +26,7 @@ class OrgUnitLevelFilterComponent extends Component {
         let currentLevelId = levelId;
         if (!showCurrentOrgUnit && currentOrgUnitId) {
             orgUnitsList = [];
-            orgUnits.forEach((o) => {
+            orgUnits.forEach(o => {
                 if (o.id !== currentOrgUnitId) {
                     orgUnitsList.push(o);
                 }
@@ -77,6 +75,5 @@ OrgUnitLevelFilterComponent.propTypes = {
     showCurrentOrgUnit: PropTypes.bool,
     currentOrgUnitId: PropTypes.any,
 };
-
 
 export default injectIntl(OrgUnitLevelFilterComponent);

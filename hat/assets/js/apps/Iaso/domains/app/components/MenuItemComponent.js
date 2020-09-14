@@ -17,9 +17,7 @@ import ExpandMore from '@material-ui/icons/ExpandMore';
 import PropTypes from 'prop-types';
 import commonStyles from '../../../styles/common';
 import muiTheme from '../../../utils/theme';
-import {
-    userHasPermission,
-} from '../../users/utils';
+import { userHasPermission } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -48,16 +46,17 @@ function MenuItem(props) {
     };
     const color = isMenuActive ? 'primary' : 'inherit';
     const hasSubMenu = menuItem.subMenu && menuItem.subMenu.length > 0;
-    const subMenuIcon = open ? <ExpandLess color={color} /> : <ExpandMore color={color} />;
+    const subMenuIcon = open ? (
+        <ExpandLess color={color} />
+    ) : (
+        <ExpandMore color={color} />
+    );
     const itemStyle = {
         paddingLeft: muiTheme.spacing(subMenuLevel * 2),
     };
     return (
         <Fragment>
-            <Link
-                className={classes.linkButton}
-                to={!hasSubMenu ? path : ''}
-            >
+            <Link className={classes.linkButton} to={!hasSubMenu ? path : ''}>
                 <ListItem
                     style={itemStyle}
                     button
@@ -67,42 +66,44 @@ function MenuItem(props) {
                         {menuItem.icon({ color })}
                     </ListItemIcon>
                     <ListItemText
-                        primary={<Typography type="body2" color={color}>{intl.formatMessage(menuItem.label)}</Typography>}
+                        primary={
+                            <Typography type="body2" color={color}>
+                                {intl.formatMessage(menuItem.label)}
+                            </Typography>
+                        }
                     />
-                    {
-                        hasSubMenu ? subMenuIcon : null
-                    }
+                    {hasSubMenu ? subMenuIcon : null}
                 </ListItem>
             </Link>
-            {
-                hasSubMenu
-                && (
-                    <Collapse in={open} timeout="auto" unmountOnExit>
-                        <List component="div" disablePadding>
-                            {
-                                menuItem.subMenu.map((subMenu) => {
-                                    if (userHasPermission(subMenu.permission, currentUser)) {
-                                        return (
-                                            <MenuItem
-                                                classes={classes}
-                                                intl={intl}
-                                                key={subMenu.key}
-                                                menuItem={subMenu}
-                                                onClick={subPath => onClick(subPath)}
-                                                subMenuLevel={subMenuLevel + 1}
-                                                location={location}
-                                                currentPath={path}
-                                                currentUser={currentUser}
-                                            />
-                                        );
-                                    }
-                                    return null;
-                                })
+            {hasSubMenu && (
+                <Collapse in={open} timeout="auto" unmountOnExit>
+                    <List component="div" disablePadding>
+                        {menuItem.subMenu.map(subMenu => {
+                            if (
+                                userHasPermission(
+                                    subMenu.permission,
+                                    currentUser,
+                                )
+                            ) {
+                                return (
+                                    <MenuItem
+                                        classes={classes}
+                                        intl={intl}
+                                        key={subMenu.key}
+                                        menuItem={subMenu}
+                                        onClick={subPath => onClick(subPath)}
+                                        subMenuLevel={subMenuLevel + 1}
+                                        location={location}
+                                        currentPath={path}
+                                        currentUser={currentUser}
+                                    />
+                                );
                             }
-                        </List>
-                    </Collapse>
-                )
-            }
+                            return null;
+                        })}
+                    </List>
+                </Collapse>
+            )}
         </Fragment>
     );
 }

@@ -29,8 +29,9 @@ const filterResults = (searchString, options) => {
     if (searchString !== '') {
         const search = searchString.toLowerCase();
         displayedOptions = displayedOptions.filter(
-            o => (o.key && o.key.toLowerCase().includes(search))
-            || (o.label && o.label.toLowerCase().includes(search)),
+            o =>
+                (o.key && o.key.toLowerCase().includes(search)) ||
+                (o.label && o.label.toLowerCase().includes(search)),
         );
     }
     return displayedOptions;
@@ -81,17 +82,13 @@ const styles = theme => ({
     },
 });
 
-const ColumnsSelectDrawerComponent = (
-    {
-        classes,
-        options,
-        setOptions,
-        minColumns,
-        intl: {
-            formatMessage,
-        },
-    },
-) => {
+const ColumnsSelectDrawerComponent = ({
+    classes,
+    options,
+    setOptions,
+    minColumns,
+    intl: { formatMessage },
+}) => {
     const [state, setState] = React.useState({
         open: false,
         searchString: '',
@@ -101,11 +98,11 @@ const ColumnsSelectDrawerComponent = (
         setState({ ...state, open });
     };
 
-    const handleSearch = reset => (event) => {
+    const handleSearch = reset => event => {
         setState({ ...state, searchString: reset ? '' : event.target.value });
     };
 
-    const handleChangeOptions = index => (event) => {
+    const handleChangeOptions = index => event => {
         const newOptions = [...options];
         newOptions[index] = {
             ...newOptions[index],
@@ -125,10 +122,12 @@ const ColumnsSelectDrawerComponent = (
                 color="white"
                 tooltipMessage={MESSAGES.columnSelectTooltip}
             />
-            <Drawer anchor="right" open={state.open} onClose={toggleDrawer(false)}>
-                <div
-                    className={classes.root}
-                >
+            <Drawer
+                anchor="right"
+                open={state.open}
+                onClose={toggleDrawer(false)}
+            >
+                <div className={classes.root}>
                     <div className={classes.toolbar}>
                         <Tooltip title={formatMessage(MESSAGES.close)}>
                             <IconButton onClick={toggleDrawer(false)}>
@@ -142,66 +141,73 @@ const ColumnsSelectDrawerComponent = (
                                 className={classes.input}
                                 placeholder={formatMessage(MESSAGES.search)}
                                 inputProps={{
-                                    'aria-label': formatMessage(MESSAGES.search),
+                                    'aria-label': formatMessage(
+                                        MESSAGES.search,
+                                    ),
                                     className: classes.input,
                                 }}
                             />
                         </div>
-                        {
-                            state.searchString !== ''
-                            && (
-                                <Tooltip title={formatMessage(MESSAGES.resetSearch)}>
-                                    <IconButton
-                                        onClick={handleSearch(true)}
-                                    >
-                                        <Close />
-                                    </IconButton>
-                                </Tooltip>
-                            )
-                        }
+                        {state.searchString !== '' && (
+                            <Tooltip
+                                title={formatMessage(MESSAGES.resetSearch)}
+                            >
+                                <IconButton onClick={handleSearch(true)}>
+                                    <Close />
+                                </IconButton>
+                            </Tooltip>
+                        )}
                     </div>
                     <Divider />
                     <div className={classes.list}>
                         <List>
-                            {
-                                displayedOptions.map((o, i) => (
-
-                                    <InView key={o.key}>
-                                        {({ inView, ref }) => (
-                                            <div ref={ref} id={o.key}>
-                                                <ListItem className={classes.listItem}>
-                                                    {
-                                                        inView
-                                                        && (
-                                                            <>
-                                                                <Switch
-                                                                    disabled={activeOptionsCount === minColumns && o.active}
-                                                                    size="small"
-                                                                    checked={o.active}
-                                                                    onChange={handleChangeOptions(o.index)}
-                                                                    color="primary"
-                                                                    inputProps={{ 'aria-label': o.label }}
-                                                                    className={classes.switch}
-                                                                />
-                                                                <ListItemText primary={o.label || o.key} />
-                                                            </>
-                                                        )
-                                                    }
-                                                    {
-                                                        !inView
-                                                        && (
-                                                            <>
-                                                                <BlockPlaceholder width="30px" />
-                                                                <BlockPlaceholder />
-                                                            </>
-                                                        )
-                                                    }
-                                                </ListItem>
-                                            </div>
-                                        )}
-                                    </InView>
-                                ))
-                            }
+                            {displayedOptions.map((o, i) => (
+                                <InView key={o.key}>
+                                    {({ inView, ref }) => (
+                                        <div ref={ref} id={o.key}>
+                                            <ListItem
+                                                className={classes.listItem}
+                                            >
+                                                {inView && (
+                                                    <>
+                                                        <Switch
+                                                            disabled={
+                                                                activeOptionsCount ===
+                                                                    minColumns &&
+                                                                o.active
+                                                            }
+                                                            size="small"
+                                                            checked={o.active}
+                                                            onChange={handleChangeOptions(
+                                                                o.index,
+                                                            )}
+                                                            color="primary"
+                                                            inputProps={{
+                                                                'aria-label':
+                                                                    o.label,
+                                                            }}
+                                                            className={
+                                                                classes.switch
+                                                            }
+                                                        />
+                                                        <ListItemText
+                                                            primary={
+                                                                o.label || o.key
+                                                            }
+                                                        />
+                                                    </>
+                                                )}
+                                                {!inView && (
+                                                    <>
+                                                        <BlockPlaceholder width="30px" />
+                                                        <BlockPlaceholder />
+                                                    </>
+                                                )}
+                                            </ListItem>
+                                        </div>
+                                    )}
+                                </InView>
+                            ))}
                         </List>
                     </div>
                 </div>
@@ -209,7 +215,6 @@ const ColumnsSelectDrawerComponent = (
         </>
     );
 };
-
 
 ColumnsSelectDrawerComponent.defaultProps = {
     minColumns: 2,
@@ -222,6 +227,5 @@ ColumnsSelectDrawerComponent.propTypes = {
     minColumns: PropTypes.number,
     intl: PropTypes.object.isRequired,
 };
-
 
 export default withStyles(styles)(injectIntl(ColumnsSelectDrawerComponent));

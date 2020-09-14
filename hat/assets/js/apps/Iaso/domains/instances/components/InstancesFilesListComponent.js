@@ -3,12 +3,7 @@ import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
 import { injectIntl, intlShape } from 'react-intl';
 
-import {
-    Grid,
-    withStyles,
-    Tabs,
-    Tab,
-} from '@material-ui/core';
+import { Grid, withStyles, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -62,9 +57,7 @@ class InstancesFilesList extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {
-            files,
-        } = this.props;
+        const { files } = this.props;
         if (files && !isEqual(prevProps.files, files)) {
             this.setFiles(files);
         }
@@ -77,13 +70,8 @@ class InstancesFilesList extends Component {
     }
 
     setCurrentIndex(fileIndex, fileTypeKey) {
-        const {
-            dispatch,
-            fetchDetails,
-        } = this.props;
-        const {
-            sortedFiles,
-        } = this.state;
+        const { dispatch, fetchDetails } = this.props;
+        const { sortedFiles } = this.state;
         if (fileIndex >= 0) {
             const file = sortedFiles[fileTypeKey][fileIndex];
             if (fetchDetails) {
@@ -91,11 +79,13 @@ class InstancesFilesList extends Component {
                     instanceDetail: null,
                 });
                 if (file) {
-                    fetchInstanceDetail(dispatch, file.itemId).then((instanceDetail) => {
-                        this.setState({
-                            instanceDetail,
-                        });
-                    });
+                    fetchInstanceDetail(dispatch, file.itemId).then(
+                        instanceDetail => {
+                            this.setState({
+                                instanceDetail,
+                            });
+                        },
+                    );
                 }
             }
         }
@@ -112,10 +102,7 @@ class InstancesFilesList extends Component {
     }
 
     closeLightbox() {
-        const {
-            fetchDetails,
-            instanceDetail,
-        } = this.props;
+        const { fetchDetails, instanceDetail } = this.props;
         this.setCurrentIndex(-1, 'images');
         this.setState({
             viewerIsOpen: false,
@@ -134,9 +121,7 @@ class InstancesFilesList extends Component {
             fetching,
             files,
             classes,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
 
         const {
@@ -152,7 +137,9 @@ class InstancesFilesList extends Component {
                 <Grid container spacing={0}>
                     <Grid item xs={5} />
                     <Grid item xs={2}>
-                        <ErrorPaperComponent message={formatMessage(MESSAGES.missingFile)} />
+                        <ErrorPaperComponent
+                            message={formatMessage(MESSAGES.missingFile)}
+                        />
                     </Grid>
                     <Grid item xs={5} />
                 </Grid>
@@ -167,73 +154,68 @@ class InstancesFilesList extends Component {
                         root: classes.tabs,
                         indicator: classes.indicator,
                     }}
-                    onChange={(event, newtab) => this.handleChangeTab(newtab)
+                    onChange={(event, newtab) => this.handleChangeTab(newtab)}
+                >
+                    {Object.keys(sortedFiles).map(fileKey => {
+                        const filesByType = sortedFiles[fileKey];
+                        let filesCount = 0;
+                        if (Array.isArray(filesByType)) {
+                            filesCount = filesByType.length;
+                        } else {
+                            Object.keys(filesByType).forEach(fileSubKey => {
+                                filesCount += filesByType[fileSubKey].length;
+                            });
+                        }
+                        return (
+                            <Tab
+                                disabled={filesCount === 0}
+                                key={fileKey}
+                                value={fileKey}
+                                label={`${formatMessage(
+                                    MESSAGES[fileKey],
+                                )} (${filesCount})`}
+                            />
+                        );
+                    })}
+                </Tabs>
+                <div
+                    className={
+                        tab !== 'images' ? classes.hiddenImages : classes.images
                     }
                 >
-                    {
-                        Object.keys(sortedFiles).map((fileKey) => {
-                            const filesByType = sortedFiles[fileKey];
-                            let filesCount = 0;
-                            if (Array.isArray(filesByType)) {
-                                filesCount = filesByType.length;
-                            } else {
-                                Object.keys(filesByType).forEach((fileSubKey) => {
-                                    filesCount += filesByType[fileSubKey].length;
-                                });
-                            }
-                            return (
-                                <Tab
-                                    disabled={filesCount === 0}
-                                    key={fileKey}
-                                    value={fileKey}
-                                    label={`${formatMessage(MESSAGES[fileKey])} (${filesCount})`}
-                                />
-                            );
-                        })
-                    }
-                </Tabs>
-                <div className={tab !== 'images' ? classes.hiddenImages : classes.images}>
                     <LazyImagesList
                         imageList={sortedFiles.images}
                         onImageClick={index => this.openLightbox(index)}
                     />
                 </div>
-                {
-                    tab === 'videos'
-                    && (
-                        <div className={classes.tabContainer}>
-                            <VideosList videoList={sortedFiles.videos} />
-                        </div>
-                    )
-                }
-                {
-                    tab === 'documents'
-                    && (
-                        <div className={classes.tabContainer}>
-                            <DocumentsList docsList={sortedFiles.documents} />
-                        </div>
-                    )
-                }
-                {
-                    tab === 'others'
-                    && (
-                        <div className={classes.tabContainer}>
-                            <DocumentsList docsList={sortedFiles.others} />
-                        </div>
-                    )
-                }
-                {
-                    viewerIsOpen
-                    && (
-                        <ImageGallery
-                            imageList={sortedFiles.images}
-                            closeLightbox={() => this.closeLightbox()}
-                            currentIndex={currentImageIndex}
-                            setCurrentIndex={newIndex => this.setCurrentIndex(newIndex, 'images')}
-                            getExtraInfos={() => <InstancePopover instanceDetail={instanceDetail} />}
-                        />
-                    )
-                }
+                {tab === 'videos' && (
+                    <div className={classes.tabContainer}>
+                        <VideosList videoList={sortedFiles.videos} />
+                    </div>
+                )}
+                {tab === 'documents' && (
+                    <div className={classes.tabContainer}>
+                        <DocumentsList docsList={sortedFiles.documents} />
+                    </div>
+                )}
+                {tab === 'others' && (
+                    <div className={classes.tabContainer}>
+                        <DocumentsList docsList={sortedFiles.others} />
+                    </div>
+                )}
+                {viewerIsOpen && (
+                    <ImageGallery
+                        imageList={sortedFiles.images}
+                        closeLightbox={() => this.closeLightbox()}
+                        currentIndex={currentImageIndex}
+                        setCurrentIndex={newIndex =>
+                            this.setCurrentIndex(newIndex, 'images')
+                        }
+                        getExtraInfos={() => (
+                            <InstancePopover instanceDetail={instanceDetail} />
+                        )}
+                    />
+                )}
             </section>
         );
     }
@@ -263,4 +245,9 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
 });
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstancesFilesList)));
+export default withStyles(styles)(
+    connect(
+        MapStateToProps,
+        MapDispatchToProps,
+    )(injectIntl(InstancesFilesList)),
+);

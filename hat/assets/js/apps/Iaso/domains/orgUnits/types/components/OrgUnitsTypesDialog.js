@@ -14,7 +14,10 @@ import { useFormState } from '../../../../hooks/form';
 import { commaSeparatedIdsToArray } from '../../../../utils/forms';
 
 export default function OrgUnitsTypesDialog({
-    orgUnitType, titleMessage, onConfirmed, ...dialogProps
+    orgUnitType,
+    titleMessage,
+    onConfirmed,
+    ...dialogProps
 }) {
     const dispatch = useDispatch();
     const { allOrgUnitTypes, allProjects } = useSelector(state => ({
@@ -31,24 +34,32 @@ export default function OrgUnitsTypesDialog({
         project_ids: orgUnitType.projects.map(p => p.id),
     });
 
-    const onConfirm = useCallback((closeDialog) => {
-        const savePromise = orgUnitType.id === null
-            ? dispatch(createOrgUnitTypeAction(formState))
-            : dispatch(saveOrgUnitTypeAction(formState));
+    const onConfirm = useCallback(
+        closeDialog => {
+            const savePromise =
+                orgUnitType.id === null
+                    ? dispatch(createOrgUnitTypeAction(formState))
+                    : dispatch(saveOrgUnitTypeAction(formState));
 
-        savePromise
-            .then(() => {
-                closeDialog();
-                onConfirmed();
-            })
-            .catch((error) => {
-                if (error.status === 400) {
-                    Object.entries(error.details).forEach(entry => setFieldErrors(entry[0], entry[1]));
-                }
-            });
-    }, [dispatch, setFieldErrors, formState]);
+            savePromise
+                .then(() => {
+                    closeDialog();
+                    onConfirmed();
+                })
+                .catch(error => {
+                    if (error.status === 400) {
+                        Object.entries(error.details).forEach(entry =>
+                            setFieldErrors(entry[0], entry[1]),
+                        );
+                    }
+                });
+        },
+        [dispatch, setFieldErrors, formState],
+    );
 
-    const subUnitTypes = allOrgUnitTypes.filter(s => s.id !== formState.id.value);
+    const subUnitTypes = allOrgUnitTypes.filter(
+        s => s.id !== formState.id.value,
+    );
 
     return (
         <ConfirmCancelDialogComponent
@@ -97,7 +108,9 @@ export default function OrgUnitsTypesDialog({
                         multi
                         clearable
                         keyValue="sub_unit_type_ids"
-                        onChange={(name, value) => setFieldValue(name, commaSeparatedIdsToArray(value))}
+                        onChange={(name, value) =>
+                            setFieldValue(name, commaSeparatedIdsToArray(value))
+                        }
                         value={formState.sub_unit_type_ids.value}
                         errors={formState.sub_unit_type_ids.errors}
                         type="select"
@@ -113,7 +126,9 @@ export default function OrgUnitsTypesDialog({
                         multi
                         clearable
                         keyValue="project_ids"
-                        onChange={(name, value) => setFieldValue(name, commaSeparatedIdsToArray(value))}
+                        onChange={(name, value) =>
+                            setFieldValue(name, commaSeparatedIdsToArray(value))
+                        }
                         value={formState.project_ids.value}
                         errors={formState.project_ids.errors}
                         type="select"

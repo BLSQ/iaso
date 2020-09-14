@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
-
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -68,9 +67,7 @@ class LinksFiltersComponent extends Component {
             params,
             classes,
             baseUrl,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             orgUnitTypes,
             sources,
             profiles,
@@ -79,11 +76,15 @@ class LinksFiltersComponent extends Component {
         } = this.props;
         let currentOrigin;
         if (params.origin && sources) {
-            currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
+            currentOrigin = sources.find(
+                s => s.id === parseInt(params.origin, 10),
+            );
         }
         let currentDestination;
         if (params.destination && sources) {
-            currentDestination = sources.find(s => s.id === parseInt(params.destination, 10));
+            currentDestination = sources.find(
+                s => s.id === parseInt(params.destination, 10),
+            );
         }
         return (
             <Fragment>
@@ -131,7 +132,12 @@ class LinksFiltersComponent extends Component {
                                 version(
                                     formatMessage,
                                     currentOrigin ? currentOrigin.versions : [],
-                                    Boolean(!currentOrigin || (currentOrigin && currentOrigin.versions.length === 0)),
+                                    Boolean(
+                                        !currentOrigin ||
+                                            (currentOrigin &&
+                                                currentOrigin.versions
+                                                    .length === 0),
+                                    ),
                                     false,
                                     'originVersion',
                                     formatMessage(MESSAGES.sourceoriginversion),
@@ -155,19 +161,39 @@ class LinksFiltersComponent extends Component {
                                 ),
                                 version(
                                     formatMessage,
-                                    currentDestination ? currentDestination.versions : [],
-                                    Boolean(!currentDestination || (currentDestination && currentDestination.versions.length === 0)),
+                                    currentDestination
+                                        ? currentDestination.versions
+                                        : [],
+                                    Boolean(
+                                        !currentDestination ||
+                                            (currentDestination &&
+                                                currentDestination.versions
+                                                    .length === 0),
+                                    ),
                                     false,
                                     'destinationVersion',
-                                    formatMessage(MESSAGES.sourcedestinationversion),
+                                    formatMessage(
+                                        MESSAGES.sourcedestinationversion,
+                                    ),
                                 ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
                 </Grid>
-                <Grid container spacing={4} justify="flex-end" alignItems="center">
-                    <Grid item xs={2} container justify="flex-end" alignItems="center">
+                <Grid
+                    container
+                    spacing={4}
+                    justify="flex-end"
+                    alignItems="center"
+                >
+                    <Grid
+                        item
+                        xs={2}
+                        container
+                        justify="flex-end"
+                        alignItems="center"
+                    >
                         <Button
                             variant="contained"
                             className={classes.button}
@@ -210,10 +236,13 @@ const MapStateToProps = state => ({
     algorithmRuns: state.links.algorithmRunsList,
 });
 
-
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(LinksFiltersComponent)));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(injectIntl(LinksFiltersComponent)));

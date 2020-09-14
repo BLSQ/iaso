@@ -12,6 +12,7 @@ class VideoComponent extends React.Component {
             });
         }
     }
+
     componentWillReceiveProps(newProps) {
         if (this.player) {
             this.player.src({
@@ -31,7 +32,9 @@ class VideoComponent extends React.Component {
             <section className="video-component">
                 <div data-vjs-player>
                     <video
-                        ref={(node) => { this.videoNode = node; }}
+                        ref={node => {
+                            this.videoNode = node;
+                        }}
                         className="video-js vjs-default-skin"
                         controls
                         preload="auto"
@@ -43,7 +46,6 @@ class VideoComponent extends React.Component {
         );
     }
 }
-
 
 VideoComponent.propTypes = {
     videoItem: PropTypes.object.isRequired,

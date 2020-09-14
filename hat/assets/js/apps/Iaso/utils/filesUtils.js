@@ -2,7 +2,7 @@ const imgExtensions = ['jpg', 'jpeg', 'JPG', 'png'];
 const videoExtensions = ['mp4'];
 const documentExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'txt'];
 
-export const getFileName = (path) => {
+export const getFileName = path => {
     let tempPath = path;
     if (tempPath.includes('?')) {
         [tempPath] = tempPath.split('?').slice(0);
@@ -18,21 +18,20 @@ export const getFileName = (path) => {
         [extension] = extensionsArray;
     }
     const name = fullFileName.replace(extension, '');
-    return ({
+    return {
         name,
         extension: extension.replace('.', ''),
-    });
+    };
 };
 
-
-export const sortFilesType = (files) => {
+export const sortFilesType = files => {
     const filesList = {
         images: [],
         videos: [],
         documents: [],
         others: [],
     };
-    files.forEach((f) => {
+    files.forEach(f => {
         const fileName = getFileName(f.path);
         const fullFile = {
             ...f,
@@ -48,5 +47,5 @@ export const sortFilesType = (files) => {
             filesList.others.push(fullFile);
         }
     });
-    return (filesList);
+    return filesList;
 };

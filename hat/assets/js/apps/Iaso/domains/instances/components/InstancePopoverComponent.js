@@ -32,15 +32,13 @@ const useStyles = makeStyles(theme => ({
 function InstancePopover(props) {
     const {
         instanceDetail,
-        intl: {
-            formatMessage,
-        },
+        intl: { formatMessage },
     } = props;
     if (!instanceDetail) return null;
     const classes = useStyles();
     const [anchorEl, setAnchorEl] = React.useState(null);
 
-    const handleClick = (event) => {
+    const handleClick = event => {
         setAnchorEl(event.currentTarget);
     };
 
@@ -62,11 +60,13 @@ function InstancePopover(props) {
                 aria-describedby={id}
                 onClick={handleClick}
             >
-                {
-                    `${instanceDetail.org_unit
+                {`${
+                    instanceDetail.org_unit
                         ? `${instanceDetail.org_unit.name} - `
-                        : ''}${moment.unix(instanceDetail.created_at).format('DD/MM/YYYY HH:mm')}`
-                }
+                        : ''
+                }${moment
+                    .unix(instanceDetail.created_at)
+                    .format('DD/MM/YYYY HH:mm')}`}
                 <Info className={classes.buttonIcon} />
             </Button>
             <Popover
@@ -86,34 +86,37 @@ function InstancePopover(props) {
                     horizontal: 'center',
                 }}
             >
-
-                <Box
-                    className={classes.typography}
-                >
+                <Box className={classes.typography}>
                     <PopupItemComponent
                         label="Uuid"
                         value={instanceDetail.uuid}
                     />
-                    {
-                        orgUnitTree.map(o => (
-                            <PopupItemComponent
-                                key={o.id}
-                                label={o.org_unit_type_name}
-                                value={o ? o.name : null}
-                            />
-                        ))
-                    }
+                    {orgUnitTree.map(o => (
+                        <PopupItemComponent
+                            key={o.id}
+                            label={o.org_unit_type_name}
+                            value={o ? o.name : null}
+                        />
+                    ))}
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.device)}
                         value={instanceDetail.device_id}
                     />
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.latitude)}
-                        value={instanceDetail.latitude ? instanceDetail.latitude.toFixed(5) : '--'}
+                        value={
+                            instanceDetail.latitude
+                                ? instanceDetail.latitude.toFixed(5)
+                                : '--'
+                        }
                     />
                     <PopupItemComponent
                         label={formatMessage(MESSAGES.longitude)}
-                        value={instanceDetail.longitude ? instanceDetail.longitude.toFixed(5) : '--'}
+                        value={
+                            instanceDetail.longitude
+                                ? instanceDetail.longitude.toFixed(5)
+                                : '--'
+                        }
                     />
                 </Box>
             </Popover>

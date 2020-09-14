@@ -38,9 +38,7 @@ const styles = () => ({
 
 class LoadingSpinner extends Component {
     render() {
-        const {
-            classes, size, transparent, fixed, padding,
-        } = this.props;
+        const { classes, size, transparent, fixed, padding } = this.props;
         return (
             <div
                 style={{

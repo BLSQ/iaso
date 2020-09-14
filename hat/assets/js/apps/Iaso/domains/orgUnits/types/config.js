@@ -18,26 +18,42 @@ const TableColumns = (formatMessage, component) => [
         Header: formatMessage(MESSAGES.shortName),
         accessor: 'short_name',
         sortable: false,
-        Cell: settings => <ColumnTextComponent text={settings.original.short_name} />,
+        Cell: settings => (
+            <ColumnTextComponent text={settings.original.short_name} />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.depth),
         accessor: 'depth',
         sortable: false,
-        Cell: settings => <ColumnTextComponent text={settings.original.depth !== null ? settings.original.depth : '-'} />,
+        Cell: settings => (
+            <ColumnTextComponent
+                text={
+                    settings.original.depth !== null
+                        ? settings.original.depth
+                        : '-'
+                }
+            />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.projects),
         accessor: 'projects',
         sortable: false,
-        Cell: settings => <ColumnTextComponent text={settings.original.projects.map(p => p.name).join(', ')} />,
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.projects.map(p => p.name).join(', ')}
+            />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.createdAt),
         accessor: 'created_at',
         sortable: false,
         Cell: settings => (
-            <span>{displayDateFromTimestamp(settings.original.created_at)}</span>
+            <span>
+                {displayDateFromTimestamp(settings.original.created_at)}
+            </span>
         ),
     },
     {
@@ -45,7 +61,9 @@ const TableColumns = (formatMessage, component) => [
         accessor: 'updated_at',
         sortable: false,
         Cell: settings => (
-            <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
+            <span>
+                {displayDateFromTimestamp(settings.original.updated_at)}
+            </span>
         ),
     },
     {
@@ -72,7 +90,11 @@ const TableColumns = (formatMessage, component) => [
                     disabled={settings.original.instances_count > 0}
                     titleMessage={MESSAGES.delete}
                     message={MESSAGES.deleteWarning}
-                    onConfirm={closeDialog => component.deleteOrgUnitType(settings.original).then(closeDialog)}
+                    onConfirm={closeDialog =>
+                        component
+                            .deleteOrgUnitType(settings.original)
+                            .then(closeDialog)
+                    }
                 />
             </section>
         ),

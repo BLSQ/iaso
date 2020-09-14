@@ -2,10 +2,7 @@ import React, { Component } from 'react';
 import LazyImage from 'react-lazy-progressive-image';
 import isEqual from 'lodash/isEqual';
 
-import {
-    Grid,
-    withStyles,
-} from '@material-ui/core';
+import { Grid, withStyles } from '@material-ui/core';
 import grey from '@material-ui/core/colors/grey';
 
 import PropTypes from 'prop-types';
@@ -37,48 +34,47 @@ class LazyImagesList extends Component {
     }
 
     render() {
-        const {
-            imageList,
-            classes,
-            onImageClick,
-        } = this.props;
+        const { imageList, classes, onImageClick } = this.props;
         return (
             <Grid container spacing={2}>
-                {
-
-                    imageList.map((file, index) => (
-                        <Grid
-                            item
-                            xs={3}
-                            key={`${file.itemId}-${getFileName(file.path).name}`}
-                            className={classes.imageItem}
+                {imageList.map((file, index) => (
+                    <Grid
+                        item
+                        xs={3}
+                        key={`${file.itemId}-${getFileName(file.path).name}`}
+                        className={classes.imageItem}
+                    >
+                        <LazyImage
+                            src={file.path}
+                            visibilitySensorProps={{
+                                partialVisibility: true,
+                            }}
                         >
-                            <LazyImage
-                                src={file.path}
-                                visibilitySensorProps={{
-                                    partialVisibility: true,
-                                }}
-                            >
-                                {(src, loading, isVisible) => (
-                                    <div
-                                        onClick={() => onImageClick(index)}
-                                        role="button"
-                                        tabIndex={0}
-                                        className={classes.imageContainer}
-                                        style={{
-                                            backgroundImage: loading ? 'none' : `url('${src}')`,
-                                        }}
-                                    >
-                                        {
-                                            loading && isVisible && <LoadingSpinner fixed={false} transparent padding={4} size={25} />
-                                        }
-
-                                    </div>
-                                )}
-                            </LazyImage>
-                        </Grid>
-                    ))
-                }
+                            {(src, loading, isVisible) => (
+                                <div
+                                    onClick={() => onImageClick(index)}
+                                    role="button"
+                                    tabIndex={0}
+                                    className={classes.imageContainer}
+                                    style={{
+                                        backgroundImage: loading
+                                            ? 'none'
+                                            : `url('${src}')`,
+                                    }}
+                                >
+                                    {loading && isVisible && (
+                                        <LoadingSpinner
+                                            fixed={false}
+                                            transparent
+                                            padding={4}
+                                            size={25}
+                                        />
+                                    )}
+                                </div>
+                            )}
+                        </LazyImage>
+                    </Grid>
+                ))}
             </Grid>
         );
     }

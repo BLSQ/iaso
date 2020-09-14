@@ -4,12 +4,13 @@ import instancesTableColumns from './config';
 const NO_VALUE = '/';
 const hasNoValue = value => !value || value === '';
 
-const KeyValueFields = ({ entry }) => Object.entries(entry).map(([key, value]) => (
-    <>
-        <span>{`${key} : ${hasNoValue(value) ? NO_VALUE : value}`}</span>
-        <br />
-    </>
-));
+const KeyValueFields = ({ entry }) =>
+    Object.entries(entry).map(([key, value]) => (
+        <>
+            <span>{`${key} : ${hasNoValue(value) ? NO_VALUE : value}`}</span>
+            <br />
+        </>
+    ));
 
 const renderValue = (settings, c) => {
     const { key } = c;
@@ -37,7 +38,7 @@ const renderValue = (settings, c) => {
 export const getInstancesColumns = (formatMessage, visibleColumns) => {
     const metasColumns = [...instancesTableColumns(formatMessage)];
     let tableColumns = [];
-    metasColumns.forEach((c) => {
+    metasColumns.forEach(c => {
         const metaColumn = visibleColumns.find(vc => vc.key === c.accessor);
         if ((metaColumn && metaColumn.active) || c.accessor === 'actions') {
             tableColumns.push(c);
@@ -47,7 +48,7 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
     const childrenArray = [];
     visibleColumns
         .filter(c => !c.meta)
-        .forEach((c) => {
+        .forEach(c => {
             if (c.active) {
                 childrenArray.push({
                     class: 'small',
@@ -62,7 +63,8 @@ export const getInstancesColumns = (formatMessage, visibleColumns) => {
     return tableColumns;
 };
 
-export const getMetasColumns = () => [...instancesTableColumns()].map(c => c.accessor);
+export const getMetasColumns = () =>
+    [...instancesTableColumns()].map(c => c.accessor);
 
 export const getInstancesVisibleColumns = (
     formatMessage,
@@ -82,11 +84,11 @@ export const getInstancesVisibleColumns = (
         active: columns !== undefined && columns.includes(c.accessor),
         meta: true,
         disabled:
-      activeOrders.indexOf(c.accessor) !== -1
-      || activeOrders.indexOf(`-${c.accessor}`) !== -1,
+            activeOrders.indexOf(c.accessor) !== -1 ||
+            activeOrders.indexOf(`-${c.accessor}`) !== -1,
     }));
     if (instance) {
-        Object.keys(instance.file_content).forEach((k) => {
+        Object.keys(instance.file_content).forEach(k => {
             if (k !== 'meta' && k !== 'uuid') {
                 newColumns.push({
                     key: k,
@@ -100,11 +102,11 @@ export const getInstancesVisibleColumns = (
     return newColumns;
 };
 
-export const getInstancesFilesList = (instances) => {
+export const getInstancesFilesList = instances => {
     const filesList = [];
-    instances.forEach((i) => {
+    instances.forEach(i => {
         if (i.files.length > 0) {
-            i.files.forEach((path) => {
+            i.files.forEach(path => {
                 const file = {
                     itemId: i.id,
                     createdAt: i.created_at,

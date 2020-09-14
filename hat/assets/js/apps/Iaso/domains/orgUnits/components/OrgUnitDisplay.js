@@ -1,8 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    withStyles,
-} from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 import { Link } from 'react-router';
 
 import { getOrgunitMessage } from '../utils';
@@ -14,11 +12,7 @@ const styles = () => ({
     },
 });
 
-const OrgUnitDisplay = ({
-    orgUnit,
-    classes,
-    withType,
-}) => {
+const OrgUnitDisplay = ({ orgUnit, classes, withType }) => {
     if (!orgUnit) {
         return textPlaceholder;
     }
@@ -36,7 +30,6 @@ const OrgUnitDisplay = ({
 OrgUnitDisplay.defaultProps = {
     withType: true,
 };
-
 
 OrgUnitDisplay.propTypes = {
     orgUnit: PropTypes.object.isRequired,

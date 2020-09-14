@@ -29,10 +29,13 @@ function formStateReducer(state, action) {
 }
 
 function formStateInitializer(initialValues) {
-    return Object.entries(initialValues).reduce((accumulator, [name, value]) => ({
-        ...accumulator,
-        [name]: { value, errors: [] },
-    }), {});
+    return Object.entries(initialValues).reduce(
+        (accumulator, [name, value]) => ({
+            ...accumulator,
+            [name]: { value, errors: [] },
+        }),
+        {},
+    );
 }
 
 /**
@@ -51,22 +54,40 @@ function formStateInitializer(initialValues) {
  * @returns [Object, func, func]
  */
 export function useFormState(initialValues) {
-    const [formState, dispatch] = useReducer(formStateReducer, initialValues, formStateInitializer);
+    const [formState, dispatch] = useReducer(
+        formStateReducer,
+        initialValues,
+        formStateInitializer,
+    );
 
-    const setFieldValue = useCallback((name, value, transformer = null) => {
-        const transformedValue = transformer === null
-            ? value
-            : transformer(value);
-        dispatch({ type: SET_FIELD_VALUE, payload: { name, value: transformedValue } });
-    }, [dispatch]);
+    const setFieldValue = useCallback(
+        (name, value, transformer = null) => {
+            const transformedValue =
+                transformer === null ? value : transformer(value);
+            dispatch({
+                type: SET_FIELD_VALUE,
+                payload: { name, value: transformedValue },
+            });
+        },
+        [dispatch],
+    );
 
-    const setFormState = useCallback((newFormState) => {
-        dispatch({ type: SET_FORM_STATE, payload: formStateInitializer(newFormState) });
-    }, [dispatch]);
+    const setFormState = useCallback(
+        newFormState => {
+            dispatch({
+                type: SET_FORM_STATE,
+                payload: formStateInitializer(newFormState),
+            });
+        },
+        [dispatch],
+    );
 
-    const setFieldErrors = useCallback((name, errors) => {
-        dispatch({ type: SET_FIELD_ERRORS, payload: { name, errors } });
-    }, [dispatch]);
+    const setFieldErrors = useCallback(
+        (name, errors) => {
+            dispatch({ type: SET_FIELD_ERRORS, payload: { name, errors } });
+        },
+        [dispatch],
+    );
 
     return [formState, setFieldValue, setFieldErrors, setFormState];
 }

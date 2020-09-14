@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-    withStyles,
-    Paper,
-} from '@material-ui/core';
+import { withStyles, Paper } from '@material-ui/core';
 import { Link } from 'react-router';
 
 import PropTypes from 'prop-types';
@@ -77,16 +74,14 @@ const renderIcon = (file, classes) => {
         }
 
         default:
-            return <AttachFile color="secondary" className={classes.muiIconb} />;
+            return (
+                <AttachFile color="secondary" className={classes.muiIconb} />
+            );
     }
 };
 
-
 function DocumentsItemComponent(props) {
-    const {
-        classes,
-        file,
-    } = props;
+    const { classes, file } = props;
     const fileName = getFileName(file.path);
     return (
         <Link
@@ -112,6 +107,5 @@ DocumentsItemComponent.propTypes = {
     file: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
 };
-
 
 export default withStyles(styles)(DocumentsItemComponent);

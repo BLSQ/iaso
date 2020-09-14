@@ -1,8 +1,5 @@
 import React from 'react';
-import {
-    Chip,
-    withStyles,
-} from '@material-ui/core';
+import { Chip, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import Cancel from '@material-ui/icons/Cancel';
@@ -16,7 +13,10 @@ const styles = () => ({
 });
 
 const CustomColorShipComponent = ({
-    color, isSelected, chipProps, classes,
+    color,
+    isSelected,
+    chipProps,
+    classes,
 }) => {
     const deleteIconStyle = {
         fill: isSelected ? color : 'inherit',
@@ -29,12 +29,12 @@ const CustomColorShipComponent = ({
                 color: !isSelected ? 'white' : color,
                 border: `1px solid ${color}`,
             }}
-            deleteIcon={(
+            deleteIcon={
                 <Cancel
                     style={isSelected ? deleteIconStyle : {}}
                     className={classes.icon}
                 />
-            )}
+            }
         />
     );
 };

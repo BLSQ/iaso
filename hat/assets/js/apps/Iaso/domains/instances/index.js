@@ -3,27 +3,44 @@ import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 import { injectIntl } from 'react-intl';
 
-import {
-    withStyles, Tabs, Grid, Tab, Box,
-} from '@material-ui/core';
+import { withStyles, Tabs, Grid, Tab, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import {
-    resetInstances, setCurrentForm, fetchFormDetail as fetchFormDetailAction, setInstances, setInstancesSmallDict, setInstancesFetching,
+    resetInstances,
+    setCurrentForm,
+    fetchFormDetail as fetchFormDetailAction,
+    setInstances,
+    setInstancesSmallDict,
+    setInstancesFetching,
 } from './actions';
 import { setOrgUnitTypes } from '../orgUnits/actions';
-import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
+import {
+    setDevicesList,
+    setDevicesOwnershipList,
+} from '../../redux/devicesReducer';
 import { setPeriods } from '../periods/actions';
-import { redirectTo as redirectToAction, redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
+import {
+    redirectTo as redirectToAction,
+    redirectToReplace as redirectToReplaceAction,
+} from '../../routing/actions';
 
 import {
-    fetchInstancesAsDict, fetchInstancesAsSmallDict, fetchOrgUnitsTypes, fetchDevices, fetchDevicesOwnerships, fetchPeriods,
+    fetchInstancesAsDict,
+    fetchInstancesAsSmallDict,
+    fetchOrgUnitsTypes,
+    fetchDevices,
+    fetchDevicesOwnerships,
+    fetchPeriods,
 } from '../../utils/requests';
 
 import {
-    getInstancesFilesList, getInstancesVisibleColumns, getInstancesColumns, getMetasColumns,
+    getInstancesFilesList,
+    getInstancesVisibleColumns,
+    getInstancesColumns,
+    getMetasColumns,
 } from './utils';
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
@@ -48,7 +65,7 @@ const baseUrl = baseUrls.instances;
 
 const defaultOrder = 'updated_at';
 
-const asBackendStatus = (status) => {
+const asBackendStatus = status => {
     if (status) {
         return status
             .split(',')
@@ -89,10 +106,18 @@ class Instances extends Component {
             redirectToReplace,
         } = this.props;
         this.props.resetInstances();
-        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchDevices(dispatch).then(devices => this.props.setDevicesList(devices));
-        fetchDevicesOwnerships(dispatch).then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
-        fetchPeriods(dispatch, formId).then(periods => this.props.setPeriods(periods));
+        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>
+            this.props.setOrgUnitTypes(orgUnitTypes),
+        );
+        fetchDevices(dispatch).then(devices =>
+            this.props.setDevicesList(devices),
+        );
+        fetchDevicesOwnerships(dispatch).then(devicesOwnershipsList =>
+            this.props.setDevicesOwnershipList(devicesOwnershipsList),
+        );
+        fetchPeriods(dispatch, formId).then(periods =>
+            this.props.setPeriods(periods),
+        );
         if (!columns) {
             const newParams = {
                 ...params,
@@ -118,15 +143,31 @@ class Instances extends Component {
             intl: { formatMessage },
         } = this.props;
         const { tableColumns } = this.state;
-        if (params.pageSize !== prevProps.params.pageSize || params.formId !== prevProps.params.formId || params.order !== prevProps.params.order || params.page !== prevProps.params.page) {
+        if (
+            params.pageSize !== prevProps.params.pageSize ||
+            params.formId !== prevProps.params.formId ||
+            params.order !== prevProps.params.order ||
+            params.page !== prevProps.params.page
+        ) {
             this.fetchInstances();
         }
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
-        if (reduxPage.list && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)) {
-            this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params, defaultOrder));
+        if (
+            reduxPage.list &&
+            (!isEqual(reduxPage.list, prevProps.reduxPage.list) ||
+                tableColumns.length === 0)
+        ) {
+            this.changeVisibleColumns(
+                getInstancesVisibleColumns(
+                    formatMessage,
+                    reduxPage.list[0],
+                    params,
+                    defaultOrder,
+                ),
+            );
         }
     }
 
@@ -154,7 +195,14 @@ class Instances extends Component {
             asSmallDict: true,
             ...this.getFilters(),
         };
-        return getTableUrl('instances', urlParams, toExport, exportType, false, asSmallDict);
+        return getTableUrl(
+            'instances',
+            urlParams,
+            toExport,
+            exportType,
+            false,
+            asSmallDict,
+        );
     }
 
     handleChangeTab(tab, redirect = true) {
@@ -185,8 +233,16 @@ class Instances extends Component {
         const urlSmall = this.getEndpointUrl(false, '', true);
 
         dispatch(this.props.setInstancesFetching(true));
-        Promise.all([fetchInstancesAsDict(dispatch, url), fetchInstancesAsSmallDict(dispatch, urlSmall)]).then(([instancesData, smallInstancesData]) => {
-            this.props.setInstances(instancesData.instances, params, instancesData.count, instancesData.pages);
+        Promise.all([
+            fetchInstancesAsDict(dispatch, url),
+            fetchInstancesAsSmallDict(dispatch, urlSmall),
+        ]).then(([instancesData, smallInstancesData]) => {
+            this.props.setInstances(
+                instancesData.instances,
+                params,
+                instancesData.count,
+                instancesData.pages,
+            );
             this.props.setInstancesSmallDict(smallInstancesData);
             dispatch(this.props.setInstancesFetching(false));
         });
@@ -227,17 +283,17 @@ class Instances extends Component {
             redirectTo,
         } = this.props;
 
-        const {
-            tab,
-            tableColumns,
-            visibleColumns,
-        } = this.state;
-        const filesList = instancesSmall ? getInstancesFilesList(instancesSmall) : null;
+        const { tab, tableColumns, visibleColumns } = this.state;
+        const filesList = instancesSmall
+            ? getInstancesFilesList(instancesSmall)
+            : null;
 
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={`${formatMessage(MESSAGES.title)}: ${currentForm ? currentForm.name : ''}`}
+                    title={`${formatMessage(MESSAGES.title)}: ${
+                        currentForm ? currentForm.name : ''
+                    }`}
                     displayBackButton
                     goBack={() => {
                         if (prevPathname) {
@@ -255,63 +311,105 @@ class Instances extends Component {
                                     root: classes.tabs,
                                     indicator: classes.indicator,
                                 }}
-                                onChange={(event, newtab) => this.handleChangeTab(newtab)}
+                                onChange={(event, newtab) =>
+                                    this.handleChangeTab(newtab)
+                                }
                             >
-                                <Tab value="list" label={formatMessage(MESSAGES.list)} />
-                                <Tab value="map" label={formatMessage(MESSAGES.map)} />
-                                <Tab value="files" label={formatMessage(MESSAGES.files)} />
+                                <Tab
+                                    value="list"
+                                    label={formatMessage(MESSAGES.list)}
+                                />
+                                <Tab
+                                    value="map"
+                                    label={formatMessage(MESSAGES.map)}
+                                />
+                                <Tab
+                                    value="files"
+                                    label={formatMessage(MESSAGES.files)}
+                                />
                             </Tabs>
                         </Grid>
-                        <Grid xs={2} item container alignItems="center" justify="flex-end" className={classes.selectColmunsContainer}>
-                            <ColumnsSelectDrawerComponent options={visibleColumns} setOptions={cols => this.changeVisibleColumns(cols)} />
+                        <Grid
+                            xs={2}
+                            item
+                            container
+                            alignItems="center"
+                            justify="flex-end"
+                            className={classes.selectColmunsContainer}
+                        >
+                            <ColumnsSelectDrawerComponent
+                                options={visibleColumns}
+                                setOptions={cols =>
+                                    this.changeVisibleColumns(cols)
+                                }
+                            />
                         </Grid>
                     </Grid>
                 </TopBar>
 
-                {
-                    (fetching || !instancesSmall)
-                    && <LoadingSpinner />
-                }
+                {(fetching || !instancesSmall) && <LoadingSpinner />}
                 <Box className={classes.containerFullHeightPadded}>
                     <InstancesFiltersComponent
                         baseUrl={baseUrl}
                         params={params}
                         onSearch={() => this.fetchInstances()}
                     />
-                    {
-                        tab === 'list'
-                        && tableColumns.length > 0
-                        && (
-                            <div className={classes.reactTable}>
-                                <CustomTableComponent
-                                    isSortable
-                                    pageSize={20}
-                                    showPagination
-                                    columns={tableColumns}
-                                    defaultSorted={[{ id: defaultOrder, desc: false }]}
-                                    params={params}
-                                    defaultPath={baseUrl}
-                                    dataKey="instances"
-                                    multiSort={false}
-                                    fetchDatas={false}
-                                    canSelect={false}
-                                    reduxPage={reduxPage}
-                                />
-                            </div>
-                        )
-                    }
+                    {tab === 'list' && tableColumns.length > 0 && (
+                        <div className={classes.reactTable}>
+                            <CustomTableComponent
+                                isSortable
+                                pageSize={20}
+                                showPagination
+                                columns={tableColumns}
+                                defaultSorted={[
+                                    { id: defaultOrder, desc: false },
+                                ]}
+                                params={params}
+                                defaultPath={baseUrl}
+                                dataKey="instances"
+                                multiSort={false}
+                                fetchDatas={false}
+                                canSelect={false}
+                                reduxPage={reduxPage}
+                            />
+                        </div>
+                    )}
                     {!fetching && tab === 'map' && (
                         <div className={classes.containerMarginNeg}>
                             <InstancesMap instances={instancesSmall} />
                         </div>
                     )}
-                    {tab === 'files' && <InstancesFilesList files={getInstancesFilesList(instancesSmall)} />}
+                    {tab === 'files' && (
+                        <InstancesFilesList
+                            files={getInstancesFilesList(instancesSmall)}
+                        />
+                    )}
                     {tab === 'list' && (
-                        <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-                            <Grid xs={12} item className={classes.textAlignRight}>
+                        <Grid
+                            container
+                            spacing={0}
+                            alignItems="center"
+                            className={classes.marginTop}
+                        >
+                            <Grid
+                                xs={12}
+                                item
+                                className={classes.textAlignRight}
+                            >
                                 <div className={classes.paddingBottomBig}>
-                                    <ExportInstancesDialogComponent getFilters={() => this.getFilters()} />
-                                    <DownloadButtonsComponent csvUrl={this.getEndpointUrl(true, 'csv')} xlsxUrl={this.getEndpointUrl(true, 'xlsx')} />
+                                    <ExportInstancesDialogComponent
+                                        getFilters={() => this.getFilters()}
+                                    />
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(
+                                            true,
+                                            'csv',
+                                        )}
+                                        xlsxUrl={this.getEndpointUrl(
+                                            true,
+                                            'xlsx',
+                                        )}
+                                    />
                                 </div>
                             </Grid>
                         </Grid>
@@ -365,12 +463,16 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     setCurrentForm: form => dispatch(setCurrentForm(form)),
     resetInstances: () => dispatch(resetInstances()),
-    setInstances: (instances, params, count, pages) => dispatch(setInstances(instances, true, params, count, pages)),
-    setInstancesSmallDict: instances => dispatch(setInstancesSmallDict(instances)),
-    setInstancesFetching: isFetching => dispatch(setInstancesFetching(isFetching)),
+    setInstances: (instances, params, count, pages) =>
+        dispatch(setInstances(instances, true, params, count, pages)),
+    setInstancesSmallDict: instances =>
+        dispatch(setInstancesSmallDict(instances)),
+    setInstancesFetching: isFetching =>
+        dispatch(setInstancesFetching(isFetching)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setDevicesList: devices => dispatch(setDevicesList(devices)),
-    setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
+    setDevicesOwnershipList: devicesOwnershipsList =>
+        dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
     ...bindActionCreators(
         {
@@ -382,4 +484,6 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(Instances)));
+export default withStyles(styles)(
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Instances)),
+);

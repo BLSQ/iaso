@@ -48,56 +48,48 @@ function TileSwitchComponent(props) {
     const {
         currentTile,
         classes,
-        intl: {
-            formatMessage,
-        },
+        intl: { formatMessage },
     } = props;
     return (
         <Fragment>
-            <Box
-                px={2}
-                className={classes.innerDrawerToolbar}
-                component="div"
-            >
+            <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     {formatMessage(MESSAGES.layersTitle)}
                 </Typography>
             </Box>
-            <Box
-                py={2}
-                component="div"
-            >
+            <Box py={2} component="div">
                 <List className={classes.list}>
-                    {
-                        Object.keys(tiles).map((key) => {
-                            const tile = tiles[key];
-                            const isCurrentTile = currentTile.url === tile.url;
-                            return (
-                                <ListItem
-                                    selected={isCurrentTile}
-                                    className={classes.listItem}
-                                    key={key}
-                                    button
-                                    onClick={() => props.setCurrentTile(tile)}
-                                >
-                                    {
-                                        isCurrentTile
-                                        && <RadioButtonChecked color="primary" className={classes.icon} />
-                                    }
-                                    {
-                                        !isCurrentTile
-                                        && <RadioButtonUnchecked className={classes.icon} />
-                                    }
-                                    <ListItemText
-                                        primary={formatMessage(MESSAGES[key])}
-                                        classes={{
-                                            primary: classes.item,
-                                        }}
+                    {Object.keys(tiles).map(key => {
+                        const tile = tiles[key];
+                        const isCurrentTile = currentTile.url === tile.url;
+                        return (
+                            <ListItem
+                                selected={isCurrentTile}
+                                className={classes.listItem}
+                                key={key}
+                                button
+                                onClick={() => props.setCurrentTile(tile)}
+                            >
+                                {isCurrentTile && (
+                                    <RadioButtonChecked
+                                        color="primary"
+                                        className={classes.icon}
                                     />
-                                </ListItem>
-                            );
-                        })
-                    }
+                                )}
+                                {!isCurrentTile && (
+                                    <RadioButtonUnchecked
+                                        className={classes.icon}
+                                    />
+                                )}
+                                <ListItemText
+                                    primary={formatMessage(MESSAGES[key])}
+                                    classes={{
+                                        primary: classes.item,
+                                    }}
+                                />
+                            </ListItem>
+                        );
+                    })}
                 </List>
             </Box>
         </Fragment>
@@ -117,11 +109,15 @@ const MapStateToProps = (state, props) => ({
 
 const MapDispatchToProps = (dispatch, props) => ({
     dispatch,
-    setCurrentTile: currentTile => (
+    setCurrentTile: currentTile =>
         props.setCurrentTile
-            ? props.setCurrentTile(currentTile) : dispatch(setCurrentTile(currentTile))),
+            ? props.setCurrentTile(currentTile)
+            : dispatch(setCurrentTile(currentTile)),
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(TileSwitchComponent)),
+    connect(
+        MapStateToProps,
+        MapDispatchToProps,
+    )(injectIntl(TileSwitchComponent)),
 );

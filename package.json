@@ -5,8 +5,7 @@
   "author": "Bluesquare",
   "license": "Apache-2.0",
   "scripts": {
-    "lint": "eslint --quiet hat/assets/js/",
-    "fix-lint": "eslint --quiet --fix hat/assets/js/ --config hat/assets/js/.eslintrc.json",
+    "fix-lint": "prettier-eslint \"./hat/assets/js/**/*.js\" --lint-different  --write",
     "mocha": "mocha --require ./hat/assets/js/test/mocha.setup.js './hat/assets/js/**/*.spec.js'",
     "mocha-watch": "mocha --require ./hat/assets/js/test/mocha.setup.js './hat/assets/js/**/*.spec.js' --watch",
     "test": "npm run lint && npm run mocha",

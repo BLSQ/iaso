@@ -18,25 +18,26 @@ const styles = theme => ({
     },
 });
 
-
-const LogoSvg = (props) => {
+const LogoSvg = props => {
     const finalProps = {
         ...props,
         viewBox: '0 0 485 189',
     };
     delete finalProps.classes;
-    const {
-        classes,
-    } = props;
+    const { classes } = props;
     return (
-        <SvgIcon
-            {...finalProps}
-        >
+        <SvgIcon {...finalProps}>
             <g transform="matrix(1,0,0,1,-2590,-1245)">
                 <g transform="matrix(1.16782,0,0,1.26061,3359.56,1421.94)">
                     <g transform="matrix(1,0,0,0.974359,-16.6837,21.6257)">
                         <g transform="matrix(0.734443,0,0,0.698287,-890.4,-332.602)">
-                            <text x="578px" y="391.292px" className={classes.text}>Iaso</text>
+                            <text
+                                x="578px"
+                                y="391.292px"
+                                className={classes.text}
+                            >
+                                Iaso
+                            </text>
                         </g>
                         <g transform="matrix(1,0,0,1,-87.2457,61.2064)">
                             <g transform="matrix(0.8563,0,0,0.814145,-2867.79,-420.77)">

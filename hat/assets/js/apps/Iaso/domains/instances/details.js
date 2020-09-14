@@ -38,7 +38,7 @@ import MESSAGES from './messages';
 import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
-const styles = (theme) => ({
+const styles = theme => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
@@ -66,7 +66,12 @@ const actions = (currentInstance, reAssignInstance) => [
     },
     {
         id: 'instanceReAssignAction',
-        icon: <ReAssignInstanceDialogComponent currentInstance={currentInstance} onReAssignInstance={reAssignInstance} />,
+        icon: (
+            <ReAssignInstanceDialogComponent
+                currentInstance={currentInstance}
+                onReAssignInstance={reAssignInstance}
+            />
+        ),
         disabled: currentInstance && currentInstance.deleted,
     },
     {
@@ -92,10 +97,16 @@ class InstanceDetails extends Component {
 
     onActionSelected(action) {
         if (action.id === 'instanceEditAction' && this.props.currentInstance) {
-            this.props.fetchEditUrl(this.props.currentInstance, window.location);
+            this.props.fetchEditUrl(
+                this.props.currentInstance,
+                window.location,
+            );
         }
 
-        if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
+        if (
+            action.id === 'instanceDeleteAction' &&
+            this.props.currentInstance
+        ) {
             this.props.softDelete(this.props.currentInstance);
         }
     }
@@ -115,7 +126,16 @@ class InstanceDetails extends Component {
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={currentInstance ? `${currentInstance.form_name}: ${currentInstance.file_name.replace('.xml', '')}` : ''}
+                    title={
+                        currentInstance
+                            ? `${
+                                  currentInstance.form_name
+                              }: ${currentInstance.file_name.replace(
+                                  '.xml',
+                                  '',
+                              )}`
+                            : ''
+                    }
                     displayBackButton
                     goBack={() => {
                         if (prevPathname || !currentInstance) {
@@ -130,29 +150,64 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions actions={actions(currentInstance, reAssignInstance)} onActionSelected={(action) => this.onActionSelected(action)} />
+                        <SpeedDialInstanceActions
+                            actions={actions(currentInstance, reAssignInstance)}
+                            onActionSelected={action =>
+                                this.onActionSelected(action)
+                            }
+                        />
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
-                                    <Alert severity="warning" className={classes.alert}>
-                                        {formatMessage(MESSAGES.warningSoftDeleted)}
+                                    <Alert
+                                        severity="warning"
+                                        className={classes.alert}
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeleted,
+                                        )}
                                         <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedExport,
+                                        )}
                                         <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedDerived,
+                                        )}
                                         <br />
                                     </Alert>
                                 )}
-                                <WidgetPaper title={formatMessage(MESSAGES.infos)} padded>
-                                    <InstanceDetailsInfos currentInstance={currentInstance} />
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.infos)}
+                                    padded
+                                >
+                                    <InstanceDetailsInfos
+                                        currentInstance={currentInstance}
+                                    />
                                 </WidgetPaper>
-                                <WidgetPaper title={formatMessage(MESSAGES.location)}>
-                                    <InstanceDetailsLocation currentInstance={currentInstance} />
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.location)}
+                                >
+                                    <InstanceDetailsLocation
+                                        currentInstance={currentInstance}
+                                    />
                                 </WidgetPaper>
-                                <InstanceDetailsExportRequests currentInstance={currentInstance} classes={classes} />
+                                <InstanceDetailsExportRequests
+                                    currentInstance={currentInstance}
+                                    classes={classes}
+                                />
                                 {currentInstance.files.length > 0 && (
-                                    <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                        <InstancesFilesList fetchDetails={false} instanceDetail={currentInstance} files={getInstancesFilesList([currentInstance])} />
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.files)}
+                                        padded
+                                    >
+                                        <InstancesFilesList
+                                            fetchDetails={false}
+                                            instanceDetail={currentInstance}
+                                            files={getInstancesFilesList([
+                                                currentInstance,
+                                            ])}
+                                        />
                                     </WidgetPaper>
                                 )}
                             </Grid>
@@ -162,13 +217,19 @@ class InstanceDetails extends Component {
                                     title={formatMessage(MESSAGES.form)}
                                     IconButton={IconButtonComponent}
                                     iconButtonProps={{
-                                        onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                        onClick: () =>
+                                            window.open(
+                                                currentInstance.file_url,
+                                                '_blank',
+                                            ),
                                         icon: 'xml',
                                         color: 'secondary',
                                         tooltipMessage: MESSAGES.downloadXml,
                                     }}
                                 >
-                                    <InstanceFileContent instance={currentInstance} />
+                                    <InstanceFileContent
+                                        instance={currentInstance}
+                                    />
                                 </WidgetPaper>
                             </Grid>
                         </Grid>
@@ -200,13 +261,13 @@ InstanceDetails.propTypes = {
     reAssignInstance: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = (state) => ({
+const MapStateToProps = state => ({
     fetching: state.instances.fetching,
     currentInstance: state.instances.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 
-const MapDispatchToProps = (dispatch) => ({
+const MapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
@@ -220,4 +281,6 @@ const MapDispatchToProps = (dispatch) => ({
     ),
 });
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)));
+export default withStyles(styles)(
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)),
+);

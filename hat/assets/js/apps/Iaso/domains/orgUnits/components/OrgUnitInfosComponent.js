@@ -10,16 +10,13 @@ import InputComponent from '../../../components/forms/InputComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
-
 import MESSAGES from '../../forms/messages';
 
 const OrgUnitInfosComponent = ({
     orgUnit,
     onChangeInfo,
     orgUnitTypes,
-    intl: {
-        formatMessage,
-    },
+    intl: { formatMessage },
     baseUrl,
     params,
     groups,
@@ -41,27 +38,29 @@ const OrgUnitInfosComponent = ({
                 value={orgUnit.org_unit_type_id.value}
                 errors={orgUnit.org_unit_type_id.errors}
                 type="select"
-                options={
-                    orgUnitTypes.map(t => ({
-                        label: t.name,
-                        value: t.id,
-                    }))
-                }
+                options={orgUnitTypes.map(t => ({
+                    label: t.name,
+                    value: t.id,
+                }))}
                 label={MESSAGES.org_unit_type_id}
             />
             <InputComponent
                 keyValue="groups"
-                onChange={(name, value) => onChangeInfo(name, commaSeparatedIdsToArray(value))}
+                onChange={(name, value) =>
+                    onChangeInfo(name, commaSeparatedIdsToArray(value))
+                }
                 multi
-                value={orgUnit.groups.value.length > 0 ? orgUnit.groups.value : null}
+                value={
+                    orgUnit.groups.value.length > 0
+                        ? orgUnit.groups.value
+                        : null
+                }
                 errors={orgUnit.groups.errors}
                 type="select"
-                options={
-                    groups.map(g => ({
-                        label: g.name,
-                        value: g.id,
-                    }))
-                }
+                options={groups.map(g => ({
+                    label: g.name,
+                    value: g.id,
+                }))}
                 label={MESSAGES.groups}
             />
             <InputComponent
@@ -72,22 +71,20 @@ const OrgUnitInfosComponent = ({
                 value={orgUnit.validation_status.value}
                 type="select"
                 label={MESSAGES.status}
-                options={
-                    [
-                        {
-                            label: formatMessage(MESSAGES.new),
-                            value: 'NEW',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.validated),
-                            value: 'VALID',
-                        },
-                        {
-                            label: formatMessage(MESSAGES.rejected),
-                            value: 'REJECTED',
-                        },
-                    ]
-                }
+                options={[
+                    {
+                        label: formatMessage(MESSAGES.new),
+                        value: 'NEW',
+                    },
+                    {
+                        label: formatMessage(MESSAGES.validated),
+                        value: 'VALID',
+                    },
+                    {
+                        label: formatMessage(MESSAGES.rejected),
+                        value: 'REJECTED',
+                    },
+                ]}
             />
             <InputComponent
                 keyValue="aliases"
@@ -98,7 +95,7 @@ const OrgUnitInfosComponent = ({
         </Grid>
         <Grid item xs={orgUnit.id ? 4 : 6}>
             <OrgUnitsLevelsFiltersComponent
-                onLatestIdChanged={(latestId) => {
+                onLatestIdChanged={latestId => {
                     if (latestId !== orgUnit.parent_id.value) {
                         onChangeInfo('parent_id', latestId);
                     }
@@ -110,34 +107,35 @@ const OrgUnitInfosComponent = ({
                 source={orgUnit.source_id}
             />
         </Grid>
-        {
-            orgUnit.id
-                    && (
-                        <Grid item xs={4}>
-                            <InputComponent
-                                keyValue="source"
-                                value={orgUnit.source}
-                                disabled
-                                label={MESSAGES.source}
-                            />
-                            <InputComponent
-                                keyValue="source_ref"
-                                value={orgUnit.source_ref}
-                                disabled
-                            />
-                            <InputComponent
-                                keyValue="created_at"
-                                value={moment.unix(orgUnit.created_at).format('DD/MM/YYYY HH:mm')}
-                                disabled
-                            />
-                            <InputComponent
-                                keyValue="updated_at"
-                                value={moment.unix(orgUnit.updated_at).format('DD/MM/YYYY HH:mm')}
-                                disabled
-                            />
-                        </Grid>
-                    )
-        }
+        {orgUnit.id && (
+            <Grid item xs={4}>
+                <InputComponent
+                    keyValue="source"
+                    value={orgUnit.source}
+                    disabled
+                    label={MESSAGES.source}
+                />
+                <InputComponent
+                    keyValue="source_ref"
+                    value={orgUnit.source_ref}
+                    disabled
+                />
+                <InputComponent
+                    keyValue="created_at"
+                    value={moment
+                        .unix(orgUnit.created_at)
+                        .format('DD/MM/YYYY HH:mm')}
+                    disabled
+                />
+                <InputComponent
+                    keyValue="updated_at"
+                    value={moment
+                        .unix(orgUnit.updated_at)
+                        .format('DD/MM/YYYY HH:mm')}
+                    disabled
+                />
+            </Grid>
+        )}
     </Grid>
 );
 
@@ -150,6 +148,5 @@ OrgUnitInfosComponent.propTypes = {
     groups: PropTypes.array.isRequired,
     onChangeInfo: PropTypes.func.isRequired,
 };
-
 
 export default injectIntl(OrgUnitInfosComponent);

@@ -1,20 +1,13 @@
-
 import React from 'react';
 import PropTypes from 'prop-types';
-import {
-    withStyles,
-    Grid,
-} from '@material-ui/core';
-
+import { withStyles, Grid } from '@material-ui/core';
 
 const styles = theme => ({
     label: {
         marginRight: theme.spacing(1),
     },
 });
-const OrgUnitsSmallInfosRow = ({
-    label, value, classes,
-}) => (
+const OrgUnitsSmallInfosRow = ({ label, value, classes }) => (
     <Grid container spacing={0}>
         <Grid
             xs={5}
@@ -23,10 +16,9 @@ const OrgUnitsSmallInfosRow = ({
             justify="flex-end"
             alignContent="flex-start"
         >
-            <span className={classes.label}>
-                {label}
-            :
-            </span>
+            <span className={classes.label}>{label}
+:
+</span>
         </Grid>
         <Grid
             xs={7}
@@ -45,6 +37,5 @@ OrgUnitsSmallInfosRow.propTypes = {
     value: PropTypes.string.isRequired,
     classes: PropTypes.object.isRequired,
 };
-
 
 export default withStyles(styles)(OrgUnitsSmallInfosRow);

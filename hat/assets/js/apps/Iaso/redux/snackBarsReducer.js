@@ -24,7 +24,10 @@ export const snackBarsInitialState = {
     notifications: [],
 };
 
-export const snackBarsReducer = (state = snackBarsInitialState, action = {}) => {
+export const snackBarsReducer = (
+    state = snackBarsInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case ENQUEUE_SNACKBAR:
             return {
@@ -41,8 +44,9 @@ export const snackBarsReducer = (state = snackBarsInitialState, action = {}) => 
             return {
                 ...state,
                 notifications: state.notifications.filter(
-                    notification => notification.options.persist
-                    && notification.id !== action.id,
+                    notification =>
+                        notification.options.persist &&
+                        notification.id !== action.id,
                 ),
             };
 

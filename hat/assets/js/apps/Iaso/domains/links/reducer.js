@@ -32,7 +32,11 @@ export const linksReducer = (state = linksInitialState, action = {}) => {
     switch (action.type) {
         case SET_LINKS: {
             const {
-                list, showPagination, params, count, pages,
+                list,
+                showPagination,
+                params,
+                count,
+                pages,
             } = action.payload;
             return {
                 ...state,
@@ -47,7 +51,11 @@ export const linksReducer = (state = linksInitialState, action = {}) => {
         }
         case SET_RUNS: {
             const {
-                list, showPagination, params, count, pages,
+                list,
+                showPagination,
+                params,
+                count,
+                pages,
             } = action.payload;
             return {
                 ...state,

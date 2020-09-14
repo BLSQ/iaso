@@ -16,16 +16,13 @@ const QuestionInfos = ({ question }) => {
             <br />
             <ObjectDumper object={question} />
             {question.bind && question.bind.calculate && (
-                <span>
-Calculate :
-                    {question.bind.calculate}
-                </span>
+                <span>Calculate :{question.bind.calculate}</span>
             )}
             {question.children && (
-            <>
-                {' Options :'}
-                {question.children.map(c => c.name).join(' , ')}
-            </>
+                <>
+                    {' Options :'}
+                    {question.children.map(c => c.name).join(' , ')}
+                </>
             )}
         </div>
     );

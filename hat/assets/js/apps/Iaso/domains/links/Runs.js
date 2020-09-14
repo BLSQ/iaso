@@ -4,9 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import {
-    withStyles, Box, Grid,
-} from '@material-ui/core';
+import { withStyles, Box, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -17,31 +15,21 @@ import {
     fetchSources,
 } from '../../utils/requests';
 
-import {
-    setRuns,
-    setIsFetching,
-    setAlgorithms,
-} from './actions';
+import { setRuns, setIsFetching, setAlgorithms } from './actions';
 
-import {
-    setSources,
-} from '../orgUnits/actions';
+import { setSources } from '../orgUnits/actions';
 
 import { runsTableColumns } from './config';
 
 import { createUrl } from '../../utils/fetchData';
 import getTableUrl from '../../utils/tableUtils';
 
-
 import TopBar from '../../components/nav/TopBarComponent';
 import CustomTableComponent from '../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import RunsFiltersComponent from './components/RunsFiltersComponent';
 import AddRunDialogComponent from './components/AddRunDialogComponent';
-import {
-    fetchUsersProfiles as fetchUsersProfilesAction,
-} from '../users/actions';
-
+import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import commonStyles from '../../styles/common';
 
@@ -75,10 +63,10 @@ class Runs extends Component {
         if (this.props.params.searchActive) {
             this.onSearch();
         }
-        fetchSources(dispatch)
-            .then(sources => this.props.setSources(sources));
-        fetchAlgorithms(dispatch)
-            .then(algoList => this.props.setAlgorithms(algoList));
+        fetchSources(dispatch).then(sources => this.props.setSources(sources));
+        fetchAlgorithms(dispatch).then(algoList =>
+            this.props.setAlgorithms(algoList),
+        );
     }
 
     componentDidUpdate() {
@@ -156,24 +144,15 @@ class Runs extends Component {
             classes,
             params,
             reduxPage,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             dispatch,
             fetching,
         } = this.props;
-        const {
-            tableUrl,
-            tableColumns,
-            isUpdated,
-        } = this.state;
+        const { tableUrl, tableColumns, isUpdated } = this.state;
 
         return (
             <Fragment>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
+                {fetching && <LoadingSpinner />}
                 <TopBar title={formatMessage(MESSAGES.runsTitle)} />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <RunsFiltersComponent
@@ -182,33 +161,44 @@ class Runs extends Component {
                         onSearch={() => this.onSearch()}
                         onRefresh={() => this.onRefresh()}
                     />
-                    {
-                        tableUrl && (
-                            <div className={classes.reactTable}>
-                                <CustomTableComponent
-                                    isSortable
-                                    pageSize={10}
-                                    showPagination
-                                    endPointUrl={tableUrl}
-                                    columns={tableColumns}
-                                    defaultSorted={[{ id: 'ended_at', desc: true }]}
-                                    params={params}
-                                    defaultPath={baseUrl}
-                                    dataKey="runs"
-                                    canSelect={false}
-                                    multiSort
-                                    onDataStartLoaded={() => this.onDataStartLoaded()}
-                                    onDataLoaded={(list, count, pages) => {
-                                        dispatch(this.props.setIsFetching(false));
-                                        this.props.setRuns(list, this.props.params, count, pages);
-                                    }}
-                                    reduxPage={reduxPage}
-                                    isUpdated={isUpdated}
-                                />
-                            </div>
-                        )
-                    }
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                    {tableUrl && (
+                        <div className={classes.reactTable}>
+                            <CustomTableComponent
+                                isSortable
+                                pageSize={10}
+                                showPagination
+                                endPointUrl={tableUrl}
+                                columns={tableColumns}
+                                defaultSorted={[{ id: 'ended_at', desc: true }]}
+                                params={params}
+                                defaultPath={baseUrl}
+                                dataKey="runs"
+                                canSelect={false}
+                                multiSort
+                                onDataStartLoaded={() =>
+                                    this.onDataStartLoaded()
+                                }
+                                onDataLoaded={(list, count, pages) => {
+                                    dispatch(this.props.setIsFetching(false));
+                                    this.props.setRuns(
+                                        list,
+                                        this.props.params,
+                                        count,
+                                        pages,
+                                    );
+                                }}
+                                reduxPage={reduxPage}
+                                isUpdated={isUpdated}
+                            />
+                        </div>
+                    )}
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    >
                         <AddRunDialogComponent
                             executeRun={runItem => this.executeRun(runItem)}
                         />
@@ -244,14 +234,19 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setRuns: (linksList, params, count, pages) => dispatch(setRuns(linksList, true, params, count, pages)),
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setRuns: (linksList, params, count, pages) =>
+        dispatch(setRuns(linksList, true, params, count, pages)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setSources: sources => dispatch(setSources(sources)),
-    ...bindActionCreators({
-        fetchUsersProfiles: fetchUsersProfilesAction,
-    }, dispatch),
+    ...bindActionCreators(
+        {
+            fetchUsersProfiles: fetchUsersProfilesAction,
+        },
+        dispatch,
+    ),
 });
 
 export default withStyles(styles)(

@@ -6,18 +6,12 @@ import PropTypes from 'prop-types';
 
 import SidebarMenu from '../../app/components/SidebarMenuComponent';
 
-import {
-    fetchCurrentUser as fetchCurrentUserAction,
-} from '../actions';
+import { fetchCurrentUser as fetchCurrentUserAction } from '../actions';
 import { redirectTo as redirectToAction } from '../../../routing/actions';
 
-import {
-    userHasPermission,
-    getFirstAllowedUrl,
-} from '../utils';
+import { userHasPermission, getFirstAllowedUrl } from '../utils';
 
 import PageError from '../../../components/errors/PageError';
-
 
 class ProtectedRoute extends Component {
     componentDidMount() {
@@ -25,14 +19,11 @@ class ProtectedRoute extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {
-            isRootUrl,
-            permission,
-            redirectTo,
-            currentUser,
-        } = this.props;
+        const { isRootUrl, permission, redirectTo, currentUser } = this.props;
         if (currentUser !== prevProps.currentUser) {
-            const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
+            const isAuthorized = permission
+                ? userHasPermission(permission, currentUser)
+                : true;
             if (!isAuthorized && isRootUrl) {
                 const newBaseUrl = getFirstAllowedUrl(permission, currentUser);
                 if (newBaseUrl) {
@@ -43,34 +34,22 @@ class ProtectedRoute extends Component {
     }
 
     render() {
-        const {
-            component,
-            currentUser,
-            permission,
-        } = this.props;
+        const { component, currentUser, permission } = this.props;
         const clonedProps = {
             ...this.props,
         };
         delete clonedProps.children;
-        const isAuthorized = permission ? userHasPermission(permission, currentUser) : true;
+        const isAuthorized = permission
+            ? userHasPermission(permission, currentUser)
+            : true;
         if (!currentUser) {
             return null;
         }
         return (
             <>
                 <SidebarMenu {...clonedProps} />
-                {
-                    isAuthorized
-                    && (
-                        component
-                    )
-                }
-                {
-                    !isAuthorized
-                    && (
-                        <PageError errorCode="401" />
-                    )
-                }
+                {isAuthorized && component}
+                {!isAuthorized && <PageError errorCode="401" />}
             </>
         );
     }
@@ -95,10 +74,13 @@ const MapStateToProps = state => ({
 });
 
 const MapDispatchToProps = dispatch => ({
-    ...bindActionCreators({
-        fetchCurrentUser: fetchCurrentUserAction,
-        redirectTo: redirectToAction,
-    }, dispatch),
+    ...bindActionCreators(
+        {
+            fetchCurrentUser: fetchCurrentUserAction,
+            redirectTo: redirectToAction,
+        },
+        dispatch,
+    ),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(ProtectedRoute);

@@ -9,14 +9,20 @@ import { PERIOD_TYPE_QUARTER } from '../../periods/constants';
 import { INSTANCE_STATUSES } from '../../instances/constants';
 import { groupCompletenessData } from '../utils';
 
-
 const styles = theme => commonStyles(theme);
 
 function CompletenessListComponent({
-    classes, completenessList, redirectTo, onGenerateDerivedInstances,
+    classes,
+    completenessList,
+    redirectTo,
+    onGenerateDerivedInstances,
 }) {
-    const [activePeriodType, setActivePeriodType] = useState(PERIOD_TYPE_QUARTER);
-    const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(INSTANCE_STATUSES);
+    const [activePeriodType, setActivePeriodType] = useState(
+        PERIOD_TYPE_QUARTER,
+    );
+    const [activeInstanceStatuses, setActiveInstanceStatuses] = useState(
+        INSTANCE_STATUSES,
+    );
 
     const groupedCompletenessData = useMemo(
         () => groupCompletenessData(completenessList, activePeriodType),
@@ -32,19 +38,17 @@ function CompletenessListComponent({
                 setActiveInstanceStatuses={setActiveInstanceStatuses}
             />
             <div className={classes.marginTop}>
-                {
-                    groupedCompletenessData.map(({ period, forms }) => (
-                        <CompletenessPeriodComponent
-                            key={period.periodString}
-                            period={period}
-                            forms={forms}
-                            activeInstanceStatuses={activeInstanceStatuses}
-                            activePeriodType={activePeriodType}
-                            redirectTo={redirectTo}
-                            onGenerateDerivedInstances={onGenerateDerivedInstances}
-                        />
-                    ))
-                }
+                {groupedCompletenessData.map(({ period, forms }) => (
+                    <CompletenessPeriodComponent
+                        key={period.periodString}
+                        period={period}
+                        forms={forms}
+                        activeInstanceStatuses={activeInstanceStatuses}
+                        activePeriodType={activePeriodType}
+                        redirectTo={redirectTo}
+                        onGenerateDerivedInstances={onGenerateDerivedInstances}
+                    />
+                ))}
             </div>
         </Box>
     );

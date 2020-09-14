@@ -6,7 +6,7 @@ import { LOAD, LOAD_SUCCESS } from '../redux/load';
 
 function createNockScope(urls) {
     const ns = nock('http://localhost');
-    urls.forEach((config) => {
+    urls.forEach(config => {
         ns.get(new RegExp(`^${config.url}`)).reply(200, config.mock);
     });
     return ns;
@@ -33,7 +33,7 @@ describe('fetchUrls', () => {
     let nockScope = null;
 
     let actions = null;
-    const dispatch = (action) => {
+    const dispatch = action => {
         actions[action.type] = action.payload || true;
     };
 
@@ -46,18 +46,20 @@ describe('fetchUrls', () => {
         nock.cleanAll();
     });
 
-    it('should fetch urls', () => fetchUrls(urls, params, oldParams, dispatch)
-        .then(() => {
+    it('should fetch urls', () =>
+        fetchUrls(urls, params, oldParams, dispatch).then(() => {
             assert(actions[LOAD], 'Load action has been called');
             assert(actions[LOAD_SUCCESS], 'Success action has been called');
             assert(nockScope.isDone(), 'The urls have been requested');
         }));
 
-
-    it('should abort when checking the result', () => fetchUrls(urls, params, oldParams, dispatch, () => false)
-        .then(() => {
+    it('should abort when checking the result', () =>
+        fetchUrls(urls, params, oldParams, dispatch, () => false).then(() => {
             assert(actions[LOAD], 'Load action has been called');
-            assert(!actions[LOAD_SUCCESS], 'Success action has been not called');
+            assert(
+                !actions[LOAD_SUCCESS],
+                'Success action has been not called',
+            );
             assert(nockScope.isDone(), 'The urls have been requested');
         }));
 });

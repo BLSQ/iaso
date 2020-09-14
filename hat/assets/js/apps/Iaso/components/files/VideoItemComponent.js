@@ -2,10 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import videojs from 'video.js';
 import moment from 'moment';
-import {
-    withStyles,
-    IconButton,
-} from '@material-ui/core';
+import { withStyles, IconButton } from '@material-ui/core';
 import PlayIcon from '@material-ui/icons/PlayCircleFilled';
 import PauseIcon from '@material-ui/icons/PauseCircleFilled';
 import theme from '../../utils/theme';
@@ -106,18 +103,15 @@ class VideoItemComponent extends React.Component {
     }
 
     render() {
-        const {
-            classes,
-            videoItem,
-        } = this.props;
-        const {
-            playerPaused,
-        } = this.state;
+        const { classes, videoItem } = this.props;
+        const { playerPaused } = this.state;
         return (
             <section className={classes.root}>
                 <div data-vjs-player>
                     <video
-                        ref={(node) => { this.videoNode = node; }}
+                        ref={node => {
+                            this.videoNode = node;
+                        }}
                         className="video-js vjs-default-skin"
                         controls
                         preload="auto"
@@ -127,25 +121,31 @@ class VideoItemComponent extends React.Component {
                 </div>
                 <IconButton
                     onClick={() => this.togglePlayback()}
-                    className={!playerPaused ? classes.pauseButton : classes.playButton}
+                    className={
+                        !playerPaused ? classes.pauseButton : classes.playButton
+                    }
                     color="secondary"
                 >
-                    {
-                        playerPaused && <PlayIcon className={classes.icon} />
-                    }
-                    {
-                        !playerPaused && <PauseIcon className={classes.icon} />
-                    }
-
+                    {playerPaused && <PlayIcon className={classes.icon} />}
+                    {!playerPaused && <PauseIcon className={classes.icon} />}
                 </IconButton>
-                <span className={!playerPaused ? classes.fileInfoHidden : classes.fileInfo}>
-                    {`${moment.unix(videoItem.createdAt).format('DD/MM/YYYY HH:mm')} - ${videoItem.name}.${videoItem.extension}`}
+                <span
+                    className={
+                        !playerPaused
+                            ? classes.fileInfoHidden
+                            : classes.fileInfo
+                    }
+                >
+                    {`${moment
+                        .unix(videoItem.createdAt)
+                        .format('DD/MM/YYYY HH:mm')} - ${videoItem.name}.${
+                        videoItem.extension
+                    }`}
                 </span>
             </section>
         );
     }
 }
-
 
 VideoItemComponent.propTypes = {
     videoItem: PropTypes.object.isRequired,

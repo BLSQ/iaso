@@ -7,7 +7,7 @@ import { isValidCoordinate } from '../../../utils/mapUtils';
 import MarkerComponent from './MarkerComponent';
 import CircleMarkerComponent from './CircleMarkerComponent';
 
-const MarkersListComponent = (props) => {
+const MarkersListComponent = props => {
     const {
         items,
         onMarkerClick,
@@ -18,35 +18,34 @@ const MarkersListComponent = (props) => {
         isCircle,
     } = props;
 
-    return items.map((i) => {
-        if (!i.latitude || !i.longitude || !isValidCoordinate(i.latitude, i.longitude)) return null;
+    return items.map(i => {
+        if (
+            !i.latitude ||
+            !i.longitude ||
+            !isValidCoordinate(i.latitude, i.longitude)
+        )
+            return null;
         return (
             <Fragment key={i.id}>
-                {
-                    !isCircle
-                    && (
-                        <MarkerComponent
-                            item={i}
-                            onClick={onMarkerClick}
-                            PopupComponent={PopupComponent}
-                            marker={customMarker}
-                            popupProps={popupProps}
-                            markerProps={markerProps}
-                        />
-                    )
-                }
-                {
-                    isCircle
-                    && (
-                        <CircleMarkerComponent
-                            item={i}
-                            onClick={onMarkerClick}
-                            PopupComponent={PopupComponent}
-                            popupProps={popupProps}
-                            markerProps={markerProps}
-                        />
-                    )
-                }
+                {!isCircle && (
+                    <MarkerComponent
+                        item={i}
+                        onClick={onMarkerClick}
+                        PopupComponent={PopupComponent}
+                        marker={customMarker}
+                        popupProps={popupProps}
+                        markerProps={markerProps}
+                    />
+                )}
+                {isCircle && (
+                    <CircleMarkerComponent
+                        item={i}
+                        onClick={onMarkerClick}
+                        PopupComponent={PopupComponent}
+                        popupProps={popupProps}
+                        markerProps={markerProps}
+                    />
+                )}
             </Fragment>
         );
     });

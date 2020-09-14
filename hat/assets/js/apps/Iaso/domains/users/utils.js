@@ -28,14 +28,13 @@ export const userHasOneOfPermissions = (permissions, user) => {
         return false;
     }
     let isAuthorised = false;
-    permissions.forEach((p) => {
+    permissions.forEach(p => {
         if (userHasPermission(p, user)) {
             isAuthorised = true;
         }
     });
     return isAuthorised;
 };
-
 
 /**
  * get the first permission of an user, ignoring root url permission
@@ -46,7 +45,7 @@ export const userHasOneOfPermissions = (permissions, user) => {
  */
 export const getFirstAllowedUrl = (rootPermission, user) => {
     let newRoot;
-    user.permissions.forEach((p) => {
+    user.permissions.forEach(p => {
         if (!newRoot && p !== rootPermission) {
             newRoot = p;
         }

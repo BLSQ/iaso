@@ -19,12 +19,13 @@ export const orgUnitsLevelsInitialState = {
     list: [],
 };
 
-export const orgUnitsLevelsReducer = (state = orgUnitsLevelsInitialState, action = {}) => {
+export const orgUnitsLevelsReducer = (
+    state = orgUnitsLevelsInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case SET_ORG_UNITS_LEVEL: {
-            const {
-                orgUnitlist, level, listIndex,
-            } = action.payload;
+            const { orgUnitlist, level, listIndex } = action.payload;
             let list;
             if (listIndex || listIndex === 0) {
                 list = [...state.list];

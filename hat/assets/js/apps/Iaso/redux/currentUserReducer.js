@@ -24,26 +24,30 @@ const setIsConnected = isConnected => ({
     payload: isConnected,
 });
 
-const fetchCurrentUserInfos = (dispatch) => {
-    req
-        .get('/api/permissions/')
-        .then((result) => {
+const fetchCurrentUserInfos = dispatch => {
+    req.get('/api/permissions/')
+        .then(result => {
             dispatch(setUserPermissions(result.body));
             dispatch(setIsConnected(true));
-            req
-                .get('/api/currentuser/')
-                .then((userResult) => {
+            req.get('/api/currentuser/')
+                .then(userResult => {
                     dispatch(setCurrentUser(userResult.body));
                 })
-                .catch(err => (console.error(`Error while fetching current user informations ${err}`)));
+                .catch(err =>
+                    console.error(
+                        `Error while fetching current user informations ${err}`,
+                    ),
+                );
         })
-        .catch((err) => {
+        .catch(err => {
             dispatch(setIsConnected(false));
-            console.error(`Error while fetching current user permissions ${err}`);
+            console.error(
+                `Error while fetching current user permissions ${err}`,
+            );
         });
-    return ({
+    return {
         type: FETCH_ACTION,
-    });
+    };
 };
 
 export const currentUserActions = {
@@ -57,7 +61,10 @@ export const currentUserInitialState = {
     isConnected: undefined,
 };
 
-export const currentUserReducer = (state = currentUserInitialState, action = {}) => {
+export const currentUserReducer = (
+    state = currentUserInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case SET_CURRENT_USER: {
             const user = action.payload;

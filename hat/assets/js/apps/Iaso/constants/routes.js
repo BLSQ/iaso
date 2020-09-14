@@ -30,9 +30,9 @@ const paginationPathParams = [
     },
 ];
 
-export const getPath = (path) => {
+export const getPath = path => {
     let url = `/${path.baseUrl}`;
-    path.params.forEach((p) => {
+    path.params.forEach(p => {
         if (p.isRequired) {
             url += `/${p.key}/:${p.key}`;
         } else {

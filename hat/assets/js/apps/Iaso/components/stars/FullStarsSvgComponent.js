@@ -15,17 +15,13 @@ const styles = () => ({
 });
 
 function FullStarsSvg(props) {
-    const {
-        classes,
-        score,
-        starsCount,
-    } = props;
+    const { classes, score, starsCount } = props;
     const stars = [];
 
     for (let i = 0; i < score; i += 1) {
         stars.push(<StarFull className={classes.star} key={`${i}-pos`} />);
     }
-    for (let i = 0; i < (starsCount - score); i += 1) {
+    for (let i = 0; i < starsCount - score; i += 1) {
         stars.push(<StarOutlined className={classes.star} key={`${i}-neg`} />);
     }
     return stars;
@@ -42,4 +38,3 @@ FullStarsSvg.propTypes = {
 };
 
 export default withStyles(styles)(FullStarsSvg);
-

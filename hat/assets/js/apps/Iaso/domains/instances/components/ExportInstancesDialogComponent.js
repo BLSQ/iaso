@@ -12,12 +12,17 @@ import { createExportRequest as createExportRequestAction } from '../actions';
 import MESSAGES from '../messages';
 
 const ExportInstancesDialogComponent = ({
-    isInstancesFilterUpdated, getFilters, createExportRequest, batchExport,
+    isInstancesFilterUpdated,
+    getFilters,
+    createExportRequest,
+    batchExport,
 }) => {
     const [forceExport, setForceExport] = React.useState(false);
-    const onConfirm = (closeDialog) => {
+    const onConfirm = closeDialog => {
         const filterParams = getFilters();
-        createExportRequest({ forceExport, ...filterParams }).then(() => closeDialog());
+        createExportRequest({ forceExport, ...filterParams }).then(() =>
+            closeDialog(),
+        );
     };
     const onClosed = () => {
         setForceExport(false);
@@ -25,7 +30,13 @@ const ExportInstancesDialogComponent = ({
 
     return (
         <ConfirmCancelDialogComponent
-            renderTrigger={({ openDialog }) => <ExportButtonComponent onClick={openDialog} isDisabled={isInstancesFilterUpdated} batchExport={batchExport} />}
+            renderTrigger={({ openDialog }) => (
+                <ExportButtonComponent
+                    onClick={openDialog}
+                    isDisabled={isInstancesFilterUpdated}
+                    batchExport={batchExport}
+                />
+            )}
             titleMessage={MESSAGES.export}
             onConfirm={onConfirm}
             confirmMessage={MESSAGES.export}
@@ -34,7 +45,14 @@ const ExportInstancesDialogComponent = ({
             maxWidth="xs"
         >
             <p />
-            <InputComponent clearable keyValue="algoId" onChange={(key, value) => setForceExport(!forceExport)} value={forceExport} type="checkbox" label={MESSAGES.forceExport} />
+            <InputComponent
+                clearable
+                keyValue="algoId"
+                onChange={(key, value) => setForceExport(!forceExport)}
+                value={forceExport}
+                type="checkbox"
+                label={MESSAGES.forceExport}
+            />
         </ConfirmCancelDialogComponent>
     );
 };
@@ -64,4 +82,7 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(ExportInstancesDialogComponent));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(injectIntl(ExportInstancesDialogComponent));

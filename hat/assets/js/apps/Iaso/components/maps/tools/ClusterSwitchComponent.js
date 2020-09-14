@@ -2,18 +2,11 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 
-import {
-    withStyles,
-    Grid,
-    Box,
-    Switch,
-    Typography,
-} from '@material-ui/core';
+import { withStyles, Grid, Box, Switch, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import MESSAGES from '../messages';
 import { toggleCluster } from '../../../redux/mapReducer';
-
 
 const styles = theme => ({
     title: {
@@ -24,13 +17,11 @@ const styles = theme => ({
     },
 });
 
-const ClusterSwitchComponent = (props) => {
+const ClusterSwitchComponent = props => {
     const {
         isClusterActive,
         classes,
-        intl: {
-            formatMessage,
-        },
+        intl: { formatMessage },
     } = props;
     return (
         <Box
@@ -39,9 +30,19 @@ const ClusterSwitchComponent = (props) => {
             className={classes.innerDrawerContent}
             component="div"
         >
-            <Grid component="label" container alignItems="center" justify="flex-start" spacing={1}>
+            <Grid
+                component="label"
+                container
+                alignItems="center"
+                justify="flex-start"
+                spacing={1}
+            >
                 <Grid item>
-                    <Typography variant="inherit" component="span" color={isClusterActive ? 'primary' : 'inherit'}>
+                    <Typography
+                        variant="inherit"
+                        component="span"
+                        color={isClusterActive ? 'primary' : 'inherit'}
+                    >
                         {formatMessage(MESSAGES.title)}
                     </Typography>
                 </Grid>
@@ -74,5 +75,8 @@ const MapDispatchToProps = dispatch => ({
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(ClusterSwitchComponent)),
+    connect(
+        MapStateToProps,
+        MapDispatchToProps,
+    )(injectIntl(ClusterSwitchComponent)),
 );

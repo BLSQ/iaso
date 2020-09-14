@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withStyles } from '@material-ui/core';
 import InputLabel from '@material-ui/core/InputLabel';
 
-
 const styles = theme => ({
     inputLabel: {
         color: 'rgba(0, 0, 0, 0.4)',
@@ -28,7 +27,13 @@ const styles = theme => ({
 });
 
 function InputLabelComponent({
-    classes, htmlFor, label, required, isFocused, shrink, error,
+    classes,
+    htmlFor,
+    label,
+    required,
+    isFocused,
+    shrink,
+    error,
 }) {
     return (
         <InputLabel
@@ -41,8 +46,8 @@ function InputLabelComponent({
             shrink={shrink}
             error={error}
         >
-            { label }
-            { required && <sup> *</sup> }
+            {label}
+            {required && <sup> *</sup>}
         </InputLabel>
     );
 }

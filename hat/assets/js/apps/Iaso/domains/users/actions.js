@@ -1,5 +1,9 @@
 import {
-    fetchAction, saveAction, createAction, deleteAction, retrieveAction,
+    fetchAction,
+    saveAction,
+    createAction,
+    deleteAction,
+    retrieveAction,
 } from '../../redux/actions/formsActions';
 
 export const SET_USERS_PROFILES = 'SET_USERS_PROFILES';
@@ -32,59 +36,64 @@ export const setPermissions = permissions => ({
 });
 
 const apiKey = 'profiles';
-export const fetchCurrentUser = () => dispatch => retrieveAction(
-    dispatch,
-    `${apiKey}`,
-    'me',
-    setCurrentUser,
-    'fetchCurrentUser',
-);
+export const fetchCurrentUser = () => dispatch =>
+    retrieveAction(
+        dispatch,
+        `${apiKey}`,
+        'me',
+        setCurrentUser,
+        'fetchCurrentUser',
+    );
 
-export const fetchPermissions = () => dispatch => fetchAction(
-    dispatch,
-    'permissions',
-    setPermissions,
-    'fetchPermissions',
-    'permissions',
-);
+export const fetchPermissions = () => dispatch =>
+    fetchAction(
+        dispatch,
+        'permissions',
+        setPermissions,
+        'fetchPermissions',
+        'permissions',
+    );
 
-export const fetchUsersProfiles = params => dispatch => fetchAction(
-    dispatch,
-    apiKey,
-    setUsersProfiles,
-    'fetchProfilesError',
-    apiKey,
-    params,
-    setIsFetching,
-);
+export const fetchUsersProfiles = params => dispatch =>
+    fetchAction(
+        dispatch,
+        apiKey,
+        setUsersProfiles,
+        'fetchProfilesError',
+        apiKey,
+        params,
+        setIsFetching,
+    );
 
-export const saveUserProFile = profile => dispatch => saveAction(
-    dispatch,
-    profile,
-    apiKey,
-    'saveUserSuccessful',
-    'saveUserError',
-    setIsFetching,
-);
+export const saveUserProFile = profile => dispatch =>
+    saveAction(
+        dispatch,
+        profile,
+        apiKey,
+        'saveUserSuccessful',
+        'saveUserError',
+        setIsFetching,
+    );
 
-export const createUserProFile = profile => dispatch => createAction(
-    dispatch,
-    profile,
-    apiKey,
-    'saveUserSuccessful',
-    'saveUserError',
-    setIsFetching,
-);
+export const createUserProFile = profile => dispatch =>
+    createAction(
+        dispatch,
+        profile,
+        apiKey,
+        'saveUserSuccessful',
+        'saveUserError',
+        setIsFetching,
+    );
 
-
-export const deleteUser = (profile, params) => dispatch => deleteAction(
-    dispatch,
-    profile,
-    apiKey,
-    setUsersProfiles,
-    'deleteUserSuccessful',
-    'deleteUserError',
-    apiKey,
-    params,
-    setIsFetching,
-);
+export const deleteUser = (profile, params) => dispatch =>
+    deleteAction(
+        dispatch,
+        profile,
+        apiKey,
+        setUsersProfiles,
+        'deleteUserSuccessful',
+        'deleteUserError',
+        apiKey,
+        params,
+        setIsFetching,
+    );

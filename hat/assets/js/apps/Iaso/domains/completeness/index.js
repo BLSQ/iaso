@@ -23,9 +23,7 @@ class Completeness extends Component {
     render() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             completeness,
             redirectTo,
             onGenerateDerivedInstances,
@@ -33,10 +31,7 @@ class Completeness extends Component {
 
         return (
             <>
-                {
-                    completeness.fetching
-                    && <LoadingSpinner />
-                }
+                {completeness.fetching && <LoadingSpinner />}
                 <TopBar
                     title={formatMessage(MESSAGES.completeness)}
                     displayBackButton={false}
@@ -65,14 +60,18 @@ const MapStateToProps = state => ({
     completeness: state.completeness,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             fetchCompleteness: fetchCompletenessAction,
             redirectTo: redirectToAction,
             onGenerateDerivedInstances: generateDerivedInstancesAction,
-        }, dispatch),
-    }
-);
+        },
+        dispatch,
+    ),
+});
 
-export default connect(MapStateToProps, mapDispatchToProps)(injectIntl(Completeness));
+export default connect(
+    MapStateToProps,
+    mapDispatchToProps,
+)(injectIntl(Completeness));

@@ -49,9 +49,9 @@ describe('substituteVars', () => {
     it('should substitute values in an object', () => {
         const templateObj = {
             foo: 11,
-      bar: '${a}', // eslint-disable-line
+            bar: '${a}', // eslint-disable-line
             baz: {
-        x: '${y}' // eslint-disable-line
+                x: '${y}', // eslint-disable-line
             },
         };
         const subs = {

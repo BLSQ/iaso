@@ -13,13 +13,9 @@ import {
     withStyles,
 } from '@material-ui/core';
 
-import {
-    saveMultiEdit as saveMultiEditAction,
-} from '../actions';
+import { saveMultiEdit as saveMultiEditAction } from '../actions';
 import { formatThousand } from '../../../utils';
-import {
-    selectionInitialState,
-} from '../../../utils/tableUtils';
+import { selectionInitialState } from '../../../utils/tableUtils';
 
 import commonStyles from '../../../styles/common';
 import MESSAGES from '../messages';
@@ -46,19 +42,15 @@ const styles = theme => ({
     },
 });
 
-const stringOfIdsToArrayofIds = stringValue => (stringValue === '' ? [] : stringValue.split(',').map(s => parseInt(s, 10)));
+const stringOfIdsToArrayofIds = stringValue =>
+    stringValue === '' ? [] : stringValue.split(',').map(s => parseInt(s, 10));
 const OrgUnitsMultiActionsDialog = ({
     open,
     closeDialog,
     classes,
     groups,
     orgUnitTypes,
-    selection: {
-        selectCount,
-        selectedItems,
-        unSelectedItems,
-        selectAll,
-    },
+    selection: { selectCount, selectedItems, unSelectedItems, selectAll },
     params,
     saveMultiEdit,
     fetchOrgUnits,
@@ -70,27 +62,30 @@ const OrgUnitsMultiActionsDialog = ({
     const [orgUnitType, setOrgUnitType] = React.useState(null);
     const [editValidation, setEditValidation] = React.useState(false);
     const [validationStatus, setValidationStatus] = React.useState(null);
-    const isSaveDisabled = () => (
-        (editGroups && (groupsAdded.length === 0 && groupsRemoved.length === 0))
-        || (editOrgUnitType && !orgUnitType)
-        || (editValidation && validationStatus === null)
-        || (!editGroups && !editOrgUnitType && !editValidation)
+    const isSaveDisabled = () =>
+        (editGroups &&
+            groupsAdded.length === 0 &&
+            groupsRemoved.length === 0) ||
+        (editOrgUnitType && !orgUnitType) ||
+        (editValidation && validationStatus === null) ||
+        (!editGroups && !editOrgUnitType && !editValidation);
+    const groupsWithoutAdded = [...groups].filter(
+        g => groupsAdded.indexOf(g.id) === -1,
     );
-    const groupsWithoutAdded = [...groups].filter(g => groupsAdded.indexOf(g.id) === -1);
-    const handleSetEditGroups = (editEnabled) => {
+    const handleSetEditGroups = editEnabled => {
         if (!editEnabled) {
             setGroupsAdded([]);
             setGroupsRemoved([]);
         }
         setEditGroups(editEnabled);
     };
-    const handleSetEditOuType = (editEnabled) => {
+    const handleSetEditOuType = editEnabled => {
         if (!editEnabled) {
             setEditOrgUnitType(null);
         }
         setEditOrgUnitType(editEnabled);
     };
-    const handleSetEditValidation = (editEnabled) => {
+    const handleSetEditValidation = editEnabled => {
         if (!editEnabled) {
             setValidationStatus(null);
         }
@@ -147,136 +142,151 @@ const OrgUnitsMultiActionsDialog = ({
                 scroll="body"
             >
                 <DialogTitle className={classes.title}>
-                    <FormattedMessage
-                        {...MESSAGES.multiEditTitle}
-                    />
+                    <FormattedMessage {...MESSAGES.multiEditTitle} />
                     {` (${formatThousand(selectCount)} `}
-                    {
-                        selectCount === 1
-                    && (
-                        <FormattedMessage
-                            {...MESSAGES.titleSingle}
-                        />
+                    {selectCount === 1 && (
+                        <FormattedMessage {...MESSAGES.titleSingle} />
+                    )}
+                    {selectCount > 1 && (
+                        <FormattedMessage {...MESSAGES.titleMulti} />
+                    )}
                     )
-                    }
-                    {
-                        selectCount > 1
-                    && (
-                        <FormattedMessage
-                            {...MESSAGES.titleMulti}
-                        />
-                    )
-                    }
-                )
                 </DialogTitle>
                 <DialogContent className={classes.content}>
                     <div>
                         <InputComponent
                             keyValue="editGroups"
-                            onChange={(key, checked) => handleSetEditGroups(checked)}
+                            onChange={(key, checked) =>
+                                handleSetEditGroups(checked)
+                            }
                             value={editGroups}
                             type="checkbox"
                             label={MESSAGES.editGroups}
                         />
-                        {
-                            editGroups
-                            && (
-                                <>
-                                    <InputComponent
-                                        multi
-                                        clearable
-                                        keyValue="addGroups"
-                                        onChange={(key, value) => setGroupsAdded(stringOfIdsToArrayofIds(value))}
-                                        value={groupsAdded.length > 0 ? groupsAdded : null}
-                                        type="select"
-                                        options={groups.map(g => ({
-                                            label: g.name,
-                                            value: g.id,
-                                        }))}
-                                        label={MESSAGES.addToGroups}
-                                        isSearchable
-                                    />
-                                    <InputComponent
-                                        multi
-                                        clearable
-                                        keyValue="removeGroups"
-                                        onChange={(key, value) => setGroupsRemoved(stringOfIdsToArrayofIds(value))}
-                                        value={groupsRemoved.length > 0 ? groupsRemoved : null}
-                                        type="select"
-                                        options={groupsWithoutAdded.map(g => ({
-                                            label: g.name,
-                                            value: g.id,
-                                        }))}
-                                        label={MESSAGES.removeFromGroups}
-                                        isSearchable
-                                    />
-                                </>
-                            )
-                        }
+                        {editGroups && (
+                            <>
+                                <InputComponent
+                                    multi
+                                    clearable
+                                    keyValue="addGroups"
+                                    onChange={(key, value) =>
+                                        setGroupsAdded(
+                                            stringOfIdsToArrayofIds(value),
+                                        )
+                                    }
+                                    value={
+                                        groupsAdded.length > 0
+                                            ? groupsAdded
+                                            : null
+                                    }
+                                    type="select"
+                                    options={groups.map(g => ({
+                                        label: g.name,
+                                        value: g.id,
+                                    }))}
+                                    label={MESSAGES.addToGroups}
+                                    isSearchable
+                                />
+                                <InputComponent
+                                    multi
+                                    clearable
+                                    keyValue="removeGroups"
+                                    onChange={(key, value) =>
+                                        setGroupsRemoved(
+                                            stringOfIdsToArrayofIds(value),
+                                        )
+                                    }
+                                    value={
+                                        groupsRemoved.length > 0
+                                            ? groupsRemoved
+                                            : null
+                                    }
+                                    type="select"
+                                    options={groupsWithoutAdded.map(g => ({
+                                        label: g.name,
+                                        value: g.id,
+                                    }))}
+                                    label={MESSAGES.removeFromGroups}
+                                    isSearchable
+                                />
+                            </>
+                        )}
                     </div>
                     <div>
                         <InputComponent
                             keyValue="editOrgUnitType"
-                            onChange={(key, checked) => handleSetEditOuType(checked)}
+                            onChange={(key, checked) =>
+                                handleSetEditOuType(checked)
+                            }
                             value={editOrgUnitType}
                             type="checkbox"
                             label={MESSAGES.editOrgUnitType}
                         />
-                        {
-                            editOrgUnitType
-                            && (
-                                <InputComponent
-                                    multi={false}
-                                    clearable
-                                    keyValue="changeOrgUnitType"
-                                    onChange={(key, value) => setOrgUnitType(value)}
-                                    value={orgUnitType}
-                                    type="select"
-                                    options={orgUnitTypes.map(ot => ({
-                                        label: ot.name,
-                                        value: ot.id,
-                                    }))}
-                                    label={MESSAGES.org_unit_type}
-                                    isSearchable
-                                />
-                            )
-                        }
+                        {editOrgUnitType && (
+                            <InputComponent
+                                multi={false}
+                                clearable
+                                keyValue="changeOrgUnitType"
+                                onChange={(key, value) => setOrgUnitType(value)}
+                                value={orgUnitType}
+                                type="select"
+                                options={orgUnitTypes.map(ot => ({
+                                    label: ot.name,
+                                    value: ot.id,
+                                }))}
+                                label={MESSAGES.org_unit_type}
+                                isSearchable
+                            />
+                        )}
                     </div>
                     <div>
                         <InputComponent
                             keyValue="editValidation"
-                            onChange={(key, checked) => handleSetEditValidation(checked)}
+                            onChange={(key, checked) =>
+                                handleSetEditValidation(checked)
+                            }
                             value={editValidation}
                             type="checkbox"
                             label={MESSAGES.editValidation}
                         />
-                        {
-                            editValidation
-                            && (
-                                <div className={classes.marginLeft}>
-                                    <InputComponent
-                                        keyValue="isValid"
-                                        onChange={(key, value) => setValidationStatus(value)}
-                                        value={validationStatus}
-                                        type="radio"
-                                        options={[
-                                            {
-                                                value: 'NEW',
-                                                label: <FormattedMessage {...MESSAGES.new} />,
-                                            },
-                                            {
-                                                value: 'VALID',
-                                                label: <FormattedMessage {...MESSAGES.valid} />,
-                                            },
-                                            {
-                                                value: 'REJECTED',
-                                                label: <FormattedMessage {...MESSAGES.rejected} />,
-                                            },
-                                        ]}
-                                    />
-                                </div>
-                            )
-                        }
+                        {editValidation && (
+                            <div className={classes.marginLeft}>
+                                <InputComponent
+                                    keyValue="isValid"
+                                    onChange={(key, value) =>
+                                        setValidationStatus(value)
+                                    }
+                                    value={validationStatus}
+                                    type="radio"
+                                    options={[
+                                        {
+                                            value: 'NEW',
+                                            label: (
+                                                <FormattedMessage
+                                                    {...MESSAGES.new}
+                                                />
+                                            ),
+                                        },
+                                        {
+                                            value: 'VALID',
+                                            label: (
+                                                <FormattedMessage
+                                                    {...MESSAGES.valid}
+                                                />
+                                            ),
+                                        },
+                                        {
+                                            value: 'REJECTED',
+                                            label: (
+                                                <FormattedMessage
+                                                    {...MESSAGES.rejected}
+                                                />
+                                            ),
+                                        },
+                                    ]}
+                                />
+                            </div>
+                        )}
                     </div>
                 </DialogContent>
                 <DialogActions className={classes.action}>
@@ -286,7 +296,11 @@ const OrgUnitsMultiActionsDialog = ({
 
                     <ConfirmDialog
                         btnMessage={<FormattedMessage {...MESSAGES.validate} />}
-                        question={<FormattedMessage {...MESSAGES.confirmMultiChange} />}
+                        question={
+                            <FormattedMessage
+                                {...MESSAGES.confirmMultiChange}
+                            />
+                        }
                         confirm={() => saveAndReset()}
                         btnDisabled={isSaveDisabled()}
                         btnVariant="text"
@@ -312,19 +326,19 @@ OrgUnitsMultiActionsDialog.propTypes = {
     selection: PropTypes.object,
 };
 
-
 const MapStateToProps = state => ({
     groups: state.orgUnits.groups,
     orgUnitTypes: state.orgUnits.orgUnitTypes,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             saveMultiEdit: saveMultiEditAction,
-        }, dispatch),
-    }
-);
+        },
+        dispatch,
+    ),
+});
 export default withStyles(styles)(
     connect(MapStateToProps, mapDispatchToProps)(OrgUnitsMultiActionsDialog),
 );

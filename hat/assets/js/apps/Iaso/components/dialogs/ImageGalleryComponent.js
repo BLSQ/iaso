@@ -98,30 +98,24 @@ const ImageGallery = ({
                 maxWidth="xl"
             >
                 <DialogContent className={classes.content}>
-                    {
-                        currentIndex > 0
-                        && (
-                            <IconButton
-                                color="primary"
-                                className={classes.prevButton}
-                                onClick={() => setCurrentIndex(currentIndex - 1)}
-                            >
-                                <ArrowLeft className={classes.navIcon} />
-                            </IconButton>
-                        )
-                    }
-                    {
-                        currentIndex + 1 < imageList.length
-                        && (
-                            <IconButton
-                                color="primary"
-                                className={classes.nextButton}
-                                onClick={() => setCurrentIndex(currentIndex + 1)}
-                            >
-                                <ArrowRight className={classes.navIcon} />
-                            </IconButton>
-                        )
-                    }
+                    {currentIndex > 0 && (
+                        <IconButton
+                            color="primary"
+                            className={classes.prevButton}
+                            onClick={() => setCurrentIndex(currentIndex - 1)}
+                        >
+                            <ArrowLeft className={classes.navIcon} />
+                        </IconButton>
+                    )}
+                    {currentIndex + 1 < imageList.length && (
+                        <IconButton
+                            color="primary"
+                            className={classes.nextButton}
+                            onClick={() => setCurrentIndex(currentIndex + 1)}
+                        >
+                            <ArrowRight className={classes.navIcon} />
+                        </IconButton>
+                    )}
                     <IconButton
                         color="primary"
                         className={classes.closeButton}
@@ -129,12 +123,8 @@ const ImageGallery = ({
                     >
                         <Close className={classes.closeIcon} />
                     </IconButton>
-                    {
-
-                    }
-                    <div
-                        className={classes.infos}
-                    >
+                    {}
+                    <div className={classes.infos}>
                         {getExtraInfos(currentImg)}
                     </div>
                     <Typography
@@ -144,11 +134,7 @@ const ImageGallery = ({
                     >
                         {`${currentIndex + 1} / ${imageList.length}`}
                     </Typography>
-                    <img
-                        className={classes.image}
-                        alt=""
-                        src={currentImgSrc}
-                    />
+                    <img className={classes.image} alt="" src={currentImgSrc} />
                 </DialogContent>
             </Dialog>
         </Fragment>

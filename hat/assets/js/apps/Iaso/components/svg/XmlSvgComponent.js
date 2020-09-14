@@ -7,10 +7,7 @@ function PdfSvg(props) {
         viewBox: '0 0 40 40',
     };
     return (
-        <SvgIcon
-            {...finalProps}
-        >
-
+        <SvgIcon {...finalProps}>
             <g>
                 <path d="M15.2,3L7,11.6v22.9h25.5V3H15.2z M14.5,6.6v3.8h-3.7L14.5,6.6z M30.5,32.5H9V12.4h7.4V5h14.1V32.5z" />
                 <g>

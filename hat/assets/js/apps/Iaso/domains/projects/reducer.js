@@ -8,7 +8,8 @@ export const projectsReducer = (state = projectsInitialState, action = {}) => {
     switch (action.type) {
         case SET_ALL_PROJECTS: {
             return {
-                ...state, allProjects: action.payload,
+                ...state,
+                allProjects: action.payload,
             };
         }
         default:

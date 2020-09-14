@@ -37,36 +37,30 @@ const styles = theme => ({
 
 class Users extends Component {
     componentDidMount() {
-        const {
-            params,
-            fetchUsersProfiles,
-        } = this.props;
+        const { params, fetchUsersProfiles } = this.props;
         fetchUsersProfiles(params);
     }
 
     componentDidUpdate(prevProps) {
         const { params, fetchUsersProfiles } = this.props;
-        if ((prevProps.params.pageSize !== params.pageSize)
-        || (prevProps.params.order !== params.order)
-        || (prevProps.params.page !== params.page)) {
+        if (
+            prevProps.params.pageSize !== params.pageSize ||
+            prevProps.params.order !== params.order ||
+            prevProps.params.page !== params.page
+        ) {
             fetchUsersProfiles(params);
         }
     }
 
     deleteUser(user) {
-        const {
-            params,
-            deleteUser,
-        } = this.props;
+        const { params, deleteUser } = this.props;
         return deleteUser(user, params);
     }
 
     render() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             profiles,
             count,
             pages,
@@ -77,10 +71,7 @@ class Users extends Component {
         } = this.props;
         return (
             <>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
+                {fetching && <LoadingSpinner />}
                 <TopBar
                     title={formatMessage(MESSAGES.users)}
                     displayBackButton={false}
@@ -91,19 +82,25 @@ class Users extends Component {
                         params={params}
                         onSearch={() => fetchUsersProfiles(params)}
                     />
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    >
                         <UsersDialog
                             titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent onClick={openDialog} />
+                            )}
                             params={params}
                         />
                     </Grid>
                     <Table
                         data={profiles}
                         pages={pages}
-                        defaultSorted={[
-                            { id: 'user__username', desc: false },
-                        ]}
+                        defaultSorted={[{ id: 'user__username', desc: false }]}
                         columns={usersTableColumns(formatMessage, this)}
                         count={count}
                         baseUrl={baseUrl}
@@ -140,14 +137,17 @@ const MapStateToProps = state => ({
     fetching: state.users.fetching,
 });
 
-const mapDispatchToProps = dispatch => (
-    {
-        ...bindActionCreators({
+const mapDispatchToProps = dispatch => ({
+    ...bindActionCreators(
+        {
             fetchUsersProfiles: fetchUsersProfilesAction,
             deleteUser: deleteUserAction,
             redirectTo: redirectToAction,
-        }, dispatch),
-    }
-);
+        },
+        dispatch,
+    ),
+});
 
-export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(Users)));
+export default withStyles(styles)(
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Users)),
+);

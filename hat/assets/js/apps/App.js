@@ -36,10 +36,7 @@ class App extends Component {
                         }}
                     >
                         <SnackBarContainer />
-                        <Router
-                            routes={routes}
-                            history={history}
-                        />
+                        <Router routes={routes} history={history} />
                     </SnackbarProvider>
                 </Provider>
             </IntlProvider>

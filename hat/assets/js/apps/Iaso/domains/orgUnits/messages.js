@@ -235,11 +235,12 @@ const MESSAGES = defineMessages({
     },
     question: {
         id: 'iaso.label.useOrgUnitLocation.question',
-        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
+        defaultMessage:
+            'Are you sure you want to use this location for the current org unit ?',
     },
     message: {
         id: 'iaso.label.useOrgUnitLocation.message',
-        defaultMessage: 'Don\'t forget to save',
+        defaultMessage: "Don't forget to save",
     },
     catchment: {
         id: 'iaso.map.catchment',

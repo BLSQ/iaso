@@ -20,44 +20,47 @@ function ChipListComponent({
     value,
     classes,
     onChange,
-    intl: {
-        formatMessage,
-    },
+    intl: { formatMessage },
 }) {
-    const toggleChip = useCallback((chipValue) => {
-        const newValue = value.includes(chipValue)
-            ? value.filter(singleValue => singleValue !== chipValue)
-            : [...value, chipValue];
-        onChange(newValue);
-    }, [value, onChange]);
+    const toggleChip = useCallback(
+        chipValue => {
+            const newValue = value.includes(chipValue)
+                ? value.filter(singleValue => singleValue !== chipValue)
+                : [...value, chipValue];
+            onChange(newValue);
+        },
+        [value, onChange],
+    );
 
     return (
         <div>
-            {
-                translateOptions(options, formatMessage).map((option) => {
-                    const isActive = value.includes(option.value);
-                    return (
-                        <Chip
-                            disabled={value.length === 1 && isActive}
-                            key={option.value}
-                            label={option.label}
-                            className={classes.marginLeft}
-                            color={isActive ? 'primary' : 'default'}
-                            onClick={() => toggleChip(option.value)}
-                            icon={(
-                                isActive ? <Cancel /> : <Add />
-                            )}
-                        />
-                    );
-                })
-            }
+            {translateOptions(options, formatMessage).map(option => {
+                const isActive = value.includes(option.value);
+                return (
+                    <Chip
+                        disabled={value.length === 1 && isActive}
+                        key={option.value}
+                        label={option.label}
+                        className={classes.marginLeft}
+                        color={isActive ? 'primary' : 'default'}
+                        onClick={() => toggleChip(option.value)}
+                        icon={isActive ? <Cancel /> : <Add />}
+                    />
+                );
+            })}
         </div>
     );
 }
 ChipListComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     options: PropTypes.array.isRequired,
-    value: PropTypes.arrayOf(PropTypes.oneOfType([PropTypes.string, PropTypes.bool, PropTypes.number])).isRequired,
+    value: PropTypes.arrayOf(
+        PropTypes.oneOfType([
+            PropTypes.string,
+            PropTypes.bool,
+            PropTypes.number,
+        ]),
+    ).isRequired,
     onChange: PropTypes.func.isRequired,
     intl: PropTypes.object.isRequired,
 };

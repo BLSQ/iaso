@@ -12,8 +12,10 @@ function findLocale(code) {
 
 function appInitialState() {
     const storedLocaleCode = localStorage.getItem('iaso_locale');
-    const code = storedLocaleCode !== null ? storedLocaleCode
-        : navigator.language.split('-')[0];
+    const code =
+        storedLocaleCode !== null
+            ? storedLocaleCode
+            : navigator.language.split('-')[0];
 
     return {
         locale: findLocale(code),

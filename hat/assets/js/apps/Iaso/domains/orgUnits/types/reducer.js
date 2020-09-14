@@ -19,13 +19,17 @@ export const reducer = (state = orgUnitsTypesInitialState, action = {}) => {
         case SET_ORG_UNIT_TYPES: {
             const { list, count = 0, pages = 1 } = action.payload;
             return {
-                ...state, list, count, pages,
+                ...state,
+                list,
+                count,
+                pages,
             };
         }
         case SET_ALL_ORG_UNIT_TYPES: {
             const allTypes = action.payload;
             return {
-                ...state, allTypes,
+                ...state,
+                allTypes,
             };
         }
         case SET_CURRENT_ORG_UNIT_TYPE: {

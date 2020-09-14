@@ -20,10 +20,7 @@ export default function App({ store, routes, history }) {
                     }}
                 >
                     <SnackBarContainer />
-                    <Router
-                        routes={routes}
-                        history={history}
-                    />
+                    <Router routes={routes} history={history} />
                 </SnackbarProvider>
             </LocalizedApp>
         </Provider>

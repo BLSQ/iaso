@@ -5,7 +5,6 @@ import { withStyles } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import Star from './StarSvgComponent';
 
-
 const styles = theme => ({
     stars: {
         width: 100,
@@ -36,15 +35,8 @@ const styles = theme => ({
     },
 });
 
-
 function StarsComponent(props) {
-    const {
-        score,
-        classes,
-        starsCount,
-        bgColor,
-        displayCount,
-    } = props;
+    const { score, classes, starsCount, bgColor, displayCount } = props;
     const stars = [];
     for (let i = 0; i < starsCount; i += 1) {
         stars.push(<Star key={i} starBgColor={bgColor} />);
@@ -58,18 +50,11 @@ function StarsComponent(props) {
                     }}
                     className={classes.starsBar}
                 />
-                <div className={classes.starsImage}>
-                    {stars}
-                </div>
+                <div className={classes.starsImage}>{stars}</div>
             </div>
-            {
-                displayCount
-                && (
-                    <span className={classes.score}>
-                        {`(${score}/100)`}
-                    </span>
-                )
-            }
+            {displayCount && (
+                <span className={classes.score}>{`(${score}/100)`}</span>
+            )}
         </Fragment>
     );
 }

@@ -9,7 +9,11 @@ import { baseUrls } from '../../constants/urls';
 
 import HeaderRowIcon from '../../components/tables/HeaderRowIconComponent';
 import {
-    PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_SIX_MONTH, PERIOD_TYPE_YEAR, PERIOD_TYPES,
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_SIX_MONTH,
+    PERIOD_TYPE_YEAR,
+    PERIOD_TYPES,
 } from '../periods/constants';
 import { formatThousand } from '../../utils';
 import { INSTANCE_STATUSES } from '../instances/constants';
@@ -30,7 +34,7 @@ const STATUS_COLUMN_ICONS = {
     exported: CheckCircleOutline,
 };
 
-const getBaseColumns = formatMessage => ([
+const getBaseColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.formsTitle),
         accessor: 'name',
@@ -38,7 +42,7 @@ const getBaseColumns = formatMessage => ([
         style: { justifyContent: 'left' },
         resizable: true,
     },
-]);
+];
 
 const getFormUrl = (form, status, period) => {
     let url = baseUrls.instances;
@@ -73,39 +77,54 @@ export const getColumns = (
     activePeriodType,
 ) => {
     const columns = getBaseColumns(formatMessage);
-    months.forEach((month) => {
+    months.forEach(month => {
         const monthColumn = {
             Header: (
                 <span className={classes.capitalize}>
                     {formatMessage(MESSAGES[monthsList[month - 1]])}
                 </span>
             ),
-            columns: activeInstanceStatuses.map(status => status.toLowerCase()).map(status => ({
-                Header: <HeaderRowIcon
-                    IconComponent={STATUS_COLUMN_ICONS[status]}
-                    title={formatMessage(MESSAGES[status])}
-                />,
-                key: status.key,
-                Cell: (settings) => {
-                    const value = settings.original.months[month][status];
-                    if (!value) return textPlaceholder;
-                    return (
-                        <Link
-                            className={`${classes.linkButton} ${classes.cell} ${value ? classes[status] : ''}`}
-                            to={getFormUrl(settings.original, status, settings.original.months[month].period)}
-                        >
-                            {value || '-'}
-                        </Link>
-                    );
-                },
-                Footer: (info) => {
-                    const counts = info.data.map(row => row._original.months[month][status]);
-                    const total = counts.reduce((sum, count) => count + sum, 0);
+            columns: activeInstanceStatuses
+                .map(status => status.toLowerCase())
+                .map(status => ({
+                    Header: (
+                        <HeaderRowIcon
+                            IconComponent={STATUS_COLUMN_ICONS[status]}
+                            title={formatMessage(MESSAGES[status])}
+                        />
+                    ),
+                    key: status.key,
+                    Cell: settings => {
+                        const value = settings.original.months[month][status];
+                        if (!value) return textPlaceholder;
+                        return (
+                            <Link
+                                className={`${classes.linkButton} ${
+                                    classes.cell
+                                } ${value ? classes[status] : ''}`}
+                                to={getFormUrl(
+                                    settings.original,
+                                    status,
+                                    settings.original.months[month].period,
+                                )}
+                            >
+                                {value || '-'}
+                            </Link>
+                        );
+                    },
+                    Footer: info => {
+                        const counts = info.data.map(
+                            row => row._original.months[month][status],
+                        );
+                        const total = counts.reduce(
+                            (sum, count) => count + sum,
+                            0,
+                        );
 
-                    return <span>{formatThousand(total)}</span>;
-                },
-                width: STATUS_COLUMN_SIZES[activePeriodType],
-            })),
+                        return <span>{formatThousand(total)}</span>;
+                    },
+                    width: STATUS_COLUMN_SIZES[activePeriodType],
+                })),
         };
         columns.push(monthColumn);
     });
@@ -114,30 +133,35 @@ export const getColumns = (
         Header: (
             <span className={classes.capitalize}>
                 {formatMessage(MESSAGES.actions)}
-            </span>),
-        columns: [{
-            Header: '',
-            Cell: settings => (settings.original.generate_derived ? (
-                <IconButtonComponent
-                    onClick={() => (onGenerateDerivedInstances(settings.original))}
-                    icon="call-merge"
-                    tooltipMessage={MESSAGES.generateDerivedInstances}
-                />
-            ) : ''),
-
-        }],
+            </span>
+        ),
+        columns: [
+            {
+                Header: '',
+                Cell: settings =>
+                    settings.original.generate_derived ? (
+                        <IconButtonComponent
+                            onClick={() =>
+                                onGenerateDerivedInstances(settings.original)
+                            }
+                            icon="call-merge"
+                            tooltipMessage={MESSAGES.generateDerivedInstances}
+                        />
+                    ) : (
+                        ''
+                    ),
+            },
+        ],
         resizable: true,
     });
 
     return columns;
 };
 
-export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => (
-    {
-        value: instanceStatus,
-        label: MESSAGES[`${instanceStatus.toLowerCase()}Multi`],
-    }
-));
+export const instanceStatusOptions = INSTANCE_STATUSES.map(instanceStatus => ({
+    value: instanceStatus,
+    label: MESSAGES[`${instanceStatus.toLowerCase()}Multi`],
+}));
 
 export const periodTypeOptions = PERIOD_TYPES.map(periodType => ({
     value: periodType,

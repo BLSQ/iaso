@@ -28,7 +28,8 @@ const mappingTypeOptions = [
     {
         value: 'EVENT_TRACKER',
         label: MESSAGES.eventTracker,
-    }];
+    },
+];
 
 const CreateMappingVersionDialogComponent = ({
     createMappingRequest,
@@ -44,7 +45,7 @@ const CreateMappingVersionDialogComponent = ({
         fetchSources();
     }, []);
 
-    const onConfirm = (closeDialog) => {
+    const onConfirm = closeDialog => {
         const payload = {
             form_version: { id: formVersion },
             mapping: { type: mappingType, datasource: { id: source } },
@@ -92,7 +93,7 @@ const CreateMappingVersionDialogComponent = ({
                             fullWidth
                             label="Source"
                             variant="outlined"
-                            onChange={(event) => {
+                            onChange={event => {
                                 setSource(event.target.value);
                             }}
                         >
@@ -110,14 +111,18 @@ const CreateMappingVersionDialogComponent = ({
                         collectionName="form_versions"
                         label="Form version"
                         fields="id,form_name,version_id,mapped"
-                        mapOptions={options => options.map(o => ({
-                            name: [
-                                o.form_name,
-                                o.version_id,
-                                o.mapped === true ? 'at least a mapping' : 'no mapping',
-                            ].join(' - '),
-                            id: o.id,
-                        }))}
+                        mapOptions={options =>
+                            options.map(o => ({
+                                name: [
+                                    o.form_name,
+                                    o.version_id,
+                                    o.mapped === true
+                                        ? 'at least a mapping'
+                                        : 'no mapping',
+                                ].join(' - '),
+                                id: o.id,
+                            }))
+                        }
                         onChange={(name, val) => {
                             setFormVersion(val.id);
                         }}
@@ -126,13 +131,21 @@ const CreateMappingVersionDialogComponent = ({
                 <Grid>
                     <Dhis2Search
                         key={`${mappingType} ${source}`}
-                        resourceName={mappingType === 'AGGREGATE' ? 'dataSets' : 'programs'}
+                        resourceName={
+                            mappingType === 'AGGREGATE'
+                                ? 'dataSets'
+                                : 'programs'
+                        }
                         fields="id,name,periodType"
-                        label={mappingType === 'AGGREGATE' ? 'dataSet' : 'program'}
-                        mapOptions={options => options.map(o => ({
-                            name: `${o.name} (${o.periodType} ${o.id})`,
-                            id: o.id,
-                        }))}
+                        label={
+                            mappingType === 'AGGREGATE' ? 'dataSet' : 'program'
+                        }
+                        mapOptions={options =>
+                            options.map(o => ({
+                                name: `${o.name} (${o.periodType} ${o.id})`,
+                                id: o.id,
+                            }))
+                        }
                         dataSourceId={source}
                         onChange={(name, val) => {
                             setDataset(val);

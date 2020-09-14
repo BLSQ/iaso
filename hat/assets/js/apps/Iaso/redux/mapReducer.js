@@ -4,7 +4,6 @@ const SET_CURRENT_TILE = 'SET_CURRENT_TILE';
 const TOGGLE_CLUSTER = 'TOGGLE_CLUSTER';
 const RESET_REDUCER = 'RESET_REDUCER';
 
-
 export const setCurrentTile = currentTile => ({
     type: SET_CURRENT_TILE,
     payload: currentTile,

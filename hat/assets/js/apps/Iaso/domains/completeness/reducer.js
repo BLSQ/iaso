@@ -4,7 +4,6 @@ import {
     STOP_FETCHING_COMPLETENESS,
 } from './actions';
 
-
 export const completenessInitialState = {
     fetching: false,
     list: [],

@@ -14,7 +14,13 @@ const actionStyles = theme => ({
 });
 
 function RawConfirmCancelActions({
-    classes, closeDialog, allowConfirm, onConfirm, confirmMessage, onCancel, cancelMessage,
+    classes,
+    closeDialog,
+    allowConfirm,
+    onConfirm,
+    confirmMessage,
+    onCancel,
+    cancelMessage,
 }) {
     return (
         <DialogActions className={classes.action}>
@@ -41,10 +47,17 @@ RawConfirmCancelActions.propTypes = {
     onCancel: PropTypes.func.isRequired,
     cancelMessage: PropTypes.object.isRequired, // TODO: make a message prop type
 };
-export const ConfirmCancelActions = withStyles(actionStyles)(RawConfirmCancelActions);
+export const ConfirmCancelActions = withStyles(actionStyles)(
+    RawConfirmCancelActions,
+);
 
 export default function ConfirmCancelDialogComponent({
-    allowConfirm, onConfirm, confirmMessage, onCancel, cancelMessage, ...dialogProps
+    allowConfirm,
+    onConfirm,
+    confirmMessage,
+    onCancel,
+    cancelMessage,
+    ...dialogProps
 }) {
     return (
         <DialogComponent

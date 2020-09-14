@@ -1,16 +1,18 @@
 import { push } from 'react-router-redux';
 import request from './request';
 import {
-    LOAD, LOAD_SUCCESS, LOAD_SUCCESS_NO_DATA, LOAD_ERROR,
+    LOAD,
+    LOAD_SUCCESS,
+    LOAD_SUCCESS_NO_DATA,
+    LOAD_ERROR,
 } from '../redux/load';
-
 
 const req = require('superagent');
 
 export function createUrl(params, url = '/charts') {
     // Create a url from an params object
     // e.g.: `{foo: 11, bar: 22} => '/foo/11/bar/22'`
-    Object.keys(params).forEach((key) => {
+    Object.keys(params).forEach(key => {
         const value = params[key];
         if (value) {
             url += `/${key}/${value}`; // eslint-disable-line
@@ -22,9 +24,11 @@ export function createUrl(params, url = '/charts') {
 export function checkLocation(params, results, dispatch) {
     // Check if we have data for the selected location,
     // if not, redirect
-    const selectedLocation = params.location
-        && decodeURIComponent(params.location);
-    const validLocation = results.locations.some(location => location === selectedLocation);
+    const selectedLocation =
+        params.location && decodeURIComponent(params.location);
+    const validLocation = results.locations.some(
+        location => location === selectedLocation,
+    );
     if (selectedLocation && !validLocation) {
         // No data for this location, redirect to all
         dispatch(push(createUrl({ ...params, location: '' })));
@@ -38,7 +42,7 @@ export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
         type: LOAD,
     });
 
-    const promises = urls.map((config) => {
+    const promises = urls.map(config => {
         const ps = { ...config.defaultParams, ...params };
         if (config.paramsToRemove) {
             delete ps[config.paramsToRemove];
@@ -54,10 +58,11 @@ export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
         ]);
     });
     return Promise.all(promises)
-        .then((results) => {
+        .then(results => {
             // Create a payload object where the key is the name defined for
             // the url and the value is the response content.
-            const payload = results.reduce((payload, result, i) => { // eslint-disable-line
+            const payload = results.reduce((payload, result, i) => {
+                // eslint-disable-line
                 payload[urls[i].name] = result; // eslint-disable-line
                 return payload;
             }, {});
@@ -71,14 +76,13 @@ export function fetchUrls(urls, params, oldParams, dispatch, checkResults) {
                 payload,
             });
         })
-        .catch((err) => {
+        .catch(err => {
             dispatch({
                 type: LOAD_ERROR,
                 payload: err,
             });
         });
 }
-
 
 export function launchAlgo(algoParams, dispatch) {
     dispatch({
@@ -88,13 +92,13 @@ export function launchAlgo(algoParams, dispatch) {
         .put('/api/algo/1/')
         .set('Content-Type', 'application/json')
         .send(algoParams)
-        .then((result) => {
+        .then(result => {
             dispatch({
                 type: LOAD_SUCCESS_NO_DATA,
             });
             return result.body;
         })
-        .catch((err) => {
+        .catch(err => {
             dispatch({
                 type: LOAD_ERROR,
                 payload: err,
@@ -110,7 +114,7 @@ export function getRequest(url, dispatch, key = null, displayLoader = true) {
     }
     return req
         .get(url)
-        .then((result) => {
+        .then(result => {
             if (displayLoader) {
                 dispatch({
                     type: LOAD_SUCCESS_NO_DATA,
@@ -124,7 +128,7 @@ export function getRequest(url, dispatch, key = null, displayLoader = true) {
             }
             return tempResult;
         })
-        .catch((err) => {
+        .catch(err => {
             if (displayLoader) {
                 dispatch({
                     type: LOAD_ERROR,

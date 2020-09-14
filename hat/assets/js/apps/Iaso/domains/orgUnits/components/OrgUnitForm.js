@@ -1,9 +1,7 @@
 import React from 'react';
 import mapValues from 'lodash/mapValues';
 import PropTypes from 'prop-types';
-import {
-    withStyles, Button, Grid,
-} from '@material-ui/core';
+import { withStyles, Button, Grid } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 
 import { useFormState } from '../../../hooks/form';
@@ -34,18 +32,26 @@ const OrgUnitForm = ({
     baseUrl,
     onResetOrgUnit,
 }) => {
-    const [formState, setFieldValue, setFieldErrors, setFormState] = useFormState(initialFormState(orgUnit));
+    const [
+        formState,
+        setFieldValue,
+        setFieldErrors,
+        setFormState,
+    ] = useFormState(initialFormState(orgUnit));
 
     const [orgUnitModified, setOrgUnitModified] = React.useState(false);
     const handleSave = () => {
-        const newOrgUnit = mapValues(formState, v => (Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v));
-        saveOrgUnit(newOrgUnit).then((savedOrgUnit) => {
-            setOrgUnitModified(false);
-            setFormState(initialFormState(savedOrgUnit));
-        })
-            .catch((error) => {
+        const newOrgUnit = mapValues(formState, v =>
+            Object.prototype.hasOwnProperty.call(v, 'value') ? v.value : v,
+        );
+        saveOrgUnit(newOrgUnit)
+            .then(savedOrgUnit => {
+                setOrgUnitModified(false);
+                setFormState(initialFormState(savedOrgUnit));
+            })
+            .catch(error => {
                 if (error.status === 400) {
-                    error.details.forEach((entry) => {
+                    error.details.forEach(entry => {
                         setFieldErrors(entry.errorKey, [entry.errorMessage]);
                     });
                 }
@@ -77,21 +83,23 @@ const OrgUnitForm = ({
                 groups={groups}
                 onChangeInfo={handleChangeInfo}
             />
-            <Grid container spacing={0} alignItems="center" className={classes.marginTopBig}>
+            <Grid
+                container
+                spacing={0}
+                alignItems="center"
+                className={classes.marginTopBig}
+            >
                 <Grid xs={12} item className={classes.textAlignRight}>
-                    {
-                        !isNewOrgunit
-                        && (
-                            <Button
-                                className={classes.marginLeft}
-                                disabled={!orgUnitModified}
-                                variant="contained"
-                                onClick={() => handleReset()}
-                            >
-                                <FormattedMessage {...MESSAGES.cancel} />
-                            </Button>
-                        )
-                    }
+                    {!isNewOrgunit && (
+                        <Button
+                            className={classes.marginLeft}
+                            disabled={!orgUnitModified}
+                            variant="contained"
+                            onClick={() => handleReset()}
+                        >
+                            <FormattedMessage {...MESSAGES.cancel} />
+                        </Button>
+                    )}
                     <Button
                         disabled={!orgUnitModified}
                         variant="contained"

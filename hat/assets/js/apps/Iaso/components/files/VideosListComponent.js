@@ -1,10 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import {
-    Grid,
-    withStyles,
-} from '@material-ui/core';
+import { Grid, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -24,25 +21,21 @@ class VideosListComponent extends Component {
     }
 
     render() {
-        const {
-            videoList,
-            classes,
-        } = this.props;
+        const { videoList, classes } = this.props;
         return (
             <Fragment>
                 <Grid container spacing={2} className={classes.root}>
-                    {
-
-                        videoList.map(file => (
-                            <Grid
-                                item
-                                md={6}
-                                key={`${file.itemId}-${getFileName(file.path).name}`}
-                            >
-                                <VideoItem videoItem={file} />
-                            </Grid>
-                        ))
-                    }
+                    {videoList.map(file => (
+                        <Grid
+                            item
+                            md={6}
+                            key={`${file.itemId}-${
+                                getFileName(file.path).name
+                            }`}
+                        >
+                            <VideoItem videoItem={file} />
+                        </Grid>
+                    ))}
                 </Grid>
             </Fragment>
         );

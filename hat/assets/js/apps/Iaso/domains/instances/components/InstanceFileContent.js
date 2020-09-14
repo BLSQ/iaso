@@ -32,12 +32,9 @@ export default class InstanceFileContent extends Component {
                 instanceData={instance.file_content}
                 formDescriptor={instance.form_descriptor}
             />
-        )
-            : (
-                <InstanceFileContentBasic
-                    fileContent={instance.file_content}
-                />
-            );
+        ) : (
+            <InstanceFileContentBasic fileContent={instance.file_content} />
+        );
     }
 }
 InstanceFileContent.propTypes = {

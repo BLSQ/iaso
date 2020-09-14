@@ -2,15 +2,12 @@ import React from 'react';
 import PropTypes from 'prop-types';
 
 function StarSvg(props) {
-    const {
-        starColor,
-        starBgColor,
-        starWidth,
-    } = props;
+    const { starColor, starBgColor, starWidth } = props;
     return (
-        <svg style={{
-            width: starWidth,
-        }}
+        <svg
+            style={{
+                width: starWidth,
+            }}
         >
             <g id="bg-star" data-name="bg-star">
                 <path
@@ -29,7 +26,6 @@ function StarSvg(props) {
                 />
             </g>
         </svg>
-
     );
 }
 

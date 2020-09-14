@@ -25,9 +25,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
     }
 
     componentDidUpdate(prevProps) {
-        const {
-            searchIndex,
-        } = this.props;
+        const { searchIndex } = this.props;
         let levels;
         let prevLevels;
         let prevSource;
@@ -51,18 +49,20 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             prevValidated = prevProps.params.validated;
             newValidated = this.props.params.validated;
         }
-        const importantParamsChanged = prevSource !== newSource || prevValidated !== newValidated;
+        const importantParamsChanged =
+            prevSource !== newSource || prevValidated !== newValidated;
         if (importantParamsChanged) {
             this.resetLevels();
         }
 
-        if ((levels && !prevLevels) || (importantParamsChanged)) {
+        if ((levels && !prevLevels) || importantParamsChanged) {
             this.fetchAllTree();
         } else {
             const lastLevel = fetchLatestOrgUnitLevelId(levels);
             const prevLastLevel = fetchLatestOrgUnitLevelId(prevLevels);
             if (lastLevel !== prevLastLevel && levels) {
-                const levelIndex = levels.split(',').indexOf(lastLevel.toString()) + 1;
+                const levelIndex =
+                    levels.split(',').indexOf(lastLevel.toString()) + 1;
                 this.fetchTree(levelIndex);
             }
         }
@@ -79,9 +79,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             onLevelsChange,
             searchIndex,
         } = this.props;
-        const {
-            levels,
-        } = this.state;
+        const { levels } = this.state;
         const newOrgUnitLevelsIds = [];
         orgUnitsLevels.forEach((o, i) => {
             if (parseInt(i, 10) < level) {
@@ -115,12 +113,9 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         });
     }
 
-
     buildUrl(base) {
         const {
-            params: {
-                version,
-            },
+            params: { version },
             searchIndex,
         } = this.props;
         let source;
@@ -151,23 +146,32 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         let levels;
         if (searchIndex || searchIndex === 0) {
             const searches = decodeSearch(this.props.params.searches);
-            levels = searches[searchIndex][this.props.paramKey] ? searches[searchIndex][this.props.paramKey].split(',') : [];
+            levels = searches[searchIndex][this.props.paramKey]
+                ? searches[searchIndex][this.props.paramKey].split(',')
+                : [];
         } else {
-            levels = this.props.params[this.props.paramKey] ? this.props.params[this.props.paramKey].split(',') : [];
+            levels = this.props.params[this.props.paramKey]
+                ? this.props.params[this.props.paramKey].split(',')
+                : [];
         }
         this.setState({
             levels,
         });
 
-        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then((orgUnits) => {
-            this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
-            if (levels[0]) {
-                if (showCurrentOrgUnit !== false
-                    || (showCurrentOrgUnit === false && parseInt(levels[0], 10) !== currentOrgUnitId)) {
-                    this.fetchTree(1);
+        return fetchOrgUnits(dispatch, this.buildUrl('&parent_id=0')).then(
+            orgUnits => {
+                this.props.setOrgUnitsLevel(orgUnits, 0, searchIndex);
+                if (levels[0]) {
+                    if (
+                        showCurrentOrgUnit !== false ||
+                        (showCurrentOrgUnit === false &&
+                            parseInt(levels[0], 10) !== currentOrgUnitId)
+                    ) {
+                        this.fetchTree(1);
+                    }
                 }
-            }
-        });
+            },
+        );
     }
 
     fetchTree(level) {
@@ -177,22 +181,26 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             currentOrgUnitId,
             searchIndex,
         } = this.props;
-        const {
-            levels,
-        } = this.state;
+        const { levels } = this.state;
         const parentId = levels[level - 1];
         if (parentId) {
             const base = `&parent_id=${parentId}`;
 
-            return fetchOrgUnits(dispatch, this.buildUrl(base)).then((orgUnits) => {
-                this.props.setOrgUnitsLevel(orgUnits, level, searchIndex);
-                if (levels[level]) {
-                    if (showCurrentOrgUnit !== false
-                        || (showCurrentOrgUnit === false && parseInt(levels[level], 10) !== currentOrgUnitId)) {
-                        this.fetchTree(level + 1);
+            return fetchOrgUnits(dispatch, this.buildUrl(base)).then(
+                orgUnits => {
+                    this.props.setOrgUnitsLevel(orgUnits, level, searchIndex);
+                    if (levels[level]) {
+                        if (
+                            showCurrentOrgUnit !== false ||
+                            (showCurrentOrgUnit === false &&
+                                parseInt(levels[level], 10) !==
+                                    currentOrgUnitId)
+                        ) {
+                            this.fetchTree(level + 1);
+                        }
                     }
-                }
-            });
+                },
+            );
         }
         return null;
     }
@@ -205,31 +213,41 @@ class OrgUnitsLevelsFiltersComponent extends Component {
             showCurrentOrgUnit,
             currentOrgUnitId,
         } = this.props;
-        const {
-            levels,
-        } = this.state;
+        const { levels } = this.state;
         // console.log('orgUnitsLevels', orgUnitsLevels);
         return (
             <div>
-                {
-                    orgUnitsLevels.map((level, index) => {
-                        if (!orgUnitsLevels[index]
-                            || (orgUnitsLevels[index] && orgUnitsLevels[index].length === 0)) return null;
-                        return (
-                            <OrgUnitLevelFilterComponent
-                                key={`level-${orgUnitsLevels[index][0] ? orgUnitsLevels[index][0].id : '0'}`}
-                                params={params}
-                                baseUrl={baseUrl}
-                                levelId={levels[index] ? parseInt(levels[index], 10) : undefined}
-                                levelIndex={index}
-                                onFilterChanged={value => this.onFilterChanged(value, index)}
-                                orgUnits={orgUnitsLevels[index]}
-                                showCurrentOrgUnit={showCurrentOrgUnit}
-                                currentOrgUnitId={currentOrgUnitId}
-                            />
-                        );
-                    })
-                }
+                {orgUnitsLevels.map((level, index) => {
+                    if (
+                        !orgUnitsLevels[index] ||
+                        (orgUnitsLevels[index] &&
+                            orgUnitsLevels[index].length === 0)
+                    )
+                        return null;
+                    return (
+                        <OrgUnitLevelFilterComponent
+                            key={`level-${
+                                orgUnitsLevels[index][0]
+                                    ? orgUnitsLevels[index][0].id
+                                    : '0'
+                            }`}
+                            params={params}
+                            baseUrl={baseUrl}
+                            levelId={
+                                levels[index]
+                                    ? parseInt(levels[index], 10)
+                                    : undefined
+                            }
+                            levelIndex={index}
+                            onFilterChanged={value =>
+                                this.onFilterChanged(value, index)
+                            }
+                            orgUnits={orgUnitsLevels[index]}
+                            showCurrentOrgUnit={showCurrentOrgUnit}
+                            currentOrgUnitId={currentOrgUnitId}
+                        />
+                    );
+                })}
             </div>
         );
     }
@@ -262,18 +280,23 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     onLevelsChange: PropTypes.func,
 };
 
-const MapStateToProps = (state, props) => (
-    {
-        fetching: state.orgUnitsLevels.fetching,
-        orgUnitsLevels: props.searchIndex || props.searchIndex === 0
-            ? state.orgUnitsLevels.list[props.searchIndex] : state.orgUnitsLevels.list,
-    }
-);
+const MapStateToProps = (state, props) => ({
+    fetching: state.orgUnitsLevels.fetching,
+    orgUnitsLevels:
+        props.searchIndex || props.searchIndex === 0
+            ? state.orgUnitsLevels.list[props.searchIndex]
+            : state.orgUnitsLevels.list,
+});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setOrgUnitsLevel: (orgUnitItem, level, index) => dispatch(setOrgUnitsLevel(orgUnitItem, level, index)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
+    setOrgUnitsLevel: (orgUnitItem, level, index) =>
+        dispatch(setOrgUnitsLevel(orgUnitItem, level, index)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(OrgUnitsLevelsFiltersComponent);
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(OrgUnitsLevelsFiltersComponent);

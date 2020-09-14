@@ -6,9 +6,13 @@
 import L from 'leaflet';
 import shapeUrls from '../constants/shapesUrls';
 
-const clean = word => ((word || '').toString().toUpperCase().replace(/[^A-Z0-9]/g, ''));
-const isEqual = (a, b) => (clean(a) === clean(b));
-const areEqual = (a, b, keys) => (keys.every(key => isEqual(a[key], b[key])));
+const clean = word =>
+    (word || '')
+        .toString()
+        .toUpperCase()
+        .replace(/[^A-Z0-9]/g, '');
+const isEqual = (a, b) => clean(a) === clean(b);
+const areEqual = (a, b, keys) => keys.every(key => isEqual(a[key], b[key]));
 
 // circle size in metres depending on the village type
 const RADIUS = {
@@ -20,17 +24,24 @@ const RADIUS = {
 };
 
 const extendDivisionInfo = (division, villages, legend) => {
-    const countByType = type => (prev, curr) => (prev + (curr.type === type ? 1 : 0));
-    const sum = key => (prev, curr) => (prev + (curr[key] || 0));
-    const max = key => (prev, curr) => (!curr[key] || prev >= curr[key] ? prev : curr[key]);
+    const countByType = type => (prev, curr) =>
+        prev + (curr.type === type ? 1 : 0);
+    const sum = key => (prev, curr) => prev + (curr[key] || 0);
+    const max = key => (prev, curr) =>
+        !curr[key] || prev >= curr[key] ? prev : curr[key];
 
     // find the villages in shape and the plotted ones
-    const inDivision = villages.filter(village => areEqual(division, village, division._keys));
+    const inDivision = villages.filter(village =>
+        areEqual(division, village, division._keys),
+    );
 
     const plotted = inDivision.filter(village => legend[village.type]);
 
     // find out the date of the last confirmed HAT case
-    const lastConfirmedCaseDate = plotted.reduce(max('lastConfirmedCaseDate'), '');
+    const lastConfirmedCaseDate = plotted.reduce(
+        max('lastConfirmedCaseDate'),
+        '',
+    );
 
     // find out the population and number of villages by type
     const population = inDivision.reduce(sum('population'), 0);
@@ -49,19 +60,25 @@ const extendDivisionInfo = (division, villages, legend) => {
     };
 };
 
-const extendVillageInfo = (village) => {
+const extendVillageInfo = village => {
     const _latlon = L.latLng(village.latitude, village.longitude);
-    const _isHighlight = (village.nr_positive_cases > 0);
+    const _isHighlight = village.nr_positive_cases > 0;
     // take size from village type and increase it if there are cases
-    const _radius = RADIUS[village.village_official] + (_isHighlight ? RADIUS.highlight : 0);
-    const _class = (_isHighlight ? 'highlight' : village.village_official);
-    const _pane = (_isHighlight ? 'highlight' : 'markers');
+    const _radius =
+        RADIUS[village.village_official] +
+        (_isHighlight ? RADIUS.highlight : 0);
+    const _class = _isHighlight ? 'highlight' : village.village_official;
+    const _pane = _isHighlight ? 'highlight' : 'markers';
 
     return {
-        ...village, _isHighlight, _radius, _class, _pane, _latlon,
+        ...village,
+        _isHighlight,
+        _radius,
+        _class,
+        _pane,
+        _latlon,
     };
 };
-
 
 const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
     if (highlightBufferSize === 0) {
@@ -95,9 +112,9 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
             // if the `longitude` is easter than the current position
             // then exit the loop
             if (villageA._isHighlight || villageB._isHighlight) {
-            // compare distance
+                // compare distance
                 const distance = villageB._latlon.distanceTo(villageA._latlon);
-                if (distance <= (radius + villageB._radius)) {
+                if (distance <= radius + villageB._radius) {
                     if (villageA._isHighlight) {
                         inBuffer.push(villageB);
                     } else {
@@ -115,27 +132,31 @@ const villagesInHighlightBuffer = (map, plotted, highlightBufferSize) => {
 };
 
 const getShape = (type, element, shapes, shapeOptions, zooms, map) => {
-    const newIsLoadingShape = Object.assign({}, element.state.isLoadingShape, { [type]: true });
+    const newIsLoadingShape = Object.assign({}, element.state.isLoadingShape, {
+        [type]: true,
+    });
     element.setState({
         isLoadingShape: newIsLoadingShape,
     });
-    return element.props.getShape(shapeUrls[type])
-        .then((response) => {
-            const shape = shapes[type];
-            const minZoomTemp = zooms[type];
-            shape.addLayer(L.geoJson(response, shapeOptions(type)));
-            map.addLayer(shape);
-            const newIsLoadingShapeCallBack = Object.assign({}, element.state.isLoadingShape, { [type]: false });
-            element.setState({
-                isLoadingShape: newIsLoadingShapeCallBack,
-            });
-            if (type === 'province') {
-                return shape;
-            }
-            return minZoomTemp;
+    return element.props.getShape(shapeUrls[type]).then(response => {
+        const shape = shapes[type];
+        const minZoomTemp = zooms[type];
+        shape.addLayer(L.geoJson(response, shapeOptions(type)));
+        map.addLayer(shape);
+        const newIsLoadingShapeCallBack = Object.assign(
+            {},
+            element.state.isLoadingShape,
+            { [type]: false },
+        );
+        element.setState({
+            isLoadingShape: newIsLoadingShapeCallBack,
         });
+        if (type === 'province') {
+            return shape;
+        }
+        return minZoomTemp;
+    });
 };
-
 
 export default {
     isEqual,
@@ -145,7 +166,7 @@ export default {
     extendDivisionInfo,
     extendVillageInfo,
     villagesInHighlightBuffer,
-    zoomDelta: 0.50,
+    zoomDelta: 0.5,
     zoomSnap: 0.1,
     getShape,
 };

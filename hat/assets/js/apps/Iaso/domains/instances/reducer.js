@@ -23,11 +23,18 @@ export const instancesInitialState = {
     isInstancesFilterUpdated: false,
 };
 
-export const instancesReducer = (state = instancesInitialState, action = {}) => {
+export const instancesReducer = (
+    state = instancesInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case SET_INSTANCES: {
             const {
-                list, showPagination, params, count, pages,
+                list,
+                showPagination,
+                params,
+                count,
+                pages,
             } = action.payload;
             return {
                 ...state,

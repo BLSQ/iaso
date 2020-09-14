@@ -13,7 +13,7 @@ const useStyles = makeStyles(theme => ({
     root: {
         height: 'calc(100vh - 64px)',
         flexGrow: 1,
-        overflow: 'auto'
+        overflow: 'auto',
     },
     mapped: {
         color: 'green',
@@ -23,7 +23,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const RecursiveTreeView = (props) => {
+const RecursiveTreeView = props => {
     const classes = useStyles();
     const { formVersion, mappingVersion, onQuestionSelected } = props;
 
@@ -36,7 +36,7 @@ const RecursiveTreeView = (props) => {
             onQuestionSelected(val);
         }
     };
-    const renderTree = (node) => {
+    const renderTree = node => {
         const coverage = Descriptor.getCoverage(
             indexedQuestions,
             mappingVersion,
@@ -46,7 +46,8 @@ const RecursiveTreeView = (props) => {
         const mapped = isMapped(questionMapping);
         const neverMapped = isNeverMapped(questionMapping);
 
-        const allChidrenMapped = Descriptor.hasChildren(node) && coverage[0] == coverage[1];
+        const allChidrenMapped =
+            Descriptor.hasChildren(node) && coverage[0] == coverage[1];
         let className = '';
         if (neverMapped) {
             className = classes.neverMapped;
@@ -58,18 +59,17 @@ const RecursiveTreeView = (props) => {
             <TreeItem
                 key={node.name}
                 nodeId={node.name}
-                label={
-                    `${_.truncate((Descriptor.getHumanLabel(node)))
-                    } (${
-                        Descriptor.hasChildren(node)
-                            ? ` ${coverage.join(' / ')}`
-                            : node.type
-                    })`
-                }
+                label={`${_.truncate(Descriptor.getHumanLabel(node))} (${
+                    Descriptor.hasChildren(node)
+                        ? ` ${coverage.join(' / ')}`
+                        : node.type
+                })`}
                 title={Descriptor.getHumanLabel(node)}
                 className={className}
             >
-                {Descriptor.hasChildren(node) ? node.children.map(n => renderTree(n)) : null}
+                {Descriptor.hasChildren(node)
+                    ? node.children.map(n => renderTree(n))
+                    : null}
             </TreeItem>
         );
     };

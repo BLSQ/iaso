@@ -30,10 +30,7 @@ import menuItems from '../../../constants/menu';
 
 import MESSAGES from './messages';
 
-import {
-    userHasPermission,
-    userHasOneOfPermissions,
-} from '../../users/utils';
+import { userHasPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -69,9 +66,7 @@ const styles = theme => ({
 
 class SidebarMenu extends PureComponent {
     onClick() {
-        const {
-            toggleSidebar,
-        } = this.props;
+        const { toggleSidebar } = this.props;
         toggleSidebar();
     }
 
@@ -84,11 +79,7 @@ class SidebarMenu extends PureComponent {
             currentUser,
         } = this.props;
         return (
-            <Drawer
-                anchor="left"
-                open={isOpen}
-                onClose={toggleSidebar}
-            >
+            <Drawer anchor="left" open={isOpen} onClose={toggleSidebar}>
                 <div className={classes.toolbar}>
                     <LogoSvg className={classes.logo} />
                     <IconButton
@@ -102,25 +93,31 @@ class SidebarMenu extends PureComponent {
                 </div>
                 <Divider />
                 <List className={classes.list}>
-                    {
-                        menuItems.map((menuItem) => {
-                            if (
-                                (menuItem.permission && userHasPermission(menuItem.permission, currentUser))
-                                || (menuItem.subMenu && userHasOneOfPermissions(menuItem.subMenu.map(sm => sm.permission), currentUser))
-                            ) {
-                                return (
-                                    <MenuItem
-                                        location={location}
-                                        key={menuItem.key}
-                                        menuItem={menuItem}
-                                        onClick={path => this.onClick(path)}
-                                        currentUser={currentUser}
-                                    />
-                                );
-                            }
-                            return null;
-                        })
-                    }
+                    {menuItems.map(menuItem => {
+                        if (
+                            (menuItem.permission &&
+                                userHasPermission(
+                                    menuItem.permission,
+                                    currentUser,
+                                )) ||
+                            (menuItem.subMenu &&
+                                userHasOneOfPermissions(
+                                    menuItem.subMenu.map(sm => sm.permission),
+                                    currentUser,
+                                ))
+                        ) {
+                            return (
+                                <MenuItem
+                                    location={location}
+                                    key={menuItem.key}
+                                    menuItem={menuItem}
+                                    onClick={path => this.onClick(path)}
+                                    currentUser={currentUser}
+                                />
+                            );
+                        }
+                        return null;
+                    })}
                 </List>
                 <Box className={classes.user}>
                     <LanguageSwitch />
@@ -162,7 +159,6 @@ const MapStateToProps = state => ({
 const MapDispatchToProps = dispatch => ({
     toggleSidebar: () => dispatch(toggleSidebarMenu()),
 });
-
 
 export default withStyles(styles)(
     connect(MapStateToProps, MapDispatchToProps)(SidebarMenu),

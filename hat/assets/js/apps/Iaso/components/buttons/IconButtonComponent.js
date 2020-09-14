@@ -2,11 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { Link } from 'react-router';
 import { FormattedMessage } from 'react-intl';
-import {
-    withStyles,
-    IconButton,
-    Tooltip,
-} from '@material-ui/core';
+import { withStyles, IconButton, Tooltip } from '@material-ui/core';
 import Delete from '@material-ui/icons/Delete';
 import FilterList from '@material-ui/icons/FilterList';
 import CallMerge from '@material-ui/icons/CallMerge';
@@ -42,9 +38,7 @@ const styles = theme => ({
     },
 });
 
-const ButtonIcon = ({
-    icon: Icon, color, onClick,
-}) => {
+const ButtonIcon = ({ icon: Icon, color, onClick }) => {
     if (Icon === undefined) {
         return 'wrong icon';
     }
@@ -54,7 +48,13 @@ const ButtonIcon = ({
     // special override for white color, which is not a "theme" variant such as primary, secondary or action
     const iconStyles = color === 'white' ? { color: 'white' } : {};
 
-    return <Icon {...iconProps} color={color === 'white' ? 'inherit' : color} style={iconStyles} />;
+    return (
+        <Icon
+            {...iconProps}
+            color={color === 'white' ? 'inherit' : color}
+            style={iconStyles}
+        />
+    );
 };
 ButtonIcon.defaultProps = {
     onClick: null,
@@ -66,10 +66,18 @@ ButtonIcon.propTypes = {
 };
 
 function IconButtonComponent({
-    classes, disabled, onClick, url, icon: iconName, tooltipMessage, color,
+    classes,
+    disabled,
+    onClick,
+    url,
+    icon: iconName,
+    tooltipMessage,
+    color,
 }) {
     if ((onClick === null) === (url === null)) {
-        console.error('IconButtonComponent needs either the onClick or the url property');
+        console.error(
+            'IconButtonComponent needs either the onClick or the url property',
+        );
     }
     const icon = ICON_VARIANTS[iconName];
     return (
@@ -83,14 +91,13 @@ function IconButtonComponent({
         >
             <span>
                 <IconButton disabled={disabled} onClick={onClick}>
-                    {
-                        url ? (
-                            <Link to={url} className={classes.linkButton}>
-                                <ButtonIcon icon={icon} color={color} />
-                            </Link>
-                        )
-                            : <ButtonIcon icon={icon} color={color} />
-                    }
+                    {url ? (
+                        <Link to={url} className={classes.linkButton}>
+                            <ButtonIcon icon={icon} color={color} />
+                        </Link>
+                    ) : (
+                        <ButtonIcon icon={icon} color={color} />
+                    )}
                 </IconButton>
             </span>
         </Tooltip>

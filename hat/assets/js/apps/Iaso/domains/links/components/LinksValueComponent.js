@@ -3,9 +3,7 @@ import PropTypes from 'prop-types';
 import { FormattedMessage, injectIntl } from 'react-intl';
 import moment from 'moment';
 
-import {
-    withStyles, TableCell, TableRow,
-} from '@material-ui/core';
+import { withStyles, TableCell, TableRow } from '@material-ui/core';
 
 import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 import { textPlaceholder } from '../../../constants/uiConstants';
@@ -44,20 +42,22 @@ const ignoredKeys = [
     'source_ref',
 ];
 
-
 const renderValue = (linkKey, value, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
     switch (linkKey) {
         case 'geo_json': {
-            return <div className={classes.cellMap}><GeoJsonMap geoJson={value} /></div>;
+            return (
+                <div className={classes.cellMap}>
+                    <GeoJsonMap geoJson={value} />
+                </div>
+            );
         }
         case 'status': {
-            return value
-                ? (
-                    <FormattedMessage {...LINKS_MESSAGES.validated} />
-                ) : (
-                    <FormattedMessage {...LINKS_MESSAGES.notValidated} />
-                );
+            return value ? (
+                <FormattedMessage {...LINKS_MESSAGES.validated} />
+            ) : (
+                <FormattedMessage {...LINKS_MESSAGES.notValidated} />
+            );
         }
         case 'groups': {
             return value.map(g => g.name).join(', ');
@@ -73,21 +73,24 @@ const renderValue = (linkKey, value, classes) => {
 };
 
 const LinksValue = ({
-    linkKey, value, isDifferent, classes, intl, validated,
+    linkKey,
+    value,
+    isDifferent,
+    classes,
+    intl,
+    validated,
 }) => {
     const { formatMessage } = intl;
     if (ignoredKeys.indexOf(linkKey) !== -1) return null;
 
-    const differentClass = validated ? classes.isDifferentValidated : classes.isDifferent;
+    const differentClass = validated
+        ? classes.isDifferentValidated
+        : classes.isDifferent;
     return (
         <TableRow>
             <TableCell className={classes.cell}>
-                {
-                    MESSAGES[linkKey] && formatMessage(MESSAGES[linkKey])
-                }
-                {
-                    !MESSAGES[linkKey] && linkKey
-                }
+                {MESSAGES[linkKey] && formatMessage(MESSAGES[linkKey])}
+                {!MESSAGES[linkKey] && linkKey}
             </TableCell>
             <TableCell className={isDifferent ? differentClass : null}>
                 {renderValue(linkKey, value, classes)}

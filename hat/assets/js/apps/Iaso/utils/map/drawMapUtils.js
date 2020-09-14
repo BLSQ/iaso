@@ -1,7 +1,6 @@
 import L from 'leaflet';
 import setDrawMessages from './drawMapMessages';
 
-
 export const includeDrawTools = (map, formatMessage, onShapeClick) => {
     map.createPane('custom-draw');
     const shapeOptions = {
@@ -34,16 +33,16 @@ export const includeDrawTools = (map, formatMessage, onShapeClick) => {
     };
     setDrawMessages(formatMessage);
 
-    map.on(L.Draw.Event.CREATED, (e) => {
+    map.on(L.Draw.Event.CREATED, e => {
         const { layer } = e;
         shapesLayer.addLayer(layer);
     });
 
-    map.on('draw:created', (e) => {
+    map.on('draw:created', e => {
         onShapeClick(e.layer);
     });
 
-    shapesLayer.on('click', (e) => {
+    shapesLayer.on('click', e => {
         onShapeClick(e.sourceTarget);
     });
 
@@ -52,7 +51,8 @@ export const includeDrawTools = (map, formatMessage, onShapeClick) => {
 };
 
 export const getMarkersInShape = (shape, markers) => {
-    const shapeContainLatLng = (latLng, currentShape) => currentShape.getBounds().contains(latLng);
+    const shapeContainLatLng = (latLng, currentShape) =>
+        currentShape.getBounds().contains(latLng);
     if (!L.Polygon.contains) {
         L.Polygon.include({
             contains: shapeContainLatLng,
@@ -67,16 +67,23 @@ export const getMarkersInShape = (shape, markers) => {
 
     if (!L.Circle.contains) {
         L.Circle.include({
-            contains: (latLng, currentShape) => currentShape.getLatLng().distanceTo(latLng) < currentShape.getRadius(),
+            contains: (latLng, currentShape) =>
+                currentShape.getLatLng().distanceTo(latLng) <
+                currentShape.getRadius(),
         });
     }
 
     const includedMarkers = [];
-    markers.forEach((marker) => {
-        if (shape.contains({
-            lng: marker.longitude,
-            lat: marker.latitude,
-        }, shape)) {
+    markers.forEach(marker => {
+        if (
+            shape.contains(
+                {
+                    lng: marker.longitude,
+                    lat: marker.latitude,
+                },
+                shape,
+            )
+        ) {
             includedMarkers.push(marker);
         }
     });

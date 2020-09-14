@@ -13,10 +13,21 @@ const styles = theme => ({
 });
 
 function ExportButtonComponent({
-    classes, intl, onClick, message, isDisabled, batchExport,
+    classes,
+    intl,
+    onClick,
+    message,
+    isDisabled,
+    batchExport,
 }) {
     return batchExport ? (
-        <Button variant="contained" className={classes.button} color="primary" onClick={onClick} disabled={isDisabled}>
+        <Button
+            variant="contained"
+            className={classes.button}
+            color="primary"
+            onClick={onClick}
+            disabled={isDisabled}
+        >
             <CallMade className={classes.buttonIcon} />
             {intl.formatMessage(message)}
         </Button>

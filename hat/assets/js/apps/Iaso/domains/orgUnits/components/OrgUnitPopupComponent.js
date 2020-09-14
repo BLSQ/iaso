@@ -1,12 +1,8 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 
-import {
-    Popup,
-} from 'react-leaflet';
-import {
-    Link,
-} from 'react-router';
+import { Popup } from 'react-leaflet';
+import { Link } from 'react-router';
 import { injectIntl, FormattedMessage } from 'react-intl';
 
 import {
@@ -68,9 +64,7 @@ class OrgUnitPopupComponent extends Component {
             classes,
             currentOrgUnit,
             displayUseLocation,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         let groups = null;
         if (currentOrgUnit && currentOrgUnit.groups.length > 0) {
@@ -78,90 +72,99 @@ class OrgUnitPopupComponent extends Component {
         }
         return (
             <Popup className={classes.popup} ref={this.popup}>
-                {
-                    !currentOrgUnit
-                    && <LoadingSpinner />
-                }
-                {
-                    currentOrgUnit
-                    && (
-                        <Card className={classes.popupCard}>
-                            <CardContent className={classes.popupCardContent}>
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.name)}
-                                    value={currentOrgUnit.name}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.type)}
-                                    value={currentOrgUnit.org_unit_type_name}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.groups)}
-                                    value={groups}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.source)}
-                                    value={currentOrgUnit.source}
-                                />
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.parent)}
-                                    value={currentOrgUnit.parent ? currentOrgUnit.parent.name : textPlaceholder}
-                                />
-                                {
-                                    !currentOrgUnit.has_geo_json && (
-                                        <Fragment>
-                                            <PopupItemComponent
-                                                label={formatMessage(MESSAGES.latitude)}
-                                                value={currentOrgUnit.latitude}
-                                            />
-                                            <PopupItemComponent
-                                                label={formatMessage(MESSAGES.longitude)}
-                                                value={currentOrgUnit.longitude}
-                                            />
-                                        </Fragment>
-                                    )
+                {!currentOrgUnit && <LoadingSpinner />}
+                {currentOrgUnit && (
+                    <Card className={classes.popupCard}>
+                        <CardContent className={classes.popupCardContent}>
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.name)}
+                                value={currentOrgUnit.name}
+                            />
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.type)}
+                                value={currentOrgUnit.org_unit_type_name}
+                            />
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.groups)}
+                                value={groups}
+                            />
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.source)}
+                                value={currentOrgUnit.source}
+                            />
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.parent)}
+                                value={
+                                    currentOrgUnit.parent
+                                        ? currentOrgUnit.parent.name
+                                        : textPlaceholder
                                 }
-                                <PopupItemComponent
-                                    label={formatMessage(MESSAGES.created_at)}
-                                    value={moment.unix(currentOrgUnit.created_at).format('DD/MM/YYYY HH:mm')}
-                                />
-                                <Box className={classes.actionBox}>
-                                    <Grid
-                                        container
-                                        spacing={0}
-                                        justify={displayUseLocation ? 'center' : 'flex-end'}
-                                        alignItems="center"
+                            />
+                            {!currentOrgUnit.has_geo_json && (
+                                <Fragment>
+                                    <PopupItemComponent
+                                        label={formatMessage(MESSAGES.latitude)}
+                                        value={currentOrgUnit.latitude}
+                                    />
+                                    <PopupItemComponent
+                                        label={formatMessage(
+                                            MESSAGES.longitude,
+                                        )}
+                                        value={currentOrgUnit.longitude}
+                                    />
+                                </Fragment>
+                            )}
+                            <PopupItemComponent
+                                label={formatMessage(MESSAGES.created_at)}
+                                value={moment
+                                    .unix(currentOrgUnit.created_at)
+                                    .format('DD/MM/YYYY HH:mm')}
+                            />
+                            <Box className={classes.actionBox}>
+                                <Grid
+                                    container
+                                    spacing={0}
+                                    justify={
+                                        displayUseLocation
+                                            ? 'center'
+                                            : 'flex-end'
+                                    }
+                                    alignItems="center"
+                                >
+                                    {displayUseLocation && (
+                                        <ConfirmDialog
+                                            btnMessage={formatMessage(
+                                                MESSAGES.associate,
+                                            )}
+                                            question={formatMessage(
+                                                MESSAGES.question,
+                                            )}
+                                            message={formatMessage(
+                                                MESSAGES.message,
+                                            )}
+                                            confirm={() => this.confirmDialog()}
+                                        />
+                                    )}
+                                    <Button
+                                        className={classes.marginLeft}
+                                        variant="outlined"
+                                        size="small"
+                                        color="primary"
                                     >
-                                        {
-                                            displayUseLocation
-                                            && (
-                                                <ConfirmDialog
-                                                    btnMessage={formatMessage(MESSAGES.associate)}
-                                                    question={formatMessage(MESSAGES.question)}
-                                                    message={formatMessage(MESSAGES.message)}
-                                                    confirm={() => this.confirmDialog()}
-                                                />
-                                            )
-                                        }
-                                        <Button
-                                            className={classes.marginLeft}
-                                            variant="outlined"
-                                            size="small"
-                                            color="primary"
+                                        <Link
+                                            to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
+                                            className={classes.linkButton}
                                         >
-                                            <Link
-                                                to={`${baseUrls.orgUnitDetails}/orgUnitId/${currentOrgUnit.id}`}
-                                                className={classes.linkButton}
-                                            >
-                                                <FormattedMessage {...MESSAGES.see} />
-                                            </Link>
-                                        </Button>
-                                    </Grid>
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    )
-                }
+                                            <FormattedMessage
+                                                {...MESSAGES.see}
+                                            />
+                                        </Link>
+                                    </Button>
+                                </Grid>
+                            </Box>
+                        </CardContent>
+                    </Card>
+                )}
             </Popup>
         );
     }
@@ -188,7 +191,9 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
 });
 
-
 export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgUnitPopupComponent)),
+    connect(
+        MapStateToProps,
+        MapDispatchToProps,
+    )(injectIntl(OrgUnitPopupComponent)),
 );

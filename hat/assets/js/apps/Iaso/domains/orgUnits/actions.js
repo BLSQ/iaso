@@ -1,6 +1,10 @@
+import mapValues from 'lodash/mapValues';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
 import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 import { postRequest } from '../../libs/Api';
+import {
+    saveAction, createAction, deleteAction,
+} from '../../redux/actions/formsActions';
 
 export const SET_ORG_UNITS = 'SET_ORG_UNITS';
 export const SET_ORG_UNITS_LOCATIONS = 'SET_ORG_UNITS_LOCATIONS';
@@ -8,6 +12,7 @@ export const RESET_ORG_UNITS = 'RESET_ORG_UNITS';
 export const SET_ORG_UNIT = 'SET_ORG_UNIT';
 export const SET_SUB_ORG_UNIT = 'SET_SUB_ORG_UNIT';
 export const SET_FETCHING = 'SET_FETCHING';
+export const SET_FETCHING_DETAIL = 'SET_FETCHING_DETAIL';
 export const SET_ORG_UNIT_TYPES = 'SET_ORG_UNIT_TYPES';
 export const SET_SOURCE_TYPES = 'SET_SOURCE_TYPES';
 export const SET_SOURCES = 'SET_SOURCES';
@@ -107,6 +112,11 @@ export const setFetching = fetching => ({
     payload: fetching,
 });
 
+export const setFetchingDetail = fetchingDetail => ({
+    type: SET_FETCHING_DETAIL,
+    payload: fetchingDetail,
+});
+
 export const setFetchingOrgUnitTypes = fetching => ({
     type: SET_FETCHING_ORG_UNITS_TYPES,
     payload: fetching,
@@ -130,3 +140,37 @@ export const saveMultiEdit = data => (dispatch) => {
             throw error;
         }));
 };
+
+const apiKey = 'orgunits';
+export const saveOrgUnit = orgUnitData => dispatch => saveAction(
+    dispatch,
+    orgUnitData,
+    apiKey,
+    'saveOrgUnitSuccesfull',
+    'saveOrgUnitError',
+    setFetchingDetail,
+);
+
+export const createOrgUnit = orgUnitData => dispatch => createAction(
+    dispatch,
+    {
+        ...orgUnitData,
+        creation_source: 'dashboard',
+    },
+    `${apiKey}/create_org_unit`,
+    'saveOrgUnitSuccesfull',
+    'saveOrgUnitError',
+    setFetchingDetail,
+);
+
+// export const deleteOrgUnit = (orgUnit, params) => dispatch => deleteAction(
+//     dispatch,
+//     orgUnit,
+//     apiKey,
+//     setOrgUnits,
+//     'deleteOrgUnitSuccesfull',
+//     'deleteOrgUnitError',
+//     'orgUnits',
+//     params,
+//     setIsFetching,
+// );

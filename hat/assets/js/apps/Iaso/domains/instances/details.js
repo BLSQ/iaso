@@ -29,6 +29,7 @@ import InstanceDetailsExportRequests from './components/InstanceDetailsExportReq
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 
@@ -37,7 +38,7 @@ import MESSAGES from './messages';
 import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
-const styles = theme => ({
+const styles = (theme) => ({
     ...commonStyles(theme),
     alert: {
         marginBottom: theme.spacing(4),
@@ -51,13 +52,21 @@ const actions = (currentInstance, reAssignInstance) => [
         disabled: currentInstance && currentInstance.deleted,
     },
     {
-        id: 'instanceReAssignAction',
+        id: 'instanceExportAction',
         icon: (
-            <ReAssignInstanceDialogComponent
-                currentInstance={currentInstance}
-                onReAssignInstance={reAssignInstance}
+            <ExportInstancesDialogComponent
+                getFilters={() => ({
+                    form_id: currentInstance.form_id,
+                    search: `ids:${currentInstance.id}`,
+                })}
+                batchExport={false}
             />
         ),
+        disabled: currentInstance && currentInstance.deleted,
+    },
+    {
+        id: 'instanceReAssignAction',
+        icon: <ReAssignInstanceDialogComponent currentInstance={currentInstance} onReAssignInstance={reAssignInstance} />,
         disabled: currentInstance && currentInstance.deleted,
     },
     {
@@ -89,9 +98,6 @@ class InstanceDetails extends Component {
         if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
             this.props.softDelete(this.props.currentInstance);
         }
-
-        // if (action.id === 'instanceReAssignAction' && this.props.currentInstance) {
-        // }
     }
 
     render() {
@@ -109,13 +115,7 @@ class InstanceDetails extends Component {
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
-                    title={
-                        currentInstance
-                            ? `${
-                                currentInstance.form_name
-                            }: ${currentInstance.file_name.replace('.xml', '')}`
-                            : ''
-                    }
+                    title={currentInstance ? `${currentInstance.form_name}: ${currentInstance.file_name.replace('.xml', '')}` : ''}
                     displayBackButton
                     goBack={() => {
                         if (prevPathname || !currentInstance) {
@@ -130,10 +130,7 @@ class InstanceDetails extends Component {
                 {fetching && <LoadingSpinner />}
                 {currentInstance && (
                     <Box className={classes.containerFullHeightNoTabPadded}>
-                        <SpeedDialInstanceActions
-                            actions={actions(currentInstance, reAssignInstance)}
-                            onActionSelected={action => this.onActionSelected(action)}
-                        />
+                        <SpeedDialInstanceActions actions={actions(currentInstance, reAssignInstance)} onActionSelected={(action) => this.onActionSelected(action)} />
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
@@ -152,17 +149,10 @@ class InstanceDetails extends Component {
                                 <WidgetPaper title={formatMessage(MESSAGES.location)}>
                                     <InstanceDetailsLocation currentInstance={currentInstance} />
                                 </WidgetPaper>
-                                <InstanceDetailsExportRequests
-                                    currentInstance={currentInstance}
-                                    classes={classes}
-                                />
+                                <InstanceDetailsExportRequests currentInstance={currentInstance} classes={classes} />
                                 {currentInstance.files.length > 0 && (
                                     <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
-                                        <InstancesFilesList
-                                            fetchDetails={false}
-                                            instanceDetail={currentInstance}
-                                            files={getInstancesFilesList([currentInstance])}
-                                        />
+                                        <InstancesFilesList fetchDetails={false} instanceDetail={currentInstance} files={getInstancesFilesList([currentInstance])} />
                                     </WidgetPaper>
                                 )}
                             </Grid>
@@ -210,13 +200,13 @@ InstanceDetails.propTypes = {
     reAssignInstance: PropTypes.func.isRequired,
 };
 
-const MapStateToProps = state => ({
+const MapStateToProps = (state) => ({
     fetching: state.instances.fetching,
     currentInstance: state.instances.current,
     prevPathname: state.routerCustom.prevPathname,
 });
 
-const MapDispatchToProps = dispatch => ({
+const MapDispatchToProps = (dispatch) => ({
     ...bindActionCreators(
         {
             fetchInstanceDetail: fetchInstanceDetailAction,
@@ -230,6 +220,4 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)),
-);
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstanceDetails)));

@@ -9,8 +9,8 @@ import {
 } from './actions';
 
 export const instancesInitialState = {
-    fetching: false,
-    instancesSmall: [],
+    fetching: true,
+    instancesSmall: null,
     instancesPage: {
         list: null,
         showPagination: false,
@@ -20,7 +20,7 @@ export const instancesInitialState = {
     },
     current: null,
     currentForm: null,
-    isInstancesFilterUpdated: false
+    isInstancesFilterUpdated: false,
 };
 
 export const instancesReducer = (state = instancesInitialState, action = {}) => {

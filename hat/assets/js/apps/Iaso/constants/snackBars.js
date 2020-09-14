@@ -22,9 +22,10 @@ export const errorSnackBar = (messageKey = formErrorMessageKey, messageObject, e
         persist: Boolean(errorLog),
     },
     errorLog,
+    id: `${messageKey}-${Date.now()}`,
 });
 
-export const warningSnackBar = (messageKey = formWarningMessageKey, messageObject) => ({
+export const warningSnackBar = (messageKey = formWarningMessageKey, messageObject, id) => ({
     messageKey,
     messageObject,
     options: {
@@ -32,6 +33,7 @@ export const warningSnackBar = (messageKey = formWarningMessageKey, messageObjec
         variant: 'warning',
         persist: true,
     },
+    id: id || messageKey,
 });
 
 export const reloadPageSnackBar = (

@@ -213,7 +213,7 @@ class InputComponent extends Component {
                         label={labelText}
                         required={required}
                         error={hasErrors}
-                        shrink={value !== ''}
+                        shrink={value !== '' && value !== null}
                     />
                     <OutlinedInput
                         size="small"

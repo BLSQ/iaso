@@ -2,10 +2,7 @@ import {
     getRequest, postRequest, putRequest, patchRequest, deleteRequest,
 } from '../../libs/Api';
 import { enqueueSnackbar } from '../../redux/snackBarsReducer';
-import {
-    errorSnackBar,
-    succesfullSnackBar,
-} from '../../constants/snackBars';
+import { errorSnackBar, succesfullSnackBar } from '../../constants/snackBars';
 
 export const SET_INSTANCES = 'SET_INSTANCES';
 export const SET_INSTANCES_SMALL_DICT = 'SET_INSTANCES_SMALL_DICT';
@@ -122,9 +119,7 @@ export const createExportRequest = filterParams => (dispatch) => {
             return dispatch(enqueueSnackbar(succesfullSnackBar('createExportRequestSuccess')));
         })
         .catch((err) => {
-            const key = err.details
-                ? `createExportRequestError${err.details.code}`
-                : 'createExportRequestError';
+            const key = err.details ? `createExportRequestError${err.details.code}` : 'createExportRequestError';
             return dispatch(enqueueSnackbar(errorSnackBar(key, null, err)));
         })
         .then(() => dispatch(setInstancesFetching(false)));

@@ -11,26 +11,15 @@ import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
 
 import {
-    resetInstances,
-    setCurrentForm,
-    fetchFormDetail as fetchFormDetailAction,
-    setInstances, setInstancesSmallDict, setInstancesFetching,
+    resetInstances, setCurrentForm, fetchFormDetail as fetchFormDetailAction, setInstances, setInstancesSmallDict, setInstancesFetching,
 } from './actions';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import { setDevicesList, setDevicesOwnershipList } from '../../redux/devicesReducer';
 import { setPeriods } from '../periods/actions';
-import {
-    redirectTo as redirectToAction,
-    redirectToReplace as redirectToReplaceAction,
-} from '../../routing/actions';
+import { redirectTo as redirectToAction, redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
 
 import {
-    fetchInstancesAsDict,
-    fetchInstancesAsSmallDict,
-    fetchOrgUnitsTypes,
-    fetchDevices,
-    fetchDevicesOwnerships,
-    fetchPeriods,
+    fetchInstancesAsDict, fetchInstancesAsSmallDict, fetchOrgUnitsTypes, fetchDevices, fetchDevicesOwnerships, fetchPeriods,
 } from '../../utils/requests';
 
 import {
@@ -61,11 +50,13 @@ const defaultOrder = 'updated_at';
 
 const asBackendStatus = (status) => {
     if (status) {
-        return status.split(',').map(s => (s === 'ERROR' ? 'DUPLICATED' : s)).join(',');
+        return status
+            .split(',')
+            .map(s => (s === 'ERROR' ? 'DUPLICATED' : s))
+            .join(',');
     }
     return status;
 };
-
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -80,7 +71,6 @@ const styles = theme => ({
     },
 });
 
-
 class Instances extends Component {
     constructor(props) {
         super(props);
@@ -94,22 +84,15 @@ class Instances extends Component {
     componentWillMount() {
         const {
             dispatch,
-            params: {
-                formId,
-                columns,
-            },
+            params: { formId, columns },
             params,
             redirectToReplace,
         } = this.props;
         this.props.resetInstances();
-        fetchOrgUnitsTypes(dispatch)
-            .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchDevices(dispatch)
-            .then(devices => this.props.setDevicesList(devices));
-        fetchDevicesOwnerships(dispatch)
-            .then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
-        fetchPeriods(dispatch, formId)
-            .then(periods => this.props.setPeriods(periods));
+        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
+        fetchDevices(dispatch).then(devices => this.props.setDevicesList(devices));
+        fetchDevicesOwnerships(dispatch).then(devicesOwnershipsList => this.props.setDevicesOwnershipList(devicesOwnershipsList));
+        fetchPeriods(dispatch, formId).then(periods => this.props.setPeriods(periods));
         if (!columns) {
             const newParams = {
                 ...params,
@@ -121,9 +104,7 @@ class Instances extends Component {
 
     componentDidMount() {
         const {
-            params: {
-                formId,
-            },
+            params: { formId },
             fetchFormDetail,
         } = this.props;
         fetchFormDetail(formId);
@@ -134,37 +115,23 @@ class Instances extends Component {
         const {
             params,
             reduxPage,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
-        const {
-            tableColumns,
-        } = this.state;
-        if (params.pageSize !== prevProps.params.pageSize
-            || params.formId !== prevProps.params.formId
-            || params.order !== prevProps.params.order
-            || params.page !== prevProps.params.page) {
+        const { tableColumns } = this.state;
+        if (params.pageSize !== prevProps.params.pageSize || params.formId !== prevProps.params.formId || params.order !== prevProps.params.order || params.page !== prevProps.params.page) {
             this.fetchInstances();
         }
 
         if (params.tab !== prevProps.params.tab) {
             this.handleChangeTab(params.tab, false);
         }
-        if (
-            (
-                reduxPage.list
-                && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)
-            )
-        ) {
+        if (reduxPage.list && (!isEqual(reduxPage.list, prevProps.reduxPage.list) || tableColumns.length === 0)) {
             this.changeVisibleColumns(getInstancesVisibleColumns(formatMessage, reduxPage.list[0], params, defaultOrder));
         }
     }
 
     getFilters() {
-        const {
-            params,
-        } = this.props;
+        const { params } = this.props;
         return {
             form_id: params.formId,
             withLocation: params.withLocation,
@@ -173,14 +140,13 @@ class Instances extends Component {
             periods: params.periods,
             status: asBackendStatus(params.status),
             deviceOwnershipId: params.deviceOwnershipId,
+            search: params.search,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
         };
     }
 
     getEndpointUrl(toExport, exportType = 'csv', asSmallDict = false) {
-        const {
-            params,
-        } = this.props;
+        const { params } = this.props;
         const urlParams = {
             limit: params.pageSize ? params.pageSize : 20,
             order: params.order ? params.order : `-${defaultOrder}`,
@@ -205,7 +171,6 @@ class Instances extends Component {
         });
     }
 
-
     goBack() {
         const { params, router } = this.props;
         this.props.setCurrentForm(undefined);
@@ -214,19 +179,13 @@ class Instances extends Component {
     }
 
     fetchInstances() {
-        const {
-            params,
-            dispatch,
-        } = this.props;
+        const { params, dispatch } = this.props;
 
         const url = this.getEndpointUrl();
         const urlSmall = this.getEndpointUrl(false, '', true);
 
         dispatch(this.props.setInstancesFetching(true));
-        Promise.all([
-            fetchInstancesAsDict(dispatch, url),
-            fetchInstancesAsSmallDict(dispatch, urlSmall),
-        ]).then(([instancesData, smallInstancesData]) => {
+        Promise.all([fetchInstancesAsDict(dispatch, url), fetchInstancesAsSmallDict(dispatch, urlSmall)]).then(([instancesData, smallInstancesData]) => {
             this.props.setInstances(instancesData.instances, params, instancesData.count, instancesData.pages);
             this.props.setInstancesSmallDict(smallInstancesData);
             dispatch(this.props.setInstancesFetching(false));
@@ -235,15 +194,16 @@ class Instances extends Component {
 
     changeVisibleColumns(visibleColumns) {
         const {
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             redirectToReplace,
             params,
         } = this.props;
         const newParams = {
             ...params,
-            columns: visibleColumns.filter(c => c.active).map(c => c.key).join(','),
+            columns: visibleColumns
+                .filter(c => c.active)
+                .map(c => c.key)
+                .join(','),
         };
         this.setState({
             visibleColumns,
@@ -253,7 +213,6 @@ class Instances extends Component {
         redirectToReplace(baseUrl, newParams);
     }
 
-
     render() {
         const {
             classes,
@@ -262,19 +221,19 @@ class Instances extends Component {
             instancesSmall,
             fetching,
             currentForm,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             router,
             prevPathname,
             redirectTo,
         } = this.props;
+
         const {
             tab,
             tableColumns,
             visibleColumns,
         } = this.state;
         const filesList = instancesSmall ? getInstancesFilesList(instancesSmall) : null;
+
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
@@ -296,38 +255,19 @@ class Instances extends Component {
                                     root: classes.tabs,
                                     indicator: classes.indicator,
                                 }}
-                                onChange={(event, newtab) => this.handleChangeTab(newtab)
-                                }
+                                onChange={(event, newtab) => this.handleChangeTab(newtab)}
                             >
-                                <Tab
-                                    value="list"
-                                    label={formatMessage(MESSAGES.list)}
-                                />
-                                <Tab
-                                    value="map"
-                                    label={formatMessage(MESSAGES.map)}
-                                />
-                                <Tab
-                                    value="files"
-                                    label={formatMessage(MESSAGES.files)}
-                                />
+                                <Tab value="list" label={formatMessage(MESSAGES.list)} />
+                                <Tab value="map" label={formatMessage(MESSAGES.map)} />
+                                <Tab value="files" label={formatMessage(MESSAGES.files)} />
                             </Tabs>
                         </Grid>
-                        <Grid
-                            xs={2}
-                            item
-                            container
-                            alignItems="center"
-                            justify="flex-end"
-                            className={classes.selectColmunsContainer}
-                        >
-                            <ColumnsSelectDrawerComponent
-                                options={visibleColumns}
-                                setOptions={cols => this.changeVisibleColumns(cols)}
-                            />
+                        <Grid xs={2} item container alignItems="center" justify="flex-end" className={classes.selectColmunsContainer}>
+                            <ColumnsSelectDrawerComponent options={visibleColumns} setOptions={cols => this.changeVisibleColumns(cols)} />
                         </Grid>
                     </Grid>
                 </TopBar>
+
                 {
                     (fetching || !instancesSmall)
                     && <LoadingSpinner />
@@ -360,34 +300,22 @@ class Instances extends Component {
                             </div>
                         )
                     }
-                    {
-                        tab === 'map' && (
-                            <div className={classes.containerMarginNeg}>
-                                <InstancesMap />
-                            </div>
-                        )
-                    }
-                    {
-                        tab === 'files' && (
-                            <InstancesFilesList
-                                files={filesList}
-                            />
-                        )
-                    }
-                    {tab === 'list'
-                        && (
-                            <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-                                <Grid xs={12} item className={classes.textAlignRight}>
-                                    <div className={classes.paddingBottomBig}>
-                                        <ExportInstancesDialogComponent getFilters={() => this.getFilters()} />
-                                        <DownloadButtonsComponent
-                                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                                        />
-                                    </div>
-                                </Grid>
+                    {!fetching && tab === 'map' && (
+                        <div className={classes.containerMarginNeg}>
+                            <InstancesMap instances={instancesSmall} />
+                        </div>
+                    )}
+                    {tab === 'files' && <InstancesFilesList files={getInstancesFilesList(instancesSmall)} />}
+                    {tab === 'list' && (
+                        <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
+                            <Grid xs={12} item className={classes.textAlignRight}>
+                                <div className={classes.paddingBottomBig}>
+                                    <ExportInstancesDialogComponent getFilters={() => this.getFilters()} />
+                                    <DownloadButtonsComponent csvUrl={this.getEndpointUrl(true, 'csv')} xlsxUrl={this.getEndpointUrl(true, 'xlsx')} />
+                                </div>
                             </Grid>
-                        )}
+                        </Grid>
+                    )}
                 </Box>
             </section>
         );
@@ -444,13 +372,14 @@ const MapDispatchToProps = dispatch => ({
     setDevicesList: devices => dispatch(setDevicesList(devices)),
     setDevicesOwnershipList: devicesOwnershipsList => dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
-    ...bindActionCreators({
-        fetchFormDetail: fetchFormDetailAction,
-        redirectTo: redirectToAction,
-        redirectToReplace: redirectToReplaceAction,
-    }, dispatch),
+    ...bindActionCreators(
+        {
+            fetchFormDetail: fetchFormDetailAction,
+            redirectTo: redirectToAction,
+            redirectToReplace: redirectToReplaceAction,
+        },
+        dispatch,
+    ),
 });
 
-export default withStyles(styles)(
-    connect(MapStateToProps, MapDispatchToProps)(injectIntl(Instances)),
-);
+export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(Instances)));

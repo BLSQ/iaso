@@ -94,6 +94,14 @@ export const instancesPath = {
         ...paginationPathParams,
         {
             isRequired: false,
+            key: 'dateFrom',
+        },
+        {
+            isRequired: false,
+            key: 'dateTo',
+        },
+        {
+            isRequired: false,
             key: 'periods',
         },
         {

@@ -43,7 +43,7 @@ const DateRange = ({
                         autoOk
                         disableToolbar
                         variant="inline"
-                        maxDate={dateTo}
+                        maxDate={dateTo === '' ? undefined : dateTo}
                         InputLabelProps={{
                             className: classes.label,
                             shrink: Boolean(dateFrom),
@@ -81,7 +81,7 @@ const DateRange = ({
                         autoOk
                         disableToolbar
                         variant="inline"
-                        minDate={dateFrom}
+                        minDate={dateFrom === '' ? undefined : dateFrom}
                         InputLabelProps={{
                             className: classes.label,
                             shrink: Boolean(dateTo),

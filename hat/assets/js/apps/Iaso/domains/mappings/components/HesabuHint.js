@@ -8,15 +8,17 @@ function fetcthDataElementUsedBy(projectDescriptor) {
     const dataElementsUsedByHesabu = [];
     const indicatorsById = {};
 
-    indicators.indicators.forEach((indic) => { indicatorsById[indic.id] = indic; });
+    indicators.indicators.forEach(indic => {
+        indicatorsById[indic.id] = indic;
+    });
 
-    Object.keys(projectDescriptor.payment_rules).forEach((paymentRuleCode) => {
+    Object.keys(projectDescriptor.payment_rules).forEach(paymentRuleCode => {
         const paymentRule = projectDescriptor.payment_rules[paymentRuleCode];
-        Object.keys(paymentRule.packages).forEach((packageCode) => {
+        Object.keys(paymentRule.packages).forEach(packageCode => {
             const orbfPackage = paymentRule.packages[packageCode];
-            Object.keys(orbfPackage.activities).forEach((activityCode) => {
+            Object.keys(orbfPackage.activities).forEach(activityCode => {
                 const activity = orbfPackage.activities[activityCode];
-                Object.keys(activity).forEach((state) => {
+                Object.keys(activity).forEach(state => {
                     const hesabuType = orbfPackage.activity_formulas[state]
                         ? 'activity_formula'
                         : 'activity_state';
@@ -25,10 +27,12 @@ function fetcthDataElementUsedBy(projectDescriptor) {
 
                         if (indicatorsById[deid]) {
                             const deRegex = /[a-zA-Z]{1}[a-zA-Z0-9]{10}/;
-                            const dataelement_ids = indicatorsById[deid].numerator
+                            const dataelement_ids = indicatorsById[
+                                deid
+                            ].numerator
                                 .split(/#{([a-zA-Z]{1}[a-zA-Z0-9]{10})}/i)
                                 .filter(ex => ex.match(deRegex));
-                            dataelement_ids.forEach((de) => {
+                            dataelement_ids.forEach(de => {
                                 dataElementsUsedByHesabu.push({
                                     id: de,
                                     activityCode: activity.code,
@@ -38,7 +42,8 @@ function fetcthDataElementUsedBy(projectDescriptor) {
                                     packageName: orbfPackage.name,
                                     paymentName: paymentRule.name,
                                     dhis2IndicatorId: deid,
-                                    dhis2IndicatorName: indicatorsById[deid].name,
+                                    dhis2IndicatorName:
+                                        indicatorsById[deid].name,
                                     hesabu: hesabuType,
                                 });
                             });
@@ -57,7 +62,7 @@ function fetcthDataElementUsedBy(projectDescriptor) {
                     }
                 }); // states
             }); // activities
-            Object.keys(orbfPackage.formulas).forEach((formulaCode) => {
+            Object.keys(orbfPackage.formulas).forEach(formulaCode => {
                 const formula = orbfPackage.formulas[formulaCode];
                 const deid = formula.de_id;
                 dataElementsUsedByHesabu.push({
@@ -74,7 +79,7 @@ function fetcthDataElementUsedBy(projectDescriptor) {
                 });
             });
         }); // packages
-        Object.keys(paymentRule.formulas).forEach((formulaCode) => {
+        Object.keys(paymentRule.formulas).forEach(formulaCode => {
             const formula = paymentRule.formulas[formulaCode];
             const deid = formula.de_id;
             dataElementsUsedByHesabu.push({
@@ -97,7 +102,11 @@ function fetcthDataElementUsedBy(projectDescriptor) {
 }
 
 const HesabuHint = ({ mapping, hesabuDescriptor }) => {
-    if (mapping === undefined || hesabuDescriptor === null || hesabuDescriptor.length === 0) {
+    if (
+        mapping === undefined ||
+        hesabuDescriptor === null ||
+        hesabuDescriptor.length === 0
+    ) {
         return null;
     }
     const usedBy = fetcthDataElementUsedBy(hesabuDescriptor[0]).filter(

@@ -5,7 +5,14 @@ import Select from 'react-select';
 import SearchIcon from '@material-ui/icons/Search';
 import Edit from '@material-ui/icons/Edit';
 import {
-    Checkbox, FormControlLabel, OutlinedInput, withStyles, Tooltip, IconButton, RadioGroup, Radio,
+    Checkbox,
+    FormControlLabel,
+    OutlinedInput,
+    withStyles,
+    Tooltip,
+    IconButton,
+    RadioGroup,
+    Radio,
 } from '@material-ui/core';
 import { fade } from '@material-ui/core/styles/colorManipulator';
 import grey from '@material-ui/core/colors/grey';
@@ -173,9 +180,7 @@ class InputComponent extends Component {
             errors,
             onChange,
             options,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             disabled,
             clearable,
             label,
@@ -187,63 +192,77 @@ class InputComponent extends Component {
             multi,
             uid,
         } = this.props;
-        const {
-            selectInputValue,
-            isFocused,
-            displayPassword,
-        } = this.state;
+        const { selectInputValue, isFocused, displayPassword } = this.state;
 
         const hasErrors = errors.length > 0;
         let labelText;
         if (type !== 'radio') {
-            labelText = labelString !== ''
-                ? labelString
-                : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+            labelText =
+                labelString !== ''
+                    ? labelString
+                    : formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
         }
 
-        if (type === 'text' || type === 'number' || type === 'email' || type === 'password') {
-            const inputValue = (value === null || typeof value === 'undefined')
-                ? ''
-                : value;
+        if (
+            type === 'text' ||
+            type === 'number' ||
+            type === 'email' ||
+            type === 'password'
+        ) {
+            const inputValue =
+                value === null || typeof value === 'undefined' ? '' : value;
 
             return (
-                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
+                <FormControlComponent
+                    withMarginTop={withMarginTop}
+                    errors={errors}
+                >
                     <InputLabelComponent
                         htmlFor={`input-text-${keyValue}`}
                         label={labelText}
                         required={required}
                         error={hasErrors}
-                        shrink={value !== ''}
+                        shrink={value !== '' && value !== null}
                     />
                     <OutlinedInput
                         size="small"
                         disabled={disabled}
                         id={`input-text-${keyValue}`}
                         value={inputValue}
-                        type={type === 'password' && displayPassword ? 'text' : type}
-                        onChange={event => onChange(keyValue, event.target.value)}
+                        type={
+                            type === 'password' && displayPassword
+                                ? 'text'
+                                : type
+                        }
+                        onChange={event =>
+                            onChange(keyValue, event.target.value)
+                        }
                         error={hasErrors}
-                        className={type === 'password' ? classes.passwordInput : ''}
+                        className={
+                            type === 'password' ? classes.passwordInput : ''
+                        }
                     />
-                    {
-                        type === 'password'
-                        && (
-                            <Tooltip
-                                className={classes.displayPassword}
-                                disableFocusListener={disabled}
-                                disableHoverListener={disabled}
-                                disableTouchListener={disabled}
-                                placement="bottom"
-                                title={formatMessage(MESSAGES.displayPassword)}
-                            >
-                                <span>
-                                    <IconButton color={displayPassword ? 'primary' : 'inherit'} onClick={() => this.toggleDisplayPassword()}>
-                                        <Edit />
-                                    </IconButton>
-                                </span>
-                            </Tooltip>
-                        )
-                    }
+                    {type === 'password' && (
+                        <Tooltip
+                            className={classes.displayPassword}
+                            disableFocusListener={disabled}
+                            disableHoverListener={disabled}
+                            disableTouchListener={disabled}
+                            placement="bottom"
+                            title={formatMessage(MESSAGES.displayPassword)}
+                        >
+                            <span>
+                                <IconButton
+                                    color={
+                                        displayPassword ? 'primary' : 'inherit'
+                                    }
+                                    onClick={() => this.toggleDisplayPassword()}
+                                >
+                                    <Edit />
+                                </IconButton>
+                            </span>
+                        </Tooltip>
+                    )}
                 </FormControlComponent>
             );
         }
@@ -254,11 +273,17 @@ class InputComponent extends Component {
             }
 
             return (
-                <FormControlComponent withMarginTop={withMarginTop} errors={errors}>
+                <FormControlComponent
+                    withMarginTop={withMarginTop}
+                    errors={errors}
+                >
                     <InputLabelComponent
                         htmlFor={`input-select-${keyValue}`}
                         label={labelText}
-                        shrink={(value !== undefined && value !== null) || selectInputValue !== ''}
+                        shrink={
+                            (value !== undefined && value !== null) ||
+                            selectInputValue !== ''
+                        }
                         isFocused={isFocused}
                         required={required}
                         error={hasErrors}
@@ -270,7 +295,9 @@ class InputComponent extends Component {
                             multi={multi}
                             clearable={clearable}
                             simpleValue
-                            onInputChange={newValue => this.onSelectInputChange(newValue)}
+                            onInputChange={newValue =>
+                                this.onSelectInputChange(newValue)
+                            }
                             name={keyValue}
                             value={value}
                             placeholder=""
@@ -284,7 +311,8 @@ class InputComponent extends Component {
                 </FormControlComponent>
             );
         }
-        if (type === 'arrayInput') { // TODO: implement required, errors...
+        if (type === 'arrayInput') {
+            // TODO: implement required, errors...
             return (
                 <ArrayFieldInput
                     label={labelText}
@@ -302,7 +330,11 @@ class InputComponent extends Component {
                         htmlFor={`search-${keyValue}`}
                         label={labelText}
                         required={required}
-                        shrink={value !== undefined && value !== null && value !== ''}
+                        shrink={
+                            value !== undefined &&
+                            value !== null &&
+                            value !== ''
+                        }
                         isFocused={isFocused}
                     />
                     <OutlinedInput
@@ -310,7 +342,7 @@ class InputComponent extends Component {
                         id={uid ? `search-${uid}` : `search-${keyValue}`}
                         value={value || ''}
                         placeholder=""
-                        onKeyPress={(event) => {
+                        onKeyPress={event => {
                             if (event.which === 13 || event.keyCode === 13) {
                                 onEnterPressed();
                             }
@@ -320,7 +352,9 @@ class InputComponent extends Component {
                             input: classes.inputInput,
                         }}
                         inputProps={{ 'aria-label': 'search' }}
-                        onChange={event => onChange(keyValue, event.target.value)}
+                        onChange={event =>
+                            onChange(keyValue, event.target.value)
+                        }
                     />
                     <div
                         tabIndex={0}
@@ -337,15 +371,17 @@ class InputComponent extends Component {
             return (
                 <FormControlLabel
                     disabled={disabled}
-                    control={(
+                    control={
                         <Checkbox
                             color="primary"
                             checked={value === true}
-                            onChange={event => onChange(keyValue, event.target.checked)}
+                            onChange={event =>
+                                onChange(keyValue, event.target.checked)
+                            }
                             value="checked"
                             disabled={disabled}
                         />
-                    )}
+                    }
                     label={labelText}
                 />
             );
@@ -357,16 +393,14 @@ class InputComponent extends Component {
                     value={value}
                     onChange={event => onChange(keyValue, event.target.value)}
                 >
-                    {
-                        options.map(o => (
-                            <FormControlLabel
-                                key={o.value}
-                                value={o.value}
-                                control={<Radio color="primary" />}
-                                label={o.label}
-                            />
-                        ))
-                    }
+                    {options.map(o => (
+                        <FormControlLabel
+                            key={o.value}
+                            value={o.value}
+                            control={<Radio color="primary" />}
+                            label={o.label}
+                        />
+                    ))}
                 </RadioGroup>
             );
         }

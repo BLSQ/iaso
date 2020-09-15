@@ -18,22 +18,32 @@ class ClusterSwitchComponent extends Component {
         const { withCluster, change, message } = this.props;
         return (
             <div className="map__option">
-                <span className="map__option__header">
-                    {message}
-                </span>
+                <span className="map__option__header">{message}</span>
                 <ul className="map__option__list">
                     <li
-                        className={`interactive map__option__list__item${withCluster ? ' active' : ''}`}
+                        className={`interactive map__option__list__item${
+                            withCluster ? ' active' : ''
+                        }`}
                         onClick={() => change(true)}
                     >
-                        <i className={`map__option__icon${withCluster ? ' active' : ''}`} />
+                        <i
+                            className={`map__option__icon${
+                                withCluster ? ' active' : ''
+                            }`}
+                        />
                         <FormattedMessage {...MESSAGES.withCluster} />
                     </li>
                     <li
-                        className={`interactive map__option__list__item${!withCluster ? ' active' : ''}`}
+                        className={`interactive map__option__list__item${
+                            !withCluster ? ' active' : ''
+                        }`}
                         onClick={() => change(false)}
                     >
-                        <i className={`map__option__icon${!withCluster ? ' active' : ''}`} />
+                        <i
+                            className={`map__option__icon${
+                                !withCluster ? ' active' : ''
+                            }`}
+                        />
                         <FormattedMessage {...MESSAGES.withOutCluster} />
                     </li>
                 </ul>

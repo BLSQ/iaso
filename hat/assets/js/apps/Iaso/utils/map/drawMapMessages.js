@@ -88,7 +88,7 @@ const MESSAGES = defineMessages({
     },
 });
 
-const setDrawMessages = (formatMessage) => {
+const setDrawMessages = formatMessage => {
     L.drawLocal = {
         draw: {
             toolbar: {

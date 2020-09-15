@@ -56,34 +56,42 @@ export const setHesabuDescriptor = descriptor => ({
     payload: descriptor,
 });
 
-export const fetchHesabuDescriptor = dataSourceId => dispatch => getRequest(
-    `/api/datasources/${dataSourceId}/hesabudescriptors.json?fields=:all`,
-).then((answer) => {
-    dispatch(setHesabuDescriptor(answer.hesabudescriptors));
-});
+export const fetchHesabuDescriptor = dataSourceId => dispatch =>
+    getRequest(
+        `/api/datasources/${dataSourceId}/hesabudescriptors.json?fields=:all`,
+    ).then(answer => {
+        dispatch(setHesabuDescriptor(answer.hesabudescriptors));
+    });
 
-export const fetchFormVersionDetail = (id, questionName) => dispatch => getRequest(`/api/formversions/${id}.json?fields=:all`).then(
-    (formVersion) => {
+export const fetchFormVersionDetail = (id, questionName) => dispatch =>
+    getRequest(`/api/formversions/${id}.json?fields=:all`).then(formVersion => {
         dispatch(setCurrentFormVersion(formVersion));
         const indexedQuestions = Descriptor.indexQuestions(
             formVersion.descriptor,
         );
         return dispatch(setCurrentQuestion(indexedQuestions[questionName]));
-    },
-);
+    });
 
 export const fetchMappingVersionDetail = (
     mappingVersionId,
     questionName,
-) => (dispatch) => {
+) => dispatch => {
     dispatch(fetchingMappingVersions(true));
-    return getRequest(`/api/mappingversions/${mappingVersionId}.json?fields=:all`)
-        .then((detail) => {
-            dispatch(fetchFormVersionDetail(detail.form_version.id, questionName));
+    return getRequest(
+        `/api/mappingversions/${mappingVersionId}.json?fields=:all`,
+    )
+        .then(detail => {
+            dispatch(
+                fetchFormVersionDetail(detail.form_version.id, questionName),
+            );
             dispatch(fetchHesabuDescriptor(detail.mapping.data_source.id));
             return dispatch(setCurrentMappingVersion(detail));
         })
-        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
+        .catch(err =>
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            ),
+        )
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
@@ -93,21 +101,27 @@ export const applyPartialUpdate = (
     mappingVersionId,
     questionName,
     mapping,
-) => (dispatch) => {
+) => dispatch => {
     dispatch(fetchingMappingVersions(true));
     return patchRequest(`/api/mappingversions/${mappingVersionId}/`, {
         question_mappings: {
             [questionName]: mapping,
         },
     })
-        .then(() => dispatch(fetchMappingVersionDetail(mappingVersionId, questionName)))
-        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
+        .then(() =>
+            dispatch(fetchMappingVersionDetail(mappingVersionId, questionName)),
+        )
+        .catch(err =>
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            ),
+        )
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
 };
 
-export const fetchMappingVersions = params => (dispatch) => {
+export const fetchMappingVersions = params => dispatch => {
     dispatch(fetchingMappingVersions(true));
 
     let url = `/api/mappingversions/?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
@@ -118,16 +132,20 @@ export const fetchMappingVersions = params => (dispatch) => {
 
     return getRequest(url)
         .then(res => dispatch(setMappingVersions(res)))
-        .catch(err => dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err))))
+        .catch(err =>
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            ),
+        )
         .then(() => {
             dispatch(fetchingMappingVersions(false));
         });
 };
 
-export const createMappingRequest = params => (dispatch) => {
+export const createMappingRequest = params => dispatch => {
     dispatch(fetchingMappingVersions(true));
     return postRequest('/api/mappingversions/', params)
-        .then((res) => {
+        .then(res => {
             dispatch(
                 redirectTo(baseUrls.mappingDetail, {
                     mappingVersionId: res.id,
@@ -135,19 +153,26 @@ export const createMappingRequest = params => (dispatch) => {
             );
             return res;
         })
-        .catch((err) => {
-            dispatch(enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)));
+        .catch(err => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchMappingsError', null, err)),
+            );
         })
-        .then((res) => {
+        .then(res => {
             dispatch(fetchingMappingVersions(false));
             return res;
         });
 };
 
-export const fetchSources = () => dispatch => getRequest('/api/datasources/')
-    .then(res => dispatch(setMappingSources(res.sources)))
-    .catch((error) => {
-        dispatch(enqueueSnackbar(errorSnackBar('fetchSourcesError', null, error)));
-        console.error('Error while fetching source list:', error);
-        throw error;
-    });
+export const fetchSources = () => dispatch =>
+    getRequest('/api/datasources/')
+        .then(res => dispatch(setMappingSources(res.sources)))
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchSourcesError', null, error),
+                ),
+            );
+            console.error('Error while fetching source list:', error);
+            throw error;
+        });

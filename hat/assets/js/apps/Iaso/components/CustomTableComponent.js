@@ -11,15 +11,18 @@ import { formatThousand } from '../utils';
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 
-const getOrderArray = orders => (orders.split(',').map(stringValue => ({
-    id: stringValue.replace('-', ''),
-    desc: stringValue.indexOf('-') !== -1,
-})));
+const getOrderArray = orders =>
+    orders.split(',').map(stringValue => ({
+        id: stringValue.replace('-', ''),
+        desc: stringValue.indexOf('-') !== -1,
+    }));
 
 class CustomTableComponent extends React.Component {
     constructor(props) {
         super(props);
-        const orderArray = props.params[props.orderKey] ? getOrderArray(props.params[props.orderKey]) : props.defaultSorted;
+        const orderArray = props.params[props.orderKey]
+            ? getOrderArray(props.params[props.orderKey])
+            : props.defaultSorted;
         const { formatMessage } = this.props.intl;
         this.state = {
             disableHeaderFixed: props.disableHeaderFixed,
@@ -27,49 +30,77 @@ class CustomTableComponent extends React.Component {
             pages: null,
             loading: false,
             showPagination: false,
-            page: props.params[props.pageKey] ? parseInt(props.params[props.pageKey], 10) : parseInt(props.page, 10),
-            pageSize: props.params[props.pageSizeKey] ? parseInt(props.params[props.pageSizeKey], 10) : parseInt(props.pageSize, 10),
+            page: props.params[props.pageKey]
+                ? parseInt(props.params[props.pageKey], 10)
+                : parseInt(props.page, 10),
+            pageSize: props.params[props.pageSizeKey]
+                ? parseInt(props.params[props.pageSizeKey], 10)
+                : parseInt(props.pageSize, 10),
             order: orderArray,
             count: undefined,
             isHeaderFixed: false,
             tableId: `custom-table${+new Date()}`,
             reduxDatas: props.reduxPage.list,
         };
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+        Object.assign(
+            ReactTableDefaults,
+            customTableTranslations(formatMessage),
+        );
     }
 
     componentDidMount() {
         window.addEventListener('scroll', () => this.handleScroll());
         if (!this.props.reduxPage.list && this.props.fetchDatas) {
-            this.onFetchData({
-                sorted: this.state.order,
-                page: this.state.page,
-                pageSize: this.state.pageSize,
-            }, this.props.endPointUrl);
+            this.onFetchData(
+                {
+                    sorted: this.state.order,
+                    page: this.state.page,
+                    pageSize: this.state.pageSize,
+                },
+                this.props.endPointUrl,
+            );
         }
     }
 
     componentWillReceiveProps(newProps) {
         this.handleScroll();
-        if (((newProps.endPointUrl !== this.props.endPointUrl)
-            || (newProps.params[newProps.pageSizeKey] !== this.props.params[this.props.pageSizeKey])
-            || (newProps.params[newProps.pageKey] !== this.props.params[this.props.pageKey])
-            || (newProps.params[newProps.orderKey] !== this.props.params[newProps.orderKey])
-            || newProps.isUpdated) && newProps.fetchDatas) {
+        if (
+            (newProps.endPointUrl !== this.props.endPointUrl ||
+                newProps.params[newProps.pageSizeKey] !==
+                    this.props.params[this.props.pageSizeKey] ||
+                newProps.params[newProps.pageKey] !==
+                    this.props.params[this.props.pageKey] ||
+                newProps.params[newProps.orderKey] !==
+                    this.props.params[newProps.orderKey] ||
+                newProps.isUpdated) &&
+            newProps.fetchDatas
+        ) {
             const orderArray = newProps.params[newProps.orderKey]
-                ? getOrderArray(newProps.params[newProps.orderKey]) : this.props.defaultSorted;
-            this.onFetchData({
-                sorted: orderArray,
-                page: newProps.params[newProps.pageKey] ? parseInt(newProps.params[newProps.pageKey], 10) : parseInt(this.props.page, 10),
-                pageSize: newProps.params[newProps.pageSizeKey] ? parseInt(newProps.params[newProps.pageSizeKey], 10) : parseInt(this.props.pageSize, 10),
-            }, newProps.endPointUrl);
+                ? getOrderArray(newProps.params[newProps.orderKey])
+                : this.props.defaultSorted;
+            this.onFetchData(
+                {
+                    sorted: orderArray,
+                    page: newProps.params[newProps.pageKey]
+                        ? parseInt(newProps.params[newProps.pageKey], 10)
+                        : parseInt(this.props.page, 10),
+                    pageSize: newProps.params[newProps.pageSizeKey]
+                        ? parseInt(newProps.params[newProps.pageSizeKey], 10)
+                        : parseInt(this.props.pageSize, 10),
+                },
+                newProps.endPointUrl,
+            );
         }
 
         if (newProps.reduxPage.list && newProps.reduxPage.params) {
-            const pageSize = newProps.reduxPage.params[newProps.pageSizeKey] || parseInt(newProps.pageSize, 10);
+            const pageSize =
+                newProps.reduxPage.params[newProps.pageSizeKey] ||
+                parseInt(newProps.pageSize, 10);
             let { showPagination } = newProps.reduxPage;
             if (newProps.reduxPage.count) {
-                showPagination = newProps.showPagination && (newProps.reduxPage.count > pageSize);
+                showPagination =
+                    newProps.showPagination &&
+                    newProps.reduxPage.count > pageSize;
             }
             if (!newProps.reduxPage.pages || newProps.reduxPage.count === 0) {
                 showPagination = false;
@@ -77,7 +108,9 @@ class CustomTableComponent extends React.Component {
             this.setState({
                 reduxDatas: newProps.reduxPage.list,
                 loading: false,
-                page: newProps.reduxPage.params[newProps.pageKey] || parseInt(newProps.page, 10),
+                page:
+                    newProps.reduxPage.params[newProps.pageKey] ||
+                    parseInt(newProps.page, 10),
                 pageSize,
                 pages: newProps.reduxPage.pages,
                 showPagination,
@@ -137,17 +170,27 @@ class CustomTableComponent extends React.Component {
             this.props.dispatch,
             null,
             this.props.displayLoader,
-
-        ).then((data) => {
-            const tempdata = this.props.dataKey ? data[this.props.dataKey] : data;
+        ).then(data => {
+            const tempdata = this.props.dataKey
+                ? data[this.props.dataKey]
+                : data;
             if (this.props.callBackWithDataKey) {
-                this.props.onDataLoaded(tempdata, parseInt(data.count, 10), data.pages);
+                this.props.onDataLoaded(
+                    tempdata,
+                    parseInt(data.count, 10),
+                    data.pages,
+                );
             } else {
-                this.props.onDataLoaded(data, parseInt(data.count, 10), data.pages);
+                this.props.onDataLoaded(
+                    data,
+                    parseInt(data.count, 10),
+                    data.pages,
+                );
             }
             let { showPagination } = this.props;
             if (data.count || data.count === 0) {
-                showPagination = this.props.showPagination && (data.count > settings.pageSize);
+                showPagination =
+                    this.props.showPagination && data.count > settings.pageSize;
             }
             if (!data.pages) {
                 showPagination = false;
@@ -169,7 +212,7 @@ class CustomTableComponent extends React.Component {
 
     onRowClicked(state, rowInfo) {
         return {
-            onClick: (e) => {
+            onClick: e => {
                 e.preventDefault();
                 this.props.onRowClicked(rowInfo.original, state, e);
             },
@@ -178,9 +221,14 @@ class CustomTableComponent extends React.Component {
 
     onResize(width) {
         const currentTable = document.getElementById(this.state.tableId);
-        const currentTableBody = currentTable.getElementsByClassName('rt-tbody')[0];
+        const currentTableBody = currentTable.getElementsByClassName(
+            'rt-tbody',
+        )[0];
         this.setState({
-            disableHeaderFixed: currentTableBody.clientWidth > width ? true : this.props.disableHeaderFixed,
+            disableHeaderFixed:
+                currentTableBody.clientWidth > width
+                    ? true
+                    : this.props.disableHeaderFixed,
             isHeaderFixed: currentTableBody.clientWidth === width,
         });
         this.handleScroll();
@@ -188,9 +236,15 @@ class CustomTableComponent extends React.Component {
             const header = currentTable.getElementsByClassName('-header')[0];
             if (header && width) {
                 if (currentTableBody.clientWidth <= width) {
-                    header.setAttribute('style', `width:${currentTable.clientWidth - 2}px;`);
+                    header.setAttribute(
+                        'style',
+                        `width:${currentTable.clientWidth - 2}px;`,
+                    );
                 } else {
-                    header.setAttribute('style', `width:${currentTableBody.clientWidth - 2}px;`);
+                    header.setAttribute(
+                        'style',
+                        `width:${currentTableBody.clientWidth - 2}px;`,
+                    );
                 }
             }
         }
@@ -201,24 +255,28 @@ class CustomTableComponent extends React.Component {
         const currentTable = document.getElementById(this.state.tableId);
         if (currentTable) {
             let topPosition = currentTable.offsetTop;
-            const headerGroups = currentTable.getElementsByClassName('-headerGroups')[0];
+            const headerGroups = currentTable.getElementsByClassName(
+                '-headerGroups',
+            )[0];
             if (headerGroups) {
                 topPosition += headerGroups.clientHeight;
             }
             this.setState({
-                isHeaderFixed: !this.state.disableHeaderFixed && lastScrollY > topPosition,
+                isHeaderFixed:
+                    !this.state.disableHeaderFixed && lastScrollY > topPosition,
             });
         }
     }
 
     render() {
-        const data = this.state.reduxDatas ? this.state.reduxDatas : this.state.data;
-        const {
-            showPagination,
-        } = this.state;
-        let currentPageSize = showPagination
-            || (!showPagination && data.length === 0)
-            ? this.state.pageSize : data.length;
+        const data = this.state.reduxDatas
+            ? this.state.reduxDatas
+            : this.state.data;
+        const { showPagination } = this.state;
+        let currentPageSize =
+            showPagination || (!showPagination && data.length === 0)
+                ? this.state.pageSize
+                : data.length;
         if (data.length === 0) {
             currentPageSize = 2;
         }
@@ -226,25 +284,35 @@ class CustomTableComponent extends React.Component {
 
         if (this.props.canSelect) {
             extraProps = {
-                getTdProps: (state, rowInfo) => this.onRowClicked(state, rowInfo),
+                getTdProps: (state, rowInfo) =>
+                    this.onRowClicked(state, rowInfo),
             };
         } else {
             extraProps = {
-                SubComponent: this.props.SubComponent ? this.props.SubComponent : null,
+                SubComponent: this.props.SubComponent
+                    ? this.props.SubComponent
+                    : null,
             };
             if (this.props.expanded) {
                 extraProps.expanded = { ...this.props.expanded };
-                extraProps.onExpandedChange = (newExpanded, index, event) => this.props.onExpandedChange(newExpanded, index, event);
+                extraProps.onExpandedChange = (newExpanded, index, event) =>
+                    this.props.onExpandedChange(newExpanded, index, event);
             }
         }
         return (
-            <ReactResizeDetector handleWidth onResize={width => this.onResize(width, this.state.tableId)}>
+            <ReactResizeDetector
+                handleWidth
+                onResize={width => this.onResize(width, this.state.tableId)}
+            >
                 <section
                     id={this.state.tableId}
-                    className={`custom-table-container ${this.props.selectable
-                        ? 'selectable' : ''} ${!showPagination && this.state.count
-                        ? 'no-pagination' : ''} ${this.state.isHeaderFixed
-                        ? 'header-fixed' : ''} `}
+                    className={`custom-table-container ${
+                        this.props.selectable ? 'selectable' : ''
+                    } ${
+                        !showPagination && this.state.count
+                            ? 'no-pagination'
+                            : ''
+                    } ${this.state.isHeaderFixed ? 'header-fixed' : ''} `}
                 >
                     <ReactTable
                         showPagination={showPagination}
@@ -255,20 +323,24 @@ class CustomTableComponent extends React.Component {
                         pages={this.state.pages}
                         loading={this.state.loading}
                         onPageChange={page => this.onPageChange(page)}
-                        onPageSizeChange={pageSize => this.onPageSizeChange(pageSize)}
+                        onPageSizeChange={pageSize =>
+                            this.onPageSizeChange(pageSize)
+                        }
                         onSortedChange={sort => this.onChangeSort(sort)}
                         filterable={this.props.isFilterable}
                         sortable={this.props.isSortable}
                         pageSize={currentPageSize}
                         page={this.state.page - 1}
-                        className={`-striped -highlight ${!this.props.withBorder ? 'no-border' : ''} ${!this.props.canSelect ? 'no-select' : ''}`}
+                        className={`-striped -highlight ${
+                            !this.props.withBorder ? 'no-border' : ''
+                        } ${!this.props.canSelect ? 'no-select' : ''}`}
                         defaultSorted={this.state.order}
                         pageSizeOptions={[5, 10, 20, 25, 50, 100, 150, 200]}
                         {...extraProps}
                     />
                     <div className="count-container">
-                        {this.state.count !== undefined && this.state.count > 0
-                            && (
+                        {this.state.count !== undefined &&
+                            this.state.count > 0 && (
                                 <div>
                                     {`${formatThousand(this.state.count)} `}
                                     <FormattedMessage
@@ -276,8 +348,7 @@ class CustomTableComponent extends React.Component {
                                         defaultMessage="résultat(s)"
                                     />
                                 </div>
-                            )
-                        }
+                            )}
                     </div>
                 </section>
             </ReactResizeDetector>
@@ -362,7 +433,8 @@ CustomTableComponent.propTypes = {
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) =>
+        dispatch(replace(`${key}${createUrl(params, '')}`)),
 });
 
 const CustomTableComponentIntl = injectIntl(CustomTableComponent);

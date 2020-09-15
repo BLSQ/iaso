@@ -1,6 +1,14 @@
 import { defineMessages } from 'react-intl';
 
 const MESSAGES = defineMessages({
+    create: {
+        defaultMessage: 'Create',
+        id: 'iaso.label.create',
+    },
+    newOrgUnit: {
+        defaultMessage: 'Create a org unit',
+        id: 'iaso.orgUnits.new',
+    },
     action: {
         defaultMessage: 'Actions',
         id: 'iaso.label.actions',
@@ -227,11 +235,12 @@ const MESSAGES = defineMessages({
     },
     question: {
         id: 'iaso.label.useOrgUnitLocation.question',
-        defaultMessage: 'Are you sure you want to use this location for the current org unit ?',
+        defaultMessage:
+            'Are you sure you want to use this location for the current org unit ?',
     },
     message: {
         id: 'iaso.label.useOrgUnitLocation.message',
-        defaultMessage: 'Don\'t forget to save',
+        defaultMessage: "Don't forget to save",
     },
     catchment: {
         id: 'iaso.map.catchment',

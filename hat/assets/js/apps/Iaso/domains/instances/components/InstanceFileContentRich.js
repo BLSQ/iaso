@@ -4,7 +4,8 @@ import {
     Table,
     TableBody,
     TableCell,
-    TableRow, Tooltip,
+    TableRow,
+    Tooltip,
 } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
 import FunctionsIcon from '@material-ui/icons/Functions';
@@ -71,7 +72,7 @@ function getRawValue(descriptor, data) {
     if (value === undefined) {
         return textPlaceholder;
     }
-    return value
+    return value;
 }
 /**
  * Extract the value from data using the descriptor
@@ -91,11 +92,15 @@ function getDisplayedValue(descriptor, data) {
         case 'select_one':
         case 'select one': {
             const choice = descriptor.children.find(c => c.name === value);
-            return choice !== undefined ? translateLabel(choice.label) : textPlaceholder;
+            return choice !== undefined
+                ? translateLabel(choice.label)
+                : textPlaceholder;
         }
         case 'select_multiple':
         case 'select multiple': {
-            const choices = descriptor.children.filter(c => value.split(' ').includes(c.name));
+            const choices = descriptor.children.filter(c =>
+                value.split(' ').includes(c.name),
+            );
             return choices.length > 0
                 ? choices.map(choice => translateLabel(choice.label)).join(', ')
                 : textPlaceholder;
@@ -112,9 +117,15 @@ export default function InstanceFileContentRich({
     return (
         <Table>
             <TableBody>
-                {formDescriptor.children.filter(c => c.name !== 'meta').map(childDescriptor => (
-                    <FormChild key={childDescriptor.name} descriptor={childDescriptor} data={instanceData} />
-                ))}
+                {formDescriptor.children
+                    .filter(c => c.name !== 'meta')
+                    .map(childDescriptor => (
+                        <FormChild
+                            key={childDescriptor.name}
+                            descriptor={childDescriptor}
+                            data={instanceData}
+                        />
+                    ))}
             </TableBody>
         </Table>
     );
@@ -128,9 +139,17 @@ InstanceFileContentRich.propTypes = {
 function FormChild({ descriptor, data }) {
     switch (descriptor.type) {
         case 'repeat':
-            return data[descriptor.name] ? data[descriptor.name].map((subdata, index) => (
-                <FormGroup key={`repeat-${index}`} descriptor={descriptor} data={subdata} />
-            )) : <></>;
+            return data[descriptor.name] ? (
+                data[descriptor.name].map((subdata, index) => (
+                    <FormGroup
+                        key={`repeat-${index}`}
+                        descriptor={descriptor}
+                        data={subdata}
+                    />
+                ))
+            ) : (
+                <></>
+            );
         case 'group':
             return <FormGroup descriptor={descriptor} data={data} />;
         case 'start':
@@ -160,19 +179,21 @@ function FormGroup({ descriptor, data }) {
     return (
         <>
             <TableRow>
-                <TableCell colSpan={2} align="center" className={classes.tableCellHead}>
+                <TableCell
+                    colSpan={2}
+                    align="center"
+                    className={classes.tableCellHead}
+                >
                     <Label descriptor={descriptor} />
                 </TableCell>
             </TableRow>
-            {
-                descriptor.children.map(childDescriptor => (
-                    <FormChild
-                        key={childDescriptor.name}
-                        descriptor={childDescriptor}
-                        data={data}
-                    />
-                ))
-            }
+            {descriptor.children.map(childDescriptor => (
+                <FormChild
+                    key={childDescriptor.name}
+                    descriptor={childDescriptor}
+                    data={data}
+                />
+            ))}
         </>
     );
 }
@@ -189,7 +210,11 @@ function FormField({ descriptor, data }) {
             <TableCell className={classes.tableCell}>
                 <Label descriptor={descriptor} />
             </TableCell>
-            <TableCell className={classes.tableCell} align="right" title={getRawValue(descriptor,data)}>
+            <TableCell
+                className={classes.tableCell}
+                align="right"
+                title={getRawValue(descriptor, data)}
+            >
                 {getDisplayedValue(descriptor, data)}
             </TableCell>
         </TableRow>
@@ -207,8 +232,14 @@ function FormCalculatedField({ descriptor, data }) {
         <TableRow>
             <TableCell className={classes.tableCell}>
                 <div className={classes.tableCellLabelWrapper}>
-                    <FunctionsIcon color="disabled" className={classes.tableCellLabelIcon} />
-                    <Label descriptor={descriptor} tooltip={descriptor.bind.calculate} />
+                    <FunctionsIcon
+                        color="disabled"
+                        className={classes.tableCellLabelIcon}
+                    />
+                    <Label
+                        descriptor={descriptor}
+                        tooltip={descriptor.bind.calculate}
+                    />
                 </div>
             </TableCell>
             <TableCell className={classes.tableCell} align="right">
@@ -228,7 +259,10 @@ function FormMetaField({ descriptor, data }) {
     return (
         <TableRow>
             <TableCell className={classes.tableCell} colSpan={2}>
-                <Label descriptor={descriptor} value={getDisplayedValue(descriptor, data)} />
+                <Label
+                    descriptor={descriptor}
+                    value={getDisplayedValue(descriptor, data)}
+                />
             </TableCell>
         </TableRow>
     );
@@ -245,7 +279,10 @@ function FormNoteField({ descriptor }) {
         <TableRow>
             <TableCell className={classes.tableCell} colSpan={2}>
                 <div className={classes.tableCellLabelWrapper}>
-                    <CommentIcon color="disabled" className={classes.tableCellLabelIcon} />
+                    <CommentIcon
+                        color="disabled"
+                        className={classes.tableCellLabelIcon}
+                    />
                     <Label descriptor={descriptor} />
                 </div>
             </TableCell>
@@ -264,7 +301,8 @@ function Label({ descriptor, value, tooltip }) {
     if ('label' in descriptor) {
         label = translateLabel(descriptor.label);
 
-        if (value !== null) { // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"
+        if (value !== null) {
+            // useful for meta questions, whose labels are like "subscriberid ${subscriberid}"
             label = label.replace(`\${${descriptor.name}}`, value);
         } else {
             showNameHint = true;
@@ -273,18 +311,22 @@ function Label({ descriptor, value, tooltip }) {
 
     const labelElement = (
         <div className={classes.tableCellLabel}>
-            {label.replace(/(<([^>]+)>)/ig, '')}
-            {
-                showNameHint && (
-                    <div className={classes.tableCellLabelName}>{descriptor.name}</div>
-                )
-            }
+            {label.replace(/(<([^>]+)>)/gi, '')}
+            {showNameHint && (
+                <div className={classes.tableCellLabelName}>
+                    {descriptor.name}
+                </div>
+            )}
         </div>
     );
 
-    return tooltip === null
-        ? labelElement
-        : <Tooltip size="small" placement="right-start" title={tooltip}>{labelElement}</Tooltip>;
+    return tooltip === null ? (
+        labelElement
+    ) : (
+        <Tooltip size="small" placement="right-start" title={tooltip}>
+            {labelElement}
+        </Tooltip>
+    );
 }
 Label.defaultProps = {
     value: null,

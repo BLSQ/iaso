@@ -9,12 +9,18 @@ import IconButtonComponent from '../buttons/IconButtonComponent';
 import MESSAGES from './messages';
 
 export default function DeleteDialog({
-    titleMessage, message, onConfirm, disabled,
+    titleMessage,
+    message,
+    onConfirm,
+    disabled,
 }) {
-    const closeThenOnConfirm = useCallback((closeDialog) => {
-        closeDialog();
-        onConfirm();
-    }, [onConfirm]);
+    const closeThenOnConfirm = useCallback(
+        closeDialog => {
+            closeDialog();
+            onConfirm();
+        },
+        [onConfirm],
+    );
 
     return (
         <ConfirmCancelDialogComponent

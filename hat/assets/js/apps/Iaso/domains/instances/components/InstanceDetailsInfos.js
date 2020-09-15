@@ -8,34 +8,29 @@ import InstanceDetailsField from './InstanceDetailsField';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 
-
-const InstanceDetailsInfos = ({
-    currentInstance,
-    intl: {
-        formatMessage,
-    },
-}) => {
+const InstanceDetailsInfos = ({ currentInstance, intl: { formatMessage } }) => {
     const fields = INSTANCE_METAS_FIELDS.filter(f => f.type === 'info');
     return (
         <>
-            {
-                fields.map((f) => {
-                    const value = get(currentInstance, f.key);
+            {fields.map(f => {
+                const value = get(currentInstance, f.key);
 
-                    return (
-                        <InstanceDetailsField
-                            key={f.key}
-                            label={formatMessage(MESSAGES['labelKey' in f ? f.labelKey : f.key])}
-                            valueTitle={f.title ? f.title(currentInstance[f.key]) : null}
-                            value={f.render ? f.render(value) : value}
-                        />
-                    );
-                })
-            }
+                return (
+                    <InstanceDetailsField
+                        key={f.key}
+                        label={formatMessage(
+                            MESSAGES['labelKey' in f ? f.labelKey : f.key],
+                        )}
+                        valueTitle={
+                            f.title ? f.title(currentInstance[f.key]) : null
+                        }
+                        value={f.render ? f.render(value) : value}
+                    />
+                );
+            })}
         </>
     );
 };
-
 
 InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,

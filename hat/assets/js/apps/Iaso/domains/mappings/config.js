@@ -32,7 +32,9 @@ const mappingsTableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.name),
         accessor: 'form_version__form__name',
         style: { justifyContent: 'left' },
-        Cell: settings => <span>{settings.original.form_version.form.name}</span>,
+        Cell: settings => (
+            <span>{settings.original.form_version.form.name}</span>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.version),
@@ -74,7 +76,9 @@ const mappingsTableColumns = formatMessage => [
         Header: formatMessage(MESSAGES.updatedAt),
         accessor: 'updated_at',
         Cell: settings => (
-            <span>{displayDateFromTimestamp(settings.original.updated_at)}</span>
+            <span>
+                {displayDateFromTimestamp(settings.original.updated_at)}
+            </span>
         ),
     },
 ];

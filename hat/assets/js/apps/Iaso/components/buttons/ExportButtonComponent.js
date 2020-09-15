@@ -2,6 +2,7 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 import CallMade from '@material-ui/icons/CallMade';
+
 import { withStyles, Button } from '@material-ui/core';
 
 import commonStyles from '../../styles/common';
@@ -12,9 +13,14 @@ const styles = theme => ({
 });
 
 function ExportButtonComponent({
-    classes, intl, onClick, message, isDisabled,
+    classes,
+    intl,
+    onClick,
+    message,
+    isDisabled,
+    batchExport,
 }) {
-    return (
+    return batchExport ? (
         <Button
             variant="contained"
             className={classes.button}
@@ -25,6 +31,8 @@ function ExportButtonComponent({
             <CallMade className={classes.buttonIcon} />
             {intl.formatMessage(message)}
         </Button>
+    ) : (
+        <CallMade onClick={onClick} disabled={isDisabled} />
     );
 }
 ExportButtonComponent.defaultProps = {
@@ -36,6 +44,7 @@ ExportButtonComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     onClick: PropTypes.func.isRequired,
     isDisabled: PropTypes.bool,
+    batchExport: PropTypes.bool.isRequired,
     message: PropTypes.object, // TODO: make a message prop type
 };
 export default withStyles(styles)(injectIntl(ExportButtonComponent));

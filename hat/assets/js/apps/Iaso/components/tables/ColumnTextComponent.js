@@ -15,6 +15,10 @@ ColumnTextComponent.defaultProps = {
 };
 
 ColumnTextComponent.propTypes = {
-    text: PropTypes.oneOfType([PropTypes.string, PropTypes.number, PropTypes.node]).isRequired,
+    text: PropTypes.oneOfType([
+        PropTypes.string,
+        PropTypes.number,
+        PropTypes.node,
+    ]).isRequired,
     title: PropTypes.string,
 };

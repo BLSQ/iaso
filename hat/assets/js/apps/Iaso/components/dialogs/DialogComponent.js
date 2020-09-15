@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core';
 import commonStyles from '../../styles/common';
 
-
 const styles = theme => ({
     ...commonStyles(theme),
     paper: {
@@ -27,7 +26,13 @@ const styles = theme => ({
 });
 
 function DialogComponent({
-    classes, children, titleMessage, renderActions, renderTrigger, maxWidth, onClosed,
+    classes,
+    children,
+    titleMessage,
+    renderActions,
+    renderTrigger,
+    maxWidth,
+    onClosed,
 }) {
     // we use the renderDialog flag in addition to the open flag to control whether to render the full dialog
     // content, or only the trigger (to avoid rendering multiple heavy contents in list)
@@ -50,29 +55,26 @@ function DialogComponent({
     return (
         <>
             {renderTrigger({ openDialog })}
-            {
-                renderDialog
-                  && (
-                      <Dialog
-                          fullWidth
-                          maxWidth={maxWidth}
-                          open={open}
-                          classes={{
-                              paper: classes.paper,
-                          }}
-                          onBackdropClick={closeDialog}
-                          scroll="body"
-                      >
-                          <DialogTitle className={classes.title}>
-                              <FormattedMessage {...titleMessage} />
-                          </DialogTitle>
-                          <DialogContent className={classes.content}>
-                              {children}
-                          </DialogContent>
-                          {renderActions({ closeDialog })}
-                      </Dialog>
-                  )
-            }
+            {renderDialog && (
+                <Dialog
+                    fullWidth
+                    maxWidth={maxWidth}
+                    open={open}
+                    classes={{
+                        paper: classes.paper,
+                    }}
+                    onBackdropClick={closeDialog}
+                    scroll="body"
+                >
+                    <DialogTitle className={classes.title}>
+                        <FormattedMessage {...titleMessage} />
+                    </DialogTitle>
+                    <DialogContent className={classes.content}>
+                        {children}
+                    </DialogContent>
+                    {renderActions({ closeDialog })}
+                </Dialog>
+            )}
         </>
     );
 }

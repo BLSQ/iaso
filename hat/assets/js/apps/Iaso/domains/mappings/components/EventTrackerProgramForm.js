@@ -5,14 +5,26 @@ import InputComponent from '../../../components/forms/InputComponent';
 import MESSAGES from '../messages';
 import ObjectDumper from './ObjectDumper';
 
-
-const EventTrackerProgramForm = ({ dataSourceId, repeatGroupMapping, onConfirmedQuestionMapping }) => {
+const EventTrackerProgramForm = ({
+    dataSourceId,
+    repeatGroupMapping,
+    onConfirmedQuestionMapping,
+}) => {
     const [program, setProgram] = React.useState('');
-    const [trackedEntityAttributes, setTrackedEntityAttributes] = React.useState([]);
-    const [trackedEntityIdentifier, setTrackedEntityIdentifier] = React.useState(null);
+    const [
+        trackedEntityAttributes,
+        setTrackedEntityAttributes,
+    ] = React.useState([]);
+    const [
+        trackedEntityIdentifier,
+        setTrackedEntityIdentifier,
+    ] = React.useState(null);
     const [relationshipType, setRelationshipType] = React.useState(null);
     const [proposedNewMapping, setProposedNewMapping] = React.useState(null);
-    const trackedEntityAttributeOptions = trackedEntityAttributes.map(a => ({ value: a.id, label: a.name }));
+    const trackedEntityAttributeOptions = trackedEntityAttributes.map(a => ({
+        value: a.id,
+        label: a.name,
+    }));
     return (
         <Grid container spacing={1} direction="column">
             <Grid>
@@ -30,7 +42,13 @@ const EventTrackerProgramForm = ({ dataSourceId, repeatGroupMapping, onConfirmed
                     onChange={(name, val) => {
                         setProgram(val);
 
-                        setTrackedEntityAttributes(val ? val.trackedEntityType.trackedEntityTypeAttributes.map(teat => teat.trackedEntityAttribute) : []);
+                        setTrackedEntityAttributes(
+                            val
+                                ? val.trackedEntityType.trackedEntityTypeAttributes.map(
+                                      teat => teat.trackedEntityAttribute,
+                                  )
+                                : [],
+                        );
                     }}
                 />
             </Grid>
@@ -77,12 +95,18 @@ const EventTrackerProgramForm = ({ dataSourceId, repeatGroupMapping, onConfirmed
                 <br />
                 <button
                     className="button"
-                    disabled={!(trackedEntityIdentifier && relationshipType && program)}
+                    disabled={
+                        !(
+                            trackedEntityIdentifier &&
+                            relationshipType &&
+                            program
+                        )
+                    }
                     onClick={() => {
                         onConfirmedQuestionMapping([proposedNewMapping]);
                     }}
                 >
-            Confirm
+                    Confirm
                 </button>
             </Grid>
         </Grid>

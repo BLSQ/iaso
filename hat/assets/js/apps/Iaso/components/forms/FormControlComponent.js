@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { withStyles, Typography } from '@material-ui/core';
 import FormControl from '@material-ui/core/FormControl';
 
-
 const styles = theme => ({
     formControl: {
         width: '100%',
@@ -28,9 +27,7 @@ const styles = theme => ({
     },
 });
 
-function FormControlComponent({
-    classes, children, withMarginTop, errors,
-}) {
+function FormControlComponent({ classes, children, withMarginTop, errors }) {
     const classNames = [classes.formControl];
     if (!withMarginTop) {
         classNames.push(classes.formControlWithMarginTop);
@@ -39,10 +36,12 @@ function FormControlComponent({
     return (
         <FormControl className={classNames.join(' ')} variant="outlined">
             {children}
-            {
-                errors.length > 0
-                  && errors.map(error => <Typography key={error} className={classes.error}>{error}</Typography>)
-            }
+            {errors.length > 0 &&
+                errors.map(error => (
+                    <Typography key={error} className={classes.error}>
+                        {error}
+                    </Typography>
+                ))}
         </FormControl>
     );
 }

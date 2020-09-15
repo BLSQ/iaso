@@ -561,6 +561,7 @@ class InstanceQuerySet(models.QuerySet):
         period_ids=None,
         status=None,
         instance_id=None,
+        search=None
     ):
         queryset = self
         if period_ids:
@@ -623,6 +624,20 @@ class InstanceQuerySet(models.QuerySet):
 
         # whatever don't show deleted submissions
         queryset = queryset.exclude(deleted=True)
+
+        if search:
+            if search.startswith("ids:"):
+                ids_str = search.replace("ids:", "")
+                try:
+                    ids = [int(i.strip()) for i in ids_str.split(",")]
+                    queryset = queryset.filter(id__in=ids)
+                except:
+                    queryset = queryset.filter(id__in=[])
+                    print("Failed parsing ids in search", search)
+            else:
+                queryset = queryset.filter(
+                    Q(org_unit__name__icontains=search) | Q(org_unit__aliases__contains=[search])
+                )
 
         return queryset
 

@@ -4,7 +4,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Grid } from '@material-ui/core';
 
-
 import {
     createForm,
     updateForm,
@@ -26,7 +25,11 @@ import MESSAGES from '../messages';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 // TODO: use config file
-const periodTypeOptions = [PERIOD_TYPE_MONTH, PERIOD_TYPE_QUARTER, PERIOD_TYPE_YEAR].map(periodType => ({
+const periodTypeOptions = [
+    PERIOD_TYPE_MONTH,
+    PERIOD_TYPE_QUARTER,
+    PERIOD_TYPE_YEAR,
+].map(periodType => ({
     value: periodType,
     label: MESSAGES[periodType.toLowerCase()],
 }));
@@ -46,46 +49,64 @@ class FormDialogComponent extends Component {
         const { dispatch } = this.props;
         if (this.props.initialData === null) {
             isUpdate = false;
-            formData = _.mapValues(_.omit(this.state, ['xls_file', 'form_id']), v => v.value);
+            formData = _.mapValues(
+                _.omit(this.state, ['xls_file', 'form_id']),
+                v => v.value,
+            );
             saveForm = createForm(this.props.dispatch, formData);
         } else {
             isUpdate = true;
-            formData = _.mapValues(_.omit(this.state, 'xls_file'), v => v.value);
-            saveForm = updateForm(this.props.dispatch, this.state.id.value, formData);
+            formData = _.mapValues(
+                _.omit(this.state, 'xls_file'),
+                v => v.value,
+            );
+            saveForm = updateForm(
+                this.props.dispatch,
+                this.state.id.value,
+                formData,
+            );
         }
         dispatch(setIsLoadingForm(true));
         saveForm
-            .then((savedFormData) => {
-                if (isUpdate && this.state.xls_file.value === null) { // allow form update without new version
+            .then(savedFormData => {
+                if (isUpdate && this.state.xls_file.value === null) {
+                    // allow form update without new version
                     return Promise.resolve();
                 }
-                return createFormVersion(this.props.dispatch, {
-                    form_id: savedFormData.id,
-                    xls_file: this.state.xls_file.value,
-                }, isUpdate)
-                    .catch((createVersionError) => {
-                        // when creating form, if version creation fails, delete freshly created, version-less form
-                        if (!isUpdate) {
-                            return deleteForm(this.props.dispatch, savedFormData.id)
-                                .then(() => console.log('Form deleted'))
-                                .catch(() => console.warn('Form could not be deleted'))
-                                .then(() => {
-                                    throw createVersionError;
-                                });
-                        }
-                        throw createVersionError;
-                    });
+                return createFormVersion(
+                    this.props.dispatch,
+                    {
+                        form_id: savedFormData.id,
+                        xls_file: this.state.xls_file.value,
+                    },
+                    isUpdate,
+                ).catch(createVersionError => {
+                    // when creating form, if version creation fails, delete freshly created, version-less form
+                    if (!isUpdate) {
+                        return deleteForm(this.props.dispatch, savedFormData.id)
+                            .then(() => console.log('Form deleted'))
+                            .catch(() =>
+                                console.warn('Form could not be deleted'),
+                            )
+                            .then(() => {
+                                throw createVersionError;
+                            });
+                    }
+                    throw createVersionError;
+                });
             })
             .then(() => {
                 closeDialog();
                 this.props.dispatch(enqueueSnackbar(succesfullSnackBar()));
                 this.props.onSuccess();
             })
-            .catch((error) => {
+            .catch(error => {
                 if (error.status === 400) {
-                    Object.entries(error.details).forEach(([errorKey, errorMessages]) => {
-                        this.setFieldErrors(errorKey, errorMessages);
-                    });
+                    Object.entries(error.details).forEach(
+                        ([errorKey, errorMessages]) => {
+                            this.setFieldErrors(errorKey, errorMessages);
+                        },
+                    );
                 }
             })
             .then(() => {
@@ -98,7 +119,9 @@ class FormDialogComponent extends Component {
     }
 
     setFieldErrors(fieldName, fieldErrors) {
-        this.setState(state => ({ [fieldName]: { value: state[fieldName].value, errors: fieldErrors } }));
+        this.setState(state => ({
+            [fieldName]: { value: state[fieldName].value, errors: fieldErrors },
+        }));
     }
 
     setPeriodType(value) {
@@ -115,10 +138,14 @@ class FormDialogComponent extends Component {
 
     initialState() {
         // TODO: useFormState hook or something, this is going to happen often
-        const initialData = this.props.initialData ? this.props.initialData : {};
+        const initialData = this.props.initialData
+            ? this.props.initialData
+            : {};
 
         const projectIds = _.get(initialData, 'projects', []).map(p => p.id);
-        const orgUnitTypeIds = _.get(initialData, 'org_unit_types', []).map(out => out.id);
+        const orgUnitTypeIds = _.get(initialData, 'org_unit_types', []).map(
+            out => out.id,
+        );
 
         return {
             id: { value: _.get(initialData, 'id', null), errors: [] },
@@ -126,19 +153,43 @@ class FormDialogComponent extends Component {
             xls_file: { value: null, errors: [] },
             project_ids: { value: projectIds, errors: [] },
             org_unit_type_ids: { value: orgUnitTypeIds, errors: [] },
-            period_type: { value: _.get(initialData, 'period_type', null), errors: [] },
-            derived: { value: _.get(initialData, 'derived', false), errors: [] },
-            single_per_period: { value: _.get(initialData, 'single_per_period', false), errors: [] },
-            periods_before_allowed: { value: _.get(initialData, 'periods_before_allowed', 0), errors: [] },
-            periods_after_allowed: { value: _.get(initialData, 'periods_after_allowed', 0), errors: [] },
-            device_field: { value: _.get(initialData, 'device_field', 'deviceid'), errors: [] },
-            location_field: { value: _.get(initialData, 'location_field', ''), errors: [] },
+            period_type: {
+                value: _.get(initialData, 'period_type', null),
+                errors: [],
+            },
+            derived: {
+                value: _.get(initialData, 'derived', false),
+                errors: [],
+            },
+            single_per_period: {
+                value: _.get(initialData, 'single_per_period', false),
+                errors: [],
+            },
+            periods_before_allowed: {
+                value: _.get(initialData, 'periods_before_allowed', 0),
+                errors: [],
+            },
+            periods_after_allowed: {
+                value: _.get(initialData, 'periods_after_allowed', 0),
+                errors: [],
+            },
+            device_field: {
+                value: _.get(initialData, 'device_field', 'deviceid'),
+                errors: [],
+            },
+            location_field: {
+                value: _.get(initialData, 'location_field', ''),
+                errors: [],
+            },
         };
     }
 
     render() {
         const {
-            renderTrigger, projects, orgUnitTypes, titleMessage,
+            renderTrigger,
+            projects,
+            orgUnitTypes,
+            titleMessage,
         } = this.props;
 
         return (
@@ -155,7 +206,9 @@ class FormDialogComponent extends Component {
                     <Grid xs={6} item>
                         <InputComponent
                             keyValue="name"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.name.value}
                             errors={this.state.name.errors}
                             type="text"
@@ -166,7 +219,9 @@ class FormDialogComponent extends Component {
                             <Grid item>
                                 <FileInputComponent
                                     keyValue="xls_file"
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
+                                    onChange={(key, value) =>
+                                        this.setFieldValue(key, value)
+                                    }
                                     label={MESSAGES.xls_form_file}
                                     errors={this.state.xls_file.errors}
                                     required
@@ -187,10 +242,18 @@ class FormDialogComponent extends Component {
                             <Grid item xs={6}>
                                 <InputComponent
                                     keyValue="periods_before_allowed"
-                                    disabled={this.state.period_type.value === null}
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    value={this.state.periods_before_allowed.value}
-                                    errors={this.state.periods_before_allowed.errors}
+                                    disabled={
+                                        this.state.period_type.value === null
+                                    }
+                                    onChange={(key, value) =>
+                                        this.setFieldValue(key, value)
+                                    }
+                                    value={
+                                        this.state.periods_before_allowed.value
+                                    }
+                                    errors={
+                                        this.state.periods_before_allowed.errors
+                                    }
                                     type="number"
                                     label={MESSAGES.periodsBeforeAllowed}
                                     required
@@ -199,10 +262,18 @@ class FormDialogComponent extends Component {
                             <Grid item xs={6}>
                                 <InputComponent
                                     keyValue="periods_after_allowed"
-                                    disabled={this.state.period_type.value === null}
-                                    onChange={(key, value) => this.setFieldValue(key, value)}
-                                    value={this.state.periods_after_allowed.value}
-                                    errors={this.state.periods_after_allowed.errors}
+                                    disabled={
+                                        this.state.period_type.value === null
+                                    }
+                                    onChange={(key, value) =>
+                                        this.setFieldValue(key, value)
+                                    }
+                                    value={
+                                        this.state.periods_after_allowed.value
+                                    }
+                                    errors={
+                                        this.state.periods_after_allowed.errors
+                                    }
                                     type="number"
                                     label={MESSAGES.periodsAfterAllowed}
                                     required
@@ -213,7 +284,9 @@ class FormDialogComponent extends Component {
                         <InputComponent
                             keyValue="single_per_period"
                             disabled={this.state.period_type.value === null}
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.single_per_period.value}
                             errors={this.state.single_per_period.errors}
                             type="checkbox"
@@ -225,7 +298,12 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="project_ids"
-                            onChange={(key, value) => this.setFieldValue(key, commaSeparatedIdsToArray(value))}
+                            onChange={(key, value) =>
+                                this.setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToArray(value),
+                                )
+                            }
                             value={this.state.project_ids.value.join(',')}
                             errors={this.state.project_ids.errors}
                             type="select"
@@ -240,7 +318,12 @@ class FormDialogComponent extends Component {
                             multi
                             clearable
                             keyValue="org_unit_type_ids"
-                            onChange={(key, value) => this.setFieldValue(key, commaSeparatedIdsToArray(value))}
+                            onChange={(key, value) =>
+                                this.setFieldValue(
+                                    key,
+                                    commaSeparatedIdsToArray(value),
+                                )
+                            }
                             value={this.state.org_unit_type_ids.value.join(',')}
                             errors={this.state.org_unit_type_ids.errors}
                             type="select"
@@ -253,7 +336,9 @@ class FormDialogComponent extends Component {
                         />
                         <InputComponent
                             keyValue="device_field"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.device_field.value}
                             errors={this.state.device_field.errors}
                             type="text"
@@ -261,7 +346,9 @@ class FormDialogComponent extends Component {
                         />
                         <InputComponent
                             keyValue="location_field"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.location_field.value}
                             errors={this.state.location_field.errors}
                             type="text"
@@ -269,7 +356,9 @@ class FormDialogComponent extends Component {
                         />
                         <InputComponent
                             keyValue="derived"
-                            onChange={(key, value) => this.setFieldValue(key, value)}
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
                             value={this.state.derived.value}
                             errors={this.state.derived.errors}
                             type="checkbox"
@@ -299,4 +388,7 @@ const mapStateToProps = state => ({
     projects: state.projects.allProjects,
 });
 const mapDispatchToProps = dispatch => ({ dispatch });
-export default connect(mapStateToProps, mapDispatchToProps)(FormDialogComponent);
+export default connect(
+    mapStateToProps,
+    mapDispatchToProps,
+)(FormDialogComponent);

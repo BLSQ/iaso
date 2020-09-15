@@ -46,7 +46,7 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'org_unit',
         accessor: 'org_unit__name',
-        render: value => (<OrgUnitDisplay orgUnit={value} />),
+        render: value => <OrgUnitDisplay orgUnit={value} />,
         title: value => getOrgunitMessage(value),
         tableOrder: 2,
         type: 'location',
@@ -67,7 +67,12 @@ export const INSTANCE_METAS_FIELDS = [
     },
     {
         key: 'status',
-        render: value => (value ? <FormattedMessage {...MESSAGES[value.toLowerCase()]} /> : '-'),
+        render: value =>
+            value ? (
+                <FormattedMessage {...MESSAGES[value.toLowerCase()]} />
+            ) : (
+                '-'
+            ),
         tableOrder: 5,
         type: 'info',
     },

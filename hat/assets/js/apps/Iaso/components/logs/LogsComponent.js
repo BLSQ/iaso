@@ -31,16 +31,16 @@ class Logs extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: orgUnitsLogsColumns(props.intl.formatMessage, props.classes),
+            tableColumns: orgUnitsLogsColumns(
+                props.intl.formatMessage,
+                props.classes,
+            ),
             tableUrl: this.getEndpointUrl(),
         };
     }
 
     getEndpointUrl() {
-        const {
-            params,
-            logObjectId,
-        } = this.props;
+        const { params, logObjectId } = this.props;
         const urlParams = {
             ...params,
             objectId: logObjectId,
@@ -71,31 +71,35 @@ class Logs extends Component {
         const { tableUrl, tableColumns } = this.state;
         return (
             <section className={classes.reactTable}>
-                {
-                    load.loading && (
-                        <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
-                    )
-                }
-                {
-                    tableUrl
-                    && (
-                        <CustomTableComponent
-                            disableHeaderFixed
-                            pageSize={10}
-                            isSortable
-                            showPagination
-                            endPointUrl={tableUrl}
-                            columns={tableColumns}
-                            defaultSorted={[{ id: 'created_at', desc: true }]}
-                            params={params}
-                            defaultPath={baseUrl}
-                            dataKey="list"
-                            multiSort
-                            canSelect={false}
-                            SubComponent={({ original }) => (original ? <LogsDetails logId={original.id} goToRevision={revision => this.goToRevision(revision)} /> : null)}
-                        />
-                    )
-                }
+                {load.loading && (
+                    <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
+                )}
+                {tableUrl && (
+                    <CustomTableComponent
+                        disableHeaderFixed
+                        pageSize={10}
+                        isSortable
+                        showPagination
+                        endPointUrl={tableUrl}
+                        columns={tableColumns}
+                        defaultSorted={[{ id: 'created_at', desc: true }]}
+                        params={params}
+                        defaultPath={baseUrl}
+                        dataKey="list"
+                        multiSort
+                        canSelect={false}
+                        SubComponent={({ original }) =>
+                            original ? (
+                                <LogsDetails
+                                    logId={original.id}
+                                    goToRevision={revision =>
+                                        this.goToRevision(revision)
+                                    }
+                                />
+                            ) : null
+                        }
+                    />
+                )}
             </section>
         );
     }
@@ -120,4 +124,6 @@ const MapDispatchToProps = dispatch => ({
 
 const LogsWithIntl = injectIntl(Logs);
 
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(LogsWithIntl));
+export default withStyles(styles)(
+    connect(MapStateToProps, MapDispatchToProps)(LogsWithIntl),
+);

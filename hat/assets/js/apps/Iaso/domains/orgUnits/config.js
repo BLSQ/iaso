@@ -30,9 +30,7 @@ export const orgUnitsTableColumns = (
             Header: formatMessage(MESSAGES.type),
             accessor: 'org_unit_type_id',
             Cell: settings => (
-                <section>
-                    {settings.original.org_unit_type_name}
-                </section>
+                <section>{settings.original.org_unit_type_name}</section>
             ),
         },
         {
@@ -40,14 +38,12 @@ export const orgUnitsTableColumns = (
             accessor: 'groups',
             Cell: settings => (
                 <section>
-                    {
-                        settings.original.groups && settings.original.groups.length > 0
-                        && settings.original.groups.map(g => g.name).join(', ')
-                    }
-                    {
-                        (!settings.original.groups || settings.original.groups.length === 0)
-                        && textPlaceholder
-                    }
+                    {settings.original.groups &&
+                        settings.original.groups.length > 0 &&
+                        settings.original.groups.map(g => g.name).join(', ')}
+                    {(!settings.original.groups ||
+                        settings.original.groups.length === 0) &&
+                        textPlaceholder}
                 </section>
             ),
         },
@@ -56,12 +52,8 @@ export const orgUnitsTableColumns = (
             accessor: 'source',
             Cell: settings => (
                 <section>
-                    {
-                        settings.original.source && settings.original.source
-                    }
-                    {
-                        !settings.original.source && textPlaceholder
-                    }
+                    {settings.original.source && settings.original.source}
+                    {!settings.original.source && textPlaceholder}
                 </section>
             ),
         },
@@ -70,11 +62,11 @@ export const orgUnitsTableColumns = (
             accessor: 'validation_status',
             Cell: settings => (
                 <span>
-                    {
-                        settings.original.validation_status === 'NEW'
-                            ? formatMessage(MESSAGES.new)
-                            : (settings.original.validation_status === 'REJECTED' ? formatMessage(MESSAGES.rejected) : formatMessage(MESSAGES.validated))
-                    }
+                    {settings.original.validation_status === 'NEW'
+                        ? formatMessage(MESSAGES.new)
+                        : settings.original.validation_status === 'REJECTED'
+                        ? formatMessage(MESSAGES.rejected)
+                        : formatMessage(MESSAGES.validated)}
                 </span>
             ),
         },
@@ -83,7 +75,9 @@ export const orgUnitsTableColumns = (
             accessor: 'updated_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.updated_at).format('DD/MM/YYYY HH:mm')}
+                    {moment
+                        .unix(settings.original.updated_at)
+                        .format('DD/MM/YYYY HH:mm')}
                 </section>
             ),
         },
@@ -92,7 +86,9 @@ export const orgUnitsTableColumns = (
             accessor: 'created_at',
             Cell: settings => (
                 <section>
-                    {moment.unix(settings.original.created_at).format('DD/MM/YYYY HH:mm')}
+                    {moment
+                        .unix(settings.original.created_at)
+                        .format('DD/MM/YYYY HH:mm')}
                 </section>
             ),
         },
@@ -108,17 +104,17 @@ export const orgUnitsTableColumns = (
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />
-                    {
-                        (settings.original.has_geo_json
-                            || (Boolean(settings.original.latitude && settings.original.longitude)))
-                        && (
-                            <IconButtonComponent
-                                url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
-                                icon="map"
-                                tooltipMessage={MESSAGES.map}
-                            />
-                        )
-                    }
+                    {(settings.original.has_geo_json ||
+                        Boolean(
+                            settings.original.latitude &&
+                                settings.original.longitude,
+                        )) && (
+                        <IconButtonComponent
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/map`}
+                            icon="map"
+                            tooltipMessage={MESSAGES.map}
+                        />
+                    )}
 
                     <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/history`}
@@ -131,29 +127,29 @@ export const orgUnitsTableColumns = (
     ];
     const searchCount = searches.length;
     if (searchCount > 1) {
-        columns.unshift(
-            {
-                Header: formatMessage(MESSAGES.search),
-                accessor: 'search_index',
-                width: 100,
-                Cell: settings => (
-                    <section>
-                        <span
-                            style={{
-                                backgroundColor: `#${settings.original.color}`,
-                                border: `2px solid ${Color(`#${settings.original.color}`).darken(0.5)}`,
-                            }}
-                            className={classes.roundColor}
-                        />
-                    </section>
-                ),
-            },
-        );
+        columns.unshift({
+            Header: formatMessage(MESSAGES.search),
+            accessor: 'search_index',
+            width: 100,
+            Cell: settings => (
+                <section>
+                    <span
+                        style={{
+                            backgroundColor: `#${settings.original.color}`,
+                            border: `2px solid ${Color(
+                                `#${settings.original.color}`,
+                            ).darken(0.5)}`,
+                        }}
+                        className={classes.roundColor}
+                    />
+                </section>
+            ),
+        });
     }
     return columns;
 };
 
-export const orgUnitsLogsColumns = (formatMessage, classes) => ([
+export const orgUnitsLogsColumns = (formatMessage, classes) => [
     {
         Header: 'ID',
         accessor: 'id',
@@ -162,37 +158,35 @@ export const orgUnitsLogsColumns = (formatMessage, classes) => ([
     {
         Header: formatMessage(MESSAGES.date),
         accessor: 'created_at',
-        Cell: settings => <span>{moment(settings.original.created_at).format('YYYY-MM-DD HH:mm')}</span>,
+        Cell: settings => (
+            <span>
+                {moment(settings.original.created_at).format(
+                    'YYYY-MM-DD HH:mm',
+                )}
+            </span>
+        ),
     },
     {
         Header: formatMessage(MESSAGES.user),
         accessor: 'user__username',
-        Cell: settings => (
-            <span>
-                {settings.original.user.userName}
-            </span>
-        ),
+        Cell: settings => <span>{settings.original.user.userName}</span>,
     },
     {
         expander: true,
         width: 65,
         // eslint-disable-next-line react/prop-types
-        Expander: ({ isExpanded }) => (
-            isExpanded
-                ? (
-                    <VisibilityOff />
-                )
-                : (
-                    <Tooltip
-                        classes={{
-                            popper: classes.popperFixed,
-                        }}
-                        title={formatMessage(MESSAGES.details)}
-                    >
-                        <Visibility />
-                    </Tooltip>
-                )
-        ),
+        Expander: ({ isExpanded }) =>
+            isExpanded ? (
+                <VisibilityOff />
+            ) : (
+                <Tooltip
+                    classes={{
+                        popper: classes.popperFixed,
+                    }}
+                    title={formatMessage(MESSAGES.details)}
+                >
+                    <Visibility />
+                </Tooltip>
+            ),
     },
-]
-);
+];

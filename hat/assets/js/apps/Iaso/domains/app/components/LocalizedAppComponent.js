@@ -19,7 +19,11 @@ export default function LocalizedAppComponent({ children }) {
     const activeLocale = useSelector(state => state.app.locale);
 
     return (
-        <IntlProvider key={activeLocale.code} locale={activeLocale.code} messages={messages[activeLocale.code]}>
+        <IntlProvider
+            key={activeLocale.code}
+            locale={activeLocale.code}
+            messages={messages[activeLocale.code]}
+        >
             {children}
         </IntlProvider>
     );

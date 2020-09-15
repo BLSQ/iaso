@@ -4,19 +4,13 @@ import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 
-import {
-    withStyles,
-    Box,
-    Typography,
-} from '@material-ui/core';
+import { withStyles, Box, Typography } from '@material-ui/core';
 
 import { setFormsSelected } from '../../orgUnits/actions';
 
 import ChipsFilterComponent from '../../../components/filters/chips/ChipsFilterComponent';
 
-import {
-    fetchInstancesAsLocationsByForm,
-} from '../../../utils/requests';
+import { fetchInstancesAsLocationsByForm } from '../../../utils/requests';
 import commonStyles from '../../../styles/common';
 
 import MESSAGES from '../messages';
@@ -27,7 +21,6 @@ const styles = theme => ({
         padding: theme.spacing(0, 3, 2, 3),
     },
 });
-
 
 function FormsChipsFilterComponent(props) {
     const {
@@ -40,32 +33,31 @@ function FormsChipsFilterComponent(props) {
     } = props;
     return (
         <Fragment>
-            <Box
-                px={2}
-                className={classes.innerDrawerToolbar}
-                component="div"
-            >
+            <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     <FormattedMessage {...MESSAGES.title} />
                 </Typography>
             </Box>
-            {
-                (!currentForms || (currentForms && currentForms.length === 0))
-                && (
-                    <Typography variant="body2" align="center" color="textSecondary">
-                        <FormattedMessage {...MESSAGES.noForm} />
-                    </Typography>
-                )
-            }
+            {(!currentForms || (currentForms && currentForms.length === 0)) && (
+                <Typography
+                    variant="body2"
+                    align="center"
+                    color="textSecondary"
+                >
+                    <FormattedMessage {...MESSAGES.noForm} />
+                </Typography>
+            )}
             <ChipsFilterComponent
                 selectLabelMessage={MESSAGES.addForm}
                 locationsKey="instances"
-                fetchDetails={form => fetchInstancesAsLocationsByForm(
-                    dispatch,
-                    form,
-                    currentOrgUnit,
-                    fitToBounds,
-                )}
+                fetchDetails={form =>
+                    fetchInstancesAsLocationsByForm(
+                        dispatch,
+                        form,
+                        currentOrgUnit,
+                        fitToBounds,
+                    )
+                }
                 setSelectedItems={props.setFormsSelected}
                 selectedItems={formsSelected}
                 currentItems={currentForms}
@@ -100,4 +92,7 @@ const MapDispatchToProps = dispatch => ({
     setFormsSelected: forms => dispatch(setFormsSelected(forms)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(FormsChipsFilterComponent));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(FormsChipsFilterComponent));

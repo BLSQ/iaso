@@ -35,10 +35,7 @@ const styles = theme => ({
 
 class Mappings extends Component {
     componentDidMount() {
-        const {
-            fetchMappingVersions,
-            params,
-        } = this.props;
+        const { fetchMappingVersions, params } = this.props;
         fetchMappingVersions(params);
     }
 
@@ -63,9 +60,7 @@ class Mappings extends Component {
         return (
             <>
                 {fetching && <LoadingSpinner />}
-                <TopBar
-                    title={formatMessage(MESSAGES.dhis2Mappings)}
-                />
+                <TopBar title={formatMessage(MESSAGES.dhis2Mappings)} />
                 <Box className={classes.containerFullHeightNoTabPadded}>
                     <Table
                         data={mappingVersions}

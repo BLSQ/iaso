@@ -44,28 +44,26 @@ const WidgetPaper = ({
     <Paper elevation={1} className={classes.root}>
         <div className={classes.paperTitle}>
             <Grid xs={IconButton ? 10 : 12} item>
-                <Typography
-                    color="primary"
-                    variant="h5"
-                >
+                <Typography color="primary" variant="h5">
                     {title}
                 </Typography>
             </Grid>
-            {
-                IconButton
-                && (
-                    <Grid xs={2} item container justify="flex-end" className={classes.paperTitleButtonContainer}>
-                        <div className={classes.paperTitleButton}>
-                            <IconButton {...iconButtonProps} />
-                        </div>
-                    </Grid>
-                )
-            }
+            {IconButton && (
+                <Grid
+                    xs={2}
+                    item
+                    container
+                    justify="flex-end"
+                    className={classes.paperTitleButtonContainer}
+                >
+                    <div className={classes.paperTitleButton}>
+                        <IconButton {...iconButtonProps} />
+                    </div>
+                </Grid>
+            )}
         </div>
         <Divider />
-        <div className={padded ? classes.padded : null}>
-            {children}
-        </div>
+        <div className={padded ? classes.padded : null}>{children}</div>
     </Paper>
 );
 
@@ -75,7 +73,6 @@ WidgetPaper.defaultProps = {
     iconButtonProps: {},
 };
 
-
 WidgetPaper.propTypes = {
     classes: PropTypes.object.isRequired,
     title: PropTypes.string.isRequired,
@@ -84,6 +81,5 @@ WidgetPaper.propTypes = {
     IconButton: PropTypes.any,
     iconButtonProps: PropTypes.object,
 };
-
 
 export default withStyles(styles)(WidgetPaper);

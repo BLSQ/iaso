@@ -1,14 +1,11 @@
 import React from 'react';
 
-import {
-    CircleMarker,
-} from 'react-leaflet';
+import { CircleMarker } from 'react-leaflet';
 
 import PropTypes from 'prop-types';
 import { isValidCoordinate } from '../../../utils/mapUtils';
 
-
-const CircleMarkerComponent = (props) => {
+const CircleMarkerComponent = props => {
     const {
         item,
         onClick,
@@ -19,7 +16,13 @@ const CircleMarkerComponent = (props) => {
         popupProps,
     } = props;
 
-    if (!item || !item.latitude || !item.longitude || !isValidCoordinate(item.latitude, item.longitude)) return null;
+    if (
+        !item ||
+        !item.latitude ||
+        !item.longitude ||
+        !isValidCoordinate(item.latitude, item.longitude)
+    )
+        return null;
     return (
         <CircleMarker
             draggable={draggable}
@@ -28,9 +31,7 @@ const CircleMarkerComponent = (props) => {
             onDragend={e => onDragend(e.target)}
             {...markerProps(item)}
         >
-            {
-                PopupComponent && <PopupComponent {...popupProps} />
-            }
+            {PopupComponent && <PopupComponent {...popupProps} />}
         </CircleMarker>
     );
 };

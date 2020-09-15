@@ -2,13 +2,7 @@ import React, { Fragment, Component } from 'react';
 import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
-import {
-    withStyles,
-    Box,
-    Grid,
-    Tabs,
-    Tab,
-} from '@material-ui/core';
+import { withStyles, Box, Grid, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -61,9 +55,7 @@ class InnerDrawer extends Component {
             withTopBorder,
             footerComponent,
         } = this.props;
-        const {
-            activeOption,
-        } = this.state;
+        const { activeOption } = this.state;
         return (
             <Fragment>
                 <Box
@@ -74,105 +66,115 @@ class InnerDrawer extends Component {
                     component="div"
                 >
                     <Grid container spacing={0}>
-                        <Grid item xs={7} md={8} lg={9} className={classes.mapContainer}>
+                        <Grid
+                            item
+                            xs={7}
+                            md={8}
+                            lg={9}
+                            className={classes.mapContainer}
+                        >
                             {children}
                         </Grid>
-                        <Grid item xs={5} md={4} lg={3} className={classes.innerDrawerToolContainer}>
-                            {
-                                (editOptionComponent || filtersOptionComponent)
-                                && (
-                                    <Tabs
-                                        classes={{
-                                            root: classes.innerDrawerTabs,
-                                        }}
-                                        value={activeOption}
-                                        indicatorColor="primary"
-                                        onChange={(event, newtab) => this.toggleOption(newtab)
-                                        }
-                                    >
-                                        {
-                                            filtersOptionComponent && (
-                                                <Tab
-                                                    classes={{
-                                                        root: classes.innerDrawerTab,
-                                                    }}
-                                                    disabled={filtersDisabled}
-                                                    value="filters"
-                                                    label={<FormattedMessage {...MESSAGES.filters} />}
-                                                />
-                                            )
-                                        }
+                        <Grid
+                            item
+                            xs={5}
+                            md={4}
+                            lg={3}
+                            className={classes.innerDrawerToolContainer}
+                        >
+                            {(editOptionComponent ||
+                                filtersOptionComponent) && (
+                                <Tabs
+                                    classes={{
+                                        root: classes.innerDrawerTabs,
+                                    }}
+                                    value={activeOption}
+                                    indicatorColor="primary"
+                                    onChange={(event, newtab) =>
+                                        this.toggleOption(newtab)
+                                    }
+                                >
+                                    {filtersOptionComponent && (
                                         <Tab
                                             classes={{
                                                 root: classes.innerDrawerTab,
                                             }}
-                                            disabled={settingsDisabled}
-                                            value="settings"
-                                            label={<FormattedMessage {...MESSAGES.settings} />}
-                                        />
-                                        {
-                                            editOptionComponent && (
-                                                <Tab
-                                                    classes={{
-                                                        root: classes.innerDrawerTab,
-                                                    }}
-                                                    value="edit"
-                                                    label={<FormattedMessage {...MESSAGES.edit} />}
+                                            disabled={filtersDisabled}
+                                            value="filters"
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.filters}
                                                 />
-                                            )
+                                            }
+                                        />
+                                    )}
+                                    <Tab
+                                        classes={{
+                                            root: classes.innerDrawerTab,
+                                        }}
+                                        disabled={settingsDisabled}
+                                        value="settings"
+                                        label={
+                                            <FormattedMessage
+                                                {...MESSAGES.settings}
+                                            />
                                         }
-                                    </Tabs>
-                                )
-                            }
+                                    />
+                                    {editOptionComponent && (
+                                        <Tab
+                                            classes={{
+                                                root: classes.innerDrawerTab,
+                                            }}
+                                            value="edit"
+                                            label={
+                                                <FormattedMessage
+                                                    {...MESSAGES.edit}
+                                                />
+                                            }
+                                        />
+                                    )}
+                                </Tabs>
+                            )}
                             <Box
                                 display="flex"
                                 flexWrap="wrap"
                                 className={classes.innerDrawerContentContainer}
                                 flexDirection="row"
                             >
-                                {
-                                    filtersOptionComponent
-                                    && (
-                                        <Box
-                                            width="100%"
-                                            className={activeOption !== 'filters' ? 'hidden-opacity' : ''}
-                                        >
-                                            {filtersOptionComponent}
-                                        </Box>
-                                    )
-                                }
+                                {filtersOptionComponent && (
+                                    <Box
+                                        width="100%"
+                                        className={
+                                            activeOption !== 'filters'
+                                                ? 'hidden-opacity'
+                                                : ''
+                                        }
+                                    >
+                                        {filtersOptionComponent}
+                                    </Box>
+                                )}
 
-                                {
-                                    activeOption === 'edit'
-                                    && (
-                                        <Box
-                                            width="100%"
-                                        >
-                                            {editOptionComponent}
-                                        </Box>
-                                    )
-                                }
+                                {activeOption === 'edit' && (
+                                    <Box width="100%">
+                                        {editOptionComponent}
+                                    </Box>
+                                )}
 
-                                {
-                                    activeOption === 'settings'
-                                    && (
-                                        <Box
-                                            width="100%"
-                                        >
-                                            {settingsOptionComponent}
-                                        </Box>
-                                    )
-                                }
-                                {
-                                    footerComponent
-                                    && (
-                                        <div className={classes.innerDrawerFooterContent}>
-                                            {footerComponent}
-                                        </div>
-                                    )
-                                }
+                                {activeOption === 'settings' && (
+                                    <Box width="100%">
+                                        {settingsOptionComponent}
+                                    </Box>
+                                )}
+                                {footerComponent && (
+                                    <div
+                                        className={
+                                            classes.innerDrawerFooterContent
+                                        }
+                                    >
+                                        {footerComponent}
+                                    </div>
+                                )}
                             </Box>
-
                         </Grid>
                     </Grid>
                 </Box>

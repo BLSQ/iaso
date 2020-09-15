@@ -14,7 +14,8 @@ import L from 'leaflet';
 L.Control.ZoomBar = L.Control.Zoom.extend({
     options: {
         zoomInfoTitle: 'Current zoom level',
-        zoomBoxTitle: 'Click here then draw a square on the map, to zoom in to an area',
+        zoomBoxTitle:
+            'Click here then draw a square on the map, to zoom in to an area',
         fitToBoundsTitle: 'Fit to bounds',
         searchTitle: 'Search village',
     },
@@ -26,7 +27,10 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
 
     onAdd(map) {
         const className = 'leaflet-control-zoom';
-        const container = L.DomUtil.create('div', `${className} leaflet-bar hide-on-print`);
+        const container = L.DomUtil.create(
+            'div',
+            `${className} leaflet-bar hide-on-print`,
+        );
         const { options } = this;
         this._map = map;
 
@@ -36,31 +40,51 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         //   className + '-info leaflet-disabled', container, function () {}, this)
 
         this._zoomInButton = this._createButton(
-            options.zoomInText, options.zoomInTitle,
-            `${className}-in`, container, this._zoomIn, this,
+            options.zoomInText,
+            options.zoomInTitle,
+            `${className}-in`,
+            container,
+            this._zoomIn,
+            this,
         );
 
         this._zoomOutButton = this._createButton(
-            options.zoomOutText, options.zoomOutTitle,
-            `${className}-out`, container, this._zoomOut, this,
+            options.zoomOutText,
+            options.zoomOutTitle,
+            `${className}-out`,
+            container,
+            this._zoomOut,
+            this,
         );
 
         this._zoomBoxButton = this._createButton(
-            '', options.zoomBoxTitle,
-            `${className}-box`, container, this._zoomBox, this,
+            '',
+            options.zoomBoxTitle,
+            `${className}-box`,
+            container,
+            this._zoomBox,
+            this,
         );
 
         if (options.fitToBounds) {
             this._fitToBoundsButton = this._createButton(
-                '', options.fitToBoundsTitle,
-                `${className}-fit`, container, options.fitToBounds, this,
+                '',
+                options.fitToBoundsTitle,
+                `${className}-fit`,
+                container,
+                options.fitToBounds,
+                this,
             );
         }
 
         if (options.withVillageSearch) {
             this._searchButton = this._createButton(
-                '', options.searchTitle,
-                `${className}-search`, container, options.onSearch, this,
+                '',
+                options.searchTitle,
+                `${className}-search`,
+                container,
+                options.onSearch,
+                this,
             );
         }
         this._updateDisabled();
@@ -76,17 +100,17 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
     },
 
     /** ***************************************************************************
-   * Zoom info
-   *************************************************************************** */
+     * Zoom info
+     *************************************************************************** */
 
     _updateInfoValue() {
         this._zoomInfoButton.innerHTML = this._map.getZoom();
     },
 
     /** ***************************************************************************
-   * Box zoom
-   * https://github.com/gregallensworth/L.Control.BoxZoom
-   *************************************************************************** */
+     * Box zoom
+     * https://github.com/gregallensworth/L.Control.BoxZoom
+     *************************************************************************** */
     _zoomBox() {
         if (this._zoomBoxActive) {
             this._zoomBoxStateOff();
@@ -106,7 +130,10 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         this._map.on('boxzoomend', this._zoomBoxStateOff, this);
 
         L.DomUtil.addClass(this._zoomBoxButton, 'active');
-        L.DomUtil.addClass(this._map._container, 'leaflet-control-boxzoom-active');
+        L.DomUtil.addClass(
+            this._map._container,
+            'leaflet-control-boxzoom-active',
+        );
     },
     _zoomBoxStateOff() {
         this._zoomBoxActive = false;
@@ -115,7 +142,10 @@ L.Control.ZoomBar = L.Control.Zoom.extend({
         this._map.boxZoom.removeHooks();
 
         L.DomUtil.removeClass(this._zoomBoxButton, 'active');
-        L.DomUtil.removeClass(this._map._container, 'leaflet-control-boxzoom-active');
+        L.DomUtil.removeClass(
+            this._map._container,
+            'leaflet-control-boxzoom-active',
+        );
     },
     _zoomBoxHandleMouseDown(event) {
         L.DomEvent.stopPropagation(event);

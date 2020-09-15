@@ -9,10 +9,11 @@ export const setAllProjects = projects => ({
 
 const apiKey = 'projects';
 
-export const fetchAllProjects = () => dispatch => fetchAction(
-    dispatch,
-    apiKey,
-    setAllProjects,
-    'fetchProjectsError',
-    'projects',
-);
+export const fetchAllProjects = () => dispatch =>
+    fetchAction(
+        dispatch,
+        apiKey,
+        setAllProjects,
+        'fetchProjectsError',
+        'projects',
+    );

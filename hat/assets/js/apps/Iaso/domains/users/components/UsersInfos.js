@@ -5,7 +5,6 @@ import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
 
-
 const UsersInfos = ({ setFieldValue, currentUser, initialData }) => (
     <>
         <InputComponent
@@ -62,6 +61,5 @@ UsersInfos.propTypes = {
     currentUser: PropTypes.object.isRequired,
     initialData: PropTypes.object,
 };
-
 
 export default UsersInfos;

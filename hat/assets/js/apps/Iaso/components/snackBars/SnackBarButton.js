@@ -6,9 +6,12 @@ import { Button } from '@material-ui/core';
 
 import MESSAGES from './messages';
 
-
 function SnackBarButton(props) {
-    const { messageKey, onClick, intl: { formatMessage } } = props;
+    const {
+        messageKey,
+        onClick,
+        intl: { formatMessage },
+    } = props;
     return (
         <Button size="small" onClick={onClick}>
             {formatMessage(MESSAGES[messageKey])}

@@ -8,11 +8,19 @@ import InputLabelComponent from './InputLabelComponent';
 import MESSAGES from '../../domains/forms/messages';
 
 function FileInputComponent({
-    intl, keyValue, label, labelString, disabled, onChange, required, errors,
+    intl,
+    keyValue,
+    label,
+    labelString,
+    disabled,
+    onChange,
+    required,
+    errors,
 }) {
-    const labelText = labelString !== ''
-        ? labelString
-        : intl.formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
+    const labelText =
+        labelString !== ''
+            ? labelString
+            : intl.formatMessage(label || MESSAGES[keyValue]); // TODO: move in label component?
 
     const hasErrors = errors.length > 0;
 

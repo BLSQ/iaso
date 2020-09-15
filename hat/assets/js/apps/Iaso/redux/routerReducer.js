@@ -11,7 +11,8 @@ export const routerReducer = (state = routerInitialState, action = {}) => {
             if (action.payload.action === 'PUSH') {
                 return {
                     currentPathname: action.payload.pathname,
-                    prevPathname: state.currentPathname || action.payload.pathname,
+                    prevPathname:
+                        state.currentPathname || action.payload.pathname,
                 };
             }
             return state;

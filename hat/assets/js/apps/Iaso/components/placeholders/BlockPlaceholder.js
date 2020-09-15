@@ -1,9 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 
-import {
-    withStyles,
-} from '@material-ui/core';
+import { withStyles } from '@material-ui/core';
 
 const styles = theme => ({
     placeholder: {
@@ -15,22 +13,14 @@ const styles = theme => ({
     },
 });
 
-const BlockPlaceholder = (
-    {
-        classes,
-        width,
-    },
-) => (
+const BlockPlaceholder = ({ classes, width }) => (
     <div
         className={classes.placeholder}
-        style={
-            {
-                width,
-            }
-        }
+        style={{
+            width,
+        }}
     />
 );
-
 
 BlockPlaceholder.defaultProps = {
     width: '50%',
@@ -40,6 +30,5 @@ BlockPlaceholder.propTypes = {
     classes: PropTypes.object.isRequired,
     width: PropTypes.string,
 };
-
 
 export default withStyles(styles)(BlockPlaceholder);

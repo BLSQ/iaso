@@ -6,6 +6,8 @@ from django.shortcuts import get_object_or_404
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.http import JsonResponse
+from django.utils.translation import gettext as _
+
 
 from iaso.models import Profile, OrgUnit
 
@@ -118,12 +120,12 @@ class ProfilesViewSet(viewsets.ViewSet):
         password = request.data.get("password", "")
         if not username:
             return JsonResponse(
-                {"errorKey": "user_name", "errorMessage": "Nom d'utilisateur requis",},
+                {"errorKey": "user_name", "errorMessage": _("Nom d'utilisateur requis"),},
                 status=400,
             )
         if not password:
             return JsonResponse(
-                {"errorKey": "password", "errorMessage": "Mot de passe requis"},
+                {"errorKey": "password", "errorMessage": _("Mot de passe requis")},
                 status=400,
             )
         existing_profile = User.objects.filter(username=username).first()
@@ -131,7 +133,7 @@ class ProfilesViewSet(viewsets.ViewSet):
             return JsonResponse(
                 {
                     "errorKey": "user_name",
-                    "errorMessage": "Nom d'utilisateur existant",
+                    "errorMessage": _("Nom d'utilisateur existant"),
                 },
                 status=400,
             )
@@ -155,6 +157,13 @@ class ProfilesViewSet(viewsets.ViewSet):
         current_profile = request.user.iaso_profile
         user.profile = Profile.objects.create(user=user, account=current_profile.account)
 
+        org_units = request.data.get("org_units", [])
+        profile = get_object_or_404(Profile, id=user.profile.pk)
+        profile.org_units.clear()
+        for org_unit in org_units:
+            org_unit_item = get_object_or_404(OrgUnit, pk=org_unit.get("id"))
+            profile.org_units.add(org_unit_item)
+        profile.save()
         return Response(user.profile.as_dict())
 
     def delete(self, request, pk=None):

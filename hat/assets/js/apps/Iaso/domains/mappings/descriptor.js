@@ -1,9 +1,9 @@
 class Descriptor {
     static hasChildren(node) {
         return (
-            Array.isArray(node.children)
-      && node.type !== 'select one'
-      && node.type !== 'select multiple'
+            Array.isArray(node.children) &&
+            node.type !== 'select one' &&
+            node.type !== 'select multiple'
         );
     }
 
@@ -18,9 +18,15 @@ class Descriptor {
 
     static getCoverage(indexedQuestions, mappingVersion, node) {
         let questions = [];
-        if (node.type === 'survey' || node.type === 'group' || node.type === 'repeat') {
+        if (
+            node.type === 'survey' ||
+            node.type === 'group' ||
+            node.type === 'repeat'
+        ) {
             const childrenNames = node.children.map(c => c.name);
-            questions = Object.values(indexedQuestions).filter(q => q.path && q.path.some(p => childrenNames.includes(p)));
+            questions = Object.values(indexedQuestions).filter(
+                q => q.path && q.path.some(p => childrenNames.includes(p)),
+            );
         }
 
         const mappedQuestions = questions.filter(
@@ -34,7 +40,10 @@ class Descriptor {
             return undefined;
         }
         return (
-            node.title || this.getLabel(node, language) || node.hint || node.name
+            node.title ||
+            this.getLabel(node, language) ||
+            node.hint ||
+            node.name
         );
     }
 
@@ -42,13 +51,17 @@ class Descriptor {
         if (node.path === undefined) {
             return null;
         }
-        return node.path.find(questionName => indexedQuestions[questionName] && indexedQuestions[questionName].type == "repeat")
+        return node.path.find(
+            questionName =>
+                indexedQuestions[questionName] &&
+                indexedQuestions[questionName].type == 'repeat',
+        );
     }
 
     static recursiveIndex(node, acc, path) {
         acc[this.getNodeName(node)] = node;
         if (this.hasChildren(node)) {
-            node.children.forEach((child) => {
+            node.children.forEach(child => {
                 const val = child;
                 val.parentName = this.getNodeName(node);
                 const newPath = [...path, child];
@@ -69,7 +82,9 @@ class Descriptor {
         const acc = {};
         if (descriptor && descriptor.children) {
             descriptor.path = ['survey'];
-            descriptor.children.forEach(child => this.recursiveIndex(child, acc, [descriptor, child]));
+            descriptor.children.forEach(child =>
+                this.recursiveIndex(child, acc, [descriptor, child]),
+            );
         }
         return acc;
     }

@@ -1,9 +1,5 @@
-import React, { useRef } from 'react';
-import {
-    Button,
-    Tooltip,
-    makeStyles,
-} from '@material-ui/core';
+import React from 'react';
+import { Button, Tooltip, makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
@@ -32,27 +28,19 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SnackBarErrorMessage = (
-    {
-        errorLog,
-        messageKey,
-        intl: { formatMessage },
-    },
-) => {
+const SnackBarErrorMessage = ({ errorLog, id, intl: { formatMessage } }) => {
     if (!errorLog || errorLog === '') return null;
     const classes = useStyles();
+    const errorMessage =
+        typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
     const dispatch = useDispatch();
-    const textAreaRef = useRef(null);
-    const handleClick = (e) => {
-        textAreaRef.current.select();
-        document.execCommand('copy');
+    const handleClick = e => {
+        navigator.clipboard.writeText(errorMessage);
         e.target.focus();
     };
-    const errorMessage = typeof errorLog === 'string' ? errorLog : JSON.stringify(errorLog);
-    const handleClose = () => dispatch(closeFixedSnackbar(messageKey));
+    const handleClose = () => dispatch(closeFixedSnackbar(id));
     return (
         <>
-
             <Tooltip
                 size="small"
                 title={<p className={classes.errorMessage}>{errorMessage}</p>}
@@ -79,7 +67,6 @@ const SnackBarErrorMessage = (
             <textarea
                 onChange={() => null}
                 className={classes.textarea}
-                ref={textAreaRef}
                 value={errorMessage}
             />
         </>
@@ -88,10 +75,11 @@ const SnackBarErrorMessage = (
 
 SnackBarErrorMessage.defaultProps = {
     errorLog: null,
+    id: null,
 };
 SnackBarErrorMessage.propTypes = {
     errorLog: PropTypes.any,
-    messageKey: PropTypes.string.isRequired,
+    id: PropTypes.oneOfType([PropTypes.object, PropTypes.string]),
     intl: PropTypes.object.isRequired,
 };
 

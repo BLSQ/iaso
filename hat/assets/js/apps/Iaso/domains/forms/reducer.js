@@ -1,8 +1,4 @@
-import {
-    SET_FORMS,
-    SET_CURRENT_FORM,
-    SET_IS_LOADING_FORM,
-} from './actions';
+import { SET_FORMS, SET_CURRENT_FORM, SET_IS_LOADING_FORM } from './actions';
 
 export const formsInitialState = {
     current: null,
@@ -20,7 +16,11 @@ export const formsReducer = (state = formsInitialState, action = {}) => {
     switch (action.type) {
         case SET_FORMS: {
             const {
-                list, showPagination, params, count, pages,
+                list,
+                showPagination,
+                params,
+                count,
+                pages,
             } = action.payload;
             return {
                 ...state,

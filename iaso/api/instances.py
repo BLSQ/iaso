@@ -88,7 +88,7 @@ class InstancesViewSet(viewsets.ViewSet):
         orders = request.GET.get("order", "updated_at").split(",")
         csv_format = request.GET.get("csv", None)
         xlsx_format = request.GET.get("xlsx", None)
-
+        search = request.GET.get("search", None)
         filters = parse_instance_filters(request.GET)
 
         form_id = filters["form_id"]
@@ -96,8 +96,10 @@ class InstancesViewSet(viewsets.ViewSet):
             form = Form.objects.get(pk=form_id)
 
         queryset = Instance.objects.order_by("-id")
+
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
+
 
         queryset = (
             queryset.exclude(file="")
@@ -110,8 +112,9 @@ class InstancesViewSet(viewsets.ViewSet):
         queryset = queryset.prefetch_related("form")
         queryset = queryset.for_filters(**filters)
 
-        if csv_format is None and xlsx_format is None:
 
+
+        if csv_format is None and xlsx_format is None:
             if limit:
                 limit = int(limit)
                 page_offset = int(page_offset)

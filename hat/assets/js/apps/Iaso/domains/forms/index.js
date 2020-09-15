@@ -13,7 +13,6 @@ import { setForms as setFormsAction } from './actions';
 import { fetchAllProjects as fetchAllProjectsAction } from '../projects/actions';
 import { fetchAllOrgUnitTypes as fetchAllOrgUnitTypesAction } from '../orgUnits/types/actions';
 
-
 import formsTableColumns from './config';
 
 import commonStyles from '../../styles/common';
@@ -23,7 +22,6 @@ import CustomTableComponent from '../../components/CustomTableComponent';
 import FormDialogComponent from './components/FormDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-
 
 import MESSAGES from './messages';
 
@@ -55,16 +53,14 @@ class Forms extends Component {
 
     getExportUrl(exportType = 'csv') {
         let url = '/api/forms/?';
-        const {
-            params,
-        } = this.props;
+        const { params } = this.props;
         const urlParams = {
             order: params.order,
         };
 
         urlParams[exportType] = true;
 
-        Object.keys(urlParams).forEach((key) => {
+        Object.keys(urlParams).forEach(key => {
             const value = urlParams[key];
             if (value && !url.includes(key)) {
                 url += `&${key}=${value}`;
@@ -78,9 +74,7 @@ class Forms extends Component {
             classes,
             params,
             reduxPage,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             isLoading,
         } = this.props;
         return (
@@ -94,39 +88,51 @@ class Forms extends Component {
                             showPagination
                             endPointUrl="/api/forms/?all=true"
                             columns={this.state.tableColumns}
-                            defaultSorted={[{ id: 'instance_updated_at', desc: false }]}
+                            defaultSorted={[
+                                { id: 'instance_updated_at', desc: false },
+                            ]}
                             params={params}
                             defaultPath={baseUrl}
                             dataKey="forms"
                             canSelect={false}
                             multiSort
                             onDataLoaded={(newFormsList, count, pages) => {
-                                this.props.setForms(newFormsList, true, params, count, pages);
+                                this.props.setForms(
+                                    newFormsList,
+                                    true,
+                                    params,
+                                    count,
+                                    pages,
+                                );
                                 this.setState({ isUpdated: false });
                             }}
                             reduxPage={reduxPage}
                             isUpdated={this.state.isUpdated}
                         />
                     </div>
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    >
                         <FormDialogComponent
                             titleMessage={MESSAGES.createForm}
-                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent onClick={openDialog} />
+                            )}
                             onSuccess={() => this.setState({ isUpdated: true })}
                         />
-                        {reduxPage.list
-                            && (
-                                <DownloadButtonsComponent
-                                    csvUrl={this.getExportUrl('csv')}
-                                    xlsxUrl={this.getExportUrl('xlsx')}
-                                />
-                            )}
+                        {reduxPage.list && (
+                            <DownloadButtonsComponent
+                                csvUrl={this.getExportUrl('csv')}
+                                xlsxUrl={this.getExportUrl('xlsx')}
+                            />
+                        )}
                     </Grid>
                 </Box>
-                {
-                    isLoading
-                    && <LoadingSpinner />
-                }
+                {isLoading && <LoadingSpinner />}
             </section>
         );
     }
@@ -152,14 +158,15 @@ const mapStateToProps = state => ({
     isLoading: state.forms.isLoading,
 });
 
-const mapDispatchToProps = dispatch => bindActionCreators(
-    {
-        setForms: setFormsAction,
-        fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
-        fetchAllProjects: fetchAllProjectsAction,
-    },
-    dispatch,
-);
+const mapDispatchToProps = dispatch =>
+    bindActionCreators(
+        {
+            setForms: setFormsAction,
+            fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
+            fetchAllProjects: fetchAllProjectsAction,
+        },
+        dispatch,
+    );
 
 export default withStyles(styles)(
     connect(mapStateToProps, mapDispatchToProps)(injectIntl(Forms)),

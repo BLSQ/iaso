@@ -1,10 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import isEqual from 'lodash/isEqual';
 
-import {
-    Grid,
-    withStyles,
-} from '@material-ui/core';
+import { Grid, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -24,26 +21,22 @@ class DocumentsListComponent extends Component {
     }
 
     render() {
-        const {
-            docsList,
-            classes,
-        } = this.props;
+        const { docsList, classes } = this.props;
         return (
             <Fragment>
                 <Grid container spacing={2} className={classes.root}>
-                    {
-
-                        docsList.map(file => (
-                            <Grid
-                                item
-                                sm={2}
-                                md={1}
-                                key={`${file.itemId}-${getFileName(file.path).name}`}
-                            >
-                                <DocumentsItem file={file} />
-                            </Grid>
-                        ))
-                    }
+                    {docsList.map(file => (
+                        <Grid
+                            item
+                            sm={2}
+                            md={1}
+                            key={`${file.itemId}-${
+                                getFileName(file.path).name
+                            }`}
+                        >
+                            <DocumentsItem file={file} />
+                        </Grid>
+                    ))}
                 </Grid>
             </Fragment>
         );

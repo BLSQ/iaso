@@ -2,7 +2,11 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { FormattedMessage } from 'react-intl';
 import {
-    Paper, Container, Box, Typography, makeStyles,
+    Paper,
+    Container,
+    Box,
+    Typography,
+    makeStyles,
 } from '@material-ui/core';
 import ErrorOutline from '@material-ui/icons/ErrorOutline';
 import NotAuthorized from '@material-ui/icons/NotInterested';
@@ -23,59 +27,60 @@ const PageError = ({ errorCode }) => {
     const classes = useStyles();
     return (
         <>
-            <TopBar
-                displayBackButton={false}
-            />
+            <TopBar displayBackButton={false} />
             <Box mt={5}>
                 <Container maxWidth="md">
                     <Paper p={3}>
-                        <Box py={6} px={2} justifyContent="center" alignItems="center" display="flex" flexDirection="column">
+                        <Box
+                            py={6}
+                            px={2}
+                            justifyContent="center"
+                            alignItems="center"
+                            display="flex"
+                            flexDirection="column"
+                        >
                             <Box pt={3}>
                                 <Typography variant="h2">
                                     {errorCode}
                                 </Typography>
                             </Box>
-                            {
-                                errorCode === '401'
-                                && (
-                                    <>
-                                        <Box pt={2} pb={2}>
-                                            <Typography variant="h5">
-                                                <FormattedMessage {...MESSAGES.notFound} />
-                                            </Typography>
-                                        </Box>
-                                        <NotAuthorized className={classes.icon} />
-                                    </>
-                                )
-                            }
-                            {
-                                errorCode === '404'
-                                && (
-                                    <>
-                                        <Box pt={2} pb={2}>
-                                            <Typography variant="h5">
-                                                <FormattedMessage {...MESSAGES.notFound} />
-                                            </Typography>
-                                        </Box>
-                                        <HelpOutline className={classes.icon} />
-                                    </>
-                                )
-                            }
-                            {
-                                errorCode === '500'
-                                && (
-                                    <>
-                                        <Box pt={2} pb={2}>
-                                            <Typography variant="h5">
-                                                <FormattedMessage {...MESSAGES.labelError} />
-                                            </Typography>
-                                        </Box>
-                                        <ErrorOutline className={classes.icon} />
-                                    </>
-                                )
-                            }
+                            {errorCode === '401' && (
+                                <>
+                                    <Box pt={2} pb={2}>
+                                        <Typography variant="h5">
+                                            <FormattedMessage
+                                                {...MESSAGES.notFound}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                    <NotAuthorized className={classes.icon} />
+                                </>
+                            )}
+                            {errorCode === '404' && (
+                                <>
+                                    <Box pt={2} pb={2}>
+                                        <Typography variant="h5">
+                                            <FormattedMessage
+                                                {...MESSAGES.notFound}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                    <HelpOutline className={classes.icon} />
+                                </>
+                            )}
+                            {errorCode === '500' && (
+                                <>
+                                    <Box pt={2} pb={2}>
+                                        <Typography variant="h5">
+                                            <FormattedMessage
+                                                {...MESSAGES.labelError}
+                                            />
+                                        </Typography>
+                                    </Box>
+                                    <ErrorOutline className={classes.icon} />
+                                </>
+                            )}
                         </Box>
-
                     </Paper>
                 </Container>
             </Box>
@@ -86,6 +91,5 @@ const PageError = ({ errorCode }) => {
 PageError.propTypes = {
     errorCode: PropTypes.string.isRequired,
 };
-
 
 export default PageError;

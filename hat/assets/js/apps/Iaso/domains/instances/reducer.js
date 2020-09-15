@@ -9,8 +9,8 @@ import {
 } from './actions';
 
 export const instancesInitialState = {
-    fetching: false,
-    instancesSmall: [],
+    fetching: true,
+    instancesSmall: null,
     instancesPage: {
         list: null,
         showPagination: false,
@@ -20,14 +20,21 @@ export const instancesInitialState = {
     },
     current: null,
     currentForm: null,
-    isInstancesFilterUpdated: false
+    isInstancesFilterUpdated: false,
 };
 
-export const instancesReducer = (state = instancesInitialState, action = {}) => {
+export const instancesReducer = (
+    state = instancesInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case SET_INSTANCES: {
             const {
-                list, showPagination, params, count, pages,
+                list,
+                showPagination,
+                params,
+                count,
+                pages,
             } = action.payload;
             return {
                 ...state,

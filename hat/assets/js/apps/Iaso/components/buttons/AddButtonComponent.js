@@ -11,9 +11,7 @@ const styles = theme => ({
     ...commonStyles(theme),
 });
 
-function AddButtonComponent({
-    classes, intl, onClick, message,
-}) {
+function AddButtonComponent({ classes, intl, onClick, message }) {
     return (
         <Button
             variant="contained"

@@ -44,7 +44,8 @@ const getVersions = (sources, sourceId) => {
     return versions;
 };
 
-class AddRunDialogComponent extends Component { // TODO: could use the new base ConfirmCancelDialogComponent
+class AddRunDialogComponent extends Component {
+    // TODO: could use the new base ConfirmCancelDialogComponent
     constructor(props) {
         super(props);
         this.state = {
@@ -72,9 +73,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
     }
 
     handleClose(isAccepted) {
-        const {
-            executeRun,
-        } = this.props;
+        const { executeRun } = this.props;
         const runItem = {
             ...this.state,
         };
@@ -90,9 +89,7 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
             classes,
             algorithms,
             sourcesList,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         const {
             open,
@@ -126,13 +123,20 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                         <FormattedMessage {...MESSAGES.addRun} />
                     </DialogTitle>
                     <DialogContent className={classes.content}>
-                        <Grid container spacing={2} alignItems="center" justify="flex-start">
+                        <Grid
+                            container
+                            spacing={2}
+                            alignItems="center"
+                            justify="flex-start"
+                        >
                             <Grid xs={6} item>
                                 <InputComponent
                                     multi={false}
                                     clearable
                                     keyValue="algoId"
-                                    onChange={(key, value) => this.onChange('algoId', value)}
+                                    onChange={(key, value) =>
+                                        this.onChange('algoId', value)
+                                    }
                                     value={algoId}
                                     type="select"
                                     options={algorithms.map(a => ({
@@ -143,19 +147,30 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                 />
                             </Grid>
                         </Grid>
-                        <Grid container spacing={2} alignItems="center" justify="flex-start">
+                        <Grid
+                            container
+                            spacing={2}
+                            alignItems="center"
+                            justify="flex-start"
+                        >
                             <Grid xs={6} item>
                                 <InputComponent
                                     multi={false}
                                     clearable
                                     keyValue="sourceOriginId"
-                                    onChange={(key, value) => this.onChange('sourceOriginId', value)}
+                                    onChange={(key, value) =>
+                                        this.onChange('sourceOriginId', value)
+                                    }
                                     value={sourceOriginId}
                                     type="select"
-                                    options={sourcesList ? sourcesList.map(s => ({
-                                        label: s.name,
-                                        value: s.id,
-                                    })) : []}
+                                    options={
+                                        sourcesList
+                                            ? sourcesList.map(s => ({
+                                                  label: s.name,
+                                                  value: s.id,
+                                              }))
+                                            : []
+                                    }
                                     label={MESSAGES.sourceorigin}
                                 />
                                 <InputComponent
@@ -163,11 +178,21 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                     clearable
                                     disabled={!sourceOriginId}
                                     keyValue="versionOrigin"
-                                    onChange={(key, value) => this.onChange('versionOrigin', value)}
+                                    onChange={(key, value) =>
+                                        this.onChange('versionOrigin', value)
+                                    }
                                     value={versionOrigin}
                                     type="select"
-                                    options={(sourceOriginId ? getVersions(sourcesList, sourceOriginId) : []).map(v => ({
-                                        label: `${formatMessage(MESSAGES.version)} ${v.number}`,
+                                    options={(sourceOriginId
+                                        ? getVersions(
+                                              sourcesList,
+                                              sourceOriginId,
+                                          )
+                                        : []
+                                    ).map(v => ({
+                                        label: `${formatMessage(
+                                            MESSAGES.version,
+                                        )} ${v.number}`,
                                         value: v.number,
                                     }))}
                                     label={MESSAGES.sourceoriginversion}
@@ -178,13 +203,22 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                     multi={false}
                                     clearable
                                     keyValue="sourceDestinationId"
-                                    onChange={(key, value) => this.onChange('sourceDestinationId', value)}
+                                    onChange={(key, value) =>
+                                        this.onChange(
+                                            'sourceDestinationId',
+                                            value,
+                                        )
+                                    }
                                     value={sourceDestinationId}
                                     type="select"
-                                    options={sourcesList ? sourcesList.map(s => ({
-                                        label: s.name,
-                                        value: s.id,
-                                    })) : []}
+                                    options={
+                                        sourcesList
+                                            ? sourcesList.map(s => ({
+                                                  label: s.name,
+                                                  value: s.id,
+                                              }))
+                                            : []
+                                    }
                                     label={MESSAGES.sourcedestination}
                                 />
                                 <InputComponent
@@ -192,13 +226,24 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                                     clearable
                                     disabled={!sourceDestinationId}
                                     keyValue="versionDestination"
-                                    onChange={(key, value) => this.onChange('versionDestination', value)}
+                                    onChange={(key, value) =>
+                                        this.onChange(
+                                            'versionDestination',
+                                            value,
+                                        )
+                                    }
                                     value={versionDestination}
                                     type="select"
                                     options={(sourceDestinationId
-                                        ? getVersions(sourcesList, sourceDestinationId)
-                                        : []).map(v => ({
-                                        label: `${formatMessage(MESSAGES.version)} ${v.number}`,
+                                        ? getVersions(
+                                              sourcesList,
+                                              sourceDestinationId,
+                                          )
+                                        : []
+                                    ).map(v => ({
+                                        label: `${formatMessage(
+                                            MESSAGES.version,
+                                        )} ${v.number}`,
                                         value: v.number,
                                     }))}
                                     label={MESSAGES.sourcedestinationversion}
@@ -207,18 +252,21 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
                         </Grid>
                     </DialogContent>
                     <DialogActions className={classes.action}>
-                        <Button onClick={() => this.handleClose(false)} color="primary">
+                        <Button
+                            onClick={() => this.handleClose(false)}
+                            color="primary"
+                        >
                             <FormattedMessage {...MESSAGES.cancel} />
                         </Button>
                         <Button
                             onClick={() => this.handleClose(true)}
-                            disabled={(
-                                !algoId
-                                || !sourceOriginId
-                                || !versionOrigin
-                                || !sourceDestinationId
-                                || !versionDestination
-                            )}
+                            disabled={
+                                !algoId ||
+                                !sourceOriginId ||
+                                !versionOrigin ||
+                                !sourceDestinationId ||
+                                !versionDestination
+                            }
                             color="primary"
                             autoFocus
                         >
@@ -230,7 +278,6 @@ class AddRunDialogComponent extends Component { // TODO: could use the new base 
         );
     }
 }
-
 
 AddRunDialogComponent.defaultProps = {
     sourcesList: [],

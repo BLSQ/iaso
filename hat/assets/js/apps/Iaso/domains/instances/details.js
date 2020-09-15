@@ -29,6 +29,7 @@ import InstanceDetailsExportRequests from './components/InstanceDetailsExportReq
 import InstancesFilesList from './components/InstancesFilesListComponent';
 import InstanceFileContent from './components/InstanceFileContent';
 import SpeedDialInstanceActions from './components/SpeedDialInstanceActions';
+import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import EnketoIcon from './components/EnketoIcon';
 import { getInstancesFilesList } from './utils';
 
@@ -48,6 +49,19 @@ const actions = (currentInstance, reAssignInstance) => [
     {
         id: 'instanceEditAction',
         icon: <EnketoIcon />,
+        disabled: currentInstance && currentInstance.deleted,
+    },
+    {
+        id: 'instanceExportAction',
+        icon: (
+            <ExportInstancesDialogComponent
+                getFilters={() => ({
+                    form_id: currentInstance.form_id,
+                    search: `ids:${currentInstance.id}`,
+                })}
+                batchExport={false}
+            />
+        ),
         disabled: currentInstance && currentInstance.deleted,
     },
     {
@@ -83,15 +97,18 @@ class InstanceDetails extends Component {
 
     onActionSelected(action) {
         if (action.id === 'instanceEditAction' && this.props.currentInstance) {
-            this.props.fetchEditUrl(this.props.currentInstance, window.location);
+            this.props.fetchEditUrl(
+                this.props.currentInstance,
+                window.location,
+            );
         }
 
-        if (action.id === 'instanceDeleteAction' && this.props.currentInstance) {
+        if (
+            action.id === 'instanceDeleteAction' &&
+            this.props.currentInstance
+        ) {
             this.props.softDelete(this.props.currentInstance);
         }
-
-        // if (action.id === 'instanceReAssignAction' && this.props.currentInstance) {
-        // }
     }
 
     render() {
@@ -112,8 +129,11 @@ class InstanceDetails extends Component {
                     title={
                         currentInstance
                             ? `${
-                                currentInstance.form_name
-                            }: ${currentInstance.file_name.replace('.xml', '')}`
+                                  currentInstance.form_name
+                              }: ${currentInstance.file_name.replace(
+                                  '.xml',
+                                  '',
+                              )}`
                             : ''
                     }
                     displayBackButton
@@ -132,36 +152,61 @@ class InstanceDetails extends Component {
                     <Box className={classes.containerFullHeightNoTabPadded}>
                         <SpeedDialInstanceActions
                             actions={actions(currentInstance, reAssignInstance)}
-                            onActionSelected={action => this.onActionSelected(action)}
+                            onActionSelected={action =>
+                                this.onActionSelected(action)
+                            }
                         />
                         <Grid container spacing={4}>
                             <Grid xs={12} md={5} item>
                                 {currentInstance.deleted && (
-                                    <Alert severity="warning" className={classes.alert}>
-                                        {formatMessage(MESSAGES.warningSoftDeleted)}
+                                    <Alert
+                                        severity="warning"
+                                        className={classes.alert}
+                                    >
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeleted,
+                                        )}
                                         <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedExport)}
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedExport,
+                                        )}
                                         <br />
-                                        {formatMessage(MESSAGES.warningSoftDeletedDerived)}
+                                        {formatMessage(
+                                            MESSAGES.warningSoftDeletedDerived,
+                                        )}
                                         <br />
                                     </Alert>
                                 )}
-                                <WidgetPaper title={formatMessage(MESSAGES.infos)} padded>
-                                    <InstanceDetailsInfos currentInstance={currentInstance} />
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.infos)}
+                                    padded
+                                >
+                                    <InstanceDetailsInfos
+                                        currentInstance={currentInstance}
+                                    />
                                 </WidgetPaper>
-                                <WidgetPaper title={formatMessage(MESSAGES.location)}>
-                                    <InstanceDetailsLocation currentInstance={currentInstance} />
+                                <WidgetPaper
+                                    title={formatMessage(MESSAGES.location)}
+                                >
+                                    <InstanceDetailsLocation
+                                        currentInstance={currentInstance}
+                                    />
                                 </WidgetPaper>
                                 <InstanceDetailsExportRequests
                                     currentInstance={currentInstance}
                                     classes={classes}
                                 />
                                 {currentInstance.files.length > 0 && (
-                                    <WidgetPaper title={formatMessage(MESSAGES.files)} padded>
+                                    <WidgetPaper
+                                        title={formatMessage(MESSAGES.files)}
+                                        padded
+                                    >
                                         <InstancesFilesList
                                             fetchDetails={false}
                                             instanceDetail={currentInstance}
-                                            files={getInstancesFilesList([currentInstance])}
+                                            files={getInstancesFilesList([
+                                                currentInstance,
+                                            ])}
                                         />
                                     </WidgetPaper>
                                 )}
@@ -172,13 +217,19 @@ class InstanceDetails extends Component {
                                     title={formatMessage(MESSAGES.form)}
                                     IconButton={IconButtonComponent}
                                     iconButtonProps={{
-                                        onClick: () => window.open(currentInstance.file_url, '_blank'),
+                                        onClick: () =>
+                                            window.open(
+                                                currentInstance.file_url,
+                                                '_blank',
+                                            ),
                                         icon: 'xml',
                                         color: 'secondary',
                                         tooltipMessage: MESSAGES.downloadXml,
                                     }}
                                 >
-                                    <InstanceFileContent instance={currentInstance} />
+                                    <InstanceFileContent
+                                        instance={currentInstance}
+                                    />
                                 </WidgetPaper>
                             </Grid>
                         </Grid>

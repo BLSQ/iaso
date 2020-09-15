@@ -51,7 +51,8 @@ const MESSAGES = defineMessages({
     },
     fetchEnketoError: {
         id: 'iaso.snackBar.fetchEnketoError',
-        defaultMessage: 'Failed to upload to enketo, either the record is currently edited or enketo is not available',
+        defaultMessage:
+            'Failed to upload to enketo, either the record is currently edited or enketo is not available',
     },
     fetchSourceTypesError: {
         id: 'iaso.snackBar.fetchSourceTypesError',
@@ -64,6 +65,14 @@ const MESSAGES = defineMessages({
     fetchGroupsError: {
         id: 'iaso.snackBar.fetchGroupsError',
         defaultMessage: 'An error occurred while fetching groups list',
+    },
+    saveOrgUnitError: {
+        id: 'iaso.snackBar.saveOrgUnitError',
+        defaultMessage: 'An error occurred while saving org unit',
+    },
+    saveOrgUnitSuccesfull: {
+        id: 'iaso.snackBar.saveOrgUnitSuccesfull',
+        defaultMessage: 'Org unit saved successfully',
     },
     fetchOrgUnitTypesError: {
         id: 'iaso.snackBar.fetchOrgUnitTypesError',
@@ -99,7 +108,8 @@ const MESSAGES = defineMessages({
     },
     fetchDevicesOwnershipError: {
         id: 'iaso.snackBar.fetchDevicesOwnershipError',
-        defaultMessage: 'An error occurred while fetching devices ownerships list',
+        defaultMessage:
+            'An error occurred while fetching devices ownerships list',
     },
     fetchInstanceError: {
         id: 'iaso.snackBar.fetchInstanceError',
@@ -111,7 +121,8 @@ const MESSAGES = defineMessages({
     },
     createExportRequestErrorNothingToExportError: {
         id: 'iaso.snackBar.createExportRequestErrorNothingToExportError',
-        defaultMessage: 'We found nothing to export, change your filter or force the re-export',
+        defaultMessage:
+            'We found nothing to export, change your filter or force the re-export',
     },
     createExportRequestErrorNoVersionError: {
         id: 'iaso.snackBar.createExportRequestErrorNoVersionError',
@@ -147,7 +158,8 @@ const MESSAGES = defineMessages({
     },
     locationLimitWarning: {
         id: 'iaso.snackBar.locationLimitWarning',
-        defaultMessage: 'Display too much items on the map can reduce the performance',
+        defaultMessage:
+            'Display too much items on the map can reduce the performance',
     },
     fetchLinkDetailError: {
         id: 'iaso.snackBar.fetchLinkDetailError',

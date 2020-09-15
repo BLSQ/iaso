@@ -6,11 +6,12 @@ import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 import { CirclePicker } from 'react-color';
 
-
 import { withStyles, FormLabel } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
+import Add from '@material-ui/icons/Add';
 import Search from '@material-ui/icons/Search';
+import classNames from 'classnames';
 
 import commonStyles from '../../../styles/common';
 import { getChipColors, chipColors } from '../../../constants/chipColors';
@@ -26,16 +27,14 @@ import {
     locationsLimit,
     group,
 } from '../../../constants/filters';
-import {
-    setFiltersUpdated,
-    setOrgUnitsLocations,
-} from '../actions';
+import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 
 import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
+import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
 
 const styles = theme => ({
@@ -51,6 +50,9 @@ const styles = theme => ({
         marginBottom: theme.spacing(2),
         display: 'block',
     },
+    marginRight: {
+        marginRight: theme.spacing(2),
+    },
 });
 
 const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
@@ -62,12 +64,7 @@ const extendFilter = (searchParams, filter, onChange, searchIndex) => ({
 
 class OrgUnitsFiltersComponent extends Component {
     onSearch() {
-        const {
-            filtersUpdated,
-            params,
-            redirectTo,
-            onSearch,
-        } = this.props;
+        const { filtersUpdated, params, redirectTo, onSearch } = this.props;
         const searches = [...decodeSearch(params.searches)];
         if (filtersUpdated) {
             this.props.setFiltersUpdated(false);
@@ -118,27 +115,51 @@ class OrgUnitsFiltersComponent extends Component {
             params,
             classes,
             baseUrl,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             orgUnitTypes,
             sources,
             currentTab,
             filtersUpdated,
             groups,
             searchIndex,
+            redirectTo,
         } = this.props;
         const searches = [...decodeSearch(params.searches)];
         const searchParams = searches[searchIndex];
         const filters = [
-            extendFilter(searchParams, search(), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-            extendFilter(searchParams, orgUnitType(orgUnitTypes), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-            extendFilter(searchParams, group(groups), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
+            extendFilter(
+                searchParams,
+                search(),
+                (value, urlKey) => this.onChange(value, urlKey),
+                searchIndex,
+            ),
+            extendFilter(
+                searchParams,
+                orgUnitType(orgUnitTypes),
+                (value, urlKey) => this.onChange(value, urlKey),
+                searchIndex,
+            ),
+            extendFilter(
+                searchParams,
+                group(groups),
+                (value, urlKey) => this.onChange(value, urlKey),
+                searchIndex,
+            ),
         ];
         if (currentTab === 'map') {
-            filters.push(extendFilter(searchParams, locationsLimit(), (value, urlKey) => this.onChange(value, urlKey), searchIndex));
+            filters.push(
+                extendFilter(
+                    searchParams,
+                    locationsLimit(),
+                    (value, urlKey) => this.onChange(value, urlKey),
+                    searchIndex,
+                ),
+            );
         }
-        const currentColor = searchParams.color ? `#${searchParams.color}` : getChipColors(0);
+        const currentColor = searchParams.color
+            ? `#${searchParams.color}`
+            : getChipColors(0);
+
         return (
             <div className={classes.root}>
                 <Grid container spacing={4}>
@@ -147,22 +168,43 @@ class OrgUnitsFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             filters={[
-                                extendFilter(searchParams, search(), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-                                extendFilter(searchParams, orgUnitType(orgUnitTypes), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-                                extendFilter(searchParams, group(groups), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
+                                extendFilter(
+                                    searchParams,
+                                    search(),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    orgUnitType(orgUnitTypes),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    group(groups),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
                         <div className={classes.colorContainer}>
                             <FormLabel className={classes.marginBottom}>
-                                <FormattedMessage {...MESSAGES.color} />
-                                :
+                                <FormattedMessage {...MESSAGES.color} />:
                             </FormLabel>
                             <CirclePicker
                                 width="100%"
                                 colors={chipColors}
                                 color={currentColor}
-                                onChangeComplete={color => this.onChange(color.hex.replace('#', ''), 'color')
+                                onChangeComplete={color =>
+                                    this.onChange(
+                                        color.hex.replace('#', ''),
+                                        'color',
+                                    )
                                 }
                             />
                         </div>
@@ -172,9 +214,27 @@ class OrgUnitsFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             filters={[
-                                extendFilter(searchParams, location(formatMessage), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-                                extendFilter(searchParams, shape(formatMessage), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-                                extendFilter(searchParams, hasInstances(formatMessage), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
+                                extendFilter(
+                                    searchParams,
+                                    location(formatMessage),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    shape(formatMessage),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    hasInstances(formatMessage),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
                             ]}
                         />
                     </Grid>
@@ -183,22 +243,65 @@ class OrgUnitsFiltersComponent extends Component {
                             params={params}
                             baseUrl={baseUrl}
                             filters={[
-                                extendFilter(searchParams, status(formatMessage), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
-                                extendFilter(searchParams, source(sources || [], false), (value, urlKey) => this.onChange(value, urlKey), searchIndex),
+                                extendFilter(
+                                    searchParams,
+                                    status(formatMessage),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
+                                extendFilter(
+                                    searchParams,
+                                    source(sources || [], false),
+                                    (value, urlKey) =>
+                                        this.onChange(value, urlKey),
+                                    searchIndex,
+                                ),
                             ]}
                         />
                         <OrgUnitsLevelsFiltersComponent
-                            onLevelsChange={levels => this.onChange(levels, 'levels')}
+                            onLevelsChange={levels =>
+                                this.onChange(levels, 'levels')
+                            }
                             params={params}
                             baseUrl={baseUrl}
                             searchIndex={searchIndex}
                         />
                     </Grid>
                 </Grid>
-                <Grid container spacing={4} justify="flex-end" alignItems="center">
-                    <Grid item xs={2} container justify="flex-end" alignItems="center">
+                <Grid
+                    container
+                    spacing={4}
+                    justify="flex-end"
+                    alignItems="center"
+                >
+                    <Grid
+                        item
+                        xs={4}
+                        container
+                        justify="flex-end"
+                        alignItems="center"
+                    >
                         <Button
-                            disabled={!filtersUpdated && Boolean(params.searchActive)}
+                            variant="contained"
+                            className={classNames(
+                                classes.button,
+                                classes.marginRight,
+                            )}
+                            color="primary"
+                            onClick={() =>
+                                redirectTo(baseUrls.orgUnitDetails, {
+                                    orgUnitId: '0',
+                                })
+                            }
+                        >
+                            <Add className={classes.buttonIcon} />
+                            <FormattedMessage {...MESSAGES.create} />
+                        </Button>
+                        <Button
+                            disabled={
+                                !filtersUpdated && Boolean(params.searchActive)
+                            }
                             variant="contained"
                             className={classes.button}
                             color="primary"
@@ -249,9 +352,15 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
-    setFiltersUpdated: filtersUpdated => dispatch(setFiltersUpdated(filtersUpdated)),
-    setOrgUnitsLocations: orgUnitsLocations => dispatch(setOrgUnitsLocations(orgUnitsLocations)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
+    setFiltersUpdated: filtersUpdated =>
+        dispatch(setFiltersUpdated(filtersUpdated)),
+    setOrgUnitsLocations: orgUnitsLocations =>
+        dispatch(setOrgUnitsLocations(orgUnitsLocations)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(injectIntl(OrgUnitsFiltersComponent)));

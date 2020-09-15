@@ -3,24 +3,16 @@ import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
-import {
-    withStyles,
-    Box,
-    Typography,
-} from '@material-ui/core';
+import { withStyles, Box, Typography } from '@material-ui/core';
 
 import { setSourcesSelected } from '../../../domains/orgUnits/actions';
 
 import ChipsFilterComponent from './ChipsFilterComponent';
 
-import {
-    fetchAssociatedOrgUnits,
-} from '../../../utils/requests';
+import { fetchAssociatedOrgUnits } from '../../../utils/requests';
 import commonStyles from '../../../styles/common';
 
-import {
-    getSourcesWithoutCurrentSource,
-} from '../../../domains/orgUnits/utils';
+import { getSourcesWithoutCurrentSource } from '../../../domains/orgUnits/utils';
 
 import MESSAGES from '../messages';
 
@@ -40,35 +32,38 @@ function SourcesChipsFilterComponent(props) {
         currentOrgUnit,
         fitToBounds,
     } = props;
-    const sources = getSourcesWithoutCurrentSource(currentSources, currentOrgUnit.source_id);
+    if (!currentOrgUnit) return null;
+    const sources = getSourcesWithoutCurrentSource(
+        currentSources,
+        currentOrgUnit.source_id,
+    );
     return (
         <Fragment>
-            <Box
-                px={2}
-                className={classes.innerDrawerToolbar}
-                component="div"
-            >
+            <Box px={2} className={classes.innerDrawerToolbar} component="div">
                 <Typography variant="subtitle1">
                     <FormattedMessage {...MESSAGES.sources} />
                 </Typography>
             </Box>
-            {
-                sources.length === 0
-                && (
-                    <Typography variant="body2" align="center" color="textSecondary">
-                        <FormattedMessage {...MESSAGES.noSources} />
-                    </Typography>
-                )
-            }
+            {sources.length === 0 && (
+                <Typography
+                    variant="body2"
+                    align="center"
+                    color="textSecondary"
+                >
+                    <FormattedMessage {...MESSAGES.noSources} />
+                </Typography>
+            )}
             <ChipsFilterComponent
                 selectLabelMessage={MESSAGES.addSource}
                 locationsKey="orgUnits"
-                fetchDetails={source => fetchAssociatedOrgUnits(
-                    dispatch,
-                    source,
-                    currentOrgUnit,
-                    fitToBounds,
-                )}
+                fetchDetails={source =>
+                    fetchAssociatedOrgUnits(
+                        dispatch,
+                        source,
+                        currentOrgUnit,
+                        fitToBounds,
+                    )
+                }
                 setSelectedItems={props.setFormsSelected}
                 selectedItems={sourcesSelected}
                 currentItems={sources}
@@ -102,4 +97,7 @@ const MapDispatchToProps = dispatch => ({
     setFormsSelected: sources => dispatch(setSourcesSelected(sources)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(SourcesChipsFilterComponent));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(SourcesChipsFilterComponent));

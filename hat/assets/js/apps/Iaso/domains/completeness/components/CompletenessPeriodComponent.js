@@ -1,9 +1,7 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
-import {
-    Paper, withStyles, Typography, Grid,
-} from '@material-ui/core';
+import { Paper, withStyles, Typography, Grid } from '@material-ui/core';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 
 import { getColumns } from '../config';
@@ -47,7 +45,10 @@ const styles = theme => ({
 class CompletenessPeriodComponent extends Component {
     componentDidMount() {
         const { formatMessage } = this.props.intl;
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+        Object.assign(
+            ReactTableDefaults,
+            customTableTranslations(formatMessage),
+        );
     }
 
     onSelectCell(form, status, period) {
@@ -59,7 +60,9 @@ class CompletenessPeriodComponent extends Component {
     }
 
     onClick(form, onGenerateDerivedInstances) {
-        const periods = Array.from(new Set(Object.values(form.months).map(m => m.period.periodString)));
+        const periods = Array.from(
+            new Set(Object.values(form.months).map(m => m.period.periodString)),
+        );
         const derived = form.generate_derived;
         onGenerateDerivedInstances({ periods, derived });
     }
@@ -71,9 +74,7 @@ class CompletenessPeriodComponent extends Component {
             activeInstanceStatuses,
             activePeriodType,
             classes,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             onGenerateDerivedInstances,
         } = this.props;
 
@@ -102,8 +103,10 @@ class CompletenessPeriodComponent extends Component {
                             period.monthRange,
                             classes,
                             activeInstanceStatuses,
-                            (form, status, p) => this.onSelectCell(form, status, p),
-                            (arg => this.onClick(arg, onGenerateDerivedInstances)),
+                            (form, status, p) =>
+                                this.onSelectCell(form, status, p),
+                            arg =>
+                                this.onClick(arg, onGenerateDerivedInstances),
                             activePeriodType,
                         )}
                         data={forms}

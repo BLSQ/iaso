@@ -5,7 +5,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { push } from 'react-router-redux';
 
-
 import { withStyles } from '@material-ui/core';
 import Grid from '@material-ui/core/Grid';
 import Button from '@material-ui/core/Button';
@@ -14,12 +13,7 @@ import Autorenew from '@material-ui/icons/Autorenew';
 
 import commonStyles from '../../../styles/common';
 
-import {
-    algo,
-    source,
-    profile,
-    version,
-} from '../../../constants/filters';
+import { algo, source, profile, version } from '../../../constants/filters';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
@@ -75,31 +69,29 @@ class RunsFiltersComponent extends Component {
         this.props.onSearch();
     }
 
-
     render() {
         const {
             params,
             classes,
             baseUrl,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             algorithms,
             onRefresh,
             sources,
             profiles,
         } = this.props;
-        const {
-            filtersUpdated,
-            refreshEnabled,
-        } = this.state;
+        const { filtersUpdated, refreshEnabled } = this.state;
         let currentOrigin;
         if (params.origin && sources) {
-            currentOrigin = sources.find(s => s.id === parseInt(params.origin, 10));
+            currentOrigin = sources.find(
+                s => s.id === parseInt(params.origin, 10),
+            );
         }
         let currentDestination;
         if (params.destination && sources) {
-            currentDestination = sources.find(s => s.id === parseInt(params.destination, 10));
+            currentDestination = sources.find(
+                s => s.id === parseInt(params.destination, 10),
+            );
         }
         return (
             <Fragment>
@@ -137,7 +129,12 @@ class RunsFiltersComponent extends Component {
                                 version(
                                     formatMessage,
                                     currentOrigin ? currentOrigin.versions : [],
-                                    Boolean(!currentOrigin || (currentOrigin && currentOrigin.versions.length === 0)),
+                                    Boolean(
+                                        !currentOrigin ||
+                                            (currentOrigin &&
+                                                currentOrigin.versions
+                                                    .length === 0),
+                                    ),
                                     false,
                                     'originVersion',
                                     formatMessage(MESSAGES.sourceoriginversion),
@@ -161,19 +158,39 @@ class RunsFiltersComponent extends Component {
                                 ),
                                 version(
                                     formatMessage,
-                                    currentDestination ? currentDestination.versions : [],
-                                    Boolean(!currentDestination || (currentDestination && currentDestination.versions.length === 0)),
+                                    currentDestination
+                                        ? currentDestination.versions
+                                        : [],
+                                    Boolean(
+                                        !currentDestination ||
+                                            (currentDestination &&
+                                                currentDestination.versions
+                                                    .length === 0),
+                                    ),
                                     false,
                                     'destinationVersion',
-                                    formatMessage(MESSAGES.sourcedestinationversion),
+                                    formatMessage(
+                                        MESSAGES.sourcedestinationversion,
+                                    ),
                                 ),
                             ]}
                             onEnterPressed={() => this.onSearch()}
                         />
                     </Grid>
                 </Grid>
-                <Grid container spacing={4} justify="flex-end" alignItems="center">
-                    <Grid item xs={12} container justify="flex-end" alignItems="center">
+                <Grid
+                    container
+                    spacing={4}
+                    justify="flex-end"
+                    alignItems="center"
+                >
+                    <Grid
+                        item
+                        xs={12}
+                        container
+                        justify="flex-end"
+                        alignItems="center"
+                    >
                         <Button
                             disabled={!refreshEnabled}
                             variant="contained"
@@ -224,10 +241,13 @@ const MapStateToProps = state => ({
     profiles: state.users.list,
 });
 
-
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(injectIntl(RunsFiltersComponent)));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(injectIntl(RunsFiltersComponent)));

@@ -20,7 +20,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-const SpeedDialInstanceActions = (props) => {
+const SpeedDialInstanceActions = props => {
     const {
         intl: { formatMessage },
         actions,
@@ -33,10 +33,10 @@ const SpeedDialInstanceActions = (props) => {
         setOpen(true);
     };
 
-    const handleClose = (action) => {
+    const handleClose = action => {
         setOpen(false);
     };
-    const handleClick = (action) => {
+    const handleClick = action => {
         setOpen(false);
         onActionSelected(action);
     };

@@ -6,7 +6,11 @@ import CheckBoxOutlineBlank from '@material-ui/icons/CheckBoxOutlineBlank';
 import grey from '@material-ui/core/colors/grey';
 
 import {
-    withStyles, Container, Grid, Divider, Button,
+    withStyles,
+    Container,
+    Grid,
+    Divider,
+    Button,
 } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -16,12 +20,9 @@ import LinksCompare from './LinksCompareComponent';
 
 import commonStyles from '../../../styles/common';
 
-import {
-    fetchLinkDetail,
-} from '../../../utils/requests';
+import { fetchLinkDetail } from '../../../utils/requests';
 
 import MESSAGES from '../messages';
-
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -52,7 +53,7 @@ class LinksDetails extends Component {
             loading: true,
         });
         fetchLinkDetail(dispatch, linkId)
-            .then((linkDetail) => {
+            .then(linkDetail => {
                 this.setState({
                     link: linkDetail,
                     loading: false,
@@ -67,65 +68,74 @@ class LinksDetails extends Component {
 
     render() {
         const {
-            intl: { formatMessage }, classes, validateLink, validated,
+            intl: { formatMessage },
+            classes,
+            validateLink,
+            validated,
         } = this.props;
         const { link, loading } = this.state;
         return (
             <Fragment>
                 <Divider />
                 <Container maxWidth={false} className={classes.root}>
-                    {
-                        loading && (
-                            <LoadingSpinner message={formatMessage(MESSAGES.loading)} />
-                        )
-                    }
-                    {
-                        link && (
-                            <Fragment>
-                                <Grid container spacing={2}>
-                                    <Grid item xs={6}>
-                                        <LinksCompare
-                                            validated={validated}
-                                            title={formatMessage(MESSAGES.destination)}
-                                            link={link.destination}
-                                            compareLink={link.source}
-                                        />
-                                    </Grid>
-                                    <Grid item xs={6}>
-                                        <LinksCompare
-                                            validated={validated}
-                                            title={formatMessage(MESSAGES.origin)}
-                                            link={link.source}
-                                            compareLink={link.destination}
-                                        />
-                                    </Grid>
+                    {loading && (
+                        <LoadingSpinner
+                            message={formatMessage(MESSAGES.loading)}
+                        />
+                    )}
+                    {link && (
+                        <Fragment>
+                            <Grid container spacing={2}>
+                                <Grid item xs={6}>
+                                    <LinksCompare
+                                        validated={validated}
+                                        title={formatMessage(
+                                            MESSAGES.destination,
+                                        )}
+                                        link={link.destination}
+                                        compareLink={link.source}
+                                    />
                                 </Grid>
-                                <Grid container spacing={2} justify="center">
-                                    <Button
-                                        className={classes.marginTop}
-                                        variant="contained"
-                                        color={validated ? 'primary' : 'secondary'}
-                                        onClick={() => validateLink()}
-                                    >
-                                        {validated
-                                            && (
-                                                <Fragment>
-                                                    <CheckBox className={classes.buttonIcon} />
-                                                    <FormattedMessage {...MESSAGES.validated} />
-                                                </Fragment>
-                                            )}
-                                        {!validated
-                                            && (
-                                                <Fragment>
-                                                    <CheckBoxOutlineBlank className={classes.buttonIcon} />
-                                                    <FormattedMessage {...MESSAGES.notValidated} />
-                                                </Fragment>
-                                            )}
-                                    </Button>
+                                <Grid item xs={6}>
+                                    <LinksCompare
+                                        validated={validated}
+                                        title={formatMessage(MESSAGES.origin)}
+                                        link={link.source}
+                                        compareLink={link.destination}
+                                    />
                                 </Grid>
-                            </Fragment>
-                        )
-                    }
+                            </Grid>
+                            <Grid container spacing={2} justify="center">
+                                <Button
+                                    className={classes.marginTop}
+                                    variant="contained"
+                                    color={validated ? 'primary' : 'secondary'}
+                                    onClick={() => validateLink()}
+                                >
+                                    {validated && (
+                                        <Fragment>
+                                            <CheckBox
+                                                className={classes.buttonIcon}
+                                            />
+                                            <FormattedMessage
+                                                {...MESSAGES.validated}
+                                            />
+                                        </Fragment>
+                                    )}
+                                    {!validated && (
+                                        <Fragment>
+                                            <CheckBoxOutlineBlank
+                                                className={classes.buttonIcon}
+                                            />
+                                            <FormattedMessage
+                                                {...MESSAGES.notValidated}
+                                            />
+                                        </Fragment>
+                                    )}
+                                </Button>
+                            </Grid>
+                        </Fragment>
+                    )}
                 </Container>
             </Fragment>
         );

@@ -5,7 +5,6 @@ import { Grid, withStyles, Typography } from '@material-ui/core';
 import commonStyles from '../../../styles/common';
 import { textPlaceholder } from '../../../constants/uiConstants';
 
-
 const styles = theme => ({
     ...commonStyles(theme),
     paper: {
@@ -21,10 +20,7 @@ const styles = theme => ({
     },
 });
 
-
-const InstanceDetailsField = ({
-    classes, label, value, Icon, valueTitle,
-}) => (
+const InstanceDetailsField = ({ classes, label, value, Icon, valueTitle }) => (
     <Grid container spacing={1}>
         <Grid xs={5} item>
             <div className={classes.labelContainer}>

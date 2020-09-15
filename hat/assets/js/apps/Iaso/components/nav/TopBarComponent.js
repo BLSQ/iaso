@@ -22,42 +22,40 @@ const styles = theme => ({
 
 function TopBar(props) {
     const {
-        classes, title, toggleSidebar, children, displayBackButton, goBack,
+        classes,
+        title,
+        toggleSidebar,
+        children,
+        displayBackButton,
+        goBack,
     } = props;
     return (
         <Fragment>
             <AppBar position="relative" color="primary">
                 <Toolbar>
-                    {
-                        !displayBackButton
-                        && (
-                            <IconButton
-                                className={classes.menuButton}
-                                color="inherit"
-                                aria-label="Menu"
-                                onClick={toggleSidebar}
-                            >
-                                <MenuIcon />
-                            </IconButton>
-                        )
-                    }
-                    {
-                        displayBackButton
-                        && (
-                            <IconButton
-                                className={classes.menuButton}
-                                color="inherit"
-                                aria-label="Back"
-                                onClick={goBack}
-                            >
-                                <ArrowBackIcon />
-                            </IconButton>
-                        )
-                    }
+                    {!displayBackButton && (
+                        <IconButton
+                            className={classes.menuButton}
+                            color="inherit"
+                            aria-label="Menu"
+                            onClick={toggleSidebar}
+                        >
+                            <MenuIcon />
+                        </IconButton>
+                    )}
+                    {displayBackButton && (
+                        <IconButton
+                            className={classes.menuButton}
+                            color="inherit"
+                            aria-label="Back"
+                            onClick={goBack}
+                        >
+                            <ArrowBackIcon />
+                        </IconButton>
+                    )}
                     <Typography variant="h6" color="inherit">
                         {title}
                     </Typography>
-
                 </Toolbar>
                 {children}
             </AppBar>

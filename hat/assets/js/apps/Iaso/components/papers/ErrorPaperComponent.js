@@ -8,7 +8,6 @@ import Warning from '@material-ui/icons/Warning';
 import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 
-
 const styles = theme => ({
     ...commonStyles(theme),
     root: {
@@ -28,11 +27,8 @@ const styles = theme => ({
     },
 });
 
-
 function ErrorPaperComponent(props) {
-    const {
-        classes, message,
-    } = props;
+    const { classes, message } = props;
     return (
         <Paper className={classes.root}>
             <Typography component="p" className={classes.paragraph}>
@@ -50,6 +46,5 @@ ErrorPaperComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     message: PropTypes.string,
 };
-
 
 export default withStyles(styles)(ErrorPaperComponent);

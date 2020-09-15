@@ -108,7 +108,7 @@ const OrgUnitSearch = ({
     const [hasSearched, setHasSearched] = useState(false);
     const [searchResults, setSearchResults] = useState([]);
     const [isLoading, seIsLoading] = useState(false);
-    const onChangeSearch = (newSearchValue) => {
+    const onChangeSearch = newSearchValue => {
         setSearchValue(newSearchValue);
         setSearchResults([]);
         setHasSearched(false);
@@ -117,18 +117,18 @@ const OrgUnitSearch = ({
         if (searchValue !== '') {
             const url = `/api/orgunits/?searches=[{"validation_status":"VALID","search":"${searchValue}"}]&order=name&page=1&limit=${resultsCount}&smallSearch=True`;
             seIsLoading(true);
-            getRequest(url).then((res) => {
+            getRequest(url).then(res => {
                 seIsLoading(false);
                 setSearchResults(res.orgunits);
                 setHasSearched(true);
             });
         }
     };
-    const handleSelect = (ou) => {
+    const handleSelect = ou => {
         onSelectOrgUnit(ou);
         setIsSearchActive(false);
     };
-    const handleResultCountChange = (newResultCount) => {
+    const handleResultCountChange = newResultCount => {
         setResultsCount(parseInt(newResultCount, 10));
         setResultsCountChanged(true);
     };
@@ -137,9 +137,7 @@ const OrgUnitSearch = ({
         handleSearch();
     };
     return (
-        <Box
-            className={classes.root}
-        >
+        <Box className={classes.root}>
             <ClickAwayListener onClickAway={() => setIsSearchActive(false)}>
                 <Box
                     className={classes.container}
@@ -155,82 +153,100 @@ const OrgUnitSearch = ({
                         onEnterPressed={() => handleSearch()}
                     />
 
-                    {
-                        isLoading && (
-                            <div className={classes.loadingContainer}><LoadingSpinner fixed={false} transparent padding={4} size={25} /></div>
-                        )
-                    }
-                    {
-                        searchResults.length === 0
-                        && isSearchActive
-                        && hasSearched
-                        && (
-                            <Typography variant="body2" align="center" className={classes.noResult}>
+                    {isLoading && (
+                        <div className={classes.loadingContainer}>
+                            <LoadingSpinner
+                                fixed={false}
+                                transparent
+                                padding={4}
+                                size={25}
+                            />
+                        </div>
+                    )}
+                    {searchResults.length === 0 &&
+                        isSearchActive &&
+                        hasSearched && (
+                            <Typography
+                                variant="body2"
+                                align="center"
+                                className={classes.noResult}
+                            >
                                 <FormattedMessage {...MESSAGES.noOptions} />
                             </Typography>
-                        )
-                    }
-                    {
-                        searchResults.length > 0
-                        && isSearchActive
-                        && (
-                            <Box className={classes.listContainer}>
-                                <List className={classes.list}>
-                                    {
-                                        searchResults.map(ou => (
-                                            <OrgUnitTooltip
-                                                key={ou.id}
-                                                orgUnit={ou}
-                                            >
-
-                                                <ListItem
-                                                    button
-                                                    onClick={() => handleSelect(ou)}
-                                                    className="org-unit-item"
-                                                >
-                                                    <ListItemText
-                                                        primary={(
-                                                            <Typography type="body2">
-                                                                {getOrgunitMessage(ou, true)}
-                                                            </Typography>
-                                                        )}
-                                                    />
-                                                </ListItem>
-                                            </OrgUnitTooltip>
-                                        ))
-                                    }
-                                </List>
-                                <Divider />
-                                <Box className={classes.resultInfos}>
-                                    <FormattedMessage {...MESSAGES.display} />
-                                    <div className={classes.countContainer}>
-                                        <InputBase
-                                            id="search-results-count"
-                                            value={resultsCount}
-                                            type="number"
-                                            min={minResultCount}
-                                            onChange={event => handleResultCountChange(event.target.value)}
-                                            inputProps={{
-                                                className: classes.resultsCountInput,
-                                                style: {
-                                                    width: `${(resultsCount.toString().length * 10) + 10}px`,
-                                                },
-                                            }}
-                                        />
-                                        <IconButton
-                                            className={classes.iconButton}
-                                            size="small"
-                                            onClick={() => validateResultCountChange()}
-                                            disabled={!resultsCountChanged}
+                        )}
+                    {searchResults.length > 0 && isSearchActive && (
+                        <Box className={classes.listContainer}>
+                            <List className={classes.list}>
+                                {searchResults.map(ou => (
+                                    <OrgUnitTooltip key={ou.id} orgUnit={ou}>
+                                        <ListItem
+                                            button
+                                            onClick={() => handleSelect(ou)}
+                                            className="org-unit-item"
                                         >
-                                            <CheckCircleOutlineIcon fontSize="small" color={resultsCountChanged ? 'primary' : 'inherit'} />
-                                        </IconButton>
-                                    </div>
-                                    <FormattedMessage {...MESSAGES.resultsLower} />
-                                </Box>
+                                            <ListItemText
+                                                primary={
+                                                    <Typography type="body2">
+                                                        {getOrgunitMessage(
+                                                            ou,
+                                                            true,
+                                                        )}
+                                                    </Typography>
+                                                }
+                                            />
+                                        </ListItem>
+                                    </OrgUnitTooltip>
+                                ))}
+                            </List>
+                            <Divider />
+                            <Box className={classes.resultInfos}>
+                                <FormattedMessage {...MESSAGES.display} />
+                                <div className={classes.countContainer}>
+                                    <InputBase
+                                        id="search-results-count"
+                                        value={resultsCount}
+                                        type="number"
+                                        min={minResultCount}
+                                        onChange={event =>
+                                            handleResultCountChange(
+                                                event.target.value,
+                                            )
+                                        }
+                                        inputProps={{
+                                            className:
+                                                classes.resultsCountInput,
+                                            style: {
+                                                width: `${
+                                                    resultsCount.toString()
+                                                        .length *
+                                                        10 +
+                                                    10
+                                                }px`,
+                                            },
+                                        }}
+                                    />
+                                    <IconButton
+                                        className={classes.iconButton}
+                                        size="small"
+                                        onClick={() =>
+                                            validateResultCountChange()
+                                        }
+                                        disabled={!resultsCountChanged}
+                                    >
+                                        <CheckCircleOutlineIcon
+                                            fontSize="small"
+                                            color={
+                                                resultsCountChanged
+                                                    ? 'primary'
+                                                    : 'inherit'
+                                            }
+                                        />
+                                    </IconButton>
+                                </div>
+                                <FormattedMessage {...MESSAGES.resultsLower} />
                             </Box>
-                        )
-                    }
+                        </Box>
+                    )}
                 </Box>
             </ClickAwayListener>
         </Box>

@@ -5,7 +5,6 @@ import {
     SET_PERMISSIONS,
 } from './actions';
 
-
 export const usersInitialState = {
     list: [],
     current: null,
@@ -15,13 +14,15 @@ export const usersInitialState = {
     permissions: [],
 };
 
-
 export const usersReducer = (state = usersInitialState, action = {}) => {
     switch (action.type) {
         case SET_USERS_PROFILES: {
             const { list, count = 0, pages = 1 } = action.payload;
             return {
-                ...state, list, count, pages,
+                ...state,
+                list,
+                count,
+                pages,
             };
         }
         case SET_CURRENT_USER: {

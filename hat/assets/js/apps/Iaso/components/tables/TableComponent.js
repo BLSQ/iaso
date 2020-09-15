@@ -8,7 +8,11 @@ import isEqual from 'lodash/isEqual';
 import classNames from 'classnames';
 
 import {
-    getSort, getOrderArray, getSimplifiedColumns, defaultSelectionActions, selectionInitialState,
+    getSort,
+    getOrderArray,
+    getSimplifiedColumns,
+    defaultSelectionActions,
+    selectionInitialState,
 } from '../../utils/tableUtils';
 
 import { formatThousand } from '../../utils';
@@ -18,36 +22,36 @@ import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
 
 /**
-* Table component, no redux, no fetch, just displaying.
-* Multi selection is optionnal, if set to true you can add custom actions
-* Required props in order to work:
-* @param {Object} params
-* @param {Array} data
-* @param {Array} columns
-* @param {Number} pages
-* @param {Function} redirectTo
-*
-* Optionnal props:
-* @param {Number} count
-* @param {String} baseUrl
-* @param {Array} defaultSorted
-* @param {Array} marginTop
-* @param {Array} countOnTop
-*
-* Multi selection is optionnal
-* Selection props:
-* @param {Boolean} multiSelect
-* if set to true you can add custom actions, an array of object(s):
-*   @param {Array} selectionActions
-*       @param {Array} icon
-*       @param {String} label
-*       @param {Function} onClick
-*       @param {Boolean} disabled
-* You need aslo to maintain selection state in parent component
-* You can use selectionInitialState and setTableSelection from Iaso/utils/tableUtils.js
-*   @param {Object} selection
-*   @param {Function} setTableSelection
-*/
+ * Table component, no redux, no fetch, just displaying.
+ * Multi selection is optionnal, if set to true you can add custom actions
+ * Required props in order to work:
+ * @param {Object} params
+ * @param {Array} data
+ * @param {Array} columns
+ * @param {Number} pages
+ * @param {Function} redirectTo
+ *
+ * Optionnal props:
+ * @param {Number} count
+ * @param {String} baseUrl
+ * @param {Array} defaultSorted
+ * @param {Array} marginTop
+ * @param {Array} countOnTop
+ *
+ * Multi selection is optionnal
+ * Selection props:
+ * @param {Boolean} multiSelect
+ * if set to true you can add custom actions, an array of object(s):
+ *   @param {Array} selectionActions
+ *       @param {Array} icon
+ *       @param {String} label
+ *       @param {Function} onClick
+ *       @param {Boolean} disabled
+ * You need aslo to maintain selection state in parent component
+ * You can use selectionInitialState and setTableSelection from Iaso/utils/tableUtils.js
+ *   @param {Object} selection
+ *   @param {Function} setTableSelection
+ */
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -81,7 +85,6 @@ const styles = theme => ({
     },
 });
 
-
 class Table extends Component {
     componentWillMount() {
         const {
@@ -89,17 +92,31 @@ class Table extends Component {
             setTableSelection,
         } = this.props;
         setTableSelection('reset');
-        Object.assign(ReactTableDefaults, customTableTranslations(formatMessage));
+        Object.assign(
+            ReactTableDefaults,
+            customTableTranslations(formatMessage),
+        );
     }
 
     shouldComponentUpdate(nextProps) {
         const newColumns = getSimplifiedColumns(nextProps.columns);
         const oldColumns = getSimplifiedColumns(this.props.columns);
-        return !isEqual(nextProps.data, this.props.data)
-        || !isEqual(newColumns, oldColumns)
-        || !isEqual(nextProps.selection.selectedItems, this.props.selection.selectedItems)
-        || !isEqual(nextProps.selection.selectAll, this.props.selection.selectAll)
-        || !isEqual(nextProps.selection.unSelectedItems, this.props.selection.unSelectedItems);
+        return (
+            !isEqual(nextProps.data, this.props.data) ||
+            !isEqual(newColumns, oldColumns) ||
+            !isEqual(
+                nextProps.selection.selectedItems,
+                this.props.selection.selectedItems,
+            ) ||
+            !isEqual(
+                nextProps.selection.selectAll,
+                this.props.selection.selectAll,
+            ) ||
+            !isEqual(
+                nextProps.selection.unSelectedItems,
+                this.props.selection.unSelectedItems,
+            )
+        );
     }
 
     componentWillUnmount() {
@@ -118,9 +135,7 @@ class Table extends Component {
         const selectedItems = [...this.props.selection.selectedItems];
         const unSelectedItems = [...this.props.selection.unSelectedItems];
         const {
-            selection: {
-                selectAll,
-            },
+            selection: { selectAll },
             count,
             setTableSelection,
         } = this.props;
@@ -128,7 +143,9 @@ class Table extends Component {
             if (!isSelected) {
                 unSelectedItems.push(item);
             } else {
-                const itemIndex = unSelectedItems.findIndex(el => isEqual(el, item));
+                const itemIndex = unSelectedItems.findIndex(el =>
+                    isEqual(el, item),
+                );
                 if (itemIndex !== -1) {
                     unSelectedItems.splice(itemIndex, 1);
                 }
@@ -138,7 +155,9 @@ class Table extends Component {
             if (isSelected) {
                 selectedItems.push(item);
             } else {
-                const itemIndex = selectedItems.findIndex(el => isEqual(el, item));
+                const itemIndex = selectedItems.findIndex(el =>
+                    isEqual(el, item),
+                );
                 selectedItems.splice(itemIndex, 1);
             }
             setTableSelection('select', selectedItems);
@@ -167,14 +186,10 @@ class Table extends Component {
             countOnTop,
             marginTop,
             multiSelect,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             selectionActions,
             setTableSelection,
-            selection: {
-                selectCount,
-            },
+            selection: { selectCount },
         } = this.props;
 
         let actions = [
@@ -186,45 +201,46 @@ class Table extends Component {
         ];
         actions = actions.concat(selectionActions);
 
-        let pageSize = parseInt(params.pageSize, 10) < count
-            ? params.pageSize
-            : count;
+        let pageSize =
+            parseInt(params.pageSize, 10) < count ? params.pageSize : count;
         if (count === 0) {
             pageSize = 2;
         }
-        const order = params.order ? getOrderArray(params.order) : defaultSorted;
+        const order = params.order
+            ? getOrderArray(params.order)
+            : defaultSorted;
         const showPagination = parseInt(params.pageSize, 10) < count;
         if (multiSelect) {
-            columns.push(
-                {
-                    Header: formatMessage(MESSAGES.selection),
-                    accessor: 'selected',
-                    width: 100,
-                    sorttable: false,
-                    Cell: settings => (
-                        <Checkbox
-                            color="primary"
-                            checked={this.isItemSelected(settings.original)}
-                            onChange={event => this.onSelect(event.target.checked, settings.original)}
-                        />
-                    ),
-                },
-            );
+            columns.push({
+                Header: formatMessage(MESSAGES.selection),
+                accessor: 'selected',
+                width: 100,
+                sorttable: false,
+                Cell: settings => (
+                    <Checkbox
+                        color="primary"
+                        checked={this.isItemSelected(settings.original)}
+                        onChange={event =>
+                            this.onSelect(
+                                event.target.checked,
+                                settings.original,
+                            )
+                        }
+                    />
+                ),
+            });
         }
         return (
             <>
-                <SelectionSpeedDials
-                    hidden={!multiSelect}
-                    actions={actions}
-                />
+                <SelectionSpeedDials hidden={!multiSelect} actions={actions} />
                 <div
                     className={classNames(classes.reactTable, {
-                        [classes.reactTableNoPaginationCountBottom]: !countOnTop && !showPagination,
+                        [classes.reactTableNoPaginationCountBottom]:
+                            !countOnTop && !showPagination,
                         [classes.reactTableNoMarginTop]: !marginTop,
                     })}
                 >
                     <div
-
                         className={classNames(classes.count, {
                             [classes.countBottom]: !countOnTop,
                             [classes.countBottomNoPagination]: !showPagination,
@@ -232,20 +248,17 @@ class Table extends Component {
                     >
                         {count > 0 && (
                             <div>
-                                {
-                                    selectCount > 0
-                                && (
+                                {selectCount > 0 && (
                                     <span>
                                         {`${formatThousand(selectCount)} `}
-                                        <FormattedMessage {...MESSAGES.selected} />
+                                        <FormattedMessage
+                                            {...MESSAGES.selected}
+                                        />
                                         {' - '}
                                     </span>
-                                )
-                                }
+                                )}
                                 {`${formatThousand(count)} `}
-                                <FormattedMessage
-                                    {... MESSAGES.results}
-                                />
+                                <FormattedMessage {...MESSAGES.results} />
                             </div>
                         )}
                     </div>
@@ -261,9 +274,15 @@ class Table extends Component {
                         defaultSorted={order}
                         pageSize={pageSize}
                         page={params.page - 1}
-                        onPageChange={page => this.onTableParamsChange('page', page + 1)}
-                        onPageSizeChange={newPageSize => this.onTableParamsChange('pageSize', newPageSize)}
-                        onSortedChange={newOrder => this.onTableParamsChange('order', newOrder)}
+                        onPageChange={page =>
+                            this.onTableParamsChange('page', page + 1)
+                        }
+                        onPageSizeChange={newPageSize =>
+                            this.onTableParamsChange('pageSize', newPageSize)
+                        }
+                        onSortedChange={newOrder =>
+                            this.onTableParamsChange('order', newOrder)
+                        }
                     />
                 </div>
             </>
@@ -272,9 +291,7 @@ class Table extends Component {
 }
 Table.defaultProps = {
     count: 0,
-    defaultSorted: [
-        { id: 'updated_at', desc: true },
-    ],
+    defaultSorted: [{ id: 'updated_at', desc: true }],
     baseUrl: '',
     countOnTop: true,
     marginTop: true,
@@ -302,6 +319,5 @@ Table.propTypes = {
     setTableSelection: PropTypes.func,
     selection: PropTypes.object,
 };
-
 
 export default withStyles(styles)(injectIntl(withRouter(Table)));

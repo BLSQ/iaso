@@ -24,11 +24,11 @@ export default function LanguageSwitchComponent() {
     const activeLocale = useSelector(state => state.app.locale);
     const dispatch = useDispatch();
 
-    const handleClickListItem = (event) => {
+    const handleClickListItem = event => {
         setAnchorEl(event.currentTarget);
     };
 
-    const handleLocaleSwitch = (localeCode) => {
+    const handleLocaleSwitch = localeCode => {
         dispatch(switchLocale(localeCode));
         setAnchorEl(null);
     };

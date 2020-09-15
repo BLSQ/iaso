@@ -12,13 +12,15 @@ export const groupsInitialState = {
     pages: 1,
 };
 
-
 export const reducer = (state = groupsInitialState, action = {}) => {
     switch (action.type) {
         case SET_GROUPS: {
             const { list, count = 0, pages = 1 } = action.payload;
             return {
-                ...state, list, count, pages,
+                ...state,
+                list,
+                count,
+                pages,
             };
         }
         case SET_CURRENT_GROUP: {

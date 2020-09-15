@@ -4,9 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import {
-    withStyles, Grid, Box,
-} from '@material-ui/core';
+import { withStyles, Grid, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -18,10 +16,7 @@ import {
     fetchAlgorithmRuns,
 } from '../../utils/requests';
 
-import {
-    setOrgUnitTypes,
-    setSources,
-} from '../orgUnits/actions';
+import { setOrgUnitTypes, setSources } from '../orgUnits/actions';
 
 import {
     setLinks,
@@ -41,10 +36,7 @@ import CustomTableComponent from '../../components/CustomTableComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import LinksFiltersComponent from './components/LinksFiltersComponent';
 import LinksDetails from './components/LinksDetailsComponent';
-import {
-    fetchUsersProfiles as fetchUsersProfilesAction,
-} from '../users/actions';
-
+import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import commonStyles from '../../styles/common';
 
@@ -66,7 +58,11 @@ class Links extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            tableColumns: linksTableColumns(props.intl.formatMessage, this, props.classes),
+            tableColumns: linksTableColumns(
+                props.intl.formatMessage,
+                this,
+                props.classes,
+            ),
             tableUrl: null,
             expanded: {},
         };
@@ -78,14 +74,16 @@ class Links extends Component {
         if (this.props.params.searchActive) {
             this.onSearch();
         }
-        fetchOrgUnitsTypes(dispatch)
-            .then(orgUnitTypes => this.props.setOrgUnitTypes(orgUnitTypes));
-        fetchSources(dispatch)
-            .then(sources => this.props.setSources(sources));
-        fetchAlgorithms(dispatch)
-            .then(algoList => this.props.setAlgorithms(algoList));
-        fetchAlgorithmRuns(dispatch)
-            .then(algoRunsList => this.props.setAlgorithmRuns(algoRunsList));
+        fetchOrgUnitsTypes(dispatch).then(orgUnitTypes =>
+            this.props.setOrgUnitTypes(orgUnitTypes),
+        );
+        fetchSources(dispatch).then(sources => this.props.setSources(sources));
+        fetchAlgorithms(dispatch).then(algoList =>
+            this.props.setAlgorithms(algoList),
+        );
+        fetchAlgorithmRuns(dispatch).then(algoRunsList =>
+            this.props.setAlgorithmRuns(algoRunsList),
+        );
     }
 
     componentDidUpdate() {
@@ -120,9 +118,7 @@ class Links extends Component {
     }
 
     onDataLoaded(linksList, count, pages) {
-        const {
-            dispatch,
-        } = this.props;
+        const { dispatch } = this.props;
         this.setState({
             expanded: {},
         });
@@ -143,25 +139,26 @@ class Links extends Component {
     }
 
     validateLink(link) {
-        const {
-            dispatch,
-            reduxPage,
-            params,
-        } = this.props;
+        const { dispatch, reduxPage, params } = this.props;
         const newLink = {
             ...link,
             validated: !link.validated,
         };
-        saveLink(dispatch, newLink).then((savedLink) => {
+        saveLink(dispatch, newLink).then(savedLink => {
             const linksList = [];
-            reduxPage.list.forEach((l) => {
+            reduxPage.list.forEach(l => {
                 if (l.id !== savedLink.id) {
                     linksList.push(l);
                 } else {
                     linksList.push(savedLink);
                 }
             });
-            this.props.setLinks(linksList, params, reduxPage.count, reduxPage.pages);
+            this.props.setLinks(
+                linksList,
+                params,
+                reduxPage.count,
+                reduxPage.pages,
+            );
         });
     }
 
@@ -170,26 +167,18 @@ class Links extends Component {
             classes,
             params,
             reduxPage,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             dispatch,
             fetching,
             prevPathname,
             router,
         } = this.props;
-        const {
-            tableUrl,
-            tableColumns,
-            expanded,
-        } = this.state;
-        const displayBackButton = prevPathname && prevPathname.includes('/links/runs/');
+        const { tableUrl, tableColumns, expanded } = this.state;
+        const displayBackButton =
+            prevPathname && prevPathname.includes('/links/runs/');
         return (
             <Fragment>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
+                {fetching && <LoadingSpinner />}
                 <TopBar
                     title={formatMessage(MESSAGES.title)}
                     displayBackButton={displayBackButton}
@@ -201,50 +190,80 @@ class Links extends Component {
                         params={params}
                         onSearch={() => this.onSearch()}
                     />
-                    {
-                        tableUrl && (
-                            <Fragment>
-                                <div className={classes.reactTable}>
-                                    <CustomTableComponent
-                                        expanded={expanded}
-                                        onExpandedChange={(newExpanded, index) => this.onExpandedChange(newExpanded, index)}
-                                        disableHeaderFixed
-                                        isSortable
-                                        pageSize={10}
-                                        showPagination
-                                        endPointUrl={tableUrl}
-                                        columns={tableColumns}
-                                        defaultSorted={[{ id: 'similarity_score', desc: true }]}
-                                        params={params}
-                                        defaultPath={baseUrl}
-                                        dataKey="links"
-                                        canSelect={false}
-                                        multiSort
-                                        onDataStartLoaded={() => dispatch(this.props.setIsFetching(true))}
-                                        onDataLoaded={(linksList, count, pages) => this.onDataLoaded(linksList, count, pages)}
-                                        reduxPage={reduxPage}
-                                        SubComponent={({ original }) => (original
-                                            ? (
-                                                <LinksDetails
-                                                    linkId={original.id}
-                                                    validated={original.validated}
-                                                    validateLink={() => this.validateLink(original)}
-                                                />
-                                            )
-                                            : null)}
+                    {tableUrl && (
+                        <Fragment>
+                            <div className={classes.reactTable}>
+                                <CustomTableComponent
+                                    expanded={expanded}
+                                    onExpandedChange={(newExpanded, index) =>
+                                        this.onExpandedChange(
+                                            newExpanded,
+                                            index,
+                                        )
+                                    }
+                                    disableHeaderFixed
+                                    isSortable
+                                    pageSize={10}
+                                    showPagination
+                                    endPointUrl={tableUrl}
+                                    columns={tableColumns}
+                                    defaultSorted={[
+                                        { id: 'similarity_score', desc: true },
+                                    ]}
+                                    params={params}
+                                    defaultPath={baseUrl}
+                                    dataKey="links"
+                                    canSelect={false}
+                                    multiSort
+                                    onDataStartLoaded={() =>
+                                        dispatch(this.props.setIsFetching(true))
+                                    }
+                                    onDataLoaded={(linksList, count, pages) =>
+                                        this.onDataLoaded(
+                                            linksList,
+                                            count,
+                                            pages,
+                                        )
+                                    }
+                                    reduxPage={reduxPage}
+                                    SubComponent={({ original }) =>
+                                        original ? (
+                                            <LinksDetails
+                                                linkId={original.id}
+                                                validated={original.validated}
+                                                validateLink={() =>
+                                                    this.validateLink(original)
+                                                }
+                                            />
+                                        ) : null
+                                    }
+                                />
+                            </div>
+                            <Grid
+                                container
+                                spacing={0}
+                                alignItems="center"
+                                className={classes.marginTop}
+                            >
+                                <Grid
+                                    xs={12}
+                                    item
+                                    className={classes.textAlignRight}
+                                >
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(
+                                            true,
+                                            'csv',
+                                        )}
+                                        xlsxUrl={this.getEndpointUrl(
+                                            true,
+                                            'xlsx',
+                                        )}
                                     />
-                                </div>
-                                <Grid container spacing={0} alignItems="center" className={classes.marginTop}>
-                                    <Grid xs={12} item className={classes.textAlignRight}>
-                                        <DownloadButtonsComponent
-                                            csvUrl={this.getEndpointUrl(true, 'csv')}
-                                            xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
-                                        />
-                                    </Grid>
                                 </Grid>
-                            </Fragment>
-                        )
-                    }
+                            </Grid>
+                        </Fragment>
+                    )}
                 </Box>
             </Fragment>
         );
@@ -282,16 +301,21 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setLinks: (linksList, params, count, pages) => dispatch(setLinks(linksList, true, params, count, pages)),
-    redirectTo: (key, params) => dispatch(push(`${key}${createUrl(params, '')}`)),
+    setLinks: (linksList, params, count, pages) =>
+        dispatch(setLinks(linksList, true, params, count, pages)),
+    redirectTo: (key, params) =>
+        dispatch(push(`${key}${createUrl(params, '')}`)),
     setOrgUnitTypes: orgUnitTypes => dispatch(setOrgUnitTypes(orgUnitTypes)),
     setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setSources: sources => dispatch(setSources(sources)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
-    ...bindActionCreators({
-        fetchUsersProfiles: fetchUsersProfilesAction,
-    }, dispatch),
+    ...bindActionCreators(
+        {
+            fetchUsersProfiles: fetchUsersProfilesAction,
+        },
+        dispatch,
+    ),
 });
 
 export default withStyles(styles)(

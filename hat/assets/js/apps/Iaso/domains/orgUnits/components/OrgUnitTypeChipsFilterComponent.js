@@ -1,12 +1,7 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { FormattedMessage } from 'react-intl';
-import {
-    withStyles,
-    Box,
-    Chip,
-    Typography,
-} from '@material-ui/core';
+import { withStyles, Box, Chip, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -33,24 +28,39 @@ const styles = theme => ({
     },
 });
 
-
-const getSubOrgunits = (orgUnit, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected) => {
+const getSubOrgunits = (
+    orgUnit,
+    orgUnitTypes,
+    orgUnitTypesList,
+    orgUnitTypesSelected,
+) => {
     let newOrgUnitTypesList = [...orgUnitTypesList];
     if (orgUnit.sub_unit_types.length > 0) {
-        orgUnit.sub_unit_types.forEach((subOrgUnit) => {
-            const fullSubOrgUnit = orgUnitTypes.find(o => o.id === subOrgUnit.id);
-            if (!newOrgUnitTypesList.find(o => o.id === subOrgUnit.id)
-                && !orgUnitTypesSelected.find(os => os.id === subOrgUnit.id)) {
+        orgUnit.sub_unit_types.forEach(subOrgUnit => {
+            const fullSubOrgUnit = orgUnitTypes.find(
+                o => o.id === subOrgUnit.id,
+            );
+            if (
+                !newOrgUnitTypesList.find(o => o.id === subOrgUnit.id) &&
+                !orgUnitTypesSelected.find(os => os.id === subOrgUnit.id)
+            ) {
                 newOrgUnitTypesList.push(fullSubOrgUnit);
             }
-            if (fullSubOrgUnit.sub_unit_types && fullSubOrgUnit.id !== orgUnit.id) {
-                newOrgUnitTypesList = getSubOrgunits(fullSubOrgUnit, orgUnitTypes, newOrgUnitTypesList, orgUnitTypesSelected);
+            if (
+                fullSubOrgUnit.sub_unit_types &&
+                fullSubOrgUnit.id !== orgUnit.id
+            ) {
+                newOrgUnitTypesList = getSubOrgunits(
+                    fullSubOrgUnit,
+                    orgUnitTypes,
+                    newOrgUnitTypesList,
+                    orgUnitTypesSelected,
+                );
             }
         });
     }
     return newOrgUnitTypesList;
 };
-
 
 class OrgUnitTypeChipsFilterComponent extends Component {
     constructor(props) {
@@ -62,22 +72,27 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 
     componentDidMount() {
-        const {
-            currentOrgUnit,
-        } = this.props;
-        const {
-            orgUnitTypes,
-        } = this.state;
+        const { currentOrgUnit } = this.props;
+        const { orgUnitTypes } = this.state;
         const orgUnitTypesSelected = [];
         let orgUnitTypesList = [];
-        orgUnitTypes.forEach((ot) => {
-            if (currentOrgUnit.org_unit_type.sub_unit_types.find(o => o.id === ot.id)) {
+        orgUnitTypes.forEach(ot => {
+            if (
+                currentOrgUnit.org_unit_type.sub_unit_types.find(
+                    o => o.id === ot.id,
+                )
+            ) {
                 orgUnitTypesSelected.push(ot);
             }
         });
         orgUnitTypesSelected.forEach((ot, index) => {
             orgUnitTypesSelected[index].color = getOtChipColors(index);
-            orgUnitTypesList = getSubOrgunits(ot, orgUnitTypes, orgUnitTypesList, orgUnitTypesSelected);
+            orgUnitTypesList = getSubOrgunits(
+                ot,
+                orgUnitTypes,
+                orgUnitTypesList,
+                orgUnitTypesSelected,
+            );
         });
         this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
         this.setState({
@@ -90,16 +105,11 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 
     onOrgUnitSelect(orgUnitId) {
-        const {
-            orgUnitTypes,
-            orgUnitTypesList,
-        } = this.state;
-        const {
-            orgUnitTypesSelected,
-        } = this.props;
+        const { orgUnitTypes, orgUnitTypesList } = this.state;
+        const { orgUnitTypesSelected } = this.props;
         const newOrgUnitTypesSelected = [...orgUnitTypesSelected];
         const newOrgUnitTypesList = [];
-        orgUnitTypesList.forEach((o) => {
+        orgUnitTypesList.forEach(o => {
             if (o.id !== orgUnitId) {
                 newOrgUnitTypesList.push(o);
             }
@@ -117,16 +127,11 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 
     onDeleteOrgUnit(orgUnitId) {
-        const {
-            orgUnitTypes,
-            orgUnitTypesList,
-        } = this.state;
-        const {
-            orgUnitTypesSelected,
-        } = this.props;
+        const { orgUnitTypes, orgUnitTypesList } = this.state;
+        const { orgUnitTypesSelected } = this.props;
         const newOrgUnitTypesSelected = [];
         const newOrgUnitTypesList = [...orgUnitTypesList];
-        orgUnitTypesSelected.forEach((o) => {
+        orgUnitTypesSelected.forEach(o => {
             if (o.id !== orgUnitId) {
                 newOrgUnitTypesSelected.push(o);
             }
@@ -144,16 +149,11 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 
     updateOrgUnitTypesSelected(orgUnitTypesSelected) {
-        const {
-            dispatch,
-            currentOrgUnit,
-        } = this.props;
-        const {
-            orgUnitTypesList,
-        } = this.state;
+        const { dispatch, currentOrgUnit } = this.props;
+        const { orgUnitTypesList } = this.state;
         const promisesArray = [];
         const oldOrgUnitsTypes = [];
-        orgUnitTypesSelected.forEach((ot) => {
+        orgUnitTypesSelected.forEach(ot => {
             if (!ot.orgUnits) {
                 promisesArray.push(
                     fetchSubOrgUnitsByType(
@@ -167,83 +167,71 @@ class OrgUnitTypeChipsFilterComponent extends Component {
             }
         });
         this.props.setFetching(true);
-        Promise.all(promisesArray).then((orgUnits) => {
+        Promise.all(promisesArray).then(orgUnits => {
             const orgUnitsTypesWithData = oldOrgUnitsTypes.concat(orgUnits);
-            this.props.setCurrentSubOrgUnitTypesSelected(orgUnitsTypesWithData, orgUnitTypesList);
+            this.props.setCurrentSubOrgUnitTypesSelected(
+                orgUnitsTypesWithData,
+                orgUnitTypesList,
+            );
             this.props.setFetching(false);
             this.props.fitToBounds();
         });
     }
 
     render() {
-        const {
-            classes,
-            orgUnitTypesSelected,
-        } = this.props;
-        const {
-            orgUnitTypesList,
-        } = this.state;
+        const { classes, orgUnitTypesSelected } = this.props;
+        const { orgUnitTypesList } = this.state;
 
         return (
             <Fragment>
-                {
-                    <Box
-                        className={classes.innerDrawerToolbar}
-                        component="div"
-                    >
-                        <Typography variant="subtitle1">
-                            <FormattedMessage {...MESSAGES.subOrgUnitsType} />
-                        </Typography>
-                    </Box>
-                }
-                <Box
-                    className={classes.content}
-                    component="div"
-                >
-                    {
-                        orgUnitTypesList.length === 0
-                        && orgUnitTypesSelected.length === 0
-                        && (
-                            <Typography variant="body2" align="center" color="textSecondary">
-                                <FormattedMessage {...MESSAGES.subOrgUnitsTypeNoData} />
-                            </Typography>
-                        )
-                    }
-                    {
-                        orgUnitTypesSelected.length > 0 && (
-                            orgUnitTypesSelected.map(o => (
-                                <Chip
-                                    key={o.id}
-                                    label={o.short_name}
-                                    clickable
-                                    className={classes.chip}
-                                    onDelete={() => this.onDeleteOrgUnit(o.id)}
-                                    style={{
-                                        backgroundColor: o.color,
-                                        color: 'white',
-                                    }}
+                <Box className={classes.innerDrawerToolbar} component="div">
+                    <Typography variant="subtitle1">
+                        <FormattedMessage {...MESSAGES.subOrgUnitsType} />
+                    </Typography>
+                </Box>
+                <Box className={classes.content} component="div">
+                    {orgUnitTypesList.length === 0 &&
+                        orgUnitTypesSelected.length === 0 && (
+                            <Typography
+                                variant="body2"
+                                align="center"
+                                color="textSecondary"
+                            >
+                                <FormattedMessage
+                                    {...MESSAGES.subOrgUnitsTypeNoData}
                                 />
-                            ))
-                        )
-                    }
-                    {
-                        orgUnitTypesList.length > 0 && (
-                            <InputComponent
-                                withMarginTop={false}
-                                keyValue="org_unit_type_id"
-                                onChange={(key, orgUnitTypeId) => this.onOrgUnitSelect(orgUnitTypeId)}
-                                value={null}
-                                type="select"
-                                options={
-                                    orgUnitTypesList.map(t => ({
-                                        label: t.name,
-                                        value: t.id,
-                                    }))
-                                }
-                                label={MESSAGES.addOrgUnitType}
+                            </Typography>
+                        )}
+                    {orgUnitTypesSelected.length > 0 &&
+                        orgUnitTypesSelected.map(o => (
+                            <Chip
+                                key={o.id}
+                                label={o.short_name}
+                                clickable
+                                className={classes.chip}
+                                onDelete={() => this.onDeleteOrgUnit(o.id)}
+                                style={{
+                                    backgroundColor: o.color,
+                                    color: 'white',
+                                }}
                             />
-                        )
-                    }
+                        ))}
+                    {orgUnitTypesList.length > 0 && (
+                        <InputComponent
+                            withMarginTop={false}
+                            keyValue="org_unit_type_id"
+                            onChange={(key, orgUnitTypeId) =>
+                                this.onOrgUnitSelect(orgUnitTypeId)
+                            }
+                            value={null}
+                            type="select"
+                            options={orgUnitTypesList.map(t => ({
+                                label: t.name,
+                                value: t.id,
+                            }))}
+                            label={MESSAGES.addOrgUnitType}
+                        />
+                    )}
                 </Box>
             </Fragment>
         );
@@ -269,8 +257,20 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setCurrentSubOrgUnitTypesSelected: (orgUnitTypesSelected, orgUnitTypesList) => dispatch(setCurrentSubOrgUnitTypesSelected(orgUnitTypesSelected, orgUnitTypesList)),
+    setCurrentSubOrgUnitTypesSelected: (
+        orgUnitTypesSelected,
+        orgUnitTypesList,
+    ) =>
+        dispatch(
+            setCurrentSubOrgUnitTypesSelected(
+                orgUnitTypesSelected,
+                orgUnitTypesList,
+            ),
+        ),
     setFetching: fetching => dispatch(setFetching(fetching)),
 });
 
-export default connect(MapStateToProps, MapDispatchToProps)(withStyles(styles)(OrgUnitTypeChipsFilterComponent));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(withStyles(styles)(OrgUnitTypeChipsFilterComponent));

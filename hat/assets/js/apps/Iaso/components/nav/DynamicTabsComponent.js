@@ -1,11 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import {
-    withStyles,
-    Tabs,
-    Tab,
-    IconButton,
-    Tooltip,
-} from '@material-ui/core';
+import { withStyles, Tabs, Tab, IconButton, Tooltip } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import Add from '@material-ui/icons/Add';
 import Remove from '@material-ui/icons/Clear';
@@ -16,7 +10,6 @@ import PropTypes from 'prop-types';
 import commonStyles from '../../styles/common';
 import { formatThousand } from '../../utils';
 import MESSAGES from './messages';
-
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -94,9 +87,7 @@ class DynamicTabsComponent extends Component {
     }
 
     setTabsElement(element, index) {
-        const {
-            tabsWidth,
-        } = this.state;
+        const { tabsWidth } = this.state;
         const newWidth = element.getBoundingClientRect().width;
         if (newWidth !== tabsWidth[index]) {
             const newArray = [...tabsWidth];
@@ -132,7 +123,6 @@ class DynamicTabsComponent extends Component {
         onTabsUpdated();
         this.setState(newState);
     }
-
 
     handleDeleteTab(tabIndex) {
         const {
@@ -193,113 +183,117 @@ class DynamicTabsComponent extends Component {
             displayCounts,
             counts,
         } = this.props;
-        const {
-            tabIndex,
-            tabsWidth,
-        } = this.state;
+        const { tabIndex, tabsWidth } = this.state;
         const itemsList = JSON.parse(params[paramKey]);
         return (
             <section className={classes.mainContainer}>
                 <div className={classes.tabsContainer}>
-
-                    {
-                        itemsList.length > 1
-                        && (
-                            <ul className={classes.removeContainer}>
-                                {
-                                    itemsList.map((item, currentTabIndex) => (
-                                        <li
-                                            className={classes.removeContainerItem}
-                                            key={currentTabIndex}
-                                            style={{
-                                                width: `${tabsWidth[currentTabIndex]}px`,
-                                            }}
+                    {itemsList.length > 1 && (
+                        <ul className={classes.removeContainer}>
+                            {itemsList.map((item, currentTabIndex) => (
+                                <li
+                                    className={classes.removeContainerItem}
+                                    key={currentTabIndex}
+                                    style={{
+                                        width: `${tabsWidth[currentTabIndex]}px`,
+                                    }}
+                                >
+                                    <Tooltip
+                                        size="small"
+                                        title={
+                                            <Fragment>
+                                                <FormattedMessage
+                                                    {...MESSAGES.delete}
+                                                />
+                                                {` ${baseLabel.toLowerCase()}`}
+                                            </Fragment>
+                                        }
+                                    >
+                                        <IconButton
+                                            onClick={() =>
+                                                this.handleDeleteTab(
+                                                    currentTabIndex,
+                                                )
+                                            }
+                                            className={classes.removeIconButton}
+                                            size="small"
                                         >
-                                            <Tooltip
-                                                size="small"
-                                                title={(
-                                                    <Fragment>
-                                                        <FormattedMessage {...MESSAGES.delete} />
-                                                        {` ${baseLabel.toLowerCase()}`}
-                                                    </Fragment>
-                                                )}
-                                            >
-                                                <IconButton
-                                                    onClick={() => this.handleDeleteTab(currentTabIndex)}
-                                                    className={classes.removeIconButton}
-                                                    size="small"
-                                                >
-                                                    <Remove />
-                                                </IconButton>
-                                            </Tooltip>
-                                        </li>
-                                    ))
-                                }
-                            </ul>
-                        )
-                    }
+                                            <Remove />
+                                        </IconButton>
+                                    </Tooltip>
+                                </li>
+                            ))}
+                        </ul>
+                    )}
                     <Tabs
                         value={tabIndex}
                         classes={{
                             root: classes.tabs,
                             indicator: classes.indicator,
                         }}
-                        onChange={(event, newtab) => this.handleTabChange(newtab)
+                        onChange={(event, newtab) =>
+                            this.handleTabChange(newtab)
                         }
                     >
-                        {
-                            itemsList.map((item, currentTabIndex) => (
-                                <Tab
-                                    ref={(ref) => { if (ref) this.setTabsElement(ref, currentTabIndex); }}
-                                    key={currentTabIndex}
-                                    value={currentTabIndex}
-                                    label={(
-                                        <span className={itemsList.length > 1 ? classes.tabContent : classes.tabContentAlone}>
-                                            <span
-                                                style={{
-                                                    backgroundColor: `#${item.color}`,
-                                                    border: `2px solid ${Color(`#${item.color}`).darken(0.5)}`,
-                                                }}
-                                                className={classes.roundColor}
-                                            />
-                                            {baseLabel}
-                                            {
-                                                displayCounts
-                                                && counts[currentTabIndex]
-                                                && (
-                                                    ` (${formatThousand(counts[currentTabIndex].count)})`
-                                                )
-                                            }
-                                        </span>
-
-                                    )}
-                                />
-                            ))
-                        }
+                        {itemsList.map((item, currentTabIndex) => (
+                            <Tab
+                                ref={ref => {
+                                    if (ref)
+                                        this.setTabsElement(
+                                            ref,
+                                            currentTabIndex,
+                                        );
+                                }}
+                                key={currentTabIndex}
+                                value={currentTabIndex}
+                                label={
+                                    <span
+                                        className={
+                                            itemsList.length > 1
+                                                ? classes.tabContent
+                                                : classes.tabContentAlone
+                                        }
+                                    >
+                                        <span
+                                            style={{
+                                                backgroundColor: `#${item.color}`,
+                                                border: `2px solid ${Color(
+                                                    `#${item.color}`,
+                                                ).darken(0.5)}`,
+                                            }}
+                                            className={classes.roundColor}
+                                        />
+                                        {baseLabel}
+                                        {displayCounts &&
+                                            counts[currentTabIndex] &&
+                                            ` (${formatThousand(
+                                                counts[currentTabIndex].count,
+                                            )})`}
+                                    </span>
+                                }
+                            />
+                        ))}
                     </Tabs>
                 </div>
-                {
-                    itemsList.length < maxItems
-                    && (
-                        <Tooltip
+                {itemsList.length < maxItems && (
+                    <Tooltip
+                        size="small"
+                        title={
+                            <Fragment>
+                                <FormattedMessage {...MESSAGES.add} />
+                                {` ${baseLabel.toLowerCase()}`}
+                            </Fragment>
+                        }
+                    >
+                        <IconButton
+                            onClick={() => this.handleAddTab()}
+                            className={classes.iconButton}
                             size="small"
-                            title={(
-                                <Fragment>
-                                    <FormattedMessage {...MESSAGES.add} />
-                                    {` ${baseLabel.toLowerCase()}`}
-                                </Fragment>
-                            )}
                         >
-                            <IconButton
-                                onClick={() => this.handleAddTab()}
-                                className={classes.iconButton}
-                                size="small"
-                            >
-                                <Add />
-                            </IconButton>
-                        </Tooltip>
-                    )
-                }
+                            <Add />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </section>
         );
     }

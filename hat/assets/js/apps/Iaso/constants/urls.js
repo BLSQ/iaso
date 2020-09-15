@@ -1,5 +1,3 @@
-
-
 export const baseUrls = {
     forms: 'forms/list',
     mappings: 'forms/mappings',

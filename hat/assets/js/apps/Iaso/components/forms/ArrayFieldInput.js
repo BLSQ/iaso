@@ -13,10 +13,7 @@ import Add from '@material-ui/icons/Add';
 
 import commonStyles from '../../styles/common';
 
-import {
-    addPositionIndex,
-    removePositionIndex,
-} from '../../utils';
+import { addPositionIndex, removePositionIndex } from '../../utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -95,45 +92,45 @@ class ArrayFieldInput extends Component {
     }
 
     render() {
-        const {
-            baseId,
-            label,
-            classes,
-        } = this.props;
-        const {
-            fieldList,
-        } = this.state;
-        const addFieldButtonDisabled = fieldList.length > 0 && fieldList[fieldList.length - 1].value === '';
+        const { baseId, label, classes } = this.props;
+        const { fieldList } = this.state;
+        const addFieldButtonDisabled =
+            fieldList.length > 0 &&
+            fieldList[fieldList.length - 1].value === '';
         return (
             <Grid container spacing={0} className={classes.marginTop}>
                 <Grid item xs={1}>
-                    <span className={classes.label}>
-                        {label}
-                        :
-                    </span>
+                    <span className={classes.label}>{label}
+:
+</span>
                 </Grid>
                 <Grid item xs={11}>
                     <List className={classes.list}>
-                        {
-                            fieldList.map((a, fieldIndex) => (
-                                <ListItem key={a.position} className={classes.listItem}>
-                                    <OutlinedInput
-                                        className={classes.input}
-                                        id={`${baseId}-${a.position}`}
-                                        value={a.value || undefined}
-                                        onChange={event => this.updateField(event.currentTarget.value, fieldIndex)}
-                                    />
-                                    <IconButton
-                                        className={classes.deleteIcon}
-                                        color="inherit"
-                                        onClick={() => this.removeField(fieldIndex)}
-                                    >
-                                        <DeleteIcon />
-                                    </IconButton>
-                                </ListItem>
-
-                            ))
-                        }
+                        {fieldList.map((a, fieldIndex) => (
+                            <ListItem
+                                key={a.position}
+                                className={classes.listItem}
+                            >
+                                <OutlinedInput
+                                    className={classes.input}
+                                    id={`${baseId}-${a.position}`}
+                                    value={a.value || undefined}
+                                    onChange={event =>
+                                        this.updateField(
+                                            event.currentTarget.value,
+                                            fieldIndex,
+                                        )
+                                    }
+                                />
+                                <IconButton
+                                    className={classes.deleteIcon}
+                                    color="inherit"
+                                    onClick={() => this.removeField(fieldIndex)}
+                                >
+                                    <DeleteIcon />
+                                </IconButton>
+                            </ListItem>
+                        ))}
                         <ListItem className={classes.addListItem}>
                             <Fab
                                 disabled={addFieldButtonDisabled}

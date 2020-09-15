@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import {
-    Map, TileLayer, Polygon,
-} from 'react-leaflet';
+import { Map, TileLayer, Polygon } from 'react-leaflet';
 import { injectIntl, intlShape } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
@@ -25,21 +23,18 @@ const styles = () => ({
 class PolygonMap extends Component {
     componentDidMount() {
         const {
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
     }
 
     fitToBounds() {
-        const {
-            polygonPositions,
-        } = this.props;
+        const { polygonPositions } = this.props;
         const bounds = getLatLngBounds(polygonPositions);
         this.map.leafletElement.fitBounds(bounds, {
-            maxZoom: tiles.osm.maxZoom, padding: boundsOptions.padding,
+            maxZoom: tiles.osm.maxZoom,
+            padding: boundsOptions.padding,
         });
     }
 
@@ -55,14 +50,18 @@ class PolygonMap extends Component {
                     center={[0, 0]}
                     bounds={getLatLngBounds(polygonPositions)}
                     boundsOptions={boundsOptions}
-                    ref={(ref) => {
+                    ref={ref => {
                         this.map = ref;
                     }}
                     zoomControl={false}
                     keyboard={false}
                 >
                     <TileLayer
-                        attribution={currentTile.attribution ? currentTile.attribution : ''}
+                        attribution={
+                            currentTile.attribution
+                                ? currentTile.attribution
+                                : ''
+                        }
                         url={currentTile.url}
                     />
                     <Polygon positions={polygonPositions} color="blue" />

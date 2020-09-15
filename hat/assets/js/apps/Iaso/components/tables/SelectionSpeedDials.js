@@ -24,10 +24,7 @@ const useStyles = makeStyles(theme => ({
     },
 }));
 
-
-const SelectionSpeedDials = ({
-    hidden, intl: { formatMessage }, actions,
-}) => {
+const SelectionSpeedDials = ({ hidden, intl: { formatMessage }, actions }) => {
     const classes = useStyles();
     const [open, setOpen] = React.useState(false);
 
@@ -40,7 +37,6 @@ const SelectionSpeedDials = ({
     };
     const activeAction = actions.filter(a => !a.disabled);
     return (
-
         <ClickAwayListener onClickAway={() => handleClose()}>
             <SpeedDial
                 ariaLabel={formatMessage(MESSAGES.selectionAction)}

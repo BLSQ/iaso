@@ -1,9 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import {
-    withStyles,
-    IconButton,
-    Tooltip,
-} from '@material-ui/core';
+import { withStyles, IconButton, Tooltip } from '@material-ui/core';
 import { FormattedMessage } from 'react-intl';
 import Add from '@material-ui/icons/Add';
 
@@ -13,7 +9,6 @@ import commonStyles from '../../styles/common';
 
 import CustomColorShipComponent from '../chips/CustomColorShipComponent';
 import MESSAGES from './messages';
-
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -70,7 +65,6 @@ class DynamicChipsComponent extends Component {
         this.setState(newState);
     }
 
-
     handleDelete(chipIndex) {
         const {
             redirectTo,
@@ -120,60 +114,47 @@ class DynamicChipsComponent extends Component {
     }
 
     render() {
-        const {
-            classes,
-            baseLabel,
-            params,
-            paramKey,
-            maxItems,
-        } = this.props;
-        const {
-            chipIndex,
-        } = this.state;
+        const { classes, baseLabel, params, paramKey, maxItems } = this.props;
+        const { chipIndex } = this.state;
         const itemsList = JSON.parse(params[paramKey]);
         return (
             <section className={classes.mainContainer}>
                 <div className={classes.chipsContainer}>
-                    {
-                        itemsList.map((item, currentIndex) => (
-                            <CustomColorShipComponent
-                                className={classes.chip}
-                                color={`#${item.color}`}
-                                key={currentIndex}
-                                isSelected={chipIndex === currentIndex}
-                                chipProps={{
-                                    label: `${baseLabel} - ${currentIndex + 1}`,
-                                    clickable: true,
-                                    onDelete: () => this.handleDelete(currentIndex),
-                                    onClick: () => this.handleChange(currentIndex),
-                                    className: classes.chip,
-                                }}
-                            />
-                        ))
-                    }
+                    {itemsList.map((item, currentIndex) => (
+                        <CustomColorShipComponent
+                            className={classes.chip}
+                            color={`#${item.color}`}
+                            key={currentIndex}
+                            isSelected={chipIndex === currentIndex}
+                            chipProps={{
+                                label: `${baseLabel} - ${currentIndex + 1}`,
+                                clickable: true,
+                                onDelete: () => this.handleDelete(currentIndex),
+                                onClick: () => this.handleChange(currentIndex),
+                                className: classes.chip,
+                            }}
+                        />
+                    ))}
                 </div>
-                {
-                    itemsList.length < maxItems
-                    && (
-                        <Tooltip
+                {itemsList.length < maxItems && (
+                    <Tooltip
+                        size="small"
+                        title={
+                            <Fragment>
+                                <FormattedMessage {...MESSAGES.add} />
+                                {` ${baseLabel.toLowerCase()}`}
+                            </Fragment>
+                        }
+                    >
+                        <IconButton
+                            onClick={() => this.handleAdd()}
+                            className={classes.iconButton}
                             size="small"
-                            title={(
-                                <Fragment>
-                                    <FormattedMessage {...MESSAGES.add} />
-                                    {` ${baseLabel.toLowerCase()}`}
-                                </Fragment>
-                            )}
                         >
-                            <IconButton
-                                onClick={() => this.handleAdd()}
-                                className={classes.iconButton}
-                                size="small"
-                            >
-                                <Add />
-                            </IconButton>
-                        </Tooltip>
-                    )
-                }
+                            <Add />
+                        </IconButton>
+                    </Tooltip>
+                )}
             </section>
         );
     }

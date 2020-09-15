@@ -5,17 +5,17 @@ import { IntlProvider } from 'react-intl';
 import { Provider } from 'react-redux';
 
 export function renderWithIntl(Component, props) {
-    const temp =
-        (
-            <IntlProvider locale="en" messages={{}}>
-                <Component {...props} />
-            </IntlProvider>
-        );
+    const temp = (
+        <IntlProvider locale="en" messages={{}}>
+            <Component {...props} />
+        </IntlProvider>
+    );
     return TestUtils.renderIntoDocument(temp);
 }
 
 export function renderWithDOMNode(Component, props, node) {
-    return ReactDOM.render( // eslint-disable-line
+    return ReactDOM.render(
+        // eslint-disable-line
         <IntlProvider locale="en" messages={{}}>
             <Component {...props} />
         </IntlProvider>,

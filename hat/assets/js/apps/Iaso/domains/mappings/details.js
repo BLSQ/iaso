@@ -64,7 +64,7 @@ class MappingDetails extends Component {
             redirectToReplace,
         } = this.props;
 
-        const onQuestionSelected = (node) => {
+        const onQuestionSelected = node => {
             setCurrentQuestion(node);
             redirectToReplace(baseUrls.mappingDetail, {
                 mappingVersionId: currentMappingVersion.id,
@@ -72,7 +72,7 @@ class MappingDetails extends Component {
             });
         };
 
-        const onConfirmedQuestionMapping = (questionMapping) => {
+        const onConfirmedQuestionMapping = questionMapping => {
             applyPartialUpdate(
                 currentMappingVersion.id,
                 currentQuestion.name,
@@ -81,34 +81,29 @@ class MappingDetails extends Component {
         };
 
         const onUnmapQuestionMapping = () => {
-            applyPartialUpdate(
-                currentMappingVersion.id,
-                currentQuestion.name,
-                { action: 'unmap' },
-            );
+            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
+                action: 'unmap',
+            });
         };
 
         const onNeverMapQuestionMapping = () => {
-            applyPartialUpdate(
-                currentMappingVersion.id,
-                currentQuestion.name,
-                { type: 'neverMapped' },
-            );
+            applyPartialUpdate(currentMappingVersion.id, currentQuestion.name, {
+                type: 'neverMapped',
+            });
         };
-        const isDataElementMappable = currentMappingVersion && currentMappingVersion.mapping.mapping_type !== 'DERIVED';
-        const indexedQuestions = currentFormVersion && Descriptor.indexQuestions(currentFormVersion.descriptor);
+        const isDataElementMappable =
+            currentMappingVersion &&
+            currentMappingVersion.mapping.mapping_type !== 'DERIVED';
+        const indexedQuestions =
+            currentFormVersion &&
+            Descriptor.indexQuestions(currentFormVersion.descriptor);
 
         return (
             <section className={classes.relativeContainer}>
                 <TopBar
                     title={
                         currentMappingVersion
-                            ? `Mapping : ${
-                                currentMappingVersion.form_version.form.name
-                            },  ${
-                                currentMappingVersion.form_version.version_id
-                            } - ${
-                                currentMappingVersion.mapping.mapping_type}`
+                            ? `Mapping : ${currentMappingVersion.form_version.form.name},  ${currentMappingVersion.form_version.version_id} - ${currentMappingVersion.mapping.mapping_type}`
                             : 'loading'
                     }
                     displayBackButton
@@ -136,32 +131,47 @@ class MappingDetails extends Component {
                             )}
                             <Grid item xs={8} md={9}>
                                 {currentQuestion && (
-                                <>
-                                    <QuestionInfos question={currentQuestion} />
-                                    <br />
-                                    { isDataElementMappable && (
-                                        <QuestionMappingForm
-                                            key={currentQuestion.name}
-                                            mapping={currentMappingVersion}
+                                    <>
+                                        <QuestionInfos
                                             question={currentQuestion}
-                                            mappingVersion={currentMappingVersion}
-                                            indexedQuestions={indexedQuestions}
-                                            onConfirmedQuestionMapping={onConfirmedQuestionMapping}
-                                            onUnmapQuestionMapping={onUnmapQuestionMapping}
-                                            onNeverMapQuestionMapping={onNeverMapQuestionMapping}
-                                            hesabuDescriptor={hesabuDescriptor}
                                         />
-                                    )}
-                                    { !isDataElementMappable && (
-                                        <DerivedQuestionMappingForm
-                                            key={currentQuestion.name}
-                                            mapping={currentMappingVersion}
-                                            question={currentQuestion}
-                                            mappingVersion={currentMappingVersion}
-                                        />
-                                    )
-                                    }
-                                </>
+                                        <br />
+                                        {isDataElementMappable && (
+                                            <QuestionMappingForm
+                                                key={currentQuestion.name}
+                                                mapping={currentMappingVersion}
+                                                question={currentQuestion}
+                                                mappingVersion={
+                                                    currentMappingVersion
+                                                }
+                                                indexedQuestions={
+                                                    indexedQuestions
+                                                }
+                                                onConfirmedQuestionMapping={
+                                                    onConfirmedQuestionMapping
+                                                }
+                                                onUnmapQuestionMapping={
+                                                    onUnmapQuestionMapping
+                                                }
+                                                onNeverMapQuestionMapping={
+                                                    onNeverMapQuestionMapping
+                                                }
+                                                hesabuDescriptor={
+                                                    hesabuDescriptor
+                                                }
+                                            />
+                                        )}
+                                        {!isDataElementMappable && (
+                                            <DerivedQuestionMappingForm
+                                                key={currentQuestion.name}
+                                                mapping={currentMappingVersion}
+                                                question={currentQuestion}
+                                                mappingVersion={
+                                                    currentMappingVersion
+                                                }
+                                            />
+                                        )}
+                                    </>
                                 )}
                             </Grid>
                         </Grid>

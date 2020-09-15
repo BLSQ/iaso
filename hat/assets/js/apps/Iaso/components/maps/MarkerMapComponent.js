@@ -1,19 +1,11 @@
 import React, { Component } from 'react';
-import {
-    Map, TileLayer,
-} from 'react-leaflet';
+import { Map, TileLayer } from 'react-leaflet';
 import Control from 'react-leaflet-control';
 import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
 import L from 'leaflet';
 
-import {
-    withStyles,
-    Dialog,
-    DialogActions,
-    Button,
-} from '@material-ui/core';
+import { withStyles, Dialog, DialogActions, Button } from '@material-ui/core';
 import Layers from '@material-ui/icons/Layers';
-
 
 import PropTypes from 'prop-types';
 
@@ -62,9 +54,7 @@ class MarkerMap extends Component {
 
     componentDidMount() {
         const {
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
@@ -72,14 +62,12 @@ class MarkerMap extends Component {
     }
 
     fitToBounds() {
-        const {
-            latitude,
-            longitude,
-        } = this.props;
+        const { latitude, longitude } = this.props;
         const latlng = [L.latLng(latitude, longitude)];
         const markerBounds = L.latLngBounds(latlng);
         this.map.leafletElement.fitBounds(markerBounds, {
-            maxZoom: 9, padding: boundsOptions.padding,
+            maxZoom: 9,
+            padding: boundsOptions.padding,
         });
     }
 
@@ -96,15 +84,8 @@ class MarkerMap extends Component {
     }
 
     render() {
-        const {
-            classes,
-            latitude,
-            longitude,
-        } = this.props;
-        const {
-            currentTile,
-            displayTilePopup,
-        } = this.state;
+        const { classes, latitude, longitude } = this.props;
+        const { currentTile, displayTilePopup } = this.state;
         if (!latitude || !longitude) return null;
         return (
             <div className={classes.mapContainer}>
@@ -114,12 +95,17 @@ class MarkerMap extends Component {
                 >
                     <div className={classes.tileSwitchContainer}>
                         <TileSwitch
-                            setCurrentTile={newtile => this.handleChangeTile(newtile)}
+                            setCurrentTile={newtile =>
+                                this.handleChangeTile(newtile)
+                            }
                             currentTile={currentTile}
                         />
                     </div>
                     <DialogActions>
-                        <Button onClick={() => this.toggleTilePopup()} color="primary">
+                        <Button
+                            onClick={() => this.toggleTilePopup()}
+                            color="primary"
+                        >
                             <FormattedMessage {...MESSAGES.close} />
                         </Button>
                     </DialogActions>
@@ -129,7 +115,7 @@ class MarkerMap extends Component {
                     maxZoom={currentTile.maxZoom}
                     style={{ height: '100%' }}
                     center={[0, 0]}
-                    ref={(ref) => {
+                    ref={ref => {
                         this.map = ref;
                     }}
                     zoomControl={false}
@@ -137,7 +123,11 @@ class MarkerMap extends Component {
                     zoomSnap={0.1}
                 >
                     <TileLayer
-                        attribution={currentTile.attribution ? currentTile.attribution : ''}
+                        attribution={
+                            currentTile.attribution
+                                ? currentTile.attribution
+                                : ''
+                        }
                         url={currentTile.url}
                     />
                     <MarkerComponent
@@ -158,7 +148,6 @@ class MarkerMap extends Component {
                             </span>
                         </div>
                     </Control>
-
                 </Map>
             </div>
         );

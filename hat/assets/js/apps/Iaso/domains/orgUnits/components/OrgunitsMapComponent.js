@@ -1,24 +1,15 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import {
-    Map, TileLayer, GeoJSON,
-} from 'react-leaflet';
+import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { injectIntl, intlShape } from 'react-intl';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
 
-import {
-    Grid,
-    Divider,
-    Box,
-    withStyles,
-} from '@material-ui/core';
+import { Grid, Divider, Box, withStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import {
-    locationsLimit,
-} from '../../../constants/filters';
+import { locationsLimit } from '../../../constants/filters';
 
 import {
     getLatLngBounds,
@@ -58,18 +49,22 @@ const styles = theme => ({
     },
 });
 
-const getFullOrgUnits = (orgUnits) => {
+const getFullOrgUnits = orgUnits => {
     let fullOrUnits = [];
-    Object.values(orgUnits).forEach((searchOrgUnits) => {
+    Object.values(orgUnits).forEach(searchOrgUnits => {
         fullOrUnits = fullOrUnits.concat(searchOrgUnits);
     });
     return fullOrUnits;
 };
 
-const getOrgUnitsBounds = (orgUnits) => {
+const getOrgUnitsBounds = orgUnits => {
     const orgUnitsLocations = getFullOrgUnits(orgUnits.locations);
-    const locationsBounds = orgUnitsLocations.length > 0 ? getLatLngBounds(orgUnitsLocations) : null;
-    const shapeBounds = orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
+    const locationsBounds =
+        orgUnitsLocations.length > 0
+            ? getLatLngBounds(orgUnitsLocations)
+            : null;
+    const shapeBounds =
+        orgUnits.shapes.length > 0 ? getShapesBounds(orgUnits.shapes) : null;
     let bounds = null;
     if (locationsBounds && shapeBounds) {
         bounds = locationsBounds.extend(shapeBounds);
@@ -91,35 +86,36 @@ class OrgunitsMap extends Component {
     componentDidMount() {
         const {
             orgUnitTypes,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
         } = this.props;
         const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
         zoomBar.addTo(this.map.leafletElement);
         if (orgUnitTypes.length === 0) {
             this.map.leafletElement.createPane('custom-shape-pane');
         } else {
-            orgUnitTypes.forEach((ot) => {
+            orgUnitTypes.forEach(ot => {
                 const otName = camelCase(ot.name);
-                this.map.leafletElement.createPane(`custom-shape-pane-${otName}`);
+                this.map.leafletElement.createPane(
+                    `custom-shape-pane-${otName}`,
+                );
             });
         }
     }
 
     shouldComponentUpdate(nextProps) {
-        return !isEqual(nextProps.orgUnits, this.props.orgUnits)
-        || !isEqual(getColorsFromParams(nextProps.params, this.props.params));
+        return (
+            !isEqual(nextProps.orgUnits, this.props.orgUnits) ||
+            !isEqual(getColorsFromParams(nextProps.params, this.props.params))
+        );
     }
 
     componentDidUpdate() {
-        const {
-            orgUnits,
-        } = this.props;
-        const {
-            fittedToBounds,
-        } = this.state;
-        if (!fittedToBounds && (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)) {
+        const { orgUnits } = this.props;
+        const { fittedToBounds } = this.state;
+        if (
+            !fittedToBounds &&
+            (orgUnits.locations.length > 0 || orgUnits.shapes.length > 0)
+        ) {
             this.setFittedToBound();
             this.fitToBounds();
         }
@@ -136,9 +132,7 @@ class OrgunitsMap extends Component {
     }
 
     getSearchColor(currentSearchIndex) {
-        const {
-            params,
-        } = this.props;
+        const { params } = this.props;
         const searches = decodeSearch(params.searches);
         const currentSearch = searches[currentSearchIndex];
         let currentColor;
@@ -146,7 +140,7 @@ class OrgunitsMap extends Component {
             currentColor = currentSearch.color;
         }
         if (!currentColor) {
-            [currentColor] = getChipColors(0);
+            currentColor = getChipColors(0);
         } else {
             currentColor = `#${currentColor}`;
         }
@@ -154,17 +148,15 @@ class OrgunitsMap extends Component {
     }
 
     fetchDetail(orgUnit) {
-        const {
-            dispatch,
-        } = this.props;
+        const { dispatch } = this.props;
         this.props.setCurrentSubOrgUnit(null);
-        fetchOrgUnitDetail(dispatch, orgUnit.id).then(i => this.props.setCurrentSubOrgUnit(i));
+        fetchOrgUnitDetail(dispatch, orgUnit.id).then(i =>
+            this.props.setCurrentSubOrgUnit(i),
+        );
     }
 
     fitToBounds() {
-        const {
-            orgUnits,
-        } = this.props;
+        const { orgUnits } = this.props;
         const bounds = getOrgUnitsBounds(orgUnits);
         if (bounds) {
             this.map.leafletElement.fitBounds(bounds, boundsOptions);
@@ -176,9 +168,7 @@ class OrgunitsMap extends Component {
             orgUnits,
             currentTile,
             isClusterActive,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             params,
             baseUrl,
             classes,
@@ -191,7 +181,9 @@ class OrgunitsMap extends Component {
                 <Grid container spacing={0}>
                     <Grid item xs={3} />
                     <Grid item xs={6}>
-                        <ErrorPaperComponent message={formatMessage(MESSAGES.missingGeolocation)} />
+                        <ErrorPaperComponent
+                            message={formatMessage(MESSAGES.missingGeolocation)}
+                        />
                     </Grid>
                     <Grid item xs={3} />
                 </Grid>
@@ -204,7 +196,7 @@ class OrgunitsMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOptionComponent={(
+                    settingsOptionComponent={
                         <Fragment>
                             <TileSwitch />
                             <Divider />
@@ -219,16 +211,14 @@ class OrgunitsMap extends Component {
                                     params={params}
                                     baseUrl={baseUrl}
                                     onFilterChanged={() => setFiltersUpdated()}
-                                    filters={[
-                                        locationsLimit(),
-                                    ]}
+                                    filters={[locationsLimit()]}
                                 />
                             </Box>
                         </Fragment>
-                    )}
+                    }
                 >
                     <Map
-                        ref={(ref) => {
+                        ref={ref => {
                             this.map = ref;
                         }}
                         scrollWheelZoom={false}
@@ -240,35 +230,48 @@ class OrgunitsMap extends Component {
                         keyboard={false}
                     >
                         <TileLayer
-                            attribution={currentTile.attribution ? currentTile.attribution : ''}
+                            attribution={
+                                currentTile.attribution
+                                    ? currentTile.attribution
+                                    : ''
+                            }
                             url={currentTile.url}
                         />
-                        {
-                            orgUnits.shapes.map(o => (
-                                <GeoJSON
-                                    pane={o.org_unit_type
-                                        ? `custom-shape-pane-${camelCase(o.org_unit_type)}`
-                                        : 'custom-shape-pane'}
-                                    key={o.id}
-                                    style={() => ({
-                                        color: this.getSearchColor(o.search_index),
-                                    })}
-                                    data={o.geo_json}
-                                    onClick={() => this.fetchDetail(o)}
-                                >
-                                    <OrgUnitPopupComponent />
-                                </GeoJSON>
-                            ))
-                        }
-                        {
-                            isClusterActive
-                            && (
-                                orgUnits.locations.map((orgUnitsBySearch, searchIndex) => {
-                                    const color = this.getSearchColor(searchIndex);
-                                    if (orgUnitsBySearch.length === 0) return null;
+                        {orgUnits.shapes.map(o => (
+                            <GeoJSON
+                                pane={
+                                    o.org_unit_type
+                                        ? `custom-shape-pane-${camelCase(
+                                              o.org_unit_type,
+                                          )}`
+                                        : 'custom-shape-pane'
+                                }
+                                key={o.id}
+                                style={() => ({
+                                    color: this.getSearchColor(o.search_index),
+                                })}
+                                data={o.geo_json}
+                                onClick={() => this.fetchDetail(o)}
+                            >
+                                <OrgUnitPopupComponent />
+                            </GeoJSON>
+                        ))}
+                        {isClusterActive &&
+                            orgUnits.locations.map(
+                                (orgUnitsBySearch, searchIndex) => {
+                                    const color = this.getSearchColor(
+                                        searchIndex,
+                                    );
+                                    if (orgUnitsBySearch.length === 0)
+                                        return null;
                                     return (
                                         <MarkerClusterGroup
-                                            iconCreateFunction={cluster => colorClusterCustomMarker(cluster, color)}
+                                            iconCreateFunction={cluster =>
+                                                colorClusterCustomMarker(
+                                                    cluster,
+                                                    color,
+                                                )
+                                            }
                                             key={searchIndex}
                                             polygonOptions={{
                                                 fillColor: color,
@@ -277,35 +280,42 @@ class OrgunitsMap extends Component {
                                         >
                                             <MarkersListComponent
                                                 markerProps={() => ({
-                                                    ...circleColorMarkerOptions(color),
+                                                    ...circleColorMarkerOptions(
+                                                        color,
+                                                    ),
                                                 })}
                                                 items={orgUnitsBySearch}
-                                                onMarkerClick={o => this.fetchDetail(o)}
-                                                PopupComponent={OrgUnitPopupComponent}
+                                                onMarkerClick={o =>
+                                                    this.fetchDetail(o)
+                                                }
+                                                PopupComponent={
+                                                    OrgUnitPopupComponent
+                                                }
                                                 isCircle
                                             />
                                         </MarkerClusterGroup>
                                     );
-                                })
-                            )
-                        }
-                        {
-                            !isClusterActive
-                            && (
-                                orgUnits.locations.map((orgUnitsBySearch, searchIndex) => (
+                                },
+                            )}
+                        {!isClusterActive &&
+                            orgUnits.locations.map(
+                                (orgUnitsBySearch, searchIndex) => (
                                     <MarkersListComponent
                                         key={searchIndex}
                                         markerProps={() => ({
-                                            ...circleColorMarkerOptions(this.getSearchColor(searchIndex)),
+                                            ...circleColorMarkerOptions(
+                                                this.getSearchColor(
+                                                    searchIndex,
+                                                ),
+                                            ),
                                         })}
                                         items={orgUnitsBySearch}
                                         onMarkerClick={o => this.fetchDetail(o)}
                                         PopupComponent={OrgUnitPopupComponent}
                                         isCircle
                                     />
-                                ))
-                            )
-                        }
+                                ),
+                            )}
                     </Map>
                 </InnerDrawer>
             </Grid>
@@ -315,7 +325,6 @@ class OrgunitsMap extends Component {
 OrgunitsMap.defaultProps = {
     baseUrl: '',
 };
-
 
 OrgunitsMap.propTypes = {
     orgUnits: PropTypes.object.isRequired,
@@ -345,5 +354,6 @@ const MapDispatchToProps = dispatch => ({
     setCurrentSubOrgUnit: i => dispatch(setCurrentSubOrgUnit(i)),
 });
 
-
-export default withStyles(styles)(connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgunitsMap)));
+export default withStyles(styles)(
+    connect(MapStateToProps, MapDispatchToProps)(injectIntl(OrgunitsMap)),
+);

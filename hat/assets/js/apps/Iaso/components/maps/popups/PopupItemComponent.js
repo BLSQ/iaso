@@ -1,9 +1,6 @@
 import React from 'react';
 
-import {
-    withStyles,
-    Grid,
-} from '@material-ui/core';
+import { withStyles, Grid } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -14,17 +11,12 @@ const styles = theme => ({
     ...mapPopupStyles(theme),
 });
 
-const PopupItemComponent = (props) => {
-    const {
-        label,
-        value,
-        classes,
-    } = props;
+const PopupItemComponent = props => {
+    const { label, value, classes } = props;
     return (
         <Grid container spacing={0}>
             <Grid item xs={4} className={classes.popupListItemLabel}>
-                {label}
-                :
+                {label}:
             </Grid>
             <Grid item xs={8} className={classes.popuplistItem}>
                 {value || textPlaceholder}

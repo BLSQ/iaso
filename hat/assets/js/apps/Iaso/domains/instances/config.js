@@ -25,7 +25,9 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                         tooltipMessage={MESSAGES.view}
                     />
                     <IconButtonComponent
-                        onClick={() => window.open(settings.original.file_url, '_blank')}
+                        onClick={() =>
+                            window.open(settings.original.file_url, '_blank')
+                        }
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
@@ -35,16 +37,22 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
     ];
     let metaFields = INSTANCE_METAS_FIELDS.filter(f => Boolean(f.tableOrder));
     metaFields = orderBy(metaFields, [f => f.tableOrder], ['asc']);
-    metaFields.forEach(f => columns.push({
-        Header: formatMessage(MESSAGES[f.key]),
-        accessor: f.accessor || f.key,
-        Cell: settings => (
-            <ColumnTextComponent
-                title={f.title ? f.title(settings.original[f.key]) : null}
-                text={f.render ? f.render(settings.original[f.key]) : settings.original[f.key]}
-            />
-        ),
-    }));
+    metaFields.forEach(f =>
+        columns.push({
+            Header: formatMessage(MESSAGES[f.key]),
+            accessor: f.accessor || f.key,
+            Cell: settings => (
+                <ColumnTextComponent
+                    title={f.title ? f.title(settings.original[f.key]) : null}
+                    text={
+                        f.render
+                            ? f.render(settings.original[f.key])
+                            : settings.original[f.key]
+                    }
+                />
+            ),
+        }),
+    );
     return columns;
 };
 

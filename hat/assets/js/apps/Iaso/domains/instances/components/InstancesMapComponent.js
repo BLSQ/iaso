@@ -1,19 +1,17 @@
 import React, { Component, Fragment } from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
-import {
-    Map, TileLayer,
-} from 'react-leaflet';
+import { Map, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
 import { injectIntl, intlShape } from 'react-intl';
 
+import { Grid, Divider } from '@material-ui/core';
+
 import {
-    Grid,
-    Divider,
-} from '@material-ui/core';
-
-
-import { getLatLngBounds, clusterCustomMarker, customZoomBar } from '../../../utils/mapUtils';
+    getLatLngBounds,
+    clusterCustomMarker,
+    customZoomBar,
+} from '../../../utils/mapUtils';
 
 import { resetMapReducer } from '../../../redux/mapReducer';
 import { setCurrentInstance } from '../actions';
@@ -24,75 +22,85 @@ import MarkersListComponent from '../../../components/maps/markers/MarkersListCo
 import InstancePopupComponent from './InstancePopupComponent';
 import InnerDrawer from '../../../components/nav/InnerDrawerComponent';
 import { warningSnackBar } from '../../../constants/snackBars';
-import { enqueueSnackbar, closeFixedSnackbar } from '../../../redux/snackBarsReducer';
+import {
+    enqueueSnackbar,
+    closeFixedSnackbar,
+} from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
 
 const boundsOptions = { padding: [50, 50] };
 
+const snackbarKey = 'noInstancesOnMap';
+
 class InstancesMap extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            warningDisplayed: false,
+            zoomBar: null,
         };
-    }
-
-    componentDidMount() {
-        const {
-            intl: {
-                formatMessage,
-            },
-        } = this.props;
-        const zoomBar = customZoomBar(formatMessage, () => this.fitToBounds());
-        zoomBar.addTo(this.map.leafletElement);
     }
 
     componentDidUpdate() {
         const {
-            instances,
-            dispatch,
-            fetching,
+            intl: { formatMessage },
         } = this.props;
-        const bounds = getLatLngBounds(instances);
-        const { warningDisplayed } = this.state;
-        if (!fetching && instances.length > 0) {
-            if (!bounds && !warningDisplayed) {
-                this.toggleWarning(true);
-                dispatch(enqueueSnackbar(warningSnackBar('noInstancesOnMap')));
-            } else if (bounds && warningDisplayed) {
-                this.toggleWarning(false);
-                dispatch(closeFixedSnackbar('noInstancesOnMap'));
-            }
+        this.setWarning();
+        const { zoomBar } = this.state;
+        if (!zoomBar && this.map) {
+            const newZoomBar = customZoomBar(formatMessage, () =>
+                this.fitToBounds(),
+            );
+            newZoomBar.addTo(this.map.leafletElement);
+            this.setZoomBar(newZoomBar);
         }
     }
 
     componentWillUnmount() {
+        const { dispatch, notifications } = this.props;
+        const warningDisplayed = notifications.find(n => n.id === snackbarKey);
         this.props.resetMapReducer();
+        if (warningDisplayed) {
+            dispatch(closeFixedSnackbar(snackbarKey));
+        }
     }
 
-    toggleWarning(warningDisplayed) {
+    setZoomBar(zoomBar) {
         this.setState({
-            warningDisplayed,
+            zoomBar,
         });
     }
 
+    setWarning() {
+        const { instances, dispatch, notifications, fetching } = this.props;
+        const bounds = getLatLngBounds(instances);
+        const warningDisplayed = notifications.find(n => n.id === snackbarKey);
+        if (
+            !fetching &&
+            instances.length === 0 &&
+            !bounds &&
+            !warningDisplayed
+        ) {
+            dispatch(enqueueSnackbar(warningSnackBar(snackbarKey)));
+        } else if (bounds && warningDisplayed) {
+            dispatch(closeFixedSnackbar(snackbarKey));
+        }
+    }
+
     fetchDetail(instance) {
-        const {
-            dispatch,
-        } = this.props;
+        const { dispatch } = this.props;
         this.props.setCurrentInstance(null);
-        fetchInstanceDetail(dispatch, instance.id).then(i => this.props.setCurrentInstance(i));
+        fetchInstanceDetail(dispatch, instance.id).then(i =>
+            this.props.setCurrentInstance(i),
+        );
     }
 
     fitToBounds() {
-        const {
-            currentTile,
-            instances,
-        } = this.props;
+        const { currentTile, instances } = this.props;
         const bounds = getLatLngBounds(instances);
         this.map.leafletElement.fitBounds(bounds, {
-            maxZoom: currentTile.maxZoom, padding: boundsOptions.padding,
+            maxZoom: currentTile.maxZoom,
+            padding: boundsOptions.padding,
         });
     }
 
@@ -112,16 +120,16 @@ class InstancesMap extends Component {
             <Grid container spacing={0}>
                 <InnerDrawer
                     withTopBorder
-                    settingsOptionComponent={(
+                    settingsOptionComponent={
                         <Fragment>
                             <TileSwitch />
                             <Divider />
                             <ClusterSwitch />
                         </Fragment>
-                    )}
+                    }
                 >
                     <Map
-                        ref={(ref) => {
+                        ref={ref => {
                             this.map = ref;
                         }}
                         scrollWheelZoom={false}
@@ -134,38 +142,37 @@ class InstancesMap extends Component {
                         keyboard={false}
                     >
                         <TileLayer
-                            attribution={currentTile.attribution ? currentTile.attribution : ''}
+                            attribution={
+                                currentTile.attribution
+                                    ? currentTile.attribution
+                                    : ''
+                            }
                             url={currentTile.url}
                         />
-                        {
-                            isClusterActive
-                            && (
-                                <MarkerClusterGroup iconCreateFunction={clusterCustomMarker}>
-                                    <MarkersListComponent
-                                        items={instances}
-                                        onMarkerClick={i => this.fetchDetail(i)}
-                                        PopupComponent={InstancePopupComponent}
-                                    />
-                                </MarkerClusterGroup>
-                            )
-                        }
-                        {
-                            !isClusterActive
-                            && (
+                        {isClusterActive && (
+                            <MarkerClusterGroup
+                                iconCreateFunction={clusterCustomMarker}
+                            >
                                 <MarkersListComponent
                                     items={instances}
                                     onMarkerClick={i => this.fetchDetail(i)}
                                     PopupComponent={InstancePopupComponent}
                                 />
-                            )
-                        }
+                            </MarkerClusterGroup>
+                        )}
+                        {!isClusterActive && (
+                            <MarkersListComponent
+                                items={instances}
+                                onMarkerClick={i => this.fetchDetail(i)}
+                                PopupComponent={InstancePopupComponent}
+                            />
+                        )}
                     </Map>
                 </InnerDrawer>
             </Grid>
         );
     }
 }
-
 
 InstancesMap.propTypes = {
     instances: PropTypes.array.isRequired,
@@ -176,12 +183,15 @@ InstancesMap.propTypes = {
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
+    notifications: PropTypes.array.isRequired,
 };
 
 const MapStateToProps = state => ({
     currentTile: state.map.currentTile,
     isClusterActive: state.map.isClusterActive,
     fetching: state.instances.fetching,
+    instances: state.instances.instancesSmall,
+    notifications: state.snackBar ? state.snackBar.notifications : [],
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -190,5 +200,7 @@ const MapDispatchToProps = dispatch => ({
     setCurrentInstance: i => dispatch(setCurrentInstance(i)),
 });
 
-
-export default connect(MapStateToProps, MapDispatchToProps)(injectIntl(InstancesMap));
+export default connect(
+    MapStateToProps,
+    MapDispatchToProps,
+)(injectIntl(InstancesMap));

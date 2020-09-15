@@ -15,11 +15,14 @@ const ExportInstancesDialogComponent = ({
     isInstancesFilterUpdated,
     getFilters,
     createExportRequest,
+    batchExport,
 }) => {
     const [forceExport, setForceExport] = React.useState(false);
-    const onConfirm = (closeDialog) => {
+    const onConfirm = closeDialog => {
         const filterParams = getFilters();
-        createExportRequest({ forceExport, ...filterParams }).then(() => closeDialog());
+        createExportRequest({ forceExport, ...filterParams }).then(() =>
+            closeDialog(),
+        );
     };
     const onClosed = () => {
         setForceExport(false);
@@ -31,6 +34,7 @@ const ExportInstancesDialogComponent = ({
                 <ExportButtonComponent
                     onClick={openDialog}
                     isDisabled={isInstancesFilterUpdated}
+                    batchExport={batchExport}
                 />
             )}
             titleMessage={MESSAGES.export}
@@ -53,10 +57,15 @@ const ExportInstancesDialogComponent = ({
     );
 };
 
+ExportInstancesDialogComponent.defaultProps = {
+    batchExport: true,
+};
+
 ExportInstancesDialogComponent.propTypes = {
     isInstancesFilterUpdated: PropTypes.bool.isRequired,
     getFilters: PropTypes.func.isRequired,
     createExportRequest: PropTypes.func.isRequired,
+    batchExport: PropTypes.bool,
 };
 
 const MapStateToProps = state => ({

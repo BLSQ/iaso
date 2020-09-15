@@ -38,10 +38,7 @@ const styles = theme => ({
 
 class OrgUnitTypes extends Component {
     componentDidMount() {
-        const {
-            fetchAllOrgUnitTypes,
-            fetchAllProjects,
-        } = this.props;
+        const { fetchAllOrgUnitTypes, fetchAllProjects } = this.props;
         this.fetchOrgUnitTypes();
         fetchAllOrgUnitTypes(); //  TO-DO, API endpoint giving only id, name, short name. This is used by the dialog to choose sub org unit
         fetchAllProjects();
@@ -49,9 +46,11 @@ class OrgUnitTypes extends Component {
 
     componentDidUpdate(prevProps) {
         const { params } = this.props;
-        if ((prevProps.params.pageSize !== params.pageSize)
-        || (prevProps.params.order !== params.order)
-        || (prevProps.params.page !== params.page)) {
+        if (
+            prevProps.params.pageSize !== params.pageSize ||
+            prevProps.params.order !== params.order ||
+            prevProps.params.page !== params.page
+        ) {
             this.fetchOrgUnitTypes();
         }
     }
@@ -61,33 +60,24 @@ class OrgUnitTypes extends Component {
     }
 
     deleteOrgUnitType(orgUnitType) {
-        const {
-            params,
-            deleteOrgUnitType,
-        } = this.props;
+        const { params, deleteOrgUnitType } = this.props;
         return deleteOrgUnitType(orgUnitType, params);
     }
 
     render() {
         const {
             params,
-            intl: {
-                formatMessage,
-            },
+            intl: { formatMessage },
             orgUnitsTypes,
             count,
             pages,
             fetching,
             classes,
-            fetchOrgUnitTypes,
             redirectTo,
         } = this.props;
         return (
             <>
-                {
-                    fetching
-                    && <LoadingSpinner />
-                }
+                {fetching && <LoadingSpinner />}
                 <TopBar
                     title={formatMessage(MESSAGES.orgUnitsTypes)}
                     displayBackButton={false}
@@ -96,19 +86,25 @@ class OrgUnitTypes extends Component {
                     <Table
                         data={orgUnitsTypes}
                         pages={pages}
-                        defaultSorted={[
-                            { id: 'name', desc: false },
-                        ]}
+                        defaultSorted={[{ id: 'name', desc: false }]}
                         columns={tableColumns(formatMessage, this)}
                         count={count}
                         baseUrl={baseUrl}
                         params={params}
                         redirectTo={redirectTo}
                     />
-                    <Grid container spacing={0} justify="flex-end" alignItems="center" className={classes.marginTop}>
+                    <Grid
+                        container
+                        spacing={0}
+                        justify="flex-end"
+                        alignItems="center"
+                        className={classes.marginTop}
+                    >
                         <OrgUnitsTypesDialog
                             titleMessage={MESSAGES.create}
-                            renderTrigger={({ openDialog }) => <AddButtonComponent onClick={openDialog} />}
+                            renderTrigger={({ openDialog }) => (
+                                <AddButtonComponent onClick={openDialog} />
+                            )}
                             params={params}
                             onConfirmed={() => this.fetchOrgUnitTypes()}
                         />
@@ -145,11 +141,17 @@ const MapStateToProps = state => ({
     fetching: state.orgUnitsTypes.fetching,
 });
 
-const mapDispatchToProps = dispatch => bindActionCreators({
-    fetchOrgUnitTypes: fetchOrgUnitTypesAction,
-    fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
-    fetchAllProjects: fetchAllProjectsAction,
-    deleteOrgUnitType: deleteOrgUnitTypeAction,
-    redirectTo: redirectToAction,
-}, dispatch);
-export default withStyles(styles)(connect(MapStateToProps, mapDispatchToProps)(injectIntl(OrgUnitTypes)));
+const mapDispatchToProps = dispatch =>
+    bindActionCreators(
+        {
+            fetchOrgUnitTypes: fetchOrgUnitTypesAction,
+            fetchAllOrgUnitTypes: fetchAllOrgUnitTypesAction,
+            fetchAllProjects: fetchAllProjectsAction,
+            deleteOrgUnitType: deleteOrgUnitTypeAction,
+            redirectTo: redirectToAction,
+        },
+        dispatch,
+    );
+export default withStyles(styles)(
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(OrgUnitTypes)),
+);

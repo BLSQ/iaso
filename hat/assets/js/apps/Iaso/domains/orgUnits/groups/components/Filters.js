@@ -4,17 +4,13 @@ import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 
-import {
-    Grid, Button, withStyles,
-} from '@material-ui/core';
+import { Grid, Button, withStyles } from '@material-ui/core';
 import SearchIcon from '@material-ui/icons/Search';
 
 import commonStyles from '../../../../styles/common';
 import { redirectTo as redirectToAction } from '../../../../routing/actions';
 
-import {
-    search,
-} from '../../../../constants/filters';
+import { search } from '../../../../constants/filters';
 
 import FiltersComponent from '../../../../components/filters/FiltersComponent';
 
@@ -24,13 +20,7 @@ const styles = theme => ({
     ...commonStyles(theme),
 });
 
-const Filters = ({
-    params,
-    classes,
-    baseUrl,
-    redirectTo,
-    onSearch,
-}) => {
+const Filters = ({ params, classes, baseUrl, redirectTo, onSearch }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(false);
     const handleSearch = () => {
         if (filtersUpdated) {
@@ -51,15 +41,19 @@ const Filters = ({
                         params={params}
                         baseUrl={baseUrl}
                         onFilterChanged={() => setFiltersUpdated(true)}
-                        filters={[
-                            search(),
-                        ]}
+                        filters={[search()]}
                         onEnterPressed={() => handleSearch()}
                     />
                 </Grid>
             </Grid>
             <Grid container spacing={4} justify="flex-end" alignItems="center">
-                <Grid item xs={2} container justify="flex-end" alignItems="center">
+                <Grid
+                    item
+                    xs={2}
+                    container
+                    justify="flex-end"
+                    alignItems="center"
+                >
                     <Button
                         disabled={!filtersUpdated}
                         variant="contained"
@@ -97,4 +91,7 @@ const MapDispatchToProps = dispatch => ({
     ),
 });
 
-export default (connect(() => ({}), MapDispatchToProps)(withStyles(styles)(Filters)));
+export default connect(
+    () => ({}),
+    MapDispatchToProps,
+)(withStyles(styles)(Filters));

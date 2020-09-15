@@ -10,7 +10,8 @@ import IconButtonComponent from '../../../components/buttons/IconButtonComponent
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceDetailsField from './InstanceDetailsField';
 
-const formatUnixTimestamp = unix => (unix ? moment.unix(unix).format('DD/MM/YYYY HH:mm') : textPlaceholder);
+const formatUnixTimestamp = unix =>
+    unix ? moment.unix(unix).format('DD/MM/YYYY HH:mm') : textPlaceholder;
 
 const InstanceDetailsExportRequests = ({
     currentInstance,
@@ -32,10 +33,8 @@ const InstanceDetailsExportRequests = ({
             valueTitle={null}
             value={formatUnixTimestamp(currentInstance.last_export_success_at)}
         />
-        {
-            currentInstance.export_statuses && currentInstance.export_statuses.length > 0
-            && <Divider />
-        }
+        {currentInstance.export_statuses &&
+            currentInstance.export_statuses.length > 0 && <Divider />}
         {currentInstance.export_statuses.map((exportStatus, index) => (
             <>
                 <InstanceDetailsField
@@ -62,16 +61,13 @@ const InstanceDetailsExportRequests = ({
                     label={formatMessage(MESSAGES.when)}
                     value={formatUnixTimestamp(exportStatus.created_at)}
                 />
-                {
-                    index !== currentInstance.export_statuses.length - 1
-                    && <Divider />
-                }
-
+                {index !== currentInstance.export_statuses.length - 1 && (
+                    <Divider />
+                )}
             </>
         ))}
     </WidgetPaper>
 );
-
 
 InstanceDetailsExportRequests.propTypes = {
     currentInstance: PropTypes.object.isRequired,

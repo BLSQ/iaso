@@ -147,7 +147,7 @@ const MESSAGES = defineMessages({
     },
     both: {
         id: 'iaso.forms.both',
-        defaultMessage: 'Validated and not validated'
+        defaultMessage: 'Validated and not validated',
     },
     all: {
         id: 'iaso.forms.all',

@@ -12,11 +12,7 @@ class FiltersComponent extends React.Component {
         if (callback) {
             callback(value, urlKey);
         } else {
-            const {
-                params,
-                redirectTo,
-                baseUrl,
-            } = this.props;
+            const { params, redirectTo, baseUrl } = this.props;
             const newParams = {
                 ...params,
             };
@@ -39,15 +35,11 @@ class FiltersComponent extends React.Component {
     }
 
     onSearch(state = this.state) {
-        const {
-            params,
-            redirectTo,
-            baseUrl,
-        } = this.props;
+        const { params, redirectTo, baseUrl } = this.props;
         const newParams = {
             ...params,
         };
-        Object.keys(state).map((objectKey) => {
+        Object.keys(state).map(objectKey => {
             const value = state[objectKey];
             newParams[objectKey] = value;
             return null;
@@ -58,11 +50,7 @@ class FiltersComponent extends React.Component {
     }
 
     toggleCheckbox(checked, urlKey) {
-        const {
-            params,
-            redirectTo,
-            baseUrl,
-        } = this.props;
+        const { params, redirectTo, baseUrl } = this.props;
         const newParams = {
             ...params,
         };
@@ -76,89 +64,105 @@ class FiltersComponent extends React.Component {
     }
 
     render() {
-        const {
-            filters, params, onEnterPressed,
-        } = this.props;
+        const { filters, params, onEnterPressed } = this.props;
         if (!filters) {
             return null;
         }
         return (
             <section>
-                {
-                    filters.map((filter) => {
-                        let filterValue = filter.value || params[filter.urlKey];
-                        if (filter.useKeyParam === false) {
-                            filterValue = filter.value;
-                        }
-                        if (!filter.hideEmpty || (filter.hideEmpty && filter.options.length !== 0)) {
-                            return (
-                                <Fragment key={filter.uid ? filter.uid : filter.urlKey}>
-                                    {
-                                        filter.type === 'number'
-                                        && (
-                                            <InputComponent
-                                                keyValue={filter.urlKey}
-                                                onChange={(key, value) => this.onChange(filter.urlKey, value, filter.callback)}
-                                                value={filterValue}
-                                                type="number"
-                                                label={filter.label}
-                                            />
-                                        )
-                                    }
-                                    {
-                                        filter.type === 'select'
-                                        && (
-                                            <InputComponent
-                                                multi={filter.isMultiSelect}
-                                                clearable={filter.isClearable}
-                                                disabled={filter.isDisabled || false}
-                                                keyValue={filter.urlKey}
-                                                onChange={(key, value) => this.onChange(filter.urlKey, value, filter.callback)}
-                                                value={filterValue}
-                                                type="select"
-                                                options={filter.options}
-                                                label={filter.label}
-                                                labelString={filter.labelString}
-                                                isSearchable={filter.isSearchable}
-                                            />
-                                        )
-                                    }
+                {filters.map(filter => {
+                    let filterValue = filter.value || params[filter.urlKey];
+                    if (filter.useKeyParam === false) {
+                        filterValue = filter.value;
+                    }
+                    if (
+                        !filter.hideEmpty ||
+                        (filter.hideEmpty && filter.options.length !== 0)
+                    ) {
+                        return (
+                            <Fragment
+                                key={filter.uid ? filter.uid : filter.urlKey}
+                            >
+                                {filter.type === 'number' && (
+                                    <InputComponent
+                                        keyValue={filter.urlKey}
+                                        onChange={(key, value) =>
+                                            this.onChange(
+                                                filter.urlKey,
+                                                value,
+                                                filter.callback,
+                                            )
+                                        }
+                                        value={filterValue}
+                                        type="number"
+                                        label={filter.label}
+                                    />
+                                )}
+                                {filter.type === 'select' && (
+                                    <InputComponent
+                                        multi={filter.isMultiSelect}
+                                        clearable={filter.isClearable}
+                                        disabled={filter.isDisabled || false}
+                                        keyValue={filter.urlKey}
+                                        onChange={(key, value) =>
+                                            this.onChange(
+                                                filter.urlKey,
+                                                value,
+                                                filter.callback,
+                                            )
+                                        }
+                                        value={filterValue}
+                                        type="select"
+                                        options={filter.options}
+                                        label={filter.label}
+                                        labelString={filter.labelString}
+                                        isSearchable={filter.isSearchable}
+                                    />
+                                )}
 
-                                    {
-                                        filter.type === 'search'
-                                        && (
-                                            <InputComponent
-                                                disabled={filter.isDisabled || false}
-                                                keyValue={filter.urlKey}
-                                                uid={filter.uid}
-                                                onChange={(key, value) => this.onSearchChange(key, value, true, filter.callback)}
-                                                value={filterValue}
-                                                type="search"
-                                                label={filter.label}
-                                                onEnterPressed={onEnterPressed}
-                                            />
-                                        )
-                                    }
+                                {filter.type === 'search' && (
+                                    <InputComponent
+                                        disabled={filter.isDisabled || false}
+                                        keyValue={filter.urlKey}
+                                        uid={filter.uid}
+                                        onChange={(key, value) =>
+                                            this.onSearchChange(
+                                                key,
+                                                value,
+                                                true,
+                                                filter.callback,
+                                            )
+                                        }
+                                        value={filterValue}
+                                        type="search"
+                                        label={filter.label}
+                                        onEnterPressed={onEnterPressed}
+                                    />
+                                )}
 
-                                    {
-                                        filter.type === 'checkbox' // TODO: check with team
-                                        && (
-                                            <InputComponent
-                                                disabled={filter.isDisabled || false}
-                                                keyValue={filter.urlKey}
-                                                onChange={(key, checked) => this.toggleCheckbox(checked, filter.urlKey)}
-                                                value={this.props.params[filter.urlKey] === 'true'}
-                                                type="checkbox"
-                                                label={filter.label}
-                                            />
-                                        )
-                                    }
-                                </Fragment>
-                            );
-                        }
-                        return null;
-                    })
-                }
+                                {filter.type === 'checkbox' && ( // TODO: check with team
+                                    <InputComponent
+                                        disabled={filter.isDisabled || false}
+                                        keyValue={filter.urlKey}
+                                        onChange={(key, checked) =>
+                                            this.toggleCheckbox(
+                                                checked,
+                                                filter.urlKey,
+                                            )
+                                        }
+                                        value={
+                                            this.props.params[filter.urlKey] ===
+                                            'true'
+                                        }
+                                        type="checkbox"
+                                        label={filter.label}
+                                    />
+                                )}
+                            </Fragment>
+                        );
+                    }
+                    return null;
+                })}
             </section>
         );
     }
@@ -182,7 +186,8 @@ const MapStateToProps = () => ({});
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    redirectTo: (key, params) => dispatch(replace(`${key}${createUrl(params, '')}`)),
+    redirectTo: (key, params) =>
+        dispatch(replace(`${key}${createUrl(params, '')}`)),
 });
 
 export default connect(MapStateToProps, MapDispatchToProps)(FiltersComponent);

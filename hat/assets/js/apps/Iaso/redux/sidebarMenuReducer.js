@@ -8,7 +8,10 @@ export const sidebarMenuInitialState = {
     isOpen: false,
 };
 
-export const sidebarMenuReducer = (state = sidebarMenuInitialState, action = {}) => {
+export const sidebarMenuReducer = (
+    state = sidebarMenuInitialState,
+    action = {},
+) => {
     switch (action.type) {
         case TOGGLE_SIDEBAR: {
             return {

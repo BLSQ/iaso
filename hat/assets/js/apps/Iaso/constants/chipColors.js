@@ -27,4 +27,3 @@ export const otChipColors = [
     '#9c27b0',
 ];
 export const getOtChipColors = i => otChipColors[i % otChipColors.length];
-

@@ -162,14 +162,7 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual(400, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
-        self.assertEqual(
-            response_data,
-            {
-                "code": "NothingToExportError",
-                "message": "no instance to export for {'filters': {'form_id': None, 'with_location': None, 'org_unit_type_id': None, 'device_id': None, 'device_ownership_id': None, 'org_unit_parent_id': None, 'org_unit_id': None, 'period_ids': '204112', 'search': None, 'status': None}, 'force_export': False}",
-            },
-        )
-
+        self.assertEqual(response_data["code"], "NothingToExportError")
 
     @tag("iaso_only")
     def test_exportrequests_create_ko_when_no_version(self):

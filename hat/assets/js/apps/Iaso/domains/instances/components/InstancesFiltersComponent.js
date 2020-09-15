@@ -22,6 +22,7 @@ import {
     instanceStatus,
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
+import DatesRange from '../../../components/filters/DatesRange';
 import { createUrl } from '../../../utils/fetchData';
 
 import OrgUnitsLevelsFiltersComponent from '../../orgUnits/components/OrgUnitsLevelsFiltersComponent';
@@ -124,6 +125,17 @@ class InstancesFiltersComponent extends Component {
 
         return (
             <div className={classes.marginBottomBig}>
+                <Grid container spacing={4}>
+                    <Grid item xs={8}>
+                        <DatesRange
+                            onChangeDate={(key, value) =>
+                                this.onChange(value, key)
+                            }
+                            dateFrom={params.dateFrom}
+                            dateTo={params.dateTo}
+                        />
+                    </Grid>
+                </Grid>
                 <Grid container spacing={4}>
                     <Grid item xs={4}>
                         <FiltersComponent

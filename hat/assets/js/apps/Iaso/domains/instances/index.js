@@ -7,6 +7,7 @@ import { withStyles, Tabs, Grid, Tab, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import isEqual from 'lodash/isEqual';
+import moment from 'moment';
 
 import {
     resetInstances,
@@ -183,6 +184,14 @@ class Instances extends Component {
             deviceOwnershipId: params.deviceOwnershipId,
             search: params.search,
             orgUnitParentId: fetchLatestOrgUnitLevelId(params.levels),
+            dateFrom: params.dateFrom
+                ? moment(params.dateFrom)
+                      .startOf('day')
+                      .format('YYYY-MM-DD HH:MM')
+                : null,
+            dateTo: params.dateTo
+                ? moment(params.dateTo).endOf('day').format('YYYY-MM-DD HH:MM')
+                : null,
         };
     }
 
@@ -284,9 +293,6 @@ class Instances extends Component {
         } = this.props;
 
         const { tab, tableColumns, visibleColumns } = this.state;
-        const filesList = instancesSmall
-            ? getInstancesFilesList(instancesSmall)
-            : null;
 
         return (
             <section className={classes.relativeContainer}>

@@ -561,9 +561,18 @@ class InstanceQuerySet(models.QuerySet):
         period_ids=None,
         status=None,
         instance_id=None,
-        search=None
+        search=None,
+        from_date=None,
+        to_date=None
     ):
         queryset = self
+
+        if from_date:
+            queryset = queryset.filter(updated_at__gte=from_date)
+
+        if to_date:
+            queryset = queryset.filter(updated_at__lte=to_date)
+
         if period_ids:
             queryset = queryset.filter(period__in=period_ids.split(","))
 

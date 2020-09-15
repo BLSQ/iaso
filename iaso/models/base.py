@@ -568,10 +568,10 @@ class InstanceQuerySet(models.QuerySet):
         queryset = self
 
         if from_date:
-            queryset = queryset.filter(updated_at__gte=from_date)
+            queryset = queryset.filter(created_at__gte=from_date)
 
         if to_date:
-            queryset = queryset.filter(updated_at__lte=to_date)
+            queryset = queryset.filter(created_at__lte=to_date)
 
         if period_ids:
             queryset = queryset.filter(period__in=period_ids.split(","))

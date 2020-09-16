@@ -214,6 +214,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 "source_ref",
                 "created_at",
                 "updated_at",
+                "location",
                 *parent_field_names,
             )
 
@@ -221,12 +222,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(org_unit, **kwargs):
+                location = org_unit.get("location", None)
                 org_unit_values = [
                     org_unit.get("id"),
                     org_unit.get("name"),
                     org_unit.get("org_unit_type__name"),
-                    org_unit.get("latitude"),
-                    org_unit.get("longitude"),
+                    location.y if location else None,
+                    location.x if location else None,
                     org_unit.get("created_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("updated_at").strftime("%Y-%m-%d %H:%M"),
                     org_unit.get("version__data_source__name"),

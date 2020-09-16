@@ -7,8 +7,10 @@ import VisibilityOff from '@material-ui/icons/VisibilityOff';
 import Color from 'color';
 import { baseUrls } from '../../constants/urls';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
+import OrgUnitTooltip from './components/OrgUnitTooltip';
 import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
+import { getStatusMessage, getOrgUnitGroups } from './utils';
 
 export const orgUnitsTableColumns = (
     formatMessage,
@@ -25,6 +27,11 @@ export const orgUnitsTableColumns = (
         {
             Header: formatMessage(MESSAGES.name),
             accessor: 'name',
+            Cell: settings => (
+                <OrgUnitTooltip orgUnit={settings.original}>
+                    <span>{settings.original.name}</span>
+                </OrgUnitTooltip>
+            ),
         },
         {
             Header: formatMessage(MESSAGES.type),
@@ -37,14 +44,7 @@ export const orgUnitsTableColumns = (
             Header: formatMessage(MESSAGES.groups),
             accessor: 'groups',
             Cell: settings => (
-                <section>
-                    {settings.original.groups &&
-                        settings.original.groups.length > 0 &&
-                        settings.original.groups.map(g => g.name).join(', ')}
-                    {(!settings.original.groups ||
-                        settings.original.groups.length === 0) &&
-                        textPlaceholder}
-                </section>
+                <section>{getOrgUnitGroups(settings.original)}</section>
             ),
         },
         {
@@ -62,11 +62,10 @@ export const orgUnitsTableColumns = (
             accessor: 'validation_status',
             Cell: settings => (
                 <span>
-                    {settings.original.validation_status === 'NEW'
-                        ? formatMessage(MESSAGES.new)
-                        : settings.original.validation_status === 'REJECTED'
-                        ? formatMessage(MESSAGES.rejected)
-                        : formatMessage(MESSAGES.validated)}
+                    {getStatusMessage(
+                        settings.original.validation_status,
+                        formatMessage,
+                    )}
                 </span>
             ),
         },

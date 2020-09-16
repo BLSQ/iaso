@@ -1,5 +1,7 @@
+import React from 'react';
 import orderBy from 'lodash/orderBy';
 import { textPlaceholder } from '../../constants/uiConstants';
+import MESSAGES from './messages';
 
 export const getPolygonPositionsFromSimplifiedGeom = field => {
     const positionsArrays = field
@@ -153,3 +155,25 @@ export const getOrgUnitParentsIds = orgUnit =>
     getOrgUnitParents(orgUnit)
         .map(ou => ou.parent_id)
         .reverse();
+
+export const getStatusMessage = (status, formatMessage) => {
+    switch (status) {
+        case 'NEW': {
+            return formatMessage(MESSAGES.new);
+        }
+        case 'REJECTED': {
+            return formatMessage(MESSAGES.rejected);
+        }
+        default:
+            return formatMessage(MESSAGES.validated);
+    }
+};
+
+export const getOrgUnitGroups = orgUnit => (
+    <span>
+        {orgUnit.groups &&
+            orgUnit.groups.length > 0 &&
+            orgUnit.groups.map(g => g.name).join(', ')}
+        {(!orgUnit.groups || orgUnit.groups.length === 0) && textPlaceholder}
+    </span>
+);

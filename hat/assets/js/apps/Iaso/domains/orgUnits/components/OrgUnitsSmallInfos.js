@@ -3,7 +3,11 @@ import PropTypes from 'prop-types';
 import { injectIntl } from 'react-intl';
 
 import MESSAGES from '../messages';
-import { getOrgUnitParentsString } from '../utils';
+import {
+    getOrgUnitParentsString,
+    getStatusMessage,
+    getOrgUnitGroups,
+} from '../utils';
 
 import OrgUnitsSmallInfosRow from './OrgUnitsSmallInfosRow';
 
@@ -36,6 +40,21 @@ const OrgUnitsSmallInfos = ({ orgUnit, intl: { formatMessage } }) => (
             <OrgUnitsSmallInfosRow
                 label={formatMessage(MESSAGES.sourceRef)}
                 value={orgUnit.source_ref}
+            />
+        )}
+        {orgUnit.groups && orgUnit.groups.length > 0 && (
+            <OrgUnitsSmallInfosRow
+                label={formatMessage(MESSAGES.groups)}
+                value={getOrgUnitGroups(orgUnit)}
+            />
+        )}
+        {orgUnit.validation_status && (
+            <OrgUnitsSmallInfosRow
+                label={formatMessage(MESSAGES.status)}
+                value={getStatusMessage(
+                    orgUnit.validation_status,
+                    formatMessage,
+                )}
             />
         )}
     </>

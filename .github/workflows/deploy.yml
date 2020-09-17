@@ -8,9 +8,9 @@ on:
         required: true
         default: Iaso-staging
       slack_channel:
-        description: probably iaso-dev but could be @edarchis
+        description: Slack Channel for notification (iasops by default)
         required: false
-        default: iaso-dev
+        default: iasops
 # Branch is chosen by default in github manual actions
 
 jobs:
@@ -95,5 +95,5 @@ jobs:
           SLACK_USERNAME: github-actions-DEPLOY
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_CHANNEL: ${{ github.event.inputs.slack_channel }}
-          SLACK_TITLE: Iaso successfully deployed on staging
+          SLACK_TITLE: Iaso successfully deployed on ${{ github.event.inputs.environment }}
         if: success()

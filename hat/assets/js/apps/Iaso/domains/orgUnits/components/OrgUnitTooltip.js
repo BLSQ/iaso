@@ -9,6 +9,9 @@ const useStyles = makeStyles(() => ({
         maxWidth: 'none',
         minWidth: 180,
     },
+    container: {
+        cursor: 'pointer',
+    },
 }));
 
 const OrgUnitTooltip = ({ orgUnit, children }) => {
@@ -21,7 +24,7 @@ const OrgUnitTooltip = ({ orgUnit, children }) => {
             enterDelay={500}
             enterNextDelay={500}
         >
-            {children}
+            <section className={classes.container}>{children}</section>
         </Tooltip>
     );
 };

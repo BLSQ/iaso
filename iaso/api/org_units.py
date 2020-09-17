@@ -134,7 +134,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if small_search:
                     res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict(), page.object_list)
+                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(), page.object_list)
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset

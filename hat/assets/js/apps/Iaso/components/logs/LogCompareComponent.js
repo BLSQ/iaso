@@ -127,7 +127,9 @@ const LogCompareComponent = ({
         );
         delete fieldsObject.longitude;
         let fields = getArrayfields(fieldsObject).slice(0, latIndex);
-        fields.push(longitude);
+        if (longitude) {
+            fields.push(longitude);
+        }
         fields = fields.concat(getArrayfields(fieldsObject).slice(latIndex));
         return (
             <Paper className={classes.paper} key={l.pk}>
@@ -194,47 +196,79 @@ const LogCompareComponent = ({
                         <Table className={classes.table}>
                             <TableBody>
                                 {fields.map(field => {
-                                    const { value, fieldKey } = field;
-                                    let isDifferent = false;
-                                    if (Array.isArray(value)) {
-                                        value.forEach((f, index) => {
-                                            if (
-                                                f &&
+                                    if (field) {
+                                        const { value, fieldKey } = field;
+                                        let isDifferent = false;
+                                        if (Array.isArray(value)) {
+                                            value.forEach((f, index) => {
+                                                if (
+                                                    f &&
+                                                    compareLog[i] &&
+                                                    f !==
+                                                        compareLog[i].fields[
+                                                            fieldKey
+                                                        ][index]
+                                                ) {
+                                                    isDifferent = true;
+                                                }
+                                            });
+                                        } else {
+                                            isDifferent =
                                                 compareLog[i] &&
-                                                f !==
-                                                    compareLog[i].fields[
-                                                        fieldKey
-                                                    ][index]
-                                            ) {
-                                                isDifferent = true;
-                                            }
-                                        });
-                                    } else {
+                                                compareLog[i].fields[
+                                                    fieldKey
+                                                ] !== value;
+                                        }
                                         isDifferent =
-                                            compareLog[i] &&
-                                            compareLog[i].fields[fieldKey] !==
-                                                value;
-                                    }
-                                    isDifferent =
-                                        isDifferent &&
-                                        l.pk === compareLog[i].pk &&
-                                        l.model === compareLog[i].model;
-                                    if (!isDifferent && !allFields) return null;
-                                    differenceArray[i][fieldKey] = value;
-                                    if (
-                                        (fieldKey === 'simplified_geom' ||
-                                            fieldKey === 'catchment') &&
-                                        value
-                                    ) {
-                                        const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
-                                            value,
-                                        );
+                                            isDifferent &&
+                                            l.pk === compareLog[i].pk &&
+                                            l.model === compareLog[i].model;
+                                        if (!isDifferent && !allFields)
+                                            return null;
+                                        differenceArray[i][fieldKey] = value;
+                                        if (
+                                            (fieldKey === 'simplified_geom' ||
+                                                fieldKey === 'catchment') &&
+                                            value
+                                        ) {
+                                            const polygonPositions = getPolygonPositionsFromSimplifiedGeom(
+                                                value,
+                                            );
+                                            return (
+                                                <TableRow key={fieldKey}>
+                                                    <TableCell
+                                                        className={classes.cell}
+                                                    >
+                                                        {fieldKey}
+                                                    </TableCell>
+                                                    <TableCell
+                                                        className={
+                                                            isDifferent &&
+                                                            allFields
+                                                                ? classes.isDifferent
+                                                                : null
+                                                        }
+                                                    >
+                                                        <PolygonMap
+                                                            polygonPositions={
+                                                                polygonPositions
+                                                            }
+                                                        />
+                                                    </TableCell>
+                                                </TableRow>
+                                            );
+                                        }
                                         return (
                                             <TableRow key={fieldKey}>
                                                 <TableCell
                                                     className={classes.cell}
                                                 >
-                                                    {fieldKey}
+                                                    {MESSAGES[fieldKey] &&
+                                                        formatMessage(
+                                                            MESSAGES[fieldKey],
+                                                        )}
+                                                    {!MESSAGES[fieldKey] &&
+                                                        fieldKey}
                                                 </TableCell>
                                                 <TableCell
                                                     className={
@@ -243,41 +277,17 @@ const LogCompareComponent = ({
                                                             : null
                                                     }
                                                 >
-                                                    <PolygonMap
-                                                        polygonPositions={
-                                                            polygonPositions
-                                                        }
-                                                    />
+                                                    {renderValue(
+                                                        fieldKey,
+                                                        value,
+                                                        l.fields,
+                                                        classes,
+                                                    )}
                                                 </TableCell>
                                             </TableRow>
                                         );
                                     }
-                                    return (
-                                        <TableRow key={fieldKey}>
-                                            <TableCell className={classes.cell}>
-                                                {MESSAGES[fieldKey] &&
-                                                    formatMessage(
-                                                        MESSAGES[fieldKey],
-                                                    )}
-                                                {!MESSAGES[fieldKey] &&
-                                                    fieldKey}
-                                            </TableCell>
-                                            <TableCell
-                                                className={
-                                                    isDifferent && allFields
-                                                        ? classes.isDifferent
-                                                        : null
-                                                }
-                                            >
-                                                {renderValue(
-                                                    fieldKey,
-                                                    value,
-                                                    l.fields,
-                                                    classes,
-                                                )}
-                                            </TableCell>
-                                        </TableRow>
-                                    );
+                                    return null;
                                 })}
                             </TableBody>
                         </Table>

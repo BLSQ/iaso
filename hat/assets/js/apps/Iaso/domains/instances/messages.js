@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.downloadXml',
         defaultMessage: 'Download XML',
     },
+    viewOrgUnit: {
+        id: 'iaso.label.viewOrgUnit',
+        defaultMessage: 'View Org Unit',
+    },
     dhis2Mappings: {
         id: 'iaso.label.dhis2Mappings',
         defaultMessage: 'DHIS mappings',

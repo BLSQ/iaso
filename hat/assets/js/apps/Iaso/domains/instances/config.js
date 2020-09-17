@@ -31,6 +31,11 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                         icon="xml"
                         tooltipMessage={MESSAGES.downloadXml}
                     />
+                    <IconButtonComponent
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
+                        icon="map"
+                        tooltipMessage={MESSAGES.viewOrgUnit}
+                    />
                 </section>
             ),
         },

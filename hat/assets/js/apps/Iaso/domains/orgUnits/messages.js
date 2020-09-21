@@ -85,6 +85,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'History',
         id: 'iaso.label.history',
     },
+    forms: {
+        defaultMessage: 'Forms',
+        id: 'iaso.label.forms',
+    },
     list: {
         defaultMessage: 'List',
         id: 'iaso.label.list',

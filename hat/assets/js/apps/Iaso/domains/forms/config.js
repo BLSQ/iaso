@@ -9,6 +9,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
 import { textPlaceholder } from '../../constants/uiConstants';
 import { baseUrls } from '../../constants/urls';
+import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 
@@ -125,51 +126,64 @@ const formsTableColumns = (formatMessage, component) => [
         resizable: false,
         sortable: false,
         width: 150,
-        Cell: settings => (
-            <section>
-                {settings.original.instances_count > 0 && (
-                    <IconButtonComponent
-                        url={`${baseUrls.instances}/formId/${settings.original.id}`}
-                        icon="remove-red-eye"
-                        tooltipMessage={MESSAGES.view}
-                    />
-                )}
+        Cell: settings => {
+            let urlToInstances = `${baseUrls.instances}/formId/${settings.original.id}`;
+            if (component.state.currentOrgUnit !== undefined) {
+                const parentIds = getOrgUnitParentsIds(
+                    component.state.currentOrgUnit,
+                );
+                parentIds.push(component.state.currentOrgUnit.id);
+                urlToInstances += `/levels/${parentIds.join(',')}`;
+            }
 
-                <FormDialogComponent
-                    renderTrigger={({ openDialog }) => (
+            return (
+                <section>
+                    {settings.original.instances_count > 0 && (
                         <IconButtonComponent
-                            onClick={openDialog}
-                            icon="edit"
-                            tooltipMessage={MESSAGES.edit}
+                            url={`${urlToInstances}`}
+                            icon="remove-red-eye"
+                            tooltipMessage={MESSAGES.view}
                         />
                     )}
-                    onSuccess={() => component.setState({ isUpdated: true })}
-                    initialData={settings.original}
-                    titleMessage={MESSAGES.update}
-                    key={settings.original.updated_at}
-                />
-                <IconButtonComponent
-                    url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                    icon="dhis"
-                    tooltipMessage={MESSAGES.dhis2Mappings}
-                />
-                {
-                    // TODO: deactivated, hard delete is too dangerous - to discuss
-                    false && (
-                        <DeleteDialog
-                            disabled={settings.original.instances_count > 0}
-                            titleMessage={MESSAGES.deleteFormTitle}
-                            message={MESSAGES.deleteFormText}
-                            onConfirm={closeDialog =>
-                                component
-                                    .deleteForm(settings.original)
-                                    .then(closeDialog)
-                            }
-                        />
-                    )
-                }
-            </section>
-        ),
+
+                    <FormDialogComponent
+                        renderTrigger={({ openDialog }) => (
+                            <IconButtonComponent
+                                onClick={openDialog}
+                                icon="edit"
+                                tooltipMessage={MESSAGES.edit}
+                            />
+                        )}
+                        onSuccess={() =>
+                            component.setState({ isUpdated: true })
+                        }
+                        initialData={settings.original}
+                        titleMessage={MESSAGES.update}
+                        key={settings.original.updated_at}
+                    />
+                    <IconButtonComponent
+                        url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                        icon="dhis"
+                        tooltipMessage={MESSAGES.dhis2Mappings}
+                    />
+                    {
+                        // TODO: deactivated, hard delete is too dangerous - to discuss
+                        false && (
+                            <DeleteDialog
+                                disabled={settings.original.instances_count > 0}
+                                titleMessage={MESSAGES.deleteFormTitle}
+                                message={MESSAGES.deleteFormText}
+                                onConfirm={closeDialog =>
+                                    component
+                                        .deleteForm(settings.original)
+                                        .then(closeDialog)
+                                }
+                            />
+                        )
+                    }
+                </section>
+            );
+        },
     },
 ];
 export default formsTableColumns;

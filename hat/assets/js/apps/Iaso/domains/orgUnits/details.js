@@ -8,6 +8,7 @@ import { bindActionCreators } from 'redux';
 import { withStyles, Box, Tabs, Tab } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
+import CustomTableComponent from '../../components/CustomTableComponent';
 
 import {
     setCurrentOrgUnit,
@@ -21,6 +22,9 @@ import {
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
 } from './actions';
+
+import { setForms as setFormsAction } from '../forms/actions';
+import formsTableColumns from '../forms/config';
 import { resetOrgUnitsLevels } from '../../redux/orgUnitsLevelsReducer';
 
 import { createUrl } from '../../utils/fetchData';
@@ -72,6 +76,7 @@ class OrgUnitDetail extends Component {
             orgUnitModified: false,
             orgUnitLocationModified: false,
             fetchingFilters: true,
+            tableColumns: formsTableColumns(props.intl.formatMessage, this),
         };
     }
 
@@ -334,6 +339,7 @@ class OrgUnitDetail extends Component {
             router,
             prevPathname,
             redirectToPush,
+            reduxPage,
         } = this.props;
         const {
             tab,
@@ -394,6 +400,10 @@ class OrgUnitDetail extends Component {
                             <Tab
                                 value="history"
                                 label={formatMessage(MESSAGES.history)}
+                            />
+                            <Tab
+                                value="forms"
+                                label={formatMessage(MESSAGES.forms)}
                             />
                         </Tabs>
                     )}
@@ -461,6 +471,46 @@ class OrgUnitDetail extends Component {
                                 />
                             </Box>
                         )}
+                        {tab === 'forms' && (
+                            <Box className={classes.containerFullHeightPadded}>
+                                <div className={classes.reactTable}>
+                                    <CustomTableComponent
+                                        isSortable
+                                        pageSize={50}
+                                        showPagination
+                                        endPointUrl={`/api/forms/?orgUnitId=${currentOrgUnit.id}`}
+                                        columns={this.state.tableColumns}
+                                        defaultSorted={[
+                                            {
+                                                id: 'instance_updated_at',
+                                                desc: false,
+                                            },
+                                        ]}
+                                        params={params}
+                                        defaultPath={baseUrl}
+                                        dataKey="forms"
+                                        canSelect={false}
+                                        multiSort
+                                        onDataLoaded={(
+                                            newFormsList,
+                                            count,
+                                            pages,
+                                        ) => {
+                                            this.props.setForms(
+                                                newFormsList,
+                                                true,
+                                                params,
+                                                count,
+                                                pages,
+                                            );
+                                            this.setState({ isUpdated: false });
+                                        }}
+                                        reduxPage={reduxPage}
+                                        isUpdated={this.state.isUpdated}
+                                    />
+                                </div>
+                            </Box>
+                        )}
                     </section>
                 )}
             </Fragment>
@@ -471,6 +521,7 @@ OrgUnitDetail.defaultProps = {
     currentOrgUnit: undefined,
     sources: [],
     prevPathname: null,
+    reduxPage: undefined,
 };
 
 OrgUnitDetail.propTypes = {
@@ -497,6 +548,8 @@ OrgUnitDetail.propTypes = {
     setGroups: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     createOrgUnit: PropTypes.func.isRequired,
+    setForms: PropTypes.func.isRequired,
+    reduxPage: PropTypes.object,
 };
 
 const MapStateToProps = state => ({
@@ -525,6 +578,7 @@ const MapDispatchToProps = dispatch => ({
     setGroups: groups => dispatch(setGroups(groups)),
     ...bindActionCreators(
         {
+            setForms: setFormsAction,
             saveOrgUnit: saveOrgUnitAction,
             createOrgUnit: createOrgUnitAction,
         },

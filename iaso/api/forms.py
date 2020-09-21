@@ -186,6 +186,10 @@ class FormsViewSet(ModelViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
 
+        org_unit_id = self.request.query_params.get("orgUnitId", None)
+        if org_unit_id:
+            queryset = queryset.filter(instances__org_unit__id=org_unit_id)
+
         # TODO: allow this only from a predefined list for security purposes
         order = self.request.query_params.get("order", "instance_updated_at").split(",")
         queryset = queryset.order_by(*order)

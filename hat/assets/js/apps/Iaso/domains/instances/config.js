@@ -33,7 +33,7 @@ const instancesTableColumns = (formatMessage = () => ({})) => {
                     />
                     <IconButtonComponent
                         url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.org_unit.id}`}
-                        icon="map"
+                        icon="orgUnit"
                         tooltipMessage={MESSAGES.viewOrgUnit}
                     />
                 </section>

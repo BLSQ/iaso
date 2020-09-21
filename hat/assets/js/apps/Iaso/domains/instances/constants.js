@@ -46,9 +46,8 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'org_unit',
         accessor: 'org_unit__name',
-        // Creates Warning: validateDOMNesting(...): <section> cannot appear as a descendant of <p>.
         render: value => (
-            <OrgUnitTooltip key={value.id} orgUnit={value}>
+            <OrgUnitTooltip key={value.id} orgUnit={value} domComponent="span">
                 <>{getOrgunitMessage(value, true)}</>
             </OrgUnitTooltip>
         ),

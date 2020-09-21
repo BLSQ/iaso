@@ -12,6 +12,7 @@ import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
+import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -25,6 +26,7 @@ const ICON_VARIANTS = {
     map: Map,
     xml: XmlSvg,
     dhis: DHIS2Svg,
+    orgUnit: OrgUnitSvg,
 };
 
 const styles = theme => ({

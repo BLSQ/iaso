@@ -2,7 +2,7 @@ import React from 'react';
 
 import { FormattedMessage } from 'react-intl';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
-import OrgUnitDisplay from '../orgUnits/components/OrgUnitDisplay';
+import OrgUnitTooltip from '../orgUnits/components/OrgUnitTooltip';
 import { Period } from '../periods/models';
 import { getOrgunitMessage } from '../orgUnits/utils';
 import MESSAGES from './messages';
@@ -46,8 +46,11 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'org_unit',
         accessor: 'org_unit__name',
-        render: value => <OrgUnitDisplay orgUnit={value} />,
-        title: value => getOrgunitMessage(value),
+        render: value => (
+            <OrgUnitTooltip key={value.id} orgUnit={value} domComponent="span">
+                <>{getOrgunitMessage(value, true)}</>
+            </OrgUnitTooltip>
+        ),
         tableOrder: 2,
         type: 'location',
     },

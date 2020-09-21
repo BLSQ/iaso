@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { createElement } from 'react';
 import PropTypes from 'prop-types';
 import { Tooltip } from '@material-ui/core';
 import { makeStyles } from '@material-ui/core/styles';
@@ -14,7 +14,7 @@ const useStyles = makeStyles(() => ({
     },
 }));
 
-const OrgUnitTooltip = ({ orgUnit, children }) => {
+const OrgUnitTooltip = ({ orgUnit, children, domComponent }) => {
     const classes = useStyles();
     return (
         <Tooltip
@@ -24,17 +24,23 @@ const OrgUnitTooltip = ({ orgUnit, children }) => {
             enterDelay={500}
             enterNextDelay={500}
         >
-            <section className={classes.container}>{children}</section>
+            {createElement(
+                domComponent,
+                { className: classes.container },
+                children,
+            )}
         </Tooltip>
     );
 };
 OrgUnitTooltip.defaultProps = {
     children: null,
+    domComponent: 'section',
 };
 
 OrgUnitTooltip.propTypes = {
     orgUnit: PropTypes.object.isRequired,
     children: PropTypes.object,
+    domComponent: PropTypes.string,
 };
 
 export default OrgUnitTooltip;

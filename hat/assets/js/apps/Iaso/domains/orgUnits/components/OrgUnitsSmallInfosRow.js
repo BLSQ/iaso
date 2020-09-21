@@ -16,9 +16,7 @@ const OrgUnitsSmallInfosRow = ({ label, value, classes }) => (
             justify="flex-end"
             alignContent="flex-start"
         >
-            <span className={classes.label}>{label}
-:
-</span>
+            <span className={classes.label}>{`${label} :`}</span>
         </Grid>
         <Grid
             xs={7}
@@ -34,7 +32,7 @@ const OrgUnitsSmallInfosRow = ({ label, value, classes }) => (
 
 OrgUnitsSmallInfosRow.propTypes = {
     label: PropTypes.string.isRequired,
-    value: PropTypes.string.isRequired,
+    value: PropTypes.oneOfType([PropTypes.string, PropTypes.object]).isRequired,
     classes: PropTypes.object.isRequired,
 };
 

@@ -278,6 +278,13 @@ class Instances extends Component {
         redirectToReplace(baseUrl, newParams);
     }
 
+    openInstanceDetails(instance) {
+        this.props.redirectTo(
+            `${baseUrls.instanceDetail}/instanceId/${instance.id}`,
+            {},
+        );
+    }
+
     render() {
         const {
             classes,
@@ -375,8 +382,11 @@ class Instances extends Component {
                                 dataKey="instances"
                                 multiSort={false}
                                 fetchDatas={false}
-                                canSelect={false}
+                                canSelect
                                 reduxPage={reduxPage}
+                                onRowClicked={instance =>
+                                    this.openInstanceDetails(instance)
+                                }
                             />
                         </div>
                     )}

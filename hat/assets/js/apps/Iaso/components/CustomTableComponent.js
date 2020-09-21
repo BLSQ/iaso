@@ -210,11 +210,13 @@ class CustomTableComponent extends React.Component {
         this.props.onDataUpdated(false);
     }
 
-    onRowClicked(state, rowInfo) {
+    onRowClicked(state, rowInfo, column) {
         return {
             onClick: e => {
                 e.preventDefault();
-                this.props.onRowClicked(rowInfo.original, state, e);
+                if (column.id !== 'actions') {
+                    this.props.onRowClicked(rowInfo.original, state, e);
+                }
             },
         };
     }
@@ -284,8 +286,8 @@ class CustomTableComponent extends React.Component {
 
         if (this.props.canSelect) {
             extraProps = {
-                getTdProps: (state, rowInfo) =>
-                    this.onRowClicked(state, rowInfo),
+                getTdProps: (state, rowInfo, column) =>
+                    this.onRowClicked(state, rowInfo, column),
             };
         } else {
             extraProps = {

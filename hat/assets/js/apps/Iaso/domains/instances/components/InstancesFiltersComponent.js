@@ -145,7 +145,7 @@ class InstancesFiltersComponent extends Component {
                                 setInstancesFilterUpdated(true)
                             }
                             filters={[
-                                periods(periodsList),
+                                periodsList.length > 0 && periods(periodsList),
                                 location(formatMessage),
                                 orgUnitType(orgUnitTypes),
                             ]}

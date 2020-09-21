@@ -262,17 +262,27 @@ class Instances extends Component {
             intl: { formatMessage },
             redirectToReplace,
             params,
+            currentForm,
         } = this.props;
+
+        const tempVisibleColumns =
+            currentForm.period_type === null
+                ? visibleColumns.filter(column => column.key !== 'period')
+                : visibleColumns;
+
         const newParams = {
             ...params,
-            columns: visibleColumns
+            columns: tempVisibleColumns
                 .filter(c => c.active)
                 .map(c => c.key)
                 .join(','),
         };
         this.setState({
-            visibleColumns,
-            tableColumns: getInstancesColumns(formatMessage, visibleColumns),
+            visibleColumns: tempVisibleColumns,
+            tableColumns: getInstancesColumns(
+                formatMessage,
+                tempVisibleColumns,
+            ),
         });
 
         redirectToReplace(baseUrl, newParams);

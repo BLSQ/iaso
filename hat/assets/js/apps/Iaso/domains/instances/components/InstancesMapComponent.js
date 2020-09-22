@@ -34,26 +34,15 @@ const boundsOptions = { padding: [50, 50] };
 const snackbarKey = 'noInstancesOnMap';
 
 class InstancesMap extends Component {
-    constructor(props) {
-        super(props);
-        this.state = {
-            zoomBar: null,
-        };
-    }
-
-    componentDidUpdate() {
+    componentDidMount() {
         const {
             intl: { formatMessage },
         } = this.props;
         this.setWarning();
-        const { zoomBar } = this.state;
-        if (!zoomBar && this.map) {
-            const newZoomBar = customZoomBar(formatMessage, () =>
-                this.fitToBounds(),
-            );
-            newZoomBar.addTo(this.map.leafletElement);
-            this.setZoomBar(newZoomBar);
-        }
+        const newZoomBar = customZoomBar(formatMessage, () =>
+            this.fitToBounds(),
+        );
+        newZoomBar.addTo(this.map.leafletElement);
     }
 
     componentWillUnmount() {
@@ -63,12 +52,6 @@ class InstancesMap extends Component {
         if (warningDisplayed) {
             dispatch(closeFixedSnackbar(snackbarKey));
         }
-    }
-
-    setZoomBar(zoomBar) {
-        this.setState({
-            zoomBar,
-        });
     }
 
     setWarning() {

@@ -255,12 +255,16 @@ class DynamicTabsComponent extends Component {
                                         }
                                     >
                                         <span
-                                            style={{
-                                                backgroundColor: `#${item.color}`,
-                                                border: `2px solid ${Color(
-                                                    `#${item.color}`,
-                                                ).darken(0.5)}`,
-                                            }}
+                                            style={
+                                                item.color
+                                                    ? {
+                                                          backgroundColor: `#${item.color}`,
+                                                          border: `2px solid ${Color(
+                                                              `#${item.color}`,
+                                                          ).darken(0.5)}`,
+                                                      }
+                                                    : {}
+                                            }
                                             className={classes.roundColor}
                                         />
                                         {baseLabel}

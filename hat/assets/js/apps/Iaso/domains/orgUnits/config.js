@@ -133,12 +133,16 @@ export const orgUnitsTableColumns = (
             Cell: settings => (
                 <section>
                     <span
-                        style={{
-                            backgroundColor: `#${settings.original.color}`,
-                            border: `2px solid ${Color(
-                                `#${settings.original.color}`,
-                            ).darken(0.5)}`,
-                        }}
+                        style={
+                            settings.original.color
+                                ? {
+                                      backgroundColor: `#${settings.original.color}`,
+                                      border: `2px solid ${Color(
+                                          `#${settings.original.color}`,
+                                      ).darken(0.5)}`,
+                                  }
+                                : {}
+                        }
                         className={classes.roundColor}
                     />
                 </section>

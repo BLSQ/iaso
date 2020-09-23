@@ -352,7 +352,7 @@ class OrgUnit(models.Model):
         return res
 
     def as_dict_with_parents(self):
-        return {
+        res = {
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
@@ -382,9 +382,12 @@ class OrgUnit(models.Model):
             "version": self.version.number if self.version else None,
             "groups": [group.as_dict() for group in self.groups.all()],
         }
+        if hasattr(self, "search_index"):
+            res["search_index"] = self.search_index
+        return res
 
     def as_small_dict(self):
-        return {
+        res = {
             "name": self.name,
             "id": self.id,
             "parent_id": self.parent_id,
@@ -397,6 +400,9 @@ class OrgUnit(models.Model):
             if self.org_unit_type
             else None,
         }
+        if hasattr(self, "search_index"):
+            res["search_index"] = self.search_index
+        return res
 
     def as_dict_for_csv(self):
         return {

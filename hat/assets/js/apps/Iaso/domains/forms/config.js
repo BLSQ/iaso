@@ -13,7 +13,12 @@ import { getOrgUnitParentsIds } from '../orgUnits/utils';
 
 import MESSAGES from './messages';
 
-const formsTableColumns = (formatMessage, component) => [
+const formsTableColumns = (
+    formatMessage,
+    component,
+    showEditAction = true,
+    showMappingAction = true,
+) => [
     {
         Header: formatMessage(MESSAGES.name),
         accessor: 'name',
@@ -145,27 +150,30 @@ const formsTableColumns = (formatMessage, component) => [
                             tooltipMessage={MESSAGES.view}
                         />
                     )}
-
-                    <FormDialogComponent
-                        renderTrigger={({ openDialog }) => (
-                            <IconButtonComponent
-                                onClick={openDialog}
-                                icon="edit"
-                                tooltipMessage={MESSAGES.edit}
-                            />
-                        )}
-                        onSuccess={() =>
-                            component.setState({ isUpdated: true })
-                        }
-                        initialData={settings.original}
-                        titleMessage={MESSAGES.update}
-                        key={settings.original.updated_at}
-                    />
-                    <IconButtonComponent
-                        url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
-                        icon="dhis"
-                        tooltipMessage={MESSAGES.dhis2Mappings}
-                    />
+                    {showEditAction && (
+                        <FormDialogComponent
+                            renderTrigger={({ openDialog }) => (
+                                <IconButtonComponent
+                                    onClick={openDialog}
+                                    icon="edit"
+                                    tooltipMessage={MESSAGES.edit}
+                                />
+                            )}
+                            onSuccess={() =>
+                                component.setState({ isUpdated: true })
+                            }
+                            initialData={settings.original}
+                            titleMessage={MESSAGES.update}
+                            key={settings.original.updated_at}
+                        />
+                    )}
+                    {showMappingAction && (
+                        <IconButtonComponent
+                            url={`/forms/mappings/formId/${settings.original.id}/order/form_version__form__name,form_version__version_id,mapping__mapping_type/pageSize/20/page/1`}
+                            icon="dhis"
+                            tooltipMessage={MESSAGES.dhis2Mappings}
+                        />
+                    )}
                     {
                         // TODO: deactivated, hard delete is too dangerous - to discuss
                         false && (

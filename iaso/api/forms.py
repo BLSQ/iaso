@@ -154,6 +154,10 @@ class FormsViewSet(ModelViewSet):
         queryset = Form.objects.filter_for_user_and_app_id(
             self.request.user, self.request.query_params.get("app_id")
         )
+        org_unit_id = self.request.query_params.get("orgUnitId", None)
+        if org_unit_id:
+            queryset = queryset.filter(instances__org_unit__id=org_unit_id)
+
         queryset = queryset.annotate(instance_updated_at=Max("instances__updated_at"))
         queryset = queryset.annotate(
             instances_count=Count(
@@ -186,9 +190,6 @@ class FormsViewSet(ModelViewSet):
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
 
-        org_unit_id = self.request.query_params.get("orgUnitId", None)
-        if org_unit_id:
-            queryset = queryset.filter(instances__org_unit__id=org_unit_id)
 
         # TODO: allow this only from a predefined list for security purposes
         order = self.request.query_params.get("order", "instance_updated_at").split(",")

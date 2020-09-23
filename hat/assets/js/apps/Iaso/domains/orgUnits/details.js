@@ -76,7 +76,12 @@ class OrgUnitDetail extends Component {
             orgUnitModified: false,
             orgUnitLocationModified: false,
             fetchingFilters: true,
-            tableColumns: formsTableColumns(props.intl.formatMessage, this),
+            tableColumns: formsTableColumns(
+                props.intl.formatMessage,
+                this,
+                false,
+                false,
+            ),
         };
     }
 

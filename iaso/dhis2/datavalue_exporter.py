@@ -899,7 +899,7 @@ class DataValueExporter:
         export_request.exported_count = stats["exported_count"]
         export_request.save()
 
-    def export_instances(self, export_request, export, page_size=50):
+    def export_instances(self, export_request, export, page_size=25):
         export_request.status = RUNNING
         export_request.started_at = timezone.now()
         export_request.save()

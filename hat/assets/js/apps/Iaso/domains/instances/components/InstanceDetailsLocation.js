@@ -29,6 +29,7 @@ const InstanceDetailsLocation = ({
     if (currentInstance.org_unit) {
         orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
     }
+
     return (
         <>
             <div className={classes.infosContainer}>
@@ -40,6 +41,12 @@ const InstanceDetailsLocation = ({
                         value={<OrgUnitDisplay orgUnit={ou} withType={false} />}
                     />
                 ))}
+                {currentInstance.org_unit && (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.source_ref)}
+                        value={currentInstance.org_unit.source_ref}
+                    />
+                )}
                 {fields.map(f => {
                     if (f.key !== 'org_unit') {
                         return (
@@ -59,6 +66,7 @@ const InstanceDetailsLocation = ({
                             />
                         );
                     }
+
                     return null;
                 })}
             </div>

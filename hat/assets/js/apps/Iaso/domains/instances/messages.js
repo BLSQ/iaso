@@ -93,6 +93,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.instance.files',
         defaultMessage: 'Files',
     },
+    source_ref: {
+        id: 'iaso.label.source_ref',
+        defaultMessage: 'Source Refence',
+    },
     latitude: {
         id: 'iaso.label.latitude',
         defaultMessage: 'Latitude',

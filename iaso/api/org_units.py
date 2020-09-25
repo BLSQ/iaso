@@ -700,18 +700,8 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
             queryset = queryset.filter(parent__id=parent_id)
 
     if org_unit_parent_id:
-        queryset = queryset.filter(
-            Q(id=org_unit_parent_id)
-            | Q(parent__id=org_unit_parent_id)
-            | Q(parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
-            | Q(
-                parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-            )
-        )
+        parent = OrgUnit.objects.get(id=org_unit_parent_id)
+        queryset = queryset.hierarchy(parent)
 
     if linked_to:
         queryset = queryset.filter(

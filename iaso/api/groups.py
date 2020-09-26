@@ -70,12 +70,15 @@ class GroupsViewSet(ModelViewSet):
     http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
 
     def get_queryset(self):
+        light = self.request.GET.get("light", False)
         profile = self.request.user.iaso_profile
         queryset = (
             Group.objects.filter(
                 source_version__data_source__projects__in=profile.account.project_set.all()
             )
-        ).annotate(org_unit_count=Count("org_units"))
+        )
+        if not light:
+            queryset = queryset.annotate(org_unit_count=Count("org_units"))
 
         version = self.request.query_params.get("version", None)
         if version:

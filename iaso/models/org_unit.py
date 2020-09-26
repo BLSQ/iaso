@@ -344,34 +344,27 @@ class OrgUnit(models.Model):
             "version": self.version.number if self.version else None,
         }
 
-        if with_groups:
-            res["groups"] = [group.as_dict() for group in self.groups.all()]
+
 
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res
 
-    def as_dict_with_parents(self):
+    def as_dict_with_parents(self, light=False):
         res = {
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
-            "source": self.version.data_source.name if self.version else None,
-            "source_id": self.version.data_source.id if self.version else None,
+
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents() if self.parent else None,
+            "parent": self.parent.as_dict_with_parents(light=True) if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
-            "org_unit_type": self.org_unit_type.as_dict()
-            if self.org_unit_type
-            else None,
+
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -379,9 +372,15 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-            "version": self.version.number if self.version else None,
-            "groups": [group.as_dict() for group in self.groups.all()],
+
         }
+        if not light: #avoiding joins here
+            res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
+            res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
+            res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
+            res["source"] = self.version.data_source.name if self.version else None
+            res["source_id"] = self.version.data_source.id if self.version else None
+            res["version"] = self.version.number if self.version else None
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res

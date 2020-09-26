@@ -361,17 +361,21 @@ class Group(models.Model):
     def __str__(self):
         return "%s | %s " % (self.name, self.source_version)
 
-    def as_dict(self):
-        return {
+    def as_dict(self, with_counts=True):
+        res = {
             "id": self.id,
             "name": self.name,
             "source_ref": self.source_ref,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
-            "org_unit_count": self.org_units.count(),
+
         }
 
+        if with_counts:
+            res["org_unit_count"] = self.org_units.count()
+
+        return res
 
 class GroupSet(models.Model):
     name = models.TextField()

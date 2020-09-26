@@ -16,6 +16,8 @@ from iaso.models import (
     BulkOperation,
 )
 from django.contrib.gis.geos import Point
+from django.db import connection
+
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from iaso.utils import geojson_queryset
@@ -134,12 +136,16 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 if small_search:
                     res["orgunits"] = map(lambda x: x.as_small_dict(), page.object_list)
                 else:
-                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(), page.object_list)
+                    res["orgunits"] = map(lambda x: x.as_dict_with_parents(light=False), page.object_list)
+
                 res["has_next"] = page.has_next()
                 res["has_previous"] = page.has_previous()
                 res["page"] = page_offset
                 res["pages"] = paginator.num_pages
                 res["limit"] = limit
+
+                res["orgunits"] = list(res["orgunits"])
+
                 return Response(res)
             elif with_shapes:
 
@@ -478,7 +484,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
 
-        res = org_unit.as_dict_with_parents()
+        res = org_unit.as_dict_with_parents(light=False)
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:

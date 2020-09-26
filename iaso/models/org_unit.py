@@ -350,7 +350,7 @@ class OrgUnit(models.Model):
             res["search_index"] = self.search_index
         return res
 
-    def as_dict_with_parents(self, light=False):
+    def as_dict_with_parents(self, light=False, light_parents=True):
         res = {
             "name": self.name,
             "short_name": self.name,
@@ -362,7 +362,7 @@ class OrgUnit(models.Model):
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents(light=True) if self.parent else None,
+            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents) if self.parent else None,
             "org_unit_type_id": self.org_unit_type_id,
 
             "created_at": self.created_at.timestamp() if self.created_at else None,

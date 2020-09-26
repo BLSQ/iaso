@@ -484,7 +484,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
 
-        res = org_unit.as_dict_with_parents(light=False)
+        res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None
         if org_unit.simplified_geom or org_unit.catchment:

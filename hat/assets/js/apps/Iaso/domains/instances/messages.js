@@ -95,7 +95,7 @@ const MESSAGES = defineMessages({
     },
     source_ref: {
         id: 'iaso.label.source_ref',
-        defaultMessage: 'Source Refence',
+        defaultMessage: 'Source Reference',
     },
     latitude: {
         id: 'iaso.label.latitude',

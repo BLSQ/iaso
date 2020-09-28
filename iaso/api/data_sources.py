@@ -1,4 +1,5 @@
 from rest_framework import viewsets, permissions
+from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from .common import HasPermission
@@ -12,6 +13,7 @@ class DataSourceViewSet(viewsets.ViewSet):
     "menupermissions.iaso_org_units", and "menupermissions.iaso_links" permissions
 
     GET /api/datasources/
+    GET /api/datasources/<id>
     """
 
     permission_classes = [
@@ -39,3 +41,9 @@ class DataSourceViewSet(viewsets.ViewSet):
         return Response(
             {"sources": [source.as_dict() for source in sources.order_by("name")]}
         )
+
+    def retrieve(self, request, pk=None):
+        source = get_object_or_404(DataSource.objects.all(), pk=pk)
+        self.check_object_permissions(request, source)
+
+        return Response(source.as_dict())

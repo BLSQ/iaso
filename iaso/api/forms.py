@@ -62,7 +62,7 @@ class FormSerializer(serializers.ModelSerializer):
         source="org_unit_types",
         write_only=True,
         many=True,
-        allow_empty=False,
+        allow_empty=True,
         queryset=OrgUnitType.objects.all(),
     )
     projects = ProjectSerializer(read_only=True, many=True)

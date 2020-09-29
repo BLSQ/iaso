@@ -194,7 +194,7 @@ export const fetchAssociatedOrgUnits = (
     orgUnit,
     fitToBounds = () => null,
 ) => {
-    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&validated=False&linkSource=${source.id}&withShapes=true&validated=both`;
+    const url = `/api/orgunits?linkedTo=${orgUnit.id}&linkValidated=False&linkSource=${source.id}&validation_status=all`;
 
     return getRequest(url)
         .then(data => {

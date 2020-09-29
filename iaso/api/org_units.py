@@ -711,9 +711,13 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
 
     if linked_to:
         queryset = queryset.filter(
-            destination_set__destination_id=linked_to,
-            destination_set__validated=link_validated,
+            destination_set__destination_id=linked_to
         )
+        if link_validated != "all":
+            queryset = queryset.filter(
+                destination_set__validated=link_validated
+            )
+
         if link_source:
             queryset = queryset.filter(version__data_source_id=link_source)
         if link_version:

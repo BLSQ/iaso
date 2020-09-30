@@ -332,7 +332,6 @@ class FormDialogComponent extends Component {
                                 value: o.id,
                             }))}
                             label={MESSAGES.orgUnitsTypes}
-                            required
                         />
                         <InputComponent
                             keyValue="device_field"

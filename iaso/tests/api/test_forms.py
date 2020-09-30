@@ -322,14 +322,13 @@ class FormsAPITestCase(APITestCase):
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
             f"/api/forms/",
-            data={"project_ids": [], "org_unit_type_ids": []},
+            data={"project_ids": []},
             format="json",
         )
         self.assertJSONResponse(response, 400)
 
         response_data = response.json()
         self.assertHasError(response_data, "project_ids")
-        self.assertHasError(response_data, "org_unit_type_ids")
 
     @tag("iaso_only")
     def test_forms_create_invalid_3(self):

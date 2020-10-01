@@ -359,7 +359,7 @@ class OrgUnit(models.Model):
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
-            "source_url": self.version.data_source.credentials.url if self.version else None,
+            "source_url": self.version.data_source.credentials.url if self.version and self.version.data_source and self.version.data_source.credentials else None,
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,

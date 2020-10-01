@@ -5,6 +5,7 @@ import { withStyles } from '@material-ui/core';
 
 import MarkerMap from '../../../components/maps/MarkerMapComponent';
 import OrgUnitDisplay from '../../orgUnits/components/OrgUnitDisplay';
+import OrgUnitSourceRefDisplay from '../../orgUnits/components/OrgUnitSourceRefDisplay';
 
 import { getOrgUnitsTree, getOrgunitMessage } from '../../orgUnits/utils';
 
@@ -29,6 +30,7 @@ const InstanceDetailsLocation = ({
     if (currentInstance.org_unit) {
         orgUnitTree = getOrgUnitsTree(currentInstance.org_unit);
     }
+
     return (
         <>
             <div className={classes.infosContainer}>
@@ -40,6 +42,20 @@ const InstanceDetailsLocation = ({
                         value={<OrgUnitDisplay orgUnit={ou} withType={false} />}
                     />
                 ))}
+                {currentInstance.org_unit && (
+                    <InstanceDetailsField
+                        label={formatMessage(MESSAGES.source_ref)}
+                        valueTitle={getOrgunitMessage(
+                            currentInstance.org_unit,
+                            false,
+                        )}
+                        value={
+                            <OrgUnitSourceRefDisplay
+                                orgUnit={currentInstance.org_unit}
+                            />
+                        }
+                    />
+                )}
                 {fields.map(f => {
                     if (f.key !== 'org_unit') {
                         return (
@@ -59,6 +75,7 @@ const InstanceDetailsLocation = ({
                             />
                         );
                     }
+
                     return null;
                 })}
             </div>

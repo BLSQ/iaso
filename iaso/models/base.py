@@ -110,6 +110,7 @@ class DataSource(models.Model):
             "name": self.name,
             "description": self.description,
             "id": self.id,
+            "url": self.credentials.url if self.credentials else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "versions": [v.as_dict_without_data_source() for v in versions],

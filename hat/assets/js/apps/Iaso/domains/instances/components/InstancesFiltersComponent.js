@@ -20,6 +20,7 @@ import {
     deviceOwnership,
     periods,
     instanceStatus,
+    instanceDeleted,
 } from '../../../constants/filters';
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 import DatesRange from '../../../components/filters/DatesRange';
@@ -133,6 +134,16 @@ class InstancesFiltersComponent extends Component {
                             }
                             dateFrom={params.dateFrom}
                             dateTo={params.dateTo}
+                        />
+                    </Grid>
+                    <Grid item xs={4}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            onFilterChanged={() =>
+                                setInstancesFilterUpdated(true)
+                            }
+                            filters={[instanceDeleted()]}
                         />
                     </Grid>
                 </Grid>

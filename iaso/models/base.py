@@ -567,7 +567,8 @@ class InstanceQuerySet(models.QuerySet):
         instance_id=None,
         search=None,
         from_date=None,
-        to_date=None
+        to_date=None,
+        show_deleted=None
     ):
         queryset = self
 
@@ -635,8 +636,12 @@ class InstanceQuerySet(models.QuerySet):
             statuses = status.split(",")
             queryset = queryset.filter(status__in=statuses)
 
-        # whatever don't show deleted submissions
-        queryset = queryset.exclude(deleted=True)
+        if show_deleted:
+            queryset = queryset.filter(deleted=True)
+        else:
+            # whatever don't show deleted submissions
+            queryset = queryset.exclude(deleted=True)
+
 
         if search:
             if search.startswith("ids:"):

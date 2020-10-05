@@ -241,6 +241,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Delete instance',
         id: 'iaso.instance.instanceDeleteAction',
     },
+    instanceRestoreAction: {
+        defaultMessage: 'Restore instance',
+        id: 'iaso.instance.instanceRestoreAction',
+    },
     instanceEditAction: {
         defaultMessage: 'Edit any answer in Enketo',
         id: 'iaso.instance.instanceEditAction',

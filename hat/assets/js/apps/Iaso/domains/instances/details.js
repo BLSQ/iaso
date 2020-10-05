@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
+import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import { withStyles, Box, Grid } from '@material-ui/core';
 
@@ -13,6 +14,7 @@ import {
     fetchInstanceDetail as fetchInstanceDetailAction,
     fetchEditUrl as fetchEditUrlAction,
     softDeleteInstance as softDeleteAction,
+    restoreInstance as restoreInstanceAction,
     reAssignInstance as reAssignInstanceAction,
 } from './actions';
 import { redirectToReplace as redirectToReplaceAction } from '../../routing/actions';
@@ -75,9 +77,17 @@ const actions = (currentInstance, reAssignInstance) => [
         disabled: currentInstance && currentInstance.deleted,
     },
     {
-        id: 'instanceDeleteAction',
-        icon: <DeleteIcon />,
-        disabled: currentInstance && currentInstance.deleted,
+        id:
+            currentInstance && currentInstance.deleted
+                ? 'instanceRestoreAction'
+                : 'instanceDeleteAction',
+        icon:
+            currentInstance && currentInstance.deleted ? (
+                <RestoreFromTrashIcon />
+            ) : (
+                <DeleteIcon />
+            ),
+        disabled: false,
     },
 ];
 
@@ -108,6 +118,12 @@ class InstanceDetails extends Component {
             this.props.currentInstance
         ) {
             this.props.softDelete(this.props.currentInstance);
+        }
+        if (
+            action.id === 'instanceRestoreAction' &&
+            this.props.currentInstance
+        ) {
+            this.props.restoreInstance(this.props.currentInstance);
         }
     }
 
@@ -258,6 +274,7 @@ InstanceDetails.propTypes = {
     setCurrentInstance: PropTypes.func.isRequired,
     fetchEditUrl: PropTypes.func.isRequired,
     softDelete: PropTypes.func.isRequired,
+    restoreInstance: PropTypes.func.isRequired,
     reAssignInstance: PropTypes.func.isRequired,
 };
 
@@ -273,6 +290,7 @@ const MapDispatchToProps = dispatch => ({
             fetchInstanceDetail: fetchInstanceDetailAction,
             fetchEditUrl: fetchEditUrlAction,
             softDelete: softDeleteAction,
+            restoreInstance: restoreInstanceAction,
             redirectToReplace: redirectToReplaceAction,
             setCurrentInstance: setCurrentInstanceAction,
             reAssignInstance: reAssignInstanceAction,

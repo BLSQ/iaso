@@ -192,6 +192,7 @@ class Instances extends Component {
             dateTo: params.dateTo
                 ? moment(params.dateTo).endOf('day').format('YYYY-MM-DD HH:MM')
                 : null,
+            showDeleted: params.showDeleted,
         };
     }
 

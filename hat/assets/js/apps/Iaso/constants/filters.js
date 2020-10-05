@@ -335,3 +335,9 @@ export const instanceStatus = options => ({
     label: MESSAGES.status,
     type: 'select',
 });
+
+export const instanceDeleted = () => ({
+    urlKey: 'showDeleted',
+    label: MESSAGES.showDeleted,
+    type: 'checkbox',
+});

@@ -140,6 +140,10 @@ export const instancesPath = {
             isRequired: false,
             key: 'search',
         },
+        {
+            isRequired: false,
+            key: 'showDeleted',
+        },
     ],
 };
 

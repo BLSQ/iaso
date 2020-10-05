@@ -115,8 +115,27 @@ export const softDeleteInstance = currentInstance => dispatch => {
         });
 };
 
+export const restoreInstance = currentInstance => dispatch => {
+    dispatch(setInstancesFetching(true));
+    patchRequest(`/api/instances/${currentInstance.id}/`, { deleted: false })
+        .then(res => {
+            dispatch(fetchInstanceDetail(currentInstance.id));
+        })
+        .catch(err =>
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('restoreInstanceError', null, err),
+                ),
+            ),
+        )
+        .then(() => {
+            dispatch(setInstancesFetching(false));
+        });
+};
+
 export const reAssignInstance = (currentInstance, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
+
     if (!payload.period) delete payload.period;
     patchRequest(`/api/instances/${currentInstance.id}/`, payload)
         .then(res => {

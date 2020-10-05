@@ -119,6 +119,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.assignInstanceError',
         defaultMessage: 'An error occured while saving the instance',
     },
+    restoreInstanceError: {
+        id: 'iaso.snackBar.restoreInstanceError',
+        defaultMessage: 'An error occured while restoring the instance',
+    },
     createExportRequestErrorNothingToExportError: {
         id: 'iaso.snackBar.createExportRequestErrorNothingToExportError',
         defaultMessage:

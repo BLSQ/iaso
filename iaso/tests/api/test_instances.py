@@ -89,6 +89,15 @@ class InstancesAPITestCase(APITestCase):
             # single_per_period=True,
         )
 
+        cls.form_4 = m.Form.objects.create(
+            name="Hydroponic public survey IV",
+            form_id="sample26",
+            device_field="deviceid",
+            location_field="geoloc",
+            period_type="QUARTER",
+            single_per_period=True,
+        )
+
         form_2_file_mock = mock.MagicMock(spec=File)
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
@@ -107,10 +116,19 @@ class InstancesAPITestCase(APITestCase):
         )
         cls.form_3.save()
 
+        # A deleted Instance
+        cls.form_4.form_versions.create(file=form_2_file_mock, version_id="2020022402")
+        cls.form_4.org_unit_types.add(cls.jedi_council)
+        cls.create_form_instance(
+            form=cls.form_4, period="2020Q1", org_unit=cls.jedi_council_corruscant, deleted=True
+        )
+        cls.form_4.save()
+
         cls.project.unit_types.add(cls.jedi_council)
         cls.project.forms.add(cls.form_1)
         cls.project.forms.add(cls.form_2)
         cls.project.forms.add(cls.form_3)
+        cls.project.forms.add(cls.form_4)
         sw_source.projects.add(cls.project)
         cls.project.save()
 
@@ -501,4 +519,32 @@ class InstancesAPITestCase(APITestCase):
             new_org_unit.id,
             modification.new_value[0]["fields"]["org_unit"],
         )
+        self.assertEqual(instance_to_patch, modification.content_object)
+
+
+    @tag("iaso_only")
+    def test_instance_patch_restore(self):
+        """PATCH /instances/:pk"""
+        self.client.force_authenticate(self.yoda)
+
+        instance_to_patch = self.form_4.instances.first()
+        self.assertTrue(instance_to_patch.deleted)
+        self.assertEqual(0, Modification.objects.count())
+        response = self.client.patch(
+            f"/api/instances/{instance_to_patch.id}/",
+             data={"deleted": False},
+             format="json",
+             HTTP_ACCEPT="application/json",
+        )
+
+        self.assertJSONResponse(response,200)
+
+        self.assertEqual(1, Modification.objects.count())
+        instance_to_patch.refresh_from_db()
+        self.assertFalse(instance_to_patch.deleted)
+
+        # assert audit log works
+        modification = Modification.objects.last()
+        self.assertEqual(self.yoda, modification.user)
+        self.assertNotEquals(modification.past_value[0]["fields"]["deleted"],modification.content_object.deleted)
         self.assertEqual(instance_to_patch, modification.content_object)

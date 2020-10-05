@@ -1,7 +1,7 @@
 import json
 
 from iaso.management.commands.command_logger import CommandLogger
-
+import csv
 
 def color(status):
     if status == "modified":
@@ -26,12 +26,16 @@ class ShapelyJsonEncoder(json.JSONEncoder):
 
 
 class Dumper:
-    def __init__(self, logger):
+    def __init__(self, logger, csv_file_name=None):
         self.iaso_logger = logger
+        self.csv_file_name = csv_file_name
 
     def dump(self, diffs, fields):
         stats = self.dump_stats(diffs, fields)
-        self.dump_as_table(diffs, fields, stats)
+        if self.csv_file_name:
+            self.dump_as_csv(diffs, fields)
+        else:
+            self.dump_as_table(diffs, fields, stats)
 
     def dump_stats(self, diffs, fields):
         stats_ou = {}
@@ -64,9 +68,40 @@ class Dumper:
     def dump_as_json(self, diffs, fields):
         self.iaso_logger.info(json.dumps(diffs, indent=4, cls=ShapelyJsonEncoder))
 
+    def dump_as_csv(self, diffs, fields):
+        res = []
+        header = ["externalId", ]
+        diffable_fields = []
+        for field in fields:
+            if field.startswith("groupset:"):
+                diffable_fields.append(field.split(":")[2])
+            else:
+                diffable_fields.append(field)
+        for field in diffable_fields:
+            header.extend((field, field + " before", field + " after"))
+        res.append(header)
+
+        for diff in diffs:
+            if diff.status != "same":
+                results = [diff.org_unit.source_ref, ]
+
+                for field in fields:
+                    comparison = list(
+                        filter(lambda x: x.field == field, diff.comparisons)
+                    )[0]
+                    results.append(comparison.status)
+                    results.append(str(comparison.before))
+                    results.append(str(comparison.after))
+
+                res.append(results)
+        with open(self.csv_file_name, 'w') as output_file:
+            writer = csv.writer(output_file)
+            for row in res:
+                writer.writerow(row)
+
     def dump_as_table(self, diffs, fields, stats):
         display = []
-        header = ["dhis2Id", "name", "ou status"]
+        header = ["externalId", "name", "ou status"]
         fields = list(
             set(
                 list(

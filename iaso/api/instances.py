@@ -171,9 +171,9 @@ class InstancesViewSet(viewsets.ViewSet):
 
             sub_columns = ["" for __ in columns]
             latest_form_version = form.form_versions.order_by("id").last()
-            questions_by_name = latest_form_version.questions_by_name()
+            questions_by_name = latest_form_version.questions_by_name() if latest_form_version else {}
             if form and form.latest_version:
-                file_content_template = form.latest_version.questions_by_name()
+                file_content_template = questions_by_name
                 for title in file_content_template:
                     sub_columns.append(
                         file_content_template.get(title, {}).get("label", "")
@@ -276,7 +276,6 @@ class InstancesViewSet(viewsets.ViewSet):
         original = get_object_or_404(Instance.objects.with_status(), pk=pk)
         instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
         self.check_object_permissions(request, instance)
-
         instance_serializer = InstanceSerializer(instance, data=request.data, partial=True, context={"request": self.request})
         instance_serializer.is_valid(raise_exception=True)
         instance_serializer.save()

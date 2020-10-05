@@ -57,7 +57,7 @@ class Command(BaseCommand):
             action="store_true",
             help="really export to dhis2 or only dry run",
         )
-
+        parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
         parser.add_argument(
             "--ignore_groups",
             action="store_true",
@@ -70,6 +70,7 @@ class Command(BaseCommand):
             help="Dhis2 url to import from (without user/password)",
         )
         parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
+
         parser.add_argument(
             "--dhis2_password", type=str, help="dhis2 password of the dhis2_user"
         )
@@ -88,6 +89,7 @@ class Command(BaseCommand):
     @transaction.atomic
     def handle(self, *args, **options):
         print("let's diff")
+        file_name = options.get("output_csv")
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
@@ -99,7 +101,7 @@ class Command(BaseCommand):
         iaso_logger.ok("================= Diffing =================")
         ignore_groups = options.get("ignore_groups")
         diffs, fields = Differ(iaso_logger).diff(version_ref, version, ignore_groups)
-        Dumper(iaso_logger).dump(diffs, fields)
+        Dumper(iaso_logger, csv_file_name=file_name).dump(diffs, fields)
         export = options.get("export")
 
         if export:

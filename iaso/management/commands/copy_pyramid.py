@@ -8,10 +8,10 @@ class Command(BaseCommand):
     """
 
     def add_arguments(self, parser):
-        parser.add_argument("source_source_name", type=str)
-        parser.add_argument("source_version", type=int)
-        parser.add_argument("destination_source_name", type=str)
-        parser.add_argument("destination_version", type=int)
+        parser.add_argument("--source_source_name", type=str)
+        parser.add_argument("--source_version", type=int)
+        parser.add_argument("--destination_source_name", type=str)
+        parser.add_argument("--destination_version", type=int)
         parser.add_argument(
             "-f",
             "--force",

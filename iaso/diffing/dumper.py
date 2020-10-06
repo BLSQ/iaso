@@ -70,7 +70,7 @@ class Dumper:
 
     def dump_as_csv(self, diffs, fields):
         res = []
-        header = ["externalId", ]
+        header = ["externalId", "diff status"]
         diffable_fields = []
         for field in fields:
             if field.startswith("groupset:"):
@@ -82,18 +82,17 @@ class Dumper:
         res.append(header)
 
         for diff in diffs:
-            if diff.status != "same":
-                results = [diff.org_unit.source_ref, ]
+            results = [diff.org_unit.source_ref, diff.status]
 
-                for field in fields:
-                    comparison = list(
-                        filter(lambda x: x.field == field, diff.comparisons)
-                    )[0]
-                    results.append(comparison.status)
-                    results.append(str(comparison.before))
-                    results.append(str(comparison.after))
+            for field in fields:
+                comparison = list(
+                    filter(lambda x: x.field == field, diff.comparisons)
+                )[0]
+                results.append(comparison.status)
+                results.append(str(comparison.before))
+                results.append(str(comparison.after))
 
-                res.append(results)
+            res.append(results)
         with open(self.csv_file_name, 'w') as output_file:
             writer = csv.writer(output_file)
             for row in res:

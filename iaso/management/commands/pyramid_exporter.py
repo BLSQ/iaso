@@ -42,26 +42,35 @@ class Command(BaseCommand):
             help="An integer version number for the new version",
         )
         parser.add_argument(
+            "--validation_status", type=str, help="Validation status", required=False
+        )
+        parser.add_argument(
             "--source_name_ref",
             type=str,
             help="The name of the source. It will be created if it doesn't exist",
         )
+
         parser.add_argument(
             "--version_number_ref",
             type=int,
             help="An integer version number for the new version",
         )
-
+        parser.add_argument(
+            "--validation_status_ref",
+            type=str,
+            help="Validation status ref",
+            required=False,
+        )
         parser.add_argument(
             "--export",
             action="store_true",
             help="really export to dhis2 or only dry run",
         )
-        parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
         parser.add_argument(
-            "--ignore_groups",
-            action="store_true",
-            help="Don't modify groups on dhis2",
+            "--output_csv", type=str, help="A file to output the diff as csv"
+        )
+        parser.add_argument(
+            "--ignore_groups", action="store_true", help="Don't modify groups on dhis2"
         )
 
         parser.add_argument(
@@ -90,6 +99,8 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         print("let's diff")
         file_name = options.get("output_csv")
+        validation_status = options.get("validation_status", None)
+        validation_status_ref = options.get("validation_status_ref", None)
         iaso_logger = CommandLogger(self.stdout)
         self.iaso_logger = iaso_logger
         start = time.time()
@@ -100,7 +111,15 @@ class Command(BaseCommand):
         )
         iaso_logger.ok("================= Diffing =================")
         ignore_groups = options.get("ignore_groups")
-        diffs, fields = Differ(iaso_logger).diff(version_ref, version, ignore_groups)
+        csv_export = file_name is not None
+        diffs, fields = Differ(iaso_logger).diff(
+            version_ref,
+            version,
+            ignore_groups,
+            show_deleted_org_units=csv_export,
+            validation_status=validation_status,
+            validation_status_ref=validation_status_ref,
+        )
         Dumper(iaso_logger, csv_file_name=file_name).dump(diffs, fields)
         export = options.get("export")
 

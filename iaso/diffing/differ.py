@@ -7,7 +7,12 @@ import json
 def index_pyramid(orgunits):
     orgunits_by_source_ref = {}
     for orgunit in orgunits:
-        orgunits_by_source_ref[orgunit.source_ref] = [orgunit]
+        if orgunits_by_source_ref.get(orgunit.source_ref, None) is None:
+            orgunits_by_source_ref[orgunit.source_ref] = [orgunit]
+        else:
+            print("TWO ORG UNITS WITH THE SAME source_ref: %s (THIS SHOULD NOT HAPPEN!)" % orgunit.source_ref)
+
+            orgunits_by_source_ref[orgunit.source_ref].append(orgunit)
     return orgunits_by_source_ref
 
 
@@ -15,21 +20,22 @@ class Differ:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def load_pyramid(self, version):
+    def load_pyramid(self, version, validation_status=None):
         self.iaso_logger.info("loading pyramid ", version.data_source, version)
-        orgunits = (
-            OrgUnit.objects.prefetch_related("groups")
-            .prefetch_related("groups__group_sets")
-            .select_related("org_unit_type")
-            .select_related("parent")
-            .select_related("parent__parent")
-            .select_related("parent__parent__parent")
-            .filter(version=version)
-            .all()
+        queryset = (OrgUnit.objects.prefetch_related("groups")
+                .prefetch_related("groups__group_sets")
+                .select_related("org_unit_type")
+                .select_related("parent")
+                .select_related("parent__parent")
+                .select_related("parent__parent__parent")
+                .filter(version=version)
         )
-        return orgunits
+        if validation_status:
+            queryset = queryset.filter(validation_status=validation_status)
 
-    def diff(self, version_ref, version, ignore_groups=False):
+        return queryset
+
+    def diff(self, version_ref, version, ignore_groups=False, show_deleted_org_units=False, validation_status=None, validation_status_ref=None):
         field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
             for group_set in GroupSet.objects.filter(source_version=version):
@@ -39,8 +45,8 @@ class Differ:
         self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 
-        orgunits_dhis2 = self.load_pyramid(version)
-        orgunit_refs = self.load_pyramid(version_ref)
+        orgunits_dhis2 = self.load_pyramid(version, validation_status=validation_status)
+        orgunit_refs = self.load_pyramid(version_ref, validation_status=validation_status_ref)
         self.iaso_logger.info(
             "comparing ",
             version_ref,
@@ -57,6 +63,7 @@ class Differ:
         diffs = []
         index = 0
         orgunits_dhis2_by_ref = index_pyramid(orgunits_dhis2)
+
         for orgunit_ref in orgunit_refs:
             index = index + 1
             orgunit_dhis2_with_ref = orgunits_dhis2_by_ref.get(
@@ -88,6 +95,27 @@ class Differ:
                 comparisons=comparisons,
             )
             diffs.append(diff)
+
+        if show_deleted_org_units:
+            target_set = set(orgunits_dhis2_by_ref.keys())
+            source_set = set([org_unit.source_ref for org_unit in orgunit_refs])
+            deleted_org_units_ids = target_set - source_set
+            for deleted_id in deleted_org_units_ids:
+                print("deleted_id", deleted_id)
+                orgunit_dhis2 = orgunits_dhis2_by_ref.get(deleted_id)[0]
+                print("orgunit_dhis2", orgunit_dhis2)
+                comparisons = []
+                for field in field_types:
+                    comparison = Comparison(
+                        before=field.access(orgunit_dhis2),
+                        after=None,
+                        field=field.field_name,
+                        status="deleted",
+                        distance=100,
+                    )
+                    comparisons.append(comparison)
+                diff = Diff(orgunit_dhis2, status="deleted", comparisons=comparisons)
+                diffs.append(diff)
 
         return (diffs, field_names)
 

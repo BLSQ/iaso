@@ -101,9 +101,7 @@ class Differ:
             source_set = set([org_unit.source_ref for org_unit in orgunit_refs])
             deleted_org_units_ids = target_set - source_set
             for deleted_id in deleted_org_units_ids:
-                print("deleted_id", deleted_id)
                 orgunit_dhis2 = orgunits_dhis2_by_ref.get(deleted_id)[0]
-                print("orgunit_dhis2", orgunit_dhis2)
                 comparisons = []
                 for field in field_types:
                     comparison = Comparison(

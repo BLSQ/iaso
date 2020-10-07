@@ -267,7 +267,7 @@ class Instances extends Component {
         } = this.props;
 
         const tempVisibleColumns =
-            currentForm.period_type === null
+            !currentForm || currentForm.period_type === null
                 ? visibleColumns.filter(column => column.key !== 'period')
                 : visibleColumns;
 

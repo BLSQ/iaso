@@ -112,7 +112,9 @@ class Differ:
                         distance=100,
                     )
                     comparisons.append(comparison)
-                diff = Diff(orgunit_dhis2, status="deleted", comparisons=comparisons)
+                used_to_exist = OrgUnit.objects.filter(source_ref=deleted_id, version=version).count() > 0
+                status = "deleted" if used_to_exist else "never_seen"
+                diff = Diff(orgunit_dhis2, status=status, comparisons=comparisons)
                 diffs.append(diff)
 
         return (diffs, field_names)

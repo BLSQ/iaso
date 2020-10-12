@@ -7,8 +7,12 @@ import { Box } from '@material-ui/core';
 import { useDispatch } from 'react-redux';
 
 import commonStyles from '../../../styles/common';
+
 import Table from '../../../components/tables/TableComponent';
+import Filters from '../../../components/tables/Filters';
+
 import { orgUnitsTableColumns } from '../config';
+
 import { fetchOrgUnitsList } from '../../../utils/requests';
 import getTableUrl, { getSort, getOrderArray } from '../../../utils/tableUtils';
 
@@ -17,14 +21,14 @@ const useStyles = makeStyles(theme => ({
 }));
 
 const getTableState = (params, paramsPrefix) => ({
-    limit: params[`${paramsPrefix}pageSize`]
-        ? parseInt(params[`${paramsPrefix}pageSize`], 10)
+    limit: params[`${paramsPrefix}PageSize`]
+        ? parseInt(params[`${paramsPrefix}PageSize`], 10)
         : 10,
-    page: params[`${paramsPrefix}page`]
-        ? parseInt(params[`${paramsPrefix}page`], 10)
+    page: params[`${paramsPrefix}Page`]
+        ? parseInt(params[`${paramsPrefix}Page`], 10)
         : 0,
-    order: params[`${paramsPrefix}order`]
-        ? getOrderArray(params[`${paramsPrefix}order`])
+    order: params[`${paramsPrefix}Order`]
+        ? getOrderArray(params[`${paramsPrefix}Order`])
         : [{ id: 'name', desc: false }],
 });
 
@@ -47,12 +51,13 @@ const OrgUnitTable = ({
     const dispatch = useDispatch();
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
-    const fetchOrgUnits = () => {
-        const tableState = getTableState(params, paramsPrefix);
+    const fetchOrgUnits = (urlParams = params) => {
+        const tableState = getTableState(urlParams, paramsPrefix);
         const newParams = {
             ...apiParams,
             ...tableState,
             order: getSort(tableState.order),
+            search: params[`${paramsPrefix}Search`],
         };
         const url = getTableUrl('orgunits', newParams);
         setLoading(true);
@@ -68,14 +73,23 @@ const OrgUnitTable = ({
 
     useEffect(() => {
         fetchOrgUnits();
-    }, [params]);
+    }, [
+        params[`${paramsPrefix}PageSize`],
+        params[`${paramsPrefix}Page`],
+        params[`${paramsPrefix}Order`],
+    ]);
 
     const { data, pages, count } = tableResults;
     return (
         <Box className={classes.containerFullHeightPadded}>
+            <Filters
+                baseUrl={baseUrl}
+                params={params}
+                onSearch={() => fetchOrgUnits(params)}
+                paramsPrefix={paramsPrefix}
+            />
             <Table
                 count={count}
-                marginTop={false}
                 data={data}
                 pages={pages}
                 defaultSorted={[{ id: 'name', desc: false }]}
@@ -86,7 +100,7 @@ const OrgUnitTable = ({
                 }}
                 baseUrl={baseUrl}
                 redirectTo={redirectTo}
-                paramsPrefix="childrenParams"
+                paramsPrefix={paramsPrefix}
             />
         </Box>
     );

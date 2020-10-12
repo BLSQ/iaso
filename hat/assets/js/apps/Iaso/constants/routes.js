@@ -14,6 +14,7 @@ import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
+import { capitalize } from '../utils/index';
 
 const paginationPathParams = [
     {
@@ -33,7 +34,7 @@ const paginationPathParams = [
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
         ...p,
-        key: `${prefix}${p.key}`,
+        key: `${prefix}${capitalize(p.key)}`,
     }));
 
 export const getPath = path => {
@@ -218,6 +219,10 @@ export const orgUnitsDetailsPath = {
         {
             isRequired: false,
             key: 'tab',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsSearch',
         },
         ...paginationPathParamsWithPrefix('childrenParams'),
     ],

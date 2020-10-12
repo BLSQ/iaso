@@ -6,8 +6,8 @@ import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
 import { getOrgunitMessage } from '../domains/orgUnits/utils';
 
-export const search = () => ({
-    urlKey: 'search',
+export const search = (urlKey = 'search') => ({
+    urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
 });

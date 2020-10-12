@@ -96,6 +96,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if parent_id:
             parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
             queryset = queryset.children(parent_org_unit)
+            queryset = build_org_units_queryset(
+                    queryset,  request.GET
+                )
 
         if not is_export and limit and not as_location:
             queryset.prefetch_related("group_set")

@@ -15,7 +15,7 @@ import {
     selectionInitialState,
 } from '../../utils/tableUtils';
 
-import { formatThousand } from '../../utils';
+import { formatThousand, capitalize } from '../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
@@ -82,6 +82,13 @@ const styles = theme => ({
     },
 });
 
+const getParamsKey = (paramsPrefix, key) => {
+    if (paramsPrefix === '') {
+        return key;
+    }
+    return `${paramsPrefix}${capitalize(key)}`;
+};
+
 class Table extends Component {
     componentWillMount() {
         const {
@@ -125,10 +132,11 @@ class Table extends Component {
         const { params, redirectTo, baseUrl, paramsPrefix } = this.props;
         const newParams = {
             ...params,
-            [`${paramsPrefix}${key}`]: key !== 'order' ? value : getSort(value),
+            [getParamsKey(paramsPrefix, key)]:
+                key !== 'order' ? value : getSort(value),
         };
         if (key === 'pageSize') {
-            newParams[`${paramsPrefix}page`] = 1;
+            newParams[getParamsKey(paramsPrefix, 'page')] = 1;
         }
         redirectTo(baseUrl, newParams);
     }
@@ -206,15 +214,14 @@ class Table extends Component {
         actions = actions.concat(selectionActions);
 
         let pageSize =
-            parseInt(params[`${paramsPrefix}pageSize`], 10) < count
-                ? params[`${paramsPrefix}pageSize`]
+            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) < count
+                ? params[getParamsKey(paramsPrefix, 'pageSize')]
                 : count;
         if (count === 0) {
             pageSize = 2;
         }
-        console.log('pageSize', pageSize);
-        const order = params[`${paramsPrefix}order`]
-            ? getOrderArray(params[`${paramsPrefix}order`])
+        const order = params[getParamsKey(paramsPrefix, 'order')]
+            ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
             : defaultSorted;
         if (multiSelect) {
             columns.push({
@@ -277,8 +284,8 @@ class Table extends Component {
                         defaultSorted={order}
                         pageSize={pageSize}
                         page={
-                            params[`${paramsPrefix}page`]
-                                ? params[`${paramsPrefix}page`] - 1
+                            params[getParamsKey(paramsPrefix, 'page')]
+                                ? params[getParamsKey(paramsPrefix, 'page')] - 1
                                 : 1
                         }
                         onPageChange={page =>
@@ -309,7 +316,6 @@ Table.defaultProps = {
     setTableSelection: () => null,
     extraProps: null,
     paramsPrefix: '',
-    onTableParamsChange: () => null,
 };
 
 Table.propTypes = {

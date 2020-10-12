@@ -123,7 +123,13 @@ class InstancesFiltersComponent extends Component {
         } = this.props;
 
         const searchParams = [{ search: params.search }];
-
+        const secondColumnFilters = [
+            location(formatMessage),
+            orgUnitType(orgUnitTypes),
+        ];
+        if (periodsList.length > 0) {
+            secondColumnFilters.unshift(periods(periodsList));
+        }
         return (
             <div className={classes.marginBottomBig}>
                 <Grid container spacing={4}>
@@ -155,11 +161,7 @@ class InstancesFiltersComponent extends Component {
                             onFilterChanged={() =>
                                 setInstancesFilterUpdated(true)
                             }
-                            filters={[
-                                periodsList.length > 0 && periods(periodsList),
-                                location(formatMessage),
-                                orgUnitType(orgUnitTypes),
-                            ]}
+                            filters={secondColumnFilters}
                         />
                     </Grid>
                     <Grid item xs={4}>

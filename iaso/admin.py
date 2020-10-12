@@ -20,6 +20,7 @@ from .models import (
     AlgorithmRun,
     Link,
     Group,
+    GroupSet,
     Profile,
     ExternalCredentials,
     Mapping,
@@ -213,6 +214,7 @@ admin.site.register(ExternalCredentials)
 admin.site.register(Mapping, MappingAdmin)
 admin.site.register(MappingVersion, MappingVersionAdmin)
 admin.site.register(Group, GroupAdmin)
+admin.site.register(GroupSet)
 admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)

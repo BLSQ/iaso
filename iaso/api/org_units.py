@@ -91,6 +91,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         with_shapes = request.GET.get("withShapes", None)
         as_location = request.GET.get("asLocation", None)
         small_search = request.GET.get("smallSearch", None)
+        parent_id = request.GET.get("parentId", None)
+
+        if parent_id:
+            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
+            queryset = queryset.children(parent_org_unit)
 
         if not is_export and limit and not as_location:
             queryset.prefetch_related("group_set")
@@ -483,7 +488,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def retrieve(self, request, pk=None):
         org_unit = get_object_or_404(self.get_queryset(), pk=pk)
         self.check_object_permissions(request, org_unit)
-
         res = org_unit.as_dict_with_parents(light=False, light_parents=False)
         res["geo_json"] = None
         res["catchment"] = None

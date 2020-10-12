@@ -37,6 +37,8 @@ import MESSAGES from './messages';
  * @param {Array} defaultSorted
  * @param {Array} marginTop
  * @param {Array} countOnTop
+ * @param {Object} extraProps
+ * @param {String} paramPrefix
  *
  * Multi selection is optionnal
  * Selection props:
@@ -70,18 +72,13 @@ const styles = theme => ({
     reactTableNoMarginTop: {
         marginTop: 0,
     },
-    reactTableNoPaginationCountBottom: {
+    reactTableCountBottom: {
         marginBottom: theme.spacing(8),
     },
     countBottom: {
         position: 'absolute',
         bottom: -4,
         right: theme.spacing(4),
-    },
-    countBottomNoPagination: {
-        bottom: 'auto',
-        right: theme.spacing(2),
-        top: 'calc(100% + 19px)',
     },
 });
 
@@ -115,7 +112,8 @@ class Table extends Component {
             !isEqual(
                 nextProps.selection.unSelectedItems,
                 this.props.selection.unSelectedItems,
-            )
+            ) ||
+            !isEqual(nextProps.extraProps, this.props.extraProps)
         );
     }
 
@@ -124,11 +122,15 @@ class Table extends Component {
     }
 
     onTableParamsChange(key, value) {
-        const { params, redirectTo, baseUrl } = this.props;
-        redirectTo(baseUrl, {
+        const { params, redirectTo, baseUrl, paramsPrefix } = this.props;
+        const newParams = {
             ...params,
-            [key]: key !== 'order' ? value : getSort(value),
-        });
+            [`${paramsPrefix}${key}`]: key !== 'order' ? value : getSort(value),
+        };
+        if (key === 'pageSize') {
+            newParams[`${paramsPrefix}page`] = 1;
+        }
+        redirectTo(baseUrl, newParams);
     }
 
     onSelect(isSelected, item) {
@@ -190,6 +192,8 @@ class Table extends Component {
             selectionActions,
             setTableSelection,
             selection: { selectCount },
+            extraProps,
+            paramsPrefix,
         } = this.props;
 
         let actions = [
@@ -202,14 +206,16 @@ class Table extends Component {
         actions = actions.concat(selectionActions);
 
         let pageSize =
-            parseInt(params.pageSize, 10) < count ? params.pageSize : count;
+            parseInt(params[`${paramsPrefix}pageSize`], 10) < count
+                ? params[`${paramsPrefix}pageSize`]
+                : count;
         if (count === 0) {
             pageSize = 2;
         }
-        const order = params.order
-            ? getOrderArray(params.order)
+        console.log('pageSize', pageSize);
+        const order = params[`${paramsPrefix}order`]
+            ? getOrderArray(params[`${paramsPrefix}order`])
             : defaultSorted;
-        const showPagination = parseInt(params.pageSize, 10) < count;
         if (multiSelect) {
             columns.push({
                 Header: formatMessage(MESSAGES.selection),
@@ -235,15 +241,13 @@ class Table extends Component {
                 <SelectionSpeedDials hidden={!multiSelect} actions={actions} />
                 <div
                     className={classNames(classes.reactTable, {
-                        [classes.reactTableNoPaginationCountBottom]:
-                            !countOnTop && !showPagination,
+                        [classes.reactTableCountBottom]: !countOnTop,
                         [classes.reactTableNoMarginTop]: !marginTop,
                     })}
                 >
                     <div
                         className={classNames(classes.count, {
                             [classes.countBottom]: !countOnTop,
-                            [classes.countBottomNoPagination]: !showPagination,
                         })}
                     >
                         {count > 0 && (
@@ -264,7 +268,6 @@ class Table extends Component {
                     </div>
 
                     <ReactTable
-                        showPagination={showPagination}
                         multiSort
                         manual
                         columns={columns}
@@ -273,7 +276,11 @@ class Table extends Component {
                         className="-striped -highlight"
                         defaultSorted={order}
                         pageSize={pageSize}
-                        page={params.page - 1}
+                        page={
+                            params[`${paramsPrefix}page`]
+                                ? params[`${paramsPrefix}page`] - 1
+                                : 1
+                        }
                         onPageChange={page =>
                             this.onTableParamsChange('page', page + 1)
                         }
@@ -283,6 +290,7 @@ class Table extends Component {
                         onSortedChange={newOrder =>
                             this.onTableParamsChange('order', newOrder)
                         }
+                        {...extraProps}
                     />
                 </div>
             </>
@@ -299,6 +307,9 @@ Table.defaultProps = {
     selectionActions: [],
     selection: selectionInitialState,
     setTableSelection: () => null,
+    extraProps: null,
+    paramsPrefix: '',
+    onTableParamsChange: () => null,
 };
 
 Table.propTypes = {
@@ -318,6 +329,8 @@ Table.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     setTableSelection: PropTypes.func,
     selection: PropTypes.object,
+    extraProps: PropTypes.object,
+    paramsPrefix: PropTypes.string,
 };
 
 export default withStyles(styles)(injectIntl(withRouter(Table)));

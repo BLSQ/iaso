@@ -290,6 +290,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.map.marker.delete',
         defaultMessage: 'Delete marker',
     },
+    children: {
+        id: 'iaso.label.children',
+        defaultMessage: 'Children',
+    },
 });
 
 export default MESSAGES;

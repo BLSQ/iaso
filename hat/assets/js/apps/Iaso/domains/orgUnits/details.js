@@ -43,18 +43,26 @@ import OrgUnitForm from './components/OrgUnitForm';
 import OrgUnitMap from './components/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
+import OrgUnitTable from './components/OrgUnitTable';
 
 import commonStyles from '../../styles/common';
 
 import { getChipColors } from '../../constants/chipColors';
-
 import { baseUrls } from '../../constants/urls';
+
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
 const styles = theme => ({
     ...commonStyles(theme),
+    hiddenOpacity: {
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        zIndex: '-100',
+        opacity: '0',
+    },
 });
 
 const initialOrgUnit = {
@@ -345,6 +353,7 @@ class OrgUnitDetail extends Component {
             prevPathname,
             redirectToPush,
             reduxPage,
+            redirectTo,
         } = this.props;
         const {
             tab,
@@ -367,6 +376,8 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
+        const tabs = ['infos', 'map', 'children', 'history', 'forms'];
+
         return (
             <Fragment>
                 <TopBar
@@ -394,22 +405,13 @@ class OrgUnitDetail extends Component {
                                 this.handleChangeTab(newtab)
                             }
                         >
-                            <Tab
-                                value="infos"
-                                label={formatMessage(MESSAGES.infos)}
-                            />
-                            <Tab
-                                value="map"
-                                label={formatMessage(MESSAGES.map)}
-                            />
-                            <Tab
-                                value="history"
-                                label={formatMessage(MESSAGES.history)}
-                            />
-                            <Tab
-                                value="forms"
-                                label={formatMessage(MESSAGES.forms)}
-                            />
+                            {tabs.map(t => (
+                                <Tab
+                                    key={t}
+                                    value={t}
+                                    label={formatMessage(MESSAGES[t])}
+                                />
+                            ))}
                         </Tabs>
                     )}
                 </TopBar>
@@ -516,6 +518,20 @@ class OrgUnitDetail extends Component {
                                 </div>
                             </Box>
                         )}
+                        <div
+                            className={
+                                tab === 'children' ? '' : classes.hiddenOpacity
+                            }
+                        >
+                            <OrgUnitTable
+                                apiParams={{
+                                    parent_id: currentOrgUnit.id,
+                                }}
+                                paramsPrefix="childrenParams"
+                                redirectTo={redirectTo}
+                                baseUrl={baseUrl}
+                            />
+                        </div>
                     </section>
                 )}
             </Fragment>

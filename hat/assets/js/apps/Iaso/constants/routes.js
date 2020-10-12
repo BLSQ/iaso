@@ -30,6 +30,12 @@ const paginationPathParams = [
     },
 ];
 
+const paginationPathParamsWithPrefix = prefix =>
+    paginationPathParams.map(p => ({
+        ...p,
+        key: `${prefix}${p.key}`,
+    }));
+
 export const getPath = path => {
     let url = `/${path.baseUrl}`;
     path.params.forEach(p => {
@@ -213,6 +219,7 @@ export const orgUnitsDetailsPath = {
             isRequired: false,
             key: 'tab',
         },
+        ...paginationPathParamsWithPrefix('childrenParams'),
     ],
 };
 

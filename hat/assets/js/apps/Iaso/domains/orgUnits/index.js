@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
@@ -335,7 +335,6 @@ class OrgUnits extends Component {
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
-            this,
             classes,
             decodeSearch(params.searches),
         );

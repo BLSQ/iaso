@@ -3,6 +3,7 @@ import React from 'react';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
+import { getParamsKey } from '../utils/tableUtils';
 import { Period } from '../domains/periods/models';
 import { getOrgunitMessage } from '../domains/orgUnits/utils';
 import { capitalize } from '../utils/index';
@@ -343,49 +344,77 @@ export const instanceDeleted = () => ({
     type: 'checkbox',
 });
 
+export const directChildren = () => ({
+    urlKey: 'onlyDirectChildren',
+    label: MESSAGES.onlyDirectChildren,
+    type: 'checkbox',
+});
+
 export const orgUnitFilters = (
     formatMessage = () => null,
     groups = [],
     orgUnitTypes = [],
-) => [
-    {
-        ...search(),
-        column: 1,
-    },
-    {
-        ...orgUnitType(orgUnitTypes),
-        column: 1,
-    },
-    {
-        ...group(groups),
-        column: 1,
-    },
-    {
-        ...location(formatMessage),
-        column: 2,
-    },
-    {
-        ...shape(formatMessage),
-        column: 2,
-    },
-    {
-        ...hasInstances(formatMessage),
-        column: 3,
-    },
-    {
-        ...status(formatMessage),
-        column: 3,
-    },
-];
+    withChildren = false,
+) => {
+    const filters = [
+        {
+            ...search(),
+            column: 1,
+        },
+        {
+            ...orgUnitType(orgUnitTypes),
+            column: 1,
+        },
+        {
+            ...group(groups),
+            column: 3,
+        },
+        {
+            ...location(formatMessage),
+            column: 2,
+        },
+        {
+            ...shape(formatMessage),
+            column: 2,
+        },
+        {
+            ...hasInstances(formatMessage),
+            column: 3,
+        },
+        {
+            ...status(formatMessage),
+            column: 3,
+        },
+    ];
+    if (withChildren) {
+        filters.push({
+            ...directChildren(),
+            column: 1,
+        });
+    }
+    return filters;
+};
 
 export const orgUnitFiltersWithPrefix = (
     paramsPrefix,
+    withChildren,
     formatMessage,
     groups,
     orgUnitTypes,
 ) =>
-    orgUnitFilters(formatMessage, groups, orgUnitTypes).map(f => ({
-        ...f,
-        urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
-        apiUrlKey: f.urlKey,
-    }));
+    orgUnitFilters(formatMessage, groups, orgUnitTypes, withChildren).map(
+        f => ({
+            ...f,
+            urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
+            apiUrlKey: f.urlKey,
+        }),
+    );
+
+export const onlyChildrenParams = (paramsPrefix, params, currentOrgUnit) => {
+    if (!currentOrgUnit) return null;
+    const onlyDirectChildren =
+        params[getParamsKey(paramsPrefix, 'onlyDirectChildren')] === 'true';
+    return onlyDirectChildren
+        ? { parent_id: currentOrgUnit.id }
+        : { org_unit_parent_id: currentOrgUnit.id };
+};

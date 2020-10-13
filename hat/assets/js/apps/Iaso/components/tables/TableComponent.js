@@ -291,8 +291,8 @@ class Table extends Component {
                         defaultSorted={order}
                         pageSize={pageSize}
                         page={page}
-                        onPageChange={page =>
-                            this.onTableParamsChange('page', page + 1)
+                        onPageChange={newPage =>
+                            this.onTableParamsChange('page', newPage + 1)
                         }
                         onPageSizeChange={newPageSize =>
                             this.onTableParamsChange('pageSize', newPageSize)

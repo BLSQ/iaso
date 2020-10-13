@@ -198,8 +198,8 @@ export const orgUnitsPath = {
         },
     ],
 };
-const orgUnitsFiltersPathParamsWithPrefix = prefix =>
-    orgUnitFiltersWithPrefix(prefix).map(f => ({
+const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
+    orgUnitFiltersWithPrefix(prefix, withChildren).map(f => ({
         isRequired: false,
         key: f.urlKey,
     }));
@@ -226,7 +226,7 @@ export const orgUnitsDetailsPath = {
             isRequired: false,
             key: 'tab',
         },
-        ...orgUnitsFiltersPathParamsWithPrefix('childrenParams'),
+        ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),
     ],
 };

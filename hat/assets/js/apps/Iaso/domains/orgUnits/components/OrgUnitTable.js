@@ -9,56 +9,37 @@ import { useDispatch, useSelector } from 'react-redux';
 import commonStyles from '../../../styles/common';
 
 import Table from '../../../components/tables/TableComponent';
-import Filters from '../../../components/tables/Filters';
+import Filters from '../../../components/tables/TableFilters';
 import DownloadButtonsComponent from '../../../components/buttons/DownloadButtonsComponent';
 
 import { orgUnitsTableColumns } from '../config';
 
 import { fetchOrgUnitsList } from '../../../utils/requests';
 import getTableUrl, {
-    getSort,
-    getOrderArray,
     getParamsKey,
+    getTableParams,
+    tableInitialResult,
 } from '../../../utils/tableUtils';
 
-import { orgUnitFiltersWithPrefix } from '../../../constants/filters';
+import {
+    orgUnitFiltersWithPrefix,
+    onlyChildrenParams,
+} from '../../../constants/filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const getTableParams = (params, paramsPrefix, filters, apiParams) => {
-    const newParams = {
-        ...apiParams,
-        limit:
-            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) || 10,
-        page: parseInt(params[getParamsKey(paramsPrefix, 'page')], 10) || 0,
-        order: getSort(
-            params[getParamsKey(paramsPrefix, 'order')]
-                ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
-                : [{ id: 'name', desc: false }],
-        ),
-    };
-    filters.forEach(f => {
-        newParams[f.apiUrlKey] = params[f.urlKey];
-    });
-    return newParams;
-};
-
 const endPointPath = 'orgunits';
 
-const tableInitialResult = {
-    data: [],
-    pages: 0,
-    count: 0,
-};
 const OrgUnitTable = ({
     intl: { formatMessage },
-    apiParams,
+    currentOrgUnit,
     paramsPrefix,
     params,
     baseUrl,
     redirectTo,
+    apiParams,
 }) => {
     const [loading, setLoading] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
@@ -68,19 +49,29 @@ const OrgUnitTable = ({
     const groups = useSelector(state => state.orgUnits.groups);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
 
+    const newApiParams = {
+        ...apiParams,
+        ...onlyChildrenParams(paramsPrefix, params, currentOrgUnit),
+    };
+
     const filters = orgUnitFiltersWithPrefix(
         paramsPrefix,
+        Boolean(currentOrgUnit),
         formatMessage,
         groups,
         orgUnitTypes,
     );
+
+    const tableParams = getTableParams(
+        params,
+        paramsPrefix,
+        filters,
+        newApiParams,
+    );
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
-    const fetchOrgUnits = (urlParams = params) => {
-        const url = getTableUrl(
-            endPointPath,
-            getTableParams(urlParams, paramsPrefix, filters, apiParams),
-        );
+    const fetchOrgUnits = () => {
+        const url = getTableUrl(endPointPath, tableParams);
         setLoading(true);
         fetchOrgUnitsList(dispatch, url).then(res => {
             setLoading(false);
@@ -93,12 +84,7 @@ const OrgUnitTable = ({
     };
 
     const getExportUrl = exportType =>
-        getTableUrl(
-            endPointPath,
-            getTableParams(params, paramsPrefix, filters, apiParams),
-            true,
-            exportType,
-        );
+        getTableUrl(endPointPath, tableParams, true, exportType);
 
     useEffect(() => {
         fetchOrgUnits();
@@ -109,19 +95,13 @@ const OrgUnitTable = ({
     ]);
 
     const { data, pages, count } = tableResults;
-    const tableParams = getTableParams(
-        params,
-        paramsPrefix,
-        filters,
-        apiParams,
-    );
     const { limit } = tableParams;
     return (
         <Box className={classes.containerFullHeightPadded}>
             <Filters
                 baseUrl={baseUrl}
                 params={params}
-                onSearch={() => fetchOrgUnits(params)}
+                onSearch={() => fetchOrgUnits()}
                 paramsPrefix={paramsPrefix}
                 filters={filters}
             />
@@ -153,18 +133,20 @@ const OrgUnitTable = ({
 };
 
 OrgUnitTable.defaultProps = {
-    apiParams: null,
+    currentOrgUnit: null,
     paramsPrefix: '',
     baseUrl: '',
+    apiParams: null,
 };
 
 OrgUnitTable.propTypes = {
     intl: PropTypes.object.isRequired,
-    apiParams: PropTypes.object,
+    currentOrgUnit: PropTypes.object,
     params: PropTypes.object.isRequired,
     paramsPrefix: PropTypes.string,
     baseUrl: PropTypes.string,
     redirectTo: PropTypes.func.isRequired,
+    apiParams: PropTypes.object,
 };
 
 export default withRouter(injectIntl(OrgUnitTable));

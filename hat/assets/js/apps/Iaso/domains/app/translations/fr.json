@@ -272,6 +272,7 @@
   "iaso.orgUnits.multiSelectionAction": "Editer les unités d'organisation sélectionnées",
   "iaso.orgUnits.name": "Nom",
   "iaso.orgUnits.new": "Créer une unité d'organisation",
+  "iaso.orgUnits.onlyDirectChildren": "Seulement les enfants directs",
   "iaso.orgUnits.orgUnitsTypes": "Type d'unité d'organisation",
   "iaso.orgUnits.parent_name": "Nom du parent",
   "iaso.orgUnits.parents": "Parents",

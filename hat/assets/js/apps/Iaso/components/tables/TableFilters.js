@@ -45,7 +45,7 @@ const Filters = ({
     };
     return (
         <Fragment>
-            <Grid container item xs={12} spacing={4}>
+            <Grid container spacing={4}>
                 {Array(3)
                     .fill()
                     .map((x, i) => i + 1)

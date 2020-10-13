@@ -524,9 +524,7 @@ class OrgUnitDetail extends Component {
                             }
                         >
                             <OrgUnitTable
-                                apiParams={{
-                                    parent_id: currentOrgUnit.id,
-                                }}
+                                currentOrgUnit={currentOrgUnit}
                                 paramsPrefix="childrenParams"
                                 redirectTo={redirectTo}
                                 baseUrl={baseUrl}

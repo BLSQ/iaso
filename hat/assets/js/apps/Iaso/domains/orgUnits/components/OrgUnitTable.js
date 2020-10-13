@@ -10,72 +10,42 @@ import commonStyles from '../../../styles/common';
 
 import Table from '../../../components/tables/TableComponent';
 import Filters from '../../../components/tables/Filters';
+import DownloadButtonsComponent from '../../../components/buttons/DownloadButtonsComponent';
 
 import { orgUnitsTableColumns } from '../config';
 
-import { capitalize } from '../../../utils/index';
 import { fetchOrgUnitsList } from '../../../utils/requests';
-import getTableUrl, { getSort, getOrderArray } from '../../../utils/tableUtils';
-import {
-    search,
-    status,
-    hasInstances,
-    orgUnitType,
-    shape,
-    location,
-    group,
-} from '../../../constants/filters';
+import getTableUrl, {
+    getSort,
+    getOrderArray,
+    getParamsKey,
+} from '../../../utils/tableUtils';
+
+import { orgUnitFiltersWithPrefix } from '../../../constants/filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const extendFilter = (filter, paramsPrefix) => ({
-    ...filter,
-    urlKey: `${paramsPrefix}${capitalize(filter.urlKey, true)}`,
-    apiUrlKey: filter.urlKey,
-});
+const getTableParams = (params, paramsPrefix, filters, apiParams) => {
+    const newParams = {
+        ...apiParams,
+        limit:
+            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) || 10,
+        page: parseInt(params[getParamsKey(paramsPrefix, 'page')], 10) || 0,
+        order: getSort(
+            params[getParamsKey(paramsPrefix, 'order')]
+                ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
+                : [{ id: 'name', desc: false }],
+        ),
+    };
+    filters.forEach(f => {
+        newParams[f.apiUrlKey] = params[f.urlKey];
+    });
+    return newParams;
+};
 
-const getFilters = (paramsPrefix, formatMessage, groups, orgUnitTypes) => [
-    {
-        ...extendFilter(search(), paramsPrefix),
-        column: 1,
-    },
-    {
-        ...extendFilter(orgUnitType(orgUnitTypes), paramsPrefix),
-        column: 1,
-    },
-    {
-        ...extendFilter(group(groups), paramsPrefix),
-        column: 1,
-    },
-    {
-        ...extendFilter(location(formatMessage), paramsPrefix),
-        column: 2,
-    },
-    {
-        ...extendFilter(shape(formatMessage), paramsPrefix),
-        column: 2,
-    },
-    {
-        ...extendFilter(hasInstances(formatMessage), paramsPrefix),
-        column: 3,
-    },
-    {
-        ...extendFilter(status(formatMessage), paramsPrefix),
-        column: 3,
-    },
-];
-
-const getTableState = (params, paramsPrefix) => ({
-    limit: parseInt(params[`${paramsPrefix}PageSize`], 10) || 10,
-    page: parseInt(params[`${paramsPrefix}Page`], 10) || 0,
-    order: getSort(
-        params[`${paramsPrefix}Order`]
-            ? getOrderArray(params[`${paramsPrefix}Order`])
-            : [{ id: 'name', desc: false }],
-    ),
-});
+const endPointPath = 'orgunits';
 
 const tableInitialResult = {
     data: [],
@@ -90,32 +60,27 @@ const OrgUnitTable = ({
     baseUrl,
     redirectTo,
 }) => {
-    const classes = useStyles();
     const [loading, setLoading] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
+
     const dispatch = useDispatch();
+    const classes = useStyles();
     const groups = useSelector(state => state.orgUnits.groups);
     const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-    const filters = getFilters(
+
+    const filters = orgUnitFiltersWithPrefix(
         paramsPrefix,
         formatMessage,
         groups,
         orgUnitTypes,
     );
-
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
     const fetchOrgUnits = (urlParams = params) => {
-        const tableState = getTableState(urlParams, paramsPrefix);
-        console.log('tableState', tableState);
-        const newParams = {
-            ...apiParams,
-            ...tableState,
-        };
-        filters.forEach(f => {
-            newParams[f.apiUrlKey] = params[f.urlKey];
-        });
-        const url = getTableUrl('orgunits', newParams);
+        const url = getTableUrl(
+            endPointPath,
+            getTableParams(urlParams, paramsPrefix, filters, apiParams),
+        );
         setLoading(true);
         fetchOrgUnitsList(dispatch, url).then(res => {
             setLoading(false);
@@ -127,15 +92,30 @@ const OrgUnitTable = ({
         });
     };
 
+    const getExportUrl = exportType =>
+        getTableUrl(
+            endPointPath,
+            getTableParams(params, paramsPrefix, filters, apiParams),
+            true,
+            exportType,
+        );
+
     useEffect(() => {
         fetchOrgUnits();
     }, [
-        params[`${paramsPrefix}PageSize`],
-        params[`${paramsPrefix}Page`],
-        params[`${paramsPrefix}Order`],
+        params[getParamsKey(paramsPrefix, 'pageSize')],
+        params[getParamsKey(paramsPrefix, 'pageSize')],
+        params[getParamsKey(paramsPrefix, 'order')],
     ]);
 
     const { data, pages, count } = tableResults;
+    const tableParams = getTableParams(
+        params,
+        paramsPrefix,
+        filters,
+        apiParams,
+    );
+    const { limit } = tableParams;
     return (
         <Box className={classes.containerFullHeightPadded}>
             <Filters
@@ -145,6 +125,15 @@ const OrgUnitTable = ({
                 paramsPrefix={paramsPrefix}
                 filters={filters}
             />
+            {count > 0 && (
+                <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
+                    <DownloadButtonsComponent
+                        csvUrl={getExportUrl('csv')}
+                        xlsxUrl={getExportUrl('xlsx')}
+                        gpkgUrl={getExportUrl('gpkg')}
+                    />
+                </Box>
+            )}
             <Table
                 count={count}
                 data={data}
@@ -153,7 +142,7 @@ const OrgUnitTable = ({
                 columns={columns}
                 extraProps={{
                     loading,
-                    defaultPageSize: getTableState(params, paramsPrefix).limit,
+                    defaultPageSize: limit,
                 }}
                 baseUrl={baseUrl}
                 redirectTo={redirectTo}

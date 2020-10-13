@@ -5,6 +5,7 @@ import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
 import { Period } from '../domains/periods/models';
 import { getOrgunitMessage } from '../domains/orgUnits/utils';
+import { capitalize } from '../utils/index';
 
 export const search = (urlKey = 'search') => ({
     urlKey,
@@ -341,3 +342,50 @@ export const instanceDeleted = () => ({
     label: MESSAGES.showDeleted,
     type: 'checkbox',
 });
+
+export const orgUnitFilters = (
+    formatMessage = () => null,
+    groups = [],
+    orgUnitTypes = [],
+) => [
+    {
+        ...search(),
+        column: 1,
+    },
+    {
+        ...orgUnitType(orgUnitTypes),
+        column: 1,
+    },
+    {
+        ...group(groups),
+        column: 1,
+    },
+    {
+        ...location(formatMessage),
+        column: 2,
+    },
+    {
+        ...shape(formatMessage),
+        column: 2,
+    },
+    {
+        ...hasInstances(formatMessage),
+        column: 3,
+    },
+    {
+        ...status(formatMessage),
+        column: 3,
+    },
+];
+
+export const orgUnitFiltersWithPrefix = (
+    paramsPrefix,
+    formatMessage,
+    groups,
+    orgUnitTypes,
+) =>
+    orgUnitFilters(formatMessage, groups, orgUnitTypes).map(f => ({
+        ...f,
+        urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
+        apiUrlKey: f.urlKey,
+    }));

@@ -15,6 +15,7 @@ import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
+import { orgUnitFiltersWithPrefix } from './filters';
 
 const paginationPathParams = [
     {
@@ -197,6 +198,11 @@ export const orgUnitsPath = {
         },
     ],
 };
+const orgUnitsFiltersPathParamsWithPrefix = prefix =>
+    orgUnitFiltersWithPrefix(prefix).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
 
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
@@ -220,34 +226,7 @@ export const orgUnitsDetailsPath = {
             isRequired: false,
             key: 'tab',
         },
-        {
-            isRequired: false,
-            key: 'childrenParamsSearch',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsValidation_status',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsHasInstances',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsOrgUnitTypeId',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsWithShape',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsWithLocation',
-        },
-        {
-            isRequired: false,
-            key: 'childrenParamsGroup',
-        },
+        ...orgUnitsFiltersPathParamsWithPrefix('childrenParams'),
         ...paginationPathParamsWithPrefix('childrenParams'),
     ],
 };

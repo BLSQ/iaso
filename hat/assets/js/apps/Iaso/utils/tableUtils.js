@@ -1,6 +1,7 @@
 import React from 'react';
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
+import { capitalize } from './index';
 
 const getTableUrl = (
     urlKey,
@@ -137,4 +138,11 @@ export const setTableSelection = (
             break;
     }
     return newSelection;
+};
+
+export const getParamsKey = (paramsPrefix, key) => {
+    if (paramsPrefix === '') {
+        return key;
+    }
+    return `${paramsPrefix}${capitalize(key, true)}`;
 };

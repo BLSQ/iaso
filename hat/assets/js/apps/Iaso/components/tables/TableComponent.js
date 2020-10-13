@@ -13,9 +13,10 @@ import {
     getSimplifiedColumns,
     defaultSelectionActions,
     selectionInitialState,
+    getParamsKey,
 } from '../../utils/tableUtils';
 
-import { formatThousand, capitalize } from '../../utils';
+import { formatThousand } from '../../utils';
 import commonStyles from '../../styles/common';
 import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
@@ -86,13 +87,6 @@ const styles = theme => ({
         top: 'calc(100% + 19px)',
     },
 });
-
-const getParamsKey = (paramsPrefix, key) => {
-    if (paramsPrefix === '') {
-        return key;
-    }
-    return `${paramsPrefix}${capitalize(key, true)}`;
-};
 
 class Table extends Component {
     componentWillMount() {

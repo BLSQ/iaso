@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { withRouter } from 'react-router';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import commonStyles from '../../../styles/common';
 
@@ -13,23 +13,68 @@ import Filters from '../../../components/tables/Filters';
 
 import { orgUnitsTableColumns } from '../config';
 
+import { capitalize } from '../../../utils/index';
 import { fetchOrgUnitsList } from '../../../utils/requests';
 import getTableUrl, { getSort, getOrderArray } from '../../../utils/tableUtils';
+import {
+    search,
+    status,
+    hasInstances,
+    orgUnitType,
+    shape,
+    location,
+    group,
+} from '../../../constants/filters';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
+const extendFilter = (filter, paramsPrefix) => ({
+    ...filter,
+    urlKey: `${paramsPrefix}${capitalize(filter.urlKey, true)}`,
+    apiUrlKey: filter.urlKey,
+});
+
+const getFilters = (paramsPrefix, formatMessage, groups, orgUnitTypes) => [
+    {
+        ...extendFilter(search(), paramsPrefix),
+        column: 1,
+    },
+    {
+        ...extendFilter(orgUnitType(orgUnitTypes), paramsPrefix),
+        column: 1,
+    },
+    {
+        ...extendFilter(group(groups), paramsPrefix),
+        column: 1,
+    },
+    {
+        ...extendFilter(location(formatMessage), paramsPrefix),
+        column: 2,
+    },
+    {
+        ...extendFilter(shape(formatMessage), paramsPrefix),
+        column: 2,
+    },
+    {
+        ...extendFilter(hasInstances(formatMessage), paramsPrefix),
+        column: 3,
+    },
+    {
+        ...extendFilter(status(formatMessage), paramsPrefix),
+        column: 3,
+    },
+];
+
 const getTableState = (params, paramsPrefix) => ({
-    limit: params[`${paramsPrefix}PageSize`]
-        ? parseInt(params[`${paramsPrefix}PageSize`], 10)
-        : 10,
-    page: params[`${paramsPrefix}Page`]
-        ? parseInt(params[`${paramsPrefix}Page`], 10)
-        : 0,
-    order: params[`${paramsPrefix}Order`]
-        ? getOrderArray(params[`${paramsPrefix}Order`])
-        : [{ id: 'name', desc: false }],
+    limit: parseInt(params[`${paramsPrefix}PageSize`], 10) || 10,
+    page: parseInt(params[`${paramsPrefix}Page`], 10) || 0,
+    order: getSort(
+        params[`${paramsPrefix}Order`]
+            ? getOrderArray(params[`${paramsPrefix}Order`])
+            : [{ id: 'name', desc: false }],
+    ),
 });
 
 const tableInitialResult = {
@@ -49,16 +94,27 @@ const OrgUnitTable = ({
     const [loading, setLoading] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const dispatch = useDispatch();
+    const groups = useSelector(state => state.orgUnits.groups);
+    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
+    const filters = getFilters(
+        paramsPrefix,
+        formatMessage,
+        groups,
+        orgUnitTypes,
+    );
+
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
     const fetchOrgUnits = (urlParams = params) => {
         const tableState = getTableState(urlParams, paramsPrefix);
+        console.log('tableState', tableState);
         const newParams = {
             ...apiParams,
             ...tableState,
-            order: getSort(tableState.order),
-            search: params[`${paramsPrefix}Search`],
         };
+        filters.forEach(f => {
+            newParams[f.apiUrlKey] = params[f.urlKey];
+        });
         const url = getTableUrl('orgunits', newParams);
         setLoading(true);
         fetchOrgUnitsList(dispatch, url).then(res => {
@@ -87,6 +143,7 @@ const OrgUnitTable = ({
                 params={params}
                 onSearch={() => fetchOrgUnits(params)}
                 paramsPrefix={paramsPrefix}
+                filters={filters}
             />
             <Table
                 count={count}
@@ -96,7 +153,7 @@ const OrgUnitTable = ({
                 columns={columns}
                 extraProps={{
                     loading,
-                    pageSize: getTableState(params, paramsPrefix).limit,
+                    defaultPageSize: getTableState(params, paramsPrefix).limit,
                 }}
                 baseUrl={baseUrl}
                 redirectTo={redirectTo}

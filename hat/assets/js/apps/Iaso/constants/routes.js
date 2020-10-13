@@ -34,7 +34,7 @@ const paginationPathParams = [
 const paginationPathParamsWithPrefix = prefix =>
     paginationPathParams.map(p => ({
         ...p,
-        key: `${prefix}${capitalize(p.key)}`,
+        key: `${prefix}${capitalize(p.key, true)}`,
     }));
 
 export const getPath = path => {
@@ -223,6 +223,30 @@ export const orgUnitsDetailsPath = {
         {
             isRequired: false,
             key: 'childrenParamsSearch',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsValidation_status',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsHasInstances',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsOrgUnitTypeId',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsWithShape',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsWithLocation',
+        },
+        {
+            isRequired: false,
+            key: 'childrenParamsGroup',
         },
         ...paginationPathParamsWithPrefix('childrenParams'),
     ],

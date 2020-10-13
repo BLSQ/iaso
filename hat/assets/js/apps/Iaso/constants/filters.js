@@ -12,8 +12,8 @@ export const search = (urlKey = 'search') => ({
     type: 'search',
 });
 
-export const status = formatMessage => ({
-    urlKey: 'validation_status',
+export const status = (formatMessage, urlKey = 'validation_status') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: false,
     options: [
@@ -38,8 +38,8 @@ export const status = formatMessage => ({
     type: 'select',
 });
 
-export const hasInstances = formatMessage => ({
-    urlKey: 'hasInstances',
+export const hasInstances = (formatMessage, urlKey = 'hasInstances') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -261,8 +261,8 @@ export const score = () => ({
     isSearchable: false,
 });
 
-export const shape = formatMessage => ({
-    urlKey: 'withShape',
+export const shape = (formatMessage, urlKey = 'withShape') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -279,8 +279,8 @@ export const shape = formatMessage => ({
     type: 'select',
 });
 
-export const location = formatMessage => ({
-    urlKey: 'withLocation',
+export const location = (formatMessage, urlKey = 'withLocation') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -303,8 +303,8 @@ export const locationsLimit = () => ({
     type: 'number',
 });
 
-export const group = groupList => ({
-    urlKey: 'group',
+export const group = (groupList, urlKey = 'group') => ({
+    urlKey,
     isMultiSelect: true,
     isClearable: true,
     options: groupList.map(a => ({

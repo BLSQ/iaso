@@ -71,12 +71,13 @@ export function substituteVars(obj, subs, transform = x => x) {
     );
 }
 
-export const capitalize = text =>
+export const capitalize = (text, keepEndCase = false) =>
     text
         .split(' ')
         .map(
             word =>
-                word.slice(0, 1).toUpperCase() + word.slice(1).toLowerCase(),
+                word.slice(0, 1).toUpperCase() +
+                (keepEndCase ? word.slice(1) : word.slice(1).toLowerCase()),
         )
         .join(' ');
 
@@ -281,12 +282,15 @@ export const renderCountCell = (total, value, formatMessage) => {
     const pourcentage = getPourcentage(total, value);
     return (
         <span>
-            {formatThousand(total)}{' '}
+            {formatThousand(total)}
+{' '}
             {pourcentage !== 0 && total !== 0 && (
                 <span>
                     <br />
                     <span style={{ fontSize: '85%' }}>
-                        ({parseFloat(pourcentage).toFixed(2)}%{' '}
+                        (
+{parseFloat(pourcentage).toFixed(2)}%
+{' '}
                         {formatMessage({
                             defaultMessage: 'positives',
                             id: 'monitoring.label.positive',

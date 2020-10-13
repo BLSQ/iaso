@@ -10,14 +10,17 @@ import SearchIcon from '@material-ui/icons/Search';
 import commonStyles from '../../styles/common';
 import { redirectTo as redirectToAction } from '../../routing/actions';
 
-import { search } from '../../constants/filters';
-
 import FiltersComponent from '../filters/FiltersComponent';
 
 import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    column: {
+        '&>section': {
+            width: '100%',
+        },
+    },
 });
 
 const Filters = ({
@@ -26,7 +29,7 @@ const Filters = ({
     baseUrl,
     redirectTo,
     onSearch,
-    paramsPrefix,
+    filters,
 }) => {
     const [filtersUpdated, setFiltersUpdated] = React.useState(false);
     const handleSearch = () => {
@@ -40,22 +43,32 @@ const Filters = ({
         }
         onSearch();
     };
-    console.log(
-        'search(`${paramsPrefix}Search`)',
-        search(`${paramsPrefix}Search`),
-    );
     return (
         <Fragment>
-            <Grid container spacing={4}>
-                <Grid item xs={3}>
-                    <FiltersComponent
-                        params={params}
-                        baseUrl={baseUrl}
-                        onFilterChanged={() => setFiltersUpdated(true)}
-                        filters={[search(`${paramsPrefix}Search`)]}
-                        onEnterPressed={() => handleSearch()}
-                    />
-                </Grid>
+            <Grid container item xs={12} spacing={4}>
+                {Array(3)
+                    .fill()
+                    .map((x, i) => i + 1)
+                    .map(column => (
+                        <Grid
+                            container
+                            item
+                            xs={12}
+                            md={4}
+                            className={classes.column}
+                            key={`column-${column}`}
+                        >
+                            <FiltersComponent
+                                params={params}
+                                baseUrl={baseUrl}
+                                onFilterChanged={() => setFiltersUpdated(true)}
+                                filters={filters.filter(
+                                    f => f.column === column,
+                                )}
+                                onEnterPressed={() => handleSearch()}
+                            />
+                        </Grid>
+                    ))}
             </Grid>
             <Grid container spacing={4} justify="flex-end" alignItems="center">
                 <Grid
@@ -83,7 +96,7 @@ const Filters = ({
 
 Filters.defaultProps = {
     baseUrl: '',
-    paramsPrefix: '',
+    filters: [],
 };
 
 Filters.propTypes = {
@@ -92,7 +105,7 @@ Filters.propTypes = {
     baseUrl: PropTypes.string,
     onSearch: PropTypes.func.isRequired,
     redirectTo: PropTypes.func.isRequired,
-    paramsPrefix: PropTypes.string,
+    filters: PropTypes.array,
 };
 
 const MapDispatchToProps = dispatch => ({

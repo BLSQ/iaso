@@ -24,7 +24,6 @@ import {
     source,
     shape,
     location,
-    locationsLimit,
     group,
 } from '../../../constants/filters';
 import { setFiltersUpdated, setOrgUnitsLocations } from '../actions';
@@ -118,7 +117,6 @@ class OrgUnitsFiltersComponent extends Component {
             intl: { formatMessage },
             orgUnitTypes,
             sources,
-            currentTab,
             filtersUpdated,
             groups,
             searchIndex,
@@ -126,36 +124,6 @@ class OrgUnitsFiltersComponent extends Component {
         } = this.props;
         const searches = [...decodeSearch(params.searches)];
         const searchParams = searches[searchIndex];
-        const filters = [
-            extendFilter(
-                searchParams,
-                search(),
-                (value, urlKey) => this.onChange(value, urlKey),
-                searchIndex,
-            ),
-            extendFilter(
-                searchParams,
-                orgUnitType(orgUnitTypes),
-                (value, urlKey) => this.onChange(value, urlKey),
-                searchIndex,
-            ),
-            extendFilter(
-                searchParams,
-                group(groups),
-                (value, urlKey) => this.onChange(value, urlKey),
-                searchIndex,
-            ),
-        ];
-        if (currentTab === 'map') {
-            filters.push(
-                extendFilter(
-                    searchParams,
-                    locationsLimit(),
-                    (value, urlKey) => this.onChange(value, urlKey),
-                    searchIndex,
-                ),
-            );
-        }
         const currentColor = searchParams.color
             ? `#${searchParams.color}`
             : getChipColors(0);
@@ -332,7 +300,6 @@ OrgUnitsFiltersComponent.propTypes = {
     orgUnitTypes: PropTypes.array.isRequired,
     sources: PropTypes.array,
     redirectTo: PropTypes.func.isRequired,
-    currentTab: PropTypes.string.isRequired,
     setFiltersUpdated: PropTypes.func.isRequired,
     filtersUpdated: PropTypes.bool.isRequired,
     groups: PropTypes.array,

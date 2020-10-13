@@ -72,7 +72,7 @@ const styles = theme => ({
     reactTableNoMarginTop: {
         marginTop: 0,
     },
-    reactTableCountBottom: {
+    reactTableNoPaginationCountBottom: {
         marginBottom: theme.spacing(8),
     },
     countBottom: {
@@ -80,13 +80,18 @@ const styles = theme => ({
         bottom: -4,
         right: theme.spacing(4),
     },
+    countBottomNoPagination: {
+        bottom: 'auto',
+        right: theme.spacing(2),
+        top: 'calc(100% + 19px)',
+    },
 });
 
 const getParamsKey = (paramsPrefix, key) => {
     if (paramsPrefix === '') {
         return key;
     }
-    return `${paramsPrefix}${capitalize(key)}`;
+    return `${paramsPrefix}${capitalize(key, true)}`;
 };
 
 class Table extends Component {
@@ -212,11 +217,16 @@ class Table extends Component {
             ),
         ];
         actions = actions.concat(selectionActions);
-
-        let pageSize =
-            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) < count
-                ? params[getParamsKey(paramsPrefix, 'pageSize')]
-                : count;
+        const page = params[getParamsKey(paramsPrefix, 'page')]
+            ? params[getParamsKey(paramsPrefix, 'page')] - 1
+            : 0;
+        const urlPageSize = parseInt(
+            params[getParamsKey(paramsPrefix, 'pageSize')],
+            10,
+        );
+        let pageSize = urlPageSize || extraProps.defaultPageSize;
+        const showPagination = !(pageSize >= count && page === 0);
+        pageSize = pageSize < count ? pageSize : count;
         if (count === 0) {
             pageSize = 2;
         }
@@ -248,13 +258,15 @@ class Table extends Component {
                 <SelectionSpeedDials hidden={!multiSelect} actions={actions} />
                 <div
                     className={classNames(classes.reactTable, {
-                        [classes.reactTableCountBottom]: !countOnTop,
+                        [classes.reactTableNoPaginationCountBottom]:
+                            !countOnTop && !showPagination,
                         [classes.reactTableNoMarginTop]: !marginTop,
                     })}
                 >
                     <div
                         className={classNames(classes.count, {
                             [classes.countBottom]: !countOnTop,
+                            [classes.countBottomNoPagination]: !showPagination,
                         })}
                     >
                         {count > 0 && (
@@ -275,6 +287,7 @@ class Table extends Component {
                     </div>
 
                     <ReactTable
+                        showPagination={showPagination}
                         multiSort
                         manual
                         columns={columns}
@@ -283,11 +296,7 @@ class Table extends Component {
                         className="-striped -highlight"
                         defaultSorted={order}
                         pageSize={pageSize}
-                        page={
-                            params[getParamsKey(paramsPrefix, 'page')]
-                                ? params[getParamsKey(paramsPrefix, 'page')] - 1
-                                : 1
-                        }
+                        page={page}
                         onPageChange={page =>
                             this.onTableParamsChange('page', page + 1)
                         }

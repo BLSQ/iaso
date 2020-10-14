@@ -69,11 +69,6 @@ const OrgUnitTable = ({
         filters,
         newApiParams,
     );
-    const onlyChildrenParam =
-        tableParams[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
-    if (onlyChildrenParam === undefined) {
-        tableParams.onlyDirectChildren = true;
-    }
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
     const fetchOrgUnits = () => {
@@ -96,7 +91,7 @@ const OrgUnitTable = ({
         fetchOrgUnits();
     }, [
         params[getParamsKey(paramsPrefix, 'pageSize')],
-        params[getParamsKey(paramsPrefix, 'pageSize')],
+        params[getParamsKey(paramsPrefix, 'page')],
         params[getParamsKey(paramsPrefix, 'order')],
     ]);
 

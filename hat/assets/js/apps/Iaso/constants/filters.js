@@ -348,6 +348,7 @@ export const directChildren = () => ({
     urlKey: 'onlyDirectChildren',
     label: MESSAGES.onlyDirectChildren,
     type: 'checkbox',
+    checkedIfNull: true,
 });
 
 export const orgUnitFilters = (
@@ -413,8 +414,8 @@ export const orgUnitFiltersWithPrefix = (
 export const onlyChildrenParams = (paramsPrefix, params, currentOrgUnit) => {
     if (!currentOrgUnit) return null;
     const onlyDirectChildren =
-        params[getParamsKey(paramsPrefix, 'onlyDirectChildren')] === 'true';
-    return onlyDirectChildren
+        params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
+    return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
         ? { parent_id: currentOrgUnit.id }
         : { org_unit_parent_id: currentOrgUnit.id };
 };

@@ -95,7 +95,7 @@ export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />

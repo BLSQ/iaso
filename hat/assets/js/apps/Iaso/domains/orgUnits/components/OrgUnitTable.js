@@ -54,9 +54,10 @@ const OrgUnitTable = ({
         ...onlyChildrenParams(paramsPrefix, params, currentOrgUnit),
     };
 
+    const hasParent = Boolean(currentOrgUnit);
     const filters = orgUnitFiltersWithPrefix(
         paramsPrefix,
-        Boolean(currentOrgUnit),
+        hasParent,
         formatMessage,
         groups,
         orgUnitTypes,
@@ -68,6 +69,11 @@ const OrgUnitTable = ({
         filters,
         newApiParams,
     );
+    const onlyChildrenParam =
+        tableParams[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
+    if (onlyChildrenParam === undefined) {
+        tableParams.onlyDirectChildren = true;
+    }
     const columns = orgUnitsTableColumns(formatMessage, classes);
 
     const fetchOrgUnits = () => {

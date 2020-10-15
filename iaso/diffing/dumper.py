@@ -70,7 +70,9 @@ class Dumper:
 
     def dump_as_csv(self, diffs, fields):
         res = []
+
         header = ["externalId", "diff status", "type"]
+
         diffable_fields = []
         for field in fields:
             if field.startswith("groupset:"):
@@ -79,6 +81,7 @@ class Dumper:
                 diffable_fields.append(field)
         for field in diffable_fields:
             header.extend((field, field + " before", field + " after"))
+
         res.append(header)
 
         for diff in diffs:

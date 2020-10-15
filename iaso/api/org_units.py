@@ -14,7 +14,7 @@ from iaso.models import (
     Group,
     Project,
     BulkOperation,
-)
+    SourceVersion)
 from django.contrib.gis.geos import Point
 from django.db import connection
 
@@ -351,7 +351,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         longitude = request.data.get("longitude", None)
 
         if latitude and longitude:
-            # TODO: remove this mess once the fontend handles altitude edition
+            # TODO: remove this mess once the frontend handles altitude edition
             if "altitude" in request.data:  # provided explicitly
                 altitude = request.data["altitude"]
             elif (
@@ -420,8 +420,18 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = OrgUnit()
 
         profile = request.user.iaso_profile
-        org_unit.version = profile.account.default_version
+
         name = request.data.get("name", None)
+        version_id = request.date.get("version_id", None)
+
+        if version_id:
+            if version_id in SourceVersion.objects.filter(data_source__projects__account=1).values_list('id', flat=True):
+                org_unit.version_id = version_id
+            else:
+                errors.append({"errorKey": "version_id", "errorMessage": _("Unauthorized version id")})
+        else:
+            org_unit.version = profile.account.default_version
+
         if not name:
             errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
 
@@ -435,6 +445,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             org_unit.validation_status = OrgUnit.VALIDATION_NEW
         else:
             org_unit.validation_status = validation_status
+
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
@@ -673,7 +684,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if has_instances is not None:
         ids_with_instances = Instance.objects.filter(
             org_unit__isnull=False
-        ).exclude(file="").values_list("org_unit_id", flat=True)
+        ).exclude(file="").exclude(deleted=True).values_list("org_unit_id", flat=True)
 
         if has_instances == "true":
             queryset = queryset.filter(id__in=ids_with_instances)

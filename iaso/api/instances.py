@@ -30,7 +30,7 @@ class InstanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Instance
-        fields = ['org_unit', 'period', 'deleted']
+        fields = ['org_unit', 'period']
 
     def validate_org_unit(self, value):
         """

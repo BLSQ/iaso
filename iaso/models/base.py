@@ -259,8 +259,8 @@ class AlgorithmRun(models.Model):
             "ended_at": self.ended_at.timestamp() if self.ended_at else None,
             "result": self.result,
             "finished": self.finished,
-            "launcher": self.launcher.profile.as_dict()
-            if self.launcher and self.launcher.profile
+            "launcher": self.launcher.iaso_profile.as_dict()
+            if self.launcher and self.launcher.iaso_profile
             else None,
             "version_1": self.version_1.as_dict() if self.version_1 else None,
             "version_2": self.version_2.as_dict() if self.version_2 else None,

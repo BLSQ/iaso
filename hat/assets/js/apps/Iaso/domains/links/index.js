@@ -239,29 +239,17 @@ class Links extends Component {
                                     }
                                 />
                             </div>
-                            <Grid
-                                container
-                                spacing={0}
-                                alignItems="center"
-                                className={classes.marginTop}
+                            <Box
+                                mb={4}
+                                mt={1}
+                                display="flex"
+                                justifyContent="flex-end"
                             >
-                                <Grid
-                                    xs={12}
-                                    item
-                                    className={classes.textAlignRight}
-                                >
-                                    <DownloadButtonsComponent
-                                        csvUrl={this.getEndpointUrl(
-                                            true,
-                                            'csv',
-                                        )}
-                                        xlsxUrl={this.getEndpointUrl(
-                                            true,
-                                            'xlsx',
-                                        )}
-                                    />
-                                </Grid>
-                            </Grid>
+                                <DownloadButtonsComponent
+                                    csvUrl={this.getEndpointUrl(true, 'csv')}
+                                    xlsxUrl={this.getEndpointUrl(true, 'xlsx')}
+                                />
+                            </Box>
                         </Fragment>
                     )}
                 </Box>

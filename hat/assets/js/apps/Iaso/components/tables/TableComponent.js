@@ -13,6 +13,7 @@ import {
     getSimplifiedColumns,
     defaultSelectionActions,
     selectionInitialState,
+    getParamsKey,
 } from '../../utils/tableUtils';
 
 import { formatThousand } from '../../utils';
@@ -37,6 +38,8 @@ import MESSAGES from './messages';
  * @param {Array} defaultSorted
  * @param {Array} marginTop
  * @param {Array} countOnTop
+ * @param {Object} extraProps
+ * @param {String} paramPrefix
  *
  * Multi selection is optionnal
  * Selection props:
@@ -115,7 +118,8 @@ class Table extends Component {
             !isEqual(
                 nextProps.selection.unSelectedItems,
                 this.props.selection.unSelectedItems,
-            )
+            ) ||
+            !isEqual(nextProps.extraProps, this.props.extraProps)
         );
     }
 
@@ -124,11 +128,16 @@ class Table extends Component {
     }
 
     onTableParamsChange(key, value) {
-        const { params, redirectTo, baseUrl } = this.props;
-        redirectTo(baseUrl, {
+        const { params, redirectTo, baseUrl, paramsPrefix } = this.props;
+        const newParams = {
             ...params,
-            [key]: key !== 'order' ? value : getSort(value),
-        });
+            [getParamsKey(paramsPrefix, key)]:
+                key !== 'order' ? value : getSort(value),
+        };
+        if (key === 'pageSize') {
+            newParams[getParamsKey(paramsPrefix, 'page')] = 1;
+        }
+        redirectTo(baseUrl, newParams);
     }
 
     onSelect(isSelected, item) {
@@ -190,6 +199,8 @@ class Table extends Component {
             selectionActions,
             setTableSelection,
             selection: { selectCount },
+            extraProps,
+            paramsPrefix,
         } = this.props;
 
         let actions = [
@@ -200,16 +211,22 @@ class Table extends Component {
             ),
         ];
         actions = actions.concat(selectionActions);
-
-        let pageSize =
-            parseInt(params.pageSize, 10) < count ? params.pageSize : count;
+        const page = params[getParamsKey(paramsPrefix, 'page')]
+            ? params[getParamsKey(paramsPrefix, 'page')] - 1
+            : 0;
+        const urlPageSize = parseInt(
+            params[getParamsKey(paramsPrefix, 'pageSize')],
+            10,
+        );
+        let pageSize = urlPageSize || extraProps.defaultPageSize;
+        const showPagination = !(pageSize >= count && page === 0);
+        pageSize = pageSize < count ? pageSize : count;
         if (count === 0) {
             pageSize = 2;
         }
-        const order = params.order
-            ? getOrderArray(params.order)
+        const order = params[getParamsKey(paramsPrefix, 'order')]
+            ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
             : defaultSorted;
-        const showPagination = parseInt(params.pageSize, 10) < count;
         if (multiSelect) {
             columns.push({
                 Header: formatMessage(MESSAGES.selection),
@@ -273,9 +290,9 @@ class Table extends Component {
                         className="-striped -highlight"
                         defaultSorted={order}
                         pageSize={pageSize}
-                        page={params.page - 1}
-                        onPageChange={page =>
-                            this.onTableParamsChange('page', page + 1)
+                        page={page}
+                        onPageChange={newPage =>
+                            this.onTableParamsChange('page', newPage + 1)
                         }
                         onPageSizeChange={newPageSize =>
                             this.onTableParamsChange('pageSize', newPageSize)
@@ -283,6 +300,7 @@ class Table extends Component {
                         onSortedChange={newOrder =>
                             this.onTableParamsChange('order', newOrder)
                         }
+                        {...extraProps}
                     />
                 </div>
             </>
@@ -299,6 +317,8 @@ Table.defaultProps = {
     selectionActions: [],
     selection: selectionInitialState,
     setTableSelection: () => null,
+    extraProps: null,
+    paramsPrefix: '',
 };
 
 Table.propTypes = {
@@ -318,6 +338,8 @@ Table.propTypes = {
     redirectTo: PropTypes.func.isRequired,
     setTableSelection: PropTypes.func,
     selection: PropTypes.object,
+    extraProps: PropTypes.object,
+    paramsPrefix: PropTypes.string,
 };
 
 export default withStyles(styles)(injectIntl(withRouter(Table)));

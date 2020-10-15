@@ -1,6 +1,7 @@
 import React from 'react';
 import RemoveIcon from '@material-ui/icons/Remove';
 import AddIcon from '@material-ui/icons/Add';
+import { capitalize } from './index';
 
 const getTableUrl = (
     urlKey,
@@ -137,4 +138,35 @@ export const setTableSelection = (
             break;
     }
     return newSelection;
+};
+
+export const getParamsKey = (paramsPrefix, key) => {
+    if (paramsPrefix === '') {
+        return key;
+    }
+    return `${paramsPrefix}${capitalize(key, true)}`;
+};
+
+export const getTableParams = (params, paramsPrefix, filters, apiParams) => {
+    const newParams = {
+        ...apiParams,
+        limit:
+            parseInt(params[getParamsKey(paramsPrefix, 'pageSize')], 10) || 10,
+        page: parseInt(params[getParamsKey(paramsPrefix, 'page')], 10) || 0,
+        order: getSort(
+            params[getParamsKey(paramsPrefix, 'order')]
+                ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
+                : [{ id: 'name', desc: false }],
+        ),
+    };
+    filters.forEach(f => {
+        newParams[f.apiUrlKey] = params[f.urlKey];
+    });
+    return newParams;
+};
+
+export const tableInitialResult = {
+    data: [],
+    pages: 0,
+    count: 0,
 };

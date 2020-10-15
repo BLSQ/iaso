@@ -12,12 +12,7 @@ import { textPlaceholder } from '../../constants/uiConstants';
 import MESSAGES from './messages';
 import { getStatusMessage, getOrgUnitGroups } from './utils';
 
-export const orgUnitsTableColumns = (
-    formatMessage,
-    component,
-    classes,
-    searches,
-) => {
+export const orgUnitsTableColumns = (formatMessage, classes, searches) => {
     const columns = [
         {
             Header: 'Id',
@@ -50,6 +45,7 @@ export const orgUnitsTableColumns = (
         {
             Header: formatMessage(MESSAGES.source),
             accessor: 'source',
+            sortable: false,
             Cell: settings => (
                 <section>
                     {settings.original.source && settings.original.source}
@@ -99,7 +95,7 @@ export const orgUnitsTableColumns = (
             Cell: settings => (
                 <section>
                     <IconButtonComponent
-                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}`}
+                        url={`${baseUrls.orgUnitDetails}/orgUnitId/${settings.original.id}/tab/infos`}
                         icon="remove-red-eye"
                         tooltipMessage={MESSAGES.details}
                     />
@@ -124,7 +120,7 @@ export const orgUnitsTableColumns = (
             ),
         },
     ];
-    const searchCount = searches.length;
+    const searchCount = searches && searches.length;
     if (searchCount > 1) {
         columns.unshift({
             Header: formatMessage(MESSAGES.search),

@@ -1,4 +1,4 @@
-import React, { Component, Fragment } from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
@@ -335,7 +335,6 @@ class OrgUnits extends Component {
         } = this.state;
         const tableColumns = orgUnitsTableColumns(
             formatMessage,
-            this,
             classes,
             decodeSearch(params.searches),
         );
@@ -479,37 +478,27 @@ class OrgUnits extends Component {
                                 </div>
                             )}
                             {tab === 'list' && reduxPage.count > 0 && (
-                                <Grid
-                                    container
-                                    spacing={0}
-                                    alignItems="center"
-                                    className={classes.marginTop}
+                                <Box
+                                    mb={4}
+                                    mt={1}
+                                    display="flex"
+                                    justifyContent="flex-end"
                                 >
-                                    <Grid
-                                        xs={12}
-                                        item
-                                        className={classes.textAlignRight}
-                                    >
-                                        <div
-                                            className={classes.paddingBottomBig}
-                                        >
-                                            <DownloadButtonsComponent
-                                                csvUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'csv',
-                                                )}
-                                                xlsxUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'xlsx',
-                                                )}
-                                                gpkgUrl={this.getEndpointUrl(
-                                                    true,
-                                                    'gpkg',
-                                                )}
-                                            />
-                                        </div>
-                                    </Grid>
-                                </Grid>
+                                    <DownloadButtonsComponent
+                                        csvUrl={this.getEndpointUrl(
+                                            true,
+                                            'csv',
+                                        )}
+                                        xlsxUrl={this.getEndpointUrl(
+                                            true,
+                                            'xlsx',
+                                        )}
+                                        gpkgUrl={this.getEndpointUrl(
+                                            true,
+                                            'gpkg',
+                                        )}
+                                    />
+                                </Box>
                             )}
                         </>
                     )}

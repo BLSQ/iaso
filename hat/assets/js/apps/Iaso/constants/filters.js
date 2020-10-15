@@ -3,17 +3,19 @@ import React from 'react';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
+import { getParamsKey } from '../utils/tableUtils';
 import { Period } from '../domains/periods/models';
 import { getOrgunitMessage } from '../domains/orgUnits/utils';
+import { capitalize } from '../utils/index';
 
-export const search = () => ({
-    urlKey: 'search',
+export const search = (urlKey = 'search') => ({
+    urlKey,
     label: MESSAGES.textSearch,
     type: 'search',
 });
 
-export const status = formatMessage => ({
-    urlKey: 'validation_status',
+export const status = (formatMessage, urlKey = 'validation_status') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: false,
     options: [
@@ -38,8 +40,8 @@ export const status = formatMessage => ({
     type: 'select',
 });
 
-export const hasInstances = formatMessage => ({
-    urlKey: 'hasInstances',
+export const hasInstances = (formatMessage, urlKey = 'hasInstances') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -261,8 +263,8 @@ export const score = () => ({
     isSearchable: false,
 });
 
-export const shape = formatMessage => ({
-    urlKey: 'withShape',
+export const shape = (formatMessage, urlKey = 'withShape') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -279,8 +281,8 @@ export const shape = formatMessage => ({
     type: 'select',
 });
 
-export const location = formatMessage => ({
-    urlKey: 'withLocation',
+export const location = (formatMessage, urlKey = 'withLocation') => ({
+    urlKey,
     isMultiSelect: false,
     isClearable: true,
     options: [
@@ -303,8 +305,8 @@ export const locationsLimit = () => ({
     type: 'number',
 });
 
-export const group = groupList => ({
-    urlKey: 'group',
+export const group = (groupList, urlKey = 'group') => ({
+    urlKey,
     isMultiSelect: true,
     isClearable: true,
     options: groupList.map(a => ({
@@ -341,3 +343,79 @@ export const instanceDeleted = () => ({
     label: MESSAGES.showDeleted,
     type: 'checkbox',
 });
+
+export const directChildren = () => ({
+    urlKey: 'onlyDirectChildren',
+    label: MESSAGES.onlyDirectChildren,
+    type: 'checkbox',
+    checkedIfNull: true,
+});
+
+export const orgUnitFilters = (
+    formatMessage = () => null,
+    groups = [],
+    orgUnitTypes = [],
+    withChildren = false,
+) => {
+    const filters = [
+        {
+            ...search(),
+            column: 1,
+        },
+        {
+            ...orgUnitType(orgUnitTypes),
+            column: 1,
+        },
+        {
+            ...group(groups),
+            column: 3,
+        },
+        {
+            ...location(formatMessage),
+            column: 2,
+        },
+        {
+            ...shape(formatMessage),
+            column: 2,
+        },
+        {
+            ...hasInstances(formatMessage),
+            column: 3,
+        },
+        {
+            ...status(formatMessage),
+            column: 3,
+        },
+    ];
+    if (withChildren) {
+        filters.push({
+            ...directChildren(),
+            column: 1,
+        });
+    }
+    return filters;
+};
+
+export const orgUnitFiltersWithPrefix = (
+    paramsPrefix,
+    withChildren,
+    formatMessage,
+    groups,
+    orgUnitTypes,
+) =>
+    orgUnitFilters(formatMessage, groups, orgUnitTypes, withChildren).map(
+        f => ({
+            ...f,
+            urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
+            apiUrlKey: f.urlKey,
+        }),
+    );
+
+export const onlyChildrenParams = (paramsPrefix, params, currentOrgUnit) => {
+    if (!currentOrgUnit) return null;
+    const onlyDirectChildren =
+        params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
+    return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
+        ? { parent_id: currentOrgUnit.id }
+        : { org_unit_parent_id: currentOrgUnit.id };
+};

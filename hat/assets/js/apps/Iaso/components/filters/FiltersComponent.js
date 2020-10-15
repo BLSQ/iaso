@@ -49,13 +49,15 @@ class FiltersComponent extends React.Component {
         redirectTo(baseUrl, newParams);
     }
 
-    toggleCheckbox(checked, urlKey) {
+    toggleCheckbox(checked, urlKey, filter) {
         const { params, redirectTo, baseUrl } = this.props;
         const newParams = {
             ...params,
         };
         if (checked) {
             newParams[urlKey] = 'true';
+        } else if (filter.checkedIfNull) {
+            newParams[urlKey] = 'false';
         } else if (newParams[urlKey]) {
             delete newParams[urlKey];
         }
@@ -148,11 +150,16 @@ class FiltersComponent extends React.Component {
                                             this.toggleCheckbox(
                                                 checked,
                                                 filter.urlKey,
+                                                filter,
                                             )
                                         }
                                         value={
                                             this.props.params[filter.urlKey] ===
-                                            'true'
+                                                'true' ||
+                                            (this.props.params[
+                                                filter.urlKey
+                                            ] === undefined &&
+                                                filter.checkedIfNull)
                                         }
                                         type="checkbox"
                                         label={filter.label}

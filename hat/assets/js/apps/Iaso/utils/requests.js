@@ -39,7 +39,7 @@ export const fetchSubOrgUnitsByType = (dispatch, params, orgUnitType) =>
         });
 
 export const fetchOrgUnitsTypes = dispatch =>
-    getRequest('/api/orgunittypes')
+    getRequest('/api/orgunittypes/')
         .then(res => res.orgUnitTypes)
         .catch(error => {
             dispatch(
@@ -89,7 +89,7 @@ export const fetchGroups = dispatch =>
         });
 
 export const fetchDevices = dispatch =>
-    getRequest('/api/devices')
+    getRequest('/api/devices/')
         .then(res => res.devices)
         .catch(error => {
             dispatch(
@@ -102,7 +102,7 @@ export const fetchDevices = dispatch =>
         });
 
 export const fetchDevicesOwnerships = dispatch =>
-    getRequest('/api/devicesownership')
+    getRequest('/api/devicesownership/')
         .then(res => res.devicesownership)
         .catch(error => {
             dispatch(
@@ -245,7 +245,7 @@ export const fetchForms = (dispatch, url = '/api/forms/') =>
         });
 
 export const fetchFormDetail = (dispatch, formId) =>
-    getRequest(`/api/forms/${formId}`)
+    getRequest(`/api/forms/${formId}/`)
         .then(form => form)
         .catch(error => {
             dispatch(
@@ -256,7 +256,7 @@ export const fetchFormDetail = (dispatch, formId) =>
         });
 
 export const fetchOrgUnitDetail = (dispatch, orgUnitId) =>
-    getRequest(`/api/orgunits/${orgUnitId}`)
+    getRequest(`/api/orgunits/${orgUnitId}/`)
         .then(orgUnit => orgUnit)
         .catch(error => {
             dispatch(
@@ -334,7 +334,7 @@ export const fetchProfiles = dispatch =>
         });
 
 export const fetchAlgorithms = dispatch =>
-    getRequest('/api/algorithms')
+    getRequest('/api/algorithms/')
         .then(algorithms => algorithms)
         .catch(error => {
             dispatch(
@@ -360,7 +360,7 @@ export const fetchLinkDetail = (dispatch, linkId) =>
         });
 
 export const fetchAlgorithmRuns = dispatch =>
-    getRequest('/api/algorithmsruns')
+    getRequest('/api/algorithmsruns/')
         .then(algorithms => algorithms)
         .catch(error => {
             dispatch(

@@ -76,7 +76,7 @@ export const fetchEditUrl = (currentInstance, location) => dispatch => {
 
 export const fetchFormDetail = formId => dispatch => {
     dispatch(setInstancesFetching(true));
-    return getRequest(`/api/forms/${formId}`)
+    return getRequest(`/api/forms/${formId}/`)
         .then(res => dispatch(setCurrentForm(res)))
         .catch(err =>
             dispatch(
@@ -87,7 +87,7 @@ export const fetchFormDetail = formId => dispatch => {
 
 export const fetchInstanceDetail = instanceId => dispatch => {
     dispatch(setInstancesFetching(true));
-    return getRequest(`/api/instances/${instanceId}`)
+    return getRequest(`/api/instances/${instanceId}/`)
         .then(res => dispatch(setCurrentInstance(res)))
         .catch(err =>
             dispatch(

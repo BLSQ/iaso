@@ -26,7 +26,7 @@ export const fetchAction = (
     params = null,
     setIsLoading = null,
 ) => {
-    let url = `/api/${apiPath}`;
+    let url = `/api/${apiPath}/`;
     if (params) {
         url += `?order=${params.order}&limit=${params.pageSize}&page=${params.page}`;
         if (params.search) {

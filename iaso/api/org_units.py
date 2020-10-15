@@ -4,7 +4,7 @@ from django.contrib.gis.geos import Polygon
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
-
+import re
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
 from iaso.models import (
@@ -654,7 +654,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         if search.startswith("ids:"):
             s = search.replace("ids:", "")
             try:
-                ids = [i.strip() for i in s.split(",")]
+                ids = re.findall('[A-Za-z0-9_-]+', s)
                 queryset = queryset.filter(id__in=ids)
             except:
                 queryset = queryset.filter(id__in=[])
@@ -662,7 +662,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         elif search.startswith("refs:"):
             s = search.replace("refs:", "")
             try:
-                refs = [i.strip() for i in s.split(",")]
+                refs = re.findall('[A-Za-z0-9_-]+', s)
                 queryset = queryset.filter(source_ref__in=refs)
             except:
                 queryset = queryset.filter(source_ref__in=[])

@@ -422,10 +422,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
 
         name = request.data.get("name", None)
-        version_id = request.date.get("version_id", None)
+        version_id = request.data.get("version_id", None)
 
         if version_id:
-            if version_id in SourceVersion.objects.filter(data_source__projects__account=1).values_list('id', flat=True):
+            if version_id in SourceVersion.objects.filter(data_source__projects__account=profile.account).values_list('id', flat=True):
                 org_unit.version_id = version_id
             else:
                 errors.append({"errorKey": "version_id", "errorMessage": _("Unauthorized version id")})

@@ -282,6 +282,7 @@ class MultiTenantTestCase(APITestCase):
         response = self.raccoon_client.get(
             "/api/sourceversions/", accept="application/json"
         )
+
         content = json.loads(response.content)
         self.assertEqual(content["versions"], [])
 

@@ -38,11 +38,10 @@ class SourceVersionViewSet(ModelViewSet):
     GET /api/datasources/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated,
-                         HasPermission("menupermissions.iaso_org_units"),
+    permission_classes = [permissions.IsAuthenticated
     ]
     serializer_class = SourceVersionSerializer
-    results_key = "sources"
+    results_key = "versions"
     queryset = DataSource.objects.all()
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
 

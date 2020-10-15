@@ -417,5 +417,5 @@ export const onlyChildrenParams = (paramsPrefix, params, currentOrgUnit) => {
         params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
     return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
         ? { parent_id: currentOrgUnit.id }
-        : { org_unit_parent_id: currentOrgUnit.id };
+        : { orgUnitParentId: currentOrgUnit.id };
 };

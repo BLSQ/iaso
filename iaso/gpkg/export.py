@@ -6,6 +6,9 @@ import pandas as pd
 import geopandas as gpd
 from shapely import wkt
 from shapely.geometry.base import BaseGeometry
+import uuid
+import tempfile
+import os
 
 ORG_UNIT_COLUMNS = [
     "name",
@@ -69,10 +72,17 @@ def org_units_to_gpkg(queryset: QuerySet) -> ContentFile:
     ou_gdf_by_type = ou_gdf.groupby("group_key")
 
     # Write to content file
-    gpkg_file = ContentFile(b"")
+
+    path = tempfile.gettempdir() + "/" + str(uuid.uuid4())
+
+    i = 1
     for group_key, group in ou_gdf_by_type:
         group = group.drop(columns=["depth", "group_key"])
         layer = group_key.split("-", 1)[1]
-        group.to_file(gpkg_file, driver="GPKG", layer=layer)
-
-    return gpkg_file
+        group.to_file(path, driver="GPKG", layer=layer)
+        i = i + 1
+        f = open(path, 'rb')
+    content = f.read()
+    f.close()
+    os.remove(path)
+    return content

@@ -1,6 +1,6 @@
 from django.utils import timezone
 from rest_framework import viewsets, status, permissions
-from django.contrib.gis.geos import Polygon
+from django.contrib.gis.geos import Polygon, MultiPolygon, GEOSGeometry
 from rest_framework.response import Response
 from rest_framework.decorators import action
 from django.utils.translation import gettext as _
@@ -404,7 +404,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     )
 
             return Response(res)
-        else :
+        else:
             return Response(
                 errors,
                 status=400,
@@ -420,7 +420,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit = OrgUnit()
 
         profile = request.user.iaso_profile
-
+        if request.user:
+            org_unit.creator = request.user
         name = request.data.get("name", None)
         version_id = request.data.get("version_id", None)
         if version_id:
@@ -446,19 +447,39 @@ class OrgUnitViewSet(viewsets.ViewSet):
         else:
             org_unit.validation_status = validation_status
 
-
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
-        groups = request.data.get("groups")
+        groups = request.data.get("groups",[])
 
-        org_unit.aliases = request.data.get("aliases", "")
+        org_unit.aliases = request.data.get("aliases", [])
+
+        geom = request.data.get("geom")
+        if geom:
+            try:
+                g = GEOSGeometry(json.dumps(geom))
+                org_unit.geom = g
+                org_unit.simplified_geom = g #maybe think of a standard simplification here?
+            except Exception as e:
+                errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
+
+        latitude = request.data.get("latitude")
+        longitude = request.data.get("longitude")
+        altitude = request.data.get("altitude", 0)
+        if latitude and longitude:
+            org_unit.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
 
         if not org_unit_type_id:
             errors.append({"errorKey": "org_unit_type_id", "errorMessage": _("Org unit type is required")})
 
+        if parent_id:
+            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
+            if org_unit.version_id != parent_org_unit.version_id:
+                errors.append({"errorKey": "parent_id", "errorMessage": _("Parent is not in the same version")})
+            org_unit.parent = parent_org_unit
+
         if not errors:
             org_unit.save()
-        else :
+        else:
             return Response(
                 errors,
                 status=400,
@@ -466,17 +487,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
-        if parent_id:
-            parent_org_unit = get_object_or_404(self.get_queryset(), id=parent_id)
-            org_unit.parent = parent_org_unit
-        else:
-            org_unit.parent = None
-
         new_groups = []
         for group in groups:
             temp_group = get_object_or_404(Group, id=group)
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
+
         audit_models.log_modification(
             None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
         )

@@ -29,7 +29,7 @@ def geos_to_shapely(geom: GEOSGeometry) -> typing.Optional[BaseGeometry]:
     return shape if not shape.is_empty else None
 
 
-def org_units_to_gpkg(queryset: QuerySet) -> ContentFile:
+def org_units_to_gpkg(queryset: QuerySet) -> bytes:
     """Export the provided org unit queryset in Geopackage (gpkg) format."""
 
     # create df with queryset, excluding entries without geo info
@@ -72,8 +72,9 @@ def org_units_to_gpkg(queryset: QuerySet) -> ContentFile:
     ou_gdf_by_type = ou_gdf.groupby("group_key")
 
     # Write to content file
-
-    path = tempfile.gettempdir() + "/" + str(uuid.uuid4())
+    # Tried to use a mkstemp but it prevents the group.to_file from writing to it and is hard to remove later on
+    # NamedTemporaryFile works but the handle cannot be used to read again. So left the plain uuid thing.
+    path = os.path.join(tempfile.gettempdir(), str(uuid.uuid4()))
 
     i = 1
     for group_key, group in ou_gdf_by_type:
@@ -81,7 +82,8 @@ def org_units_to_gpkg(queryset: QuerySet) -> ContentFile:
         layer = group_key.split("-", 1)[1]
         group.to_file(path, driver="GPKG", layer=layer)
         i = i + 1
-        f = open(path, 'rb')
+
+    f = open(path, 'rb')
     content = f.read()
     f.close()
     os.remove(path)

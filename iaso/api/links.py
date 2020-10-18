@@ -19,6 +19,7 @@ class LinkViewSet(viewsets.ViewSet):
     This API is restricted to authenticated users having the "menupermissions.iaso_links" permission
 
     GET /api/links/
+    POST /api/links/
     GET /api/links/<id>
     PATCH /api/links/<id>
     """
@@ -42,7 +43,7 @@ class LinkViewSet(viewsets.ViewSet):
         destination_version = request.GET.get("destinationVersion", None)
         validator_id = request.GET.get("validatorId", None)
         algorithm_id = request.GET.get("algorithmId", None)
-        algorithm_run_Id = request.GET.get("algorithmRunId", None)
+        algorithm_run_id = request.GET.get("algorithmRunId", None)
         run_id = request.GET.get("run", None)
         score = request.GET.get("score", None)
         csv_format = request.GET.get("csv", None)
@@ -88,15 +89,15 @@ class LinkViewSet(viewsets.ViewSet):
         if algorithm_id:
             queryset = queryset.filter(algorithm_run__algorithm=algorithm_id)
 
-        if algorithm_run_Id:
-            queryset = queryset.filter(algorithm_run_id=algorithm_run_Id)
+        if algorithm_run_id:
+            queryset = queryset.filter(algorithm_run_id=algorithm_run_id)
 
         if run_id:
             queryset = queryset.filter(algorithm_run=run_id)
         if score:
-            scoreList = score.split(",")
-            score_lower_bound = scoreList[0]
-            score_upper_bound = scoreList[1]
+            score_list = score.split(",")
+            score_lower_bound = score_list[0]
+            score_upper_bound = score_list[1]
             if score_lower_bound:
                 queryset = queryset.filter(similarity_score__gte=score_lower_bound)
 

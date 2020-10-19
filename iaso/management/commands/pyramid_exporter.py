@@ -1,6 +1,8 @@
 import time
 import json
+import logging
 
+logger = logging.getLogger(__name__)
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.contrib.gis.geos import Point
@@ -97,7 +99,7 @@ class Command(BaseCommand):
 
     @transaction.atomic
     def handle(self, *args, **options):
-        print("let's diff")
+        logger.debug("let's diff")
         file_name = options.get("output_csv")
         validation_status = options.get("validation_status", None)
         validation_status_ref = options.get("validation_status_ref", None)

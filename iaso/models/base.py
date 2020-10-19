@@ -378,6 +378,7 @@ class Group(models.Model):
 
         return res
 
+
 class GroupSet(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)

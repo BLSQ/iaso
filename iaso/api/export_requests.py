@@ -1,4 +1,7 @@
 import typing
+import logging
+
+logger = logging.getLogger(__name__)
 from iaso.models import ExportRequest
 from rest_framework import serializers, permissions
 
@@ -33,7 +36,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             user = self.context["request"].user
             force_export = self.context["request"].data.get("forceExport", False)
 
-            print("ExportRequest to create", user, validated_data)
+            logger.debug("ExportRequest to create", user, validated_data)
 
             return ExportRequestBuilder().build_export_request(
                 filters=validated_data, launcher=user, force_export=force_export

@@ -1,4 +1,6 @@
 import uuid
+import logging
+logger = logging.getLogger(__name__)
 
 
 def seed_event_mapping(api, program_id):
@@ -62,4 +64,4 @@ def copy_mappings_from_previous_version(form_version, previous_form_version):
             ]
 
         mapping_version.save()
-        print("cloned", mapping_version)
+        logger.debug("cloned " + str(mapping_version))

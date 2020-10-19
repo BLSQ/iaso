@@ -2,6 +2,8 @@ import json
 import responses
 from django.core.files.uploadedfile import UploadedFile
 from collections import namedtuple
+import logging
+logger = logging.getLogger(__name__)
 from django.test import TestCase
 from django.contrib.gis.geos import Point
 from iaso.models import (
@@ -247,9 +249,9 @@ def build_form_mapping():
 
 
 def dump_attributes(obj):
-    print("----- ", obj.__class__)
+    logger.debug("----- " + str(obj.__class__))
     for k in obj.__dict__:
-        print("\t", k, obj.__dict__[k])
+        logger.debug("\t" + k + str(obj.__dict__[k]))
 
 
 class DataValueExporterTests(TestCase):
@@ -284,7 +286,7 @@ class DataValueExporterTests(TestCase):
     def expect_logs(self, status):
         # TODO understand what is happening on setting.DEBUG ?
         if os.environ.get("DEBUG", "").lower() == "true":
-            print("-*-*-*-*-*", self._testMethodName)
+            logger.debug("-*-*-*-*-*" + self._testMethodName)
             for export_log in ExportLog.objects.all():
                 dump_attributes(export_log)
             for export_status in ExportStatus.objects.all():

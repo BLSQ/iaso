@@ -13,6 +13,8 @@ from django.db.models import Avg, Count, FloatField, Sum, Exists, OuterRef
 from django.db.models.functions import Cast
 from django.db.models.expressions import RawSQL
 from iaso.models import Instance
+import logging
+logger = logging.getLogger(__name__)
 
 
 def generate_instance_xml(instance, form_version):
@@ -86,7 +88,7 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
 
     queryset = queryset.order_by("period", "org_unit_id", "form_id")
 
-    print("generate_instances : queryset", queryset.count())
+    logger.debug("generate_instances : queryset" + str(queryset.count()))
     # generate "derived" instances
 
     page_size = 50
@@ -108,14 +110,8 @@ def generate_instances(project, cvs_form, cvs_stat_mapping_version, period):
     instances = Instance.objects.filter(
         period=period, form=cvs_stat_mapping_version.form_version.form, project=project
     )
-    print(
-        "generate_instances :",
-        "took",
-        batch_time,
-        "to generate",
-        instances.count(),
-        "instances : ",
-        progress,
+    logger.debug(
+        "generate_instances : took" + str(batch_time) + "to generate" + str(instances.count()) + "instances : " + str(progress)
     )
     return progress
 
@@ -127,7 +123,7 @@ def process_page(
     page_start = timer()
 
     counts = paginator.page(page).object_list
-    print("generate_instances : page : ", page)
+    logger.debug("generate_instances : page : " + str(page))
 
     for record in counts:
         instance = process_instance(
@@ -135,7 +131,7 @@ def process_page(
         )
 
     page_time = timer() - page_start
-    print("generate_instances :", progress, "in", page_time, "seconds")
+    logger.debug("generate_instances :" + str(progress) +"in" + str(page_time) + "seconds")
 
 
 def process_instance(record, project, cvs_stat_mapping_version, progress, aggregations):

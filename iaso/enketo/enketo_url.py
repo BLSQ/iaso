@@ -3,6 +3,9 @@ import requests
 import json
 from json.decoder import JSONDecodeError
 from django.conf import settings as djangoSettings
+import logging
+
+logger = logging.getLogger(__name__)
 
 # See REVERSE-ENKETO.md for more info
 
@@ -73,7 +76,7 @@ def enketo_url(
         handle_enketo_error(response)
 
     except requests.exceptions.ConnectionError as connectionError:
-        print(connectionError)
+        logger.error(str(connectionError))
         raise EnketoError("Enketo is not available")
 
 

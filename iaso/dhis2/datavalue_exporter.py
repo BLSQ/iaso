@@ -173,8 +173,7 @@ class AggregateHandler(BaseHandler):
         )
         request = {"completeDataSetRegistrations": complete_data_set_registrations}
         resp_complete = api.post("completeDataSetRegistrations", request)
-
-        print("completeDataSetRegistrations response", resp_complete.json())
+        self.logger.debug("completeDataSetRegistrations response %s" % resp_complete.text)
         export_log = ExportLog()
         export_log.sent = request
         export_log.received = resp_complete.json()
@@ -215,8 +214,7 @@ class AggregateHandler(BaseHandler):
             batched_end = timer()
             batched_time = batched_end - batched_start
             stats["batched_time"] = batched_time
-
-            print(prefix, resp)
+            self.logger.debug(prefix + str(resp))
 
             export_log = ExportLog()
             export_log.sent = request
@@ -286,7 +284,7 @@ class EventHandler(BaseHandler):
                     ),
                 ]
             )
-            print(event_errors)
+            self.logger.error(str(event_errors))
 
         for question_key in instance.json.keys():
             if question_key in question_mappings:
@@ -329,7 +327,8 @@ class EventHandler(BaseHandler):
                 except Exception as error:
                     errored = True
                     event_errors.append([question_key, error])
-                    print("ERROR Mapping", error, question_key)
+                    self.logger.error("ERROR Mapping" + str(error) + "question_key" + question_key)
+
         if errored:
             return (None, event_errors)
         else:
@@ -342,9 +341,9 @@ class EventHandler(BaseHandler):
 
         try:
             payload = {"events": data}
-            print(json.dumps(payload, indent=2))
+            self.logger.debug(json.dumps(payload, indent=2))
             resp = api.post("events", payload).json()
-            print(resp)
+            self.logger.debug(str(resp))
 
             exception = self.handle_exception({"response": resp}, "transient")
             if exception:
@@ -384,9 +383,9 @@ class EventHandler(BaseHandler):
             ]
             conflicts = [m["conflicts"] for m in import_summaries if "conflicts" in m]
             descriptions = uniquify(descriptions)
-            print("---------------------------------------------------------")
-            print("----------------------- EXPORT ERROR --------------------")
-            print("Failed to create events got", descriptions, conflicts, resp)
+            self.logger.error("---------------------------------------------------------")
+            self.logger.error("----------------------- EXPORT ERROR --------------------")
+            self.logger.error("Failed to create events got" + str(descriptions) + str(conflicts) + str(resp))
             return InstanceExportError(message, counts, descriptions)
 
 
@@ -473,7 +472,7 @@ class EventTrackerHandler(BaseHandler):
             if len(event["dataValues"]) > 0:
                 events.append(event)
             else:
-                print(
+                self.logger.error(
                     f"skipping event for stage {program_stage_id} in #{instance.id} no data"
                 )
 
@@ -544,20 +543,20 @@ class EventTrackerHandler(BaseHandler):
         return self.get_first(resp["trackedEntityInstances"])
 
     def update_tracked_entity(self, api, tracked_entity):
-        print("update_tracked_entity", json.dumps(tracked_entity))
+        #print("update_tracked_entity", json.dumps(tracked_entity))
         resp = api.put(
             "trackedEntityInstances/" + tracked_entity["trackedEntityInstance"],
             tracked_entity,
         ).json()
-        print(resp)
+        self.logger.debug(str(resp))
 
         return resp
 
     def create_tracked_entity(self, api, tracked_entity):
-        print("create_tracked_entity", json.dumps(tracked_entity))
+        self.logger.debug("create_tracked_entity" + json.dumps(tracked_entity))
         resp = api.post("trackedEntityInstances", tracked_entity).json()
 
-        print(resp)
+        self.logger.debug(str(resp))
 
         return resp
 
@@ -576,7 +575,7 @@ class EventTrackerHandler(BaseHandler):
             f"trackedEntityAttributes/{unique_number_attribute_id}/generate",
             params={"ORG_UNIT_CODE": org_unit_dhis2["code"]},
         ).json()
-        print("generate_unique_number", generated)
+        self.logger.debug("generate_unique_number" + str(generated))
         return generated["value"]
 
     def export_page(self, prefix, data, export_statuses, stats, raw_api):
@@ -635,7 +634,7 @@ class EventTrackerHandler(BaseHandler):
                                     "tracked_entity_identifier"
                                 ]
                                 tracked_entity_iaso = mapped[0][2]
-                                print("SUB form mapped to ", tracked_entity_iaso)
+                                self.logger.debug("SUB form mapped to " + str(tracked_entity_iaso))
                                 # export_record
                                 related_tei_uid = self.export_record(
                                     api,
@@ -704,13 +703,12 @@ class EventTrackerHandler(BaseHandler):
                 if attribute["attribute"] == unique_number_attribute_id
             ]
         )
-        print(
-            "looking for",
+        self.logger.debug(
+            "looking for" +
             unique_number_attribute_id,
-            "in ",
-            tracked_entity_iaso["attributes"],
+            "in " + str(tracked_entity_iaso["attributes"])
         )
-        print(instance.id, "unique number ?", unique_number)
+        self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
         if unique_number:
             tracked_entity_dhis2 = self.find_tracked_entity(
                 api,
@@ -736,7 +734,7 @@ class EventTrackerHandler(BaseHandler):
                 api, unique_number_attribute_id, instance.org_unit
             )
 
-            print(instance.id, "unique number ?", unique_number)
+            self.logger.debug(str(instance.id) + "unique number ?" + str(unique_number))
 
             unique_number_attribute = self.get_first(
                 [
@@ -796,9 +794,9 @@ class EventTrackerHandler(BaseHandler):
             descriptions = uniquify(descriptions)
             if len(descriptions) == 0:
                 descriptions = [conflicts[0][0]["value"]]
-            print("---------------------------------------------------------")
-            print("----------------------- EXPORT ERROR --------------------")
-            print("Failed to create events got", descriptions, conflicts, resp)
+            self.logger.error("---------------------------------------------------------")
+            self.logger.error("----------------------- EXPORT ERROR --------------------")
+            self.logger.error("Failed to create events got" + str(descriptions) + "conflicts " + str(conflicts) + "resp " +str(resp))
             return InstanceExportError(message, counts, descriptions)
 
     def flag_as_errored(self, export_status, message, stats):
@@ -945,7 +943,7 @@ class DataValueExporter:
 
                 page_end = timer()
                 page_time = page_end - page_start
-                print(
+                logger.debug(
                     prefix
                     + " in %1.2f sec (dhis2 time %1.2f batched): %d skipped"
                     % (page_time, stats["batched_time"], len(skipped))

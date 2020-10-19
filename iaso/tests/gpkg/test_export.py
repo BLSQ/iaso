@@ -45,5 +45,5 @@ class ExportTestCase(TestCase):
 
     def test_org_units_to_gpkg(self):
         gpkg_content = org_units_to_gpkg(m.OrgUnit.objects.all())
-        self.assertIsInstance(gpkg_content, ContentFile)
+        self.assertIsInstance(gpkg_content, bytes)
         self.assertGreater(len(gpkg_content), 200)

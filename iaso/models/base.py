@@ -320,8 +320,8 @@ class Link(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "validated": self.validated,
-            "validator": self.validator.profile.as_dict()
-            if self.validator and self.validator.profile
+            "validator": self.validator.iaso_profile.as_dict()
+            if self.validator and self.validator.iaso_profile
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
@@ -338,8 +338,8 @@ class Link(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "validated": self.validated,
-            "validator": self.validator.profile.as_dict()
-            if self.validator and self.validator.profile
+            "validator": self.validator.iaso_profile.as_dict()
+            if self.validator and self.validator.iaso_profile
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,

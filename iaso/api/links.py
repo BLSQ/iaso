@@ -1,6 +1,6 @@
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
-from iaso.models import Link, OrgUnit
+from iaso.models import Link, OrgUnit, DataSource, AlgorithmRun, MatchingAlgorithm
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
@@ -11,6 +11,30 @@ from django.http import StreamingHttpResponse, HttpResponse
 from hat.api.export_utils import Echo, generate_xlsx, iter_items
 from iaso.utils import geojson_queryset
 from .common import HasPermission
+
+
+class LinkSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Link
+        fields = ["id", "destination", "source", "validated", "similarity_score", "algorithm_run"]
+
+    def validate(self, attrs):
+        validated_data = super().validate(attrs)
+        account = self.context["request"].user.iaso_profile.account
+        sources = DataSource.objects.filter(projects__account=account)
+        run = attrs["algorithm_run"]
+
+        if not (run.version_1.data_source in sources and run.version_2.data_source in sources):
+            raise serializers.ValidationError('This run is not part of your account.')
+        link_source = attrs["source"]
+        link_destination = attrs["destination"]
+        # print(link_source.version, run.version_1)
+        # print(link_destination.version, run.version_2)
+        if not (link_source.version == run.version_2 and link_destination.version == run.version_1):
+            raise serializers.ValidationError('Your source and destination are not matching with the run')
+
+        return validated_data
 
 
 class LinkViewSet(viewsets.ViewSet):
@@ -211,3 +235,11 @@ class LinkViewSet(viewsets.ViewSet):
                 queryset, geometry_field="simplified_geom"
             )
         return Response(res)
+
+    def create(self, request):
+        link_serializer = LinkSerializer(data=request.data, context={"request": request})
+        link_serializer.is_valid(raise_exception=True)
+        link = link_serializer.save()
+        link.validator = request.user
+        return Response(link.as_dict())
+

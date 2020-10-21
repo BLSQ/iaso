@@ -230,11 +230,11 @@ export const algo = algoList => ({
 });
 
 const getRunDisplayName = (runItem, formatMessage) =>
-    `${formatMessage(MESSAGES.from)} ${runItem.version_2.data_source.name} v${
-        runItem.version_2.number
+    `${formatMessage(MESSAGES.from)} ${runItem.source.data_source.name} v${
+        runItem.source.number
     }` +
-    ` ${formatMessage(MESSAGES.to)} ${runItem.version_1.data_source.name} v${
-        runItem.version_1.number
+    ` ${formatMessage(MESSAGES.to)} ${runItem.destination.data_source.name} v${
+        runItem.destination.number
     } (` +
     `${runItem.algorithm_name})`;
 

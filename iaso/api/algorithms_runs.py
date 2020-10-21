@@ -1,5 +1,5 @@
 import importlib
-from rest_framework import viewsets, permissions
+from rest_framework import viewsets, permissions, exceptions
 from rest_framework.response import Response
 from django.core.paginator import Paginator
 from django.shortcuts import get_object_or_404
@@ -78,6 +78,24 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
             return Response(res)
         else:
             return Response(map(lambda x: x.as_list(), queryset))
+
+    def create(self, request):
+        algo_id = request.data.get("algo")
+        version_1 = request.data.get("destination")
+        version_2 = request.data.get("source")
+        launcher = self.request.user
+        profile = self.request.user.iaso_profile
+        sources = DataSource.objects.filter(projects__account=profile.account).distinct()
+
+        v1 = SourceVersion.objects.get(id=version_1)
+        v2 = SourceVersion.objects.get(id=version_2)
+
+        if v1.data_source not in sources or v2.data_source not in sources:
+            raise exceptions.PermissionDenied()
+
+        run = AlgorithmRun(algorithm_id=algo_id, version_1=v1, version_2=v2, launcher=launcher)
+        run.save()
+        return Response(run.as_dict())
 
     def retrieve(self, request, pk=None):
         run_item = get_object_or_404(AlgorithmRun, pk=pk)

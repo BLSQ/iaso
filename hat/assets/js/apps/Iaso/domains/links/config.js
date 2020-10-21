@@ -202,30 +202,30 @@ export const runsTableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.origin),
-        accessor: 'version_2',
+        accessor: 'source',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.version_2.data_source.name
+                    settings.original.source.data_source.name
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.version_2.number
+                    settings.original.source.number
                 }`}
             </span>
         ),
     },
     {
         Header: formatMessage(MESSAGES.destination),
-        accessor: 'version_1',
+        accessor: 'destination',
         Cell: settings => (
             <span>
                 {`${formatMessage(MESSAGES.source)}: ${
-                    settings.original.version_1.data_source.name
+                    settings.original.destination.data_source.name
                 }`}
                 <br />
                 {`${formatMessage(MESSAGES.version)}: ${
-                    settings.original.version_1.number
+                    settings.original.destination.number
                 }`}
             </span>
         ),

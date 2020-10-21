@@ -262,8 +262,8 @@ class AlgorithmRun(models.Model):
             "launcher": self.launcher.iaso_profile.as_dict()
             if self.launcher and self.launcher.iaso_profile
             else None,
-            "version_1": self.version_1.as_dict() if self.version_1 else None,
-            "version_2": self.version_2.as_dict() if self.version_2 else None,
+            "destination": self.version_1.as_dict() if self.version_1 else None,
+            "source": self.version_2.as_dict() if self.version_2 else None,
             "links_count": links_count,
         }
 
@@ -272,8 +272,8 @@ class AlgorithmRun(models.Model):
             "algorithm_name": self.algorithm.name,
             "algorithm_id": self.algorithm.id,
             "id": self.id,
-            "version_1": self.version_1.as_list() if self.version_1 else None,
-            "version_2": self.version_2.as_list() if self.version_2 else None,
+            "destination": self.version_1.as_list() if self.version_1 else None,
+            "source": self.version_2.as_list() if self.version_2 else None,
         }
 
 

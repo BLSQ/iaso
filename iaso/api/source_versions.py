@@ -38,8 +38,7 @@ class SourceVersionViewSet(ModelViewSet):
     GET /api/datasources/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated
-    ]
+    permission_classes = [permissions.IsAuthenticated]
     serializer_class = SourceVersionSerializer
     results_key = "versions"
     queryset = DataSource.objects.all()

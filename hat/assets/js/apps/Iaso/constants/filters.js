@@ -384,6 +384,7 @@ export const orgUnitFilters = (
         },
         {
             ...status(formatMessage),
+            defaultValue: 'all',
             column: 3,
         },
     ];

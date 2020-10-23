@@ -3,6 +3,7 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import DeleteIcon from '@material-ui/icons/Delete';
+import UpdateIcon from '@material-ui/icons/Update';
 import RestoreFromTrashIcon from '@material-ui/icons/RestoreFromTrash';
 import Alert from '@material-ui/lab/Alert';
 import { withStyles, Box, Grid } from '@material-ui/core';
@@ -23,7 +24,7 @@ import TopBar from '../../components/nav/TopBarComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../components/papers/WidgetPaperComponent';
-import ReAssignInstanceDialogComponent from './components/ReAssignInstanceDialogComponent';
+import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
 import InstanceDetailsInfos from './components/InstanceDetailsInfos';
 import InstanceDetailsLocation from './components/InstanceDetailsLocation';
@@ -69,9 +70,14 @@ const actions = (currentInstance, reAssignInstance) => [
     {
         id: 'instanceReAssignAction',
         icon: (
-            <ReAssignInstanceDialogComponent
+            <CreateReAssignDialogComponent
+                titleMessage={MESSAGES.reAssignInstance}
+                confirmMessage={MESSAGES.reAssignInstanceAction}
                 currentInstance={currentInstance}
-                onReAssignInstance={reAssignInstance}
+                onCreateOrReAssign={reAssignInstance}
+                renderTrigger={({ openDialog }) => (
+                    <UpdateIcon onClick={openDialog} />
+                )}
             />
         ),
         disabled: currentInstance && currentInstance.deleted,

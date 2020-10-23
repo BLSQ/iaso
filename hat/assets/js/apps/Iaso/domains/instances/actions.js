@@ -153,6 +153,12 @@ export const reAssignInstance = (currentInstance, payload) => dispatch => {
         });
 };
 
+export const createInstance = (currentForm, payload) => dispatch => {
+    dispatch(setInstancesFetching(true));
+    // if (!payload.period) delete payload.period;
+    alert(JSON.stringify(payload));
+};
+
 export const createExportRequest = filterParams => dispatch => {
     dispatch(setInstancesFetching(true));
     return postRequest('/api/exportrequests/', filterParams)

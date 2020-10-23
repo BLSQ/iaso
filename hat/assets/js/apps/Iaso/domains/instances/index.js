@@ -16,6 +16,7 @@ import {
     setInstances,
     setInstancesSmallDict,
     setInstancesFetching,
+    createInstance,
 } from './actions';
 import { setOrgUnitTypes } from '../orgUnits/actions';
 import {
@@ -54,6 +55,8 @@ import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import InstancesFiltersComponent from './components/InstancesFiltersComponent';
 import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectDrawerComponent';
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
+import AddButtonComponent from '../../components/buttons/AddButtonComponent';
+import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -424,6 +427,25 @@ class Instances extends Component {
                                 className={classes.textAlignRight}
                             >
                                 <div className={classes.paddingBottomBig}>
+                                    {currentForm && (
+                                        <CreateReAssignDialogComponent
+                                            titleMessage={
+                                                MESSAGES.instanceCreationDialogTitle
+                                            }
+                                            confirmMessage={
+                                                MESSAGES.instanceCreateAction
+                                            }
+                                            formType={currentForm}
+                                            onCreateOrReAssign={
+                                                this.props.createInstance
+                                            }
+                                            renderTrigger={({ openDialog }) => (
+                                                <AddButtonComponent
+                                                    onClick={openDialog}
+                                                />
+                                            )}
+                                        />
+                                    )}
                                     <ExportInstancesDialogComponent
                                         getFilters={() => this.getFilters()}
                                     />
@@ -476,6 +498,7 @@ Instances.propTypes = {
     prevPathname: PropTypes.any,
     setPeriods: PropTypes.func.isRequired,
     fetchFormDetail: PropTypes.func.isRequired,
+    createInstance: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -501,6 +524,8 @@ const MapDispatchToProps = dispatch => ({
     setDevicesOwnershipList: devicesOwnershipsList =>
         dispatch(setDevicesOwnershipList(devicesOwnershipsList)),
     setPeriods: periods => dispatch(setPeriods(periods)),
+    createInstance: (currentForm, payload) =>
+        dispatch(createInstance(currentForm, payload)),
     ...bindActionCreators(
         {
             fetchFormDetail: fetchFormDetailAction,

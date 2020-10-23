@@ -69,6 +69,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.type',
         defaultMessage: 'Type',
     },
+    ok: {
+        id: 'iaso.label.ok',
+        defaultMessage: 'Ok',
+    },
     cancel: {
         id: 'iaso.label.cancel',
         defaultMessage: 'Cancel',
@@ -268,6 +272,13 @@ const MESSAGES = defineMessages({
     see: {
         defaultMessage: 'See',
         id: 'iaso.label.see',
+    instanceCreateAction: {
+        defaultMessage: 'Create instance',
+        id: 'iaso.instance.instanceCreateAction',
+    },
+    instanceCreationDialogTitle: {
+        defaultMessage: 'Create instance',
+        id: 'iaso.instance.instanceCreationDialogTitle',
     },
 });
 

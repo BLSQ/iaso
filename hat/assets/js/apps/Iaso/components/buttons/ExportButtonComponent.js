@@ -10,6 +10,12 @@ import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
+    button: {
+        marginLeft: theme.spacing(2),
+        '& svg, & i': {
+            marginRight: theme.spacing(1),
+        },
+    },
 });
 
 function ExportButtonComponent({

@@ -4,7 +4,7 @@ import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import { withStyles, Grid, Box } from '@material-ui/core';
+import { withStyles, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 
@@ -60,7 +60,7 @@ class Links extends Component {
         this.state = {
             tableColumns: linksTableColumns(
                 props.intl.formatMessage,
-                this,
+                link => this.validateLink(link),
                 props.classes,
             ),
             tableUrl: null,
@@ -195,11 +195,8 @@ class Links extends Component {
                             <div className={classes.reactTable}>
                                 <CustomTableComponent
                                     expanded={expanded}
-                                    onExpandedChange={(newExpanded, index) =>
-                                        this.onExpandedChange(
-                                            newExpanded,
-                                            index,
-                                        )
+                                    onExpandedChange={newExpanded =>
+                                        this.onExpandedChange(newExpanded)
                                     }
                                     disableHeaderFixed
                                     isSortable

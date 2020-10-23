@@ -326,6 +326,7 @@
     "iaso.snackBar.fetchGroupsError": "An error occurred while fetching groups list",
     "iaso.snackBar.fetchInstanceDictError": "An error occurred while fetching instances list",
     "iaso.snackBar.fetchInstanceError": "An error occurred while fetching instance detail",
+    "iaso.snackBar.fetchLinksError": "An error occurred while fetching links",
     "iaso.snackBar.fetchInstanceLocationError": "An error occurred while fetching instances locations",
     "iaso.snackBar.fetchLinkDetailError": "An error occurred while fetching link detail",
     "iaso.snackBar.fetchLogDetailError": "An error occurred while fetching log detail",

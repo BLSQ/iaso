@@ -327,6 +327,7 @@
   "iaso.snackBar.fetchInstanceError": "Une erreur est survenue en récupérant le detail de l'instance",
   "iaso.snackBar.fetchInstanceLocationError": "Une erreur est survenue en récupérant les localisations des instances",
   "iaso.snackBar.fetchLinkDetailError": "Une erreur est survenue en récupérant le detail d'une correspondance",
+  "iaso.snackBar.fetchLinksError": "Une erreur est survenue en récupérant la liste des correspondances",
   "iaso.snackBar.fetchLogDetailError": "Une erreur est survenue en récupérant le detail de la modification",
   "iaso.snackBar.fetchMappingsError": "Une erreur est survenue en récupérant la liste des correspondances avec DHIS2",
   "iaso.snackBar.fetchOrgUnitError": "Une erreur est survenue en récupérant les details de l'unité d’organisation",

@@ -156,6 +156,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.snackBar.fetchProfilesError',
         defaultMessage: 'An error occurred while fetching profiles list',
     },
+    fetchLinksError: {
+        id: 'iaso.snackBar.fetchLinksError',
+        defaultMessage: 'An error occurred while fetching links list',
+    },
     fetchAlgorithmsError: {
         id: 'iaso.snackBar.fetchAlgorithmsError',
         defaultMessage: 'An error occurred while fetching algorithms list',

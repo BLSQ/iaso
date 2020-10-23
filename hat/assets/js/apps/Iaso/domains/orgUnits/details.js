@@ -22,6 +22,7 @@ import {
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
 } from './actions';
+import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
 
 import { setForms as setFormsAction } from '../forms/actions';
 import formsTableColumns from '../forms/config';
@@ -35,15 +36,22 @@ import {
     fetchForms,
     fetchGroups,
     fetchSources,
+    fetchOrgUnitsList,
+    fetchLinks,
+    fetchAlgorithms,
+    fetchAlgorithmRuns,
+    saveLink,
 } from '../../utils/requests';
 import { getAliasesArrayFromString, getOrgUnitsTree } from './utils';
+import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
 import OrgUnitForm from './components/OrgUnitForm';
 import OrgUnitMap from './components/OrgUnitMapComponent';
 import Logs from '../../components/logs/LogsComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
-import OrgUnitTable from './components/OrgUnitTable';
+import SingleTable from '../../components/tables/SingleTable';
+import LinksDetails from '../links/components/LinksDetailsComponent';
 
 import commonStyles from '../../styles/common';
 
@@ -51,6 +59,14 @@ import { getChipColors } from '../../constants/chipColors';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
+
+import {
+    orgUnitFiltersWithPrefix,
+    linksFiltersWithPrefix,
+    onlyChildrenParams,
+} from '../../constants/filters';
+import { orgUnitsTableColumns } from './config';
+import { linksTableColumns } from '../links/config';
 
 const baseUrl = baseUrls.orgUnitDetails;
 
@@ -97,6 +113,7 @@ class OrgUnitDetail extends Component {
         const {
             dispatch,
             params: { orgUnitId },
+            fetchUsersProfiles,
         } = this.props;
         this.props.resetOrgUnitsLevels();
         dispatch(setFetching(true));
@@ -109,6 +126,13 @@ class OrgUnitDetail extends Component {
             );
         }
 
+        fetchUsersProfiles();
+        fetchAlgorithms(dispatch).then(algoList =>
+            this.props.setAlgorithms(algoList),
+        );
+        fetchAlgorithmRuns(dispatch).then(algoRunsList =>
+            this.props.setAlgorithmRuns(algoRunsList),
+        );
         if (!this.props.sources) {
             promisesArray.push(
                 fetchSources(dispatch).then(data => {
@@ -340,6 +364,15 @@ class OrgUnitDetail extends Component {
         });
     }
 
+    validateLink(link, handleFetch) {
+        const { dispatch } = this.props;
+        const newLink = {
+            ...link,
+            validated: !link.validated,
+        };
+        saveLink(dispatch, newLink).then(() => handleFetch());
+    }
+
     render() {
         const {
             classes,
@@ -353,7 +386,10 @@ class OrgUnitDetail extends Component {
             prevPathname,
             redirectToPush,
             reduxPage,
-            redirectTo,
+            sources,
+            profiles,
+            algorithms,
+            algorithmRuns,
         } = this.props;
         const {
             tab,
@@ -376,7 +412,7 @@ class OrgUnitDetail extends Component {
                 }`;
             }
         }
-        const tabs = ['infos', 'map', 'children', 'history', 'forms'];
+        const tabs = ['infos', 'map', 'children', 'links', 'history', 'forms'];
 
         return (
             <Fragment>
@@ -523,11 +559,80 @@ class OrgUnitDetail extends Component {
                                 tab === 'children' ? '' : classes.hiddenOpacity
                             }
                         >
-                            <OrgUnitTable
-                                currentOrgUnit={currentOrgUnit}
+                            <SingleTable
                                 paramsPrefix="childrenParams"
-                                redirectTo={redirectTo}
+                                apiParams={{
+                                    ...onlyChildrenParams(
+                                        'childrenParams',
+                                        params,
+                                        currentOrgUnit,
+                                    ),
+                                }}
                                 baseUrl={baseUrl}
+                                endPointPath="orgunits"
+                                fetchItems={fetchOrgUnitsList}
+                                filters={orgUnitFiltersWithPrefix(
+                                    'childrenParams',
+                                    true,
+                                    formatMessage,
+                                    groups,
+                                    orgUnitTypes,
+                                )}
+                                columns={orgUnitsTableColumns(
+                                    formatMessage,
+                                    classes,
+                                )}
+                            />
+                        </div>
+                        <div
+                            className={
+                                tab === 'links' ? '' : classes.hiddenOpacity
+                            }
+                        >
+                            <SingleTable
+                                apiParams={{
+                                    orgUnitId: currentOrgUnit.id,
+                                }}
+                                filters={linksFiltersWithPrefix(
+                                    'linksParams',
+                                    algorithmRuns,
+                                    formatMessage,
+                                    profiles,
+                                    algorithms,
+                                    sources,
+                                )}
+                                paramsPrefix="linksParams"
+                                baseUrl={baseUrl}
+                                endPointPath="links"
+                                fetchItems={fetchLinks}
+                                defaultSorted={[
+                                    { id: 'similarity_score', desc: false },
+                                ]}
+                                columns={handleFetch =>
+                                    linksTableColumns(
+                                        formatMessage,
+                                        link =>
+                                            this.validateLink(
+                                                link,
+                                                handleFetch,
+                                            ),
+                                        classes,
+                                    )
+                                }
+                                subComponent={(link, handleFetch) =>
+                                    link ? (
+                                        <LinksDetails
+                                            linkId={link.id}
+                                            validated={link.validated}
+                                            validateLink={() =>
+                                                this.validateLink(
+                                                    link,
+                                                    handleFetch,
+                                                )
+                                            }
+                                        />
+                                    ) : null
+                                }
                             />
                         </div>
                     </section>
@@ -567,8 +672,14 @@ OrgUnitDetail.propTypes = {
     setGroups: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     createOrgUnit: PropTypes.func.isRequired,
+    setAlgorithms: PropTypes.func.isRequired,
+    setAlgorithmRuns: PropTypes.func.isRequired,
     setForms: PropTypes.func.isRequired,
     reduxPage: PropTypes.object,
+    profiles: PropTypes.array.isRequired,
+    algorithms: PropTypes.array.isRequired,
+    algorithmRuns: PropTypes.array.isRequired,
+    fetchUsersProfiles: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -580,6 +691,9 @@ const MapStateToProps = state => ({
     sources: state.orgUnits.sources,
     prevPathname: state.routerCustom.prevPathname,
     groups: state.orgUnits.groups,
+    profiles: state.users.list,
+    algorithms: state.links.algorithmsList,
+    algorithmRuns: state.links.algorithmRunsList,
 });
 
 const MapDispatchToProps = dispatch => ({
@@ -595,11 +709,14 @@ const MapDispatchToProps = dispatch => ({
     resetOrgUnitsLevels: () => dispatch(resetOrgUnitsLevels()),
     setSources: sources => dispatch(setSources(sources)),
     setGroups: groups => dispatch(setGroups(groups)),
+    setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
+    setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
     ...bindActionCreators(
         {
             setForms: setFormsAction,
             saveOrgUnit: saveOrgUnitAction,
             createOrgUnit: createOrgUnitAction,
+            fetchUsersProfiles: fetchUsersProfilesAction,
         },
         dispatch,
     ),

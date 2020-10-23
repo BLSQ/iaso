@@ -61,6 +61,7 @@ class LinkViewSet(viewsets.ViewSet):
         search = request.GET.get("search", None)
 
         org_unit_type_id = request.GET.get("orgUnitTypeId", None)
+        org_unit_id = request.GET.get("orgUnitId", None)
         origin = request.GET.get("origin", None)
         destination = request.GET.get("destination", None)
         origin_version = request.GET.get("originVersion", None)
@@ -94,7 +95,11 @@ class LinkViewSet(viewsets.ViewSet):
             queryset = queryset.filter(validated=True)
         if validated == "false":
             queryset = queryset.filter(validated=False)
-
+        if org_unit_id:
+            queryset = queryset.filter(
+                Q(destination__id=org_unit_id)
+                | Q(source__id=org_unit_id)
+            )
         if destination:
             queryset = queryset.filter(destination__version__data_source_id=destination)
 

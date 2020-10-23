@@ -125,6 +125,18 @@ export const MESSAGES = defineMessages({
         defaultMessage: 'Search',
         id: 'iaso.search',
     },
+    status: {
+        id: 'iaso.forms.status',
+        defaultMessage: 'Status',
+    },
+    rejected: {
+        id: 'iaso.forms.rejected',
+        defaultMessage: 'Rejected',
+    },
+    new: {
+        id: 'iaso.forms.new',
+        defaultMessage: 'New',
+    },
 });
 
 export default MESSAGES;

@@ -1,83 +1,61 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import { withRouter } from 'react-router';
 import { makeStyles } from '@material-ui/core/styles';
 import { Box } from '@material-ui/core';
-import { useDispatch, useSelector } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
-import commonStyles from '../../../styles/common';
+import commonStyles from '../../styles/common';
 
-import Table from '../../../components/tables/TableComponent';
-import Filters from '../../../components/tables/TableFilters';
-import DownloadButtonsComponent from '../../../components/buttons/DownloadButtonsComponent';
+import Table from './TableComponent';
+import Filters from './TableFilters';
+import DownloadButtonsComponent from '../buttons/DownloadButtonsComponent';
+import { redirectToReplace } from '../../routing/actions';
 
-import { orgUnitsTableColumns } from '../config';
-
-import { fetchOrgUnitsList } from '../../../utils/requests';
 import getTableUrl, {
     getParamsKey,
     getTableParams,
     tableInitialResult,
-} from '../../../utils/tableUtils';
-
-import {
-    orgUnitFiltersWithPrefix,
-    onlyChildrenParams,
-} from '../../../constants/filters';
+} from '../../utils/tableUtils';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),
 }));
 
-const endPointPath = 'orgunits';
-
-const OrgUnitTable = ({
-    intl: { formatMessage },
-    currentOrgUnit,
+const SingleTable = ({
+    filters,
+    columns,
     paramsPrefix,
     params,
     baseUrl,
-    redirectTo,
     apiParams,
+    endPointPath,
+    fetchItems,
+    subComponent,
+    defaultSorted,
 }) => {
     const [loading, setLoading] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
+    const [expanded, setExpanded] = useState({});
 
     const dispatch = useDispatch();
     const classes = useStyles();
-    const groups = useSelector(state => state.orgUnits.groups);
-    const orgUnitTypes = useSelector(state => state.orgUnits.orgUnitTypes);
-
-    const newApiParams = {
-        ...apiParams,
-        ...onlyChildrenParams(paramsPrefix, params, currentOrgUnit),
-    };
-
-    const hasParent = Boolean(currentOrgUnit);
-    const filters = orgUnitFiltersWithPrefix(
-        paramsPrefix,
-        hasParent,
-        formatMessage,
-        groups,
-        orgUnitTypes,
-    );
 
     const tableParams = getTableParams(
         params,
         paramsPrefix,
         filters,
-        newApiParams,
+        apiParams,
+        defaultSorted,
     );
-    const columns = orgUnitsTableColumns(formatMessage, classes);
 
-    const fetchOrgUnits = () => {
+    const handleFetch = () => {
         const url = getTableUrl(endPointPath, tableParams);
         setLoading(true);
-        fetchOrgUnitsList(dispatch, url).then(res => {
+        fetchItems(dispatch, url).then(res => {
             setLoading(false);
             setTableResults({
-                data: res.orgunits,
+                data: res[endPointPath],
                 count: res.count,
                 pages: res.pages,
             });
@@ -88,7 +66,7 @@ const OrgUnitTable = ({
         getTableUrl(endPointPath, tableParams, true, exportType);
 
     useEffect(() => {
-        fetchOrgUnits();
+        handleFetch();
     }, [
         params[getParamsKey(paramsPrefix, 'pageSize')],
         params[getParamsKey(paramsPrefix, 'page')],
@@ -97,15 +75,29 @@ const OrgUnitTable = ({
 
     const { data, pages, count } = tableResults;
     const { limit } = tableParams;
+    let extraProps = {
+        loading,
+        defaultPageSize: limit,
+    };
+    if (subComponent) {
+        extraProps = {
+            ...extraProps,
+            SubComponent: ({ original }) => subComponent(original, handleFetch),
+            expanded,
+            onExpandedChange: newExpanded => setExpanded(newExpanded),
+        };
+    }
     return (
         <Box className={classes.containerFullHeightPadded}>
-            <Filters
-                baseUrl={baseUrl}
-                params={params}
-                onSearch={() => fetchOrgUnits()}
-                paramsPrefix={paramsPrefix}
-                filters={filters}
-            />
+            {filters.length > 0 && (
+                <Filters
+                    baseUrl={baseUrl}
+                    params={params}
+                    onSearch={() => handleFetch()}
+                    paramsPrefix={paramsPrefix}
+                    filters={filters}
+                />
+            )}
             {count > 0 && (
                 <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
                     <DownloadButtonsComponent
@@ -119,35 +111,42 @@ const OrgUnitTable = ({
                 count={count}
                 data={data}
                 pages={pages}
-                defaultSorted={[{ id: 'name', desc: false }]}
-                columns={columns}
-                extraProps={{
-                    loading,
-                    defaultPageSize: limit,
-                }}
+                defaultSorted={defaultSorted}
+                columns={
+                    Array.isArray(columns) ? columns : columns(handleFetch)
+                }
+                extraProps={extraProps}
                 baseUrl={baseUrl}
-                redirectTo={redirectTo}
+                redirectTo={(key, newParams) =>
+                    dispatch(redirectToReplace(key, newParams))
+                }
                 paramsPrefix={paramsPrefix}
             />
         </Box>
     );
 };
 
-OrgUnitTable.defaultProps = {
-    currentOrgUnit: null,
+SingleTable.defaultProps = {
     paramsPrefix: '',
     baseUrl: '',
     apiParams: null,
+    filters: [],
+    defaultSorted: [{ id: 'name', desc: false }],
+    subComponent: null,
+    columns: [],
 };
 
-OrgUnitTable.propTypes = {
-    intl: PropTypes.object.isRequired,
-    currentOrgUnit: PropTypes.object,
+SingleTable.propTypes = {
     params: PropTypes.object.isRequired,
     paramsPrefix: PropTypes.string,
     baseUrl: PropTypes.string,
-    redirectTo: PropTypes.func.isRequired,
+    fetchItems: PropTypes.func.isRequired,
     apiParams: PropTypes.object,
+    subComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
+    endPointPath: PropTypes.string.isRequired,
+    filters: PropTypes.array,
+    columns: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
+    defaultSorted: PropTypes.array,
 };
 
-export default withRouter(injectIntl(OrgUnitTable));
+export default withRouter(SingleTable);

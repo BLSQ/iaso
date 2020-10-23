@@ -294,6 +294,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.children',
         defaultMessage: 'Children',
     },
+    links: {
+        id: 'iaso.label.links',
+        defaultMessage: 'Links',
+    },
 });
 
 export default MESSAGES;

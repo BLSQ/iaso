@@ -56,6 +56,19 @@ const InstanceDetailsLocation = ({
                         }
                     />
                 )}
+                {currentInstance.org_unit &&
+                    currentInstance.org_unit.groups && (
+                        <InstanceDetailsField
+                            label={formatMessage(MESSAGES.groups)}
+                            value={
+                                currentInstance.org_unit.groups.length > 0
+                                    ? currentInstance.org_unit.groups
+                                          .map(g => g.name)
+                                          .join(', ')
+                                    : null
+                            }
+                        />
+                    )}
                 {fields.map(f => {
                     if (f.key !== 'org_unit') {
                         return (

@@ -8,8 +8,14 @@ import InstanceDetailsField from './InstanceDetailsField';
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
 
-const InstanceDetailsInfos = ({ currentInstance, intl: { formatMessage } }) => {
-    const fields = INSTANCE_METAS_FIELDS.filter(f => f.type === 'info');
+const InstanceDetailsInfos = ({
+    currentInstance,
+    intl: { formatMessage },
+    fieldsToHide,
+}) => {
+    const fields = INSTANCE_METAS_FIELDS.filter(
+        f => f.type === 'info' && !fieldsToHide.includes(f.key),
+    );
     return (
         <>
             {fields.map(f => {
@@ -32,8 +38,13 @@ const InstanceDetailsInfos = ({ currentInstance, intl: { formatMessage } }) => {
     );
 };
 
+InstanceDetailsInfos.defaultProps = {
+    fieldsToHide: [],
+};
+
 InstanceDetailsInfos.propTypes = {
     currentInstance: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
+    fieldsToHide: PropTypes.array,
 };
 export default injectIntl(InstanceDetailsInfos);

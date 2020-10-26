@@ -46,11 +46,18 @@ export const INSTANCE_METAS_FIELDS = [
     {
         key: 'org_unit',
         accessor: 'org_unit__name',
-        render: value => (
-            <OrgUnitTooltip key={value.id} orgUnit={value} domComponent="span">
-                <>{getOrgunitMessage(value, true)}</>
-            </OrgUnitTooltip>
-        ),
+        render: value => {
+            if (!value) return null;
+            return (
+                <OrgUnitTooltip
+                    key={value.id}
+                    orgUnit={value}
+                    domComponent="span"
+                >
+                    <>{getOrgunitMessage(value, true)}</>
+                </OrgUnitTooltip>
+            );
+        },
         tableOrder: 2,
         type: 'location',
     },

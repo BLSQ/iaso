@@ -125,29 +125,33 @@ const ReAssignInstanceDialogComponent = ({
                         inputLabelObject={MESSAGES.addOrgUnit}
                     />
                 )}
-                {fieldValue.orgUnit.value !== undefined && (
-                    <Box className={classes.chipList}>
-                        <Typography
-                            variant="subtitle1"
-                            className={classes.chipListTitle}
-                        >
-                            <FormattedMessage {...MESSAGES.selectedOrgUnit} />:
-                        </Typography>
-                        <OrgUnitTooltip
-                            orgUnit={fieldValue.orgUnit.value}
-                            key={fieldValue.orgUnit.value.id}
-                        >
-                            <Chip
-                                label={getOrgunitMessage(
-                                    fieldValue.orgUnit.value,
-                                )}
-                                onDelete={() => handleRemoveOrgUnit()}
-                                className={classes.chip}
-                                color="primary"
-                            />
-                        </OrgUnitTooltip>
-                    </Box>
-                )}
+                {fieldValue.orgUnit.value !== undefined &&
+                    fieldValue.orgUnit.value && (
+                        <Box className={classes.chipList}>
+                            <Typography
+                                variant="subtitle1"
+                                className={classes.chipListTitle}
+                            >
+                                <FormattedMessage
+                                    {...MESSAGES.selectedOrgUnit}
+                                />
+                                {`:`}
+                            </Typography>
+                            <OrgUnitTooltip
+                                orgUnit={fieldValue.orgUnit.value}
+                                key={fieldValue.orgUnit.value.id}
+                            >
+                                <Chip
+                                    label={getOrgunitMessage(
+                                        fieldValue.orgUnit.value,
+                                    )}
+                                    onDelete={() => handleRemoveOrgUnit()}
+                                    className={classes.chip}
+                                    color="primary"
+                                />
+                            </OrgUnitTooltip>
+                        </Box>
+                    )}
             </>
         </ConfirmCancelDialogComponent>
     );

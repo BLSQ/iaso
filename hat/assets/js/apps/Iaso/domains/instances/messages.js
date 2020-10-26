@@ -25,6 +25,10 @@ const MESSAGES = defineMessages({
         defaultMessage: 'List',
         id: 'iaso.label.list',
     },
+    groups: {
+        defaultMessage: 'Groups',
+        id: 'iaso.label.groups',
+    },
     map: {
         defaultMessage: 'Map',
         id: 'iaso.label.map',
@@ -260,6 +264,10 @@ const MESSAGES = defineMessages({
     instanceExportAction: {
         defaultMessage: 'Export instance',
         id: 'iaso.instance.instanceExportAction',
+    },
+    see: {
+        defaultMessage: 'See',
+        id: 'iaso.label.see',
     },
 });
 

@@ -138,7 +138,6 @@ class InstanceDetails extends Component {
             prevPathname,
             redirectToReplace,
         } = this.props;
-
         return (
             <section className={classes.relativeContainer}>
                 <TopBar

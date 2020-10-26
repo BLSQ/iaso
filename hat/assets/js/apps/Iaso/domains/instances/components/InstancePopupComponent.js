@@ -1,45 +1,37 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { Popup } from 'react-leaflet';
-import { injectIntl } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
+import { Link } from 'react-router';
 
 import {
     withStyles,
     Card,
     CardMedia,
     CardContent,
+    Button,
     Grid,
     Box,
 } from '@material-ui/core';
-import AttachFile from '@material-ui/icons/AttachFile';
 
 import PropTypes from 'prop-types';
-import moment from 'moment';
 
 import LoadingSpinner from '../../../components/LoadingSpinnerComponent';
-import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 import ConfirmDialog from '../../../components/dialogs/ConfirmDialogComponent';
+import InstanceDetailsInfos from './InstanceDetailsInfos';
+import InstanceDetailsField from './InstanceDetailsField';
 
 import commonStyles from '../../../styles/common';
 import mapPopupStyles from '../../../styles/mapPopup';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
+import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
     ...mapPopupStyles(theme),
-    fileList: {
-        listStyleType: 'none',
-    },
-    fileListItem: {
-        padding: theme.spacing(1, 1, 1, 0),
-        display: 'inline-block',
-    },
-    fileItem: {
-        display: 'inline-block',
-    },
     actionBox: {
         padding: theme.spacing(1, 0, 0, 0),
     },
@@ -85,63 +77,31 @@ class InstancePopupComponent extends Component {
                             />
                         )}
                         <CardContent className={classes.popupCardContent}>
+                            <InstanceDetailsInfos
+                                currentInstance={currentInstance}
+                                fieldsToHide={['device_id']}
+                            />
+                            {currentInstance.org_unit && (
+                                <InstanceDetailsField
+                                    label={formatMessage(MESSAGES.groups)}
+                                    value={
+                                        currentInstance.org_unit.groups &&
+                                        currentInstance.org_unit.groups.length >
+                                            0
+                                            ? currentInstance.org_unit.groups
+                                                  .map(g => g.name)
+                                                  .join(', ')
+                                            : null
+                                    }
+                                />
+                            )}
                             {orgUnitTree.map(o => (
-                                <PopupItemComponent
+                                <InstanceDetailsField
                                     key={o.id}
                                     label={o.org_unit_type_name}
                                     value={o ? o.name : null}
                                 />
                             ))}
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.device)}
-                                value={currentInstance.device_id}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.latitude)}
-                                value={currentInstance.latitude}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.longitude)}
-                                value={currentInstance.longitude}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.created_at)}
-                                value={moment
-                                    .unix(currentInstance.created_at)
-                                    .format('DD/MM/YYYY HH:mm')}
-                            />
-                            <PopupItemComponent
-                                label={formatMessage(MESSAGES.files)}
-                                value={
-                                    <ul className={classes.fileList}>
-                                        <li>
-                                            <a
-                                                className={classes.fileItem}
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                href={currentInstance.file_url}
-                                            >
-                                                {currentInstance.file_name}
-                                            </a>
-                                        </li>
-                                        {currentInstance.files.map(f => (
-                                            <li
-                                                className={classes.fileListItem}
-                                                key={f}
-                                            >
-                                                <a
-                                                    className={classes.fileItem}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    href={f}
-                                                >
-                                                    <AttachFile />
-                                                </a>
-                                            </li>
-                                        ))}
-                                    </ul>
-                                }
-                            />
                             {displayUseLocation && (
                                 <Box className={classes.actionBox}>
                                     <Grid
@@ -165,6 +125,34 @@ class InstancePopupComponent extends Component {
                                     </Grid>
                                 </Box>
                             )}
+                            <Box className={classes.actionBox}>
+                                <Grid
+                                    container
+                                    spacing={0}
+                                    justify={
+                                        displayUseLocation
+                                            ? 'center'
+                                            : 'flex-end'
+                                    }
+                                    alignItems="center"
+                                >
+                                    <Button
+                                        className={classes.marginLeft}
+                                        variant="outlined"
+                                        size="small"
+                                        color="primary"
+                                    >
+                                        <Link
+                                            to={`${baseUrls.instanceDetail}/instanceId/${currentInstance.id}`}
+                                            className={classes.linkButton}
+                                        >
+                                            <FormattedMessage
+                                                {...MESSAGES.see}
+                                            />
+                                        </Link>
+                                    </Button>
+                                </Grid>
+                            </Box>
                         </CardContent>
                     </Card>
                 )}

@@ -7,7 +7,14 @@ const mapPopupStyles = theme => ({
         '& .leaflet-popup-content': {
             margin: 0,
             minHeight: 100,
-            width: '340px !important',
+            width: '360px !important',
+            '& p.MuiTypography-root': {
+                margin: 0,
+                fontSize: 12,
+            },
+            '& .MuiGrid-root > div': {
+                top: 1,
+            },
         },
         '& a.leaflet-popup-close-button': {
             color: 'white',
@@ -41,7 +48,7 @@ const mapPopupStyles = theme => ({
         boxShadow: 'none',
     },
     popupCardMedia: {
-        height: 120,
+        height: 180,
     },
     popupCardContent: {
         margin: theme.spacing(3, 2, 2, 2),

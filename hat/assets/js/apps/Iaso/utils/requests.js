@@ -77,8 +77,9 @@ export const fetchSources = dispatch =>
             throw error;
         });
 
-export const fetchGroups = dispatch =>
-    getRequest('/api/groups/')
+export const fetchGroups = (dispatch, defaultVersion = false) => {
+    const url = `/api/groups/${defaultVersion ? '?&defaultVersion=true' : ''}`;
+    return getRequest(url)
         .then(res => res.groups)
         .catch(error => {
             dispatch(
@@ -87,6 +88,7 @@ export const fetchGroups = dispatch =>
             console.error('Error while fetching group list:', error);
             throw error;
         });
+};
 
 export const fetchDevices = dispatch =>
     getRequest('/api/devices/')

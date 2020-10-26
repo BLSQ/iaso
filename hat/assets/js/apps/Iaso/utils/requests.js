@@ -359,6 +359,17 @@ export const fetchLinkDetail = (dispatch, linkId) =>
             throw error;
         });
 
+export const fetchLinks = (dispatch, url) =>
+    getRequest(url)
+        .then(links => links)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchLinksError', null, error)),
+            );
+            console.error('Error while fetching links:', error);
+            throw error;
+        });
+
 export const fetchAlgorithmRuns = dispatch =>
     getRequest('/api/algorithmsruns/')
         .then(algorithms => algorithms)

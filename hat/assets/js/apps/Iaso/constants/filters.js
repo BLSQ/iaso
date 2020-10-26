@@ -384,6 +384,7 @@ export const orgUnitFilters = (
         },
         {
             ...status(formatMessage),
+            defaultValue: 'all',
             column: 3,
         },
     ];
@@ -396,6 +397,13 @@ export const orgUnitFilters = (
     return filters;
 };
 
+export const filtersWithPrefix = (filters, paramsPrefix) =>
+    filters.map(f => ({
+        ...f,
+        urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
+        apiUrlKey: f.urlKey,
+    }));
+
 export const orgUnitFiltersWithPrefix = (
     paramsPrefix,
     withChildren,
@@ -403,19 +411,63 @@ export const orgUnitFiltersWithPrefix = (
     groups,
     orgUnitTypes,
 ) =>
-    orgUnitFilters(formatMessage, groups, orgUnitTypes, withChildren).map(
-        f => ({
-            ...f,
-            urlKey: `${paramsPrefix}${capitalize(f.urlKey, true)}`,
-            apiUrlKey: f.urlKey,
-        }),
+    filtersWithPrefix(
+        orgUnitFilters(formatMessage, groups, orgUnitTypes, withChildren),
+        paramsPrefix,
+    );
+export const linksFiltersWithPrefix = (
+    paramsPrefix,
+    algorithmRuns = [],
+    formatMessage = () => null,
+    profiles = [],
+    algorithms = [],
+    sources = [],
+) =>
+    filtersWithPrefix(
+        [
+            {
+                ...search(),
+                column: 1,
+            },
+            {
+                ...algoRun(algorithmRuns, formatMessage),
+                column: 1,
+            },
+            {
+                ...status(formatMessage),
+                column: 3,
+            },
+            {
+                ...validator(profiles),
+                column: 2,
+            },
+            {
+                ...algo(algorithms),
+                column: 2,
+            },
+            {
+                ...score(formatMessage),
+                column: 1,
+            },
+            {
+                ...source(
+                    sources || [],
+                    false,
+                    false,
+                    'origin',
+                    formatMessage(MESSAGES.sourceorigin),
+                ),
+                column: 3,
+            },
+        ],
+        paramsPrefix,
     );
 
-export const onlyChildrenParams = (paramsPrefix, params, currentOrgUnit) => {
-    if (!currentOrgUnit) return null;
+export const onlyChildrenParams = (paramsPrefix, params, parent) => {
+    if (!parent) return null;
     const onlyDirectChildren =
         params[getParamsKey(paramsPrefix, 'onlyDirectChildren')];
     return onlyDirectChildren === 'true' || onlyDirectChildren === undefined
-        ? { parent_id: currentOrgUnit.id }
-        : { orgUnitParentId: currentOrgUnit.id };
+        ? { parent_id: parent.id }
+        : { orgUnitParentId: parent.id };
 };

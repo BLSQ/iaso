@@ -15,7 +15,7 @@ import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from './messages';
 
-export const linksTableColumns = (formatMessage, component, classes) => [
+export const linksTableColumns = (formatMessage, validateLink, classes) => [
     {
         Header: formatMessage(MESSAGES.similarityScore),
         width: 170,
@@ -35,8 +35,7 @@ export const linksTableColumns = (formatMessage, component, classes) => [
         accessor: 'destination__name',
         Cell: settings => (
             <span>
-                {settings.original.destination.name} /
-{' '}
+                {settings.original.destination.name} /{' '}
                 {settings.original.source.name}
             </span>
         ),
@@ -105,7 +104,7 @@ export const linksTableColumns = (formatMessage, component, classes) => [
             <Checkbox
                 color="primary"
                 checked={settings.original.validated}
-                onChange={() => component.validateLink(settings.original)}
+                onChange={() => validateLink(settings.original)}
                 value="checked"
             />
         ),

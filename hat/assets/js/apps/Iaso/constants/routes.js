@@ -15,7 +15,7 @@ import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
 import { baseUrls } from './urls';
 import { capitalize } from '../utils/index';
-import { orgUnitFiltersWithPrefix } from './filters';
+import { orgUnitFiltersWithPrefix, linksFiltersWithPrefix } from './filters';
 
 const paginationPathParams = [
     {
@@ -204,6 +204,12 @@ const orgUnitsFiltersPathParamsWithPrefix = (prefix, withChildren) =>
         key: f.urlKey,
     }));
 
+const linksFiltersPathParamsWithPrefix = prefix =>
+    linksFiltersWithPrefix(prefix).map(f => ({
+        isRequired: false,
+        key: f.urlKey,
+    }));
+
 export const orgUnitsDetailsPath = {
     baseUrl: baseUrls.orgUnitDetails,
     permission: 'iaso_org_units',
@@ -228,6 +234,8 @@ export const orgUnitsDetailsPath = {
         },
         ...orgUnitsFiltersPathParamsWithPrefix('childrenParams', true),
         ...paginationPathParamsWithPrefix('childrenParams'),
+        ...linksFiltersPathParamsWithPrefix('linksParams'),
+        ...paginationPathParamsWithPrefix('linksParams'),
     ],
 };
 
@@ -284,6 +292,10 @@ export const linksPath = {
         {
             isRequired: false,
             key: 'searchActive',
+        },
+        {
+            isRequired: false,
+            key: 'validation_status',
         },
     ],
 };

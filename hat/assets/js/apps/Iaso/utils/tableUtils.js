@@ -147,7 +147,13 @@ export const getParamsKey = (paramsPrefix, key) => {
     return `${paramsPrefix}${capitalize(key, true)}`;
 };
 
-export const getTableParams = (params, paramsPrefix, filters, apiParams) => {
+export const getTableParams = (
+    params,
+    paramsPrefix,
+    filters,
+    apiParams,
+    defaultSorted = [{ id: 'name', desc: false }],
+) => {
     const newParams = {
         ...apiParams,
         limit:
@@ -156,7 +162,7 @@ export const getTableParams = (params, paramsPrefix, filters, apiParams) => {
         order: getSort(
             params[getParamsKey(paramsPrefix, 'order')]
                 ? getOrderArray(params[getParamsKey(paramsPrefix, 'order')])
-                : [{ id: 'name', desc: false }],
+                : defaultSorted,
         ),
     };
     filters.forEach(f => {

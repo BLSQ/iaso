@@ -150,7 +150,7 @@ class OrgUnitDetail extends Component {
 
         if (this.props.groups.length === 0) {
             promisesArray.push(
-                fetchGroups(dispatch).then(groups =>
+                fetchGroups(dispatch, orgUnitId === '0').then(groups =>
                     this.props.setGroups(groups),
                 ),
             );

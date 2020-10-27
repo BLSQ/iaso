@@ -20,7 +20,7 @@ export const isValidCoordinate = (latitude, longitude) => {
 };
 
 export const getLatLngBounds = items => {
-    if (items.length === 0) return null;
+    if (!items || (items && items.length === 0)) return null;
     const latLngs = [];
     items.forEach(i => {
         if (isValidCoordinate(i.latitude, i.longitude)) {

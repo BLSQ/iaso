@@ -39,10 +39,12 @@ class InstancesMap extends Component {
             intl: { formatMessage },
         } = this.props;
         this.setWarning();
-        const newZoomBar = customZoomBar(formatMessage, () =>
-            this.fitToBounds(),
-        );
-        newZoomBar.addTo(this.map.leafletElement);
+        if (this.map) {
+            const newZoomBar = customZoomBar(formatMessage, () =>
+                this.fitToBounds(),
+            );
+            newZoomBar.addTo(this.map.leafletElement);
+        }
     }
 
     componentWillUnmount() {
@@ -157,8 +159,12 @@ class InstancesMap extends Component {
     }
 }
 
+InstancesMap.defaultProps = {
+    instances: [],
+};
+
 InstancesMap.propTypes = {
-    instances: PropTypes.array.isRequired,
+    instances: PropTypes.array,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,

@@ -104,12 +104,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         searches = request.GET.get("searches", None)
         counts = []
+        profile = request.user.iaso_profile
         if searches:
             search_index = 0
             base_queryset = queryset
             for search in json.loads(searches):
                 additional_queryset = build_org_units_queryset(
-                    base_queryset, search
+                    base_queryset, search, profile
                 ).annotate(search_index=Value(search_index, IntegerField()))
                 if search_index == 0:
                     queryset = additional_queryset
@@ -120,7 +121,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET)
+            queryset = build_org_units_queryset(queryset, request.GET, profile)
 
         queryset = queryset.order_by(*order)
 
@@ -552,8 +553,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.exclude(pk__in=unselected_ids)
             search_index = 0
             base_queryset = queryset
+            profile = request.user.iaso_profile
             for search in searches:
-                additional_queryset = build_org_units_queryset(base_queryset, search)
+                additional_queryset = build_org_units_queryset(base_queryset, search, profile)
                 if search_index == 0:
                     queryset = additional_queryset
                 else:
@@ -644,7 +646,7 @@ def import_data(org_units, user, app_id):
     return new_org_units
 
 
-def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_queryset()
+def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewset.get_queryset()
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     search = params.get("search", None)
@@ -657,6 +659,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     source = params.get("source", None)
     group = params.get("group", None)
     version = params.get("version", None)
+    default_version = params.get("defaultVersion", None)
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
 
@@ -698,6 +701,9 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
 
     if version:
         queryset = queryset.filter(version=version)
+
+    if default_version == "true":
+        queryset = queryset.filter(version=profile.account.default_version)
 
     if has_instances is not None:
         ids_with_instances = Instance.objects.filter(

@@ -73,6 +73,15 @@ class GroupsAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
+    def test_default_version_groups_list_ok(self):
+        """GET /groups/ with authenticated user and only default version"""
+
+        self.client.force_authenticate(self.yoda)
+        response = self.client.get("/api/groups/?defaultVersion=true")
+        self.assertJSONResponse(response, 200)
+        self.assertValidGroupListData(response.json(), 1)
+
+    @tag("iaso_only")
     def test_groups_list_ok(self):
         """GET /groups/ with authenticated user with the right menu permission"""
 

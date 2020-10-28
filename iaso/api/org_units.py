@@ -104,7 +104,10 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         searches = request.GET.get("searches", None)
         counts = []
-        profile = request.user.iaso_profile
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+        else:
+            profile = None
         if searches:
             search_index = 0
             base_queryset = queryset
@@ -702,7 +705,7 @@ def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewse
     if version:
         queryset = queryset.filter(version=version)
 
-    if default_version == "true":
+    if default_version == "true" and profile is not None:
         queryset = queryset.filter(version=profile.account.default_version)
 
     if has_instances is not None:

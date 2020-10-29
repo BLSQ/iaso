@@ -224,6 +224,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
                             orgUnitsLevels[index].length === 0)
                     )
                         return null;
+
                     return (
                         <OrgUnitLevelFilterComponent
                             key={`level-${

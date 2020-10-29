@@ -1,11 +1,12 @@
 import React, { Component, Fragment } from 'react';
+import Grid from '@material-ui/core/Grid';
 import { injectIntl } from 'react-intl';
 
 import PropTypes from 'prop-types';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
-import { orgUnitLevel } from '../../../constants/filters';
+import { orgUnitLevel, status } from '../../../constants/filters';
 
 class OrgUnitLevelFilterComponent extends Component {
     render() {
@@ -36,21 +37,45 @@ class OrgUnitLevelFilterComponent extends Component {
             }
         }
         if (orgUnitsList.length === 0) return null;
+
+        const validationStatus = orgUnitsList.find(
+            oU => oU.id === currentLevelId,
+        );
+        const statusIcons = status(formatMessage).options;
+
         return (
             <Fragment>
-                <FiltersComponent
-                    params={params}
-                    baseUrl={baseUrl}
-                    filters={[
-                        orgUnitLevel(
-                            orgUnitsList,
-                            levelIndex,
-                            value => onFilterChanged(value, levelIndex),
-                            currentLevelId,
-                            formatMessage,
-                        ),
-                    ]}
-                />
+                <Grid
+                    container
+                    direction="row"
+                    justify="flex-start"
+                    alignItems="center"
+                    spacing={1}
+                >
+                    <Grid item xs={11}>
+                        <FiltersComponent
+                            params={params}
+                            baseUrl={baseUrl}
+                            filters={[
+                                orgUnitLevel(
+                                    orgUnitsList,
+                                    levelIndex,
+                                    value => onFilterChanged(value, levelIndex),
+                                    currentLevelId,
+                                    formatMessage,
+                                ),
+                            ]}
+                        />
+                    </Grid>
+                    <Grid item xs={1}>
+                        {validationStatus &&
+                            statusIcons.find(
+                                icon =>
+                                    icon.value ===
+                                    validationStatus.validation_status,
+                            ).icon}
+                    </Grid>
+                </Grid>
             </Fragment>
         );
     }

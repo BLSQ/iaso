@@ -162,8 +162,7 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                         <div className={classes.colorContainer}>
                             <FormLabel className={classes.marginBottom}>
-                                <FormattedMessage {...MESSAGES.color} />
-                                {`:`}
+                                <FormattedMessage {...MESSAGES.color} />:
                             </FormLabel>
                             <CirclePicker
                                 width="100%"

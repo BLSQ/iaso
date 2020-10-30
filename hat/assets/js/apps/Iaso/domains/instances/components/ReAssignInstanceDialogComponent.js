@@ -135,7 +135,7 @@ const ReAssignInstanceDialogComponent = ({
                                 <FormattedMessage
                                     {...MESSAGES.selectedOrgUnit}
                                 />
-                                {`:`}
+                                :
                             </Typography>
                             <OrgUnitTooltip
                                 orgUnit={fieldValue.orgUnit.value}

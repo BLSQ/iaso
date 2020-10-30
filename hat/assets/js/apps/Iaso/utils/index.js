@@ -282,15 +282,12 @@ export const renderCountCell = (total, value, formatMessage) => {
     const pourcentage = getPourcentage(total, value);
     return (
         <span>
-            {formatThousand(total)}
-{' '}
+            {formatThousand(total)}{' '}
             {pourcentage !== 0 && total !== 0 && (
                 <span>
                     <br />
                     <span style={{ fontSize: '85%' }}>
-                        (
-{parseFloat(pourcentage).toFixed(2)}%
-{' '}
+                        ({parseFloat(pourcentage).toFixed(2)}%{' '}
                         {formatMessage({
                             defaultMessage: 'positives',
                             id: 'monitoring.label.positive',

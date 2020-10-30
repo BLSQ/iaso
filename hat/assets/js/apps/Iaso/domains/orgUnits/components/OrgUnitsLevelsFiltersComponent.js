@@ -117,6 +117,7 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         const {
             params: { version },
             searchIndex,
+            defaultVersion,
         } = this.props;
         let source;
         if (searchIndex || searchIndex === 0) {
@@ -131,6 +132,9 @@ class OrgUnitsLevelsFiltersComponent extends Component {
         }
         if (version) {
             url = `${url}&version=${version}`;
+        }
+        if (defaultVersion) {
+            url = `${url}&defaultVersion=true`;
         }
         url = `${url}&validation_status=all`;
         return url;
@@ -263,6 +267,7 @@ OrgUnitsLevelsFiltersComponent.defaultProps = {
     orgUnitsLevels: [],
     onLevelsChange: () => ({}),
     onLatestIdChanged: () => ({}),
+    defaultVersion: false,
 };
 
 OrgUnitsLevelsFiltersComponent.propTypes = {
@@ -279,6 +284,7 @@ OrgUnitsLevelsFiltersComponent.propTypes = {
     source: PropTypes.any,
     searchIndex: PropTypes.any,
     onLevelsChange: PropTypes.func,
+    defaultVersion: PropTypes.bool,
 };
 
 const MapStateToProps = (state, props) => ({

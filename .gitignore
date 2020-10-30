@@ -5,6 +5,8 @@ shared
 *.swp
 *~
 privatekey.json
+.nyc_output
+coverage
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

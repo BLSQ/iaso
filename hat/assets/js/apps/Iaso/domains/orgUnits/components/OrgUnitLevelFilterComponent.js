@@ -68,12 +68,12 @@ class OrgUnitLevelFilterComponent extends Component {
                         />
                     </Grid>
                     <Grid item xs={1}>
-                        {validationStatus &&
-                            statusIcons.find(
-                                icon =>
-                                    icon.value ===
-                                    validationStatus.validation_status,
-                            ).icon}
+                        <a href={'/dashboard/orgunits/detail/orgUnitId/' + currentLevelId}>{validationStatus &&
+                        statusIcons.find(
+                          icon =>
+                            icon.value ===
+                            validationStatus.validation_status,
+                        ).icon}</a>
                     </Grid>
                 </Grid>
             </Fragment>

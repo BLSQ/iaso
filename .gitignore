@@ -4,7 +4,6 @@ celerybeat-schedule.db
 shared
 *.swp
 *~
-privatekey.json
 
 ### Python ###
 # Byte-compiled / optimized / DLL files
@@ -82,8 +81,6 @@ media
 locale/
 
 # Deployment
-build_scripts/nginx.hf_registry.conf
-build_scripts/nginx.kanoconnect.conf
 build_scripts/Dockerrun.aws.json
 build_scripts/deploy.zip
 

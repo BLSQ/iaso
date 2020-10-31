@@ -27,7 +27,7 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_CACHE = os.environ.get("CACHE", "").lower() == "true"
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
-ENVIRONMENT = os.environ.get("SENSE_HAT_ENVIRONMENT", "development").lower()
+ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
 
 
 ALLOWED_HOSTS = ["*"]

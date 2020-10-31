@@ -42,13 +42,6 @@ case "$1" in
   "mocha" )
     npm run mocha
   ;;
-  "test_integration" )
-    export TESTING=true
-    ./scripts/wait_for_dbs.sh
-    # create static files
-    npm run webpack
-    ./manage.py test --tag=selenium --failfast
-  ;;
   "gen_docs" )
     ./scripts/gen_docs.sh
   ;;
@@ -81,19 +74,7 @@ case "$1" in
     fi
     npm run webpack-server
   ;;
-  "start_rq" )
-    ./manage.py rqscheduler &
-    ./manage.py rqworker default
-  ;;
-  "start_dev_rq" )
-    # In local dev we assign a random name to the rq worker,
-    # to get around conflicts when restarting its container.
-    # RQ uses the PID as part of it's name and that does not
-    # change with container restarts and RQ the exits because
-    # it finds the old worker under it's name in redis.
-    ./manage.py rqscheduler &
-    ./manage.py rqworker default --name "rq-${RANDOM}"
-  ;;
+
   "manage" )
     ./manage.py "${@:2}"
   ;;

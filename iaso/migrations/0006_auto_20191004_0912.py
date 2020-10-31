@@ -10,15 +10,9 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AddField(
-            model_name="algorithmrun",
-            name="ended_at",
-            field=models.DateTimeField(blank=True, null=True),
+            model_name="algorithmrun", name="ended_at", field=models.DateTimeField(blank=True, null=True)
         ),
-        migrations.AddField(
-            model_name="algorithmrun",
-            name="finished",
-            field=models.BooleanField(default=False),
-        ),
+        migrations.AddField(model_name="algorithmrun", name="finished", field=models.BooleanField(default=False)),
         migrations.AddField(
             model_name="algorithmrun",
             name="result",

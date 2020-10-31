@@ -57,8 +57,6 @@ def home(request: HttpRequest) -> HttpResponse:
             )
 
 
-
-
 @is_user_authorized
 @login_required()
 @permission_required("menupermissions.x_management_users")
@@ -72,7 +70,6 @@ def users_management(request: HttpRequest) -> HttpResponse:
             "menu": get_menu(request.user, reverse("dashboard:management_user")),
         },
     )
-
 
 
 @is_user_authorized
@@ -100,7 +97,6 @@ def log_detail(request: HttpRequest) -> HttpResponse:
             "menu": get_menu(request.user, reverse("dashboard:log_detail")),
         },
     )
-
 
 
 @login_required(login_url="/login/")

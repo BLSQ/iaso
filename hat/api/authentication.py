@@ -11,7 +11,7 @@ class UserAccessPermission(permissions.BasePermission):
     def has_permission(self, request, view):  # type: ignore
         user = request.user
         access_granted = False
-        if hasattr(view, 'permission_required'):
+        if hasattr(view, "permission_required"):
             for permission in view.permission_required:
                 if user.has_perm(permission):
                     access_granted = True

@@ -1,15 +1,6 @@
 from django.test import tag
 
-from ..models import (
-    OrgUnit,
-    Form,
-    Instance,
-    OrgUnitType,
-    Account,
-    Project,
-    SourceVersion,
-    DataSource,
-)
+from ..models import OrgUnit, Form, Instance, OrgUnitType, Account, Project, SourceVersion, DataSource
 from math import floor
 from rest_framework.test import APIClient
 import json
@@ -26,9 +17,7 @@ class BasicAPITestCase(APITestCase):
         account = Account(name="Les Inconnus", default_version=default_version)
         account.save()
 
-        self.project = Project(
-            name="Le spectacle", app_id="org.inconnus.spectacle", account=account
-        )
+        self.project = Project(name="Le spectacle", app_id="org.inconnus.spectacle", account=account)
         self.project.save()
 
         unit_type = OrgUnitType(name="Hospital", short_name="Hosp")
@@ -41,9 +30,7 @@ class BasicAPITestCase(APITestCase):
         self.project.unit_types.add(unit_type_2)
         unit_type.sub_unit_types.add(unit_type_2)
 
-        OrgUnit.objects.create(
-            version=old_version, name="Odd org unit", org_unit_type=unit_type
-        )
+        OrgUnit.objects.create(version=old_version, name="Odd org unit", org_unit_type=unit_type)
 
         self.form_1 = Form.objects.create(name="Hydroponics study")
         self.form_2 = Form.objects.create(name="Another hydroponics study")
@@ -76,11 +63,7 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post(
-            "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=unit_body,
-            format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body, format="json")
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
@@ -92,9 +75,7 @@ class BasicAPITestCase(APITestCase):
         # make sure APIImport record has been created
         self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False)
 
-        response = c.get(
-            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
-        )
+        response = c.get("/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json")
 
         json_response = json.loads(response.content)
 
@@ -104,17 +85,13 @@ class BasicAPITestCase(APITestCase):
         velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
-        response = c.get(
-            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
-        )
+        response = c.get("/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json")
 
         content_1 = response.content
         json_response = json.loads(response.content)
 
         units = json_response["orgUnits"]
-        self.assertEqual(
-            1, len(units)
-        )  # two org units but only one for default version
+        self.assertEqual(1, len(units))  # two org units but only one for default version
         velpo_json = units[0]
         self.assertEqual(velpo_json["name"], name)
         self.assertEqual(floor(velpo_json["created_at"]), floor(1565194077692 / 1000))
@@ -157,11 +134,7 @@ class BasicAPITestCase(APITestCase):
             "name": name2,
         }
 
-        response = c.post(
-            "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=[unit_body_2],
-            format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=[unit_body_2], format="json")
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
@@ -192,18 +165,12 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post(
-            "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=unit_body,
-            format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body, format="json")
         self.assertEqual(response.status_code, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         self.assertEqual(velpo_model.name, name)
 
-        response = c.get(
-            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
-        )
+        response = c.get("/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json")
 
         json_response = json.loads(response.content)
 
@@ -213,9 +180,7 @@ class BasicAPITestCase(APITestCase):
         velpo_model.validation_status = OrgUnit.VALIDATION_VALID
         velpo_model.save()
 
-        response = c.get(
-            "/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json"
-        )
+        response = c.get("/api/orgunits/?app_id=org.inconnus.spectacle", accept="application/json")
 
         content_1 = response.content
         json_response = json.loads(response.content)
@@ -263,18 +228,14 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post(
-            "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=unit_body_2,
-            format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=unit_body_2, format="json")
         self.assertEqual(response.status_code, 200)
 
         fifre_model = OrgUnit.objects.get(uuid=uuid2)
         self.assertEqual(fifre_model.name, name2)
 
         # No app id - An APIImport record with has_problem set to True should be created
-        response = c.post("/api/orgunits/", data=unit_body_2, format="json",)
+        response = c.post("/api/orgunits/", data=unit_body_2, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertAPIImport(
             "orgUnit",
@@ -284,9 +245,7 @@ class BasicAPITestCase(APITestCase):
         )
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
-        response = c.post(
-            "/api/orgunits/?app_id=1234", data=unit_body_2, format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=1234", data=unit_body_2, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertAPIImport(
             "orgUnit",
@@ -316,11 +275,7 @@ class BasicAPITestCase(APITestCase):
             "name": name,
         }
 
-        response = c.post(
-            "/api/orgunits/?app_id=org.inconnus.spectacle",
-            data=[unit_body],
-            format="json",
-        )
+        response = c.post("/api/orgunits/?app_id=org.inconnus.spectacle", data=[unit_body], format="json")
         self.assertJSONResponse(response, 200)
         velpo_model = OrgUnit.objects.get(uuid=uuid)
         uuid = "4b7c3954-f69a-4b99-83b1-db73957b32b8"
@@ -344,11 +299,7 @@ class BasicAPITestCase(APITestCase):
             }
         ]
 
-        response = c.post(
-            "/api/instances/?app_id=org.inconnus.spectacle",
-            data=instance_body,
-            format="json",
-        )
+        response = c.post("/api/instances/?app_id=org.inconnus.spectacle", data=instance_body, format="json")
         self.assertEqual(response.status_code, 200)
 
         instance = Instance.objects.get(uuid=uuid)
@@ -363,7 +314,7 @@ class BasicAPITestCase(APITestCase):
         self.assertAPIImport("instance", request_body=instance_body, has_problems=False)
 
         # No app id - An APIImport record with has_problem set to True should be created
-        response = c.post("/api/instances/", data=instance_body, format="json",)
+        response = c.post("/api/instances/", data=instance_body, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertAPIImport(
             "instance",
@@ -373,9 +324,7 @@ class BasicAPITestCase(APITestCase):
         )
 
         # Wrong app id - An APIImport record with has_problem set to True should be created
-        response = c.post(
-            "/api/instances/?app_id=9876", data=instance_body, format="json",
-        )
+        response = c.post("/api/instances/?app_id=9876", data=instance_body, format="json")
         self.assertEqual(response.status_code, 200)
         self.assertAPIImport(
             "instance",
@@ -390,16 +339,14 @@ class BasicAPITestCase(APITestCase):
         c = APIClient()
 
         response = c.get(
-            "/api/orgunittypes/?app_id=com.pascallegitimus.iaso",
-            accept="application/json",
+            "/api/orgunittypes/?app_id=com.pascallegitimus.iaso", accept="application/json"
         )  # this should have 0 result
         json_response = json.loads(response.content)
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(json_response["orgUnitTypes"]), 0)
 
         response = c.get(
-            "/api/orgunittypes/?app_id=org.inconnus.spectacle",
-            accept="application/json",
+            "/api/orgunittypes/?app_id=org.inconnus.spectacle", accept="application/json"
         )  # this should have 2 results
         json_response = json.loads(response.content)
         org_unit_types = json_response["orgUnitTypes"]
@@ -409,9 +356,7 @@ class BasicAPITestCase(APITestCase):
         for org_unit_type_data in org_unit_types:
             self.assertValidOrgUnitTypeData(org_unit_type_data)
             if org_unit_type_data["name"] == "Hospital":
-                self.assertLess(
-                    org_unit_type_data["created_at"], org_unit_type_data["updated_at"]
-                )
+                self.assertLess(org_unit_type_data["created_at"], org_unit_type_data["updated_at"])
                 self.assertEqual(len(org_unit_type_data["sub_unit_types"]), 1)
                 for sub_org_unit_type_data in org_unit_type_data["sub_unit_types"]:
                     self.assertValidOrgUnitTypeData(sub_org_unit_type_data)
@@ -433,14 +378,9 @@ class BasicAPITestCase(APITestCase):
             self.assertValidFormData(form_data)
 
     # noinspection DuplicatedCode
-    def assertValidFormListData(
-        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
-    ):
+    def assertValidFormListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
-            list_data=list_data,
-            expected_length=expected_length,
-            results_key="forms",
-            paginated=paginated,
+            list_data=list_data, expected_length=expected_length, results_key="forms", paginated=paginated
         )
 
         for form_data in list_data["forms"]:

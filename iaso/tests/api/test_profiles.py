@@ -10,15 +10,9 @@ class ProfileAPITestCase(APITestCase):
     def setUpTestData(cls):
         ghi = m.Account.objects.create(name="Global Health Initiative")
 
-        cls.jane = cls.create_user_with_profile(
-            username="janedoe", account=ghi, permissions=["iaso_forms"]
-        )
-        cls.john = cls.create_user_with_profile(
-            username="johndoe", account=ghi, is_superuser=True
-        )
-        cls.jim = cls.create_user_with_profile(
-            username="jim", account=ghi, permissions=["iaso_forms", "iaso_users"]
-        )
+        cls.jane = cls.create_user_with_profile(username="janedoe", account=ghi, permissions=["iaso_forms"])
+        cls.john = cls.create_user_with_profile(username="johndoe", account=ghi, is_superuser=True)
+        cls.jim = cls.create_user_with_profile(username="jim", account=ghi, permissions=["iaso_forms", "iaso_users"])
 
     @tag("iaso_only")
     def test_profile_me_without_auth(self):
@@ -84,14 +78,9 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 200)
         self.assertValidProfileListData(response.json(), 3)
 
-    def assertValidProfileListData(
-        self, list_data: typing.Mapping, expected_length: int, paginated: bool = False
-    ):
+    def assertValidProfileListData(self, list_data: typing.Mapping, expected_length: int, paginated: bool = False):
         self.assertValidListData(
-            list_data=list_data,
-            expected_length=expected_length,
-            results_key="profiles",
-            paginated=paginated,
+            list_data=list_data, expected_length=expected_length, results_key="profiles", paginated=paginated
         )
 
         for profile_data in list_data["profiles"]:

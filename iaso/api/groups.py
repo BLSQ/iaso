@@ -9,27 +9,10 @@ from .common import ModelViewSet, TimestampField, HasPermission
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
-        fields = [
-            "id",
-            "name",
-            "source_ref",
-            "source_version",
-            "org_unit_count",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "source_ref",
-            "source_version",
-            "org_unit_count",
-            "created_at",
-            "updated_at",
-        ]
+        fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
+        read_only_fields = ["id", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
 
-    source_version = serializers.SerializerMethodField(
-        read_only=True
-    )  # TODO: use serializer
+    source_version = serializers.SerializerMethodField(read_only=True)  # TODO: use serializer
     org_unit_count = serializers.IntegerField(read_only=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -61,10 +44,7 @@ class GroupsViewSet(ModelViewSet):
     DELETE /api/groups/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_org_units"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_org_units")]
     serializer_class = GroupSerializer
     results_key = "groups"
     http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]
@@ -72,11 +52,7 @@ class GroupsViewSet(ModelViewSet):
     def get_queryset(self):
         light = self.request.GET.get("light", False)
         profile = self.request.user.iaso_profile
-        queryset = (
-            Group.objects.filter(
-                source_version__data_source__projects__in=profile.account.project_set.all()
-            )
-        )
+        queryset = Group.objects.filter(source_version__data_source__projects__in=profile.account.project_set.all())
         if not light:
             queryset = queryset.annotate(org_unit_count=Count("org_units"))
 

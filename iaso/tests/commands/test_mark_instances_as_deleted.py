@@ -12,68 +12,41 @@ class InstancesAPITestCase(APITestCase):
         star_wars = m.Account.objects.create(name="Star Wars")
         star_wars.save()
 
-        cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc"
-        )
+        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
         cls.jedi_council_endor = m.OrgUnit.objects.create(name="Endor Jedi Council")
 
         cls.project_1 = m.Project.objects.create(
-            name="Hydroponic gardens",
-            app_id="stars.empire.agriculture.hydroponics",
-            account=star_wars,
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
 
-        cls.form_1 = m.Form.objects.create(
-            name="Hydroponics study", period_type=m.MONTH, single_per_period=True
-        )
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
-        cls.form_2 = m.Form.objects.create(
-            name="Hydroponics interview", period_type=m.QUARTER, single_per_period=True
-        )
+        cls.form_2 = m.Form.objects.create(name="Hydroponics interview", period_type=m.QUARTER, single_per_period=True)
 
         cls.instance_1 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202001",
-            org_unit=cls.jedi_council_endor,
-            project=cls.project_1,
+            form=cls.form_1, period="202001", org_unit=cls.jedi_council_endor, project=cls.project_1
         )
         cls.instance_2 = cls.create_form_instance(
-            form=cls.form_1,
-            period="202002",
-            org_unit=cls.jedi_council_endor,
-            project=cls.project_1,
+            form=cls.form_1, period="202002", org_unit=cls.jedi_council_endor, project=cls.project_1
         )
         cls.instance_3 = cls.create_form_instance(
-            form=cls.form_2,
-            period="2020Q2",
-            org_unit=cls.jedi_council_endor,
-            project=cls.project_1,
+            form=cls.form_2, period="2020Q2", org_unit=cls.jedi_council_endor, project=cls.project_1
         )
 
         cls.project_1.unit_types.add(cls.jedi_council)
         cls.project_1.forms.set([cls.form_1, cls.form_2])
 
         cls.project_2 = m.Project.objects.create(
-            name="Lightsaber mark3",
-            app_id="stars.empire.lightsaber",
-            account=star_wars,
+            name="Lightsaber mark3", app_id="stars.empire.lightsaber", account=star_wars
         )
         cls.project_2.unit_types.add(cls.jedi_council)
-        cls.form_3 = m.Form.objects.create(
-            name="Land speeder study", period_type=m.QUARTER, single_per_period=False
-        )
+        cls.form_3 = m.Form.objects.create(name="Land speeder study", period_type=m.QUARTER, single_per_period=False)
         cls.instance_4 = cls.create_form_instance(
-            form=cls.form_3,
-            period="2020Q3",
-            org_unit=cls.jedi_council_endor,
-            project=cls.project_2,
+            form=cls.form_3, period="2020Q3", org_unit=cls.jedi_council_endor, project=cls.project_2
         )
         cls.instance_5 = cls.create_form_instance(
-            form=cls.form_3,
-            period="2020Q4",
-            org_unit=cls.jedi_council_endor,
-            project=cls.project_2,
+            form=cls.form_3, period="2020Q4", org_unit=cls.jedi_council_endor, project=cls.project_2
         )
         cls.project_2.forms.add(cls.form_3)
 
@@ -83,12 +56,7 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertEqual(0, m.Instance.objects.filter(deleted=True).count())
 
-        management.call_command(
-            "mark_instances_as_deleted",
-            self.project_1.id,
-            stdout=StringIO(),
-            force=True,
-        )
+        management.call_command("mark_instances_as_deleted", self.project_1.id, stdout=StringIO(), force=True)
 
         self.assertEqual(3, m.Instance.objects.filter(deleted=True).count())
 
@@ -106,8 +74,6 @@ class InstancesAPITestCase(APITestCase):
 
         self.assertEqual(0, m.Instance.objects.filter(deleted=True).count())
 
-        management.call_command(
-            "mark_instances_as_deleted", self.project_1.id, stdout=StringIO(),
-        )
+        management.call_command("mark_instances_as_deleted", self.project_1.id, stdout=StringIO())
 
         self.assertEqual(0, m.Instance.objects.filter(deleted=True).count())

@@ -1,5 +1,6 @@
 import uuid
 import logging
+
 logger = logging.getLogger(__name__)
 
 
@@ -28,11 +29,7 @@ def seed_event_mapping(api, program_id):
             psde["dataElement"]["code"] = code_or_name
             question_mappings[code_or_name] = psde["dataElement"]
 
-    mapping = {
-        "type": "simple_event",
-        "program_id": program_id,
-        "question_mappings": question_mappings,
-    }
+    mapping = {"type": "simple_event", "program_id": program_id, "question_mappings": question_mappings}
 
     return (mapping, missing_data_elements)
 
@@ -49,18 +46,14 @@ def copy_mappings_from_previous_version(form_version, previous_form_version):
 
         if "question_mappings" in mapping_version.json:
             filtered_question_mappings = {
-                k: v
-                for k, v in mapping_version.json["question_mappings"].items()
-                if k in questions_by_name
+                k: v for k, v in mapping_version.json["question_mappings"].items() if k in questions_by_name
             }
 
             mapping_version.json["question_mappings"] = filtered_question_mappings
 
         if "aggregations" in mapping_version.json:
             mapping_version.json["aggregations"] = [
-                agg
-                for agg in mapping_version.json["aggregations"]
-                if agg["id"] in questions_by_name
+                agg for agg in mapping_version.json["aggregations"] if agg["id"] in questions_by_name
             ]
 
         mapping_version.save()

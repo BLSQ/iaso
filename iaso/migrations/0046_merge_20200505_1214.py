@@ -5,10 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0045_orgunit_creator'),
-        ('iaso', '0044_profile_org_units'),
-    ]
+    dependencies = [("iaso", "0045_orgunit_creator"), ("iaso", "0044_profile_org_units")]
 
-    operations = [
-    ]
+    operations = []

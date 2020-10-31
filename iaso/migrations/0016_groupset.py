@@ -6,21 +6,24 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0015_merge_20191104_1319'),
-    ]
+    dependencies = [("iaso", "0015_merge_20191104_1319")]
 
     operations = [
         migrations.CreateModel(
-            name='GroupSet',
+            name="GroupSet",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.TextField()),
-                ('source_ref', models.TextField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('groups', models.ManyToManyField(blank=True, to='iaso.Group')),
-                ('source_version', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to='iaso.SourceVersion')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("name", models.TextField()),
+                ("source_ref", models.TextField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("groups", models.ManyToManyField(blank=True, to="iaso.Group")),
+                (
+                    "source_version",
+                    models.ForeignKey(
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.SourceVersion"
+                    ),
+                ),
             ],
-        ),
+        )
     ]

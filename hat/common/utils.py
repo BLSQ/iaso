@@ -16,23 +16,18 @@ from hat.settings import SNS_NOTIFICATION_TOPIC
 
 def run_cmd(cmd: List[str], **kwargs: Any) -> str:
     """Helper function to run an external command."""
-    args = {
-        'stdout': PIPE,
-        'stderr': PIPE,
-        'check': True,
-        **kwargs
-    }
+    args = {"stdout": PIPE, "stderr": PIPE, "check": True, **kwargs}
     try:
         r = run(cmd, **args)
     except CalledProcessError as exc:
         msg = exc.stdout.decode() + exc.stderr.decode()
-        raise Exception('Subprocess error: ' + msg)
+        raise Exception("Subprocess error: " + msg)
     return r.stdout.decode()
 
 
 def create_shared_filename(suffix: str) -> str:
     """Create a unique filename in the shared directory with given suffix."""
-    return '{}/{}{}'.format(settings.SHARED_DIR, str(uuid4()), suffix)
+    return "{}/{}{}".format(settings.SHARED_DIR, str(uuid4()), suffix)
 
 
 # https://stackoverflow.com/questions/1265665/how-can-i-check-if-a-string-represents-an-int-without-using-try-except
@@ -59,7 +54,7 @@ def queryset_iterator(queryset, chunk_size=1000):
     if queryset._prefetch_related_lookups:
         if not queryset.query.order_by:
             # Paginator() throws a warning if there is no sorting attached to the queryset
-            queryset = queryset.order_by('pk')
+            queryset = queryset.order_by("pk")
         paginator = Paginator(queryset, chunk_size)
         for index in range(paginator.num_pages):
             yield from paginator.get_page(index + 1)
@@ -118,11 +113,10 @@ def sns_notify(message):
 
     if SNS_NOTIFICATION_TOPIC:
         try:
-            client = boto3.client('sns', region_name='eu-central-1')
+            client = boto3.client("sns", region_name="eu-central-1")
 
             response = client.publish(
-                TopicArn=SNS_NOTIFICATION_TOPIC,
-                Message=str(message)
+                TopicArn=SNS_NOTIFICATION_TOPIC, Message=str(message)
             )
 
             return response
@@ -133,7 +127,9 @@ def sns_notify(message):
         return None
 
 
-def slack_notify(plain_text=None, icon="information_source", channel=None, attachments=None):
+def slack_notify(
+    plain_text=None, icon="information_source", channel=None, attachments=None
+):
     """
     Slack notification. This requires a SLACK_WEBHOOK_URL environment parameter to do anything.
     The URL should look like https://hooks.slack.com/services/xxxxxx/xxxxxxx/xxxxxxxxxxxxxxxxxxxxxxx
@@ -167,10 +163,10 @@ def slack_notify(plain_text=None, icon="information_source", channel=None, attac
             channel = "#" + channel
 
         notif = {
-                    "username": os.environ.get("SLACK_USERNAME", "incoming-webhook"),
-                    "icon_emoji": icon,
-                    "channel": channel,
-                }
+            "username": os.environ.get("SLACK_USERNAME", "incoming-webhook"),
+            "icon_emoji": icon,
+            "channel": channel,
+        }
         if attachments:
             notif["attachments"] = attachments
         if plain_text:
@@ -178,10 +174,8 @@ def slack_notify(plain_text=None, icon="information_source", channel=None, attac
         try:
             response = requests.post(
                 url=url,
-                headers={
-                    "Content-Type": "application/json; charset=utf-8",
-                },
-                data=json.dumps(notif)
+                headers={"Content-Type": "application/json; charset=utf-8"},
+                data=json.dumps(notif),
             )
         except requests.exceptions.RequestException:
             pass  # This is notification, it shouldn't crash the application.
@@ -192,7 +186,7 @@ def get_request_as_array(request_get_or_post, item, default_list=[]):
     if param is None:
         return default_list
     else:
-        return [int(x) for x in param.split(',')]
+        return [int(x) for x in param.split(",")]
 
 
 ANONYMOUS_PLACEHOLDER = "•••••••••••"

@@ -16,20 +16,18 @@ class Page(NamedTuple):
     last_url: Optional[str]
 
 
-def paginate(request: HttpRequest,
-             objects: QuerySet,
-             prefix_url: str,
-             page_size: int = 20) -> Page:
-
+def paginate(
+    request: HttpRequest, objects: QuerySet, prefix_url: str, page_size: int = 20
+) -> Page:
     def get_page_url(p: int) -> str:
         qs = request.GET.copy()
-        qs['page'] = p
+        qs["page"] = p
         return prefix_url + qs.urlencode()
 
     paginator = Paginator(objects, page_size)
     total = paginator.num_pages
     count = objects.count()
-    page = request.GET.get('page')
+    page = request.GET.get("page")
 
     try:
         items = paginator.page(page)
@@ -63,7 +61,6 @@ def paginate(request: HttpRequest,
         count=count,
         current=page,
         total=total,
-
         first_url=first_url,
         prev_url=prev_url,
         next_url=next_url,

@@ -43,9 +43,7 @@ class ExportRequestSerializer(serializers.ModelSerializer):
             )
         except Exception as e:
             # warn the client will use this as part of the translation key
-            raise serializers.ValidationError(
-                {"code": type(e).__name__, "message": str(e)}
-            )
+            raise serializers.ValidationError({"code": type(e).__name__, "message": str(e)})
 
     def update(self, export_request, validated_data):
         DataValueExporter().export_instances(export_request, True)

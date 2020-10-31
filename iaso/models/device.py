@@ -26,9 +26,7 @@ class Device(models.Model):
 
 class DeviceOwnership(models.Model):
     device = models.ForeignKey("Device", on_delete=models.CASCADE)
-    project = models.ForeignKey(
-        "Project", blank=True, null=True, on_delete=models.DO_NOTHING
-    )
+    project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     start = models.DateTimeField(auto_now_add=True)
     end = models.DateTimeField(auto_now_add=True)

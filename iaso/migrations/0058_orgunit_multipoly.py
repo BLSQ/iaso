@@ -6,9 +6,7 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0057_orgunit_multipoly"),
-    ]
+    dependencies = [("iaso", "0057_orgunit_multipoly")]
 
     operations = [
         migrations.AlterField(

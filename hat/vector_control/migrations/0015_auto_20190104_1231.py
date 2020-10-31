@@ -6,24 +6,28 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0014_auto_20190104_1112'),
-    ]
+    dependencies = [("vector_control", "0014_auto_20190104_1112")]
 
     operations = [
         migrations.AlterField(
-            model_name='catch',
-            name='end_location',
-            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
+            model_name="catch",
+            name="end_location",
+            field=django.contrib.gis.db.models.fields.PointField(
+                dim=3, null=True, srid=4326
+            ),
         ),
         migrations.AlterField(
-            model_name='catch',
-            name='start_location',
-            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
+            model_name="catch",
+            name="start_location",
+            field=django.contrib.gis.db.models.fields.PointField(
+                dim=3, null=True, srid=4326
+            ),
         ),
         migrations.AlterField(
-            model_name='site',
-            name='location',
-            field=django.contrib.gis.db.models.fields.PointField(dim=3, null=True, srid=4326),
+            model_name="site",
+            name="location",
+            field=django.contrib.gis.db.models.fields.PointField(
+                dim=3, null=True, srid=4326
+            ),
         ),
     ]

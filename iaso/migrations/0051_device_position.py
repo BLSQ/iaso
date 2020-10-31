@@ -8,22 +8,20 @@ import uuid
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0050_operations'),
-    ]
+    dependencies = [("iaso", "0050_operations")]
 
     operations = [
         migrations.CreateModel(
-            name='DevicePosition',
+            name="DevicePosition",
             fields=[
-                ('id', models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('uuid', models.UUIDField(default=uuid.uuid4, unique=True)),
-                ('location', django.contrib.gis.db.models.fields.PointField(dim=3, srid=4326)),
-                ('accuracy', models.DecimalField(decimal_places=2, max_digits=7)),
-                ('captured_at', models.DateTimeField()),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('updated_at', models.DateTimeField(auto_now=True)),
-                ('device', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='iaso.Device')),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("uuid", models.UUIDField(default=uuid.uuid4, unique=True)),
+                ("location", django.contrib.gis.db.models.fields.PointField(dim=3, srid=4326)),
+                ("accuracy", models.DecimalField(decimal_places=2, max_digits=7)),
+                ("captured_at", models.DateTimeField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("device", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.Device")),
             ],
-        ),
+        )
     ]

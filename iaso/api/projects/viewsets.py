@@ -14,10 +14,7 @@ class ProjectsViewSet(ModelViewSet):
     GET /api/projects/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
     serializer_class = ProjectSerializer
     results_key = "projects"
     http_method_names = ["get", "head", "options", "trace"]

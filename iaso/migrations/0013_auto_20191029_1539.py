@@ -12,15 +12,11 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="instance",
             name="location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                blank=True, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(blank=True, null=True, srid=4326),
         ),
         migrations.AlterField(
             model_name="orgunit",
             name="location",
-            field=django.contrib.gis.db.models.fields.PointField(
-                blank=True, null=True, srid=4326
-            ),
+            field=django.contrib.gis.db.models.fields.PointField(blank=True, null=True, srid=4326),
         ),
     ]

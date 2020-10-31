@@ -109,16 +109,7 @@ class Diff(Dictable):
         return next(x for x in self.comparisons if x.field == field)
 
     def are_fields_modified(self, fields):
-        return (
-            len(
-                list(
-                    x
-                    for x in self.comparisons
-                    if x.field in fields and x.status != "same"
-                )
-            )
-            > 0
-        )
+        return len(list(x for x in self.comparisons if x.field in fields and x.status != "same")) > 0
 
 
 class Comparison(Dictable):

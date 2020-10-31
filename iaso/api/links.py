@@ -14,7 +14,6 @@ from .common import HasPermission
 
 
 class LinkSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Link
         fields = ["id", "destination", "source", "validated", "similarity_score", "algorithm_run"]
@@ -26,13 +25,13 @@ class LinkSerializer(serializers.ModelSerializer):
         run = attrs["algorithm_run"]
 
         if not (run.version_1.data_source in sources and run.version_2.data_source in sources):
-            raise serializers.ValidationError('This run is not part of your account.')
+            raise serializers.ValidationError("This run is not part of your account.")
         link_source = attrs["source"]
         link_destination = attrs["destination"]
         # print(link_source.version, run.version_1)
         # print(link_destination.version, run.version_2)
         if not (link_source.version == run.version_2 and link_destination.version == run.version_1):
-            raise serializers.ValidationError('Your source and destination are not matching with the run')
+            raise serializers.ValidationError("Your source and destination are not matching with the run")
 
         return validated_data
 
@@ -48,10 +47,7 @@ class LinkViewSet(viewsets.ViewSet):
     PATCH /api/links/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_links"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_links")]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -77,29 +73,20 @@ class LinkViewSet(viewsets.ViewSet):
 
         if not request.user.is_anonymous:
             profile = request.user.iaso_profile
-            queryset = queryset.filter(
-                source__version__data_source__projects__account=profile.account
-            )
+            queryset = queryset.filter(source__version__data_source__projects__account=profile.account)
 
         if search:
             queryset = queryset.filter(
-                Q(destination__name__icontains=search)
-                | Q(destination__aliases__contains=[search])
+                Q(destination__name__icontains=search) | Q(destination__aliases__contains=[search])
             )
-            queryset = queryset.filter(
-                Q(source__name__icontains=search)
-                | Q(source__aliases__contains=[search])
-            )
+            queryset = queryset.filter(Q(source__name__icontains=search) | Q(source__aliases__contains=[search]))
 
         if validated == "true":
             queryset = queryset.filter(validated=True)
         if validated == "false":
             queryset = queryset.filter(validated=False)
         if org_unit_id:
-            queryset = queryset.filter(
-                Q(destination__id=org_unit_id)
-                | Q(source__id=org_unit_id)
-            )
+            queryset = queryset.filter(Q(destination__id=org_unit_id) | Q(source__id=org_unit_id))
         if destination:
             queryset = queryset.filter(destination__version__data_source_id=destination)
 
@@ -199,8 +186,7 @@ class LinkViewSet(viewsets.ViewSet):
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                    content_type="text/csv",
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -231,14 +217,10 @@ class LinkViewSet(viewsets.ViewSet):
         res["destination"]["geo_json"] = None
         if link.source.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=link.source.id)
-            res["source"]["geo_json"] = geojson_queryset(
-                queryset, geometry_field="simplified_geom"
-            )
+            res["source"]["geo_json"] = geojson_queryset(queryset, geometry_field="simplified_geom")
         if link.destination.simplified_geom:
             queryset = OrgUnit.objects.all().filter(id=link.destination.id)
-            res["destination"]["geo_json"] = geojson_queryset(
-                queryset, geometry_field="simplified_geom"
-            )
+            res["destination"]["geo_json"] = geojson_queryset(queryset, geometry_field="simplified_geom")
         return Response(res)
 
     def create(self, request):
@@ -247,4 +229,3 @@ class LinkViewSet(viewsets.ViewSet):
         link = link_serializer.save()
         link.validator = request.user
         return Response(link.as_dict())
-

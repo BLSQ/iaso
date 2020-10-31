@@ -16,21 +16,21 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_url(obj: DataSource):
-         return obj.credentials.url if obj.credentials else None
+        return obj.credentials.url if obj.credentials else None
 
     @staticmethod
     def get_versions(obj: DataSource):
-        return [v.as_dict_without_data_source() for v in obj.versions.all()],
+        return ([v.as_dict_without_data_source() for v in obj.versions.all()],)
 
     @staticmethod
     def get_projects(obj: DataSource):
-        return [v.as_dict() for v in obj.projects.all()],
+        return ([v.as_dict() for v in obj.projects.all()],)
 
     def create(self, validated_data):
         ds = DataSource(**validated_data)
         ds.save()
         account = self.context["request"].user.iaso_profile.account
-        project = account.project_set.first() #not wonderful, there should maybe be a default project rather than this
+        project = account.project_set.first()  # not wonderful, there should maybe be a default project rather than this
         ds.projects.add(project)
         return ds
 
@@ -52,14 +52,11 @@ class DataSourceViewSet(ModelViewSet):
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
 
     def get_queryset(self):
-        linked_to = self.kwargs.get('linkedTo', None)
+        linked_to = self.kwargs.get("linkedTo", None)
         profile = self.request.user.iaso_profile
         sources = DataSource.objects.filter(projects__account=profile.account).distinct()
         if linked_to:
             org_unit = OrgUnit.objects.get(pk=linked_to)
-            useful_sources = org_unit.source_set.values_list(
-                "algorithm_run__version_2__data_source_id", flat=True
-            )
+            useful_sources = org_unit.source_set.values_list("algorithm_run__version_2__data_source_id", flat=True)
             sources = sources.filter(id__in=useful_sources)
         return sources.order_by("name")
-

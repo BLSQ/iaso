@@ -11,8 +11,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="project",
             name="forms",
-            field=models.ManyToManyField(
-                blank=True, related_name="projects", to="iaso.Form"
-            ),
+            field=models.ManyToManyField(blank=True, related_name="projects", to="iaso.Form"),
         )
     ]

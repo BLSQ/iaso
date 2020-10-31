@@ -18,18 +18,20 @@ class ProjectQuerySet(models.QuerySet):
         if app_id is not None:
             try:
                 project = self.get(app_id=app_id)
-                if user is None or not project.needs_authentication or (
-                    user.is_authenticated
-                    and user.iaso_profile is not None
-                    and project.account.id == user.iaso_profile.account.id
+                if (
+                    user is None
+                    or not project.needs_authentication
+                    or (
+                        user.is_authenticated
+                        and user.iaso_profile is not None
+                        and project.account.id == user.iaso_profile.account.id
+                    )
                 ):
                     return project
             except self.model.DoesNotExist:  # we want to launch a custom exception message
                 pass
 
-        raise self.model.DoesNotExist(
-            f"Could not find project for user {user} and app_id {app_id}"
-        )
+        raise self.model.DoesNotExist(f"Could not find project for user {user} and app_id {app_id}")
 
 
 class Project(models.Model):
@@ -37,9 +39,7 @@ class Project(models.Model):
 
     name = models.TextField(null=True, blank=True)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
-    account = models.ForeignKey(
-        "Account", on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
     app_id = models.TextField(null=True, blank=True)
     needs_authentication = models.BooleanField(default=False)
     feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
@@ -52,10 +52,7 @@ class Project(models.Model):
         return "%s " % (self.name,)
 
     def as_dict(self):
-        return {
-            "name": self.name,
-            "app_id": self.app_id
-        }
+        return {"name": self.name, "app_id": self.app_id}
 
     def has_feature(self, feature_code):
         return self.feature_flags.filter(code=feature_code).exists()

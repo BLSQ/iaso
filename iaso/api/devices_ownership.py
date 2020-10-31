@@ -13,14 +13,9 @@ class DevicesOwnershipViewSet(viewsets.ViewSet):
     GET /api/devicesownership/
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
 
     def list(self, request):
         queryset = DeviceOwnership.objects.all()
 
-        return Response(
-            {"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]}
-        )
+        return Response({"devicesownership": [ownerShip.as_dict() for ownerShip in queryset]})

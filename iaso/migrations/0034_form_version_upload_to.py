@@ -6,19 +6,15 @@ from iaso.models.forms import _form_version_upload_to
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0033_form_version_xls_file'),
-    ]
+    dependencies = [("iaso", "0033_form_version_xls_file")]
 
     operations = [
         migrations.AlterField(
-            model_name='formversion',
-            name='file',
-            field=models.FileField(upload_to=_form_version_upload_to),
+            model_name="formversion", name="file", field=models.FileField(upload_to=_form_version_upload_to)
         ),
         migrations.AlterField(
-            model_name='formversion',
-            name='xls_file',
+            model_name="formversion",
+            name="xls_file",
             field=models.FileField(blank=True, null=True, upload_to=_form_version_upload_to),
         ),
     ]

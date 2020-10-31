@@ -19,14 +19,10 @@ class Algorithm:
         run.save()
 
         units1 = list(
-            OrgUnit.objects.filter(version_id=version_1)
-            .exclude(source_ref=None)
-            .values_list("id", "source_ref")
+            OrgUnit.objects.filter(version_id=version_1).exclude(source_ref=None).values_list("id", "source_ref")
         )
         units2 = list(
-            OrgUnit.objects.filter(version=version_2)
-            .exclude(source_ref=None)
-            .values_list("id", "source_ref")
+            OrgUnit.objects.filter(version=version_2).exclude(source_ref=None).values_list("id", "source_ref")
         )
         units2_dict = {t[1]: t[0] for t in units2}
 

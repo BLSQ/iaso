@@ -9,13 +9,19 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('vector_control', '0021_auto_20190227_1737'),
+        ("vector_control", "0021_auto_20190227_1737"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='site',
-            name='creator',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='site_creator', to=settings.AUTH_USER_MODEL),
-        ),
+            model_name="site",
+            name="creator",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="site_creator",
+                to=settings.AUTH_USER_MODEL,
+            ),
+        )
     ]

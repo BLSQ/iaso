@@ -67,9 +67,7 @@ class Account(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     users = models.ManyToManyField(User, blank=True)
-    default_version = models.ForeignKey(
-        "SourceVersion", null=True, blank=True, on_delete=models.SET_NULL
-    )
+    default_version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.SET_NULL)
 
     def as_dict(self):
         return {
@@ -86,15 +84,9 @@ class Account(models.Model):
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
     read_only = models.BooleanField(default=True)
-    projects = models.ManyToManyField(
-        "Project", related_name="data_sources", blank=True
-    )
+    projects = models.ManyToManyField("Project", related_name="data_sources", blank=True)
     credentials = models.ForeignKey(
-        "ExternalCredentials",
-        on_delete=models.SET_NULL,
-        related_name="data_sources",
-        null=True,
-        blank=True,
+        "ExternalCredentials", on_delete=models.SET_NULL, related_name="data_sources", null=True, blank=True
     )
 
     description = models.TextField(null=True, blank=True)
@@ -121,9 +113,7 @@ class DataSource(models.Model):
 
 
 class SourceVersion(models.Model):
-    data_source = models.ForeignKey(
-        DataSource, on_delete=models.CASCADE, related_name="versions"
-    )
+    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="versions")
     number = models.IntegerField()
     description = models.TextField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -143,11 +133,7 @@ class SourceVersion(models.Model):
         }
 
     def as_list(self):
-        return {
-            "data_source": self.data_source.as_list(),
-            "number": self.number,
-            "id": self.id,
-        }
+        return {"data_source": self.data_source.as_list(), "number": self.number, "id": self.id}
 
     def as_dict_without_data_source(self):
         return {
@@ -161,21 +147,13 @@ class SourceVersion(models.Model):
     def as_report_dict(self):
         report = {}
         report["org_units"] = self.orgunit_set.count()
-        report["org_units_with_location"] = self.orgunit_set.exclude(
-            location=None
-        ).count()
-        report["org_units_with_shapes"] = self.orgunit_set.filter(
-            simplified_geom__isnull=False
-        ).count()
-        org_unit_types = self.orgunit_set.values_list(
-            "org_unit_type__name", "org_unit_type__id"
-        ).distinct()
+        report["org_units_with_location"] = self.orgunit_set.exclude(location=None).count()
+        report["org_units_with_shapes"] = self.orgunit_set.filter(simplified_geom__isnull=False).count()
+        org_unit_types = self.orgunit_set.values_list("org_unit_type__name", "org_unit_type__id").distinct()
         org_unit_types_report = {}
         for t in org_unit_types:
             name, ident = t
-            org_unit_types_report[name] = self.orgunit_set.filter(
-                org_unit_type_id=ident
-            ).count()
+            org_unit_types_report[name] = self.orgunit_set.filter(org_unit_type_id=ident).count()
         report["types"] = org_unit_types_report
         group_report = {}
         groups = self.orgunit_set.values_list("groups__name", "groups__id").distinct()
@@ -187,9 +165,7 @@ class SourceVersion(models.Model):
 
 
 class RecordType(models.Model):
-    projects = models.ManyToManyField(
-        "Project", related_name="record_types", blank=True
-    )
+    projects = models.ManyToManyField("Project", related_name="record_types", blank=True)
     name = models.TextField()
     description = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -197,15 +173,9 @@ class RecordType(models.Model):
 
 class Record(models.Model):
     value = models.DecimalField(max_digits=19, decimal_places=10)
-    version = models.ForeignKey(
-        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
-    )
-    org_unit = models.ForeignKey(
-        "OrgUnit", null=True, blank=True, on_delete=models.CASCADE
-    )
-    record_type = models.ForeignKey(
-        RecordType, on_delete=models.CASCADE, null=True, blank=True
-    )
+    version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
+    org_unit = models.ForeignKey("OrgUnit", null=True, blank=True, on_delete=models.CASCADE)
+    record_type = models.ForeignKey(RecordType, on_delete=models.CASCADE, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 
@@ -215,11 +185,7 @@ class MatchingAlgorithm(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
-        return "%s - %s %s" % (
-            self.name,
-            self.description,
-            self.created_at.timestamp() if self.created_at else None,
-        )
+        return "%s - %s %s" % (self.name, self.description, self.created_at.timestamp() if self.created_at else None)
 
     def as_dict(self):
         return {"name": self.name, "id": self.id, "description": self.description}
@@ -233,18 +199,10 @@ class AlgorithmRun(models.Model):
     result = JSONField(null=True, blank=True)
     finished = models.BooleanField(default=False)
     version_1 = models.ForeignKey(
-        SourceVersion,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="runs_where_destination",
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE, related_name="runs_where_destination"
     )
     version_2 = models.ForeignKey(
-        SourceVersion,
-        null=True,
-        blank=True,
-        on_delete=models.CASCADE,
-        related_name="runs_where_source",
+        SourceVersion, null=True, blank=True, on_delete=models.CASCADE, related_name="runs_where_source"
     )
 
     def __str__(self):
@@ -259,9 +217,7 @@ class AlgorithmRun(models.Model):
             "ended_at": self.ended_at.timestamp() if self.ended_at else None,
             "result": self.result,
             "finished": self.finished,
-            "launcher": self.launcher.iaso_profile.as_dict()
-            if self.launcher and self.launcher.iaso_profile
-            else None,
+            "launcher": self.launcher.iaso_profile.as_dict() if self.launcher and self.launcher.iaso_profile else None,
             "destination": self.version_1.as_dict() if self.version_1 else None,
             "source": self.version_2.as_dict() if self.version_2 else None,
             "links_count": links_count,
@@ -279,38 +235,23 @@ class AlgorithmRun(models.Model):
 
 class Link(models.Model):
     destination = models.ForeignKey(
-        "OrgUnit",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="source_set",
+        "OrgUnit", on_delete=models.CASCADE, null=True, blank=True, related_name="source_set"
     )
     source = models.ForeignKey(
-        "OrgUnit",
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name="destination_set",
+        "OrgUnit", on_delete=models.CASCADE, null=True, blank=True, related_name="destination_set"
     )
     validated = models.BooleanField(default=False)
     validator = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
     validation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
 
     similarity_score = models.SmallIntegerField(null=True)
-    algorithm_run = models.ForeignKey(
-        AlgorithmRun, on_delete=models.CASCADE, null=True, blank=True
-    )
+    algorithm_run = models.ForeignKey(AlgorithmRun, on_delete=models.CASCADE, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
-        return "%s - %s - %s -%d" % (
-            self.destination,
-            self.source,
-            self.algorithm_run,
-            self.similarity_score,
-        )
+        return "%s - %s - %s -%d" % (self.destination, self.source, self.algorithm_run, self.similarity_score)
 
     def as_dict(self):
         return {
@@ -325,9 +266,7 @@ class Link(models.Model):
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
-            "algorithm_run": self.algorithm_run.as_dict()
-            if self.algorithm_run
-            else None,
+            "algorithm_run": self.algorithm_run.as_dict() if self.algorithm_run else None,
         }
 
     def as_full_dict(self):
@@ -343,18 +282,14 @@ class Link(models.Model):
             else None,
             "validation_date": self.validation_date,
             "similarity_score": self.similarity_score,
-            "algorithm_run": self.algorithm_run.as_dict()
-            if self.algorithm_run
-            else None,
+            "algorithm_run": self.algorithm_run.as_dict() if self.algorithm_run else None,
         }
 
 
 class Group(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
-    source_version = models.ForeignKey(
-        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
-    )
+    source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="groups")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -370,7 +305,6 @@ class Group(models.Model):
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "source_version": self.source_version_id,
-
         }
 
         if with_counts:
@@ -382,9 +316,7 @@ class Group(models.Model):
 class GroupSet(models.Model):
     name = models.TextField()
     source_ref = models.TextField(null=True, blank=True)
-    source_version = models.ForeignKey(
-        SourceVersion, null=True, blank=True, on_delete=models.CASCADE
-    )
+    source_version = models.ForeignKey(SourceVersion, null=True, blank=True, on_delete=models.CASCADE)
     groups = models.ManyToManyField(Group, blank=True, related_name="group_sets")
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -395,9 +327,7 @@ class GroupSet(models.Model):
 
 class Mapping(models.Model):
     name = models.TextField()
-    data_source = models.ForeignKey(
-        DataSource, on_delete=models.CASCADE, related_name="mappings"
-    )
+    data_source = models.ForeignKey(DataSource, on_delete=models.CASCADE, related_name="mappings")
     form = models.ForeignKey("Form", on_delete=models.DO_NOTHING, null=True, blank=True)
     mapping_type = models.TextField(choices=MAPPING_TYPE_CHOICES)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -428,16 +358,8 @@ class MappingVersion(models.Model):
     QUESTION_MAPPING_NEVER_MAPPED = "neverMapped"
     QUESTION_MAPPING_MULTIPLE = "multiple"
 
-    form_version = models.ForeignKey(
-        "FormVersion", on_delete=models.CASCADE, related_name="mapping_versions"
-    )
-    mapping = models.ForeignKey(
-        Mapping,
-        on_delete=models.CASCADE,
-        related_name="versions",
-        null=True,
-        blank=True,
-    )
+    form_version = models.ForeignKey("FormVersion", on_delete=models.CASCADE, related_name="mapping_versions")
+    mapping = models.ForeignKey(Mapping, on_delete=models.CASCADE, related_name="versions", null=True, blank=True)
     name = models.TextField()
     json = JSONField()
     created_at = models.DateTimeField(auto_now_add=True)
@@ -451,9 +373,7 @@ class MappingVersion(models.Model):
 
 
 class ExternalCredentials(models.Model):
-    account = models.ForeignKey(
-        Account, on_delete=models.CASCADE, related_name="credentials"
-    )
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name="credentials")
 
     name = models.TextField()
     login = models.TextField()
@@ -478,14 +398,8 @@ class InstanceQuerySet(models.QuerySet):
 
         return self.annotate(
             status=models.Case(
-                models.When(
-                    id__in=duplicates_subquery,
-                    then=models.Value(Instance.STATUS_DUPLICATED),
-                ),
-                models.When(
-                    last_export_success_at__isnull=False,
-                    then=models.Value(Instance.STATUS_EXPORTED),
-                ),
+                models.When(id__in=duplicates_subquery, then=models.Value(Instance.STATUS_DUPLICATED)),
+                models.When(last_export_success_at__isnull=False, then=models.Value(Instance.STATUS_EXPORTED)),
                 default=models.Value(Instance.STATUS_READY),
                 output_field=models.CharField(),
             )
@@ -505,21 +419,14 @@ class InstanceQuerySet(models.QuerySet):
 
         qs = self.annotate(
             duplicates_count=models.Subquery(
-                duplicates_subquery.values("duplicates_count"),
-                output_field=models.IntegerField(),
+                duplicates_subquery.values("duplicates_count"), output_field=models.IntegerField()
             )
         )
 
         return qs.annotate(
             status=models.Case(
-                models.When(
-                    duplicates_count__gt=0,
-                    then=models.Value(Instance.STATUS_DUPLICATED),
-                ),
-                models.When(
-                    last_export_success_at__isnull=False,
-                    then=models.Value(Instance.STATUS_EXPORTED),
-                ),
+                models.When(duplicates_count__gt=0, then=models.Value(Instance.STATUS_DUPLICATED)),
+                models.When(last_export_success_at__isnull=False, then=models.Value(Instance.STATUS_EXPORTED)),
                 default=models.Value(Instance.STATUS_READY),
                 output_field=models.CharField(),
             )
@@ -532,24 +439,12 @@ class InstanceQuerySet(models.QuerySet):
             self.values(*grouping_fields)
             .annotate(total_count=models.Count("id", distinct=True))
             .annotate(
-                duplicated_count=models.Count(
-                    "id",
-                    distinct=True,
-                    filter=models.Q(status=Instance.STATUS_DUPLICATED),
-                )
+                duplicated_count=models.Count("id", distinct=True, filter=models.Q(status=Instance.STATUS_DUPLICATED))
             )
             .annotate(
-                exported_count=models.Count(
-                    "id",
-                    distinct=True,
-                    filter=models.Q(status=Instance.STATUS_EXPORTED),
-                )
+                exported_count=models.Count("id", distinct=True, filter=models.Q(status=Instance.STATUS_EXPORTED))
             )
-            .annotate(
-                ready_count=models.Count(
-                    "id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)
-                )
-            )
+            .annotate(ready_count=models.Count("id", distinct=True, filter=models.Q(status=Instance.STATUS_READY)))
             .exclude(period=None)
             .order_by("period", "form__name")
         )
@@ -570,7 +465,7 @@ class InstanceQuerySet(models.QuerySet):
         search=None,
         from_date=None,
         to_date=None,
-        show_deleted=None
+        show_deleted=None,
     ):
         queryset = self
 
@@ -587,9 +482,7 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(id=instance_id)
 
         if org_unit_type_id:
-            queryset = queryset.filter(
-                org_unit__org_unit_type__in=org_unit_type_id.split(",")
-            )
+            queryset = queryset.filter(org_unit__org_unit_type__in=org_unit_type_id.split(","))
         if org_unit_id:
             queryset = queryset.filter(org_unit_id=org_unit_id)
 
@@ -600,15 +493,9 @@ class InstanceQuerySet(models.QuerySet):
                 | Q(org_unit__parent__parent__id=org_unit_parent_id)
                 | Q(org_unit__parent__parent__parent__id=org_unit_parent_id)
                 | Q(org_unit__parent__parent__parent__parent__id=org_unit_parent_id)
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
-                | Q(
-                    org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id
-                )
+                | Q(org_unit__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
+                | Q(org_unit__parent__parent__parent__parent__parent__parent__parent__id=org_unit_parent_id)
             )
 
         if with_location == "true":
@@ -621,9 +508,7 @@ class InstanceQuerySet(models.QuerySet):
             queryset = queryset.filter(device__id=device_id)
 
         if device_ownership_id:
-            device_ownership = get_object_or_404(
-                DeviceOwnership, pk=device_ownership_id
-            )
+            device_ownership = get_object_or_404(DeviceOwnership, pk=device_ownership_id)
             queryset = queryset.filter(device__id=device_ownership.device.id)
 
         if form_id:
@@ -643,7 +528,6 @@ class InstanceQuerySet(models.QuerySet):
         else:
             # whatever don't show deleted submissions
             queryset = queryset.exclude(deleted=True)
-
 
         if search:
             if search.startswith("ids:"):
@@ -667,10 +551,7 @@ class InstanceQuerySet(models.QuerySet):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, list):
-            query = reduce(
-                operator.or_,
-                [Q(org_unit__path__descendants=str(ou.path)) for ou in org_unit],
-            )
+            query = reduce(operator.or_, [Q(org_unit__path__descendants=str(ou.path)) for ou in org_unit])
         else:
             query = Q(org_unit__path__descendants=str(org_unit.path))
 
@@ -695,24 +576,12 @@ class Instance(models.Model):
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
     file_name = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, dim=3, srid=4326)
-    org_unit = models.ForeignKey(
-        "OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True
-    )
-    form = models.ForeignKey(
-        "Form",
-        on_delete=models.PROTECT,
-        null=True,
-        blank=True,
-        related_name="instances",
-    )
-    project = models.ForeignKey(
-        "Project", blank=True, null=True, on_delete=models.DO_NOTHING
-    )
+    org_unit = models.ForeignKey("OrgUnit", on_delete=models.DO_NOTHING, null=True, blank=True)
+    form = models.ForeignKey("Form", on_delete=models.PROTECT, null=True, blank=True, related_name="instances")
+    project = models.ForeignKey("Project", blank=True, null=True, on_delete=models.DO_NOTHING)
     json = JSONField(null=True, blank=True)
     accuracy = models.DecimalField(null=True, decimal_places=2, max_digits=7)
-    device = models.ForeignKey(
-        "Device", null=True, blank=True, on_delete=models.DO_NOTHING
-    )
+    device = models.ForeignKey("Device", null=True, blank=True, on_delete=models.DO_NOTHING)
     period = models.TextField(null=True, blank=True, db_index=True)
 
     last_export_success_at = models.DateTimeField(null=True, blank=True)
@@ -729,9 +598,7 @@ class Instance(models.Model):
         if self.json and f:
             location = self.json.get(f, None)
             if location:
-                latitude, longitude, altitude, accuracy = [
-                    float(x) for x in location.split(" ")
-                ]
+                latitude, longitude, altitude, accuracy = [float(x) for x in location.split(" ")]
                 self.location = Point(x=longitude, y=latitude, z=altitude, srid=4326)
                 self.accuracy = accuracy
                 self.save()
@@ -772,15 +639,11 @@ class Instance(models.Model):
             soup = as_soup(file)
             form_version_id = extract_form_version_id(soup)
             if form_version_id:
-                form_versions = self.form.form_versions.filter(
-                    version_id=form_version_id
-                )
+                form_versions = self.form.form_versions.filter(version_id=form_version_id)
                 form_version = form_versions.first()
                 if form_version:
 
-                    self.json = flat_parse_xml_soup(
-                        soup, [rg["name"] for rg in form_version.repeat_groups()]
-                    )
+                    self.json = flat_parse_xml_soup(soup, [rg["name"] for rg in form_version.repeat_groups()])
                 else:
                     # warn old form, but keep it working ? or throw error
                     self.json = flat_parse_xml_soup(soup, [])
@@ -802,10 +665,7 @@ class Instance(models.Model):
 
     def export(self, launcher=None):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
-        from iaso.dhis2.export_request_builder import (
-            ExportRequestBuilder,
-            NothingToExportError,
-        )
+        from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
@@ -874,9 +734,7 @@ class Instance(models.Model):
             "file_url": self.file.url if self.file else None,
             "form_id": self.form_id,
             "form_name": self.form.name,
-            "form_descriptor": form_version.get_or_save_form_descriptor()
-            if form_version is not None
-            else None,
+            "form_descriptor": form_version.get_or_save_form_descriptor() if form_version is not None else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "org_unit": self.org_unit.as_dict_with_parents(light=False, light_parents=False) if self.org_unit else None,
@@ -885,20 +743,14 @@ class Instance(models.Model):
             "altitude": self.location.z if self.location else None,
             "period": self.period,
             "file_content": file_content,
-            "files": [
-                f.file.url if f.file else None for f in self.instancefile_set.all()
-            ],
+            "files": [f.file.url if f.file else None for f in self.instancefile_set.all()],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
-            "last_export_success_at": self.last_export_success_at.timestamp()
-            if self.last_export_success_at
-            else None,
+            "last_export_success_at": self.last_export_success_at.timestamp() if self.last_export_success_at else None,
             "export_statuses": [
                 {
                     "status": export_status.status,
-                    "created_at": export_status.created_at.timestamp()
-                    if export_status.created_at
-                    else None,
+                    "created_at": export_status.created_at.timestamp() if export_status.created_at else None,
                     "export_request": {
                         "launcher": {
                             "full_name": export_status.export_request.launcher.get_full_name()
@@ -911,9 +763,7 @@ class Instance(models.Model):
                         "last_error_message": f"{export_status.last_error_message}, {export_status.export_request.last_error_message}",
                     },
                 }
-                for export_status in Paginator(
-                    self.exportstatus_set.order_by("-id"), 3
-                ).object_list
+                for export_status in Paginator(self.exportstatus_set.order_by("-id"), 3).object_list
             ],
             "deleted": self.deleted,
         }
@@ -928,9 +778,7 @@ class Instance(models.Model):
             "latitude": self.location.y if self.location else None,
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
-            "files": [
-                f.file.url if f.file else None for f in self.instancefile_set.all()
-            ],
+            "files": [f.file.url if f.file else None for f in self.instancefile_set.all()],
             "status": getattr(self, "status", None),
             "correlation_id": self.correlation_id,
         }
@@ -945,9 +793,7 @@ class Instance(models.Model):
 
 class InstanceFile(models.Model):
     UPLOADED_TO = "instancefiles/"
-    instance = models.ForeignKey(
-        Instance, on_delete=models.DO_NOTHING, null=True, blank=True
-    )
+    instance = models.ForeignKey(Instance, on_delete=models.DO_NOTHING, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
@@ -959,13 +805,9 @@ class InstanceFile(models.Model):
 
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
-    user = models.OneToOneField(
-        User, on_delete=models.CASCADE, related_name="iaso_profile"
-    )
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
 
-    org_units = models.ManyToManyField(
-        "OrgUnit", blank=True, related_name="iaso_profile"
-    )
+    org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
 
     def __str__(self):
         return "%s -- %s" % (self.user, self.account)
@@ -979,14 +821,10 @@ class Profile(models.Model):
             "email": self.user.email,
             "account": self.account.as_dict(),
             "permissions": list(
-                self.user.user_permissions.filter(
-                    codename__startswith="iaso_"
-                ).values_list("codename", flat=True)
+                self.user.user_permissions.filter(codename__startswith="iaso_").values_list("codename", flat=True)
             ),
             "is_superuser": self.user.is_superuser,
-            "org_units": [
-                o.as_small_dict() for o in self.org_units.all().order_by("name")
-            ],
+            "org_units": [o.as_small_dict() for o in self.org_units.all().order_by("name")],
         }
 
     def as_short_dict(self):
@@ -1000,9 +838,7 @@ class Profile(models.Model):
 
 
 class ExportRequest(models.Model):
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     params = JSONField(null=True, blank=True)
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     result = JSONField(null=True, blank=True)
@@ -1039,9 +875,7 @@ class ExportRequest(models.Model):
 
 
 class ExportLog(models.Model):
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
     sent = JSONField(null=True, blank=True)
     received = JSONField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1065,9 +899,7 @@ class ExportLog(models.Model):
 
 
 class ExportStatus(models.Model):
-    id = models.BigAutoField(
-        auto_created=True, primary_key=True, serialize=False, verbose_name="ID"
-    )
+    id = models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")
 
     export_request = models.ForeignKey(ExportRequest, on_delete=models.CASCADE)
     instance = models.ForeignKey(Instance, on_delete=models.CASCADE)
@@ -1091,16 +923,8 @@ class FeatureFlag(models.Model):
 
     FEATURE_FLAGS = {
         (INSTANT_EXPORT, "Instant export", _("Immediate export of instances to DHIS2")),
-        (
-            TAKE_GPS_ON_FORM,
-            "Mobile: take GPS on new form",
-            _("GPS localization on start of instance on mobile"),
-        ),
-        (
-            REQUIRE_AUTHENTICATION,
-            "Mobile: authentication required",
-            _("Require authentication on mobile"),
-        ),
+        (TAKE_GPS_ON_FORM, "Mobile: take GPS on new form", _("GPS localization on start of instance on mobile")),
+        (REQUIRE_AUTHENTICATION, "Mobile: authentication required", _("Require authentication on mobile")),
         (
             FORMS_AUTO_UPLOAD,
             "",

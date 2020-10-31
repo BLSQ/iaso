@@ -13,10 +13,7 @@ class DevicesViewSet(viewsets.ViewSet):
     GET /api/devices/
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
 
     def list(self, request):
         queryset = Device.objects.all()

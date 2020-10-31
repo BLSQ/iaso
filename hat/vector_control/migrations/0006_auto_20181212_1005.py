@@ -6,40 +6,26 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0005_auto_20181211_1551'),
-    ]
+    dependencies = [("vector_control", "0005_auto_20181211_1551")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='site',
-            name='latitude',
-        ),
-        migrations.RemoveField(
-            model_name='site',
-            name='longitude',
-        ),
-        migrations.RemoveField(
-            model_name='target',
-            name='latitude',
-        ),
-        migrations.RemoveField(
-            model_name='target',
-            name='longitude',
-        ),
+        migrations.RemoveField(model_name="site", name="latitude"),
+        migrations.RemoveField(model_name="site", name="longitude"),
+        migrations.RemoveField(model_name="target", name="latitude"),
+        migrations.RemoveField(model_name="target", name="longitude"),
         migrations.AddField(
-            model_name='catch',
-            name='location',
+            model_name="catch",
+            name="location",
             field=django.contrib.gis.db.models.fields.PointField(null=True, srid=4326),
         ),
         migrations.AddField(
-            model_name='site',
-            name='location',
+            model_name="site",
+            name="location",
             field=django.contrib.gis.db.models.fields.PointField(null=True, srid=4326),
         ),
         migrations.AddField(
-            model_name='target',
-            name='location',
+            model_name="target",
+            name="location",
             field=django.contrib.gis.db.models.fields.PointField(null=True, srid=4326),
         ),
     ]

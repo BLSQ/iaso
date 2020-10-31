@@ -15,10 +15,9 @@ from hat.audit import models as audit_models
 from .base import Group, SourceVersion
 from .project import Project
 
+
 class OrgUnitTypeQuerySet(models.QuerySet):
-    def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: str
-    ):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -42,9 +41,7 @@ class OrgUnitType(models.Model):
     short_name = models.CharField(max_length=255)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    sub_unit_types = models.ManyToManyField(
-        "OrgUnitType", related_name="super_types", blank=True
-    )
+    sub_unit_types = models.ManyToManyField("OrgUnitType", related_name="super_types", blank=True)
 
     projects = models.ManyToManyField("Project", related_name="unit_types", blank=False)
     depth = models.PositiveSmallIntegerField(null=True, blank=True)
@@ -65,13 +62,10 @@ class OrgUnitType(models.Model):
         }
         if sub_units:
             if not app_id:
-                sub_unit_types = [
-                    unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()
-                ]
+                sub_unit_types = [unit.as_dict(sub_units=False) for unit in self.sub_unit_types.all()]
             else:
                 sub_unit_types = [
-                    unit.as_dict(sub_units=False)
-                    for unit in self.sub_unit_types.filter(projects__app_id=app_id)
+                    unit.as_dict(sub_units=False) for unit in self.sub_unit_types.filter(projects__app_id=app_id)
                 ]
             res["sub_unit_types"] = sub_unit_types
         return res
@@ -81,18 +75,13 @@ class OrgUnitQuerySet(models.QuerySet):
     def children(self, org_unit):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
-        return self.filter(
-            path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1
-        )
+        return self.filter(path__descendants=str(org_unit.path), path__depth=len(org_unit.path) + 1)
 
     def hierarchy(self, org_unit):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
         if isinstance(org_unit, (list, models.QuerySet)):
-            query = reduce(
-                operator.or_,
-                [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)],
-            )
+            query = reduce(operator.or_, [models.Q(path__descendants=str(ou.path)) for ou in list(org_unit)])
         else:
             query = models.Q(path__descendants=str(org_unit.path))
 
@@ -101,13 +90,9 @@ class OrgUnitQuerySet(models.QuerySet):
     def descendants(self, org_unit):
         # We need to cast PathValue instances to strings - this could be fixed upstream
         # (https://github.com/mariocesar/django-ltree/issues/8)
-        return self.filter(
-            path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path)
-        )
+        return self.filter(path__descendants=str(org_unit.path), path__depth__gt=len(org_unit.path))
 
-    def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser, None], app_id: str
-    ):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser, None], app_id: str):
         if user and user.is_anonymous and app_id is None:
             return self.none()
 
@@ -137,8 +122,7 @@ class OrgUnitQuerySet(models.QuerySet):
                     return self.none()
 
                 queryset = queryset.filter(
-                    org_unit_type__projects__in=[project],
-                    version=project.account.default_version,
+                    org_unit_type__projects__in=[project], version=project.account.default_version
                 )
             except Project.DoesNotExist:
                 return self.none()
@@ -148,14 +132,7 @@ class OrgUnitQuerySet(models.QuerySet):
 
 class OrgUnitManager(ManagerWithBulkUpdate):
     def update_single_unit_from_bulk(
-        self,
-        user,
-        org_unit,
-        *,
-        validation_status,
-        org_unit_type_id,
-        groups_ids_added,
-        groups_ids_removed
+        self, user, org_unit, *, validation_status, org_unit_type_id, groups_ids_added, groups_ids_removed
     ):
         """Used within the context of a bulk operation"""
 
@@ -176,9 +153,7 @@ class OrgUnitManager(ManagerWithBulkUpdate):
 
         org_unit.save()
 
-        audit_models.log_modification(
-            original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user
-        )
+        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API_BULK, user=user)
 
 
 class OrgUnit(models.Model):
@@ -195,36 +170,23 @@ class OrgUnit(models.Model):
     name = models.CharField(max_length=255)
     uuid = models.TextField(null=True, blank=True, db_index=True)
     custom = models.BooleanField(default=False)
-    validated = models.BooleanField(default=True, db_index=True)# TO DO : remove in a later migration
-    validation_status = models.CharField(max_length=25,  choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
-    version = models.ForeignKey(
-        "SourceVersion", null=True, blank=True, on_delete=models.CASCADE
-    )
-    parent = models.ForeignKey(
-        "OrgUnit", on_delete=models.CASCADE, null=True, blank=True
-    )
+    validated = models.BooleanField(default=True, db_index=True)  # TO DO : remove in a later migration
+    validation_status = models.CharField(max_length=25, choices=VALIDATION_STATUS_CHOICES, default=VALIDATION_NEW)
+    version = models.ForeignKey("SourceVersion", null=True, blank=True, on_delete=models.CASCADE)
+    parent = models.ForeignKey("OrgUnit", on_delete=models.CASCADE, null=True, blank=True)
     path = PathField(null=True, blank=True, unique=True)
-    aliases = ArrayField(
-        CITextField(max_length=255, blank=True), size=100, null=True, blank=True
-    )
+    aliases = ArrayField(CITextField(max_length=255, blank=True), size=100, null=True, blank=True)
 
-    org_unit_type = models.ForeignKey(
-        OrgUnitType, on_delete=models.CASCADE, null=True, blank=True
-    )
+    org_unit_type = models.ForeignKey(OrgUnitType, on_delete=models.CASCADE, null=True, blank=True)
 
-    sub_source = models.TextField(null=True, blank=True
-    )  # sometimes, in a given source, there are sub sources
+    sub_source = models.TextField(null=True, blank=True)  # sometimes, in a given source, there are sub sources
     source_ref = models.TextField(null=True, blank=True, db_index=True)
     geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
-    simplified_geom = MultiPolygonField(
-        null=True, blank=True, srid=4326, geography=True
-    )
+    simplified_geom = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     catchment = MultiPolygonField(null=True, blank=True, srid=4326, geography=True)
     geom_ref = models.IntegerField(null=True, blank=True)
 
-    gps_source = models.TextField(
-        null=True, blank=True
-    )
+    gps_source = models.TextField(null=True, blank=True)
     location = PointField(null=True, blank=True, geography=True, dim=3, srid=4326)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -250,9 +212,7 @@ class OrgUnit(models.Model):
                 super().save(*args, **kwargs)
                 OrgUnit.objects.bulk_update(self.calculate_paths(), ["path"])
 
-    def calculate_paths(
-        self, force_recalculate: bool = False
-    ) -> typing.List["OrgUnit"]:
+    def calculate_paths(self, force_recalculate: bool = False) -> typing.List["OrgUnit"]:
         """Calculate the path for this org unit and all its children.
 
         This method will check if this org unit path should change. If it is the case (or if force_recalculate is
@@ -312,9 +272,7 @@ class OrgUnit(models.Model):
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
             "org_unit_type_name": self.org_unit_type.name,
-            "validation_status": self.validation_status
-            if self.org_unit_type
-            else None,
+            "validation_status": self.validation_status if self.org_unit_type else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "latitude": self.location.y if self.location else None,
@@ -331,9 +289,7 @@ class OrgUnit(models.Model):
             "source_ref": self.source_ref,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -345,8 +301,6 @@ class OrgUnit(models.Model):
             "version": self.version.number if self.version else None,
         }
 
-
-
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
         return res
@@ -356,17 +310,19 @@ class OrgUnit(models.Model):
             "name": self.name,
             "short_name": self.name,
             "id": self.id,
-
             "sub_source": self.sub_source,
             "sub_source_id": self.sub_source,
             "source_ref": self.source_ref,
-            "source_url": self.version.data_source.credentials.url if self.version and self.version.data_source and self.version.data_source.credentials else None,
+            "source_url": self.version.data_source.credentials.url
+            if self.version and self.version.data_source and self.version.data_source.credentials
+            else None,
             "parent_id": self.parent_id,
             "validation_status": self.validation_status,
             "parent_name": self.parent.name if self.parent else None,
-            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents) if self.parent else None,
+            "parent": self.parent.as_dict_with_parents(light=light_parents, light_parents=light_parents)
+            if self.parent
+            else None,
             "org_unit_type_id": self.org_unit_type_id,
-
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,
             "aliases": self.aliases,
@@ -374,9 +330,8 @@ class OrgUnit(models.Model):
             "longitude": self.location.x if self.location else None,
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
-
         }
-        if not light: #avoiding joins here
+        if not light:  # avoiding joins here
             res["groups"] = [group.as_dict(with_counts=False) for group in self.groups.all()]
             res["org_unit_type_name"] = self.org_unit_type.name if self.org_unit_type else None
             res["org_unit_type"] = self.org_unit_type.as_dict() if self.org_unit_type else None
@@ -397,9 +352,7 @@ class OrgUnit(models.Model):
             "source": self.version.data_source.name if self.version else None,
             "source_ref": self.source_ref,
             "parent": self.parent.as_small_dict() if self.parent else None,
-            "org_unit_type_name": self.org_unit_type.name
-            if self.org_unit_type
-            else None,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
         }
         if hasattr(self, "search_index"):
             res["search_index"] = self.search_index
@@ -424,9 +377,7 @@ class OrgUnit(models.Model):
             "altitude": self.location.z if self.location else None,
             "has_geo_json": True if self.simplified_geom else False,
             "org_unit_type": self.org_unit_type.name if self.org_unit_type else None,
-            "org_unit_type_depth": self.org_unit_type.depth
-            if self.org_unit_type
-            else None,
+            "org_unit_type_depth": self.org_unit_type.depth if self.org_unit_type else None,
             "source_id": self.version.data_source.id if self.version else None,
             "source_name": self.version.data_source.name if self.version else None,
         }

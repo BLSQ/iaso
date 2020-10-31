@@ -17,12 +17,7 @@ from django.utils import timezone
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--user", type=str, help="username", required=True)
-        parser.add_argument(
-            "--formids",
-            type=str,
-            help="db id comma seperated of the forms",
-            required=True,
-        )
+        parser.add_argument("--formids", type=str, help="db id comma seperated of the forms", required=True)
 
     def handle(self, *args, **options):
 
@@ -30,44 +25,23 @@ class Command(BaseCommand):
 
         form_ids = [
             str(f.id)
-            for f in m.Form.objects.filter(
-                projects__account=user.iaso_profile.account
-            ).filter(form_id=options["formids"])
+            for f in m.Form.objects.filter(projects__account=user.iaso_profile.account).filter(
+                form_id=options["formids"]
+            )
         ]
 
         try:
-            self.log(
-                "Prepare export of instances to dhis2",
-                options["formids"],
-                f"({form_ids})",
-                "on behalf of",
-                user,
-            )
+            self.log("Prepare export of instances to dhis2", options["formids"], f"({form_ids})", "on behalf of", user)
 
             export_request = ExportRequestBuilder().build_export_request(
                 filters={"form_ids": ",".join(form_ids)}, launcher=user
             )
 
-            print(
-                "export_request => ",
-                export_request.id,
-                export_request.status,
-                export_request.params,
-            )
+            print("export_request => ", export_request.id, export_request.status, export_request.params)
 
-            self.log(
-                "Exporting",
-                export_request.exportstatus_set.count(),
-                "instances",
-                timezone.now(),
-            )
+            self.log("Exporting", export_request.exportstatus_set.count(), "instances", timezone.now())
             DataValueExporter().export_instances(export_request, True)
-            self.log(
-                "Exported",
-                export_request.exportstatus_set.count(),
-                "instances",
-                timezone.now(),
-            )
+            self.log("Exported", export_request.exportstatus_set.count(), "instances", timezone.now())
         except NothingToExportError as error:
             self.log("nothing to export : ", error)
 

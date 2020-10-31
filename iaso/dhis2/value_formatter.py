@@ -41,9 +41,7 @@ def translate_optionset(data_element, raw_value):
             if options["code"] == raw_value:
                 return raw_value
 
-        raise Exception(
-            "no value matching : '" + raw_value + "' in " + str(data_element)
-        )
+        raise Exception("no value matching : '" + raw_value + "' in " + str(data_element))
     return raw_value
 
 
@@ -68,9 +66,7 @@ def format_value(data_element, raw_value, orgunit_resolver):
             else:
                 return int(translated_value)
         except:
-            raise Exception(
-                "Bad value for float '" + str(raw_value) + "'", data_element
-            )
+            raise Exception("Bad value for float '" + str(raw_value) + "'", data_element)
 
     if (
         data_element_type == "INTEGER_ZERO_OR_POSITIVE"
@@ -86,11 +82,10 @@ def format_value(data_element, raw_value, orgunit_resolver):
         except:
             raise Exception("Bad value for int '" + str(raw_value) + "'", data_element)
 
-    if (data_element_type == "ORGANISATION_UNIT"):
+    if data_element_type == "ORGANISATION_UNIT":
         if translated_value is None:
             return None
         return orgunit_resolver(str(translated_value))
-
 
     if (
         data_element_type == "TEXT"
@@ -99,31 +94,20 @@ def format_value(data_element, raw_value, orgunit_resolver):
         or data_element_type == "EMAIL"
         or data_element_type == "PHONE_NUMBER"
         or data_element_type == "LETTER"
-
     ):
         if translated_value is None:
             return None
         return str(translated_value)
 
     if data_element_type == "BOOLEAN":
-        if (
-            translated_value == "1"
-            or translated_value == "yes"
-            or translated_value == "true"
-        ):
+        if translated_value == "1" or translated_value == "yes" or translated_value == "true":
             return True
-        elif (
-            translated_value == "0"
-            or translated_value == "no"
-            or translated_value == "false"
-        ):
+        elif translated_value == "0" or translated_value == "no" or translated_value == "false":
             return False
         elif translated_value == "":
             return None
         else:
-            raise Exception(
-                "Bad value for boolean '" + str(raw_value) + "'", data_element
-            )
+            raise Exception("Bad value for boolean '" + str(raw_value) + "'", data_element)
 
     if data_element_type == "COORDINATE":
         if translated_value:

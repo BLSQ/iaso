@@ -45,20 +45,11 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
     ordering = ("name",)
-    list_display = (
-        "name",
-        "projects_list",
-        "short_name",
-        "depth",
-    )
+    list_display = ("name", "projects_list", "short_name", "depth")
 
     def projects_list(self, obj):
         projects = obj.projects.all()
-        return (
-            ", ".join(project.name for project in projects)
-            if len(projects) > 0
-            else "-"
-        )
+        return ", ".join(project.name for project in projects) if len(projects) > 0 else "-"
 
     projects_list.short_description = "Projects"
 
@@ -85,13 +76,7 @@ class FormAdmin(admin.GeoModelAdmin):
 class FormVersionAdmin(admin.GeoModelAdmin):
     search_fields = ("form__name", "form__form_id")
     ordering = ("form__name",)
-    list_display = (
-        "form_name",
-        "form_id",
-        "version_id",
-        "created_at",
-        "updated_at",
-    )
+    list_display = ("form_name", "form_id", "version_id", "created_at", "updated_at")
 
     def form_name(self, obj):
         return obj.form.name
@@ -118,13 +103,7 @@ class InstanceFileAdmin(admin.GeoModelAdmin):
 
 
 class ProjectAdmin(admin.ModelAdmin):
-    list_display = (
-        "name",
-        "app_id",
-        "account",
-        "needs_authentication",
-        "feature_flags_list",
-    )
+    list_display = ("name", "app_id", "account", "needs_authentication", "feature_flags_list")
 
     def feature_flags_list(self, obj):
         flags = obj.feature_flags.all()
@@ -188,10 +167,7 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         return format_html_join(
             mark_safe("<br/><br/>"),
             "{} http status: {} url : {} <br/> <ul> <li>sent <pre>{}</pre> </li><li>received <pre>{}</pre></li></ul>",
-            (
-                (line.id, line.http_status, line.url, line.sent, line.received)
-                for line in instance.export_logs.all()
-            ),
+            ((line.id, line.http_status, line.url, line.sent, line.received) for line in instance.export_logs.all()),
         ) or mark_safe("<span>no logs available.</span>")
 
 

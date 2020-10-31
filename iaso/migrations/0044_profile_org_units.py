@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0043_auto_20200428_0650'),
-    ]
+    dependencies = [("iaso", "0043_auto_20200428_0650")]
 
     operations = [
         migrations.AddField(
-            model_name='profile',
-            name='org_units',
-            field=models.ManyToManyField(blank=True, related_name='iaso_profile', to='iaso.OrgUnit'),
-        ),
+            model_name="profile",
+            name="org_units",
+            field=models.ManyToManyField(blank=True, related_name="iaso_profile", to="iaso.OrgUnit"),
+        )
     ]

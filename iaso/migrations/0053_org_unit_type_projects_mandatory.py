@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0052_fix_period_before_after'),
-    ]
+    dependencies = [("iaso", "0052_fix_period_before_after")]
 
     operations = [
         migrations.AlterField(
-            model_name='orgunittype',
-            name='projects',
-            field=models.ManyToManyField(related_name='unit_types', to='iaso.Project'),
-        ),
+            model_name="orgunittype",
+            name="projects",
+            field=models.ManyToManyField(related_name="unit_types", to="iaso.Project"),
+        )
     ]

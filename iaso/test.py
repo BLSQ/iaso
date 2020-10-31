@@ -18,12 +18,7 @@ from iaso import models as m
 class IasoTestCaseMixin:
     @staticmethod
     def create_user_with_profile(
-        *,
-        username: str,
-        account: m.Account,
-        permissions=None,
-        org_units: typing.Sequence[m.OrgUnit] = None,
-        **kwargs,
+        *, username: str, account: m.Account, permissions=None, org_units: typing.Sequence[m.OrgUnit] = None, **kwargs
     ):
         User = get_user_model()
 
@@ -32,11 +27,7 @@ class IasoTestCaseMixin:
 
         if permissions is not None:
             content_type = ContentType.objects.get_for_model(CustomPermissionSupport)
-            user.user_permissions.set(
-                Permission.objects.filter(
-                    codename__in=permissions, content_type=content_type
-                )
-            )
+            user.user_permissions.set(Permission.objects.filter(codename__in=permissions, content_type=content_type))
 
         if org_units is not None:
             user.iaso_profile.org_units.set(org_units)
@@ -44,19 +35,11 @@ class IasoTestCaseMixin:
         return user
 
     @staticmethod
-    def create_form_instance(
-        *, form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs
-    ):
+    def create_form_instance(*, form: m.Form = None, period: str = None, org_unit: m.OrgUnit = None, **kwargs):
         instance_file_mock = mock.MagicMock(spec=File)
         instance_file_mock.name = "test.xml"
 
-        return m.Instance.objects.create(
-            form=form,
-            period=period,
-            org_unit=org_unit,
-            file=instance_file_mock,
-            **kwargs,
-        )
+        return m.Instance.objects.create(form=form, period=period, org_unit=org_unit, file=instance_file_mock, **kwargs)
 
     @staticmethod
     def create_file_mock(**kwargs):
@@ -105,8 +88,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
 
         if expected_attachment_filename is not None:
             self.assertEquals(
-                response.get("Content-Disposition"),
-                f"attachment; filename={expected_attachment_filename}",
+                response.get("Content-Disposition"), f"attachment; filename={expected_attachment_filename}"
             )
 
     def assertValidListData(
@@ -132,23 +114,14 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
             self.assertHasField(list_data, "pages", int)
             self.assertHasField(list_data, "limit", int)
 
-    def assertHasField(
-        self,
-        data: typing.Mapping,
-        field_name: str,
-        cls: type,
-        *,
-        optional: bool = False,
-    ):
+    def assertHasField(self, data: typing.Mapping, field_name: str, cls: type, *, optional: bool = False):
         if not optional:
             self.assertIn(field_name, data)
 
         if field_name in data and (not optional or data[field_name] is not None):
             self.assertIsInstance(data[field_name], cls)
 
-    def assertHasError(
-        self, data: typing.Mapping, field_name: str, error_message: str = None
-    ):
+    def assertHasError(self, data: typing.Mapping, field_name: str, error_message: str = None):
         self.assertIn(field_name, data)
         if error_message is not None:
             self.assertIn(error_message, data[field_name])
@@ -174,9 +147,7 @@ class APITestCase(BaseAPITestCase, IasoTestCaseMixin):
         self.assertIsInstance(last_api_import.headers, dict)
         if check_auth_header:
             self.assertIsInstance(last_api_import.headers["HTTP_AUTHORIZATION"], str)
-            self.assertEqual(
-                "Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7]
-            )
+            self.assertEqual("Bearer ", last_api_import.headers["HTTP_AUTHORIZATION"][:7])
 
         if has_problems is False:
             self.assertEqual(last_api_import.exception, "")

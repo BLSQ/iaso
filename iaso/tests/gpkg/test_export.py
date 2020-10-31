@@ -14,16 +14,12 @@ class ExportTestCase(TestCase):
         sw_version_1 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
         sw_version_2 = m.SourceVersion.objects.create(data_source=sw_source, number=1)
 
-        cls.jedi_squad = m.OrgUnitType.objects.create(
-            name="Jedi Squad", short_name="Jds"
-        )
+        cls.jedi_squad = m.OrgUnitType.objects.create(name="Jedi Squad", short_name="Jds")
         cls.jedi_team = m.OrgUnitType.objects.create(name="Jedi Team", short_name="Jdt")
         cls.jedi_squad.sub_unit_types.add(cls.jedi_team)
 
         cls.mock_point = Point(x=4, y=50, z=100)
-        cls.mock_multipolygon = MultiPolygon(
-            Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])
-        )
+        cls.mock_multipolygon = MultiPolygon(Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]))
         cls.jedi_squad_brussels = m.OrgUnit.objects.create(
             org_unit_type=cls.jedi_squad,
             version=sw_version_1,

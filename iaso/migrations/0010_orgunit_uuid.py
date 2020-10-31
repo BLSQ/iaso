@@ -7,10 +7,4 @@ class Migration(migrations.Migration):
 
     dependencies = [("iaso", "0009_auto_20190628_0933")]
 
-    operations = [
-        migrations.AddField(
-            model_name="orgunit",
-            name="uuid",
-            field=models.TextField(blank=True, null=True),
-        )
-    ]
+    operations = [migrations.AddField(model_name="orgunit", name="uuid", field=models.TextField(blank=True, null=True))]

@@ -13,10 +13,7 @@ class Migration(migrations.Migration):
             model_name="account",
             name="default_version",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.SET_NULL,
-                to="iaso.SourceVersion",
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to="iaso.SourceVersion"
             ),
         )
     ]

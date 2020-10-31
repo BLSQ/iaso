@@ -6,19 +6,17 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0029_apiimport_has_problem'),
-    ]
+    dependencies = [("vector_control", "0029_apiimport_has_problem")]
 
     operations = [
         migrations.AddField(
-            model_name='apiimport',
-            name='exception',
-            field=models.TextField(blank=True, default=''),
+            model_name="apiimport",
+            name="exception",
+            field=models.TextField(blank=True, default=""),
         ),
         migrations.AddField(
-            model_name='apiimport',
-            name='headers',
+            model_name="apiimport",
+            name="headers",
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True),
         ),
     ]

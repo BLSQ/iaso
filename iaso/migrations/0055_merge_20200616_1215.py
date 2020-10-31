@@ -5,10 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0053_org_unit_type_projects_mandatory'),
-        ('iaso', '0054_exportstatus_last_error_message'),
-    ]
+    dependencies = [("iaso", "0053_org_unit_type_projects_mandatory"), ("iaso", "0054_exportstatus_last_error_message")]
 
-    operations = [
-    ]
+    operations = []

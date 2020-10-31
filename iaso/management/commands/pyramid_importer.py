@@ -20,9 +20,7 @@ class Command(BaseCommand):
         version = options.get("version")
 
         source, created = DataSource.objects.get_or_create(name=source_name)
-        version, created = SourceVersion.objects.get_or_create(
-            number=version, data_source=source
-        )
+        version, created = SourceVersion.objects.get_or_create(number=version, data_source=source)
 
         OrgUnit.objects.filter(sub_source=source_name).delete()  # warning: dangerous
         type_dict = dict()
@@ -72,9 +70,7 @@ class Command(BaseCommand):
                     if longitude and latitude:
                         longitude = float(longitude)
                         latitude = float(latitude)
-                        org_unit.location = Point(
-                            x=longitude, y=latitude, z=0, srid=4326
-                        )
+                        org_unit.location = Point(x=longitude, y=latitude, z=0, srid=4326)
                     org_unit.save(skip_calculate_path=True)
                     unit_dict[org_unit.source_ref] = org_unit
                     index += 1

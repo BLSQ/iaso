@@ -9,9 +9,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="datasource",
-            name="description",
-            field=models.TextField(blank=True, null=True),
+            model_name="datasource", name="description", field=models.TextField(blank=True, null=True)
         ),
         migrations.AlterField(
             model_name="orgunit",
@@ -42,8 +40,6 @@ class Migration(migrations.Migration):
             ),
         ),
         migrations.AlterField(
-            model_name="sourceversion",
-            name="description",
-            field=models.TextField(blank=True, null=True),
+            model_name="sourceversion", name="description", field=models.TextField(blank=True, null=True)
         ),
     ]

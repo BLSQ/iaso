@@ -5,20 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0040_form_derived"),
-    ]
+    dependencies = [("iaso", "0040_form_derived")]
 
     operations = [
         migrations.AlterField(
             model_name="mapping",
             name="mapping_type",
-            field=models.TextField(
-                choices=[
-                    ("AGGREGATE", "Aggregate"),
-                    ("EVENT", "Event"),
-                    ("DERIVED", "Derived"),
-                ]
-            ),
-        ),
+            field=models.TextField(choices=[("AGGREGATE", "Aggregate"), ("EVENT", "Event"), ("DERIVED", "Derived")]),
+        )
     ]

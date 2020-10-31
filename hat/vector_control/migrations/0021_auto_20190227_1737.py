@@ -6,19 +6,21 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0020_vector_refactor'),
-    ]
+    dependencies = [("vector_control", "0020_vector_refactor")]
 
     operations = [
         migrations.AddField(
-            model_name='trap',
-            name='is_selected',
+            model_name="trap",
+            name="is_selected",
             field=models.BooleanField(default=True),
         ),
         migrations.AddField(
-            model_name='trap',
-            name='site',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='vector_control.Site'),
+            model_name="trap",
+            name="site",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="vector_control.Site",
+            ),
         ),
     ]

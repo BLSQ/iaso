@@ -10,9 +10,7 @@ class DerivedInstancesTests(APITestCase):
     def floor_values(self, jsondata):
         result = {}
         for k in jsondata:
-            result[k] = (
-                floor(jsondata[k]) if not isinstance(jsondata[k], str) else jsondata[k]
-            )
+            result[k] = floor(jsondata[k]) if not isinstance(jsondata[k], str) else jsondata[k]
         return result
 
     def build_instance(self, form, score):
@@ -21,9 +19,7 @@ class DerivedInstancesTests(APITestCase):
         instance.period = "2018Q1"
         instance.json = {"satisfaction_score": score}
 
-        instance.file = UploadedFile(
-            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
-        )
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.form = form
         instance.project = self.project
         instance.save()
@@ -39,16 +35,12 @@ class DerivedInstancesTests(APITestCase):
         )
         self.survey_form = survey_form
 
-        survey_form_version, created = m.FormVersion.objects.get_or_create(
-            form=survey_form, version_id="1"
-        )
+        survey_form_version, created = m.FormVersion.objects.get_or_create(form=survey_form, version_id="1")
 
         self.survey_form = survey_form
         self.survey_form_version = survey_form_version
 
-        account, account_created = m.Account.objects.get_or_create(
-            name="Organisation Name"
-        )
+        account, account_created = m.Account.objects.get_or_create(name="Organisation Name")
 
         self.user = self.create_user_with_profile(
             username="Test User Name",
@@ -57,25 +49,15 @@ class DerivedInstancesTests(APITestCase):
             permissions=["iaso_completeness"],
         )
         credentials, creds_created = m.ExternalCredentials.objects.get_or_create(
-            name="Test export api",
-            url="https://dhis2.com",
-            login="admin",
-            password="whocares",
-            account=account,
+            name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account
         )
 
-        datasource, _ds_created = m.DataSource.objects.get_or_create(
-            name="reference", credentials=credentials
-        )
+        datasource, _ds_created = m.DataSource.objects.get_or_create(name="reference", credentials=credentials)
         self.datasource = datasource
-        source_version, _created = m.SourceVersion.objects.get_or_create(
-            number=1, data_source=datasource
-        )
+        source_version, _created = m.SourceVersion.objects.get_or_create(number=1, data_source=datasource)
         self.source_version = source_version
 
-        self.project = m.Project(
-            name="Hyrule", app_id="magic.countries.hyrule.collect", account=account
-        )
+        self.project = m.Project(name="Hyrule", app_id="magic.countries.hyrule.collect", account=account)
         self.project.save()
 
         datasource.projects.add(self.project)
@@ -96,12 +78,8 @@ class DerivedInstancesTests(APITestCase):
         )
         self.derived_form = derived_form
 
-        derived_form_version, created = m.FormVersion.objects.get_or_create(
-            form=derived_form, version_id="1"
-        )
-        derived_form_mapping = m.Mapping(
-            form=derived_form, data_source=self.datasource, mapping_type=m.DERIVED
-        )
+        derived_form_version, created = m.FormVersion.objects.get_or_create(form=derived_form, version_id="1")
+        derived_form_mapping = m.Mapping(form=derived_form, data_source=self.datasource, mapping_type=m.DERIVED)
         derived_form_mapping.save()
 
         derived_form_mapping_version = m.MappingVersion(
@@ -160,9 +138,7 @@ class DerivedInstancesTests(APITestCase):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0})
 
         derived_instance = self.derived_form.instances.all().first()
 
@@ -182,9 +158,7 @@ class DerivedInstancesTests(APITestCase):
         self.survey_form.instances.first().delete()
 
         # expect to update the derived form
-        self.trigger_generation_and_expect_stats(
-            {"new": 0, "updated": 1, "skipped": 0, "nullified": 0, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 0, "updated": 1, "skipped": 0, "nullified": 0, "deleted": 0})
         derived_instance = self.derived_form.instances.all().first()
 
         self.assertEqual(
@@ -203,16 +177,12 @@ class DerivedInstancesTests(APITestCase):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0})
 
         # delete all survey  submissions expect an update
         self.survey_form.instances.all().delete()
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 0, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 1}
-        )
+        self.trigger_generation_and_expect_stats({"new": 0, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 1})
         # the instances should deleted
         self.assertEqual(self.derived_form.instances.all().count(), 0)
 
@@ -221,9 +191,7 @@ class DerivedInstancesTests(APITestCase):
         self.setup_5_instances()
         self.client.force_authenticate(self.user)
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0})
         # mark as already export the stats (need to remove them from dhis2)
         derived_instance = self.derived_form.instances.all().first()
         derived_instance.last_export_success_at = timezone.now()
@@ -232,9 +200,7 @@ class DerivedInstancesTests(APITestCase):
         # delete all survey  submissions expect an update
         self.survey_form.instances.all().delete()
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 0, "updated": 0, "skipped": 0, "nullified": 1, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 0, "updated": 0, "skipped": 0, "nullified": 1, "deleted": 0})
         # the instances should nullified
         derived_instance = self.derived_form.instances.all().first()
         self.assertEqual(
@@ -257,9 +223,7 @@ class DerivedInstancesTests(APITestCase):
 
         self.setup_5_instances()
 
-        self.trigger_generation_and_expect_stats(
-            {"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0}
-        )
+        self.trigger_generation_and_expect_stats({"new": 1, "updated": 0, "skipped": 0, "nullified": 0, "deleted": 0})
 
         derived_instance = self.derived_form.instances.all().first()
 
@@ -285,10 +249,7 @@ class DerivedInstancesTests(APITestCase):
     def trigger_generation_and_expect_stats(self, expected_stats):
         response = self.client.post(
             "/api/derivedinstances/",
-            data={
-                "periods": ["2018Q1"],
-                "derived": [{"form_version__form_id": self.derived_form.id}],
-            },
+            data={"periods": ["2018Q1"], "derived": [{"form_version__form_id": self.derived_form.id}]},
             format="json",
         )
         stats = response.json()["stats"][0]

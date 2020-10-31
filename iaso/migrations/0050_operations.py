@@ -18,37 +18,17 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="BulkOperation",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
-                (
-                    "operation_type",
-                    models.CharField(choices=[("UPDATE", "Update")], max_length=100),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("operation_type", models.CharField(choices=[("UPDATE", "Update")], max_length=100)),
                 ("operation_count", models.PositiveIntegerField()),
                 ("json_body", django.contrib.postgres.fields.jsonb.JSONField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "content_type",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to="contenttypes.ContentType",
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to="contenttypes.ContentType"),
                 ),
-                (
-                    "user",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.PROTECT,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
-                ),
+                ("user", models.ForeignKey(on_delete=django.db.models.deletion.PROTECT, to=settings.AUTH_USER_MODEL)),
             ],
-            options={"db_table": "iaso_operation_bulkupdate",},
-        ),
+            options={"db_table": "iaso_operation_bulkupdate"},
+        )
     ]

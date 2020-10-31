@@ -13,15 +13,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="ExternalCredentials",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.TextField()),
                 ("login", models.TextField()),
                 ("password", models.TextField()),
@@ -29,9 +21,7 @@ class Migration(migrations.Migration):
                 (
                     "account",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        related_name="credentials",
-                        to="iaso.Account",
+                        on_delete=django.db.models.deletion.CASCADE, related_name="credentials", to="iaso.Account"
                     ),
                 ),
             ],
@@ -39,15 +29,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Mapping",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.TextField()),
                 ("json", django.contrib.postgres.fields.jsonb.JSONField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -58,18 +40,14 @@ class Migration(migrations.Migration):
             model_name="formversion",
             name="form",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="form_versions",
-                to="iaso.Form",
+                on_delete=django.db.models.deletion.CASCADE, related_name="form_versions", to="iaso.Form"
             ),
         ),
         migrations.AddField(
             model_name="mapping",
             name="form_version",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="mappings",
-                to="iaso.FormVersion",
+                on_delete=django.db.models.deletion.CASCADE, related_name="mappings", to="iaso.FormVersion"
             ),
         ),
         migrations.AddField(
@@ -83,7 +61,5 @@ class Migration(migrations.Migration):
                 to="iaso.ExternalCredentials",
             ),
         ),
-        migrations.AlterUniqueTogether(
-            name="mapping", unique_together={("form_version", "name")}
-        ),
+        migrations.AlterUniqueTogether(name="mapping", unique_together={("form_version", "name")}),
     ]

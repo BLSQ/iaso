@@ -33,43 +33,26 @@ class EnketoAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         star_wars.save()
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms"]
-        )
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
 
-        cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc"
-        )
+        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Corruscant Jedi Council"
-        )
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Corruscant Jedi Council")
 
         cls.project = m.Project.objects.create(
-            name="Hydroponic gardens",
-            app_id="stars.empire.agriculture.hydroponics",
-            account=star_wars,
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
 
         cls.form_1 = m.Form.objects.create(
-            name="Hydroponics study",
-            form_id="hydro_1",
-            period_type=m.MONTH,
-            single_per_period=True,
+            name="Hydroponics study", form_id="hydro_1", period_type=m.MONTH, single_per_period=True
         )
 
         cls.form_version_1 = m.FormVersion.objects.create(
-            form=cls.form_1,
-            version_id="1",
-            file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml")),
+            form=cls.form_1, version_id="1", file=UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         )
 
         cls.create_form_instance(
-            form=cls.form_1,
-            period="202001",
-            org_unit=cls.jedi_council_corruscant,
-            project=cls.project,
-            uuid="uuid-1",
+            form=cls.form_1, period="202001", org_unit=cls.jedi_council_corruscant, project=cls.project, uuid="uuid-1"
         )
 
         cls.project.unit_types.add(cls.jedi_council)
@@ -92,9 +75,7 @@ class EnketoAPITestCase(APITestCase):
     @tag("iaso_only")
     @override_settings(ENKETO=enketo_test_settings)
     @responses.activate
-    def test_when_authenticated_edit_url_and_no_enketo_server_should_return_an_error(
-        self,
-    ):
+    def test_when_authenticated_edit_url_and_no_enketo_server_should_return_an_error(self,):
         """GET /api/enketo/edit/{uuid}/"""
         instance = self.form_1.instances.first()
         self.client.force_authenticate(self.yoda)
@@ -113,11 +94,7 @@ class EnketoAPITestCase(APITestCase):
 
         def request_callback(request):
             enketo_contents.append(urllib.parse.unquote(request.body))
-            return (
-                200,
-                {},
-                json.dumps({"edit_url": "https://enketo_url.host.test/something"}),
-            )
+            return (200, {}, json.dumps({"edit_url": "https://enketo_url.host.test/something"}))
 
         responses.add_callback(
             responses.POST,
@@ -168,18 +145,10 @@ class EnketoAPITestCase(APITestCase):
     @tag("iaso_only")
     def test_when_anonymous_get_formList_should_work(self):
 
-        with open(
-            "iaso/tests/fixtures/hydroponics_test_upload_modified.xml"
-        ) as modified_xml:
-            f = SimpleUploadedFile(
-                "file.txt",
-                modified_xml.read()
-                .replace("REPLACEuserID", str(self.yoda.id))
-                .encode(),
-            )
+        with open("iaso/tests/fixtures/hydroponics_test_upload_modified.xml") as modified_xml:
+            f = SimpleUploadedFile("file.txt", modified_xml.read().replace("REPLACEuserID", str(self.yoda.id)).encode())
             response = self.client.post(
-                f"/api/enketo/submission",
-                {"name": "xml_submission_file", "xml_submission_file": f},
+                f"/api/enketo/submission", {"name": "xml_submission_file", "xml_submission_file": f}
             )
 
             instance = self.form_1.instances.first()
@@ -188,14 +157,8 @@ class EnketoAPITestCase(APITestCase):
             modification = Modification.objects.last()
 
             self.assertEqual(self.yoda, modification.user)
-            self.assertEqual(
-                "0",
-                modification.past_value[0]["fields"]["json"]["Ident_type_serv_medical"],
-            )
-            self.assertEqual(
-                "1",
-                modification.new_value[0]["fields"]["json"]["Ident_type_serv_medical"],
-            )
+            self.assertEqual("0", modification.past_value[0]["fields"]["json"]["Ident_type_serv_medical"])
+            self.assertEqual("1", modification.new_value[0]["fields"]["json"]["Ident_type_serv_medical"])
 
             self.assertEqual(instance, modification.content_object)
 

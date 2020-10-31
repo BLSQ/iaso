@@ -32,9 +32,7 @@ def public_url_for_enketo(request, path):
 @api_view(["GET"])
 @permission_classes([permissions.IsAuthenticated])
 def enketo_edit_url(request, instance_uuid):
-    instance = Instance.objects.filter(
-        uuid=instance_uuid, project__account=request.user.iaso_profile.account
-    ).first()
+    instance = Instance.objects.filter(uuid=instance_uuid, project__account=request.user.iaso_profile.account).first()
 
     if instance is None:
         return JsonResponse({"error": "No such instance or not allowed"}, status=404)
@@ -47,9 +45,7 @@ def enketo_edit_url(request, instance_uuid):
         # inject editUserID in the meta section of the xml
         # to allow assign Modification to the user
         instance_xml = inject_userid_and_version(
-            instance_xml.decode("utf-8"),
-            request.user.id,
-            instance.form.latest_version.version_id,
+            instance_xml.decode("utf-8"), request.user.id, instance.form.latest_version.version_id
         )
 
         edit_url = enketo_url(
@@ -61,9 +57,7 @@ def enketo_edit_url(request, instance_uuid):
             + str(instance.form.latest_version.version_id),
             instance_xml=instance_xml,
             instance_id=instanceid,
-            return_url=request.GET.get(
-                "return_url", public_url_for_enketo(request, "")
-            ),
+            return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)

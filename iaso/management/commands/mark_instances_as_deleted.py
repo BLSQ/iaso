@@ -8,9 +8,7 @@ class Command(BaseCommand):
     help = 'Flag all instances for the provided project as "deleted"'
 
     def add_arguments(self, parser):
-        parser.add_argument(
-            "project_id", help="The project for which instances ought to be deleted",
-        )
+        parser.add_argument("project_id", help="The project for which instances ought to be deleted")
         parser.add_argument(
             "--force",
             action="store_true",
@@ -23,9 +21,7 @@ class Command(BaseCommand):
         try:
             project = Project.objects.get(id=options["project_id"])
         except Project.DoesNotExist:
-            raise CommandError(
-                f"Project with id {options['project_id']} does not exist"
-            )
+            raise CommandError(f"Project with id {options['project_id']} does not exist")
 
         self.stdout.write(f"Deleting all instances from the {project.name} project")
 
@@ -37,9 +33,7 @@ class Command(BaseCommand):
             form_names = [f.name for f in forms.all()]
 
             self.stdout.write("Called without --force - no instance will be deleted")
-            self.stdout.write(
-                f"If called with --force, would delete {instance_count} instances"
-            )
+            self.stdout.write(f"If called with --force, would delete {instance_count} instances")
             self.stdout.write(f"Forms in the {project.name} project are:")
 
             for form_name in form_names:
@@ -51,6 +45,4 @@ class Command(BaseCommand):
             for instance in instances.all():
                 instance.soft_delete()
 
-        self.stdout.write(
-            self.style.SUCCESS(f"Successfully deleted {instance_count} instances")
-        )
+        self.stdout.write(self.style.SUCCESS(f"Successfully deleted {instance_count} instances"))

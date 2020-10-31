@@ -8,9 +8,5 @@ class Migration(migrations.Migration):
     dependencies = [("iaso", "0002_auto_20191001_1142")]
 
     operations = [
-        migrations.AlterField(
-            model_name="datasource",
-            name="name",
-            field=models.CharField(max_length=255, unique=True),
-        )
+        migrations.AlterField(model_name="datasource", name="name", field=models.CharField(max_length=255, unique=True))
     ]

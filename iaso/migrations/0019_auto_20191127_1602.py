@@ -14,9 +14,7 @@ class Migration(migrations.Migration):
             model_name="profile",
             name="user",
             field=models.OneToOneField(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="iaso_profile",
-                to=settings.AUTH_USER_MODEL,
+                on_delete=django.db.models.deletion.CASCADE, related_name="iaso_profile", to=settings.AUTH_USER_MODEL
             ),
         )
     ]

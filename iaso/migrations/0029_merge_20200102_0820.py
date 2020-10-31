@@ -5,9 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0022_auto_20200102_0729"),
-        ("iaso", "0028_remove_group_projects"),
-    ]
+    dependencies = [("iaso", "0022_auto_20200102_0729"), ("iaso", "0028_remove_group_projects")]
 
     operations = []

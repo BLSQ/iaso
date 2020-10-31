@@ -47,12 +47,8 @@ router.register(r"forms", FormsViewSet, basename="forms")
 router.register(r"formversions", FormVersionsViewSet, basename="formversions")
 router.register(r"periods", PeriodsViewSet, basename="periods")
 router.register(r"devices", DevicesViewSet, basename="devices")
-router.register(
-    r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership",
-)
-router.register(
-    r"devicesposition", DevicesPositionViewSet, basename="devicesposition",
-)
+router.register(r"devicesownership", DevicesOwnershipViewSet, basename="devicesownership")
+router.register(r"devicesposition", DevicesPositionViewSet, basename="devicesposition")
 router.register(r"datasources", DataSourceViewSet, basename="datasources")
 router.register(r"sourceversions", SourceVersionViewSet, basename="sourceversion")
 router.register(r"links", LinkViewSet, basename="links")
@@ -66,23 +62,13 @@ router.register(r"exportrequests", ExportRequestsViewSet, basename="exportreques
 router.register(r"mappings", MappingsViewSet, basename="mappings")
 router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingversions")
 router.register(r"permissions", PermissionsViewSet, basename="permissions")
-router.register(
-    r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances"
-)
+router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 
 urlpatterns = [
-    url(
-        r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$",
-        view=enketo_edit_url,
-        name="enketo-edit-url",
-    ),
-    url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list",),
-    url(
-        r"^enketo/submission$",
-        view=EnketoSubmissionAPIView.as_view(),
-        name="enketo-submission",
-    ),
+    url(r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$", view=enketo_edit_url, name="enketo-edit-url"),
+    url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list"),
+    url(r"^enketo/submission$", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
 ]
 
 
@@ -96,9 +82,7 @@ def append_datasources_subresource(viewset, resource_name, urlpatterns):
     )
     urlpatterns.append(
         url(
-            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/"
-            + resource_name
-            + r"\.(?P<format>[a-z0-9]+)/?$",
+            r"^datasources/(?P<datasource_id>[a-z0-9-]+)/" + resource_name + r"\.(?P<format>[a-z0-9]+)/?$",
             view=viewset.as_view({"get": "list"}),
             name=resource_name,
         )
@@ -113,9 +97,7 @@ urlpatterns = urlpatterns + [
 for dhis2_resource in DHIS2_VIEWSETS:
     append_datasources_subresource(dhis2_resource, dhis2_resource.resource, urlpatterns)
 
-append_datasources_subresource(
-    HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns
-)
+append_datasources_subresource(HesabuDescriptorsViewSet, HesabuDescriptorsViewSet.resource, urlpatterns)
 
 
 ##########   creating algorithms in the database so that they will appear in the API  ##########
@@ -126,12 +108,7 @@ try:
         full_name = "iaso.matching." + pkg.name
         algo_module = importlib.import_module(full_name)
         algo = algo_module.Algorithm()
-        MatchingAlgorithm.objects.get_or_create(
-            name=full_name, defaults={"description": algo.description}
-        )
+        MatchingAlgorithm.objects.get_or_create(name=full_name, defaults={"description": algo.description})
 
 except Exception as e:
-    print(
-        "!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate",
-        e,
-    )
+    print("!! failed to create MatchingAlgorithm based on code, probably in manage.py migrate", e)

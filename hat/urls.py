@@ -19,7 +19,7 @@ if settings.FLAVOR == "iaso":
         url(r"^accounts/", include("django.contrib.auth.urls")),
         url(r"^admin/", admin.site.urls),
         url(r"^api/", include("iaso.urls")),
-        #url(r"^api/", include("hat.api.urls")),
+        # url(r"^api/", include("hat.api.urls")),
         url(r"^dashboard/", include("hat.dashboard.urls")),
         url(
             r"^login/",

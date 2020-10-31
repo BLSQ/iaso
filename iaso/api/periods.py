@@ -15,10 +15,7 @@ class PeriodsViewSet(viewsets.ViewSet):
     GET /api/periods/?form_id=id
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
 
     def list(self, request):
         form_id = request.GET.get("form_id", None)

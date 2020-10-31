@@ -5,9 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0037_export_request_models"),
-        ("iaso", "0036_instance_deleted"),
-    ]
+    dependencies = [("iaso", "0037_export_request_models"), ("iaso", "0036_instance_deleted")]
 
     operations = []

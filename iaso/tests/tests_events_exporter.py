@@ -31,11 +31,7 @@ from iaso.models import (
 
 import os
 from datetime import datetime
-from iaso.dhis2.datavalue_exporter import (
-    DataValueExporter,
-    InstanceExportError,
-    EventHandler,
-)
+from iaso.dhis2.datavalue_exporter import DataValueExporter, InstanceExportError, EventHandler
 from ..dhis2.export_request_builder import ExportRequestBuilder
 
 
@@ -74,33 +70,24 @@ class DataValueExporterTests(TestCase):
         instance = Instance()
         instance.export_id = "EVENT_DHIS2_UID"
 
-        instance.created_at = datetime.strptime(
-            "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-        )
+        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.org_unit = self.org_unit
         if form == self.form:
             instance.period = "201801"
             instance.json = {"question1": "1", "version": self.form_version.version_id}
         else:
             instance.period = "2018Q1"
-            instance.json = {
-                "question1": "1",
-                "version": self.form_quality_version.version_id,
-            }
+            instance.json = {"question1": "1", "version": self.form_quality_version.version_id}
 
         instance.location = Point(1.5, 7.3, 0)
 
-        instance.file = UploadedFile(
-            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
-        )
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.form = form
         instance.project = self.project
         instance.save()
         # force to past creation date
         # looks the the first save don't take it
-        instance.created_at = datetime.strptime(
-            "2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p"
-        )
+        instance.created_at = datetime.strptime("2018-02-16 11:00 AM", "%Y-%m-%d %I:%M %p")
         instance.save()
         return instance
 
@@ -125,50 +112,31 @@ class DataValueExporterTests(TestCase):
 
     def setUp(self):
         form, created = Form.objects.get_or_create(
-            form_id="patient",
-            name="Patientform",
-            period_type="month",
-            single_per_period=True,
+            form_id="patient", name="Patientform", period_type="month", single_per_period=True
         )
         self.form = form
 
-        form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id="1"
-        )
+        form_version, created = FormVersion.objects.get_or_create(form=form, version_id="1")
 
         self.form = form
         self.form_version = form_version
 
-        account, account_created = Account.objects.get_or_create(
-            name="Organisation Name"
-        )
+        account, account_created = Account.objects.get_or_create(name="Organisation Name")
 
-        user, user_created = User.objects.get_or_create(
-            username="Test User Name", email="testemail@bluesquarehub.com"
-        )
+        user, user_created = User.objects.get_or_create(username="Test User Name", email="testemail@bluesquarehub.com")
         self.user = user
         p = Profile(user=user, account=account)
         p.save()
         credentials, creds_created = ExternalCredentials.objects.get_or_create(
-            name="Test export api",
-            url="https://dhis2.com",
-            login="admin",
-            password="whocares",
-            account=account,
+            name="Test export api", url="https://dhis2.com", login="admin", password="whocares", account=account
         )
 
-        datasource, _ds_created = DataSource.objects.get_or_create(
-            name="reference", credentials=credentials
-        )
+        datasource, _ds_created = DataSource.objects.get_or_create(name="reference", credentials=credentials)
         self.datasource = datasource
-        source_version, _created = SourceVersion.objects.get_or_create(
-            number=1, data_source=datasource
-        )
+        source_version, _created = SourceVersion.objects.get_or_create(number=1, data_source=datasource)
         self.source_version = source_version
 
-        self.project = Project(
-            name="Hyrule", app_id="magic.countries.hyrule.collect", account=account
-        )
+        self.project = Project(name="Hyrule", app_id="magic.countries.hyrule.collect", account=account)
         self.project.save()
 
         datasource.projects.add(self.project)
@@ -191,16 +159,12 @@ class DataValueExporterTests(TestCase):
 
         for testcase in testcases:
 
-            exception = EventHandler().handle_exception(
-                load_dhis2_fixture(testcase), "error"
-            )
+            exception = EventHandler().handle_exception(load_dhis2_fixture(testcase), "error")
             self.assertIsNotNone(exception)
 
     def test_event_mapping_works(self):
 
-        event, errors = EventHandler().map_to_values(
-            self.build_instance(self.form), build_form_mapping()
-        )
+        event, errors = EventHandler().map_to_values(self.build_instance(self.form), build_form_mapping())
 
         self.assertEquals(
             {
@@ -262,10 +226,7 @@ class DataValueExporterTests(TestCase):
     def test_event_export_works(self):
 
         mapping_version = MappingVersion(
-            name="event",
-            json=build_form_mapping(),
-            form_version=self.form_version,
-            mapping=self.mapping,
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
         mapping_version.save()
         # setup
@@ -273,20 +234,13 @@ class DataValueExporterTests(TestCase):
         instance = self.build_instance(self.form)
 
         export_request = ExportRequestBuilder().build_export_request(
-            filters={
-                "period_ids": "201801",
-                "form_id": self.form.id,
-                "org_unit_id": instance.org_unit.id,
-            },
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
             launcher=self.user,
         )
         # mock expected calls
 
         responses.add(
-            responses.POST,
-            "https://dhis2.com/api/events",
-            json=load_dhis2_fixture("datavalues-ok.json"),
-            status=200,
+            responses.POST, "https://dhis2.com/api/events", json=load_dhis2_fixture("datavalues-ok.json"), status=200
         )
 
         # excercice
@@ -302,10 +256,7 @@ class DataValueExporterTests(TestCase):
     def test_event_export_handle_errors(self):
 
         mapping_version = MappingVersion(
-            name="event",
-            json=build_form_mapping(),
-            form_version=self.form_version,
-            mapping=self.mapping,
+            name="event", json=build_form_mapping(), form_version=self.form_version, mapping=self.mapping
         )
         mapping_version.save()
         # setup
@@ -313,11 +264,7 @@ class DataValueExporterTests(TestCase):
         instance = self.build_instance(self.form)
 
         export_request = ExportRequestBuilder().build_export_request(
-            filters={
-                "period_ids": "201801",
-                "form_id": self.form.id,
-                "org_unit_id": instance.org_unit.id,
-            },
+            filters={"period_ids": "201801", "form_id": self.form.id, "org_unit_id": instance.org_unit.id},
             launcher=self.user,
         )
         # mock expected calls

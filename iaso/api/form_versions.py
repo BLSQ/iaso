@@ -8,12 +8,7 @@ from django.db.models import BooleanField
 from django.db.models.expressions import Case, When
 
 from iaso.odk import parsing
-from .common import (
-    ModelViewSet,
-    TimestampField,
-    DynamicFieldsModelSerializer,
-    HasPermission,
-)
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from .forms import HasFormPermission
 
 
@@ -57,13 +52,9 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             "descriptor",
         ]
 
-    form_id = serializers.PrimaryKeyRelatedField(
-        source="form", queryset=Form.objects.all()
-    )
+    form_id = serializers.PrimaryKeyRelatedField(source="form", queryset=Form.objects.all())
     form_name = serializers.SerializerMethodField()
-    xls_file = serializers.FileField(
-        required=True, allow_empty_file=False
-    )  # field is not required in model
+    xls_file = serializers.FileField(required=True, allow_empty_file=False)  # field is not required in model
     mapped = serializers.BooleanField(read_only=True)
     full_name = serializers.CharField(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -81,9 +72,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
 
         # validate form (access check)
         permission_checker = HasFormPermission()
-        if not permission_checker.has_object_permission(
-            self.context["request"], self.context["view"], form
-        ):
+        if not permission_checker.has_object_permission(self.context["request"], self.context["view"], form):
             raise serializers.ValidationError({"form_id": "Invalid form id"})
 
         # handle xls to xml conversion
@@ -91,26 +80,18 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
             previous_form_version = FormVersion.objects.latest_version(form)
             survey = parsing.parse_xls_form(
                 data["xls_file"],
-                previous_version=previous_form_version.version_id
-                if previous_form_version is not None
-                else None,
+                previous_version=previous_form_version.version_id if previous_form_version is not None else None,
             )
         except parsing.ParsingError as e:
             raise serializers.ValidationError({"xls_file": str(e)})
 
         # validate that form_id stays constant across versions
         if form.form_id is not None and survey.form_id != form.form_id:
-            raise serializers.ValidationError(
-                {"xls_file": "Form id should stay constant across form versions."}
-            )
+            raise serializers.ValidationError({"xls_file": "Form id should stay constant across form versions."})
 
         # validate form_id (from XLS file) uniqueness across account
-        if Form.objects.exists_with_same_version_id_within_projects(
-            form, survey.form_id
-        ):
-            raise serializers.ValidationError(
-                {"xls_file": "The form_id is already used in another form."}
-            )
+        if Form.objects.exists_with_same_version_id_within_projects(form, survey.form_id):
+            raise serializers.ValidationError({"xls_file": "The form_id is already used in another form."})
 
         data["survey"] = survey
 
@@ -120,9 +101,7 @@ class FormVersionSerializer(DynamicFieldsModelSerializer):
         form = validated_data.pop("form")
         survey = validated_data.pop("survey")
 
-        return FormVersion.objects.create_for_form_and_survey(
-            form=form, survey=survey, **validated_data
-        )
+        return FormVersion.objects.create_for_form_and_survey(form=form, survey=survey, **validated_data)
 
 
 class FormVersionsViewSet(ModelViewSet):
@@ -136,10 +115,7 @@ class FormVersionsViewSet(ModelViewSet):
     """
 
     serializer_class = FormVersionSerializer
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_forms"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
     results_key = "form_versions"
     queryset = FormVersion.objects.all()
     parser_classes = (parsers.MultiPartParser,)
@@ -156,18 +132,12 @@ class FormVersionsViewSet(ModelViewSet):
         if search_name:
             queryset = queryset.filter(form__name__icontains=search_name)
 
-        queryset = queryset.annotate(
-            full_name=Concat("form__name", Value(" - V"), "version_id")
-        )
+        queryset = queryset.annotate(full_name=Concat("form__name", Value(" - V"), "version_id"))
 
         queryset = queryset.annotate(mapping_versions_count=Count("mapping_versions"))
 
         queryset = queryset.annotate(
-            mapped=Case(
-                When(mapping_versions_count__gt=0, then=True),
-                default=False,
-                output_field=BooleanField(),
-            )
+            mapped=Case(When(mapping_versions_count__gt=0, then=True), default=False, output_field=BooleanField())
         )
 
         if mapped_filter:

@@ -25,29 +25,15 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "projects",
-            "sub_unit_types",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["id", "projects", "sub_unit_types", "created_at", "updated_at"]
 
     projects = ProjectSerializer(many=True, read_only=True)
     project_ids = serializers.PrimaryKeyRelatedField(
-        source="projects",
-        write_only=True,
-        many=True,
-        queryset=Project.objects.all(),
-        allow_empty=False,
+        source="projects", write_only=True, many=True, queryset=Project.objects.all(), allow_empty=False
     )
     sub_unit_types = serializers.SerializerMethodField(read_only=True)
     sub_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="sub_unit_types",
-        write_only=True,
-        many=True,
-        allow_empty=True,
-        queryset=OrgUnitType.objects.all(),
+        source="sub_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
     )
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -60,7 +46,7 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
 
         return OrgUnitTypeSerializer(
             unit_types,
-            fields=["id", "name", "short_name", "depth", "created_at", "updated_at",],
+            fields=["id", "name", "short_name", "depth", "created_at", "updated_at"],
             many=True,
             context=self.context,
         ).data
@@ -69,8 +55,6 @@ class OrgUnitTypeSerializer(DynamicFieldsModelSerializer):
         # validate projects (access check)
         for project in data.get("projects", []):
             if self.context["request"].user.iaso_profile.account != project.account:
-                raise serializers.ValidationError(
-                    {"project_ids": "Invalid project ids"}
-                )
+                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
 
         return data

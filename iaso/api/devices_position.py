@@ -21,15 +21,9 @@ class DevicePositionSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["id", "created_at", "updated_at"]
 
-    device_id = serializers.PrimaryKeyRelatedField(
-        source="device", queryset=Device.objects.all()
-    )
+    device_id = serializers.PrimaryKeyRelatedField(source="device", queryset=Device.objects.all())
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     altitude = serializers.FloatField()
@@ -67,9 +61,7 @@ class DevicesPositionViewSet(ModelViewSet):
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
         # We need to check the project linked to the app_id: it might requires authentication
-        Project.objects.get_for_user_and_app_id(
-            request.user, request.query_params.get("app_id")
-        )
+        Project.objects.get_for_user_and_app_id(request.user, request.query_params.get("app_id"))
 
         return super().create(request, *args, **kwargs)
 

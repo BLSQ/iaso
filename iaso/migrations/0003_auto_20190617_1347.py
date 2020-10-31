@@ -7,8 +7,4 @@ class Migration(migrations.Migration):
 
     dependencies = [("iaso", "0002_auto_20190617_1232")]
 
-    operations = [
-        migrations.RenameField(
-            model_name="orglevel", old_name="org_unit_type", new_name="org_unit_types"
-        )
-    ]
+    operations = [migrations.RenameField(model_name="orglevel", old_name="org_unit_type", new_name="org_unit_types")]

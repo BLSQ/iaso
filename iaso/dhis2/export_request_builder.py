@@ -29,7 +29,7 @@ class ExportRequestBuilder:
 
         # normal filters
         instances = instances.for_filters(**filters)
-        
+
         # add account from Launcher
         if launcher:
             instances = instances.filter(project__account=launcher.iaso_profile.account)
@@ -45,9 +45,7 @@ class ExportRequestBuilder:
             instances = instances.filter(last_export_success_at__isnull=True)
 
         # don't export instances already referenced by another running or queued export request
-        instances = instances.exclude(
-            exportstatus__export_request__status__in=ALIVE_STATUSES
-        )
+        instances = instances.exclude(exportstatus__export_request__status__in=ALIVE_STATUSES)
 
         params = {"filters": filters, "force_export": force_export}
 
@@ -79,9 +77,7 @@ class ExportRequestBuilder:
                         )
 
                     export_status = ExportStatus(
-                        export_request=export_request,
-                        instance=instance,
-                        mapping_version=mapping_version,
+                        export_request=export_request, instance=instance, mapping_version=mapping_version
                     )
                     export_statuses.append(export_status)
 
@@ -104,13 +100,9 @@ class ExportRequestBuilder:
             return self.form_mappings_cache[key]
 
         mappings = []
-        for form_mapping in instance.form.mapping_set.exclude(
-            mapping_type=DERIVED
-        ).all():
+        for form_mapping in instance.form.mapping_set.exclude(mapping_type=DERIVED).all():
             for form_mapping_version in form_mapping.versions.all():
-                if str(form_mapping_version.form_version.version_id) == str(
-                    ona_version
-                ):
+                if str(form_mapping_version.form_version.version_id) == str(ona_version):
                     mappings.append(form_mapping_version)
 
         if len(mappings) == 0:

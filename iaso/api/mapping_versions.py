@@ -3,12 +3,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from rest_framework import serializers, permissions
 import iaso.models as m
 
-from .common import (
-    ModelViewSet,
-    TimestampField,
-    DynamicFieldsModelSerializer,
-    HasPermission,
-)
+from .common import ModelViewSet, TimestampField, DynamicFieldsModelSerializer, HasPermission
 from iaso.models import FormVersion, MappingVersion
 
 
@@ -36,13 +31,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             "created_at",
             "updated_at",
         ]
-        read_only_fields = [
-            "id",
-            "form_version",
-            "mapped_questions",
-            "created_at",
-            "updated_at",
-        ]
+        read_only_fields = ["id", "form_version", "mapped_questions", "created_at", "updated_at"]
 
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
@@ -69,20 +58,13 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
     def get_mapping(self, mapping_version):
         m = mapping_version.mapping
-        return {
-            "mapping_type": m.mapping_type,
-            "data_source": {"id": m.data_source.id, "name": m.data_source.name},
-        }
+        return {"mapping_type": m.mapping_type, "data_source": {"id": m.data_source.id, "name": m.data_source.name}}
 
     def get_form_version(self, mapping_version):
         v = mapping_version.form_version
         return {
             "id": v.id,
-            "form": {
-                "id": v.form.id,
-                "name": v.form.name,
-                "periodType": v.form.period_type,
-            },
+            "form": {"id": v.form.id, "name": v.form.name, "periodType": v.form.period_type},
             "version_id": v.version_id,
         }
 
@@ -105,29 +87,23 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
         form_version = None
         try:
-            form_version = m.FormVersion.objects.filter(
-                form__projects__account=profile.account
-            ).get(pk=data["form_version"]["id"])
+            form_version = m.FormVersion.objects.filter(form__projects__account=profile.account).get(
+                pk=data["form_version"]["id"]
+            )
         except ObjectDoesNotExist:
             raise serializers.ValidationError({"form_version": "object doesn't exist"})
 
         datasource = None
         try:
-            datasource = m.DataSource.objects.filter(
-                projects__account=profile.account
-            ).get(pk=data["mapping"]["datasource"]["id"])
-        except ObjectDoesNotExist:
-            raise serializers.ValidationError(
-                {"mapping.datasource": "object doesn't exist"}
+            datasource = m.DataSource.objects.filter(projects__account=profile.account).get(
+                pk=data["mapping"]["datasource"]["id"]
             )
+        except ObjectDoesNotExist:
+            raise serializers.ValidationError({"mapping.datasource": "object doesn't exist"})
 
         mapping_type = data["mapping"]["type"]
 
-        validated_data = {
-            "form_version": form_version,
-            "datasource": datasource,
-            "mapping_type": mapping_type,
-        }
+        validated_data = {"form_version": form_version, "datasource": datasource, "mapping_type": mapping_type}
         validated_data["json"] = {"question_mappings": {}}
 
         if mapping_type == "AGGREGATE":
@@ -148,9 +124,7 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
             form=form_version.form, data_source=datasource, mapping_type=mapping_type
         )
 
-        existing_mapping_version = m.MappingVersion.objects.filter(
-            mapping=mapping, form_version=form_version
-        ).first()
+        existing_mapping_version = m.MappingVersion.objects.filter(mapping=mapping, form_version=form_version).first()
         if existing_mapping_version:
             # be idempotent return existing
             return existing_mapping_version
@@ -176,14 +150,10 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
                     MappingVersion.QUESTION_MAPPING_NEVER_MAPPED,
                 ):
                     if data_element.get("id") == None:
-                        raise serializers.ValidationError(
-                            {path: "should have a least an data element id"}
-                        )
+                        raise serializers.ValidationError({path: "should have a least an data element id"})
 
                     if data_element.get("valueType") is None:
-                        raise serializers.ValidationError(
-                            {path: "should have a valueType"}
-                        )
+                        raise serializers.ValidationError({path: "should have a valueType"})
 
             instance.json["question_mappings"][question_name] = data_element
 
@@ -203,10 +173,7 @@ class MappingVersionsViewSet(ModelViewSet):
     PATCH /api/mappingversions/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_mappings"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_mappings")]
     serializer_class = MappingVersionSerializer
     results_key = "mapping_versions"
     queryset = MappingVersion.objects.all()
@@ -214,15 +181,12 @@ class MappingVersionsViewSet(ModelViewSet):
 
     def get_queryset(self):
         orders = self.request.GET.get(
-            "order",
-            "form_version__form__name,form_version__version_id,mapping__mapping_type",
+            "order", "form_version__form__name,form_version__version_id,mapping__mapping_type"
         ).split(",")
 
         profile = self.request.user.iaso_profile
         queryset = MappingVersion.objects.filter(
-            form_version_id__in=FormVersion.objects.filter(
-                form__projects__account=profile.account
-            )
+            form_version_id__in=FormVersion.objects.filter(form__projects__account=profile.account)
         )
 
         form_id = self.request.GET.get("form_id")

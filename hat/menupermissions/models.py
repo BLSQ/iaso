@@ -20,13 +20,13 @@ class CustomPermissionSupport(models.Model):
         # will be performed for this model.
 
         permissions = (
-            ('x_modifications', MODIFICATIONS),
+            ("x_modifications", MODIFICATIONS),
             ("x_management_teams", TEAMS),
             ("x_management_users", USERS),
-            ('iaso_forms', FORMS),
-            ('iaso_mappings', MAPPINGS),
-            ('iaso_completeness', COMPLETENESS),
-            ('iaso_org_units', ORG_UNITS),
-            ('iaso_links', LINKS),
-            ('iaso_users', USERS),
+            ("iaso_forms", FORMS),
+            ("iaso_mappings", MAPPINGS),
+            ("iaso_completeness", COMPLETENESS),
+            ("iaso_org_units", ORG_UNITS),
+            ("iaso_links", LINKS),
+            ("iaso_users", USERS),
         )

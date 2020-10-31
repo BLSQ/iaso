@@ -31,10 +31,7 @@ class EnketoLibTests(TestCase):
         form = m.Form.objects.create(name="name < with entity", form_id="odk_form_id")
         m.FormVersion.objects.create(form=form, version_id="2012010601")
         xml = to_xforms_xml(
-            form=form,
-            version="2019559126",
-            download_url="https://xlsform/odk_form_id.xml",
-            md5checksum="857564sdf",
+            form=form, version="2019559126", download_url="https://xlsform/odk_form_id.xml", md5checksum="857564sdf"
         )
         expectedXforms = [
             '<xforms xmlns="http://openrosa.org/xforms/xformsList">',

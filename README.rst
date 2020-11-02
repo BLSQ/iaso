@@ -232,16 +232,13 @@ To load some fixture into the database manually run e.g.:
 Code reloading
 ==============
 
-In development the django dev server will restart when it detects a file change.
-
-If everything fails **be drastic!**
+In development the django dev server will restart when it detects a file change, either in Python or Javascript.
 
 .. code:: shell
 
     docker-compose stop && docker-compose start
 
-
-**EXTREMELY  DRASTIC!!!**
+If you encounter problems, you can try to rebuild everything from scratch.
 
 .. code:: shell
 
@@ -253,9 +250,6 @@ If everything fails **be drastic!**
     docker-compose build
     # start-up containers
     docker-compose up
-
-.. warning:: NEVER remove **db** container without backup or
-             you'll loose all the data!!!
 
 Code formatting
 ===============

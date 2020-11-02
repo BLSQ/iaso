@@ -92,6 +92,7 @@
     "it": "readonly",
     "expect": "readonly",
     "shallow": "readonly",
+    "mount": "readonly",
     "sinon": "readonly"
   }
 }

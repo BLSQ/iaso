@@ -6,14 +6,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0013_auto_20191029_1539'),
-    ]
+    dependencies = [("iaso", "0013_auto_20191029_1539")]
 
     operations = [
         migrations.AddField(
-            model_name='orgunit',
-            name='catchment',
+            model_name="orgunit",
+            name="catchment",
             field=django.contrib.gis.db.models.fields.PolygonField(blank=True, null=True, srid=4326),
-        ),
+        )
     ]

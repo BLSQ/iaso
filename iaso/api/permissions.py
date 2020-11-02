@@ -26,20 +26,10 @@ class PermissionsViewSet(viewsets.ViewSet):
             perms = Permission.objects
         else:
             perms = request.user.user_permissions
-        perms = (
-            perms.filter(content_type=content_type)
-            .filter(codename__startswith="iaso_")
-            .order_by("id")
-        )
+        perms = perms.filter(content_type=content_type).filter(codename__startswith="iaso_").order_by("id")
 
         result = []
         for permission in perms:
-            result.append(
-                {
-                    "id": permission.id,
-                    "name": _(permission.name),
-                    "codename": permission.codename,
-                }
-            )
+            result.append({"id": permission.id, "name": _(permission.name), "codename": permission.codename})
 
         return Response({"permissions": sorted(result, key=itemgetter("name"))})

@@ -8,9 +8,5 @@ class Migration(migrations.Migration):
     dependencies = [("iaso", "0015_instance_uuid")]
 
     operations = [
-        migrations.AddField(
-            model_name="instance",
-            name="name",
-            field=models.TextField(blank=True, null=True),
-        )
+        migrations.AddField(model_name="instance", name="name", field=models.TextField(blank=True, null=True))
     ]

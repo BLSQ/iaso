@@ -12,15 +12,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Form",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("form_id", models.TextField(blank=True, null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
@@ -29,10 +21,7 @@ class Migration(migrations.Migration):
                 (
                     "org_unit_type",
                     models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.OrgUnitType",
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnitType"
                     ),
                 ),
             ],

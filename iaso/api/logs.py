@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from hat.audit.models import Modification
 from hat.api.authentication import CsrfExemptSessionAuthentication
 
+
 class LogsViewSet(viewsets.ViewSet):
     """
     Modification API to retrieve log modifications.

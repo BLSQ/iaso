@@ -45,31 +45,17 @@ seed_test_data --mode=export --force
 class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("--mode", type=str, help="seed or export", required=True)
-        parser.add_argument(
-            "--dhis2version",
-            type=str,
-            help="seed or export",
-            required=True,
-            default="2.31.8",
-        )
-        parser.add_argument(
-            "-f",
-            "--force",
-            action="store_true",
-            help="Force the re-export of exported submissions",
-        )
+        parser.add_argument("--dhis2version", type=str, help="seed or export", required=True, default="2.31.8")
+        parser.add_argument("-f", "--force", action="store_true", help="Force the re-export of exported submissions")
 
     def handle(self, *args, **options):
         dhis2_version = options.get("dhis2version")
         mode = options.get("mode")
 
-        account, account_created = Account.objects.get_or_create(
-            name="Organisation Name" + dhis2_version
-        )
+        account, account_created = Account.objects.get_or_create(name="Organisation Name" + dhis2_version)
 
         user, user_created = User.objects.get_or_create(
-            username="testemail" + dhis2_version,
-            email="testemail" + dhis2_version + "@bluesquarehub.com",
+            username="testemail" + dhis2_version, email="testemail" + dhis2_version + "@bluesquarehub.com"
         )
         if user.password == "":
             user.set_password("testemail" + dhis2_version)
@@ -102,21 +88,15 @@ class Command(BaseCommand):
             account=account,
         )
 
-        project, p_created = Project.objects.get_or_create(
-            name="Test" + dhis2_version, account=account
-        )
+        project, p_created = Project.objects.get_or_create(name="Test" + dhis2_version, account=account)
 
         datasource, _ds_created = DataSource.objects.get_or_create(
             name="reference_play_test" + dhis2_version, credentials=credentials
         )
         datasource.projects.add(project)
-        source_version, _created = SourceVersion.objects.get_or_create(
-            number=1, data_source=datasource
-        )
+        source_version, _created = SourceVersion.objects.get_or_create(number=1, data_source=datasource)
 
-        orgunit_type, created = OrgUnitType.objects.get_or_create(
-            name="FosaPlay", short_name="FosaPlay"
-        )
+        orgunit_type, created = OrgUnitType.objects.get_or_create(name="FosaPlay", short_name="FosaPlay")
         orgunit_type.projects.add(project)
         # quantity
         quantity_form, created = Form.objects.get_or_create(
@@ -198,9 +178,7 @@ class Command(BaseCommand):
         project.forms.add(cvs_stat_form)
 
         event_tracker_form, created = Form.objects.get_or_create(
-            form_id="event_tracker" + dhis2_version,
-            name="Event Tracker " + dhis2_version,
-            single_per_period=False,
+            form_id="event_tracker" + dhis2_version, name="Event Tracker " + dhis2_version, single_per_period=False
         )
 
         event_tracker_form.org_unit_types.add(orgunit_type)
@@ -224,11 +202,7 @@ class Command(BaseCommand):
         print("********* FORM seed done")
         if mode == "seed":
             print("******** delete previous instances")
-            print(
-                Instance.objects.filter(
-                    org_unit__in=source_version.orgunit_set.all()
-                ).delete()
-            )
+            print(Instance.objects.filter(org_unit__in=source_version.orgunit_set.all()).delete())
 
             print("********* Importing orgunits")
 
@@ -248,39 +222,17 @@ class Command(BaseCommand):
             print("********* generating instances")
 
             self.seed_instances(
-                source_version,
-                event_tracker_form,
-                [None],
-                event_tracker_form_version,
-                fixed_instance_count=1,
+                source_version, event_tracker_form, [None], event_tracker_form_version, fixed_instance_count=1
             )
 
             self.seed_instances(
-                source_version,
-                cvs_form,
-                quarter_periods[0:1],
-                cvs_mapping_version,
-                fixed_instance_count=50,
+                source_version, cvs_form, quarter_periods[0:1], cvs_mapping_version, fixed_instance_count=50
             )
             print("generated", cvs_form.name, cvs_form.instances.count(), "instances")
-            self.seed_instances(
-                source_version, quantity_form, periods, quantity_mapping_version
-            )
-            print(
-                "generated",
-                quantity_form.name,
-                quantity_form.instances.count(),
-                "instances",
-            )
-            self.seed_instances(
-                source_version, quality_form, quarter_periods, quality_form_version
-            )
-            print(
-                "generated",
-                quality_form.name,
-                quality_form.instances.count(),
-                "instances",
-            )
+            self.seed_instances(source_version, quantity_form, periods, quantity_mapping_version)
+            print("generated", quantity_form.name, quantity_form.instances.count(), "instances")
+            self.seed_instances(source_version, quality_form, quarter_periods, quality_form_version)
+            print("generated", quality_form.name, quality_form.instances.count(), "instances")
 
         if mode == "derived":
 
@@ -290,16 +242,9 @@ class Command(BaseCommand):
 
             from iaso.dhis2.derived_instance_generator import generate_instances
 
-            generate_instances(
-                project, cvs_mapping_version, cvs_stat_mapping_version, period
-            )
+            generate_instances(project, cvs_mapping_version, cvs_stat_mapping_version, period)
 
-            print(
-                "generated",
-                cvs_stat_form.name,
-                cvs_stat_form.instances.count(),
-                "instances",
-            )
+            print("generated", cvs_stat_form.name, cvs_stat_form.instances.count(), "instances")
 
         if mode == "export":
             force = options.get("force")
@@ -313,9 +258,7 @@ class Command(BaseCommand):
             export_request = ExportRequestBuilder().build_export_request(
                 filters={
                     "period_ids": ",".join(export_periods),
-                    "form_ids": ",".join(
-                        list(map(str, [quantity_form.id, quality_form.id]))
-                    ),
+                    "form_ids": ",".join(list(map(str, [quantity_form.id, quality_form.id]))),
                 },
                 launcher=self.user,
                 force_export=force,
@@ -337,28 +280,21 @@ class Command(BaseCommand):
     def assign_orgunits_to_program(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
         program_id = "eBAyeGv0exc"
-        orgunits = api.get(
-            "organisationUnits", params={"fields": "id", "paging": "false"}
-        ).json()["organisationUnits"]
+        orgunits = api.get("organisationUnits", params={"fields": "id", "paging": "false"}).json()["organisationUnits"]
         program = api.get("programs/" + program_id, params={"fields": ":all"}).json()
         program["organisationUnits"] = orgunits
         api.put("programs/" + program_id, program)
 
     def make_category_options_public(self, credentials):
         api = Api(credentials.url, credentials.login, credentials.password)
-        for page in api.get_paged(
-            "categoryOptions", params={"fields": ":all"}, page_size=100
-        ):
+        for page in api.get_paged("categoryOptions", params={"fields": ":all"}, page_size=100):
             for category_option in page["categoryOptions"]:
                 if category_option["name"] != "default":
                     try:
                         api.post(
                             "sharing?type=categoryOption&id=" + category_option["id"],
                             {
-                                "meta": {
-                                    "allowPublicAccess": True,
-                                    "allowExternalAccess": False,
-                                },
+                                "meta": {"allowPublicAccess": True, "allowExternalAccess": False},
                                 "object": {
                                     "id": category_option["id"],
                                     "name": category_option["name"],
@@ -381,9 +317,7 @@ class Command(BaseCommand):
         mapping_file=None,
         xls_file="testdata/seed-data-command-form.xlsx",
     ):
-        form_version, created = FormVersion.objects.get_or_create(
-            form=form, version_id=1
-        )
+        form_version, created = FormVersion.objects.get_or_create(form=form, version_id=1)
         # don't use uploadedFile in get_or_create, it will end up non unique
         form_version.file = UploadedFile(
             # TODO: use better fixture
@@ -404,17 +338,9 @@ class Command(BaseCommand):
 
         mapping_version_json = self.mapping_json(mapping_file)
 
-        if (
-            MappingVersion.objects.filter(
-                name=mapping_version_name, form_version=form_version
-            ).count()
-            == 0
-        ):
+        if MappingVersion.objects.filter(name=mapping_version_name, form_version=form_version).count() == 0:
             MappingVersion.objects.get_or_create(
-                name=mapping_version_name,
-                form_version=form_version,
-                mapping=mapping,
-                json=mapping_version_json,
+                name=mapping_version_name, form_version=form_version, mapping=mapping, json=mapping_version_json
             )
 
         mapping_version, mapping_version_created = MappingVersion.objects.get_or_create(
@@ -425,9 +351,7 @@ class Command(BaseCommand):
         return mapping_version
 
     @transaction.atomic
-    def seed_instances(
-        self, source_version, form, periods, mapping_version, fixed_instance_count=None
-    ):
+    def seed_instances(self, source_version, form, periods, mapping_version, fixed_instance_count=None):
         for org_unit in source_version.orgunit_set.all():
             instances = []
             for period in periods:
@@ -446,9 +370,7 @@ class Command(BaseCommand):
                     instance.file_name = "fake_it_until_you_make_it.xml"
                     instance.uuid = str(uuid4())
                     if with_location:
-                        instance.location = Point(
-                            -11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0
-                        )
+                        instance.location = Point(-11.7868289 + (2 * random()), 8.4494988 + (2 * random()), 0)
 
                     test_data = {"_version": 1}
 
@@ -483,9 +405,7 @@ class Command(BaseCommand):
                             "hh_repeat": [
                                 {
                                     "hh_name": "household 1",
-                                    "hh_gender": "Male"
-                                    if randint(1, 10) < 5
-                                    else "Female",
+                                    "hh_gender": "Male" if randint(1, 10) < 5 else "Female",
                                     "hh_age": randint(18, 65),
                                     "hh_street": "streeet 1",
                                     "hh_number": "44b",
@@ -493,9 +413,7 @@ class Command(BaseCommand):
                                 },
                                 {
                                     "hh_name": "household 2",
-                                    "hh_gender": "Male"
-                                    if randint(1, 10) < 5
-                                    else "Female",
+                                    "hh_gender": "Male" if randint(1, 10) < 5 else "Female",
                                     "hh_age": randint(18, 65),
                                     "hh_street": "street b",
                                     "hh_number": "45",
@@ -535,9 +453,7 @@ class Command(BaseCommand):
         xml_string = self.generate_instance_xml(instance, form_version)
 
         buffer = BytesIO(xml_string)
-        buffer.seek(
-            0, 2
-        )  # Seek to the end of the stream, so we can get its length with `buf.tell()`
+        buffer.seek(0, 2)  # Seek to the end of the stream, so we can get its length with `buf.tell()`
         instance.file_name = form_version.form.form_id + "_" + instance.uuid
         file = InMemoryUploadedFile(
             file=buffer,

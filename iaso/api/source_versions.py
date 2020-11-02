@@ -12,6 +12,7 @@ class SourceVersionSerializer(serializers.ModelSerializer):
 
     GET /api/sourceversions/
     """
+
     class Meta:
         model = SourceVersion
         fields = ["id", "data_source", "number", "description", "created_at", "updated_at"]
@@ -54,5 +55,3 @@ class SourceVersionViewSet(ModelViewSet):
             versions = versions.filter(data_source_id=source_id)
 
         return versions.order_by("id")
-
-

@@ -10,11 +10,7 @@ class Migration(migrations.Migration):
     dependencies = [("iaso", "0012_orgunit_validated")]
 
     operations = [
-        migrations.AddField(
-            model_name="instance",
-            name="file_name",
-            field=models.TextField(blank=True, null=True),
-        ),
+        migrations.AddField(model_name="instance", name="file_name", field=models.TextField(blank=True, null=True)),
         migrations.AddField(
             model_name="instance",
             name="location",
@@ -24,20 +20,14 @@ class Migration(migrations.Migration):
             model_name="instance",
             name="org_unit",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                to="iaso.OrgUnit",
+                blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.OrgUnit"
             ),
         ),
         migrations.AlterField(
             model_name="instance",
             name="form",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                to="iaso.Form",
+                blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.Form"
             ),
         ),
     ]

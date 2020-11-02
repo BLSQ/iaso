@@ -10,15 +10,7 @@ from django.contrib.gis.geos import GEOSGeometry
 from django.core.serializers import serialize
 from .command_logger import CommandLogger
 
-from iaso.models import (
-    OrgUnit,
-    OrgUnitType,
-    DataSource,
-    SourceVersion,
-    Group,
-    GroupSet,
-    generate_id_for_dhis_2,
-)
+from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet, generate_id_for_dhis_2
 from iaso.diffing import Differ, Dumper, Exporter
 
 
@@ -34,65 +26,30 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--source_name",
-            type=str,
-            help="The name of the source. It will be created if it doesn't exist",
+            "--source_name", type=str, help="The name of the source. It will be created if it doesn't exist"
         )
+        parser.add_argument("--version_number", type=int, help="An integer version number for the new version")
+        parser.add_argument("--validation_status", type=str, help="Validation status", required=False)
         parser.add_argument(
-            "--version_number",
-            type=int,
-            help="An integer version number for the new version",
-        )
-        parser.add_argument(
-            "--validation_status", type=str, help="Validation status", required=False
-        )
-        parser.add_argument(
-            "--source_name_ref",
-            type=str,
-            help="The name of the source. It will be created if it doesn't exist",
+            "--source_name_ref", type=str, help="The name of the source. It will be created if it doesn't exist"
         )
 
-        parser.add_argument(
-            "--version_number_ref",
-            type=int,
-            help="An integer version number for the new version",
-        )
-        parser.add_argument(
-            "--validation_status_ref",
-            type=str,
-            help="Validation status ref",
-            required=False,
-        )
-        parser.add_argument(
-            "--export",
-            action="store_true",
-            help="really export to dhis2 or only dry run",
-        )
-        parser.add_argument(
-            "--output_csv", type=str, help="A file to output the diff as csv"
-        )
-        parser.add_argument(
-            "--ignore_groups", action="store_true", help="Don't modify groups on dhis2"
-        )
+        parser.add_argument("--version_number_ref", type=int, help="An integer version number for the new version")
+        parser.add_argument("--validation_status_ref", type=str, help="Validation status ref", required=False)
+        parser.add_argument("--export", action="store_true", help="really export to dhis2 or only dry run")
+        parser.add_argument("--output_csv", type=str, help="A file to output the diff as csv")
+        parser.add_argument("--ignore_groups", action="store_true", help="Don't modify groups on dhis2")
 
-        parser.add_argument(
-            "--dhis2_url",
-            type=str,
-            help="Dhis2 url to import from (without user/password)",
-        )
+        parser.add_argument("--dhis2_url", type=str, help="Dhis2 url to import from (without user/password)")
         parser.add_argument("--dhis2_user", type=str, help="dhis2 user name")
 
-        parser.add_argument(
-            "--dhis2_password", type=str, help="dhis2 password of the dhis2_user"
-        )
+        parser.add_argument("--dhis2_password", type=str, help="dhis2 password of the dhis2_user")
 
     def get_api(self, options):
         from dhis2 import Api
 
         api = Api(
-            get_option(options, "dhis2_url"),
-            get_option(options, "dhis2_user"),
-            get_option(options, "dhis2_password"),
+            get_option(options, "dhis2_url"), get_option(options, "dhis2_user"), get_option(options, "dhis2_password")
         )
 
         return api
@@ -108,9 +65,7 @@ class Command(BaseCommand):
         start = time.time()
 
         _source, version = self.load_version(options, "source_name", "version_number")
-        _source_ref, version_ref = self.load_version(
-            options, "source_name_ref", "version_number_ref"
-        )
+        _source_ref, version_ref = self.load_version(options, "source_name_ref", "version_number_ref")
         iaso_logger.ok("================= Diffing =================")
         ignore_groups = options.get("ignore_groups")
         csv_export = file_name is not None
@@ -127,9 +82,7 @@ class Command(BaseCommand):
 
         if export:
             iaso_logger.ok("================= Exporting =================")
-            Exporter(self.iaso_logger).export_to_dhis2(
-                self.get_api(options), diffs, fields
-            )
+            Exporter(self.iaso_logger).export_to_dhis2(self.get_api(options), diffs, fields)
         else:
             iaso_logger.warn("not exporting, specify --export")
         end = time.time()
@@ -154,9 +107,7 @@ class Command(BaseCommand):
             raise Exception(message)
 
         try:
-            version = SourceVersion.objects.get(
-                number=version_number, data_source=source
-            )
+            version = SourceVersion.objects.get(number=version_number, data_source=source)
         except Exception as e:
             message = " ".join(
                 (
@@ -166,9 +117,7 @@ class Command(BaseCommand):
                         list(
                             map(
                                 lambda x: str(x),
-                                SourceVersion.objects.filter(
-                                    data_source=source
-                                ).values_list("number", flat=True),
+                                SourceVersion.objects.filter(data_source=source).values_list("number", flat=True),
                             )
                         )
                     ),

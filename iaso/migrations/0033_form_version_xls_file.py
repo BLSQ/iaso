@@ -5,26 +5,22 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0032_form_instances'),
-    ]
+    dependencies = [("iaso", "0032_form_instances")]
 
     operations = [
         migrations.AddField(
-            model_name='formversion',
-            name='xls_file',
-            field=models.FileField(blank=True, null=True, upload_to='forms/'),
+            model_name="formversion", name="xls_file", field=models.FileField(blank=True, null=True, upload_to="forms/")
         ),
         migrations.AlterField(
-            model_name='formversion',
-            name='file',
-            field=models.FileField(default='missing', upload_to='forms/'),
+            model_name="formversion",
+            name="file",
+            field=models.FileField(default="missing", upload_to="forms/"),
             preserve_default=False,
         ),
         migrations.AlterField(
-            model_name='formversion',
-            name='version_id',
-            field=models.TextField(default='missing'),
+            model_name="formversion",
+            name="version_id",
+            field=models.TextField(default="missing"),
             preserve_default=False,
         ),
     ]

@@ -9,13 +9,15 @@ class Migration(migrations.Migration):
 
     dependencies = [
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ('iaso', '0044_project_needs_authentication'),
+        ("iaso", "0044_project_needs_authentication"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='orgunit',
-            name='creator',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL),
-        ),
+            model_name="orgunit",
+            name="creator",
+            field=models.ForeignKey(
+                blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
+            ),
+        )
     ]

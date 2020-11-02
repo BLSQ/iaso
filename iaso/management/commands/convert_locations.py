@@ -9,11 +9,7 @@ class Command(BaseCommand):
         forms = Form.objects.filter(location_field__isnull=False)
 
         for form in forms:
-            instances = (
-                Instance.objects.filter(json__isnull=False)
-                .filter(form=form)
-                .filter(location__isnull=True)
-            )
+            instances = Instance.objects.filter(json__isnull=False).filter(form=form).filter(location__isnull=True)
             for instance in instances:
                 try:
                     instance.convert_location_from_field(form.location_field)

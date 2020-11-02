@@ -29,7 +29,7 @@ services:
     links: &hat_links
       - db
     environment: &hat_environment
-      SENSE_HAT_ENVIRONMENT: 'development'
+      IASO_ENVIRONMENT: 'development'
       FLAVOR: iaso
       RDS_HOSTNAME: db
       RDS_DB_NAME: iaso
@@ -46,7 +46,7 @@ services:
       ENKETO_API_TOKEN: AZE78974654azeAZE
       ENKETO_URL: ${ENKETO_URL}
     # Limit logging in dev to not overflow terminal
-    logging: &hat_logging
+    logging: &iaso_logging
       driver: "json-file"
       options:
         max-size: "5k"
@@ -55,7 +55,7 @@ services:
 
   db:
     image: mdillon/postgis:10
-    logging: *hat_logging
+    logging: *iaso_logging
     ports:
       - "5433:5432"
     volumes:
@@ -73,5 +73,5 @@ services:
       - "3000:3000"
     volumes: *hat_volumes
     environment: *hat_environment
-    logging: *hat_logging
+    logging: *iaso_logging
     command: start_webpack

@@ -33,30 +33,14 @@ def org_units_to_gpkg(queryset: QuerySet) -> bytes:
     """Export the provided org unit queryset in Geopackage (gpkg) format."""
 
     # create df with queryset, excluding entries without geo info
-    queryset = queryset.exclude(
-        Q(location=None) & Q(geom=None) & Q(simplified_geom=None)
-    )
+    queryset = queryset.exclude(Q(location=None) & Q(geom=None) & Q(simplified_geom=None))
     ou_df = pd.DataFrame(queryset.values(*ORG_UNIT_COLUMNS))
 
     # cleanup / transforms
-    ou_df["parent"] = (
-        ou_df["parent__name"] + " (" + ou_df["parent__org_unit_type__name"] + ")"
-    )
-    ou_df["geography"] = ou_df["geom"].fillna(
-        ou_df["simplified_geom"].fillna(ou_df["location"])
-    )
-    ou_df = ou_df.drop(
-        columns=[
-            "geom",
-            "simplified_geom",
-            "location",
-            "parent__name",
-            "parent__org_unit_type__name",
-        ]
-    )
-    ou_df = ou_df.rename(
-        columns={"org_unit_type__name": "type", "org_unit_type__depth": "depth"}
-    )
+    ou_df["parent"] = ou_df["parent__name"] + " (" + ou_df["parent__org_unit_type__name"] + ")"
+    ou_df["geography"] = ou_df["geom"].fillna(ou_df["simplified_geom"].fillna(ou_df["location"]))
+    ou_df = ou_df.drop(columns=["geom", "simplified_geom", "location", "parent__name", "parent__org_unit_type__name"])
+    ou_df = ou_df.rename(columns={"org_unit_type__name": "type", "org_unit_type__depth": "depth"})
     ou_df["depth"] = ou_df["depth"].fillna(999)
     ou_df = ou_df.set_index("uuid")
 
@@ -83,7 +67,7 @@ def org_units_to_gpkg(queryset: QuerySet) -> bytes:
         group.to_file(path, driver="GPKG", layer=layer)
         i = i + 1
 
-    f = open(path, 'rb')
+    f = open(path, "rb")
     content = f.read()
     f.close()
     os.remove(path)

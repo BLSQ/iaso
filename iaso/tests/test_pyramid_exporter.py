@@ -73,9 +73,7 @@ class CommandTests(TestCase):
         org_unit_chief.source_ref = None
         org_unit_chief.validated = False
         org_unit_chief.parent = parent
-        org_unit_chief.simplified_geom = MultiPolygon(
-            [Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])]
-        )
+        org_unit_chief.simplified_geom = MultiPolygon([Polygon([[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]])])
         org_unit_chief.save()
 
         group = Group.objects.get(source_ref="f25dqv3Y7Z0", source_version=version_ref)
@@ -195,9 +193,7 @@ class CommandTests(TestCase):
                     "parent": {"id": "kJq2mPyFEHo"},
                     "geometry": {
                         "type": "MultiPolygon",
-                        "coordinates": [
-                            [[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]
-                        ],
+                        "coordinates": [[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]],
                     },
                     "coordinates": "[[[[-1.3, 2.5], [-1.7, 2.8], [-1.1, 4.1], [-1.3, 2.5]]]]",
                     "featureType": "MULTI_POLYGON",

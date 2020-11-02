@@ -12,8 +12,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="instance",
             name="export_id",
-            field=models.TextField(
-                blank=True, default=iaso.models.generate_id_for_dhis_2, null=True
-            ),
+            field=models.TextField(blank=True, default=iaso.models.generate_id_for_dhis_2, null=True),
         )
     ]

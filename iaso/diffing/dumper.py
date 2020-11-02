@@ -3,6 +3,7 @@ import json
 from iaso.management.commands.command_logger import CommandLogger
 import csv
 
+
 def color(status):
     if status == "modified":
         return CommandLogger.YELLOW
@@ -88,15 +89,13 @@ class Dumper:
             results = [diff.org_unit.source_ref, diff.status, diff.org_unit.org_unit_type.name if diff.org_unit else ""]
 
             for field in fields:
-                comparison = list(
-                    filter(lambda x: x.field == field, diff.comparisons)
-                )[0]
+                comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                 results.append(comparison.status)
                 results.append(str(comparison.before))
                 results.append(str(comparison.after))
 
             res.append(results)
-        with open(self.csv_file_name, 'w') as output_file:
+        with open(self.csv_file_name, "w") as output_file:
             writer = csv.writer(output_file)
             for row in res:
                 writer.writerow(row)
@@ -106,9 +105,7 @@ class Dumper:
         header = ["externalId", "name", "ou status"]
         fields = list(
             set(
-                list(
-                    filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields)
-                )
+                list(filter(lambda f: "modified" in stats["orgUnitsByField"][f], fields))
                 + list(filter(lambda f: "new" in stats["orgUnitsByField"][f], fields))
             )
         )
@@ -124,22 +121,14 @@ class Dumper:
                 results = [diff.org_unit.source_ref, diff.org_unit.name, diff.status]
 
                 for field in fields:
-                    comparison = list(
-                        filter(lambda x: x.field == field, diff.comparisons)
-                    )[0]
+                    comparison = list(filter(lambda x: x.field == field, diff.comparisons))[0]
                     if comparison.status == "same":
                         results.append("same")
                     else:
                         results.append(
                             self.iaso_logger.colorize(
-                                " vs ".join(
-                                    [str(comparison.before), str(comparison.after)]
-                                )
-                                + (
-                                    (" Dist : %.2f " % comparison.distance)
-                                    if comparison.distance
-                                    else ""
-                                ),
+                                " vs ".join([str(comparison.before), str(comparison.after)])
+                                + ((" Dist : %.2f " % comparison.distance) if comparison.distance else ""),
                                 color(comparison.status),
                             )
                         )
@@ -147,21 +136,10 @@ class Dumper:
                 display.append(results)
 
         for d in display:
-            message = "\t".join(
-                map(
-                    lambda s: self.iaso_logger.colorize(
-                        str(s).ljust(20, " "), color(s)
-                    ),
-                    d,
-                )
-            )
+            message = "\t".join(map(lambda s: self.iaso_logger.colorize(str(s).ljust(20, " "), color(s)), d))
             if d[2] == "new":
-                self.iaso_logger.info(
-                    self.iaso_logger.colorize(message, CommandLogger.GREEN)
-                )
+                self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.GREEN))
             elif d[2] == "modified":
-                self.iaso_logger.info(
-                    self.iaso_logger.colorize(message, CommandLogger.RED)
-                )
+                self.iaso_logger.info(self.iaso_logger.colorize(message, CommandLogger.RED))
             else:
                 self.iaso_logger.info(message)

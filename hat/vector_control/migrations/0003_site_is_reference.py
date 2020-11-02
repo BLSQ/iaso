@@ -5,14 +5,12 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0002_auto_20181207_1112'),
-    ]
+    dependencies = [("vector_control", "0002_auto_20181207_1112")]
 
     operations = [
         migrations.AddField(
-            model_name='site',
-            name='is_reference',
+            model_name="site",
+            name="is_reference",
             field=models.BooleanField(default=False),
-        ),
+        )
     ]

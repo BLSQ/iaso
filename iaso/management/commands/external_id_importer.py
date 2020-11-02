@@ -13,9 +13,7 @@ class Command(BaseCommand):
     def add_arguments(self, parser):
         parser.add_argument("csv_file", type=str, help="Path to the  csv file")
         parser.add_argument("id_column_name", type=str, help="id column name")
-        parser.add_argument(
-            "export_id_column_name", type=str, help="export id column name"
-        )
+        parser.add_argument("export_id_column_name", type=str, help="export id column name")
 
     def handle(self, *args, **options):
         file_name = options.get("csv_file")

@@ -9,18 +9,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.AlterField(
-            model_name="orgunit",
-            name="source_ref",
-            field=models.TextField(blank=True, db_index=True, null=True),
+            model_name="orgunit", name="source_ref", field=models.TextField(blank=True, db_index=True, null=True)
         ),
         migrations.AlterField(
-            model_name="orgunit",
-            name="uuid",
-            field=models.TextField(blank=True, db_index=True, null=True),
+            model_name="orgunit", name="uuid", field=models.TextField(blank=True, db_index=True, null=True)
         ),
         migrations.AlterField(
-            model_name="orgunit",
-            name="validated",
-            field=models.BooleanField(db_index=True, default=True),
+            model_name="orgunit", name="validated", field=models.BooleanField(db_index=True, default=True)
         ),
     ]

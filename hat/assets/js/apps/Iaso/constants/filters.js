@@ -1,5 +1,6 @@
 import React from 'react';
-
+import Icon from '@material-ui/core/Icon';
+import Tooltip from '@material-ui/core/Tooltip';
 import MESSAGES from '../domains/forms/messages';
 import FullStarsSvg from '../components/stars/FullStarsSvgComponent';
 import getDisplayName from '../utils/usersUtils';
@@ -22,18 +23,50 @@ export const status = (formatMessage, urlKey = 'validation_status') => ({
         {
             label: formatMessage(MESSAGES.all),
             value: 'all',
+            icon: (
+                <Tooltip title={formatMessage(MESSAGES.all)}>
+                    <Icon
+                        style={{ color: '#90caf9' }}
+                        className="fa fa-circle-o fa-lg"
+                    />
+                </Tooltip>
+            ),
         },
         {
             label: formatMessage(MESSAGES.new),
             value: 'NEW',
+            icon: (
+                <Tooltip title={formatMessage(MESSAGES.new)}>
+                    <Icon
+                        style={{ color: '#ffb74d' }}
+                        className="fa fa-asterisk fa-lg"
+                    />
+                </Tooltip>
+            ),
         },
         {
             label: formatMessage(MESSAGES.validated),
             value: 'VALID',
+            icon: (
+                <Tooltip title={formatMessage(MESSAGES.validated)}>
+                    <Icon
+                        style={{ color: '#4caf50' }}
+                        className="fa fa-check fa-lg"
+                    />
+                </Tooltip>
+            ),
         },
         {
             label: formatMessage(MESSAGES.rejected),
             value: 'REJECTED',
+            icon: (
+                <Tooltip title={formatMessage(MESSAGES.rejected)}>
+                    <Icon
+                        style={{ color: '#d32f2f' }}
+                        className="fa fa-ban fa-lg"
+                    />
+                </Tooltip>
+            ),
         },
     ],
     label: MESSAGES.status,

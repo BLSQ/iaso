@@ -5,14 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0053_auto_20200614_1556"),
-    ]
+    dependencies = [("iaso", "0053_auto_20200614_1556")]
 
     operations = [
         migrations.AddField(
-            model_name="exportstatus",
-            name="last_error_message",
-            field=models.TextField(blank=True, null=True),
-        ),
+            model_name="exportstatus", name="last_error_message", field=models.TextField(blank=True, null=True)
+        )
     ]

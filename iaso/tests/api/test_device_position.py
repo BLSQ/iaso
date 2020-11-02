@@ -11,9 +11,7 @@ class DevicesPositionAPITestCase(APITestCase):
     def setUpTestData(cls):
         star_wars = m.Account.objects.create(name="Star Wars")
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_forms"]
-        )
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_forms"])
 
         cls.project_1 = m.Project.objects.create(
             name="Hydroponic gardens",
@@ -47,20 +45,14 @@ class DevicesPositionAPITestCase(APITestCase):
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
-            },
+            }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}",
-            devices_position_body,
-            format="json",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidDevicePositionListData(
-            response.json(), 1, with_result_key=False
-        )
-        self.assertAPIImport(
-            "devicesposition", request_body=devices_position_body, has_problems=False
-        )
+        self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
+        self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
     @tag("iaso_only")
     def test_post_ok_no_auth_many(self):
@@ -79,17 +71,11 @@ class DevicesPositionAPITestCase(APITestCase):
             for i in range(50)
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}",
-            devices_position_body,
-            format="json",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidDevicePositionListData(
-            response.json(), 50, with_result_key=False
-        )
-        self.assertAPIImport(
-            "devicesposition", request_body=devices_position_body, has_problems=False
-        )
+        self.assertValidDevicePositionListData(response.json(), 50, with_result_key=False)
+        self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
 
     @tag("iaso_only")
     def test_post_ko_no_auth(self):
@@ -104,17 +90,13 @@ class DevicesPositionAPITestCase(APITestCase):
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
-            },
+            }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_2.app_id}",
-            devices_position_body,
-            format="json",
+            f"/api/devicesposition/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
-        self.assertDictEqual(
-            response.json(), {"res": "a problem happened, but your data was saved"}
-        )
+        self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})
         self.assertAPIImport(
             "devicesposition",
             request_body=devices_position_body,
@@ -133,18 +115,14 @@ class DevicesPositionAPITestCase(APITestCase):
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
-            },
+            }
         ]
         self.client.force_authenticate(self.yoda)
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_2.app_id}",
-            devices_position_body,
-            format="json",
+            f"/api/devicesposition/?app_id={self.project_2.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
-        self.assertValidDevicePositionListData(
-            response.json(), 1, with_result_key=False
-        )
+        self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
 
     @tag("iaso_only")
     def test_post_ko_invalid_device_id(self):
@@ -157,17 +135,13 @@ class DevicesPositionAPITestCase(APITestCase):
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
-            },
+            }
         ]
         response = self.client.post(
-            f"/api/devicesposition/?app_id={self.project_1.app_id}",
-            devices_position_body,
-            format="json",
+            f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
         self.assertJSONResponse(response, 201)
-        self.assertDictEqual(
-            response.json(), {"res": "a problem happened, but your data was saved"}
-        )
+        self.assertDictEqual(response.json(), {"res": "a problem happened, but your data was saved"})
         self.assertAPIImport(
             "devicesposition",
             request_body=devices_position_body,
@@ -176,22 +150,13 @@ class DevicesPositionAPITestCase(APITestCase):
         )
 
     def assertValidDevicePositionListData(
-        self,
-        list_data: typing.Mapping,
-        expected_length: int,
-        with_result_key=True,
-        paginated: bool = False,
+        self, list_data: typing.Mapping, expected_length: int, with_result_key=True, paginated: bool = False
     ):
         self.assertValidListData(
-            list_data=list_data,
-            expected_length=expected_length,
-            results_key=None,
-            paginated=paginated,
+            list_data=list_data, expected_length=expected_length, results_key=None, paginated=paginated
         )
 
-        device_positions = (
-            list_data["devicesposition"] if with_result_key else list_data
-        )
+        device_positions = list_data["devicesposition"] if with_result_key else list_data
 
         for form_data in device_positions:
             self.assertValidDevicePositionData(form_data)

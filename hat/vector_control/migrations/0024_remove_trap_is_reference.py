@@ -5,13 +5,6 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0023_trap_river'),
-    ]
+    dependencies = [("vector_control", "0023_trap_river")]
 
-    operations = [
-        migrations.RemoveField(
-            model_name='trap',
-            name='is_reference',
-        ),
-    ]
+    operations = [migrations.RemoveField(model_name="trap", name="is_reference")]

@@ -13,10 +13,7 @@ class Command(BaseCommand):
         parser.add_argument("--destination_source_name", type=str)
         parser.add_argument("--destination_version", type=int)
         parser.add_argument(
-            "-f",
-            "--force",
-            action="store_true",
-            help="Will proceed to delete destination version if it already exists",
+            "-f", "--force", action="store_true", help="Will proceed to delete destination version if it already exists"
         )
 
     def handle(self, *args, **options):
@@ -27,14 +24,10 @@ class Command(BaseCommand):
         force = options.get("force")
 
         source_source = DataSource.objects.get(name=source_source_name)
-        source_version = SourceVersion.objects.get(
-            number=source_version_number, data_source=source_source
-        )
+        source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)
         print("source_version", source_version)
 
-        destination_source, created = DataSource.objects.get_or_create(
-            name=destination_source_name
-        )
+        destination_source, created = DataSource.objects.get_or_create(name=destination_source_name)
         destination_version, created = SourceVersion.objects.get_or_create(
             number=destination_version_number, data_source=destination_source
         )

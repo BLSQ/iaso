@@ -7,24 +7,13 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0021_auto_20190815_2254"),
-    ]
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL), ("iaso", "0021_auto_20190815_2254")]
 
     operations = [
         migrations.CreateModel(
             name="MatchingAlgorithm",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.TextField()),
                 ("description", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -33,15 +22,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Link",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("validated", models.BooleanField(default=False)),
                 ("validation_date", models.DateTimeField(auto_now=True, null=True)),
                 ("similarity_score", models.SmallIntegerField(null=True)),
@@ -49,10 +30,7 @@ class Migration(migrations.Migration):
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "algorithm",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.MatchingAlgorithm",
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.MatchingAlgorithm"),
                 ),
                 (
                     "destination",
@@ -76,10 +54,7 @@ class Migration(migrations.Migration):
                 ),
                 (
                     "validator",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to=settings.AUTH_USER_MODEL,
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to=settings.AUTH_USER_MODEL),
                 ),
             ],
         ),

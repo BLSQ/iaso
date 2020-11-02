@@ -19,10 +19,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
     DELETE /api/algorithmsruns/<id>
     """
 
-    permission_classes = [
-        permissions.IsAuthenticated,
-        HasPermission("menupermissions.iaso_links"),
-    ]
+    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_links")]
 
     def list(self, request):
         limit = request.GET.get("limit", None)
@@ -38,9 +35,7 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
         queryset = AlgorithmRun.objects.all()
 
         profile = request.user.iaso_profile
-        sources = DataSource.objects.filter(
-            projects__account=profile.account
-        ).distinct()
+        sources = DataSource.objects.filter(projects__account=profile.account).distinct()
         queryset = queryset.filter(version_1__data_source__in=sources)
         queryset = queryset.filter(version_2__data_source__in=sources)
 
@@ -115,13 +110,9 @@ class AlgorithmsRunsViewSet(viewsets.ViewSet):
 
         algorithm = MatchingAlgorithm.objects.get(id=algo_id)
         source_1 = DataSource.objects.get(id=source_origin_id)
-        version_1 = SourceVersion.objects.get(
-            number=version_origin, data_source=source_1
-        )
+        version_1 = SourceVersion.objects.get(number=version_origin, data_source=source_1)
         source_2 = DataSource.objects.get(id=source_destination_id)
-        version_2 = SourceVersion.objects.get(
-            number=version_destination, data_source=source_2
-        )
+        version_2 = SourceVersion.objects.get(number=version_destination, data_source=source_2)
         algo_module = importlib.import_module(algorithm.name)
         algo = algo_module.Algorithm()
         algo.match(version_1, version_2, request.user)

@@ -20,9 +20,7 @@ class ExportRequestsAPITestCase(APITestCase):
         account.default_version = version
         account.save()
 
-        cls.project = m.Project(
-            name="Hyrule", app_id="magic.countries.hyrule.collect", account=account
-        )
+        cls.project = m.Project(name="Hyrule", app_id="magic.countries.hyrule.collect", account=account)
         cls.project.save()
 
         source.projects.add(cls.project)
@@ -39,12 +37,8 @@ class ExportRequestsAPITestCase(APITestCase):
         p.save()
         cls.user = user
 
-        cls.village_1 = m.OrgUnit.objects.create(
-            name="Akkala", org_unit_type=unit_type, version=version
-        )
-        cls.village_2 = m.OrgUnit.objects.create(
-            name="Kakariko", org_unit_type=unit_type, version=version
-        )
+        cls.village_1 = m.OrgUnit.objects.create(name="Akkala", org_unit_type=unit_type, version=version)
+        cls.village_2 = m.OrgUnit.objects.create(name="Kakariko", org_unit_type=unit_type, version=version)
         form = m.Form(name="Quantity FORM")
         form.period_type = "monthly"
         form.single_per_period = True
@@ -54,12 +48,8 @@ class ExportRequestsAPITestCase(APITestCase):
         form_version = m.FormVersion.objects.create(form=form, version_id=1)
         cls.form_version = form_version
 
-        mapping = m.Mapping.objects.create(
-            form=form, data_source=source, mapping_type="AGGREGATE"
-        )
-        m.MappingVersion.objects.create(
-            name="aggregate", form_version=form_version, mapping=mapping, json={}
-        )
+        mapping = m.Mapping.objects.create(form=form, data_source=source, mapping_type="AGGREGATE")
+        m.MappingVersion.objects.create(name="aggregate", form_version=form_version, mapping=mapping, json={})
 
     def build_instance(self, org_unit, instance_uuid, period):
 
@@ -72,9 +62,7 @@ class ExportRequestsAPITestCase(APITestCase):
         instance.period = period
         instance.form = self.form
         instance.project = self.project
-        instance.file = UploadedFile(
-            open("iaso/tests/fixtures/hydroponics_test_upload.xml")
-        )
+        instance.file = UploadedFile(open("iaso/tests/fixtures/hydroponics_test_upload.xml"))
         instance.json = {"question_1": "answer1", "_version": 1}
         instance.save()
         return instance
@@ -116,20 +104,10 @@ class ExportRequestsAPITestCase(APITestCase):
         self.assertEqual("application/json", response["Content-Type"])
         response_data = response.json()
 
-        self.assertEqual(
-            response_data["export_requests"][0]["stats"]["instance_count"], 1
-        )
-        self.assertEqual(
-            response_data["export_requests"][0]["params"]["filters"]["period_ids"],
-            "201903",
-        )
-        self.assertEqual(
-            response_data["export_requests"][1]["stats"]["instance_count"], 3
-        )
-        self.assertEqual(
-            response_data["export_requests"][1]["params"]["filters"]["period_ids"],
-            "201901,201902",
-        )
+        self.assertEqual(response_data["export_requests"][0]["stats"]["instance_count"], 1)
+        self.assertEqual(response_data["export_requests"][0]["params"]["filters"]["period_ids"], "201903")
+        self.assertEqual(response_data["export_requests"][1]["stats"]["instance_count"], 3)
+        self.assertEqual(response_data["export_requests"][1]["params"]["filters"]["period_ids"], "201901,201902")
 
     @tag("iaso_only")
     def test_exportrequests_create_works(self):
@@ -143,9 +121,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            f"/api/exportrequests/", data={"period_ids": "201901,201902"}
-        )
+        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "201901,201902"})
 
         self.assertEqual(201, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
@@ -155,9 +131,7 @@ class ExportRequestsAPITestCase(APITestCase):
         self.build_instance(self.village_1, self.uuid(1), "201901")
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            f"/api/exportrequests/", data={"period_ids": "204112"}
-        )
+        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "204112"})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])
@@ -172,9 +146,7 @@ class ExportRequestsAPITestCase(APITestCase):
 
         self.client.force_authenticate(self.user)
 
-        response = self.client.post(
-            f"/api/exportrequests/", data={"period_ids": "201901"}
-        )
+        response = self.client.post(f"/api/exportrequests/", data={"period_ids": "201901"})
 
         self.assertEqual(400, response.status_code)
         self.assertEqual("application/json", response["Content-Type"])

@@ -6,24 +6,35 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0010_auto_20181218_1457'),
-    ]
+    dependencies = [("vector_control", "0010_auto_20181218_1457")]
 
     operations = [
         migrations.AddField(
-            model_name='apiimport',
-            name='import_type',
-            field=models.TextField(blank=True, choices=[('site', 'Site'), ('catch', 'Catch')], max_length=25, null=True),
+            model_name="apiimport",
+            name="import_type",
+            field=models.TextField(
+                blank=True,
+                choices=[("site", "Site"), ("catch", "Catch")],
+                max_length=25,
+                null=True,
+            ),
         ),
         migrations.AddField(
-            model_name='catch',
-            name='api_import',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='vector_control.APIImport'),
+            model_name="catch",
+            name="api_import",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="vector_control.APIImport",
+            ),
         ),
         migrations.AddField(
-            model_name='site',
-            name='api_import',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='vector_control.APIImport'),
+            model_name="site",
+            name="api_import",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="vector_control.APIImport",
+            ),
         ),
     ]

@@ -13,9 +13,7 @@ class Migration(migrations.Migration):
             model_name="sourceversion",
             name="data_source",
             field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE,
-                related_name="versions",
-                to="iaso.DataSource",
+                on_delete=django.db.models.deletion.CASCADE, related_name="versions", to="iaso.DataSource"
             ),
         )
     ]

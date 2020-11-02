@@ -6,14 +6,12 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ("iaso", "0038_merge_20200317_1456"),
-    ]
+    dependencies = [("iaso", "0038_merge_20200317_1456")]
 
     operations = [
         migrations.AddField(
             model_name="formversion",
             name="form_descriptor",
             field=django.contrib.postgres.fields.jsonb.JSONField(blank=True, null=True),
-        ),
+        )
     ]

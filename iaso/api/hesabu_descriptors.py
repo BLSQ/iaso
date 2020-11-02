@@ -27,23 +27,12 @@ class HesabuDescriptorsViewSet(viewsets.ViewSet):
         credentials = data_source.credentials
 
         if not credentials:
-            return Response(
-                {"error": "no credentials configured"},
-                status=status.HTTP_501_NOT_IMPLEMENTED,
-            )
+            return Response({"error": "no credentials configured"}, status=status.HTTP_501_NOT_IMPLEMENTED)
 
-        return Response(
-            {
-                "hesabudescriptors": [
-                    load_fixture_response("fixtures/hesabu.dhis2.fbrcameroun.org.json")
-                ]
-            }
-        )
+        return Response({"hesabudescriptors": [load_fixture_response("fixtures/hesabu.dhis2.fbrcameroun.org.json")]})
 
 
 def load_fixture_response(filename):
-    with open(
-        os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8"
-    ) as f:
+    with open(os.path.join(os.path.dirname(__file__), filename), "r", encoding="utf-8") as f:
         document = json.load(f)
         return document

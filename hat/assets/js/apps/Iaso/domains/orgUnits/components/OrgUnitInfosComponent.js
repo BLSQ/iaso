@@ -101,6 +101,7 @@ const OrgUnitInfosComponent = ({
                     }
                 }}
                 params={params}
+                defaultVersion={params.orgUnitId === '0'}
                 baseUrl={baseUrl}
                 showCurrentOrgUnit={false}
                 currentOrgUnitId={orgUnit.id}

@@ -16,13 +16,9 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         source_1 = DataSource.objects.get(name=options["source_1"])
-        version_1 = SourceVersion.objects.get(
-            number=options["version_1"], data_source=source_1
-        )
+        version_1 = SourceVersion.objects.get(number=options["version_1"], data_source=source_1)
         source_2 = DataSource.objects.get(name=options["source_2"])
-        version_2 = SourceVersion.objects.get(
-            number=options["version_2"], data_source=source_2
-        )
+        version_2 = SourceVersion.objects.get(number=options["version_2"], data_source=source_2)
         algo_module = importlib.import_module("iaso.matching." + options["algo_name"])
         algo = algo_module.Algorithm()
         algo.match(version_1, version_2)

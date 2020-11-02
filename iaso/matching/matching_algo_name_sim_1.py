@@ -12,12 +12,7 @@ def remove_words(dest, words):
 class Algorithm:
     description = "Name and parent similarity"
 
-    words_to_strip = [
-        "aire de santé",
-        "poste de santé",
-        "centre de santé",
-        "centre de sante",
-    ]
+    words_to_strip = ["aire de santé", "poste de santé", "centre de santé", "centre de sante"]
 
     def normalize_name(self, name):
         return remove_words(name.strip().lower(), self.words_to_strip)
@@ -47,10 +42,7 @@ class Algorithm:
                     if normalized_name != normalized_alias:
                         self.add_item(names_1, item, normalized_alias)
 
-        names_2 = {
-            remove_words(item.name.strip().lower(), self.words_to_strip): item
-            for item in level_2
-        }
+        names_2 = {remove_words(item.name.strip().lower(), self.words_to_strip): item for item in level_2}
         for name_1 in names_1.keys():
             item_2 = names_2.get(name_1, None)
 
@@ -60,9 +52,9 @@ class Algorithm:
                 for item in items:
                     proceed = not item.parent
                     if not proceed:
-                        linked_to_parent = item.parent.source_set.filter(
-                            algorithm_run=run
-                        ).values_list("source_id", flat=True)
+                        linked_to_parent = item.parent.source_set.filter(algorithm_run=run).values_list(
+                            "source_id", flat=True
+                        )
                         if item_2.parent_id in linked_to_parent:
                             proceed = True
 
@@ -99,9 +91,7 @@ class Algorithm:
 
         index = 1
         children_1 = list(
-            OrgUnit.objects.filter(parent__in=parent_1).prefetch_related(
-                ("source_set__source__source_set__source")
-            )
+            OrgUnit.objects.filter(parent__in=parent_1).prefetch_related(("source_set__source__source_set__source"))
         )
         children_2 = list(OrgUnit.objects.filter(parent__in=parent_2))
         while children_1 and children_2:

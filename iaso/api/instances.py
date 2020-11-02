@@ -11,12 +11,7 @@ from time import gmtime, strftime
 import ntpath
 import json
 from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import (
-    Echo,
-    generate_xlsx,
-    iter_items,
-    timestamp_to_utc_datetime,
-)
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 from iaso.utils import timestamp_to_datetime
 from .common import safe_api_import
 from .instance_filters import parse_instance_filters
@@ -24,13 +19,14 @@ from hat.audit.models import log_modification, INSTANCE_API
 from rest_framework import serializers
 import iaso.periods as periods
 
+
 class InstanceSerializer(serializers.ModelSerializer):
     org_unit = serializers.PrimaryKeyRelatedField(queryset=OrgUnit.objects.all())
     period = serializers.CharField(max_length=6, allow_blank=True)
 
     class Meta:
         model = Instance
-        fields = ['org_unit', 'period', 'deleted']
+        fields = ["org_unit", "period", "deleted"]
 
     def validate_org_unit(self, value):
         """
@@ -38,7 +34,7 @@ class InstanceSerializer(serializers.ModelSerializer):
         """
         if value.org_unit_type in self.instance.form.org_unit_types.all():
             try:
-                return OrgUnit.objects.filter_for_user_and_app_id( self.context["request"].user, None).get(pk=value.pk)
+                return OrgUnit.objects.filter_for_user_and_app_id(self.context["request"].user, None).get(pk=value.pk)
             except OrgUnit.DoesNotExist:
                 pass  # that way, if the condition is false, the exception is raised as well
         raise serializers.ValidationError("Org unit type not assigned to this form or not accessible to this user")
@@ -58,9 +54,7 @@ class HasInstancePermission(permissions.BasePermission):
         if request.method == "POST":
             return True
 
-        return request.user.is_authenticated and request.user.has_perm(
-            "menupermissions.iaso_forms"
-        )
+        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
 
     def has_object_permission(self, request: Request, view, obj: Instance):
         # TODO: should not be necessary once the instances viewset uses a get_queryset that handle accounts
@@ -99,11 +93,7 @@ class InstancesViewSet(viewsets.ViewSet):
         profile = request.user.iaso_profile
         queryset = queryset.filter(project__account=profile.account)
 
-        queryset = (
-            queryset.exclude(file="")
-            .exclude(device__test_device=True)
-            .order_by(*orders)
-        )
+        queryset = queryset.exclude(file="").exclude(device__test_device=True).order_by(*orders)
 
         queryset = queryset.prefetch_related("org_unit")
         queryset = queryset.prefetch_related("org_unit__org_unit_type")
@@ -133,18 +123,14 @@ class InstancesViewSet(viewsets.ViewSet):
                 return Response(
                     [
                         instance.as_small_dict()
-                        for instance in queryset.filter(
-                            Q(location__isnull=False) | Q(instancefile_count__gt=0)
-                        )
+                        for instance in queryset.filter(Q(location__isnull=False) | Q(instancefile_count__gt=0))
                         .prefetch_related("instancefile_set")
                         .prefetch_related("device")
                         .defer("json")
                     ]
                 )
             else:
-                return Response(
-                    {"instances": [instance.as_dict() for instance in queryset]}
-                )
+                return Response({"instances": [instance.as_dict() for instance in queryset]})
         else:
             columns = [
                 {"title": "ID du formulaire", "width": 20},
@@ -175,17 +161,13 @@ class InstancesViewSet(viewsets.ViewSet):
             if form and form.latest_version:
                 file_content_template = questions_by_name
                 for title in file_content_template:
-                    sub_columns.append(
-                        file_content_template.get(title, {}).get("label", "")
-                    )
+                    sub_columns.append(file_content_template.get(title, {}).get("label", ""))
                     columns.append({"title": title, "width": 50})
             else:
                 file_content_template = queryset.first().as_dict()["file_content"]
                 for title in file_content_template:
                     columns.append({"title": title, "width": 50})
-                    sub_columns.append(
-                        questions_by_name.get(title, {}).get("label", "")
-                    )
+                    sub_columns.append(questions_by_name.get(title, {}).get("label", ""))
             filename = "%s-%s" % (filename, strftime("%Y-%m-%d-%H-%M", gmtime()))
 
             def get_row(instance, **kwargs):
@@ -223,32 +205,21 @@ class InstancesViewSet(viewsets.ViewSet):
                         instance_values.append(v)
                 return instance_values
 
-            queryset.prefetch_related(
-                "org_unit__parent__parent__parent__parent"
-            ).prefetch_related("org_unit__parent__parent__parent").prefetch_related(
-                "org_unit__parent__parent"
-            ).prefetch_related(
-                "org_unit__parent"
-            ).prefetch_related(
+            queryset.prefetch_related("org_unit__parent__parent__parent__parent").prefetch_related(
+                "org_unit__parent__parent__parent"
+            ).prefetch_related("org_unit__parent__parent").prefetch_related("org_unit__parent").prefetch_related(
                 "org_unit"
             )
 
             if xlsx_format:
                 filename = filename + ".xlsx"
                 response = HttpResponse(
-                    generate_xlsx(
-                        "Forms",
-                        columns,
-                        queryset_iterator(queryset, 100),
-                        get_row,
-                        sub_columns,
-                    ),
+                    generate_xlsx("Forms", columns, queryset_iterator(queryset, 100), get_row, sub_columns),
                     content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                    content_type="text/csv",
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -276,7 +247,9 @@ class InstancesViewSet(viewsets.ViewSet):
         original = get_object_or_404(Instance.objects.with_status(), pk=pk)
         instance = get_object_or_404(Instance.objects.with_status(), pk=pk)
         self.check_object_permissions(request, instance)
-        instance_serializer = InstanceSerializer(instance, data=request.data, partial=True, context={"request": self.request})
+        instance_serializer = InstanceSerializer(
+            instance, data=request.data, partial=True, context={"request": self.request}
+        )
         instance_serializer.is_valid(raise_exception=True)
         instance_serializer.save()
 
@@ -315,17 +288,11 @@ def import_data(instances, user, app_id):
         instance.form_id = instance_data.get("formId")
 
         created_at_ts = instance_data.get("created_at", None)
-        instance.created_at = (
-            timestamp_to_utc_datetime(int(created_at_ts))
-            if created_at_ts is not None
-            else None
-        )
+        instance.created_at = timestamp_to_utc_datetime(int(created_at_ts)) if created_at_ts is not None else None
 
         updated_at_ts = instance_data.get("updated_at", None)
         instance.updated_at = (
-            timestamp_to_utc_datetime(int(updated_at_ts))
-            if updated_at_ts is not None
-            else instance.created_at
+            timestamp_to_utc_datetime(int(updated_at_ts)) if updated_at_ts is not None else instance.created_at
         )
 
         latitude = instance_data.get("latitude", None)

@@ -7,14 +7,7 @@ from django.utils.translation import gettext as _
 import re
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
-from iaso.models import (
-    OrgUnit,
-    OrgUnitType,
-    Instance,
-    Group,
-    Project,
-    BulkOperation,
-    SourceVersion)
+from iaso.models import OrgUnit, OrgUnitType, Instance, Group, Project, BulkOperation, SourceVersion
 from django.contrib.gis.geos import Point
 from django.db import connection
 
@@ -27,12 +20,7 @@ from copy import deepcopy
 from hat.audit import models as audit_models
 from time import gmtime, strftime
 from django.http import StreamingHttpResponse, HttpResponse
-from hat.api.export_utils import (
-    Echo,
-    generate_xlsx,
-    iter_items,
-    timestamp_to_utc_datetime,
-)
+from hat.api.export_utils import Echo, generate_xlsx, iter_items, timestamp_to_utc_datetime
 import json
 from django.db.models import Value, IntegerField
 
@@ -72,9 +60,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     permission_classes = [HasOrgUnitPermission]
 
     def get_queryset(self):
-        return OrgUnit.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
-        )
+        return OrgUnit.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
 
     def list(self, request):
         queryset = self.get_queryset()
@@ -97,30 +83,29 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset.prefetch_related("group_set")
 
         if as_location:
-            queryset = queryset.filter(
-                Q(location__isnull=False)
-                | Q(simplified_geom__isnull=False)
-            )
+            queryset = queryset.filter(Q(location__isnull=False) | Q(simplified_geom__isnull=False))
 
         searches = request.GET.get("searches", None)
         counts = []
+        if not request.user.is_anonymous:
+            profile = request.user.iaso_profile
+        else:
+            profile = None
         if searches:
             search_index = 0
             base_queryset = queryset
             for search in json.loads(searches):
-                additional_queryset = build_org_units_queryset(
-                    base_queryset, search
-                ).annotate(search_index=Value(search_index, IntegerField()))
+                additional_queryset = build_org_units_queryset(base_queryset, search, profile).annotate(
+                    search_index=Value(search_index, IntegerField())
+                )
                 if search_index == 0:
                     queryset = additional_queryset
                 else:
                     queryset = queryset.union(additional_queryset)
-                counts.append(
-                    {"index": search_index, "count": additional_queryset.count()}
-                )
+                counts.append({"index": search_index, "count": additional_queryset.count()})
                 search_index += 1
         else:
-            queryset = build_org_units_queryset(queryset, request.GET)
+            queryset = build_org_units_queryset(queryset, request.GET, profile)
 
         queryset = queryset.order_by(*order)
 
@@ -155,12 +140,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_dict()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(
-                            id=temp_org_unit["id"]
-                        )
-                        temp_org_unit["geo_json"] = geojson_queryset(
-                            shape_queryset, geometry_field="simplified_geom"
-                        )
+                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
+                        temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response({"orgUnits": org_units})
             elif as_location:
@@ -172,19 +153,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     temp_org_unit = unit.as_location()
                     temp_org_unit["geo_json"] = None
                     if temp_org_unit["has_geo_json"] == True:
-                        shape_queryset = self.get_queryset().filter(
-                            id=temp_org_unit["id"]
-                        )
-                        temp_org_unit["geo_json"] = geojson_queryset(
-                            shape_queryset, geometry_field="simplified_geom"
-                        )
+                        shape_queryset = self.get_queryset().filter(id=temp_org_unit["id"])
+                        temp_org_unit["geo_json"] = geojson_queryset(shape_queryset, geometry_field="simplified_geom")
                     org_units.append(temp_org_unit)
                 return Response(org_units)
             else:
                 queryset = queryset.select_related("org_unit_type")
-                return Response(
-                    {"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]}
-                )
+                return Response({"orgUnits": [unit.as_dict_for_mobile() for unit in queryset]})
         elif gpkg_format:
             return self.list_to_gpkg(queryset)
         else:
@@ -209,9 +184,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 {"title": "Ref Ext parent 4", "width": 20},
             ]
             parent_field_names = ["parent__" * i + "name" for i in range(1, 5)]
-            parent_field_names.extend(
-                ["parent__" * i + "source_ref" for i in range(1, 5)]
-            )
+            parent_field_names.extend(["parent__" * i + "source_ref" for i in range(1, 5)])
             queryset = queryset.values(
                 "id",
                 "name",
@@ -245,13 +218,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 ]
                 return org_unit_values
 
-            queryset.prefetch_related(
-                "parent__parent__parent__parent"
-            ).prefetch_related("parent__parent__parent").prefetch_related(
-                "parent__parent"
-            ).prefetch_related(
-                "parent"
-            )
+            queryset.prefetch_related("parent__parent__parent__parent").prefetch_related(
+                "parent__parent__parent"
+            ).prefetch_related("parent__parent").prefetch_related("parent")
 
             if xlsx_format:
                 filename = filename + ".xlsx"
@@ -261,8 +230,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 )
             if csv_format:
                 response = StreamingHttpResponse(
-                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)),
-                    content_type="text/csv",
+                    streaming_content=(iter_items(queryset, Echo(), columns, get_row)), content_type="text/csv"
                 )
                 filename = filename + ".csv"
             response["Content-Disposition"] = "attachment; filename=%s" % filename
@@ -271,9 +239,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def list_to_gpkg(self, queryset):
         queryset = queryset.prefetch_related("parent", "org_unit_type")
 
-        response = HttpResponse(
-            org_units_to_gpkg(queryset), content_type="application/octet-stream",
-        )
+        response = HttpResponse(org_units_to_gpkg(queryset), content_type="application/octet-stream")
         filename = f"org_units-{timezone.now().strftime('%Y-%m-%d-%H-%M')}.gpkg"
         response["Content-Disposition"] = f"attachment; filename={filename}"
 
@@ -308,20 +274,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
         groups = request.data.get("groups")
 
         if False:  # simplified geom shape editing is currently disabled
-            if (
-                geo_json
-                and geo_json["features"][0]["geometry"]
-                and geo_json["features"][0]["geometry"]["coordinates"]
-            ):
+            if geo_json and geo_json["features"][0]["geometry"] and geo_json["features"][0]["geometry"]["coordinates"]:
                 if len(geo_json["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.simplified_geom = Polygon(
-                        geo_json["features"][0]["geometry"]["coordinates"][0]
-                    )
+                    org_unit.simplified_geom = Polygon(geo_json["features"][0]["geometry"]["coordinates"][0])
                 else:
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response(
-                        "Only one polygon should be saved in the geo_json shape",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        "Only one polygon should be saved in the geo_json shape", status=status.HTTP_400_BAD_REQUEST
                     )
             elif simplified_geom:
                 org_unit.simplified_geom = simplified_geom
@@ -335,14 +294,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
                 and catchment["features"][0]["geometry"]["coordinates"]
             ):
                 if len(catchment["features"][0]["geometry"]["coordinates"]) == 1:
-                    org_unit.catchment = Polygon(
-                        catchment["features"][0]["geometry"]["coordinates"][0]
-                    )
+                    org_unit.catchment = Polygon(catchment["features"][0]["geometry"]["coordinates"][0])
                 else:
                     # DB has a single Polygon, refuse if we have more, or less.
                     return Response(
-                        "Only one polygon should be saved in the catchment shape",
-                        status=status.HTTP_400_BAD_REQUEST,
+                        "Only one polygon should be saved in the catchment shape", status=status.HTTP_400_BAD_REQUEST
                     )
             else:
                 org_unit.catchment = None
@@ -354,9 +310,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             # TODO: remove this mess once the frontend handles altitude edition
             if "altitude" in request.data:  # provided explicitly
                 altitude = request.data["altitude"]
-            elif (
-                org_unit.location is not None
-            ):  # not provided but we have a current location: keep altitude
+            elif org_unit.location is not None:  # not provided but we have a current location: keep altitude
                 altitude = org_unit.location.z
             else:  # no location yet, no altitude provided, set to 0
                 altitude = 0
@@ -383,9 +337,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             temp_group = get_object_or_404(Group, id=group)
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
-        audit_models.log_modification(
-            original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
-        )
+        audit_models.log_modification(original_copy, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
         if not errors:
             org_unit.save()
 
@@ -395,26 +347,15 @@ class OrgUnitViewSet(viewsets.ViewSet):
             if org_unit.simplified_geom or org_unit.catchment:
                 queryset = self.get_queryset().filter(id=org_unit.id)
                 if org_unit.simplified_geom:
-                    res["geo_json"] = geojson_queryset(
-                        queryset, geometry_field="simplified_geom"
-                    )
+                    res["geo_json"] = geojson_queryset(queryset, geometry_field="simplified_geom")
                 if org_unit.catchment:
-                    res["catchment"] = geojson_queryset(
-                        queryset, geometry_field="catchment"
-                    )
+                    res["catchment"] = geojson_queryset(queryset, geometry_field="catchment")
 
             return Response(res)
         else:
-            return Response(
-                errors,
-                status=400,
-            )
+            return Response(errors, status=400)
 
-    @action(
-        detail=False,
-        methods=["POST"],
-        permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission],
-    )
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def create_org_unit(self, request):
         errors = []
         org_unit = OrgUnit()
@@ -425,11 +366,24 @@ class OrgUnitViewSet(viewsets.ViewSet):
         name = request.data.get("name", None)
         version_id = request.data.get("version_id", None)
         if version_id:
-            authorized_ids = list(SourceVersion.objects.filter(data_source__projects__account=profile.account).values_list('id', flat=True))
+            authorized_ids = list(
+                SourceVersion.objects.filter(data_source__projects__account=profile.account).values_list(
+                    "id", flat=True
+                )
+            )
             if version_id in authorized_ids:
                 org_unit.version_id = version_id
             else:
-                errors.append({"errorKey": "version_id", "errorMessage": _("Unauthorized version id") + ": " + str(version_id) + " | authorized ones are " + str(authorized_ids)})
+                errors.append(
+                    {
+                        "errorKey": "version_id",
+                        "errorMessage": _("Unauthorized version id")
+                        + ": "
+                        + str(version_id)
+                        + " | authorized ones are "
+                        + str(authorized_ids),
+                    }
+                )
         else:
             org_unit.version = profile.account.default_version
 
@@ -451,7 +405,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         org_unit_type_id = request.data.get("org_unit_type_id", None)
         parent_id = request.data.get("parent_id", None)
-        groups = request.data.get("groups",[])
+        groups = request.data.get("groups", [])
 
         org_unit.aliases = request.data.get("aliases", [])
 
@@ -460,7 +414,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             try:
                 g = GEOSGeometry(json.dumps(geom))
                 org_unit.geom = g
-                org_unit.simplified_geom = g #maybe think of a standard simplification here?
+                org_unit.simplified_geom = g  # maybe think of a standard simplification here?
             except Exception as e:
                 errors.append({"errorKey": "geom", "errorMessage": _("Can't parse geom")})
 
@@ -482,10 +436,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if not errors:
             org_unit.save()
         else:
-            return Response(
-                errors,
-                status=400,
-            )
+            return Response(errors, status=400)
         org_unit_type = get_object_or_404(OrgUnitType, id=org_unit_type_id)
         org_unit.org_unit_type = org_unit_type
 
@@ -495,9 +446,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
             new_groups.append(temp_group)
         org_unit.groups.set(new_groups)
 
-        audit_models.log_modification(
-            None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user
-        )
+        audit_models.log_modification(None, org_unit, source=audit_models.ORG_UNIT_API, user=request.user)
         org_unit.save()
 
         res = org_unit.as_dict_with_parents()
@@ -505,9 +454,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(
-            request.data, request.user, request.query_params.get("app_id")
-        )
+        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
         return Response([org_unit.as_dict() for org_unit in new_org_units])
 
     def retrieve(self, request, pk=None):
@@ -519,20 +466,12 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if org_unit.simplified_geom or org_unit.catchment:
             geo_queryset = self.get_queryset().filter(id=org_unit.id)
             if org_unit.simplified_geom:
-                res["geo_json"] = geojson_queryset(
-                    geo_queryset, geometry_field="simplified_geom"
-                )
+                res["geo_json"] = geojson_queryset(geo_queryset, geometry_field="simplified_geom")
             if org_unit.catchment:
-                res["catchment"] = geojson_queryset(
-                    geo_queryset, geometry_field="catchment"
-                )
+                res["catchment"] = geojson_queryset(geo_queryset, geometry_field="catchment")
         return Response(res)
 
-    @action(
-        detail=False,
-        methods=["POST"],
-        permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission],
-    )
+    @action(detail=False, methods=["POST"], permission_classes=[permissions.IsAuthenticated, HasOrgUnitPermission])
     def bulkupdate(self, request):
         select_all = request.data.get("select_all", None)
         validation_status = request.data.get("validation_status", None)
@@ -552,8 +491,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             queryset = queryset.exclude(pk__in=unselected_ids)
             search_index = 0
             base_queryset = queryset
+            profile = request.user.iaso_profile
             for search in searches:
-                additional_queryset = build_org_units_queryset(base_queryset, search)
+                additional_queryset = build_org_units_queryset(base_queryset, search, profile)
                 if search_index == 0:
                     queryset = additional_queryset
                 else:
@@ -644,7 +584,7 @@ def import_data(org_units, user, app_id):
     return new_org_units
 
 
-def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_queryset()
+def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewset.get_queryset()
     validation_status = params.get("validation_status", OrgUnit.VALIDATION_VALID)
     has_instances = params.get("hasInstances", None)
     search = params.get("search", None)
@@ -657,6 +597,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     source = params.get("source", None)
     group = params.get("group", None)
     version = params.get("version", None)
+    default_version = params.get("defaultVersion", None)
 
     org_unit_parent_id = params.get("orgUnitParentId", None)
 
@@ -672,7 +613,7 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         if search.startswith("ids:"):
             s = search.replace("ids:", "")
             try:
-                ids = re.findall('[A-Za-z0-9_-]+', s)
+                ids = re.findall("[A-Za-z0-9_-]+", s)
                 queryset = queryset.filter(id__in=ids)
             except:
                 queryset = queryset.filter(id__in=[])
@@ -680,15 +621,13 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         elif search.startswith("refs:"):
             s = search.replace("refs:", "")
             try:
-                refs = re.findall('[A-Za-z0-9_-]+', s)
+                refs = re.findall("[A-Za-z0-9_-]+", s)
                 queryset = queryset.filter(source_ref__in=refs)
             except:
                 queryset = queryset.filter(source_ref__in=[])
                 print("Failed parsing refs in search", search)
         else:
-            queryset = queryset.filter(
-                Q(name__icontains=search) | Q(aliases__contains=[search])
-            )
+            queryset = queryset.filter(Q(name__icontains=search) | Q(aliases__contains=[search]))
 
     if group:
         queryset = queryset.filter(groups__in=group.split(","))
@@ -699,10 +638,16 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
     if version:
         queryset = queryset.filter(version=version)
 
+    if default_version == "true" and profile is not None:
+        queryset = queryset.filter(version=profile.account.default_version)
+
     if has_instances is not None:
-        ids_with_instances = Instance.objects.filter(
-            org_unit__isnull=False
-        ).exclude(file="").exclude(deleted=True).values_list("org_unit_id", flat=True)
+        ids_with_instances = (
+            Instance.objects.filter(org_unit__isnull=False)
+            .exclude(file="")
+            .exclude(deleted=True)
+            .values_list("org_unit_id", flat=True)
+        )
 
         if has_instances == "true":
             queryset = queryset.filter(id__in=ids_with_instances)
@@ -719,14 +664,10 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         queryset = queryset.filter(simplified_geom__isnull=True)
 
     if with_location == "true":
-        queryset = queryset.filter(
-            Q(location__isnull=False)
-        )
+        queryset = queryset.filter(Q(location__isnull=False))
 
     if with_location == "false":
-        queryset = queryset.filter(
-            Q(location__isnull=True)
-        )
+        queryset = queryset.filter(Q(location__isnull=True))
 
     if parent_id:
         if parent_id == "0":
@@ -739,13 +680,9 @@ def build_org_units_queryset(queryset, params):  # TODO: move in viewset.get_que
         queryset = queryset.hierarchy(parent)
 
     if linked_to:
-        queryset = queryset.filter(
-            destination_set__destination_id=linked_to
-        )
+        queryset = queryset.filter(destination_set__destination_id=linked_to)
         if link_validated != "all":
-            queryset = queryset.filter(
-                destination_set__validated=link_validated
-            )
+            queryset = queryset.filter(destination_set__validated=link_validated)
 
         if link_source:
             queryset = queryset.filter(version__data_source_id=link_source)

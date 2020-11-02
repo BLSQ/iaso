@@ -5,14 +5,10 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0010_auto_20191011_1433'),
-    ]
+    dependencies = [("iaso", "0010_auto_20191011_1433")]
 
     operations = [
         migrations.AddField(
-            model_name='orgunittype',
-            name='depth',
-            field=models.PositiveSmallIntegerField(blank=True, null=True),
-        ),
+            model_name="orgunittype", name="depth", field=models.PositiveSmallIntegerField(blank=True, null=True)
+        )
     ]

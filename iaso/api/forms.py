@@ -17,9 +17,7 @@ class HasFormPermission(permissions.BasePermission):
         if request.method in permissions.SAFE_METHODS:
             return True
 
-        return request.user.is_authenticated and request.user.has_perm(
-            "menupermissions.iaso_forms"
-        )
+        return request.user.is_authenticated and request.user.has_perm("menupermissions.iaso_forms")
 
 
 class FormSerializer(serializers.ModelSerializer):
@@ -59,23 +57,13 @@ class FormSerializer(serializers.ModelSerializer):
 
     org_unit_types = serializers.SerializerMethodField()
     org_unit_type_ids = serializers.PrimaryKeyRelatedField(
-        source="org_unit_types",
-        write_only=True,
-        many=True,
-        allow_empty=True,
-        queryset=OrgUnitType.objects.all(),
+        source="org_unit_types", write_only=True, many=True, allow_empty=True, queryset=OrgUnitType.objects.all()
     )
     projects = ProjectSerializer(read_only=True, many=True)
     project_ids = serializers.PrimaryKeyRelatedField(
-        source="projects",
-        write_only=True,
-        many=True,
-        allow_empty=False,
-        queryset=Project.objects.all(),
+        source="projects", write_only=True, many=True, allow_empty=False, queryset=Project.objects.all()
     )
-    latest_form_version = (
-        serializers.SerializerMethodField()
-    )  # TODO: use FormSerializer
+    latest_form_version = serializers.SerializerMethodField()  # TODO: use FormSerializer
     instances_count = serializers.IntegerField(read_only=True)
     instance_updated_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
@@ -93,18 +81,12 @@ class FormSerializer(serializers.ModelSerializer):
         # validate projects (access check)
         for project in data["projects"]:
             if self.context["request"].user.iaso_profile.account != project.account:
-                raise serializers.ValidationError(
-                    {"project_ids": "Invalid project ids"}
-                )
+                raise serializers.ValidationError({"project_ids": "Invalid project ids"})
 
         # validate org_unit_types against projects
-        allowed_org_unit_types = [
-            ut for p in data["projects"] for ut in p.unit_types.all()
-        ]
+        allowed_org_unit_types = [ut for p in data["projects"] for ut in p.unit_types.all()]
         if len(set(data["org_unit_types"]) - set(allowed_org_unit_types)) > 0:
-            raise serializers.ValidationError(
-                {"org_unit_type_ids": "Invalid org unit type ids"}
-            )
+            raise serializers.ValidationError({"org_unit_type_ids": "Invalid org unit type ids"})
 
         # If the period type is None, some period-specific fields must have specific values
         if data["period_type"] is None:
@@ -151,9 +133,7 @@ class FormsViewSet(ModelViewSet):
     EXPORT_ADDITIONAL_SERIALIZER_FIELDS = ("instance_updated_at", "instances_count")
 
     def get_queryset(self):
-        queryset = Form.objects.filter_for_user_and_app_id(
-            self.request.user, self.request.query_params.get("app_id")
-        )
+        queryset = Form.objects.filter_for_user_and_app_id(self.request.user, self.request.query_params.get("app_id"))
         org_unit_id = self.request.query_params.get("orgUnitId", None)
         if org_unit_id:
             queryset = queryset.filter(instances__org_unit__id=org_unit_id)
@@ -162,20 +142,14 @@ class FormsViewSet(ModelViewSet):
         queryset = queryset.annotate(
             instances_count=Count(
                 "instances",
-                filter=(
-                    ~Q(instances__file="")
-                    & ~Q(instances__device__test_device=True)
-                    & ~Q(instances__deleted=True)
-                ),
+                filter=(~Q(instances__file="") & ~Q(instances__device__test_device=True) & ~Q(instances__deleted=True)),
             )
         )
 
         from_date = self.request.query_params.get("date_from", None)
         if from_date:
             queryset = queryset.filter(
-                Q(instance_updated_at__gte=from_date)
-                | Q(created_at__gte=from_date)
-                | Q(updated_at__gte=from_date)
+                Q(instance_updated_at__gte=from_date) | Q(created_at__gte=from_date) | Q(updated_at__gte=from_date)
             )
         to_date = self.request.query_params.get("date_to", None)
         if to_date:
@@ -189,7 +163,6 @@ class FormsViewSet(ModelViewSet):
         org_unit_type_id = self.request.query_params.get("orgUnitTypeId", None)
         if org_unit_type_id:
             queryset = queryset.filter(org_unit_types__id=org_unit_type_id)
-
 
         # TODO: allow this only from a predefined list for security purposes
         order = self.request.query_params.get("order", "instance_updated_at").split(",")
@@ -213,35 +186,19 @@ class FormsViewSet(ModelViewSet):
 
     def list_to_csv(self):
         response = StreamingHttpResponse(
-            streaming_content=(
-                iter_items(
-                    self.get_queryset(),
-                    Echo(),
-                    self.EXPORT_TABLE_COLUMNS,
-                    self._get_table_row,
-                )
-            ),
+            streaming_content=(iter_items(self.get_queryset(), Echo(), self.EXPORT_TABLE_COLUMNS, self._get_table_row)),
             content_type="text/csv",
         )
-        response[
-            "Content-Disposition"
-        ] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
+        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.csv"
 
         return response
 
     def list_to_xlsx(self):
         response = HttpResponse(
-            generate_xlsx(
-                "Forms",
-                self.EXPORT_TABLE_COLUMNS,
-                self.get_queryset(),
-                self._get_table_row,
-            ),
+            generate_xlsx("Forms", self.EXPORT_TABLE_COLUMNS, self.get_queryset(), self._get_table_row),
             content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         )
-        response[
-            "Content-Disposition"
-        ] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
+        response["Content-Disposition"] = f"attachment; filename={self.EXPORT_FILE_NAME}.xlsx"
 
         return response
 
@@ -253,9 +210,7 @@ class FormsViewSet(ModelViewSet):
             if form_data.get("instance_updated_at")
             else "2019-01-01 00:00:00"
         )
-        org_unit_types = ", ".join(
-            [o["name"] for o in form_data.get("org_unit_types") if o is not None]
-        )
+        org_unit_types = ", ".join([o["name"] for o in form_data.get("org_unit_types") if o is not None])
         return [
             form_data.get("form_id"),
             form_data.get("name"),

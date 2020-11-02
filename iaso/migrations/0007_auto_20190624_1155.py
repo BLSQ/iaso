@@ -11,8 +11,6 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name="orgunittype",
             name="sub_unit_types",
-            field=models.ManyToManyField(
-                related_name="super_types", to="iaso.OrgUnitType"
-            ),
+            field=models.ManyToManyField(related_name="super_types", to="iaso.OrgUnitType"),
         )
     ]

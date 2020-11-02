@@ -10,19 +10,12 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RemoveField(model_name="instancefile", name="device"),
-        migrations.AddField(
-            model_name="device",
-            name="test_device",
-            field=models.BooleanField(default=False),
-        ),
+        migrations.AddField(model_name="device", name="test_device", field=models.BooleanField(default=False)),
         migrations.AddField(
             model_name="instance",
             name="device",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.DO_NOTHING,
-                to="iaso.Device",
+                blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, to="iaso.Device"
             ),
         ),
     ]

@@ -10,8 +10,6 @@ class Migration(migrations.Migration):
     operations = [
         migrations.RemoveField(model_name="form", name="org_unit_type"),
         migrations.AddField(
-            model_name="form",
-            name="org_unit_types",
-            field=models.ManyToManyField(blank=True, to="iaso.OrgUnitType"),
+            model_name="form", name="org_unit_types", field=models.ManyToManyField(blank=True, to="iaso.OrgUnitType")
         ),
     ]

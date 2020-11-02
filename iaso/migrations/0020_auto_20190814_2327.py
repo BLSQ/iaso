@@ -8,19 +8,9 @@ class Migration(migrations.Migration):
     dependencies = [("iaso", "0019_instancefile_device")]
 
     operations = [
+        migrations.AddField(model_name="form", name="device_field", field=models.TextField(blank=True, null=True)),
+        migrations.AddField(model_name="form", name="location_field", field=models.TextField(blank=True, null=True)),
         migrations.AddField(
-            model_name="form",
-            name="device_field",
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="form",
-            name="location_field",
-            field=models.TextField(blank=True, null=True),
-        ),
-        migrations.AddField(
-            model_name="instance",
-            name="accuracy",
-            field=models.DecimalField(decimal_places=2, max_digits=7, null=True),
+            model_name="instance", name="accuracy", field=models.DecimalField(decimal_places=2, max_digits=7, null=True)
         ),
     ]

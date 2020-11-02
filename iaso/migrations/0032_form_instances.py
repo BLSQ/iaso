@@ -6,14 +6,18 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0031_auto_20200121_1327'),
-    ]
+    dependencies = [("iaso", "0031_auto_20200121_1327")]
 
     operations = [
         migrations.AlterField(
-            model_name='instance',
-            name='form',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.DO_NOTHING, related_name='instances', to='iaso.Form'),
-        ),
+            model_name="instance",
+            name="form",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                related_name="instances",
+                to="iaso.Form",
+            ),
+        )
     ]

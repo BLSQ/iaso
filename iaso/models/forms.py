@@ -21,22 +21,14 @@ class FormQuerySet(models.QuerySet):
         - linked to a project from the same accounts as the provided form
         """
 
-        all_accounts = set(
-            project.account for project in form.projects.all()
-        )  # TODO: discuss - smells weird
+        all_accounts = set(project.account for project in form.projects.all())  # TODO: discuss - smells weird
         for account in all_accounts:
-            if (
-                self.filter(projects__account=account, form_id=form_id)
-                .exclude(pk=form.id)
-                .exists()
-            ):
+            if self.filter(projects__account=account, form_id=form_id).exclude(pk=form.id).exists():
                 return True
 
         return False
 
-    def filter_for_user_and_app_id(
-        self, user: typing.Union[User, AnonymousUser], app_id: str
-    ):
+    def filter_for_user_and_app_id(self, user: typing.Union[User, AnonymousUser], app_id: str):
         if user.is_anonymous and app_id is None:
             return self.none()
 
@@ -49,9 +41,7 @@ class FormQuerySet(models.QuerySet):
             try:
                 project = Project.objects.get_for_user_and_app_id(user, app_id)
                 queryset = queryset.filter(projects__in=[project])
-                queryset = queryset.exclude(
-                    derived=True
-                )  # do not include derived instances for the mobile app
+                queryset = queryset.exclude(derived=True)  # do not include derived instances for the mobile app
             except Project.DoesNotExist:
                 return self.none()
 
@@ -109,11 +99,7 @@ class Form(models.Model):
         }
 
         if show_version:
-            res["latest_form_version"] = (
-                self.latest_version.as_dict()
-                if self.latest_version is not None
-                else None
-            )
+            res["latest_form_version"] = self.latest_version.as_dict() if self.latest_version is not None else None
         if additional_fields:
             for field in additional_fields:
                 if hasattr(self, field):
@@ -138,20 +124,14 @@ class FormVersionQuerySet(models.QuerySet):
 
 
 class FormVersionManager(models.Manager):
-    def create_for_form_and_survey(
-        self, *, form: "Form", survey: parsing.Survey, **kwargs
-    ):
+    def create_for_form_and_survey(self, *, form: "Form", survey: parsing.Survey, **kwargs):
         with transaction.atomic():
             latest_version = self.latest_version(form)
 
             form_version = super().create(
                 **kwargs,
                 form=form,
-                file=SimpleUploadedFile(
-                    survey.generate_file_name("xml"),
-                    survey.to_xml(),
-                    content_type="text/xml",
-                ),
+                file=SimpleUploadedFile(survey.generate_file_name("xml"), survey.to_xml(), content_type="text/xml"),
                 version_id=survey.version,
                 form_descriptor=survey.to_json(),
             )
@@ -165,14 +145,10 @@ class FormVersionManager(models.Manager):
 
 
 class FormVersion(models.Model):
-    form = models.ForeignKey(
-        Form, on_delete=models.CASCADE, related_name="form_versions"
-    )
+    form = models.ForeignKey(Form, on_delete=models.CASCADE, related_name="form_versions")
     # xml file representation
     file = models.FileField(upload_to=_form_version_upload_to)
-    xls_file = models.FileField(
-        upload_to=_form_version_upload_to, null=True, blank=True
-    )
+    xls_file = models.FileField(upload_to=_form_version_upload_to, null=True, blank=True)
     form_descriptor = JSONField(null=True, blank=True)
     version_id = models.TextField()  # extracted from xls
     created_at = models.DateTimeField(auto_now_add=True)
@@ -180,9 +156,7 @@ class FormVersion(models.Model):
 
     objects = FormVersionManager.from_queryset(FormVersionQuerySet)()
 
-    def get_or_save_form_descriptor(
-        self,
-    ):  # TODO: remove me - shoud be populated on create
+    def get_or_save_form_descriptor(self,):  # TODO: remove me - shoud be populated on create
         if self.form_descriptor:
             json_survey = self.form_descriptor
         elif self.xls_file:

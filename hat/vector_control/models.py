@@ -7,10 +7,7 @@ from django.contrib.postgres.fields import JSONField
 
 from django.db.models import CASCADE, SET_NULL
 
-IMPORT_TYPE = (
-    ("orgUnit", "Org Unit"),
-    ("instance", "Form instance"),
-)
+IMPORT_TYPE = (("orgUnit", "Org Unit"), ("instance", "Form instance"))
 
 
 class APIImport(models.Model):

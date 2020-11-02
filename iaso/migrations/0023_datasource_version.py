@@ -12,15 +12,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="DataSource",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=255)),
                 ("description", models.TextField(max_length=255)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -60,36 +52,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="SourceVersion",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("number", models.IntegerField()),
                 ("description", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                (
-                    "data_source",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.DataSource",
-                    ),
-                ),
+                ("data_source", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.DataSource")),
             ],
         ),
         migrations.AddField(
             model_name="orgunit",
             name="version",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                to="iaso.SourceVersion",
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.SourceVersion"
             ),
         ),
     ]

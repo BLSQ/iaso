@@ -7,40 +7,23 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        migrations.swappable_dependency(settings.AUTH_USER_MODEL),
-        ("iaso", "0004_auto_20191003_1311"),
-    ]
+    dependencies = [migrations.swappable_dependency(settings.AUTH_USER_MODEL), ("iaso", "0004_auto_20191003_1311")]
 
     operations = [
         migrations.RemoveField(model_name="link", name="algorithm"),
         migrations.CreateModel(
             name="AlgorithmRun",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "algorithm",
-                    models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.MatchingAlgorithm",
-                    ),
+                    models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.MatchingAlgorithm"),
                 ),
                 (
                     "launcher",
                     models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.SET_NULL,
-                        to=settings.AUTH_USER_MODEL,
+                        blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to=settings.AUTH_USER_MODEL
                     ),
                 ),
             ],
@@ -49,10 +32,7 @@ class Migration(migrations.Migration):
             model_name="link",
             name="algorithm_run",
             field=models.ForeignKey(
-                blank=True,
-                null=True,
-                on_delete=django.db.models.deletion.CASCADE,
-                to="iaso.AlgorithmRun",
+                blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.AlgorithmRun"
             ),
         ),
     ]

@@ -74,7 +74,7 @@ jobs:
           python manage.py test
         env:
           CI: true
-          SENSE_HAT_ENVIRONMENT: development
+          IASO_ENVIRONMENT: development
           RDS_DB_NAME: github_actions
           SECRET_KEY: secret
           DEBUG: true

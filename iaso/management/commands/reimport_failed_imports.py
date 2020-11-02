@@ -8,9 +8,7 @@ class Command(BaseCommand):
     help = "reimport failed orgunit imports"
 
     def handle(self, *args, **options):
-        failed_org_units_imports = APIImport.objects.filter(has_problem=True).filter(
-            import_type="orgUnit"
-        )
+        failed_org_units_imports = APIImport.objects.filter(has_problem=True).filter(import_type="orgUnit")
         unit_count = 0
         for i in failed_org_units_imports:
             try:
@@ -21,9 +19,7 @@ class Command(BaseCommand):
             except Exception as e:
                 print("An error happened", e)
 
-        failed_instance_imports = APIImport.objects.filter(has_problem=True).filter(
-            import_type="instance"
-        )
+        failed_instance_imports = APIImport.objects.filter(has_problem=True).filter(import_type="instance")
         instance_count = 0
         for i in failed_instance_imports:
             try:

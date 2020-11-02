@@ -16,13 +16,9 @@ class TokenAPITestCase(APITestCase):
         cls.yoda.set_password("IMomLove")
         cls.yoda.save()
 
-        cls.jedi_council = m.OrgUnitType.objects.create(
-            name="Jedi Council", short_name="Cnc"
-        )
+        cls.jedi_council = m.OrgUnitType.objects.create(name="Jedi Council", short_name="Cnc")
 
-        cls.jedi_council_corruscant = m.OrgUnit.objects.create(
-            name="Corruscant Jedi Council"
-        )
+        cls.jedi_council_corruscant = m.OrgUnit.objects.create(name="Corruscant Jedi Council")
 
         cls.project = m.Project.objects.create(
             name="Hydroponic gardens",
@@ -31,9 +27,7 @@ class TokenAPITestCase(APITestCase):
             needs_authentication=True,
         )
 
-        cls.form_1 = m.Form.objects.create(
-            name="Hydroponics study", period_type=m.MONTH, single_per_period=True
-        )
+        cls.form_1 = m.Form.objects.create(name="Hydroponics study", period_type=m.MONTH, single_per_period=True)
 
         cls.form_2 = m.Form.objects.create(
             name="Hydroponic public survey",
@@ -47,9 +41,7 @@ class TokenAPITestCase(APITestCase):
         form_2_file_mock.name = "test.xml"
         cls.form_2.form_versions.create(file=form_2_file_mock, version_id="2020022401")
         cls.form_2.org_unit_types.add(cls.jedi_council)
-        cls.create_form_instance(
-            form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant
-        )
+        cls.create_form_instance(form=cls.form_2, period="202001", org_unit=cls.jedi_council_corruscant)
         cls.form_2.save()
 
         cls.project.unit_types.add(cls.jedi_council)
@@ -58,11 +50,7 @@ class TokenAPITestCase(APITestCase):
         cls.project.save()
 
     def authenticate_using_token(self):
-        response = self.client.post(
-            f"/api/token/",
-            data={"username": "yoda", "password": "IMomLove"},
-            format="json",
-        )
+        response = self.client.post(f"/api/token/", data={"username": "yoda", "password": "IMomLove"}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
@@ -76,9 +64,7 @@ class TokenAPITestCase(APITestCase):
 
         self.authenticate_using_token()
 
-        response = self.client.get(
-            "/api/forms/?app_id=stars.empire.agriculture.hydroponics"
-        )
+        response = self.client.get("/api/forms/?app_id=stars.empire.agriculture.hydroponics")
         self.assertJSONResponse(response, 200)
 
         response_data = response.json()
@@ -110,9 +96,7 @@ class TokenAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
-            data=instance_body,
-            format="json",
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -141,9 +125,7 @@ class TokenAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/instances/?app_id=stars.empire.agriculture.hydroponics",
-            data=instance_body,
-            format="json",
+            "/api/instances/?app_id=stars.empire.agriculture.hydroponics", data=instance_body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 
@@ -165,9 +147,7 @@ class TokenAPITestCase(APITestCase):
         # Unauthenticated case is already tested in test_api
         response_data = self.authenticate_using_token()
         refresh_token = response_data.get("refresh")
-        response = self.client.post(
-            f"/api/token/refresh/", data={"refresh": refresh_token}, format="json"
-        )
+        response = self.client.post(f"/api/token/refresh/", data={"refresh": refresh_token}, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
 
@@ -175,9 +155,7 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer {access_token_2}")
 
         # test an endpoint that requires authentication
-        response = self.client.get(
-            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics"
-        )
+        response = self.client.get("/api/orgunits/?app_id=stars.empire.agriculture.hydroponics")
 
         self.assertJSONResponse(response, 200)
 
@@ -189,18 +167,14 @@ class TokenAPITestCase(APITestCase):
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  ")
 
         # test an endpoint that requires authentication
-        response = self.client.get(
-            "/api/groups/?app_id=stars.empire.agriculture.hydroponics"
-        )
+        response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
         self.assertJSONResponse(response, 403)
 
         self.client.credentials(HTTP_AUTHORIZATION=f"Bearer  WRONG")
 
         # test an endpoint that requires authentication
-        response = self.client.get(
-            "/api/groups/?app_id=stars.empire.agriculture.hydroponics"
-        )
+        response = self.client.get("/api/groups/?app_id=stars.empire.agriculture.hydroponics")
 
         self.assertJSONResponse(response, 403)
 
@@ -228,18 +202,11 @@ class TokenAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
-            data=unit_body,
-            format="json",
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=unit_body, format="json"
         )
         self.assertEqual(response.status_code, 200)
         self.assertTrue(m.OrgUnit.objects.filter(uuid=uuid).first() is not None)
-        self.assertAPIImport(
-            "orgUnit",
-            request_body=unit_body,
-            has_problems=False,
-            check_auth_header=True,
-        )
+        self.assertAPIImport("orgUnit", request_body=unit_body, has_problems=False, check_auth_header=True)
 
     @tag("iaso_only")
     def test_unauthenticated_post_org_unit(self):
@@ -265,9 +232,7 @@ class TokenAPITestCase(APITestCase):
         ]
 
         response = self.client.post(
-            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics",
-            data=unit_body,
-            format="json",
+            "/api/orgunits/?app_id=stars.empire.agriculture.hydroponics", data=unit_body, format="json"
         )
         self.assertEqual(response.status_code, 200)
 

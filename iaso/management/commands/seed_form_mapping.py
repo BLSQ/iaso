@@ -23,43 +23,25 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--dhis2_url",
-            type=str,
-            help="Dhis2 url to import from (without user/password)",
-            required=True,
+            "--dhis2_url", type=str, help="Dhis2 url to import from (without user/password)", required=True
         )
-        parser.add_argument(
-            "--dhis2_user", type=str, help="dhis2 user name", required=True
-        )
-        parser.add_argument(
-            "--dhis2_password",
-            type=str,
-            help="dhis2 password of the dhis2_user",
-            required=True,
-        )
+        parser.add_argument("--dhis2_user", type=str, help="dhis2 user name", required=True)
+        parser.add_argument("--dhis2_password", type=str, help="dhis2 password of the dhis2_user", required=True)
         parser.add_argument(
             "--dhis2_program_id",
             type=str,
             help="dhis2 program_id to generate a default form mapping json",
             required=True,
         )
-        parser.add_argument(
-            "--form_id", type=str, help="iaso form_id eg ", required=True
-        )
+        parser.add_argument("--form_id", type=str, help="iaso form_id eg ", required=True)
 
     def get_api(self, options):
-        return Api(
-            options.get("dhis2_url"),
-            options.get("dhis2_user"),
-            options.get("dhis2_password"),
-        )
+        return Api(options.get("dhis2_url"), options.get("dhis2_user"), options.get("dhis2_password"))
 
     def handle(self, *args, **options):
         api = self.get_api(options)
 
-        mapping, missing_data_elements = seed_event_mapping(
-            api, options.get("dhis2_program_id")
-        )
+        mapping, missing_data_elements = seed_event_mapping(api, options.get("dhis2_program_id"))
 
         usual_ona_meta = [
             "end",
@@ -76,14 +58,7 @@ class Command(BaseCommand):
             "instanceid",
         ]
 
-        usual_dc_meta = [
-            "fosa",
-            "region",
-            "prefecture",
-            "quarter",
-            "district",
-            "sous-prefecture",
-        ]
+        usual_dc_meta = ["fosa", "region", "prefecture", "quarter", "district", "sous-prefecture"]
 
         print(json.dumps(mapping, indent=4))
         print("******** Mapped questions")
@@ -105,9 +80,7 @@ class Command(BaseCommand):
             if not field in mapping["question_mappings"]:
                 status = "ERROR no corresponding"
                 if field in usual_ona_meta or field in usual_dc_meta:
-                    status = (
-                        "WARN usualy data collect metadata should not be in the program"
-                    )
+                    status = "WARN usualy data collect metadata should not be in the program"
                     print(field, status)
         print("******** data elements in the program but not in the form at all")
         for missing_data_element in missing_data_elements:

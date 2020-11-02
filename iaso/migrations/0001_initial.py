@@ -23,15 +23,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OrgLevel",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=255)),
                 ("short_name", models.CharField(max_length=255)),
                 ("level", models.IntegerField()),
@@ -42,22 +34,12 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OrgUnit",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=255)),
                 (
                     "aliases",
                     django.contrib.postgres.fields.ArrayField(
-                        base_field=django.contrib.postgres.fields.citext.CITextField(
-                            blank=True, max_length=255
-                        ),
+                        base_field=django.contrib.postgres.fields.citext.CITextField(blank=True, max_length=255),
                         blank=True,
                         null=True,
                         size=100,
@@ -76,18 +58,8 @@ class Migration(migrations.Migration):
                     ),
                 ),
                 ("source_ref", models.TextField(null=True)),
-                (
-                    "geom",
-                    django.contrib.gis.db.models.fields.PolygonField(
-                        null=True, srid=4326
-                    ),
-                ),
-                (
-                    "simplified_geom",
-                    django.contrib.gis.db.models.fields.PolygonField(
-                        null=True, srid=4326
-                    ),
-                ),
+                ("geom", django.contrib.gis.db.models.fields.PolygonField(null=True, srid=4326)),
+                ("simplified_geom", django.contrib.gis.db.models.fields.PolygonField(null=True, srid=4326)),
                 (
                     "geom_source",
                     models.TextField(
@@ -108,15 +80,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="OrgUnitType",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.CharField(max_length=255)),
                 ("short_name", models.CharField(max_length=255)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -126,29 +90,21 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="orgunit",
             name="org_unit_type",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnitType"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnitType"),
         ),
         migrations.AddField(
             model_name="orgunit",
             name="parent",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnit"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnit"),
         ),
         migrations.AddField(
             model_name="orglevel",
             name="org_unit_type",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnitType"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnitType"),
         ),
         migrations.AddField(
             model_name="orglevel",
             name="parent",
-            field=models.ForeignKey(
-                on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgLevel"
-            ),
+            field=models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgLevel"),
         ),
     ]

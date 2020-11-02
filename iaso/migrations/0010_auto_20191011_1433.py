@@ -7,8 +7,4 @@ class Migration(migrations.Migration):
 
     dependencies = [("iaso", "0009_group")]
 
-    operations = [
-        migrations.RenameField(
-            model_name="group", old_name="sourceVersion", new_name="source_version"
-        )
-    ]
+    operations = [migrations.RenameField(model_name="group", old_name="sourceVersion", new_name="source_version")]

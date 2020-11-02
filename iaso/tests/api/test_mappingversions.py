@@ -27,21 +27,13 @@ class FormsVersionAPITestCase(APITestCase):
         star_wars.default_version = sw_version
         cls.sw_source = sw_source
 
-        cls.yoda = cls.create_user_with_profile(
-            username="yoda", account=star_wars, permissions=["iaso_mappings"]
-        )
-        cls.batman = cls.create_user_with_profile(
-            username="batman", account=dc, permissions=["iaso_mappings"]
-        )
+        cls.yoda = cls.create_user_with_profile(username="yoda", account=star_wars, permissions=["iaso_mappings"])
+        cls.batman = cls.create_user_with_profile(username="batman", account=dc, permissions=["iaso_mappings"])
 
-        cls.sith_council = m.OrgUnitType.objects.create(
-            name="Sith Council", short_name="Cnc"
-        )
+        cls.sith_council = m.OrgUnitType.objects.create(name="Sith Council", short_name="Cnc")
 
         cls.project = m.Project.objects.create(
-            name="Hydroponic gardens",
-            app_id="stars.empire.agriculture.hydroponics",
-            account=star_wars,
+            name="Hydroponic gardens", app_id="stars.empire.agriculture.hydroponics", account=star_wars
         )
         cls.project.unit_types.add(cls.sith_council)
         sw_source.projects.add(cls.project)
@@ -57,10 +49,7 @@ class FormsVersionAPITestCase(APITestCase):
         cls.project.save()
 
         cls.form_2 = m.Form.objects.create(
-            name="Death Start survey",
-            form_id="sample2",
-            period_type="MONTH",
-            single_per_period=False,
+            name="Death Start survey", form_id="sample2", period_type="MONTH", single_per_period=False
         )
         cls.form_2.org_unit_types.add(cls.sith_council)
         cls.form_1.save()
@@ -116,14 +105,10 @@ class FormsVersionAPITestCase(APITestCase):
             HTTP_ACCEPT="application/json",
         )
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
-            format="json",
-            HTTP_ACCEPT="application/json",
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
         )
 
-        self.assertEqual(
-            mapping_version.json()["question_mappings"]["question_1"], data_element_1
-        )
+        self.assertEqual(mapping_version.json()["question_mappings"]["question_1"], data_element_1)
         # multi select for question 2
         data_element_2 = {
             "type": "multiple",
@@ -152,13 +137,9 @@ class FormsVersionAPITestCase(APITestCase):
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
-            format="json",
-            HTTP_ACCEPT="application/json",
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
         )
-        self.assertEqual(
-            mapping_version.json()["question_mappings"]["question_2"], data_element_2
-        )
+        self.assertEqual(mapping_version.json()["question_mappings"]["question_2"], data_element_2)
         self.client.patch(
             f"/api/mappingversions/" + mappingversionid + "/",
             data={"question_mappings": {"question_2": {"action": "unmap"}}},
@@ -167,14 +148,10 @@ class FormsVersionAPITestCase(APITestCase):
         )
 
         mapping_version = self.client.get(
-            f"/api/mappingversions/" + mappingversionid + "/?fields=:all",
-            format="json",
-            HTTP_ACCEPT="application/json",
+            f"/api/mappingversions/" + mappingversionid + "/?fields=:all", format="json", HTTP_ACCEPT="application/json"
         )
 
-        self.assertEqual(
-            list(mapping_version.json()["question_mappings"].keys()), ["question_1"]
-        )
+        self.assertEqual(list(mapping_version.json()["question_mappings"].keys()), ["question_1"])
 
     @tag("iaso_only")
     def test_mappingversions_create_ok_idempotent_version(self):
@@ -199,19 +176,14 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/",
             data={
                 "form_version": {"id": formversion.id},
-                "mapping": {
-                    "type": "AGGREGATE",
-                    "datasource": {"id": self.dc_source.id},
-                },
+                "mapping": {"type": "AGGREGATE", "datasource": {"id": self.dc_source.id}},
                 "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
             HTTP_ACCEPT="application/json",
         )
 
-        self.assertEqual(
-            create_response.json(), {"mapping.datasource": ["object doesn't exist"]}
-        )
+        self.assertEqual(create_response.json(), {"mapping.datasource": ["object doesn't exist"]})
 
     @tag("iaso_only")
     def test_mappingversions_create_ko_non_existing_form_version(self):
@@ -223,19 +195,14 @@ class FormsVersionAPITestCase(APITestCase):
             f"/api/mappingversions/",
             data={
                 "form_version": {"id": 10000},
-                "mapping": {
-                    "type": "AGGREGATE",
-                    "datasource": {"id": self.dc_source.id},
-                },
+                "mapping": {"type": "AGGREGATE", "datasource": {"id": self.dc_source.id}},
                 "dataset": {"id": "ERTFDG", "name": "My dataset name"},
             },
             format="json",
             HTTP_ACCEPT="application/json",
         )
 
-        self.assertEqual(
-            create_response.json(), {"form_version": ["object doesn't exist"]}
-        )
+        self.assertEqual(create_response.json(), {"form_version": ["object doesn't exist"]})
 
     @tag("iaso_only")
     def test_mappingversions_create_ko_data_element_id(self):
@@ -258,10 +225,7 @@ class FormsVersionAPITestCase(APITestCase):
             HTTP_ACCEPT="application/json",
         )
 
-        self.assertEqual(
-            resp.json(),
-            {"question_mappings.question_1": "should have a least an data element id"},
-        )
+        self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a least an data element id"})
 
     @tag("iaso_only")
     def test_mappingversions_create_ko_data_element_value_type(self):
@@ -285,14 +249,10 @@ class FormsVersionAPITestCase(APITestCase):
             HTTP_ACCEPT="application/json",
         )
 
-        self.assertEqual(
-            resp.json(), {"question_mappings.question_1": "should have a valueType"}
-        )
+        self.assertEqual(resp.json(), {"question_mappings.question_1": "should have a valueType"})
 
     def create_form_version(self):
-        with open(
-            "iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb"
-        ) as xls_file:
+        with open("iaso/tests/fixtures/odk_form_valid_sample1_2020022401.xls", "rb") as xls_file:
             self.client.post(
                 f"/api/formversions/",
                 data={"form_id": self.form_1.id, "xls_file": xls_file},

@@ -11,15 +11,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="FormVersion",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("file", models.FileField(blank=True, null=True, upload_to="forms/")),
                 ("version_id", models.TextField(blank=True, null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -29,32 +21,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Instance",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("form", models.TextField(blank=True, null=True)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.TextField(blank=True, null=True)),
-                (
-                    "file",
-                    models.FileField(blank=True, null=True, upload_to="instances/"),
-                ),
+                ("file", models.FileField(blank=True, null=True, upload_to="instances/")),
             ],
         ),
         migrations.RemoveField(model_name="form", name="file"),
         migrations.AlterField(
             model_name="orgunittype",
             name="sub_unit_types",
-            field=models.ManyToManyField(
-                blank=True, related_name="super_types", to="iaso.OrgUnitType"
-            ),
+            field=models.ManyToManyField(blank=True, related_name="super_types", to="iaso.OrgUnitType"),
         ),
         migrations.AddField(
             model_name="instance",

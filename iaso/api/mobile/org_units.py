@@ -3,15 +3,10 @@ from rest_framework.response import Response
 from rest_framework import viewsets, permissions
 from iaso.api.common import safe_api_import
 
-from iaso.models import (
-    OrgUnit,
-    Project,
-)
+from iaso.models import OrgUnit, Project
 from django.contrib.gis.geos import Point
 
-from hat.api.export_utils import (
-    timestamp_to_utc_datetime,
-)
+from hat.api.export_utils import timestamp_to_utc_datetime
 
 
 class HasOrgUnitPermission(permissions.BasePermission):
@@ -42,12 +37,13 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
     GET /api/mobile/orgunits/
     POST /api/mobile/orgunits/
     """
+
     permission_classes = [HasOrgUnitPermission]
 
     def get_queryset(self):
-        return OrgUnit.objects.filter_for_user_and_app_id(
-            None, self.request.query_params.get("app_id")
-        ).filter(validation_status=OrgUnit.VALIDATION_VALID)
+        return OrgUnit.objects.filter_for_user_and_app_id(None, self.request.query_params.get("app_id")).filter(
+            validation_status=OrgUnit.VALIDATION_VALID
+        )
 
     def list(self, request):
         queryset = self.get_queryset()
@@ -59,18 +55,14 @@ class MobileOrgUnitViewSet(viewsets.ViewSet):
         response["roots"] = roots
         response["orgUnits"] = [unit.as_dict_for_mobile() for unit in queryset]
 
-        return Response(
-            response
-        )
-
+        return Response(response)
 
     @safe_api_import("orgUnit")
     def create(self, _, request):
-        new_org_units = import_data(
-            request.data, request.user, request.query_params.get("app_id")
-        )
+        new_org_units = import_data(request.data, request.user, request.query_params.get("app_id"))
 
         return Response([org_unit.as_dict() for org_unit in new_org_units])
+
 
 def import_data(org_units, user, app_id):
     new_org_units = []
@@ -133,7 +125,3 @@ def import_data(org_units, user, app_id):
             org_unit_db.version = project.account.default_version
             org_unit_db.save()
     return new_org_units
-
-
-
-

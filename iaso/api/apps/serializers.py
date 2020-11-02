@@ -7,21 +7,7 @@ class AppSerializer(ProjectSerializer):
     the app_id field from the Project model is used as the primary key."""
 
     class Meta(ProjectSerializer.Meta):
-        fields = [
-            "id",
-            "name",
-            "feature_flags",
-            "needs_authentication",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = [
-            "id",
-            "name",
-            "feature_flags",
-            "needs_authentication",
-            "created_at",
-            "updated_at",
-        ]
+        fields = ["id", "name", "feature_flags", "needs_authentication", "created_at", "updated_at"]
+        read_only_fields = ["id", "name", "feature_flags", "needs_authentication", "created_at", "updated_at"]
 
     id = serializers.CharField(read_only=True, source="app_id")

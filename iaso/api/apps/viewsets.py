@@ -34,9 +34,7 @@ class AppsViewSet(ModelViewSet):
     def get_object(self):
         """Override to handle GET /api/app/current/?app_id=some.app.id"""
         if self.kwargs["app_id"] == "current":
-            return get_object_or_404(
-                self.get_queryset(), app_id=self.request.query_params.get("app_id")
-            )
+            return get_object_or_404(self.get_queryset(), app_id=self.request.query_params.get("app_id"))
 
         return super().get_object()
 

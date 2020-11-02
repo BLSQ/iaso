@@ -6,21 +6,18 @@ import django.db.models.deletion
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0001_initial'),
-    ]
+    dependencies = [("vector_control", "0001_initial")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='gpswaypoint',
-            name='gps_import',
-        ),
+        migrations.RemoveField(model_name="gpswaypoint", name="gps_import"),
         migrations.AddField(
-            model_name='target',
-            name='gps_import',
-            field=models.ForeignKey(null=True, on_delete=django.db.models.deletion.CASCADE, to='vector_control.GpsImport'),
+            model_name="target",
+            name="gps_import",
+            field=models.ForeignKey(
+                null=True,
+                on_delete=django.db.models.deletion.CASCADE,
+                to="vector_control.GpsImport",
+            ),
         ),
-        migrations.DeleteModel(
-            name='GpsWaypoint',
-        ),
+        migrations.DeleteModel(name="GpsWaypoint"),
     ]

@@ -4,9 +4,9 @@ from django import template
 register = template.Library()
 
 
-@register.filter(name='get')
+@register.filter(name="get")
 def get(obj: Any, attr: str) -> str:
-    ''' Gets an attribute of an object dynamically from a string name '''
+    """ Gets an attribute of an object dynamically from a string name """
     try:
         return obj[attr]
     except:
@@ -15,4 +15,4 @@ def get(obj: Any, attr: str) -> str:
         except:
             pass
 
-    return ''
+    return ""

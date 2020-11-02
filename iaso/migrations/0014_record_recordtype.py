@@ -12,15 +12,7 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="RecordType",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("name", models.TextField()),
                 ("description", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
@@ -29,33 +21,19 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Record",
             fields=[
-                (
-                    "id",
-                    models.AutoField(
-                        auto_created=True,
-                        primary_key=True,
-                        serialize=False,
-                        verbose_name="ID",
-                    ),
-                ),
+                ("id", models.AutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
                 ("value", models.DecimalField(decimal_places=10, max_digits=19)),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 (
                     "org_unit",
                     models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.OrgUnit",
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.OrgUnit"
                     ),
                 ),
                 (
                     "version",
                     models.ForeignKey(
-                        blank=True,
-                        null=True,
-                        on_delete=django.db.models.deletion.CASCADE,
-                        to="iaso.SourceVersion",
+                        blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, to="iaso.SourceVersion"
                     ),
                 ),
             ],

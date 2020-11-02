@@ -25,20 +25,13 @@ class Dhis2ViewSet(viewsets.ViewSet):
 
         sources = DataSource.objects.all()
         profile = request.user.iaso_profile
-        data_source = sources.filter(
-            projects__account=profile.account, id=datasource_id
-        ).first()
+        data_source = sources.filter(projects__account=profile.account, id=datasource_id).first()
 
         if data_source is None:
-            return Response(
-                {"error": "Data source not available"}, status=status.HTTP_404_NOT_FOUND
-            )
+            return Response({"error": "Data source not available"}, status=status.HTTP_404_NOT_FOUND)
 
         if data_source.credentials is None:
-            return Response(
-                {"error": "No credentials configured"},
-                status=status.HTTP_401_UNAUTHORIZED,
-            )
+            return Response({"error": "No credentials configured"}, status=status.HTTP_401_UNAUTHORIZED)
 
         credentials = data_source.credentials
 
@@ -76,9 +69,4 @@ class RelationshipTypesSet(Dhis2ViewSet):
     resource = "relationshipTypes"
 
 
-DHIS2_VIEWSETS = (
-    DataElementsViewSet,
-    DataSetsViewSet,
-    ProgramsViewSet,
-    RelationshipTypesSet,
-)
+DHIS2_VIEWSETS = (DataElementsViewSet, DataSetsViewSet, ProgramsViewSet, RelationshipTypesSet)

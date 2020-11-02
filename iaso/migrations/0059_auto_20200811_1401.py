@@ -5,17 +5,9 @@ from django.db import migrations
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0058_orgunit_multipoly'),
-    ]
+    dependencies = [("iaso", "0058_orgunit_multipoly")]
 
     operations = [
-        migrations.RemoveField(
-            model_name='orgunit',
-            name='latitude',
-        ),
-        migrations.RemoveField(
-            model_name='orgunit',
-            name='longitude',
-        ),
+        migrations.RemoveField(model_name="orgunit", name="latitude"),
+        migrations.RemoveField(model_name="orgunit", name="longitude"),
     ]

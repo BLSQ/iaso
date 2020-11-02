@@ -5,14 +5,27 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0003_site_is_reference'),
-    ]
+    dependencies = [("vector_control", "0003_site_is_reference")]
 
     operations = [
         migrations.AlterField(
-            model_name='site',
-            name='habitat',
-            field=models.TextField(blank=True, choices=[('unknown', 'Inconnu'), ('bush', 'Buisson'), ('fish_pond', 'Etang à poissons'), ('farm', 'Ferme'), ('farm', 'Forêt'), ('lake', 'Lac'), ('river', 'Rivière'), ('stream', 'Ruisseau'), ('road', 'Route')], max_length=255, null=True),
-        ),
+            model_name="site",
+            name="habitat",
+            field=models.TextField(
+                blank=True,
+                choices=[
+                    ("unknown", "Inconnu"),
+                    ("bush", "Buisson"),
+                    ("fish_pond", "Etang à poissons"),
+                    ("farm", "Ferme"),
+                    ("farm", "Forêt"),
+                    ("lake", "Lac"),
+                    ("river", "Rivière"),
+                    ("stream", "Ruisseau"),
+                    ("road", "Route"),
+                ],
+                max_length=255,
+                null=True,
+            ),
+        )
     ]

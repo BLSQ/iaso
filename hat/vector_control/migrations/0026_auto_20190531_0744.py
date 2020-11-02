@@ -5,14 +5,24 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('vector_control', '0025_auto_20190530_0943'),
-    ]
+    dependencies = [("vector_control", "0025_auto_20190530_0943")]
 
     operations = [
         migrations.AlterField(
-            model_name='catch',
-            name='problem',
-            field=models.TextField(blank=True, choices=[('ants', 'Fourmis'), ('damaged', 'Endommagé'), ('fallen', 'Tombé'), ('flood', 'Innondé'), ('missing', 'Manquant'), ('moved', 'Bougé')], max_length=255, null=True),
-        ),
+            model_name="catch",
+            name="problem",
+            field=models.TextField(
+                blank=True,
+                choices=[
+                    ("ants", "Fourmis"),
+                    ("damaged", "Endommagé"),
+                    ("fallen", "Tombé"),
+                    ("flood", "Innondé"),
+                    ("missing", "Manquant"),
+                    ("moved", "Bougé"),
+                ],
+                max_length=255,
+                null=True,
+            ),
+        )
     ]

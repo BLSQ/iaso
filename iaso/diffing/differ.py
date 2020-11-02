@@ -22,42 +22,40 @@ class Differ:
 
     def load_pyramid(self, version, validation_status=None):
         self.iaso_logger.info("loading pyramid ", version.data_source, version)
-        queryset = (OrgUnit.objects.prefetch_related("groups")
-                .prefetch_related("groups__group_sets")
-                .select_related("org_unit_type")
-                .select_related("parent")
-                .select_related("parent__parent")
-                .select_related("parent__parent__parent")
-                .filter(version=version)
+        queryset = (
+            OrgUnit.objects.prefetch_related("groups")
+            .prefetch_related("groups__group_sets")
+            .select_related("org_unit_type")
+            .select_related("parent")
+            .select_related("parent__parent")
+            .select_related("parent__parent__parent")
+            .filter(version=version)
         )
         if validation_status:
             queryset = queryset.filter(validation_status=validation_status)
 
         return queryset
 
-    def diff(self, version_ref, version, ignore_groups=False, show_deleted_org_units=False, validation_status=None, validation_status_ref=None):
+    def diff(
+        self,
+        version_ref,
+        version,
+        ignore_groups=False,
+        show_deleted_org_units=False,
+        validation_status=None,
+        validation_status_ref=None,
+    ):
         field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
             for group_set in GroupSet.objects.filter(source_version=version):
-                field_names.append(
-                    "groupset:" + group_set.source_ref + ":" + group_set.name
-                )
+                field_names.append("groupset:" + group_set.source_ref + ":" + group_set.name)
         self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 
         orgunits_dhis2 = self.load_pyramid(version, validation_status=validation_status)
         orgunit_refs = self.load_pyramid(version_ref, validation_status=validation_status_ref)
         self.iaso_logger.info(
-            "comparing ",
-            version_ref,
-            "(",
-            len(orgunits_dhis2),
-            ")",
-            " and ",
-            version,
-            "(",
-            len(orgunit_refs),
-            ")",
+            "comparing ", version_ref, "(", len(orgunits_dhis2), ")", " and ", version, "(", len(orgunit_refs), ")"
         )
         # speed how to index_by(&:source_ref)
         diffs = []
@@ -66,9 +64,7 @@ class Differ:
 
         for orgunit_ref in orgunit_refs:
             index = index + 1
-            orgunit_dhis2_with_ref = orgunits_dhis2_by_ref.get(
-                orgunit_ref.source_ref, []
-            )
+            orgunit_dhis2_with_ref = orgunits_dhis2_by_ref.get(orgunit_ref.source_ref, [])
             status = "same"
             orgunit_dhis2 = None
 
@@ -78,9 +74,7 @@ class Differ:
                 status = "new"
 
             if index % 100 == 0:
-                self.iaso_logger.info(
-                    index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2
-                )
+                self.iaso_logger.info(index, "will compare ", orgunit_ref, " vs ", orgunit_dhis2)
 
             comparisons = self.compare_fields(orgunit_dhis2, orgunit_ref, field_types)
             all_same = all(map(lambda comp: comp.status == "same", comparisons))
@@ -90,9 +84,7 @@ class Differ:
                 status = "same"
 
             diff = Diff(
-                org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref,
-                status=status,
-                comparisons=comparisons,
+                org_unit=orgunit_dhis2 if orgunit_dhis2 else orgunit_ref, status=status, comparisons=comparisons
             )
             diffs.append(diff)
 
@@ -135,11 +127,7 @@ class Differ:
 
             if dhis2_value is None and ref_value is not None:
                 status = "new"
-            if (
-                not same
-                and dhis2_value is not None
-                and (ref_value is None or ref_value == [])
-            ):
+            if not same and dhis2_value is not None and (ref_value is None or ref_value == []):
                 status = "deleted"
 
             comparisons.append(

@@ -17,12 +17,12 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/bluesquare/iaso.git"
+    "url": "git+https://github.com/BLSQ/iaso.git"
   },
   "bugs": {
-    "url": "https://github.com/bluesquare/iaso/issues"
+    "url": "https://github.com/BLSQ/iaso/issues"
   },
-  "homepage": "https://github.com/bluesquare/iaso#readme",
+  "homepage": "https://github.com/BLSQ/iaso#readme",
   "standard": {
     "ignore": [
       "hat/assets/bundles",

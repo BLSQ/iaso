@@ -4,11 +4,15 @@ Introduction & Settings
 
 Introduction
 ============
-Iaso is a georegistry and data collection platform structured around org unit trees (also known a master lists)
+Iaso is a georegistry and data collection web platform structured around trees of organization units (also known a master lists)
 
+The main tasks it allows to do are:
 
-.. note:: The dashboard is optimized for Chrome and must be compatible with
-          Chrome 40.0.0 and further versions.
+- Data collection using [XLSForm](https://xlsform.org/) forms linked to org units through a mobile application.
+- Import, comparison and merging of multiple org. units trees, both through a web application and an API allowing manipulation
+through data science tools like [Jupyter notebooks](https://jupyter.org/).
+- Validation of received data for org. units trees and forms.
+- Exports of the org. unit trees and form data, either in csv, xlsx, [GeoPackage](https://www.geopackage.org/) or through an api.
 
 
 Development environment
@@ -311,9 +315,8 @@ Testing S3 uploads in development
 
 If you need to test s3 storage in development, you have to:
 
-1. Set the `AWS_STORAGE_BUCKET_NAME` env variable to "iaso-dev" (a bucket created for such tests)
-2. Set the `AWS_ACCESS_KEY_ID` and `AKIAS4KZU3S6BZ7CFTXO` env variables appropriately
-   (see "iaso-dev AWS user" credentials in 1password)
+1. Set the `AWS_STORAGE_BUCKET_NAME` env variable to a bucket created for such tests
+2. Set the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` env variables appropriately
 3. Change the `DEFAULT_FILE_STORAGE` setting to `storages.backends.s3boto3.S3Boto3Storage`
 
 Enketo

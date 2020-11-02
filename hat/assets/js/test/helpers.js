@@ -3,6 +3,8 @@ import { expect } from 'chai';
 import { mount, render, shallow, configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 
+import { mockMessages } from './utils/intl';
+
 configure({ adapter: new Adapter() });
 
 global.expect = expect;
@@ -13,10 +15,7 @@ global.mount = mount;
 global.render = render;
 global.shallow = shallow;
 
-const mock = require('mock-require');
+mockMessages();
 
-// mock Translations
-mock('__intl/messages/fr', []);
-mock('__intl/messages/en', []);
-mock('__intl/localeData/fr', []);
-mock('__intl/localeData/en', []);
+const chai = require('chai');
+chai.use(require('sinon-chai'));

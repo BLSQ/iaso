@@ -85,11 +85,14 @@
         "ignorePureComponents": true
       }
     ],
-    "valid-typeof": "warn"
+    "valid-typeof": "warn",
+    "no-unused-expressions": "off"
   },
   "globals": {
     "describe": "readonly",
     "it": "readonly",
+    "before": "readonly",
+    "beforeEach": "readonly",
     "expect": "readonly",
     "shallow": "readonly",
     "mount": "readonly",

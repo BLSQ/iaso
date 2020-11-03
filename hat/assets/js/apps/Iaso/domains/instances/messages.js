@@ -272,6 +272,7 @@ const MESSAGES = defineMessages({
     see: {
         defaultMessage: 'See',
         id: 'iaso.label.see',
+    },
     instanceCreateAction: {
         defaultMessage: 'Create instance',
         id: 'iaso.instance.instanceCreateAction',

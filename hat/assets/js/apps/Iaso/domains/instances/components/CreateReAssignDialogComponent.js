@@ -38,7 +38,7 @@ const CreateReAssignDialogComponent = ({
     const currentFormOrInstance = currentInstance || formType;
 
     // Begin check if this is a Form type
-    if (currentFormOrInstance.period === undefined) {
+    if (currentFormOrInstance.period === undefined || currentFormOrInstance.period === '') {
         const toDay = new Date();
         const period = new Period(
             toDay.getFullYear() + `0${toDay.getMonth()}`.slice(-2),

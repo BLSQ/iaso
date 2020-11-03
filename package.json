@@ -7,8 +7,8 @@
   "scripts": {
     "fix-lint": "prettier-eslint \"./hat/assets/js/**/*.js\" --lint-different  --write",
     "test-coverage": "nyc npm run test",
-    "test": "mocha --reporter dot --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js'",
-    "test-watch": "mocha --reporter dot --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js' --watch",
+    "test": "mocha --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js'",
+    "test-watch": "mocha --require @babel/register --require ./hat/assets/js/test/helpers.js --require ./hat/assets/js/test/dom.js './hat/assets/js/**/*.spec.js' --watch",
     "build": "npm run webpack",
     "webpack": "webpack --config ./hat/webpack.dev.js",
     "webpack-prod": "webpack --config ./hat/webpack.prod.js",

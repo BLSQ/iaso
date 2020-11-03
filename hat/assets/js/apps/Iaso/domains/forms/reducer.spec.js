@@ -22,7 +22,7 @@ describe('Forms reducer', () => {
         const expectedState = {
             formsPage: payload,
         };
-        expect(isEqual(formsReducer({}, action), expectedState)).to.equal(true);
+        expect(isEqual(formsReducer({}, action), expectedState)).to.be.true;
     });
 
     it('should respond to SET_CURRENT_FORM', () => {
@@ -34,7 +34,7 @@ describe('Forms reducer', () => {
         const expectedState = {
             current: payload,
         };
-        expect(isEqual(formsReducer({}, action), expectedState)).to.equal(true);
+        expect(isEqual(formsReducer({}, action), expectedState)).to.be.true;
     });
 
     it('should respond to SET_IS_LOADING_FORM', () => {
@@ -45,6 +45,6 @@ describe('Forms reducer', () => {
         const expectedState = {
             isLoading: true,
         };
-        expect(isEqual(formsReducer({}, action), expectedState)).to.equal(true);
+        expect(isEqual(formsReducer({}, action), expectedState)).to.be.true;
     });
 });

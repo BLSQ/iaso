@@ -8,7 +8,7 @@ import {
     setIsLoadingForm,
 } from './actions';
 
-describe('forms actions', () => {
+describe('Forms actions', () => {
     it('should create an action to set forms', () => {
         const payload = {
             list: [],
@@ -22,12 +22,8 @@ describe('forms actions', () => {
             payload,
         };
         const { list, showPagination, params, count, pages } = payload;
-        expect(
-            isEqual(
-                setForms(list, showPagination, params, count, pages),
-                expectedAction,
-            ),
-        ).to.equal(true);
+        const action = setForms(list, showPagination, params, count, pages);
+        expect(action).to.eql(expectedAction);
     });
 
     it('should create an action to set currentForm', () => {
@@ -36,7 +32,8 @@ describe('forms actions', () => {
             payload: undefined,
         };
 
-        expect(isEqual(setCurrentForm(), expectedAction)).to.equal(true);
+        const action = setCurrentForm();
+        expect(action).to.eql(expectedAction);
     });
 
     it('should create an action to set loading', () => {
@@ -45,6 +42,7 @@ describe('forms actions', () => {
             payload: undefined,
         };
 
-        expect(isEqual(setIsLoadingForm(), expectedAction)).to.equal(true);
+        const action = setIsLoadingForm();
+        expect(action).to.eql(expectedAction);
     });
 });

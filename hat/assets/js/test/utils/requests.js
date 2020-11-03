@@ -7,3 +7,9 @@ export const mockGetRequest = (url, result = [], spy = () => null) => {
     };
     nock('http://localhost:80').get(url).reply(200, onReply());
 };
+
+export const mockGetRequestsList = requests => {
+    requests.forEach(r => {
+        mockGetRequest(r.url, r.result, r.onSuccess);
+    });
+};

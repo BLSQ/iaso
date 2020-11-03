@@ -69,12 +69,6 @@ export class Forms extends Component {
         return url;
     }
 
-    handleSuccess() {
-        this.setState({
-            isUpdated: true,
-        });
-    }
-
     render() {
         const {
             classes,

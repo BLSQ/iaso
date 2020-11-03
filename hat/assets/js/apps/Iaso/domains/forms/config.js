@@ -3,7 +3,7 @@ import moment from 'moment';
 import Grid from '@material-ui/core/Grid';
 import { Link } from 'react-router';
 
-import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
+// import DeleteDialog from '../../components/dialogs/DeleteDialogComponent';
 import FormDialogComponent from './components/FormDialogComponent';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ColumnTextComponent from '../../components/tables/ColumnTextComponent';
@@ -174,7 +174,7 @@ const formsTableColumns = (
                             tooltipMessage={MESSAGES.dhis2Mappings}
                         />
                     )}
-                    {
+                    {/* {
                         // TODO: deactivated, hard delete is too dangerous - to discuss
                         false && (
                             <DeleteDialog
@@ -188,7 +188,7 @@ const formsTableColumns = (
                                 }
                             />
                         )
-                    }
+                    } */}
                 </section>
             );
         },

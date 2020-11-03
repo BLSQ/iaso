@@ -7,37 +7,39 @@ import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsCo
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import FormDialogComponent from './components/FormDialogComponent';
 import { renderWithStore } from '../../../../test/utils/redux';
-import { mockGetRequest } from '../../../../test/utils/requests';
+import { mockGetRequestsList } from '../../../../test/utils/requests';
 
 const formsSpy = sinon.spy();
 const projectsSpy = sinon.spy();
 const orgUnitTypesSpy = sinon.spy();
 let connectedWrapper;
-const mockRequests = () => {
-    mockGetRequest(
-        '/api/projects/',
-        {
+
+const requests = [
+    {
+        url: '/api/projects/',
+        result: {
             projects: [],
         },
-        projectsSpy(),
-    );
-    mockGetRequest(
-        '/api/orgunittypes/',
-        {
+        onSuccess: projectsSpy(),
+    },
+    {
+        url: '/api/orgunittypes/',
+        result: {
             orgUnitTypes: [],
         },
-        orgUnitTypesSpy(),
-    );
-    mockGetRequest(
-        '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
-        {
+        onSuccess: orgUnitTypesSpy(),
+    },
+    {
+        url: '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
+        result: {
             forms: [],
         },
-        formsSpy(),
-    );
-};
-describe('Connected Form component', () => {
-    before(() => mockRequests());
+        onSuccess: formsSpy(),
+    },
+];
+
+describe('Forms connected component', () => {
+    before(() => mockGetRequestsList(requests));
 
     it('mount properly', () => {
         connectedWrapper = mount(
@@ -76,13 +78,15 @@ const defaultProps = {
 let wrapperForm;
 let instance;
 
-describe('Pure Form component', () => {
-    before(() => mockRequests());
+describe('Forms pure component', () => {
+    before(() => mockGetRequestsList(requests));
     it('should update on success', () => {
         wrapperForm = shallow(<Forms {...defaultProps} />);
         instance = wrapperForm.instance();
         expect(instance.state.isUpdated).to.equal(false);
-        instance.handleSuccess();
+        const formDialogComponent = wrapperForm.find(FormDialogComponent);
+        formDialogComponent.props().onSuccess();
+        wrapperForm.update();
         expect(instance.state.isUpdated).to.equal(true);
     });
 

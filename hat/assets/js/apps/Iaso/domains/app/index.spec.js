@@ -15,6 +15,6 @@ describe('App', () => {
                 history={{}}
             />,
         );
-        expect(wrapper.exists()).to.equal(true);
+        expect(wrapper.exists()).to.be.true;
     });
 });

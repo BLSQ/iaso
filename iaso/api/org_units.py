@@ -693,4 +693,4 @@ def build_org_units_queryset(queryset, params, profile):  # TODO: move in viewse
         queryset = queryset.filter(sub_source=source_id)
     queryset = queryset.select_related("version__data_source")
     queryset = queryset.select_related("org_unit_type")
-    return queryset
+    return queryset.distinct()

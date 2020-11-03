@@ -333,8 +333,6 @@ To enable the Enketo editor in your local environment, you will have to install 
 Then, you need to make sure your `.env` file is properly configured.
 `ENKETO_URL` should be set to `http://192.168.1.15:81` (Replace 192.168.1.15 by your host)
 
-If you need usable instances:
-
 .. code:: shell
 
     docker-compose up

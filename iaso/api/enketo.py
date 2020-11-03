@@ -18,7 +18,7 @@ from iaso.models import Form, Instance, InstanceFile
 
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
-
+from uuid import uuid4
 
 def public_url_for_enketo(request, path):
     resolved_path = request.build_absolute_uri(path)
@@ -27,6 +27,58 @@ def public_url_for_enketo(request, path):
         resolved_path = resolved_path.replace("localhost", "docker-host")
 
     return resolved_path
+
+
+sample_xml = """<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://openrosa.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:odk="http://www.opendatakit.org/xforms" id="%(odk_form_id)s" version="%(version)s">
+          <meta>
+            <instanceID>uuid:%(uuid)s</instanceID>
+          </meta>
+        </data>
+"""
+
+@api_view(["POST"])
+@permission_classes([permissions.IsAuthenticated])
+def enketo_create_url(request):
+    form_id = request.data.get("form_id")
+    period = request.data.get("period", None)
+    org_unit_id =  request.data.get("org_unit_id")
+    return_url = request.data.get("return_url")
+
+    uuid = str(uuid4())
+    form = Form.objects.get(id=form_id)
+    latest_version = form.latest_version
+    latest_version_xml = latest_version.file.read()
+    latest_version_soup = Soup(latest_version_xml, "xml")
+
+    print("latest_version_xml", latest_version_xml)
+    filled_xml = sample_xml % {"form_id": form.form_id, "uuid": uuid, "odk_form_id": "odk_form_id", "version": latest_version.version_id }
+    filled_soup = Soup(filled_xml, 'xml')
+
+    print("latest_version_soup", latest_version_soup)
+    instance_xml = latest_version_soup.head.model.instance
+    filled_soup.data.append(instance_xml)
+    print("filled_soup", filled_soup)
+
+    i = Instance(form_id=form_id, period=period, uuid=uuid)
+    i.save()
+
+    try:
+        edit_url = enketo_url(
+            public_url_for_enketo(request, "/api/enketo"),
+            form_id_string=form.form_id
+            + ENKETO_FORM_ID_SEPARATOR
+            + str(form.id)
+            + ENKETO_FORM_ID_SEPARATOR
+            + str(latest_version.version_id),
+            instance_xml=filled_soup,
+            instance_id=uuid,
+            return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
+        )
+
+        return JsonResponse({"edit_url": edit_url}, status=201)
+    except EnketoError as error:
+        print(error)
+        return JsonResponse({"error": str(error)}, status=409)
 
 
 @api_view(["GET"])

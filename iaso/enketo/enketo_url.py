@@ -32,10 +32,10 @@ def enketo_url(form_url, form_id_string, instance_xml=None, instance_id=None, re
     settings = enketo_settings()
     url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
 
-    values = {"form_id": form_id_string, "server_url": form_url}
+    data = {"form_id": form_id_string, "server_url": form_url}
     if instance_id is not None and instance_xml is not None:
         url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_INSTANCE_PATH"])
-        values.update(
+        data.update(
             {
                 "instance": instance_xml,
                 "instance_id": instance_id,
@@ -44,10 +44,13 @@ def enketo_url(form_url, form_id_string, instance_xml=None, instance_id=None, re
             }
         )
     try:
-        response = requests.post(url, data=values, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True)
+        print("************", data)
+        response = requests.post(url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True)
         resp_content = response.content
 
         resp_content = resp_content.decode("utf-8") if hasattr(resp_content, "decode") else resp_content
+        print("---------", response)
+        print("---------", response.text)
         if response.status_code in [200, 201]:
             try:
                 data = json.loads(resp_content)

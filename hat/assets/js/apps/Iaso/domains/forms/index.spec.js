@@ -1,55 +1,51 @@
 import React from 'react';
 
-import Forms from './index';
+import ConnectedForms, { Forms } from './index';
 import TopBar from '../../components/nav/TopBarComponent';
 import CustomTableComponent from '../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
+import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 import FormDialogComponent from './components/FormDialogComponent';
 import { renderWithStore } from '../../../../test/utils/redux';
 import { mockGetRequest } from '../../../../test/utils/requests';
-import { formsInitialState } from './reducer';
 
 const formsSpy = sinon.spy();
 const projectsSpy = sinon.spy();
 const orgUnitTypesSpy = sinon.spy();
-let wrapper;
-mockGetRequest(
-    '/api/projects/',
-    {
-        projects: [],
-    },
-    projectsSpy(),
-);
-mockGetRequest(
-    '/api/orgunittypes/',
-    {
-        orgUnitTypes: [],
-    },
-    orgUnitTypesSpy(),
-);
-mockGetRequest(
-    '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
-    {
-        forms: [],
-    },
-    formsSpy(),
-);
-describe('Forms list page', () => {
+let connectedWrapper;
+const mockRequests = () => {
+    mockGetRequest(
+        '/api/projects/',
+        {
+            projects: [],
+        },
+        projectsSpy(),
+    );
+    mockGetRequest(
+        '/api/orgunittypes/',
+        {
+            orgUnitTypes: [],
+        },
+        orgUnitTypesSpy(),
+    );
+    mockGetRequest(
+        '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
+        {
+            forms: [],
+        },
+        formsSpy(),
+    );
+};
+describe('Connected Form component', () => {
+    before(() => mockRequests());
+
     it('mount properly', () => {
-        wrapper = mount(renderWithStore(<Forms params={{}} />));
-        expect(wrapper.exists()).to.equal(true);
-    });
-    it('render TopBar', () => {
-        expect(wrapper.find(TopBar)).to.have.lengthOf(1);
-    });
-
-    it('render CustomTableComponent', () => {
-        expect(wrapper.find(CustomTableComponent)).to.have.lengthOf(1);
+        connectedWrapper = mount(
+            renderWithStore(<ConnectedForms params={{}} />),
+        );
+        expect(connectedWrapper.exists()).to.equal(true);
     });
 
-    it('render FormDialogComponent', () => {
-        expect(wrapper.find(FormDialogComponent)).to.have.lengthOf(1);
-    });
     describe('should connect to api', () => {
         it('and call forms api', () => {
             expect(formsSpy).to.have.been.calledOnce;
@@ -61,23 +57,59 @@ describe('Forms list page', () => {
             expect(orgUnitTypesSpy).to.have.been.calledOnce;
         });
     });
+});
 
-    it('render DownloadButtonsComponent if forms results', () => {
-        wrapper.update();
-        // wrapper = mount(
-        //     renderWithStore(<Forms params={{}} />, {
-        //         forms: {
-        //             ...formsInitialState,
-        //             formsPage: {
-        //                 list: [],
-        //                 showPagination: false,
-        //                 params: {},
-        //                 count: 0,
-        //                 pages: 0,
-        //             },
-        //         },
-        //     }),
-        // );
-        expect(wrapper.find(DownloadButtonsComponent)).to.have.lengthOf(1);
+const defaultProps = {
+    isLoading: false,
+    classes: {
+        containerFullHeightNoTabPadded: '',
+        marginTop: '',
+        reactTable: '',
+    },
+    setForms: () => null,
+    fetchAllProjects: () => null,
+    fetchAllOrgUnitTypes: () => null,
+    params: {},
+    intl: { formatMessage: () => null },
+    reduxPage: { list: [] },
+};
+let wrapperForm;
+let instance;
+
+describe('Pure Form component', () => {
+    before(() => mockRequests());
+    it('should update on success', () => {
+        wrapperForm = shallow(<Forms {...defaultProps} />);
+        instance = wrapperForm.instance();
+        expect(instance.state.isUpdated).to.equal(false);
+        instance.handleSuccess();
+        expect(instance.state.isUpdated).to.equal(true);
+    });
+
+    it('getExportUrl without exportTypes should return csv by default', () => {
+        expect(instance.getExportUrl()).to.equal('/api/forms/?&csv=true');
+    });
+
+    it('should not display loader if not loading', () => {
+        expect(wrapperForm.find(LoadingSpinner)).to.have.lengthOf(0);
+    });
+
+    it('should display loading spinner if loading', () => {
+        wrapperForm = shallow(<Forms {...defaultProps} isLoading />);
+        expect(wrapperForm.find(LoadingSpinner)).to.have.lengthOf(1);
+    });
+    it('should display DownloadButtonsComponent if forms list ins not null', () => {
+        expect(wrapperForm.find(DownloadButtonsComponent)).to.have.lengthOf(1);
+    });
+    it('render TopBar', () => {
+        expect(wrapperForm.find(TopBar)).to.have.lengthOf(1);
+    });
+
+    it('render CustomTableComponent', () => {
+        expect(wrapperForm.find(CustomTableComponent)).to.have.lengthOf(1);
+    });
+
+    it('render FormDialogComponent', () => {
+        expect(wrapperForm.find(FormDialogComponent)).to.have.lengthOf(1);
     });
 });

@@ -37,7 +37,7 @@ const styles = theme => ({
     },
 });
 
-class Forms extends Component {
+export class Forms extends Component {
     constructor(props) {
         super(props);
         this.state = {
@@ -67,6 +67,12 @@ class Forms extends Component {
             }
         });
         return url;
+    }
+
+    handleSuccess() {
+        this.setState({
+            isUpdated: true,
+        });
     }
 
     render() {

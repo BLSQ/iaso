@@ -24,7 +24,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
-from .api.enketo import enketo_edit_url, enketo_create_url, enketo_form_list, EnketoSubmissionAPIView
+from .api.enketo import enketo_edit_url, enketo_create_url, enketo_form_list, EnketoSubmissionAPIView, enketo_form_download
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
@@ -69,6 +69,7 @@ urlpatterns = [
     url(r"^enketo/create/$", view=enketo_create_url, name="enketo-create-url"),
     url(r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$", view=enketo_edit_url, name="enketo-edit-url"),
     url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list"),
+    url(r"^enketo/formDownload/$", view=enketo_form_download, name="enketo_form_download"),
     url(r"^enketo/submission$", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
 ]
 

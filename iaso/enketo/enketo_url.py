@@ -44,7 +44,7 @@ def enketo_url(form_url, form_id_string, instance_xml=None, instance_id=None, re
             }
         )
     try:
-        print("************", data)
+        #print("************", data)
         response = requests.post(url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True)
         resp_content = response.content
 

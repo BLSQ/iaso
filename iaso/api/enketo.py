@@ -36,6 +36,8 @@ sample_xml = """<data xmlns:jr="http://openrosa.org/javarosa" xmlns:orx="http://
         </data>
 """
 
+sample_xml = """<%(odk_form_id)s xmlns:ev="http://www.w3.org/2001/xml-events" xmlns:orx="http://openrosa.org/xforms" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:odk="http://www.opendatakit.org/xforms" xmlns:h="http://www.w3.org/1999/xhtml" xmlns:jr="http://openrosa.org/javarosa" id="%(odk_form_id)s" version="%(version)s"><meta><instanceID>uuid:%(uuid)s</instanceID></meta></%(odk_form_id)s>"""
+
 @api_view(["POST"])
 @permission_classes([permissions.IsAuthenticated])
 def enketo_create_url(request):
@@ -50,14 +52,17 @@ def enketo_create_url(request):
     latest_version_xml = latest_version.file.read()
     latest_version_soup = Soup(latest_version_xml, "xml")
 
-    print("latest_version_xml", latest_version_xml)
-    filled_xml = sample_xml % {"form_id": form.form_id, "uuid": uuid, "odk_form_id": "odk_form_id", "version": latest_version.version_id }
+    #print("latest_version_xml", latest_version_xml)
+    filled_xml = sample_xml % {"form_id": form.form_id, "uuid": uuid, "odk_form_id": form.form_id, "version": latest_version.version_id }
+    #print("-----------------------------------filled_xml", filled_xml)
     filled_soup = Soup(filled_xml, 'xml')
-
-    print("latest_version_soup", latest_version_soup)
-    instance_xml = latest_version_soup.head.model.instance
-    filled_soup.data.append(instance_xml)
-    print("filled_soup", filled_soup)
+    #print("-----------------------------------filled_soup", filled_soup)
+    #print("-----------------------------------latest_version_soup", latest_version_soup)
+    instance_xml = latest_version_soup.head.model.instance.data
+    #print("-----------------------------------instance_xml", instance_xml)
+    main_element = getattr(filled_soup, form.form_id)
+    main_element.append(instance_xml)
+    print("-----------------------------------filled_soup", filled_soup)
 
     i = Instance(form_id=form_id, period=period, uuid=uuid)
     i.save()
@@ -102,11 +107,7 @@ def enketo_edit_url(request, instance_uuid):
 
         edit_url = enketo_url(
             public_url_for_enketo(request, "/api/enketo"),
-            form_id_string=instance.form.form_id
-            + ENKETO_FORM_ID_SEPARATOR
-            + str(instance.form.id)
-            + ENKETO_FORM_ID_SEPARATOR
-            + str(instance.form.latest_version.version_id),
+            form_id_string=instance.uuid,
             instance_xml=instance_xml,
             instance_id=instanceid,
             return_url=request.GET.get("return_url", public_url_for_enketo(request, "")),
@@ -121,17 +122,16 @@ def enketo_edit_url(request, instance_uuid):
 @api_view(["GET", "HEAD"])
 @permission_classes([permissions.AllowAny])
 def enketo_form_list(request):
-    form_id_str = request.GET["formID"].split(ENKETO_FORM_ID_SEPARATOR)
-    form_id = form_id_str[-2]
-    version_id = form_id_str[-1]
+    form_id_str = request.GET["formID"]
+    i = Instance.objects.get(uuid=form_id_str)
 
-    form = Form.objects.filter(id=form_id).first()
-    lastest_form_version = form.latest_version
+    lastest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, lastest_form_version.file.url)
-
+    downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?instance_id=%s" % i.id)
+    downloadurl = "http://localhost:8081/api/enketo/formDownload/?instance_id=%s" % i.id
     xforms = to_xforms_xml(
-        form,
+        i.form,
         download_url=downloadurl,
         version=lastest_form_version.version_id,
         md5checksum=calculate_file_md5(lastest_form_version.file),
@@ -139,6 +139,13 @@ def enketo_form_list(request):
 
     return HttpResponse(xforms, content_type="application/xml")
 
+@api_view(["GET", "HEAD"])
+@permission_classes([permissions.AllowAny])
+def enketo_form_download(request):
+    instance_id = request.GET.get("instance_id")
+    i = Instance.objects.get(pk=instance_id)
+
+    return HttpResponse(i.form.latest_version.file, content_type="application/xml")
 
 class EnketoSubmissionAPIView(APIView):
     permission_classes = [permissions.AllowAny]

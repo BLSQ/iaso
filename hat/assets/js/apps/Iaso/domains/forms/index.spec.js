@@ -12,7 +12,6 @@ import { mockGetRequestsList } from '../../../../test/utils/requests';
 const formsSpy = sinon.spy();
 const projectsSpy = sinon.spy();
 const orgUnitTypesSpy = sinon.spy();
-let connectedWrapper;
 
 const requests = [
     {
@@ -42,7 +41,7 @@ describe('Forms connected component', () => {
     before(() => mockGetRequestsList(requests));
 
     it('mount properly', () => {
-        connectedWrapper = mount(
+        const connectedWrapper = mount(
             renderWithStore(<ConnectedForms params={{}} />),
         );
         expect(connectedWrapper.exists()).to.equal(true);

@@ -72,7 +72,7 @@ describe('Forms config', () => {
                     original: tempForm,
                 }),
             );
-            const redEyeIcon = wrapper.find(IconButtonComponent);
+            const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
             expect(redEyeIcon.prop('url')).to.equal(
                 'instances/formId/14/levels/1',
             );

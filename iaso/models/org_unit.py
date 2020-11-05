@@ -271,7 +271,7 @@ class OrgUnit(models.Model):
             "id": self.id,
             "parent_id": self.parent_id,
             "org_unit_type_id": self.org_unit_type_id,
-            "org_unit_type_name": self.org_unit_type.name,
+            "org_unit_type_name": self.org_unit_type.name if self.org_unit_type else None,
             "validation_status": self.validation_status if self.org_unit_type else None,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

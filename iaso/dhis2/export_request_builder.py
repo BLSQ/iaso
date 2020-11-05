@@ -71,7 +71,7 @@ class ExportRequestBuilder:
             for instance in paginator.page(1).object_list:
                 for mapping_version in self.get_form_mapping_versions(instance):
 
-                    if mapping_version.mapping.is_event_tracker and force_export:
+                    if mapping_version.mapping.is_event_tracker() and force_export:
                         raise NotSupportedError(
                             f"{mapping_version} can't be forced to be exported, due to possible duplicates tracked entity or event for instance {instance.id}"
                         )

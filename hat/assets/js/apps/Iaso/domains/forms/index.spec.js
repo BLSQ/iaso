@@ -79,9 +79,11 @@ let instance;
 
 describe('Forms pure component', () => {
     before(() => mockGetRequestsList(requests));
-    it('should update on success', () => {
+    it('mount properly', () => {
         wrapperForm = shallow(<Forms {...defaultProps} />);
         instance = wrapperForm.instance();
+    });
+    it('should update on success', () => {
         expect(instance.state.isUpdated).to.equal(false);
         const formDialogComponent = wrapperForm.find(FormDialogComponent);
         formDialogComponent.props().onSuccess();

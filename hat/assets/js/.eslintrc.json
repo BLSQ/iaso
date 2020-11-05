@@ -93,6 +93,8 @@
     "it": "readonly",
     "before": "readonly",
     "beforeEach": "readonly",
+    "afterEach": "readonly",
+    "after": "readonly",
     "expect": "readonly",
     "shallow": "readonly",
     "mount": "readonly",

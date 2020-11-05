@@ -34,7 +34,7 @@ const periodTypeOptions = [
     label: MESSAGES[periodType.toLowerCase()],
 }));
 
-class FormDialogComponent extends Component {
+export class FormDialogComponent extends Component {
     constructor(props) {
         super(props);
 

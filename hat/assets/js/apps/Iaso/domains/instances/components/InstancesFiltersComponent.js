@@ -202,6 +202,7 @@ class InstancesFiltersComponent extends Component {
                             onLatestIdChanged={() =>
                                 setInstancesFilterUpdated(true)
                             }
+                            defaultVersion
                             params={params}
                             baseUrl={baseUrl}
                         />

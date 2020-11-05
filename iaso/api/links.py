@@ -62,7 +62,7 @@ class LinkViewSet(viewsets.ViewSet):
         destination = request.GET.get("destination", None)
         origin_version = request.GET.get("originVersion", None)
         destination_version = request.GET.get("destinationVersion", None)
-        validator_id = request.GET.get("validatorId", None)
+        validator = request.GET.get("validator", None)
         algorithm_id = request.GET.get("algorithmId", None)
         algorithm_run_id = request.GET.get("algorithmRunId", None)
         run_id = request.GET.get("run", None)
@@ -99,7 +99,8 @@ class LinkViewSet(viewsets.ViewSet):
         if origin_version:
             queryset = queryset.filter(source__version__number=origin_version)
 
-        if validator_id:
+        if validator:
+            validator_id = validator.get("id")
             queryset = queryset.filter(validator=validator_id)
 
         if algorithm_id:

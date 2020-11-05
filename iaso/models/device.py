@@ -39,7 +39,7 @@ class DeviceOwnership(models.Model):
     def as_dict(self):
         return {
             "device": self.device.as_dict(),
-            "user": self.user.profile.as_short_dict(),
+            "user": self.user.iaso_profile.as_short_dict(),
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
             "updated_at": self.updated_at.timestamp() if self.updated_at else None,

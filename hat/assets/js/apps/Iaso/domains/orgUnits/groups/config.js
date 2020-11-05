@@ -6,6 +6,7 @@ import ColumnTextComponent from '../../../components/tables/ColumnTextComponent'
 import { displayDateFromTimestamp } from '../../../utils/intlUtil';
 import { formatThousand } from '../../../utils';
 import MESSAGES from './messages';
+import { textPlaceholder } from '../../../constants/uiConstants';
 
 const TableColumns = (formatMessage, component) => [
     {
@@ -25,16 +26,25 @@ const TableColumns = (formatMessage, component) => [
     },
     {
         Header: formatMessage(MESSAGES.sourceVersion),
-        accessor: 'source_version',
+        accessor: '',
         Cell: settings => {
-            const { source_version } = settings.original;
+            const sourceVersion = settings.original.source_version;
             const text =
-                source_version !== null
-                    ? `${source_version.data_source.name} - ${source_version.number}`
-                    : '-';
+                sourceVersion !== null
+                    ? `${sourceVersion.data_source.name} - ${sourceVersion.number}`
+                    : textPlaceholder;
 
             return <ColumnTextComponent text={text} />;
         },
+    },
+    {
+        Header: formatMessage(MESSAGES.sourceRef),
+        accessor: 'source_ref',
+        Cell: settings => (
+            <ColumnTextComponent
+                text={settings.original.source_ref || textPlaceholder}
+            />
+        ),
     },
     {
         Header: formatMessage(MESSAGES.orgUnit),

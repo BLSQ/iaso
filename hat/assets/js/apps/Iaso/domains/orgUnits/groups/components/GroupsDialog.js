@@ -92,6 +92,10 @@ class GroupDialogComponent extends Component {
         return {
             id: { value: get(initialData, 'id', null), errors: [] },
             name: { value: get(initialData, 'name', ''), errors: [] },
+            source_ref: {
+                value: get(initialData, 'source_ref', ''),
+                errors: [],
+            },
         };
     }
 
@@ -120,6 +124,16 @@ class GroupDialogComponent extends Component {
                             type="text"
                             label={MESSAGES.name}
                             required
+                        />
+                        <InputComponent
+                            keyValue="source_ref"
+                            onChange={(key, value) =>
+                                this.setFieldValue(key, value)
+                            }
+                            value={this.state.source_ref.value}
+                            errors={this.state.source_ref.errors}
+                            type="text"
+                            label={MESSAGES.sourceRef}
                         />
                     </Grid>
                 </Grid>

@@ -10,7 +10,7 @@ class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
         fields = ["id", "name", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
-        read_only_fields = ["id", "source_ref", "source_version", "org_unit_count", "created_at", "updated_at"]
+        read_only_fields = ["id", "source_version", "org_unit_count", "created_at", "updated_at"]
 
     source_version = serializers.SerializerMethodField(read_only=True)  # TODO: use serializer
     org_unit_count = serializers.IntegerField(read_only=True)

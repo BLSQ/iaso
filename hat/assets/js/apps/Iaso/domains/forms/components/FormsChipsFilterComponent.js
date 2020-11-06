@@ -22,7 +22,7 @@ const styles = theme => ({
     },
 });
 
-function FormsChipsFilterComponent(props) {
+export function FormsChipsFilterComponent(props) {
     const {
         classes,
         formsSelected,

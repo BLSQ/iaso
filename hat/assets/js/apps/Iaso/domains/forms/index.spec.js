@@ -19,21 +19,21 @@ const requests = [
         result: {
             projects: [],
         },
-        onSuccess: projectsSpy(),
+        onSuccess: () => projectsSpy(),
     },
     {
         url: '/api/orgunittypes/',
         result: {
             orgUnitTypes: [],
         },
-        onSuccess: orgUnitTypesSpy(),
+        onSuccess: () => orgUnitTypesSpy(),
     },
     {
         url: '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
         result: {
             forms: [],
         },
-        onSuccess: formsSpy(),
+        onSuccess: () => formsSpy(),
     },
 ];
 

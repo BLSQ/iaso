@@ -6,7 +6,12 @@ import ConnectedFormsDialog, {
 import { renderWithStore } from '../../../../../test/utils/redux';
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
-import { mockPutRequest } from '../../../../../test/utils/requests';
+import {
+    mockPutRequest,
+    mockDeleteRequest,
+    mockPostRequest,
+    mockPutRequest2,
+} from '../../../../../test/utils/requests';
 
 const actions = require('../actions');
 
@@ -14,6 +19,7 @@ let wrapper;
 let instance;
 let confirmCancelDialogComponent;
 let setIsLoadingFormStub;
+let timer;
 
 const fieldsList = [
     'name',
@@ -217,34 +223,72 @@ describe('FormDialogComponent', () => {
                     ...initialState,
                     id: { value: 1, errors: [] },
                 });
-                // setIsLoadingFormSpy = sinon.spy();
-                // mock('../actions', {
-                //     setIsLoadingForm: setIsLoadingFormSpy(),
-                // });
                 mockPutRequest('/api/forms/1/');
-                instance.onConfirm(() => null);
-                expect(setIsLoadingFormStub).to.have.been.calledOnce;
+                instance.onConfirm();
+                expect(setIsLoadingFormStub).to.have.been.called;
             });
+
+            // it('should call closeDialog on success', () => {
+            //     const closeDialogSpy = sinon.spy();
+            //     const fakeCloseDialog = () => {
+            //         closeDialogSpy();
+            //     };
+            //     mockPutRequest2('/api/forms/1/', () => {
+            //         timer = setTimeout(() => {
+            //             expect(closeDialogSpy).to.have.been.calledOnce;
+            //             nock.cleanAll();
+            //         }, 10);
+            //     });
+            //     instance.onConfirm(fakeCloseDialog);
+            // });
+
             it('should call update api url', () => {
                 const callBackSpy = sinon.spy();
-                mockPutRequest('/api/forms/1/', [], callBackSpy());
-                instance.onConfirm(() => null);
+                mockPutRequest('/api/forms/1/', [], () => callBackSpy());
+                instance.onConfirm();
                 expect(callBackSpy).to.have.been.calledOnce;
             });
-            it('should call closeDialog on success', () => {
+            it('should call createFormVersion if xls_file and isUpdate', () => {
+                instance.setState({
+                    ...instance.state,
+                    xls_file: { value: ['ocarina of time'], errors: [] },
+                });
+                const callBackSpy = sinon.spy();
                 mockPutRequest('/api/forms/1/');
-                const closeDialogSpy = sinon.spy();
-                instance.onConfirm(closeDialogSpy());
-                expect(closeDialogSpy).to.have.been.calledOnce;
+                mockPostRequest('/api/formversions/', [], () => callBackSpy());
+                instance.onConfirm();
+                expect(callBackSpy).to.have.been.calledOnce;
             });
-            it('should call create api url if no initial data Data', () => {
+            it('should call create api url if no initial data', () => {
                 wrapper = shallow(<FormDialogComponent {...defaultProps} />);
                 instance = wrapper.instance();
                 const callBackSpy = sinon.spy();
-                mockPutRequest('/api/forms/', [], callBackSpy());
-                instance.onConfirm(() => null);
+                mockPostRequest('/api/forms/', [], () => callBackSpy());
+                instance.onConfirm();
                 expect(callBackSpy).to.have.been.calledOnce;
             });
+
+            // after(() => {
+            //     clearTimeout(timer);
+            // });
+
+            // it('should call deleteForm if createFormVersion error and not isUpdate', () => {
+            //     wrapper = shallow(<FormDialogComponent {...defaultProps} />);
+            //     instance = wrapper.instance();
+            //     instance.setState({
+            //         ...initialState,
+            //         xls_file: { value: ['ocarina of time'], errors: [] },
+            //     });
+            //     const deleteCallBackSpy = sinon.spy();
+            //     mockPostRequest('/api/forms/1/');
+            //     mockPostRequest('/api/formversions/', [], () => null, true);
+            //     mockDeleteRequest('/api/forms/1/', [], () =>
+            //         deleteCallBackSpy(),
+            //     );
+            //     instance.onConfirm();
+            //     expect(deleteCallBackSpy).to.have.been.calledOnce;
+            //     nock.cleanAll();
+            // });
         });
     });
 });

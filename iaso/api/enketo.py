@@ -28,8 +28,9 @@ def public_url_for_enketo(request, path):
     resolved_path = request.build_absolute_uri(path)
 
     if enketo_settings().get("ENKETO_DEV"):
+        print("before", resolved_path)
         resolved_path = resolved_path.replace("localhost", "docker-host")
-
+        print("after", resolved_path)
     return resolved_path
 
 
@@ -57,7 +58,7 @@ def enketo_create_url(request):
         edit_url = enketo_url_for_creation(
             server_url=public_url_for_enketo(request, "/api/enketo"),
             uuid=uuid,
-            return_url=public_url_for_enketo(request, "/dashboard/instance/instanceId/%s" % i.id),
+            return_url=request.build_absolute_uri("/dashboard/instance/instanceId/%s" % i.id),
         )
 
         return JsonResponse({"edit_url": edit_url}, status=201)

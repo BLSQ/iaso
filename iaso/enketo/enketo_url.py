@@ -31,7 +31,7 @@ def enketo_url_for_creation(uuid, server_url, return_url):
 
     settings = enketo_settings()
     url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
-    url = urljoin(url, "single")
+    url = urljoin(url, "/single")
     data = {"server_url": server_url, "form_id": uuid, "return_url": u"%s" % return_url}
     return get_url_from_enketo(url, data)
 
@@ -48,7 +48,7 @@ def enketo_url_for_edition(
 
     settings = enketo_settings()
     url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_SURVEY_PATH"])
-
+    url = urljoin(url, "/single")
     data = {"form_id": form_id_string, "server_url": form_url}
     if instance_id is not None and instance_xml is not None:
         url = urljoin(settings["ENKETO_URL"], settings["ENKETO_API_INSTANCE_PATH"])
@@ -66,6 +66,7 @@ def enketo_url_for_edition(
 def get_url_from_enketo(url, data):
     try:
         settings = enketo_settings()
+        print(url, data)
         response = requests.post(
             url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True
         )
@@ -82,7 +83,7 @@ def get_url_from_enketo(url, data):
             except ValueError:
                 pass
             else:
-                url = data.get("edit_url") or data.get("offline_url") or data.get("url")
+                url = data.get("edit_url") or data.get("offline_url") or data.get("url") or data.get("single_url")
                 if url:
                     if settings.get("ENKETO_DEV"):
                         return url.replace("https://", "http://")

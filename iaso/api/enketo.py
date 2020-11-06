@@ -152,7 +152,11 @@ class EnketoSubmissionAPIView(APIView):
             xml = main_file.read()
             soup = Soup(xml, "xml")
             # should we add form_id criteria or instanceID is enough ?
-            instanceid = soup.data["iasoInstance"]
+
+            for c in soup:
+                if c.attrs.get("iasoInstance", None):
+                    instanceid = c.attrs["iasoInstance"]
+
             try:
                 user_id = soup.meta.editUserID.contents[0].strip()
                 user = User.objects.filter(id=user_id).first()

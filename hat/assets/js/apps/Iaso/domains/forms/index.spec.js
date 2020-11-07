@@ -1,4 +1,5 @@
 import React from 'react';
+import nock from 'nock';
 
 import ConnectedForms, { Forms } from './index';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -9,31 +10,24 @@ import FormDialogComponent from './components/FormDialogComponent';
 import { renderWithStore } from '../../../../test/utils/redux';
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 
-const formsSpy = sinon.spy();
-const projectsSpy = sinon.spy();
-const orgUnitTypesSpy = sinon.spy();
-
 const requests = [
     {
         url: '/api/projects/',
         result: {
             projects: [],
         },
-        onSuccess: () => projectsSpy(),
     },
     {
         url: '/api/orgunittypes/',
         result: {
             orgUnitTypes: [],
         },
-        onSuccess: () => orgUnitTypesSpy(),
     },
     {
         url: '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
         result: {
             forms: [],
         },
-        onSuccess: () => formsSpy(),
     },
 ];
 
@@ -49,13 +43,7 @@ describe('Forms connected component', () => {
 
     describe('should connect to api', () => {
         it('and call forms api', () => {
-            expect(formsSpy).to.have.been.calledOnce;
-        });
-        it('and call projects api', () => {
-            expect(projectsSpy).to.have.been.calledOnce;
-        });
-        it('and call org unit type api', () => {
-            expect(orgUnitTypesSpy).to.have.been.calledOnce;
+            expect(nock.activeMocks()).to.have.lengthOf(0);
         });
     });
 });

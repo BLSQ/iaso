@@ -1,4 +1,5 @@
 import React from 'react';
+import nock from 'nock';
 
 import ConnectedFormsDialog, {
     FormDialogComponent,
@@ -10,12 +11,14 @@ import {
     mockPutRequest,
     mockDeleteRequest,
     mockPostRequest,
-    mockPutRequest2,
+    mockPostRequestError,
 } from '../../../../../test/utils/requests';
 
 const actions = require('../actions');
 
 let wrapper;
+let connectedWrapper;
+let formDialogComponent;
 let instance;
 let confirmCancelDialogComponent;
 let setIsLoadingFormStub;
@@ -69,15 +72,189 @@ const initialState = {
 };
 
 describe('FormDialogComponent', () => {
-    afterEach(() => {
-        sinon.restore();
-    });
     it('connected component mount properly', () => {
-        const connectedWrapper = mount(
+        connectedWrapper = mount(
             renderWithStore(<ConnectedFormsDialog {...defaultProps} />),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });
+    describe('onConfirm method', () => {
+        before(() => {
+            setIsLoadingFormStub = sinon
+                .stub(actions, 'setIsLoadingForm')
+                .returns({
+                    type: 'TRUX',
+                    payload: '',
+                });
+            formDialogComponent = connectedWrapper.find(FormDialogComponent);
+            instance = connectedWrapper.find(FormDialogComponent).instance();
+        });
+
+        it('should trigger setIsLoadingForm action', () => {
+            formDialogComponent.setState({
+                ...initialState,
+                id: { value: 1, errors: [] },
+            });
+            instance.onConfirm();
+            mockPostRequest('/api/forms/', { id: 1 });
+            expect(setIsLoadingFormStub).to.have.been.called;
+        });
+
+        describe('on create', () => {
+            it('should call closeDialog on success', () => {
+                const closeDialogSpy = sinon.spy();
+                const fakeCloseDialog = () => {
+                    closeDialogSpy();
+                    return Promise.resolve();
+                };
+                const fakePromise = fakeCloseDialog().then(() => {
+                    expect(closeDialogSpy).to.have.been.calledOnce;
+                });
+                mockPostRequest('/api/forms/', { id: 1 });
+                mockDeleteRequest('/api/forms/1/', []);
+                instance.onConfirm(fakePromise);
+            });
+
+            it('should call create api url if no initial data', async () => {
+                mockDeleteRequest('/api/forms/1/', []);
+                mockPostRequest('/api/forms/', { id: 1 });
+                await instance.onConfirm();
+                expect(nock.activeMocks()).to.have.lengthOf(0);
+            });
+
+            it('should call deleteForm if createFormVersion error and not isUpdate', async () => {
+                mockPostRequest('/api/forms/', { id: 1 });
+                mockPostRequestError(
+                    '/api/formversions/',
+                    {
+                        name: ['This field may not be blank.'],
+                        project_ids: ['This list may not be empty.'],
+                    },
+                    /form-data; name="field"[^]*value/m,
+                );
+                mockDeleteRequest('/api/forms/1/', []);
+
+                await instance.onConfirm(() => null);
+                expect(nock.activeMocks()).to.have.lengthOf(0);
+            });
+
+            afterEach(() => {
+                nock.cleanAll();
+                nock.abortPendingRequests();
+            });
+        });
+
+        describe('on update', () => {
+            before(() => {
+                nock.cleanAll();
+                nock.abortPendingRequests();
+            });
+            beforeEach(() => {
+                connectedWrapper = mount(
+                    renderWithStore(
+                        <ConnectedFormsDialog
+                            {...defaultProps}
+                            initialData={{
+                                id: null,
+                                name: '',
+                                xls_file: null,
+                                period_type: null,
+                                derived: false,
+                                single_per_period: false,
+                                periods_before_allowed: 0,
+                                periods_after_allowed: 0,
+                                device_field: 'deviceid',
+                                location_field: '',
+                                org_unit_types: [
+                                    {
+                                        id: 1,
+                                    },
+                                ],
+                                projects: [
+                                    {
+                                        id: 1,
+                                    },
+                                ],
+                            }}
+                        />,
+                    ),
+                );
+                formDialogComponent = connectedWrapper.find(
+                    FormDialogComponent,
+                );
+                instance = connectedWrapper
+                    .find(FormDialogComponent)
+                    .instance();
+            });
+            // it('should call createFormVersion if xls_file and isUpdate', async () => {
+            //     instance.setState({
+            //         ...instance.state,
+            //         id: { value: 1, errors: [] },
+            //         xls_file: { value: ['ocarina of time'], errors: [] },
+            //     });
+            //     mockPutRequest('/api/forms/1/', { id: 1 });
+
+            //     mockPostRequest(
+            //         '/api/formversions/',
+            //         { id: 1 },
+            //         /form-data; name="field"[^]*value/m,
+            //     );
+            //     await instance.onConfirm(() => null);
+            //     expect(nock.activeMocks()).to.have.lengthOf(0);
+            // });
+            it('should call update api url', async () => {
+                instance.setState({
+                    ...instance.state,
+                    id: { value: 1, errors: [] },
+                    xls_file: { value: null, errors: [] },
+                });
+                mockPutRequest('/api/forms/1/', { id: 1 });
+                await instance.onConfirm(() => null);
+                expect(nock.activeMocks()).to.have.lengthOf(0);
+            });
+            it('should not call createFormVersion if no xls_file and isUpdate', async () => {
+                instance.setState({
+                    ...instance.state,
+                    id: { value: 1, errors: [] },
+                    xls_file: { value: null, errors: [] },
+                });
+                mockPutRequest('/api/forms/1/', { id: 1 });
+                mockPostRequest(
+                    '/api/formversions/',
+                    { id: 1 },
+                    /form-data; name="field"[^]*value/m,
+                );
+                await instance.onConfirm(() => null);
+
+                expect(nock.activeMocks()).to.have.lengthOf(1);
+            });
+
+            it('should not call deleteForm if createFormVersion error', async () => {
+                instance.setState({
+                    ...instance.state,
+                    id: { value: 1, errors: [] },
+                    xls_file: { value: null, errors: [] },
+                });
+                mockPutRequest('/api/forms/1/', { id: 1 });
+                mockPostRequestError(
+                    '/api/formversions/',
+                    {
+                        name: ['This field may not be blank.'],
+                        project_ids: ['This list may not be empty.'],
+                    },
+                    /form-data; name="field"[^]*value/m,
+                );
+                await instance.onConfirm(() => null);
+                expect(nock.activeMocks()).to.have.lengthOf(1);
+            });
+
+            afterEach(() => {
+                nock.cleanAll();
+                nock.abortPendingRequests();
+            });
+        });
+    });
+
     describe('pure component', () => {
         it('mount properly', () => {
             wrapper = shallow(<FormDialogComponent {...defaultProps} />);
@@ -213,82 +390,6 @@ describe('FormDialogComponent', () => {
                 expect(setPeriodTypeStub).to.have.been.calledOnce;
                 expect(setPeriodTypeStub).to.have.been.calledWith(value);
             });
-        });
-        describe('onConfirm method', () => {
-            before(() => {
-                setIsLoadingFormStub = sinon.stub(actions, 'setIsLoadingForm');
-            });
-            it('should trigger setIsLoadingForm action', () => {
-                instance.setState({
-                    ...initialState,
-                    id: { value: 1, errors: [] },
-                });
-                mockPutRequest('/api/forms/1/');
-                instance.onConfirm();
-                expect(setIsLoadingFormStub).to.have.been.called;
-            });
-
-            // it('should call closeDialog on success', () => {
-            //     const closeDialogSpy = sinon.spy();
-            //     const fakeCloseDialog = () => {
-            //         closeDialogSpy();
-            //     };
-            //     mockPutRequest2('/api/forms/1/', () => {
-            //         timer = setTimeout(() => {
-            //             expect(closeDialogSpy).to.have.been.calledOnce;
-            //             nock.cleanAll();
-            //         }, 10);
-            //     });
-            //     instance.onConfirm(fakeCloseDialog);
-            // });
-
-            it('should call update api url', () => {
-                const callBackSpy = sinon.spy();
-                mockPutRequest('/api/forms/1/', [], () => callBackSpy());
-                instance.onConfirm();
-                expect(callBackSpy).to.have.been.calledOnce;
-            });
-            it('should call createFormVersion if xls_file and isUpdate', () => {
-                instance.setState({
-                    ...instance.state,
-                    xls_file: { value: ['ocarina of time'], errors: [] },
-                });
-                const callBackSpy = sinon.spy();
-                mockPutRequest('/api/forms/1/');
-                mockPostRequest('/api/formversions/', [], () => callBackSpy());
-                instance.onConfirm();
-                expect(callBackSpy).to.have.been.calledOnce;
-            });
-            it('should call create api url if no initial data', () => {
-                wrapper = shallow(<FormDialogComponent {...defaultProps} />);
-                instance = wrapper.instance();
-                const callBackSpy = sinon.spy();
-                mockPostRequest('/api/forms/', [], () => callBackSpy());
-                instance.onConfirm();
-                expect(callBackSpy).to.have.been.calledOnce;
-            });
-
-            // after(() => {
-            //     clearTimeout(timer);
-            // });
-
-            // it('should call deleteForm if createFormVersion error and not isUpdate', () => {
-            //     wrapper = shallow(<FormDialogComponent {...defaultProps} />);
-            //     instance = wrapper.instance();
-            //     instance.setState({
-            //         ...initialState,
-            //         xls_file: { value: ['ocarina of time'], errors: [] },
-            //     });
-            //     const deleteCallBackSpy = sinon.spy();
-            //     mockPostRequest('/api/forms/1/');
-            //     mockPostRequest('/api/formversions/', [], () => null, true);
-            //     mockDeleteRequest('/api/forms/1/', [], () =>
-            //         deleteCallBackSpy(),
-            //     );
-            //     instance.onConfirm();
-            //     expect(deleteCallBackSpy).to.have.been.calledOnce;
-            //     nock.cleanAll();
-            // });
         });
     });
 });

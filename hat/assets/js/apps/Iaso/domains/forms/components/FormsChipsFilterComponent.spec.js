@@ -1,4 +1,5 @@
 import React from 'react';
+import nock from 'nock';
 
 import ConnectedFormsChipsFilterComponent, {
     FormsChipsFilterComponent,
@@ -17,9 +18,11 @@ let setFormsSelectedStub;
 
 const defaultProps = {
     classes: {},
-    formsSelected: {
-        id: 1,
-    },
+    formsSelected: [
+        {
+            id: 1,
+        },
+    ],
     currentForms: [[{ id: 1 }]],
     dispatch: arg => arg,
     currentOrgUnit: {
@@ -38,27 +41,6 @@ describe('FormsChipsFilterComponent', () => {
         connectedWrapper = mount(
             renderWithStore(
                 <ConnectedFormsChipsFilterComponent {...defaultProps} />,
-            ),
-        );
-        expect(connectedWrapper.exists()).to.equal(true);
-    });
-
-    it('should call setFormsSelected if trigger component props setFormsSelected', () => {
-        formsChipsFilterComponent = connectedWrapper
-            .find(FormsChipsFilterComponent)
-            .props();
-        formsChipsFilterComponent.setFormsSelected();
-        expect(setFormsSelectedStub).to.have.been.called;
-    });
-
-    it('fetchDetails props should call fetchInstancesAsLocationsByForm', () => {
-        const form = {
-            id: 1,
-        };
-        const callBackSpy = sinon.spy();
-        connectedWrapper = mount(
-            renderWithStore(
-                <ConnectedFormsChipsFilterComponent {...defaultProps} />,
                 {
                     orgUnits: {
                         ...orgUnitsInitialState,
@@ -67,14 +49,32 @@ describe('FormsChipsFilterComponent', () => {
                 },
             ),
         );
+        expect(connectedWrapper.exists()).to.equal(true);
+    });
+
+    it('should call setFormsSelected if trigger component props setFormsSelected', () => {
+        formsChipsFilterComponent = connectedWrapper.find(
+            FormsChipsFilterComponent,
+        );
+        formsChipsFilterComponent.props().setFormsSelected();
+        expect(setFormsSelectedStub).to.have.been.called;
+    });
+
+    it('fetchDetails props should call fetchInstancesAsLocationsByForm', () => {
+        const form = {
+            id: 1,
+        };
         mockGetRequest(
             `/api/instances?as_location=true&form_id=${form.id}&orgUnitId=1`,
             [],
-            () => callBackSpy(),
         );
         chipsFilterComponent = connectedWrapper.find(ChipsFilterComponent);
-        chipsFilterComponent.props().fetchDetails(form);
-        expect(callBackSpy).to.have.been.calledOnce;
+        chipsFilterComponent
+            .props()
+            .fetchDetails(form)
+            .then(() => {
+                expect(nock.pendingMocks()).to.have.lengthOf(0);
+            });
     });
 
     it('pure component mount properly', () => {

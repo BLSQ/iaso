@@ -67,7 +67,7 @@ export class FormDialogComponent extends Component {
             );
         }
         dispatch(setIsLoadingForm(true));
-        saveForm
+        return saveForm
             .then(savedFormData => {
                 if (isUpdate && this.state.xls_file.value === null) {
                     // allow form update without new version

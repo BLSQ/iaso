@@ -1,63 +1,38 @@
 const nock = require('nock');
 
-export const mockPutRequest = (
-    url,
-    result = [],
-    spy = () => null,
-    error = false,
-) => {
-    const onReply = () => {
-        spy();
-        return result;
-    };
-    if (!error) {
-        nock('http://localhost:80').put(url).reply(200, onReply());
-    }
-    nock('http://localhost:80').put(url).replyWithError(500);
+const defautlHeader = {
+    reqheaders: { 'Content-Type': 'application/json' },
 };
-export const mockPostRequest = (
-    url,
-    result = [],
-    spy = () => null,
-    error = false,
-) => {
-    const onReply = () => {
-        spy();
-        return result;
-    };
-    if (!error) {
-        nock('http://localhost:80').post(url).reply(200, onReply());
-    }
-    nock('http://localhost:80').post(url).replyWithError(500);
+const baseUrl = 'http://localhost:80';
+export const mockPutRequest = (url, result = [], headers = defautlHeader) => {
+    return nock(baseUrl, headers).put(url).reply(200, result);
 };
 
-export const mockGetRequest = (url, result = [], spy = () => null) => {
-    const onReply = () => {
-        spy();
-        return result;
-    };
-    nock('http://localhost:80').get(url).reply(200, onReply());
+export const mockPostRequest = (url, result = [], headers = defautlHeader) => {
+    return nock(baseUrl, headers).post(url).reply(200, result);
+};
+export const mockPostRequestError = (
+    url,
+    result = {},
+    headers = defautlHeader,
+) => {
+    return nock(baseUrl, headers).post(url).reply(400, result);
 };
 
-export const mockDeleteRequest = (url, result = [], spy = () => null) => {
-    const onReply = () => {
-        spy();
-        return result;
-    };
-    nock('http://localhost:80').delete(url).reply(200, onReply());
+export const mockGetRequest = (url, result = []) => {
+    return nock(baseUrl).get(url).reply(200, result);
 };
+
+export const mockDeleteRequest = (
+    url,
+    result = [],
+    headers = defautlHeader,
+) => {
+    return nock(baseUrl, headers).delete(url).reply(200, result);
+};
+
 export const mockGetRequestsList = requests => {
     requests.forEach(r => {
         mockGetRequest(r.url, r.result, r.onSuccess);
     });
-};
-
-export const mockPutRequest2 = (url, spy, error = false) => {
-    const onReply = () => {
-        return spy();
-    };
-    if (!error) {
-        nock('http://localhost:80').put(url).reply(200, onReply());
-    }
-    nock('http://localhost:80').put(url).replyWithError(500);
 };

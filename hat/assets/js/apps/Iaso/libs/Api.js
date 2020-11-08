@@ -11,8 +11,10 @@ class ApiError extends Error {
 
         this.name = 'ApiError';
         // Custom debugging information
-        this.status = response.status;
-        this.details = response.body;
+        if (response) {
+            this.status = response.status;
+            this.details = response.body;
+        }
     }
 }
 

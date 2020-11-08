@@ -13,19 +13,19 @@ import { mockGetRequestsList } from '../../../../test/utils/requests';
 const requests = [
     {
         url: '/api/projects/',
-        result: {
+        body: {
             projects: [],
         },
     },
     {
         url: '/api/orgunittypes/',
-        result: {
+        body: {
             orgUnitTypes: [],
         },
     },
     {
         url: '/api/forms/?all=true&order=instance_updated_at&limit=50&page=1',
-        result: {
+        body: {
             forms: [],
         },
     },

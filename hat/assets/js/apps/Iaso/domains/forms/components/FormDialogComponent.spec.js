@@ -12,7 +12,12 @@ import {
     mockDeleteRequest,
     mockPostRequest,
     mockPostRequestError,
+    mockDeleteRequestError,
 } from '../../../../../test/utils/requests';
+
+const fs = require('fs');
+
+const textFile = `${__dirname}/../../../../../test/utils/test.txt`;
 
 const actions = require('../actions');
 
@@ -22,7 +27,6 @@ let formDialogComponent;
 let instance;
 let confirmCancelDialogComponent;
 let setIsLoadingFormStub;
-let timer;
 
 const fieldsList = [
     'name',
@@ -90,17 +94,22 @@ describe('FormDialogComponent', () => {
             instance = connectedWrapper.find(FormDialogComponent).instance();
         });
 
-        it('should trigger setIsLoadingForm action', () => {
+        it('should trigger setIsLoadingForm action', async () => {
             formDialogComponent.setState({
                 ...initialState,
                 id: { value: 1, errors: [] },
             });
-            instance.onConfirm();
+            await instance.onConfirm(() => null);
             mockPostRequest('/api/forms/', { id: 1 });
             expect(setIsLoadingFormStub).to.have.been.called;
         });
 
         describe('on create', () => {
+            before(() => {
+                nock.cleanAll();
+                nock.abortPendingRequests();
+            });
+
             it('should call closeDialog on success', () => {
                 const closeDialogSpy = sinon.spy();
                 const fakeCloseDialog = () => {
@@ -116,28 +125,42 @@ describe('FormDialogComponent', () => {
             });
 
             it('should call create api url if no initial data', async () => {
-                mockDeleteRequest('/api/forms/1/', []);
+                mockPostRequest('/api/formversions/');
                 mockPostRequest('/api/forms/', { id: 1 });
-                await instance.onConfirm();
+                await instance.onConfirm(() => null);
                 expect(nock.activeMocks()).to.have.lengthOf(0);
             });
 
             it('should call deleteForm if createFormVersion error and not isUpdate', async () => {
                 mockPostRequest('/api/forms/', { id: 1 });
-                mockPostRequestError(
-                    '/api/formversions/',
-                    {
-                        name: ['This field may not be blank.'],
-                        project_ids: ['This list may not be empty.'],
-                    },
-                    /form-data; name="field"[^]*value/m,
-                );
+                mockPostRequestError('/api/formversions/');
+
+                //         {
+                //             name: ['This field may not be blank.'],
+                //             project_ids: ['This list may not be empty.'],
+                //         },
                 mockDeleteRequest('/api/forms/1/', []);
 
                 await instance.onConfirm(() => null);
                 expect(nock.activeMocks()).to.have.lengthOf(0);
             });
 
+            it('should not call deleteForm if createFormVersion error and throw error on delete', async () => {
+                instance.setState({
+                    ...instance.state,
+                    xls_file: {
+                        value: fs.createReadStream(textFile),
+                        errors: [],
+                    },
+                });
+                mockPostRequest('/api/forms/', { id: 1 });
+
+                mockPostRequestError('/api/formversions/');
+                mockDeleteRequestError('/api/forms/1/');
+                await instance.onConfirm(() => null);
+
+                expect(nock.activeMocks()).to.have.lengthOf(0);
+            });
             afterEach(() => {
                 nock.cleanAll();
                 nock.abortPendingRequests();
@@ -186,22 +209,7 @@ describe('FormDialogComponent', () => {
                     .find(FormDialogComponent)
                     .instance();
             });
-            // it('should call createFormVersion if xls_file and isUpdate', async () => {
-            //     instance.setState({
-            //         ...instance.state,
-            //         id: { value: 1, errors: [] },
-            //         xls_file: { value: ['ocarina of time'], errors: [] },
-            //     });
-            //     mockPutRequest('/api/forms/1/', { id: 1 });
 
-            //     mockPostRequest(
-            //         '/api/formversions/',
-            //         { id: 1 },
-            //         /form-data; name="field"[^]*value/m,
-            //     );
-            //     await instance.onConfirm(() => null);
-            //     expect(nock.activeMocks()).to.have.lengthOf(0);
-            // });
             it('should call update api url', async () => {
                 instance.setState({
                     ...instance.state,
@@ -219,13 +227,13 @@ describe('FormDialogComponent', () => {
                     xls_file: { value: null, errors: [] },
                 });
                 mockPutRequest('/api/forms/1/', { id: 1 });
-                mockPostRequest(
-                    '/api/formversions/',
-                    { id: 1 },
-                    /form-data; name="field"[^]*value/m,
-                );
+                mockPostRequest('/api/formversions/', { id: 1 });
                 await instance.onConfirm(() => null);
 
+                const expectedMock = [
+                    'POST http://localhost:80/api/formversions/',
+                ];
+                expect(nock.activeMocks()).to.eql(expectedMock);
                 expect(nock.activeMocks()).to.have.lengthOf(1);
             });
 
@@ -233,18 +241,20 @@ describe('FormDialogComponent', () => {
                 instance.setState({
                     ...instance.state,
                     id: { value: 1, errors: [] },
-                    xls_file: { value: null, errors: [] },
+                    xls_file: {
+                        value: fs.createReadStream(textFile),
+                        errors: [],
+                    },
                 });
                 mockPutRequest('/api/forms/1/', { id: 1 });
-                mockPostRequestError(
-                    '/api/formversions/',
-                    {
-                        name: ['This field may not be blank.'],
-                        project_ids: ['This list may not be empty.'],
-                    },
-                    /form-data; name="field"[^]*value/m,
-                );
+
+                mockPostRequestError('/api/formversions/');
+                mockDeleteRequest('/api/forms/1/', []);
                 await instance.onConfirm(() => null);
+                const expectedMock = [
+                    'DELETE http://localhost:80/api/forms/1/',
+                ];
+                expect(nock.activeMocks()).to.eql(expectedMock);
                 expect(nock.activeMocks()).to.have.lengthOf(1);
             });
 

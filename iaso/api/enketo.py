@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup as Soup
-from django.http import HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework import permissions
@@ -17,7 +18,7 @@ from iaso.enketo import (
     ENKETO_FORM_ID_SEPARATOR,
 )
 from iaso.enketo import calculate_file_md5
-from iaso.models import Form, Instance, InstanceFile
+from iaso.models import Form, Instance, InstanceFile, OrgUnit
 
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.models import User
@@ -28,9 +29,7 @@ def public_url_for_enketo(request, path):
     resolved_path = request.build_absolute_uri(path)
 
     if enketo_settings().get("ENKETO_DEV"):
-        print("before", resolved_path)
         resolved_path = resolved_path.replace("localhost", "docker-host")
-        print("after", resolved_path)
     return resolved_path
 
 
@@ -42,7 +41,7 @@ def enketo_create_url(request):
     org_unit_id = request.data.get("org_unit_id")
 
     uuid = str(uuid4())
-    form = Form.objects.get(id=form_id)
+    form = get_object_or_404(Form, id=form_id)
 
     i = Instance(
         form_id=form_id,
@@ -65,6 +64,33 @@ def enketo_create_url(request):
     except EnketoError as error:
         print(error)
         return JsonResponse({"error": str(error)}, status=409)
+
+
+@api_view(["GET"])
+def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
+    form = get_object_or_404(Form, uuid=form_uuid)
+
+    org_unit = get_object_or_404(OrgUnit, id=org_unit_id)
+    uuid = str(uuid4())
+    i = Instance(
+        form_id=form.id,
+        period=period,
+        uuid=uuid,
+        org_unit=org_unit,
+        project=form.projects.first(),
+        file_name=str(uuid) + "xml",
+    )  # warning for access rights here
+    i.save()
+
+    try:
+        edit_url = enketo_url_for_creation(
+            server_url=public_url_for_enketo(request, "/api/enketo"),
+            uuid=uuid,
+        )
+
+        return HttpResponseRedirect(edit_url)
+    except EnketoError as error:
+        return HttpResponse( str(error), status=409)
 
 
 @api_view(["GET"])
@@ -106,7 +132,7 @@ def enketo_edit_url(request, instance_uuid):
 def enketo_form_list(request):
     form_id_str = request.GET["formID"]
     i = Instance.objects.get(uuid=form_id_str)
-    lastest_form_version = i.form.latest_version
+    latest_form_version = i.form.latest_version
     # will it work through s3, what about "signing" infos if they expires ?
     downloadurl = public_url_for_enketo(request, "/api/enketo/formDownload/?uuid=%s" % i.uuid)
 
@@ -114,8 +140,8 @@ def enketo_form_list(request):
         xforms = to_xforms_xml(
             i.form,
             download_url=downloadurl,
-            version=lastest_form_version.version_id,
-            md5checksum=calculate_file_md5(lastest_form_version.file),
+            version=latest_form_version.version_id,
+            md5checksum=calculate_file_md5(latest_form_version.file),
             new_form_id=form_id_str,
         )
 

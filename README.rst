@@ -9,8 +9,7 @@ Iaso is a georegistry and data collection web platform structured around trees o
 The main tasks it allows to do are:
 
 - Data collection using [XLSForm](https://xlsform.org/) forms linked to org units through a mobile application.
-- Import, comparison and merging of multiple org. units trees, both through a web application and an API allowing manipulation
-through data science tools like [Jupyter notebooks](https://jupyter.org/).
+- Import, comparison and merging of multiple org. units trees, both through a web application and an API allowing manipulation through data science tools like [Jupyter notebooks](https://jupyter.org/).
 - Validation of received data for org. units trees and forms.
 - Exports of the org. unit trees and form data, either in csv, xlsx, [GeoPackage](https://www.geopackage.org/) or through an api.
 

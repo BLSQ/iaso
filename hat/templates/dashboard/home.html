@@ -1,0 +1,26 @@
+{% extends 'app.html' %}
+{% load i18n %}
+{% load static %}
+{% load render_bundle from webpack_loader %}
+{% block extrajs %}
+    <script type="text/javascript">
+        var STATIC_URL = "{{ STATIC_URL }}";
+    </script>
+{% endblock %}
+{% block content %}
+
+  <div>
+    <div id="app"></div>
+  </div>
+
+  {% render_bundle 'common' %}
+  {% render_bundle 'home' %}
+  <script>
+    HAT.home.default(
+      {},
+      document.getElementById('app'),
+      '/dashboard/home/'
+    )
+  </script>
+
+{% endblock %}

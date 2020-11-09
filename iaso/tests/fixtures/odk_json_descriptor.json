@@ -1,0 +1,425 @@
+{
+  "name": "survey",
+  "type": "survey",
+  "title": "qlty_pca_03_business_plan_trimestriel",
+  "id_string": "qlty_pca_fosa_business_plan",
+  "sms_keyword": "qlty_pca_fosa_business_plan",
+  "default_language": "default",
+  "children": [
+    {
+      "name": "start",
+      "label": {
+        "French": "Survey start time: ${start}",
+        "English": "Survey start time: ${start}"
+      },
+      "type": "start"
+    },
+    {
+      "name": "end",
+      "label": {
+        "French": "Survey end time: ${end}",
+        "English": "Survey end time: ${end}"
+      },
+      "type": "end"
+    },
+    {
+      "name": "today",
+      "label": {
+        "French": "Today: ${today}",
+        "English": "Today: ${today}"
+      },
+      "type": "today"
+    },
+    {
+      "name": "deviceid",
+      "label": {
+        "French": "deviceid: ${deviceid}",
+        "English": "deviceid: ${deviceid}"
+      },
+      "type": "deviceid"
+    },
+    {
+      "name": "subscriberid",
+      "label": {
+        "French": "subscriberid ${subscriberid}",
+        "English": "subscriberid ${subscriberid}"
+      },
+      "type": "subscriberid"
+    },
+    {
+      "name": "imei",
+      "label": {
+        "French": "imei: ${imei}",
+        "English": "imei: ${imei}"
+      },
+      "type": "deviceid"
+    },
+    {
+      "name": "simserial",
+      "label": {
+        "French": "simserial: ${simserial}",
+        "English": "simserial: ${simserial}"
+      },
+      "type": "simserial"
+    },
+    {
+      "name": "phonenumber",
+      "label": {
+        "French": "phone: ${phonenumber}",
+        "English": "phone: ${phonenumber}"
+      },
+      "type": "phonenumber"
+    },
+    {
+      "name": "PBF_PCA_qlt_begin_v3",
+      "label": {
+        "French": "3. BUSINESS PLAN TRIMESTRIEL",
+        "English": "3. QUARTERLY BUSINESS PLAN"
+      },
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "PBF_PCA_qlt_3_1_1",
+          "label": {
+            "French": "3.1. Business plan trimestriel de l'Hôpital disponible et accessible :",
+            "English": "3.1. Hospital quarterly business plan available and accessible:"
+          },
+          "hint": "Le vérificateur vérifie le business plan en vigueur signé entre le manager et le responsable de la FOSA (Voir trimestre en cours)",
+          "type": "select one",
+          "bind": {
+            "required": "yes"
+          },
+          "list_name": "Oui_non",
+          "children": [
+            {
+              "name": "1",
+              "label": "Oui"
+            },
+            {
+              "name": "0",
+              "label": "Non"
+            }
+          ]
+        },
+        {
+          "name": "PBF_PCA_qlt_3_1",
+          "type": "calculate",
+          "bind": {
+            "calculate": "if(${PBF_PCA_qlt_3_1_1}=1,2,0)"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_3_2_1",
+          "label": {
+            "French": "3.2. Business plan élaboré avec les acteurs clés",
+            "English": "3.2. Business plan developed with key players"
+          },
+          "hint": "Chefs de services de l'Hôpital\n- Le président du COGE ou son représentant (Voir la liste de présence et le rapport d'élaboration du Business plan)",
+          "type": "select one",
+          "list_name": "Oui_non",
+          "children": [
+            {
+              "name": "1",
+              "label": "Oui"
+            },
+            {
+              "name": "0",
+              "label": "Non"
+            }
+          ]
+        },
+        {
+          "name": "PBF_PCA_qlt_3_2",
+          "type": "calculate",
+          "bind": {
+            "calculate": "if(${PBF_PCA_qlt_3_2_1}=1,2,0)"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_3_3_1",
+          "label": {
+            "French": "3.3. Business plan contient une stratégie de couverture géographique convaincante :",
+            "English": "3.3. Business plan contains a convincing geographic coverage strategy:"
+          },
+          "hint": "Stratégies de communication et de référence –contre référence avec les FOSA PMA",
+          "type": "select one",
+          "bind": {
+            "required": "yes"
+          },
+          "list_name": "Oui_non",
+          "children": [
+            {
+              "name": "1",
+              "label": "Oui"
+            },
+            {
+              "name": "0",
+              "label": "Non"
+            }
+          ]
+        },
+        {
+          "name": "PBF_PCA_qlt_3_3",
+          "type": "calculate",
+          "bind": {
+            "calculate": "if(${PBF_PCA_qlt_3_3_1}=1,2,0)"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_3_4_1",
+          "label": {
+            "French": "3.4. Les cinq problèmes clés du Business Plan du trimestre dernier ont été résolus à au moins 80% :",
+            "English": "3.4. The five key problems of the Business Plan for the last quarter have been solved at least 80%:"
+          },
+          "hint": "Voir les 5 problèmes clés identifiés dans le Business plan",
+          "type": "select one",
+          "bind": {
+            "required": "yes"
+          },
+          "list_name": "Oui_non",
+          "children": [
+            {
+              "name": "1",
+              "label": "Oui"
+            },
+            {
+              "name": "0",
+              "label": "Non"
+            }
+          ]
+        },
+        {
+          "name": "PBF_PCA_qlt_3_4",
+          "type": "calculate",
+          "bind": {
+            "calculate": "if(${PBF_PCA_qlt_3_4_1}=1,4,0)"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_3_5_1",
+          "label": {
+            "French": "3.5. Plan Business montre une analyse de l'accessibilité financière et contient une stratégie raisonnable :",
+            "English": "3.5. Plan Business shows an analysis of financial accessibility and contains a reasonable strategy:"
+          },
+          "hint": "Responsable a rempli cette question et le PB montre qu'il a négocié les tarifs avec COSA / relais communautaires",
+          "type": "select one",
+          "bind": {
+            "required": "yes"
+          },
+          "list_name": "Oui_non",
+          "children": [
+            {
+              "name": "1",
+              "label": "Oui"
+            },
+            {
+              "name": "0",
+              "label": "Non"
+            }
+          ]
+        },
+        {
+          "name": "PBF_PCA_qlt_3_5",
+          "type": "calculate",
+          "bind": {
+            "calculate": "if(${PBF_PCA_qlt_3_5_1}=1,2,0)"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_point_v3",
+          "type": "calculate",
+          "bind": {
+            "calculate": "${PBF_PCA_qlt_3_1}+${PBF_PCA_qlt_3_2}+${PBF_PCA_qlt_3_3}+${PBF_PCA_qlt_3_4}+${PBF_PCA_qlt_3_5}"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_max_point_v3",
+          "type": "calculate",
+          "bind": {
+            "calculate": "12"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlt_point_vol_3",
+          "label": {
+            "French": "BUSINESS PLAN TRIMESTRIEL = ${PBF_PCA_qlt_point_v3} / ${PBF_PCA_qlt_max_point_v3} point(s)",
+            "English": "QUARTERLY BUSINESS PLAN = ${PBF_PCA_qlt_point_v3} / ${PBF_PCA_qlt_max_point_v3} point(s)"
+          },
+          "type": "note"
+        }
+      ]
+    },
+    {
+      "name": "PBF_PCA_qlte_fosa",
+      "label": {
+        "French": "Nom et signature des responsables enquêteurs",
+        "English": "Name and signature of investigating officers"
+      },
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "PBF_PCA_qlte_nom_enqueteur",
+          "label": {
+            "French": "Nom évaluateur :",
+            "English": "Name of assessor:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_qualif_enqueteur",
+          "label": {
+            "French": "Qualification évaluateur :",
+            "English": "Evaluator qualification:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_struct_enqueteur",
+          "label": {
+            "French": "Structure évaluateur :",
+            "English": "Evaluator structure:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_signature_respo_fosa",
+          "label": {
+            "French": "Signature évaluateur :",
+            "English": "Appraiser's signature:"
+          },
+          "type": "photo",
+          "control": {
+            "appearance": "signature"
+          }
+        },
+        {
+          "name": "PBF_PCA_qlte_tel_enqueteur",
+          "label": {
+            "French": "N° Tel :",
+            "English": "Call number"
+          },
+          "type": "text"
+        }
+      ]
+    },
+    {
+      "name": "PBF_PCA_qlte_infos_evaluateur",
+      "label": {
+        "French": "INFORMATIONS DE L'EVALUATEUR",
+        "English": "EVALUATOR INFORMATION"
+      },
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "PBF_PCA_qlte_problem_ident",
+          "label": {
+            "French": "Problèmes prioritaires identifiés :",
+            "English": "Priority problems identified:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_action_urgent",
+          "label": {
+            "French": "Actions urgentes d'amélioration proposées :",
+            "English": "Urgent improvement actions proposed:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_nom_evalu",
+          "label": {
+            "French": "Nom évéluateur :",
+            "English": "Name of developer:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_qualification_eval",
+          "label": {
+            "French": "Qualification évaluateur :",
+            "English": "Evaluator qualification:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_struct_eval",
+          "label": {
+            "French": "Structure évaluateur :",
+            "English": "Evaluator structure:"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_signature_eval",
+          "label": {
+            "French": "Signature :",
+            "English": "Signature:"
+          },
+          "type": "photo",
+          "control": {
+            "appearance": "signature"
+          }
+        }
+      ]
+    },
+    {
+      "name": "PBF_PCA_qlte_infos_respo_fosa",
+      "label": {
+        "French": "INFORMATIONS DU RESPONSABLE DE LA FORMATION SANITAIRE",
+        "English": "INFORMATION OF THE HEALTH FACILITY MANAGER"
+      },
+      "type": "group",
+      "control": {
+        "appearance": "field-list"
+      },
+      "children": [
+        {
+          "name": "PBF_PCA_qlte_nom_respo_fosa",
+          "label": {
+            "French": "Nom du responsable :",
+            "English": "Name of the responsible :"
+          },
+          "type": "text"
+        },
+        {
+          "name": "PBF_PCA_qlte_signature_respo_fosa",
+          "label": {
+            "French": "Signature :",
+            "English": "Signature :"
+          },
+          "type": "photo",
+          "control": {
+            "appearance": "signature"
+          }
+        }
+      ]
+    },
+    {
+      "name": "meta",
+      "type": "group",
+      "control": {
+        "bodyless": true
+      },
+      "children": [
+        {
+          "name": "instanceID",
+          "type": "calculate",
+          "bind": {
+            "readonly": "true()",
+            "jr:preload": "uid"
+          }
+        }
+      ]
+    }
+  ]
+}

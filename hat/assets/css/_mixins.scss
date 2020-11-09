@@ -1,0 +1,83 @@
+/* Triangle helper mixin */
+
+/* @param {Direction} $direction - Triangle direction, either `top`, `right`, `bottom` or `left` */
+
+/* @param {Color} $color [currentcolor] - Triangle color */
+
+/* @param {Length} $size [1em] - Triangle size */
+
+@mixin triangle($direction, $color: currentcolor, $size: 1em) {
+    @if not index(top right bottom left, $direction) {
+        @error "Direction must be either `top`, `right`, `bottom` or `left`.";
+    }
+
+    width: 0;
+    height: 0;
+    content: '';
+    z-index: $z-index-triangle-mixin;
+
+    @if $direction==top {
+        border-bottom: ($size * 1.5) solid $color;
+    }
+
+    @if $direction==bottom {
+        border-top: ($size * 1.5) solid $color;
+    }
+
+    @if $direction==left {
+        border-right: ($size * 1.5) solid $color;
+    }
+
+    @if $direction==right {
+        border-left: ($size * 1.5) solid $color;
+    }
+
+    $perpendicular-borders: $size solid transparent;
+
+    @if $direction==top or $direction==bottom {
+        border-left: $perpendicular-borders;
+        border-right: $perpendicular-borders;
+    }
+
+    @else if $direction==right or $direction==left {
+        border-bottom: $perpendicular-borders;
+        border-top: $perpendicular-borders;
+    }
+}
+
+@keyframes fade-in {
+    0% {
+        opacity: 0;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.animation--fade-in {
+    animation: fade-in 1s;
+}
+
+/* where elements use 100vh layouts, adjusts for
+  presence of fixed-position staging site warning */
+
+@mixin height-if-body-has-banner-layout {
+    min-height: 100vh;
+
+    .body--banner & {
+        min-height: calc(100vh - #{$banner-height});
+    }
+}
+
+/*  media queries, just small laptop/desktop screens for now */
+
+/*  site not optimised for anything smaller than that */
+
+$desktop-small: 1280px;
+
+@mixin small-screen {
+    @media (max-width: #{$desktop-small}) {
+        @content;
+    }
+}

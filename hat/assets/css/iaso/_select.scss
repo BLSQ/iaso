@@ -1,0 +1,34 @@
+$select-height: 54px;
+.iaso {
+    .Select-control {
+        height: $select-height;
+
+        .Select-value,
+        .Select-placeholder,
+        .Select-input {
+            display: flex !important;
+            align-items: center;
+            height: $select-height;
+            padding-left: 16px !important;
+            padding-right: 16px !important;
+            font-size: 16px !important;
+        }
+
+
+        .Select-clear {
+            font-size: 30px;
+            font-weight: lighter;
+            margin-top: -5px;
+            margin-right: 5px;
+        }
+    }
+
+    .Select-menu-outer {
+        z-index: 9999;
+    }
+
+    .Select-value-label {
+        width: 87%;
+        overflow: hidden;
+    }
+}

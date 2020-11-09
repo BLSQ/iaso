@@ -1,0 +1,14 @@
+{
+    "require": [
+        "@babel/register"
+    ],
+    "include": [
+        "hat/assets/js/**/*.js"
+    ],
+    "exclude": [
+        "**/*.spec.js",
+        "hat/assets/js/test/**/*.js"
+    ],
+    "reporter": "lcov",
+    "all": true
+}

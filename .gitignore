@@ -1,0 +1,124 @@
+node_modules
+celerybeat-schedule.db
+.ipynb_checkpoints
+shared
+*.swp
+*~
+privatekey.json
+.nyc_output
+coverage
+
+### Python ###
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+env/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# PyInstaller
+#  Usually these files are written by a python script from a template
+#  before PyInstaller builds the exe, so as to inject date/other infos into it.
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*,cover
+.hypothesis/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+
+# Sphinx built documentation
+docs/build
+hat/dashboard/static/docs/
+
+# PyBuilder
+target/
+
+
+### Django ###
+*.log
+*.pot
+*.pyc
+__pycache__/
+local_settings.py
+db.sqlite3
+media
+
+### Translations ###
+locale/
+
+# Deployment
+build_scripts/Dockerrun.aws.json
+build_scripts/deploy.zip
+
+# Elastic Beanstalk Files
+#.elasticbeanstalk/*
+#!.elasticbeanstalk/*.cfg.yml
+#!.elasticbeanstalk/*.global.yml
+.elasticbeanstalk/config.yml
+
+### Built JS ###
+hat/assets/bundles/
+hat/assets/messages/**/*.json
+
+\.DS_Store
+
+\.vscode/
+
+/pgdata/
+
+hat/assets/webpack/webpack-stats\.json
+
+bin/
+
+include/python3.6m
+
+pip-selfcheck.json
+data
+
+# dev environment
+.env
+.idea/codeStyles/Project.xml
+.idea/codeStyles/codeStyleConfig.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/libraries/Django_Lib.xml
+.idea/iaso.iml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml

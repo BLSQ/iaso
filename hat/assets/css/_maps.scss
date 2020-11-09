@@ -1,0 +1,1633 @@
+/* colours */
+
+$active: $blue;
+$buffer: $yellow;
+$highlight-buffer: $bright-blue;
+$highlight: $bright-pink;
+$selected: $bright-yellow;
+/* village types */
+
+$official: $green;
+$notofficial: $light-gray;
+$other: $bright-blue;
+$unknown: $dark-gray;
+$insideGeoloc: $green;
+$outsideGeoloc: $red;
+/* map size */
+
+$map-height: 720px;
+$map-sidebar-width: 260px;
+$types: (YES: $official, NO: $notofficial, OTHER: $other, NA: $unknown, highlight: $highlight);
+
+@each $type,
+$color in $types {
+    .text--#{$type} {
+        color: $color !important;
+    }
+
+    .background--#{$type} {
+        background-color: $color !important;
+    }
+}
+
+/******************************************************************************
+ * map containers
+ ******************************************************************************/
+
+.map__panel__container {
+    display: flex;
+}
+
+.map__panel {
+    display: inline-block;
+    height: $map-height;
+    width: 100%;
+    position: relative;
+
+    &--fullscreen {
+        background: $background-highlight-gray;
+        overflow: hidden;
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 100%;
+        width: 100%;
+        z-index: 1001;
+    }
+
+    &--left {
+        height: $map-height;
+        width: 370px;
+    }
+
+    &--right {
+        border-left: 1px solid $gray;
+        box-shadow: -1px 0 1px 0 rgba(black, 0.08);
+        display: inline-block;
+        height: $map-height;
+        overflow: hidden;
+        vertical-align: top;
+        width: calc(100% - 370px);
+    }
+}
+
+.map__panel--left {
+    &.geo-scope {
+        padding: $padding-unit / 2;
+        width: 520px;
+        overflow: auto;
+
+        .map__option {
+            width: 100%;
+
+            .map__option__list__item {
+                white-space: initial;
+            }
+        }
+
+        >div {
+            margin-bottom: $padding-unit / 2;
+        }
+    }
+}
+
+.map__header--filters {
+    position: relative;
+    z-index: 1000;
+}
+
+.map-container {
+    background: $background-highlight-gray;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+
+    &.without-draw {
+
+        .leaflet-draw.leaflet-control,
+        .leaflet-custom-draw-pane {
+            display: none;
+        }
+    }
+}
+
+.leaflet-container {
+    color: $text-color;
+    cursor: default !important;
+    font-family: $body-font-family;
+    font-weight: normal;
+    margin: 0 auto;
+}
+
+.map__text--select {
+    display: block;
+}
+
+.map__filters {
+    font-size: $font-size-xs;
+
+    .map__filters--option {
+        padding-bottom: 8px;
+
+        span.map__text--select {
+            font-weight: bold;
+            color: $mid-gray;
+            margin-bottom: 6px;
+        }
+    }
+}
+
+.interactive {
+    cursor: pointer;
+}
+
+/******************************************************************************
+ * map controls
+ ******************************************************************************/
+
+[class*="leaflet-control-zoom-"] {
+    font-size: $font-size-s;
+    font-weight: bold;
+    height: 34px;
+    line-height: 30px;
+    margin: 0;
+    text-align: center;
+    width: 34px;
+}
+
+.leaflet-control-zoom-box:after {
+    color: $dark-gray;
+    content: '\f096';
+    /* empty square icon */
+    font-family: $icon-font;
+    font-size: $font-size-standard;
+}
+
+.leaflet-control-zoom-search:after {
+    color: $dark-gray;
+    content: "";
+    /* empty square icon */
+    font-family: $icon-font;
+    font-size: $font-size-standard;
+}
+
+
+.leaflet-control-zoom-box.active {
+    color: $active;
+    background: lighten($active, 35%);
+}
+
+.leaflet-control-zoom-box.active:after {
+    color: $active;
+}
+
+.leaflet-control-zoom-fit:after {
+    color: $dark-gray;
+    content: '\f041';
+    /* map marker icon */
+    font-family: $icon-font;
+    font-size: $font-size-standard;
+}
+
+.map__control__button--printer {
+    align-items: center;
+    background: white;
+    border-radius: 10px;
+    border: 2px solid $blue;
+    box-shadow: 0 0 3px 0 $dark-gray;
+    box-sizing: border-box;
+    display: flex;
+    font-size: $font-size-xs;
+    height: auto;
+    margin-right: 10px;
+    padding: 8px;
+    text-align: left;
+    width: auto;
+
+    .map__icon--printer {
+        box-sizing: border-box;
+        position: relative;
+        display: inline-block;
+        vertical-align: middle;
+        width: 64px;
+        height: 64px;
+        margin-right: 6px;
+
+        &:after {
+            margin-left: 6px;
+            font-style: normal;
+            font-size: 48px;
+            line-height: 64px;
+            font-family: $icon-font;
+            color: $blue;
+            content: '\f02f';
+            /* printer icon */
+        }
+    }
+}
+
+/*
+ * BOXZOOM
+ * https://github.com/gregallensworth/L.Control.BoxZoom
+ */
+
+.leaflet-container.leaflet-control-boxzoom-active {
+    cursor: crosshair !important;
+
+    path.leaflet-interactive {
+        cursor: crosshair !important;
+    }
+}
+
+/******************************************************************************
+ * map options: legend / layers / overlays
+ ******************************************************************************/
+
+.map__option {
+    color: $text-color;
+    font-family: $body-font-family;
+    font-size: $font-size-xs;
+}
+
+.map__option__header {
+    font-weight: bold;
+    color: $mid-gray;
+}
+
+.map__option__list {
+    @include reset-list-style;
+    clear: both;
+
+    &.large {
+        .map__option__list__item {
+            height: 20px;
+
+            i {
+                position: relative;
+                top: -2px;
+
+                &.map__option__icon--medium {
+                    top: -5px;
+                }
+
+                &.map__option__icon--large {
+                    top: -6px;
+                }
+            }
+        }
+    }
+}
+
+.map__option__list__item {
+    line-height: 12px;
+    margin: $padding-unit/4;
+    white-space: nowrap;
+
+    span {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    &.active {
+        color: $active;
+    }
+
+    &.initial-white-space {
+        span {
+            display: inline;
+        }
+    }
+}
+
+.map__option__action {
+    margin-left: 6px;
+    color: $mid-gray;
+    cursor: pointer;
+
+    &:hover {
+        border-bottom: 1px dotted $mid-gray;
+    }
+}
+
+[class^="map__option__icon"] {
+    display: inline-block;
+    vertical-align: middle;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-left: 2px;
+    margin-right: 12px;
+    background: white;
+    border: 3px solid $light-gray;
+}
+
+.map__option__icon {
+    &--warning {
+        border-color: rgba(yellow, 0.5);
+        position: relative;
+
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+
+    &--alert {
+        border-color: red;
+        position: relative;
+
+        &:after {
+            width: 12px;
+            height: 12px;
+            border-radius: 9px;
+            display: block;
+            content: '';
+            position: absolute;
+            top: 0px;
+            left: 0px;
+            background-color: orange;
+        }
+    }
+
+    &--medium {
+        width: 18px;
+        height: 18px;
+        margin-left: -1px;
+        margin-right: 9px;
+    }
+
+    &--large {
+        width: 24px;
+        height: 24px;
+        margin-left: -4px;
+        margin-right: 6px;
+    }
+
+    &--YES {
+        border-color: $official;
+        background: $official;
+    }
+
+    &--NO {
+        background: $notofficial;
+        border-color: darken($notofficial, 15%);
+    }
+
+    &--OTHER {
+        background: white;
+        border-color: $other;
+    }
+
+    &--NA {
+        background: $unknown;
+        border-color: darken($unknown, 15%);
+    }
+
+    &--highlight {
+        background: $highlight;
+        border-color: $highlight;
+    }
+
+    &--selected {
+        background: white;
+        border-color: $selected;
+    }
+
+    &--insideGeoloc {
+        border-color: $insideGeoloc;
+        background: $insideGeoloc;
+    }
+
+    &--outsideGeoloc {
+        border-color: $outsideGeoloc;
+        background: $outsideGeoloc;
+    }
+
+    &--villages,
+    &--villages-with-case,
+    &--sites,
+    &--site,
+    &--traps,
+    &--catches,
+    &--targets {
+        border: none;
+        background: transparent;
+        width: 35px;
+        height: 35px;
+        position: relative;
+
+        &:before {
+            content: '';
+            position: absolute;
+            width: calc(100% - 5px);
+            height: calc(100% - 5px);
+            top: 0;
+            left: -5px;
+            border-radius: 35px;
+        }
+
+        &:after {
+            content: '';
+            position: absolute;
+            width: calc(100% - 15px);
+            height: calc(100% - 15px);
+            display: block;
+            top: 5px;
+            left: 0px;
+            border-radius: 15px;
+            box-sizing: border-box;
+            padding-top: 3px;
+            text-align: center;
+        }
+    }
+
+    &--villages {
+        &:before {
+            background: rgba($green, 0.5);
+        }
+
+        &:after {
+            background: $green;
+        }
+    }
+
+    &--villages-with-case {
+        &:before {
+            background: rgba(red, 0.5);
+        }
+
+        &:after {
+            background: red;
+        }
+    }
+
+    &--sites {
+        &:before {
+            background: rgba($gray, 1);
+        }
+
+        &.current {
+            &:before {
+                background: $green;
+            }
+        }
+
+        &.other {
+            &:before {
+                background: $blue;
+            }
+        }
+
+        &.not-assigned {
+            &:before {
+                background: red;
+            }
+        }
+
+        &:after {
+            background: yellow;
+        }
+    }
+
+    &--site {
+        width: 12px;
+        height: 12px;
+        border: 2px solid $gray;
+        background: rgba(yellow, 0.5);
+    }
+
+    &--traps {
+        &--selected {
+            border: 2px solid green;
+            background: rgba(orange, 0.5);
+        }
+
+        &--not-selected {
+            border: 2px solid red;
+            background: rgba(orange, 0.5);
+        }
+
+        &:before {
+            background: rgba(orange, 0.5);
+        }
+
+        &:after {
+            background: orange;
+        }
+    }
+
+    &--catches {
+        &:before {
+            background: rgba(violet, 0.5);
+        }
+
+        &:after {
+            background: violet;
+            color: white;
+        }
+
+        &.small {
+            width: 12px;
+            height: 12px;
+            border: 2px solid violet;
+            background: rgba(violet, 0.5);
+
+            &:before {
+                display: none;
+            }
+
+            &:after {
+                display: none;
+            }
+        }
+    }
+
+    &--targets {
+        &:before {
+            background: rgba(blue, 0.5);
+        }
+
+        &:after {
+            background: blue;
+            color: white;
+        }
+    }
+
+    &--route-with-positive-cases {
+        background: white;
+        border-color: red;
+    }
+
+    &--with-positive-cases {
+        background: rgba(red, 0.5);
+        border-color: red;
+    }
+
+    &--without-positive-cases {
+        background: rgba($dark-green, 0.5);
+        border-color: $dark-green;
+    }
+
+    &--route-assigned {
+        background: rgba(blue, 0.5);
+        border-color: blue;
+    }
+
+    &--route-not-assigned {
+        background: rgba(yellow, 0.5);
+        border-color: orange;
+    }
+
+    &.square {
+        border-radius: 5px;
+    }
+
+    &.active {
+        border-color: $active;
+        background: lighten($active, 35%);
+    }
+}
+
+/******************************************************************************
+ * tooltips (warning, map: small and large)
+ ******************************************************************************/
+
+.tooltip--warning {
+    .tooltip__warning {
+        @include text--x-small;
+        background-color: black;
+        border-radius: 4px;
+        color: white;
+        line-height: 1.2em;
+        margin-top: $padding-unit/2;
+        padding: $padding-unit/3;
+        position: absolute;
+        visibility: hidden;
+        z-index: 10000;
+
+        span {
+            border: none;
+        }
+    }
+
+    span {
+        border-bottom: 1px dotted $mid-gray;
+    }
+
+    &:hover .tooltip__warning {
+        visibility: visible;
+    }
+}
+
+.map__tooltip {
+    min-width: 250px;
+
+    &.microplanning {
+        min-height: 300px;
+    }
+
+    div.property {
+        padding: 0.4em 0;
+        border-top: 1px solid $gray;
+
+        div.label {
+            display: inline-block;
+            width: 40%;
+            font-size: $font-size-xs;
+
+            &.select-team {
+                position: relative;
+                top: -7px;
+            }
+        }
+
+        div.value {
+            display: inline-block;
+            width: 60%;
+            font-weight: bold;
+            font-size: $font-size-s;
+            text-align: right;
+            line-height: 1.2;
+        }
+    }
+
+    &--close {
+        font-family: $body-font-family;
+        font-size: $font-size-xs;
+        margin-bottom: 14px;
+        margin-left: 3px;
+        text-transform: uppercase;
+        cursor: pointer;
+        color: $gray;
+        text-align: right;
+
+        &:hover {
+            color: $red;
+        }
+    }
+
+    .loading-map__tooltip {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+}
+
+.map__control__tooltip:not(:empty) {
+    background-color: rgba(white, 0.95);
+    border-radius: 4px;
+    border: 1px solid $gray;
+    box-shadow: 0 0 10px rgba(black, 0.2);
+    vertical-align: middle;
+    padding: 0.5em 1em;
+}
+
+/******************************************************************************
+ * map markers and boundaries
+ ******************************************************************************/
+
+@mixin layer($stroke-color: $mid-gray, $stroke-width: 3) {
+    fill: transparent;
+    fill-opacity: 0;
+    stroke-dasharray: 1, 0;
+    stroke-opacity: 1;
+    stroke: $stroke-color;
+    stroke-width: $stroke-width;
+
+    &:hover {
+        stroke: darken($stroke-color, 10%);
+        stroke-width: ($stroke-width+1);
+    }
+}
+
+@mixin layer-selected($stroke-color) {
+    fill: $blue;
+    fill-opacity: 0.2 !important;
+    stroke-dasharray: 1, 0;
+    stroke-opacity: 1 !important;
+    ;
+    stroke: $stroke-color;
+    stroke-width: 2;
+
+    &:hover {
+        stroke-width: (3);
+    }
+}
+
+path.map-layer {
+
+    &.province,
+    &.provinces {
+        @include layer(#935116, 2);
+
+        &.selected {
+            @include layer-selected(#935116);
+        }
+    }
+
+    &.zone,
+    &.zs {
+        @include layer(#CA6F1E, 2);
+
+        &.selected {
+            @include layer-selected(#CA6F1E);
+        }
+    }
+
+    &.area,
+    &.as {
+        @include layer(#F0B27A, 1);
+
+        &.selected {
+            @include layer-selected(#F0B27A);
+        }
+    }
+
+    &.no-border {
+        fill-opacity: 0 !important;
+        stroke-opacity: 0 !important;
+    }
+}
+
+@mixin marker($color: $gray, $fill-opacity: 0.85, $stroke-color: $color, $stroke-width: 2, $stroke-opacity: 0.8) {
+    fill-opacity: $fill-opacity;
+    fill: $color;
+    stroke: $stroke-color;
+    stroke-dasharray: 1, 0;
+    stroke-opacity: $stroke-opacity;
+    stroke-width: $stroke-width;
+
+    &:hover {
+        fill-opacity: 1;
+        fill: lighten($color, 10%);
+        stroke: $stroke-color;
+        stroke-width: $stroke-width;
+    }
+}
+
+$highlight-stroke: 1.5;
+
+path.map-marker {
+    @include marker($gray);
+
+    &.YES {
+        @include marker($official, $fill-opacity: 1, $stroke-color: black, $stroke-opacity: 1, $stroke-width: 0.2);
+
+        &.assignedToOtherTeam {
+            @include marker($official, $stroke-color: blue, $fill-opacity: 1 !important);
+            stroke-opacity: 1 !important;
+            stroke-width: $highlight-stroke;
+        }
+
+        &.assignedToCurrentTeam {
+            @include marker($official, $stroke-color: $selected, $fill-opacity: 1 !important);
+            stroke-opacity: 1 !important;
+            stroke-width: $highlight-stroke;
+        }
+    }
+
+    &.NO {
+        @include marker($notofficial, $fill-opacity: 1);
+    }
+
+    &.OTHER {
+        @include marker($other, $fill-opacity: 1);
+    }
+
+    &.NA {
+        @include marker($unknown, $fill-opacity: 1);
+    }
+
+    &.selected,
+    &.assignedToCurrentTeam {
+        @include marker($stroke-color: $selected !important, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
+
+        &.YES {
+            fill: $official;
+        }
+
+        &.NO {
+            fill: $notofficial;
+        }
+
+        &.OTHER {
+            fill: $other;
+        }
+
+        &.NA {
+            fill: $unknown;
+        }
+    }
+
+    &.highlight {
+        @include marker($highlight, $fill-opacity: 1, $stroke-opacity: 1, $stroke-width: $highlight-stroke);
+
+        &.assignedToOtherTeam {
+            @include marker($highlight, $stroke-color: blue, $fill-opacity: 1 !important);
+            stroke-opacity: 1 !important;
+            stroke-width: $highlight-stroke;
+        }
+
+        &.assignedToCurrentTeam {
+            @include marker($highlight, $stroke-color: $selected, $fill-opacity: 1 !important);
+            stroke-opacity: 1 !important;
+            stroke-width: $highlight-stroke;
+        }
+    }
+
+    &.geoScope {
+        @include marker($insideGeoloc);
+    }
+
+    &.outOfScope {
+        @include marker($outsideGeoloc);
+    }
+
+    &.assignedToCurrentTeam {
+        filter: drop-shadow(5px 2px 5px #000);
+    }
+
+    &.assignedToOtherTeam {
+        @include marker($green, $stroke-color: blue);
+    }
+
+    &.highlight-buffer {
+        @include marker($highlight-buffer, $fill-opacity: 0.3, $stroke-width: 0);
+
+        &:hover {
+            fill-opacity: 0.3;
+            fill: $highlight-buffer;
+        }
+    }
+
+    &.buffer {
+        @include marker($buffer, $fill-opacity: 0.3, $stroke-width: 1);
+
+        &:hover {
+            fill-opacity: 0.3;
+            fill: $buffer;
+        }
+    }
+
+    &.shadow {
+        @include marker($highlight, $fill-opacity: 0.3, $stroke-width: 0);
+
+        &:hover {
+            fill-opacity: 0.3;
+            fill: $highlight;
+        }
+    }
+
+    &.chosen {
+        @include marker($active, $fill-opacity: 0.5, $stroke-width: 0);
+        -webkit-animation-name: chosen-marker-animation;
+        -webkit-animation-duration: 1s;
+        -webkit-animation-iteration-count: infinite;
+        /* Safari 4.0 - 8.0 */
+        animation-name: chosen-marker-animation;
+        animation-duration: 1s;
+        animation-iteration-count: infinite;
+
+        &:hover {
+            fill-opacity: 0.5;
+            fill: $active;
+        }
+    }
+}
+
+@keyframes chosen-marker-animation {
+    0% {
+        stroke-width: 0px;
+    }
+
+    50% {
+        stroke-width: 3px;
+    }
+
+    100% {
+        stroke-width: 0px;
+    }
+}
+
+.map__marker__label {
+    font-size: $font-size-s;
+    white-space: nowrap;
+    color: $dark-gray;
+    text-shadow: 0px 0px 2px white;
+    font-variant: small-caps;
+    font-weight: 800;
+
+    &.other {
+        font-size: $font-size-xs;
+    }
+}
+
+/******************************************************************************
+ * map selection list
+ ******************************************************************************/
+
+.map__selection {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    justify-content: space-between;
+}
+
+
+.map__selection__container {
+    padding: $padding-unit/4 $padding-unit/3;
+    height: 100%;
+
+    >div {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .loading-small {
+        justify-content: center;
+    }
+
+}
+
+
+.map__selection__title {
+    @include heading--medium;
+    margin-bottom: 1em;
+}
+
+.map__selection__summary--empty {
+    @include text--small;
+    font-weight: bold;
+    margin: $padding-unit/2 0;
+    padding: $padding-unit/2 0;
+    text-align: center;
+}
+
+.map__selection__summary {
+    padding: $padding-unit/3 0;
+    border-top: 1px solid $gray;
+}
+
+.map__selection__summary__heading {
+    @include heading--small;
+    margin-bottom: $padding-unit/3;
+}
+
+.map__selection__summary__item {
+    @include text--x-small;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: $padding-unit/4;
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+
+    .map__selection__summary__number {
+        font-weight: bold;
+    }
+}
+
+.map__selection__list__header {
+    align-items: baseline;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: $padding-unit/4;
+
+    h3 {
+        font-size: $font-size-s;
+    }
+
+    .button--danger {
+        background-color: $mid-gray;
+
+        &:hover {
+            background-color: $red;
+        }
+    }
+}
+
+.map__selection__container {
+    height: 100%;
+    overflow: auto;
+}
+
+.map__selection__list {
+    font-size: 12px;
+
+    .tools {
+        width: 30px;
+        box-sizing: border-box;
+        padding: 15px;
+        margin: 0;
+        height: 100%;
+        position: relative;
+
+        >span {
+            position: absolute;
+            top: 0;
+            left: 0;
+            display: block;
+            width: 100%;
+            padding: 10px 0;
+            text-align: center;
+            display: block;
+            height: 100%;
+        }
+    }
+
+    td {
+        padding: 8px;
+        max-width: 70px;
+
+        &.limited-width {
+            max-width: 50px;
+        }
+    }
+}
+
+.map__selection__list__item {
+    @include text--small;
+    line-height: 1.3;
+    white-space: nowrap;
+    font-size: 12px;
+
+    span.remove {
+        @include text--error;
+        cursor: pointer;
+        margin-right: $padding-unit/4;
+    }
+
+    span.view {
+        cursor: pointer;
+        margin-right: $padding-unit/4;
+    }
+}
+
+
+/******************************************************************************
+ * map selection controls
+ ******************************************************************************/
+
+.map__selection__control__container {
+    width: 100%;
+    font-size: $font-size-xs;
+    text-align: right;
+
+    .map__text--select {
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    /* active items have a highlighted border */
+    div[class*="active"] {
+        border-color: $buffer;
+        color: $red;
+        background-color: $background-highlight-gray;
+
+        .map__icon--select {
+            filter: initial;
+        }
+    }
+}
+
+.map__selection__actions {
+    margin: 0.2em 0;
+    overflow: hidden;
+
+    input {
+        display: inline-block;
+        margin: .5em;
+    }
+
+    input.small {
+        width: 32px;
+        font-weight: bold;
+        padding: 0.4em 0.25em;
+    }
+}
+
+[class^="map__control__button--selection"] {
+    font-size: $font-size-xs;
+    box-sizing: border-box;
+    width: auto;
+    height: auto;
+    margin-bottom: 10px;
+    border: 1px solid $gray;
+    box-shadow: 0 0 2px 0 #865A0B;
+    border-radius: 5px;
+    padding: 6px;
+    text-align: left;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+[class^="map__control__button--selection--deselect"] {
+    .map__icon--select:before {
+        position: absolute;
+        display: block;
+        content: '';
+        width: 12px;
+        height: 4px;
+        border-radius: 2px;
+        background: $highlight;
+        z-index: 2;
+        right: -4px;
+        top: 30%;
+    }
+}
+
+/* the select/deselect icon */
+
+.map__icon--select {
+    /* sizes */
+    $icon-size: 28px;
+    $icon-center-size: 8px;
+    /* styles */
+    box-sizing: border-box;
+    position: relative;
+    display: inline-block;
+    vertical-align: middle;
+    width: $icon-size;
+    height: $icon-size;
+    border-radius: 50%;
+    background: rgba($buffer, 0.85);
+    box-shadow: 0 0 4px 0 darken($selected, 15%);
+    margin-right: 6px;
+    filter: grayscale(100%);
+
+    @include small-screen {
+        display: none;
+    }
+
+    &:after {
+        display: block;
+        position: absolute;
+        box-sizing: border-box;
+        content: '';
+        width: $icon-center-size;
+        height: $icon-center-size;
+        border-radius: 50%;
+        left: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+        top: calc(#{$icon-size}/2 - #{$icon-center-size}/2);
+        z-index: 1;
+        background: darken($buffer, 5%);
+        border: 2px solid rgba($highlight, 0.85);
+        box-shadow: 0 0 1px 1px rgba($highlight, 0.45);
+    }
+}
+
+/******************************************************************************
+ * Vector control styles
+ ******************************************************************************/
+
+.vector-map {
+    height: 800px;
+    width: 100%;
+}
+
+.loading-small {
+    font-size: 18px;
+    text-align: center;
+    display: block;
+    margin-bottom: 10px;
+}
+
+.vector-map .leaflet-pane>svg path {
+    stroke-width: 1px !important;
+}
+
+.route-map .leaflet-pane>svg path.routeCircle {
+    stroke-width: 1px !important;
+}
+
+.route-map .leaflet-pane>svg path.routeLine {
+    stroke-width: 5px !important;
+}
+
+.leaflet-pane {
+    &.leaflet-custom-pane-shapes-pane {
+        z-index: 200;
+    }
+
+    &.leaflet-custom-pane-selected {
+        z-index: 200;
+    }
+}
+
+.map-parent-container {
+    height: 100%;
+}
+
+.geo-scope-map {
+    height: 720px;
+    width: 100%;
+}
+
+.macro-container,
+#planning-map,
+.route-map,
+.split-map,
+.village-map-container,
+.location-map-container,
+.shape-map-container,
+.traps-map-container,
+.catches-map-container,
+.vector-map,
+.geo-scope-map {
+    .map-container {
+        height: 720px;
+    }
+
+    .map-parent-container {
+        overflow: hidden !important;
+        position: relative !important;
+        width: 100% !important;
+
+        .loading-small {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: rgba(#FFFFFF, 0.7);
+            height: 20px;
+            width: 20px;
+            display: block;
+            z-index: 20000;
+
+            &:after {
+                display: block;
+                content: '';
+                height: 10px;
+                width: 10px;
+                animation: rotate 0.8s infinite linear;
+                border: 5px solid #3498db;
+                border-right-color: transparent;
+                border-radius: 50%;
+            }
+        }
+
+        >div:not(.map-container) {
+            overflow: hidden !important;
+            height: 720px !important;
+            display: block !important;
+            width: 100% !important;
+            position: relative !important;
+
+            &:after {
+                display: block;
+                content: '';
+                height: 28px;
+                width: 28px;
+                animation: rotate 0.8s infinite linear;
+                border: 8px solid #3498db;
+                border-right-color: transparent;
+                border-radius: 50%;
+                z-index: 20000;
+                position: absolute;
+                top: calc(50% - 28px);
+                left: calc(50% - 28px);
+            }
+
+            &.epHolder {
+                position: relative !important;
+
+                &+div {
+                    position: absolute !important;
+                    top: 0;
+                    left: 0;
+                    z-index: 1;
+                }
+            }
+        }
+    }
+
+    .widget__content--tier>div.map {
+        flex-basis: 75%;
+        padding: 0;
+    }
+}
+
+#home-map {
+    position: relative;
+    width: 800px !important;
+
+    .map-container {
+        height: 720px;
+    }
+
+    .map-parent-container {
+        width: 800px !important;
+
+        .leaflet-control-attribution {
+            display: none;
+        }
+    }
+
+    .loading-small {
+        height: 100%;
+        margin-bottom: 0;
+
+        .fa-spinner {
+            top: 50%;
+            position: relative;
+        }
+    }
+
+    .legend {
+        background-color: white;
+        border-radius: 5px;
+        border: 1px solid $light-gray;
+        padding: 5px;
+
+        h6 {
+            font-size: 12px;
+        }
+
+        >div {
+            &:before {
+                content: '';
+                display: inline-block;
+                margin-right: 5px;
+                width: 15px;
+                height: 15px;
+                border-radius: 15px;
+                border: 2px solid gray;
+                position: relative;
+                box-sizing: border-box;
+                top: 3px;
+            }
+        }
+
+        .endemic {
+            &:before {
+                background-color: rgba(red, 0.5);
+                border-color: red;
+            }
+        }
+
+        .non-endemic {
+            &:before {
+                background-color: rgba(green, 0.5);
+                border-color: green;
+            }
+        }
+
+        .infos {
+            font-size: 10px;
+            margin-top: 5px;
+
+            &:before {
+                display: none;
+            }
+        }
+    }
+}
+
+.split-map {
+    .map-container {
+        height: 600px;
+    }
+
+    .map-parent-container {
+        >div:not(.map-container) {
+            height: 600px !important;
+        }
+    }
+
+    &.big {
+        .map-container {
+            height: 800px;
+        }
+
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 800px !important;
+            }
+        }
+    }
+}
+
+.village-map-container,
+.location-map-container {
+    .map-container {
+        height: 450px;
+    }
+
+    .map-parent-container {
+        >div:not(.map-container) {
+            height: 450px !important;
+        }
+    }
+}
+
+.catches-map-container,
+.traps-map-container {
+    margin-bottom: $padding-unit / 2;
+    padding: 0 !important;
+
+    .map-container {
+        height: 500px;
+    }
+
+    .map-parent-container {
+        >div:not(.map-container) {
+            height: 500px !important;
+        }
+    }
+}
+
+@media (max-height: 950px) {
+
+    .catches-map-container,
+    .traps-map-container {
+        .map-container {
+            height: 450px;
+        }
+
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 450px !important;
+            }
+        }
+    }
+}
+
+@media (max-height: 880px) {
+
+    .catches-map-container,
+    .traps-map-container {
+        .map-container {
+            height: 400px;
+        }
+
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 400px !important;
+            }
+        }
+    }
+}
+
+@media (max-height: 750px) {
+
+    .catches-map-container,
+    .traps-map-container {
+        .map-container {
+            height: 350px;
+        }
+
+        .map-parent-container {
+            >div:not(.map-container) {
+                height: 350px !important;
+            }
+        }
+    }
+}
+
+.vector-map {
+    .map-container {
+        height: 800px;
+    }
+
+    .map-parent-container {
+        >div:not(.map-container) {
+            height: 800px !important;
+        }
+    }
+}
+
+@keyframes rotate {
+    0% {
+        transform: rotate(0deg);
+    }
+
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+.leaflet-tooltip.see-trough {
+    opacity: 0.7 !important;
+}
+
+.leaflet-custom-pane-chosen-pane,
+.leaflet-custom-pane-tests-pane {
+    z-index: 603;
+}
+
+$filter: drop-shadow(0px 0px 0.04rem black) drop-shadow(0px 0px 0.04rem black);
+
+#planning-map {
+
+    .leaflet-custom-pane-markers-pane,
+    .leaflet-custom-pane-highlight-pane {
+        svg {
+            filter: $filter;
+        }
+    }
+}
+
+.legend {
+    &.with-icons {
+        li {
+            &:after {
+                clear: both;
+                display: block;
+                content: '';
+            }
+
+            i {
+                font-size: 22px;
+                position: relative;
+                top: -3px;
+                padding-right: 5px;
+                float: left;
+
+                &.positive {
+                    color: red;
+                }
+
+                &.negative {
+                    color: green;
+                }
+
+                &.fa-home {
+                    top: -5px;
+                    left: -4px;
+                    padding-right: 2px;
+                }
+            }
+        }
+    }
+}
+
+.marker-test,
+.marker-village {
+    font-size: 50px;
+    position: relative;
+    z-index: 501 !important;
+    cursor: pointer;
+
+    >div {
+        position: absolute;
+        top: 0;
+        left: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%;
+        height: 100%;
+
+        i {
+            display: block;
+
+            &.positive {
+                color: red;
+            }
+
+            &.negative {
+                color: green;
+            }
+        }
+    }
+
+    &:hover {
+        z-index: 1000 !important;
+
+        .custom-tooltip {
+            background-color: white;
+        }
+    }
+}
+
+.marker-village {
+    z-index: 500 !important;
+}
+
+.custom-tooltip {
+    background-color: rgba(white, 0.8);
+
+    &.leaflet-tooltip-left {
+        left: auto;
+        right: 25px;
+    }
+
+    &.leaflet-tooltip-right {
+        left: 25px;
+        right: auto;
+    }
+}

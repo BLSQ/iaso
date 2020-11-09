@@ -1,0 +1,120 @@
+@mixin reset-list-style {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+[class*="list--stats"] {
+  @include reset-list-style;
+  margin-top: $padding-unit*.5;
+  margin-bottom: $padding-unit*2;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+[class*="list__item--stats"] {
+  display: flex;
+  justify-content: space-between;
+  padding: $padding-unit*.75 $padding-unit;
+  font-size: $font-size-m;
+  border-top: 1px solid $gray;
+  &:last-of-type {
+    border-bottom: 1px solid $gray;
+  }
+}
+
+.list__item--stats {
+  &--important {
+    font-weight: bold;
+    font-size: $font-size-l;
+    background: $background-gray;
+  }
+  &--blue {
+    background: rgba($blue, 0.08);
+  }
+  &--yellow {
+    background: rgba($yellow, 0.1);
+  }
+  &--purple {
+    background: rgba($purple, 0.1);
+  }
+  &--reduced {
+    display: block;
+    padding: $padding-unit/4 0;
+  }
+  [class^="button"] {
+    margin-top: 0.5em;
+  }
+}
+
+.list__item--graph {
+  display: flex;
+  flex-direction: column;
+  padding: $padding-unit*.75 $padding-unit;
+  font-size: $font-size-m;
+  font-weight: bold;
+  border-bottom: 1px solid $gray;
+  .vega {
+    margin-top: $padding-unit*1.5;
+  }
+}
+
+.list__item__definition {
+  @include text--caption;
+  display: block;
+  margin-top: 0.75em;
+}
+
+.list__item__number {
+  display: block;
+  text-align: right;
+}
+
+/* stats page, inheriting from monthly report styles above ^
+   these are confusingly named 'stats' :-/                  */
+
+.list--stats--reduced {
+  margin-top: $padding-unit;
+  margin-bottom: $padding-unit;
+}
+
+.list__item__number--prominent {
+  display: block;
+  font-size: 1.875rem;
+  font-weight: bold;
+  margin-top: 0.25em;
+}
+
+.list__header {
+  margin-top: $padding-unit;
+  padding: 0 $padding-unit;
+  color: $mid-gray;
+  font-weight: normal;
+}
+
+
+.list--instructions {
+  margin-top: $padding-unit*.5;
+  margin-bottom: $padding-unit;
+  padding-left: $padding-unit;
+  max-width: 32em;
+}
+.list__item--instructions {
+  margin-bottom: 0.5em;
+  line-height: 1.35;
+  font-size: $font-size-s;
+}
+
+.form__wrapper ul {
+  @include reset-list-style;
+}
+
+.form__wrapper.inline ul li {
+  display: inline-block;
+}
+
+.list--normalized-as-checkbox {
+    display: inline-block;
+    margin-left: 10px;
+}

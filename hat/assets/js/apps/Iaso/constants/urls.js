@@ -1,0 +1,18 @@
+export const baseUrls = {
+    forms: 'forms/list',
+    mappings: 'forms/mappings',
+    mappingDetail: 'forms/mapping',
+    instances: 'instances',
+    instanceDetail: 'instance',
+    orgUnits: 'orgunits/list',
+    groups: 'orgunits/groups',
+    orgUnitTypes: 'orgunits/types',
+    orgUnitDetails: 'orgunits/detail',
+    links: 'orgunits/links/list',
+    algos: 'orgunits/links/runs',
+    completeness: 'forms/completeness',
+    users: 'settings/users',
+    error401: '401',
+    error404: '404',
+    error500: '500',
+};

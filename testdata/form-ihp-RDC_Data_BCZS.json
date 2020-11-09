@@ -1,0 +1,1596 @@
+{
+  "type": "simple_event",
+  "program_id": "xyy24iHHgxP",
+  "comment": "https://datasystem.ihp-prosani.com/dhis-web-maintenance/#/edit/programSection/program/xyy24iHHgxP",
+  "question_mappings": {
+    "BCZS_101": {
+      "code": "BCZS_101",
+      "name": "EDL - BCZS - 101. Adresse physique du BCZ :",
+      "id": "A1VDCB0ztZO",
+      "valueType": "TEXT"
+    },
+    "BCZS_103": {
+      "code": "BCZS_103",
+      "name": "EDL - BCZS - 103. Nom du M\u00e9decin Chef de zone :",
+      "id": "SwqtqJAazxu",
+      "valueType": "TEXT"
+    },
+    "BCZS_104": {
+      "code": "BCZS_104",
+      "name": "EDL - BCZS - 104. Sexe du M\u00e9decin Chef de zone :",
+      "id": "PCPFYUVKGtl",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "BCZS_105": {
+      "code": "BCZS_105",
+      "name": "EDL - BCZS - 105. Qualification du M\u00e9decin Chef de zone :",
+      "id": "WSMvpzELg3R",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Docteur en m\u00e9decin"
+          },
+          {
+            "code": "2",
+            "name": "2. Docteur en medicine avec master en sant\u00e9 publique"
+          },
+          {
+            "code": "3",
+            "name": "3. Autres \u00e0 sp\u00e9cifier"
+          }
+        ],
+        "id": "KkTUBuZBaWR"
+      }
+    },
+    "BCZS_106": {
+      "code": "BCZS_106",
+      "name": "EDL - BCZS - 106. Numero de contact du BCZ",
+      "id": "pXurZB2S1vu",
+      "valueType": "TEXT"
+    },
+    "BCZS_107": {
+      "code": "BCZS_107",
+      "name": "EDL - BCZS - 115. Adresse Email du BCZ",
+      "id": "Xjm70CA7joQ",
+      "valueType": "TEXT"
+    },
+    "BCZS_108": {
+      "code": "BCZS_108",
+      "name": "EDL - BCZS - 108. Existence d'une radiophonie fonctionnelle",
+      "id": "pG4hCo89YSJ",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_109": {
+      "code": "BCZS_109",
+      "name": "EDL - BCZS - 109. Fr\u00e9quence de la radiophonie utilis\u00e9e",
+      "id": "ng0jBQwm2ZV",
+      "valueType": "TEXT"
+    },
+    "BCZS_110": {
+      "code": "BCZS_110",
+      "name": "EDL - BCZS - 110. Heure de Contact pour la phonie",
+      "id": "GYjv31I6DEB",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "heure_contact_phonie1",
+            "name": "1. 7h00-8h00"
+          },
+          {
+            "code": "heure_contact_phonie2",
+            "name": "2. 9h00-10h00"
+          },
+          {
+            "code": "heure_contact_phonie3",
+            "name": "3. 11h00-12h00"
+          },
+          {
+            "code": "heure_contact_phonie4",
+            "name": "4. 13h00-14h00"
+          },
+          {
+            "code": "heure_contact_phonie5",
+            "name": "5. 14h00-15h00"
+          }
+        ],
+        "id": "MVPDR8bWggT"
+      }
+    },
+    "heure_deb": {
+      "code": "heure_deb",
+      "name": "EDL - BCZS - 111.1 Horaire de travail au Bureau central : Heure debut - lundi - vendredi",
+      "id": "FuvHtEC6LDp",
+      "valueType": "TIME"
+    },
+    "heure_fin": {
+      "code": "heure_fin",
+      "name": "EDL - BCZS - 111.1 Horaire de travail au Bureau central : Heure fin - lundi - vendredi",
+      "id": "qvpLqB1faSK",
+      "valueType": "TIME"
+    },
+    "heure_deb_sam": {
+      "code": "heure_deb_sam",
+      "name": "EDL - BCZS - 111.2 Horaire de travail au Bureau central : Heure debut - samedi",
+      "id": "U1sv52yPXyS",
+      "valueType": "TIME"
+    },
+    "heure_fin_sam": {
+      "code": "heure_fin_sam",
+      "name": "EDL - BCZS - 111.2 Horaire de travail au Bureau central : Heure fin - samedi",
+      "id": "N3KDNGabXWu",
+      "valueType": "TIME"
+    },
+    "nom_bank": {
+      "code": "nom_bank",
+      "name": "EDL - BCZS - 112.1 Coordonn\u00e9es bancaires : Nom de la banque",
+      "id": "IvnB2UiDhrN",
+      "valueType": "TEXT"
+    },
+    "num_compte": {
+      "code": "num_compte",
+      "name": "EDL - BCZS - 112.2  Coordonn\u00e9es bancaires : N\u00b0 du compte bancaire",
+      "id": "bA6oaCKN46i",
+      "valueType": "TEXT"
+    },
+    "nbre_aire_sannte": {
+      "code": "nbre_aire_sannte",
+      "name": "EDL - BCZS - 112.B Nombre d'aire de sant\u00e9",
+      "id": "s1wAVKOMDqU",
+      "valueType": "INTEGER"
+    },
+    "BCZS_113": {
+      "code": "BCZS_113",
+      "name": "EDL - BCZS - 113. Exite t il un HGR ?",
+      "id": "VesmVOQS1So",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_114": {
+      "code": "BCZS_114",
+      "name": "EDL - BCZS - 114. Nombre d'h\u00f4pitaux/ Centres Hospitaliers dans la zone de sant\u00e9",
+      "id": "lKDv97QnKRq",
+      "valueType": "INTEGER"
+    },
+    "BCZS_115": {
+      "code": "BCZS_115",
+      "name": "EDL - BCZS - 115. Nombre de Centres de Sante de R\u00e9f\u00e9rence",
+      "id": "TWX7TIQcTnO",
+      "valueType": "INTEGER"
+    },
+    "BCZS_116": {
+      "code": "BCZS_116",
+      "name": "EDL - BCZS - 116. Nombre des Centres de Sante",
+      "id": "VNEoFp3N51Q",
+      "valueType": "INTEGER"
+    },
+    "BCZS_117": {
+      "code": "BCZS_117",
+      "name": "EDL - BCZS - 117. Nombre des Postes de sante",
+      "id": "xvCnCYZdg4i",
+      "valueType": "INTEGER"
+    },
+    "BCZS_118": {
+      "code": "BCZS_118",
+      "name": "EDL - BCZS - 118. Nombre d'aires de sant\u00e9",
+      "id": "pgBnHRbUpOJ",
+      "valueType": "INTEGER"
+    },
+    "BCZS_119": {
+      "code": "BCZS_119",
+      "name": "EDL - BCZS - 119. Nombre d'aires de sant\u00e9 couvertes par un CS",
+      "id": "zsCFyDCQGQp",
+      "valueType": "INTEGER"
+    },
+    "BCZS_120": {
+      "code": "BCZS_120",
+      "name": "EDL - BCZS - 120. Nombre de SSC",
+      "id": "iGYUZ7nbfkL",
+      "valueType": "INTEGER"
+    },
+    "BCZS_121": {
+      "code": "BCZS_121",
+      "name": "EDL - BCZS - 121. Population totale de la zone de Sant\u00e9 ?",
+      "id": "DESvfQYeuX9",
+      "valueType": "INTEGER"
+    },
+    "BCZS_122": {
+      "code": "BCZS_122",
+      "name": "EDL - BCZS - 122. Population couverte",
+      "id": "EjVQ6StJktw",
+      "valueType": "INTEGER"
+    },
+    "BCZS_201_Homme": {
+      "code": "BCZS_201_Homme",
+      "name": "EDL - BCZS - 201. RH au BCZS : Nombre de m\u00e9decin(s) sp\u00e9cialiste (s) homme :",
+      "id": "J4Ov220b2lb",
+      "valueType": "INTEGER"
+    },
+    "BCZS_201_Femme": {
+      "code": "BCZS_201_Femme",
+      "name": "EDL - BCZS - 201. RH au BCZS : Nombre de m\u00e9decin(s) sp\u00e9cialiste (s) femme :",
+      "id": "IdewTnxQrh6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_202_Homme": {
+      "code": "BCZS_202_Homme",
+      "name": "EDL - BCZS - 202. RH au BCZS : Nombre de M\u00e9decin(s) g\u00e9n\u00e9raliste(s) homme :",
+      "id": "uDIk5d0ihZd",
+      "valueType": "INTEGER"
+    },
+    "BCZS_202_Femme": {
+      "code": "BCZS_202_Femme",
+      "name": "EDL - BCZS - 202. RH au BCZS : Nombre de M\u00e9decin(s) g\u00e9n\u00e9raliste(s) femme :",
+      "id": "TvbEnjqmWcq",
+      "valueType": "INTEGER"
+    },
+    "BCZS_203_Homme": {
+      "code": "BCZS_203_Homme",
+      "name": "EDL - BCZS - 203. RH au BCZS : Nombre de Pharmacien(s) homme :",
+      "id": "Olvxwt07evE",
+      "valueType": "INTEGER"
+    },
+    "BCZS_203_Femme": {
+      "code": "BCZS_203_Femme",
+      "name": "EDL - BCZS - 203. RH au BCZS : Nombre de Pharmacien(s) femme :",
+      "id": "ZJenGG4X23n",
+      "valueType": "INTEGER"
+    },
+    "BCZS_204_Homme": {
+      "code": "BCZS_204_Homme",
+      "name": "EDL - BCZS - 204. RH au BCZS : Nombre d'Assistant(s) en Pharmacie Homme :",
+      "id": "CzaQT3MlCXm",
+      "valueType": "INTEGER"
+    },
+    "BCZS_204_Femme": {
+      "code": "BCZS_204_Femme",
+      "name": "EDL - BCZS - 204. RH au BCZS : Nombre d'Assistant(s) en Pharmacie femme :",
+      "id": "iLdOkg10rI5",
+      "valueType": "INTEGER"
+    },
+    "BCZS_205_Homme": {
+      "code": "BCZS_205_Homme",
+      "name": "EDL - BCZS - 205. RH au BCZS : Nombre de Nutritionniste(s) Homme :",
+      "id": "dI7xx484xyY",
+      "valueType": "INTEGER"
+    },
+    "BCZS_205_Femme": {
+      "code": "BCZS_205_Femme",
+      "name": "EDL - BCZS - 205. RH au BCZS : Nombre de Nutritionniste(s) Femme :",
+      "id": "jkMD449oaqd",
+      "valueType": "INTEGER"
+    },
+    "BCZS_206_Homme": {
+      "code": "BCZS_206_Homme",
+      "name": "EDL - BCZS - 206. RH au BCZS : Nombre d'Infirmier(s) A0, A1, A2 Homme :",
+      "id": "Hs91fDdppK4",
+      "valueType": "INTEGER"
+    },
+    "BCZS_206_Femme": {
+      "code": "BCZS_206_Femme",
+      "name": "EDL - BCZS - 206. RH au BCZS : Nombre d'Infirmier(s) A0, A1, A2) Femme :",
+      "id": "CMH4kN7dis6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_207_Homme": {
+      "code": "BCZS_207_Homme",
+      "name": "EDL - BCZS - 207. RH au BCZS : Nombre d'Infirmier(s) A3 Homme :",
+      "id": "d7dfnWGOCkC",
+      "valueType": "INTEGER"
+    },
+    "BCZS_207_Femme": {
+      "code": "BCZS_207_Femme",
+      "name": "EDL - BCZS - 207. RH au BCZS : Nombre d'Infirmier(s) A3 Femme :",
+      "id": "Wwt14jfK2yc",
+      "valueType": "INTEGER"
+    },
+    "BCZS_208_Homme": {
+      "code": "BCZS_208_Homme",
+      "name": "EDL - BCZS - 208. RH au BCZS : Nombre de Sage-Femme(s) (A1) Homme :",
+      "id": "CoW0URaRp3R",
+      "valueType": "INTEGER"
+    },
+    "BCZS_208_Femme": {
+      "code": "BCZS_208_Femme",
+      "name": "EDL - BCZS - 208. RH au BCZS : Nombre de Sage-Femme(s) (A1) Femme :",
+      "id": "WruI7rm6N6D",
+      "valueType": "INTEGER"
+    },
+    "BCZS_209_Homme": {
+      "code": "BCZS_209_Homme",
+      "name": "EDL - BCZS - 209. RH au BCZS : Nombre d'Accoucheuse(s) ( A2) Homme :",
+      "id": "W7IgrkEWiC6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_209_Femme": {
+      "code": "BCZS_209_Femme",
+      "name": "EDL - BCZS - 209. RH au BCZS : Nombre d'Accoucheuse(s) ( A2) Femme :",
+      "id": "sMufXkYLI1U",
+      "valueType": "INTEGER"
+    },
+    "BCZS_210_Homme": {
+      "code": "BCZS_210_Homme",
+      "name": "EDL - BCZS - 210. RH au BCZS : Nombre d'Administrateur(s) Gestionnaire(s) niveau L2, G3 Homme :",
+      "id": "PeXKfFzmb6n",
+      "valueType": "INTEGER"
+    },
+    "BCZS_210_Femme": {
+      "code": "BCZS_210_Femme",
+      "name": "EDL - BCZS - 210. RH au BCZS : Nombre d'Administrateur(s) Gestionnaire(s) niveau L2, G3 Femme :",
+      "id": "nTX5RSdx2nt",
+      "valueType": "INTEGER"
+    },
+    "BCZS_211_Homme": {
+      "code": "BCZS_211_Homme",
+      "name": "EDL - BCZS - 211. RH au BCZS : Nombre de Charg\u00e9(s) de Sant\u00e9 Communautaire (L2 ou G3 TDR) Homme :",
+      "id": "X6hLm55yYxm",
+      "valueType": "INTEGER"
+    },
+    "BCZS_211_Femme": {
+      "code": "BCZS_211_Femme",
+      "name": "EDL - BCZS - 211. RH au BCZS : Nombre de Charg\u00e9(s) de Sant\u00e9 Communautaire (L2 ou G3 TDR) Femme :",
+      "id": "P8OWoOoo2WE",
+      "valueType": "INTEGER"
+    },
+    "BCZS_212_Homme": {
+      "code": "BCZS_212_Homme",
+      "name": "EDL - BCZS - 212. RH au BCZS : Nombre Personnel d'appui Homme :",
+      "id": "VwG2lE2iuO0",
+      "valueType": "INTEGER"
+    },
+    "BCZS_212_Femme": {
+      "code": "BCZS_212_Femme",
+      "name": "EDL - BCZS - 212. RH au BCZS : Nombre Personnel d'appui Femme :",
+      "id": "wUkX6SZgFvw",
+      "valueType": "INTEGER"
+    },
+    "BCZS_213_Homme": {
+      "code": "BCZS_213_Homme",
+      "name": "EDL - BCZS - 213. RH au BCZS : Nombre de Comptable(s) Homme :",
+      "id": "gE9JheySgZw",
+      "valueType": "INTEGER"
+    },
+    "BCZS_213_Femme": {
+      "code": "BCZS_213_Femme",
+      "name": "EDL - BCZS - 213. RH au BCZS : Nombre de Comptable(s) Femme :",
+      "id": "K036Kgo9Qs4",
+      "valueType": "INTEGER"
+    },
+    "BCZS_214_Homme": {
+      "code": "BCZS_214_Homme",
+      "name": "EDL - BCZS - 214. RH au BCZS : Nombre de Gestionnaire(s) des donn\u00e9es SNIS Homme :",
+      "id": "Do3XOu9lDAT",
+      "valueType": "INTEGER"
+    },
+    "BCZS_214_Femme": {
+      "code": "BCZS_214_Femme",
+      "name": "EDL - BCZS - 214. RH au BCZS : Nombre de Gestionnaire(s) des donn\u00e9es SNIS Femme :",
+      "id": "WgbmmgpyKnu",
+      "valueType": "INTEGER"
+    },
+    "BCZS_215_Homme": {
+      "code": "BCZS_215_Homme",
+      "name": "EDL - BCZS - 215. RH au BCZS : Autres professionnel de sant\u00e9 Homme :",
+      "id": "ygD3q7LJZXQ",
+      "valueType": "INTEGER"
+    },
+    "BCZS_215_Femme": {
+      "code": "BCZS_215_Femme",
+      "name": "EDL - BCZS - 215. RH au BCZS : Autres professionnel de sant\u00e9 Femme :",
+      "id": "QHLAb7MfmsI",
+      "valueType": "INTEGER"
+    },
+    "BCZS_216_Homme": {
+      "code": "BCZS_216_Homme",
+      "name": "EDL - BCZS - 216. RH au BCZS : Nombre de Personnel administratif Homme :",
+      "id": "Q6wLSu9lu8y",
+      "valueType": "INTEGER"
+    },
+    "BCZS_216_Femme": {
+      "code": "BCZS_216_Femme",
+      "name": "EDL - BCZS - 216. RH au BCZS : Nombre de Personnel administratif Femme :",
+      "id": "xMnpyyYgtXC",
+      "valueType": "INTEGER"
+    },
+    "BCZS_217_Homme": {
+      "code": "BCZS_217_Homme",
+      "name": "EDL - BCZS - 217. RH au BCZS : Nombre de Sans qualification Homme :",
+      "id": "WznnKtFuNFa",
+      "valueType": "INTEGER"
+    },
+    "BCZS_217_Femme": {
+      "code": "BCZS_217_Femme",
+      "name": "EDL - BCZS - 217. RH au BCZS : Nombre de Sans qualification Femme :",
+      "id": "BEmginTpzoR",
+      "valueType": "INTEGER"
+    },
+    "BCZS_218_Homme": {
+      "code": "BCZS_218_Homme",
+      "name": "EDL - BCZS - 218. RH au BCZS : Nombre total d'homme(s)",
+      "id": "VNVmzfC0BfL",
+      "valueType": "INTEGER"
+    },
+    "BCZS_218_Femme": {
+      "code": "BCZS_218_Femme",
+      "name": "EDL - BCZS - 218. RH au BCZS : Nombre total de femme(s)",
+      "id": "HtoLmGkyE8c",
+      "valueType": "INTEGER"
+    },
+    "BCZS_219": {
+      "code": "BCZS_219",
+      "name": "EDL - BCZS - 219. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Management de Soins de Sant\u00e9 Primaires",
+      "id": "AHxK1MzTMpN",
+      "valueType": "INTEGER"
+    },
+    "BCZS_220": {
+      "code": "BCZS_220",
+      "name": "EDL - BCZS - 220. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Surveillance Int\u00e9gr\u00e9e des maladies et riposte",
+      "id": "Ss4sviHnMZU",
+      "valueType": "INTEGER"
+    },
+    "BCZS_221": {
+      "code": "BCZS_221",
+      "name": "EDL - BCZS - 221. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re, du Nouveau-n\u00e9 et de l'Adolescent (SMNEA) approche par comp\u00e9tence ",
+      "id": "MothdxlyIEr",
+      "valueType": "INTEGER"
+    },
+    "BCZS_222": {
+      "code": "BCZS_222",
+      "name": "EDL - BCZS - 222. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence complet",
+      "id": "DYoKPX2FI1J",
+      "valueType": "INTEGER"
+    },
+    "BCZS_223": {
+      "code": "BCZS_223",
+      "name": "EDL - BCZS - 223. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : R\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 respirer",
+      "id": "ik4c1Du88Xx",
+      "valueType": "INTEGER"
+    },
+    "BCZS_224": {
+      "code": "BCZS_224",
+      "name": "EDL - BCZS - 224. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prevention et Prise en charge de l'hemorragie en post partum : Aider les m\u00e8res \u00e0 survivre",
+      "id": "m0oDqXWTQeX",
+      "valueType": "INTEGER"
+    },
+    "BCZS_224_2": {
+      "code": "BCZS_224_2",
+      "name": "EDL - BCZS - 224.2 Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Utilisation des ordinogrammes",
+      "id": "sTNc6fs8TJF",
+      "valueType": "INTEGER"
+    },
+    "BCZS_225": {
+      "code": "BCZS_225",
+      "name": "EDL - BCZS - 225. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Planification Familiale",
+      "id": "yYFFkovkS0z",
+      "valueType": "INTEGER"
+    },
+    "BCZS_226": {
+      "code": "BCZS_226",
+      "name": "EDL - BCZS - 226. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Guides cliniques et th\u00e9rapeutiques",
+      "id": "bLGK5d2r3CA",
+      "valueType": "INTEGER"
+    },
+    "BCZS_227": {
+      "code": "BCZS_227",
+      "name": "EDL - BCZS - 227. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Transfusion sanguine",
+      "id": "vI1G9279gkc",
+      "valueType": "INTEGER"
+    },
+    "BCZS_228": {
+      "code": "BCZS_228",
+      "name": "EDL - BCZS - 228. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en Charge Int\u00e9gr\u00e9e de Malnutrition Aigue (PCIMA)",
+      "id": "LmhiHKl5fjE",
+      "valueType": "INTEGER"
+    },
+    "BCZS_229": {
+      "code": "BCZS_229",
+      "name": "EDL - BCZS - 229. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Tri- Evaluation-Traitement-D'urgence ( PCIME-TETU)",
+      "id": "jHhzqyssoG5",
+      "valueType": "INTEGER"
+    },
+    "BCZS_230": {
+      "code": "BCZS_230",
+      "name": "EDL - BCZS - 230. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Programme Elargi de Vaccination ( PEV)",
+      "id": "tlPiRexeioi",
+      "valueType": "INTEGER"
+    },
+    "BCZS_231": {
+      "code": "BCZS_231",
+      "name": "EDL - BCZS - 231. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en Charge (PEC) du paludisme",
+      "id": "cAFsdzCdoqZ",
+      "valueType": "INTEGER"
+    },
+    "BCZS_232": {
+      "code": "BCZS_232",
+      "name": "EDL - BCZS - 232. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en charge du paludisme chez la femme enceinte",
+      "id": "mlVrun1BA73",
+      "valueType": "INTEGER"
+    },
+    "BCZS_233": {
+      "code": "BCZS_233",
+      "name": "EDL - BCZS - 233. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en charge m\u00e9dicale des survivantes de violences sexuelles",
+      "id": "Yg8Cdwl1Tw8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_234": {
+      "code": "BCZS_234",
+      "name": "EDL - BCZS - 234. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes ( SSRAJ)",
+      "id": "GNq5RsD11Q2",
+      "valueType": "INTEGER"
+    },
+    "BCZS_235": {
+      "code": "BCZS_235",
+      "name": "EDL - BCZS - 235. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Prise en charge de la Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V ( PATI V )",
+      "id": "YlWvd9uXhAp",
+      "valueType": "INTEGER"
+    },
+    "BCZS_236": {
+      "code": "BCZS_236",
+      "name": "EDL - BCZS - 236. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Gestion des m\u00e9dicaments",
+      "id": "qR3hj9xXJzW",
+      "valueType": "INTEGER"
+    },
+    "BCZS_237": {
+      "code": "BCZS_237",
+      "name": "EDL - BCZS - 237. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Pr\u00e9vention et contr\u00f4le de l'infection",
+      "id": "q0m1q98Yvw9",
+      "valueType": "INTEGER"
+    },
+    "BCZS_237_2": {
+      "code": "BCZS_237_2",
+      "name": "EDL - BCZS - 237.2 Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Supervision integr\u00e9e",
+      "id": "z6jfnMBcXxw",
+      "valueType": "INTEGER"
+    },
+    "BCZS_238": {
+      "code": "BCZS_238",
+      "name": "EDL - BCZS - 238. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Formation en DQI",
+      "id": "EypTzORplV4",
+      "valueType": "INTEGER"
+    },
+    "BCZS_239": {
+      "code": "BCZS_239",
+      "name": "EDL - BCZS - 239. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : Gestion SNIS",
+      "id": "lwq1RDeApTh",
+      "valueType": "INTEGER"
+    },
+    "BCZS_240": {
+      "code": "BCZS_240",
+      "name": "EDL - BCZS - 240. Formation re\u00e7ue dans le cadre du PCA (entre 2017 et aujourd'hui) en : PICAL (auto-\u00e9valuation)",
+      "id": "IDcC9BKpolR",
+      "valueType": "INTEGER"
+    },
+    "BCZS_301": {
+      "code": "BCZS_301",
+      "name": "EDL - BCZS - 301. Gestion des m\u00e9dicaments : Existe-t-il d'un d\u00e9p\u00f4t pour le stockage des m\u00e9dicaments au BCZS (separ\u00e9 de celui de l'HGR)",
+      "id": "XcKbkpIUIem",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_302": {
+      "code": "BCZS_302",
+      "name": "EDL - BCZS - 302. Gestion des m\u00e9dicaments : Si Oui, quelle est la capacit\u00e9 de stockage ?",
+      "id": "B0SN3eqMT8x",
+      "valueType": "INTEGER"
+    },
+    "BCZS_303": {
+      "code": "BCZS_303",
+      "name": "EDL - BCZS - 303. Gestion des m\u00e9dicaments : Les M\u00e9dicaments sont ils stock\u00e9s dans une salle ferm\u00e9e ?",
+      "id": "xpHMcI082g7",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_304": {
+      "code": "BCZS_304",
+      "name": "EDL - BCZS - 304. Gestion des m\u00e9dicaments : Si les m\u00e9dicaments sont stock\u00e9s dans une salle, est-ce que la salle de stockage des m\u00e9dicaments est dot\u00e9e d'un plafond et de pavement au sol ? ",
+      "id": "PsTnAGwaS5v",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_305": {
+      "code": "BCZS_305",
+      "name": "EDL - BCZS - 305. Gestion des m\u00e9dicaments : Avez-vous des armoires avec cl\u00e9s pour le stockage des m\u00e9dicaments",
+      "id": "QPLvwpdgDW7",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_306.1": {
+      "code": "BCZS_306.1",
+      "name": "EDL - BCZS - 306.1 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Chaleur",
+      "id": "opFOEb8XeXf",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_306.2": {
+      "code": "BCZS_306.2",
+      "name": "EDL - BCZS - 306.2 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Lumi\u00e8re directe du soleil",
+      "id": "jLL8pFhqeYl",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_306.3": {
+      "code": "BCZS_306.3",
+      "name": "EDL - BCZS - 306.3 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 l'Humidit\u00e9",
+      "id": "KlXn4nJoeKL",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_306.4": {
+      "code": "BCZS_306.4",
+      "name": "EDL - BCZS - 306.4 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Poussi\u00e8re",
+      "id": "AqJdj9Uqr0q",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_307": {
+      "code": "BCZS_307",
+      "name": "EDL - BCZS - 307. Gestion des m\u00e9dicaments : L'\u00e9clairage est il suffisant dans le lieu de stockage?",
+      "id": "cX76uiRBxYB",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_308": {
+      "code": "BCZS_308",
+      "name": "EDL - BCZS - 308. Gestion des m\u00e9dicaments : Avez-vous au moins un refrigerateur pour la conservation des m\u00e9dicaments?",
+      "id": "uefGllfkehr",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_309": {
+      "code": "BCZS_309",
+      "name": "EDL - BCZS - 309. Gestion des m\u00e9dicaments : Les refrigerateurs fonctionnels sont tous dot\u00e9s de fridge tag ou fiche de temp\u00e9rature?",
+      "id": "rsJ8i8G4BJk",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_310": {
+      "code": "BCZS_310",
+      "name": "EDL - BCZS - 310. Gestion des m\u00e9dicaments : Quelle est la source principale d'approvisionnement en M\u00e9dicament?",
+      "id": "UuV5p7CwFxp",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "cdr",
+            "name": "1. CDR"
+          },
+          {
+            "code": "zs",
+            "name": "2. ZS"
+          },
+          {
+            "code": "marche_loc",
+            "name": "3. March\u00e9 local"
+          },
+          {
+            "code": "part",
+            "name": "4. Partenaire"
+          }
+        ],
+        "id": "Ch5RQ92Pz3E"
+      }
+    },
+    "BCZS_311": {
+      "code": "BCZS_311",
+      "name": "EDL - BCZS - 311. Gestion des m\u00e9dicaments : Quel est le co\u00fbt moyen mensuel de transport pour les m\u00e9dicaments de la source principale?",
+      "id": "aFrO99clgYo",
+      "valueType": "TEXT"
+    },
+    "BCZS_312": {
+      "code": "BCZS_312",
+      "name": "EDL - BCZS - 312. Gestion des m\u00e9dicaments : Distance par rapport \u00e0 la CDR",
+      "id": "op6jGQXlfu0",
+      "valueType": "NUMBER"
+    },
+    "BCZS_401": {
+      "code": "BCZS_401",
+      "name": "EDL - BCZS - 401. Infrastructures : Existence des b\u00e2timents",
+      "id": "njsnX8IP5aW",
+      "valueType": "NUMBER"
+    },
+    "BCZS_402": {
+      "code": "BCZS_402",
+      "name": "EDL - BCZS - 402. Infrastructures : Appartenance batiment du BCZS",
+      "id": "M7y2uRfBbxt",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "appartenance_bat.1",
+            "name": "1. Batiment propre au BCZ"
+          },
+          {
+            "code": "appartenance_bat.2",
+            "name": "2. Batiment de l'h\u00f4pital"
+          },
+          {
+            "code": "appartenance_bat.3",
+            "name": "3. Batiment  en location"
+          },
+          {
+            "code": "appartenance_bat.4",
+            "name": "3. Autres"
+          }
+        ],
+        "id": "hsGEVZeOOYB"
+      }
+    },
+    "BCZS_403": {
+      "code": "BCZS_403",
+      "name": "EDL - BCZS - 403. Infrastructures : Existence des bureaux",
+      "id": "QdxbEKnZbLt",
+      "valueType": "INTEGER"
+    },
+    "BCZS_404": {
+      "code": "BCZS_404",
+      "name": "EDL - BCZS - 404. Infrastructures : Existence d'une salle de r\u00e9union?",
+      "id": "l0h0ZGRQT1W",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_405": {
+      "code": "BCZS_405",
+      "name": "EDL - BCZS - 405. Infrastructures : Existence d'un d\u00e9pot / magasin g\u00e9n\u00e9ral?",
+      "id": "mQTGIni5HFW",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_406": {
+      "code": "BCZS_406",
+      "name": "EDL - BCZS - 406. Infrastructures : Type de b\u00e2timent du BCZ",
+      "id": "PQyjvFM6Xql",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type-batiment1",
+            "name": "1. Durables ( Murs en briques cuites ou en cimen; Toiture en t\u00f4les/tuile;    pavement au sol ( carrelage ou enduit en ciment)"
+          },
+          {
+            "code": "type-batiment2",
+            "name": "2. Semi-durables ( Toiture en t\u00f4les/tuile,  Murs en briques non  cuites ou bois, . Pavement au sol ( carrelage ou enduit en ciment)"
+          },
+          {
+            "code": "type-batiment3",
+            "name": "3. En pis\u00e9 ( Toiture en chaume,  Murs en briques non  cuites ou la boue,  Terre battue)"
+          }
+        ],
+        "id": "TM07k1FPact"
+      }
+    },
+    "BCZS_407": {
+      "code": "BCZS_407",
+      "name": "EDL - BCZS - 407. Infrastructures : Le BCZ a besoin de R\u00e9habilitation leg\u00e8re (Portes, fenetres, pavement, peinture)",
+      "id": "ZuldDuVFTHU",
+      "valueType": "INTEGER"
+    },
+    "BCZS_408": {
+      "code": "BCZS_408",
+      "name": "EDL - BCZS - 408. Infrastructures : Le BCZ a besoin de R\u00e9habilitation lourde (toiture, murs, autres)",
+      "id": "AcTMrDkQn0h",
+      "valueType": "INTEGER"
+    },
+    "BCZS_409": {
+      "code": "BCZS_409",
+      "name": "EDL - BCZS - 409. Infrastructures : Le BCZ a besoin de Construction",
+      "id": "JXyvcCQUkeU",
+      "valueType": "INTEGER"
+    },
+    "BCZS_410": {
+      "code": "BCZS_410",
+      "name": "EDL - BCZS - 410. Infrastructures - WASH : Quelle est la source d'eau la plus couramment utilis\u00e9e pour la formation sanitaire en ce moment ?",
+      "id": "IxHzkyB9UFl",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_eau1",
+            "name": "1. Eau courante dans les locaux"
+          },
+          {
+            "code": "source_eau2",
+            "name": "2. Eaux raccord\u00e9es  dans la parcelle"
+          },
+          {
+            "code": "source_eau3",
+            "name": "3. Borne Fontaine, Forage, puits tub\u00e9"
+          },
+          {
+            "code": "source_eau4",
+            "name": "4. Puits ordinaires prot\u00e9g\u00e9s"
+          },
+          {
+            "code": "source_eau5",
+            "name": "5. Collecte d'eau de pluie"
+          },
+          {
+            "code": "source_eau6",
+            "name": "6. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "SXACQsfSvzW"
+      }
+    },
+    "BCZS_411": {
+      "code": "BCZS_411",
+      "name": "EDL - BCZS - 411. Infrastructures - WASH : L'approvionnment en eau \u00e0 partir de cette source est disponible au sein du BCZ, ou \u00e0 distance?",
+      "id": "aob0mhQxnf6",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "dispo_appro_eau1",
+            "name": "1. Au sein du BCZ"
+          },
+          {
+            "code": "dispo_appro_eau2",
+            "name": "2. A moins de  500 m\u00e8tres du BCZ"
+          },
+          {
+            "code": "dispo_appro_eau3",
+            "name": "3. A plus de 500 \u00e8tres du BCZ"
+          }
+        ],
+        "id": "djXbDPiptGi"
+      }
+    },
+    "BCZS_412": {
+      "code": "BCZS_412",
+      "name": "EDL - BCZS - 412. Infrastructures - WASH : Latrines hygi\u00e9niques fonctionnelles pour le personnel au niveau du BCZ ?",
+      "id": "hCQs9pEHwid",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_412_1": {
+      "code": "BCZS_412_1",
+      "name": "EDL - BCZS - 425.1 Infrastructures - WASH  : Si Oui, ces latrines sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "YZDkzTNre1q",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_413": {
+      "code": "BCZS_413",
+      "name": "EDL - BCZS - 413. Infrastructures - WASH : Si Oui d\u00e9terminer le type de latrine",
+      "id": "LWHm8ZLbkSt",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_latrine1",
+            "name": "1. Toilette \u00e0 chasse d'eau"
+          },
+          {
+            "code": "type_latrine2",
+            "name": "2. Latrines ventil\u00e9e Am\u00e9lior\u00e9es"
+          },
+          {
+            "code": "type_latrine3",
+            "name": "3. Fosse avec dalle"
+          },
+          {
+            "code": "type_latrine4",
+            "name": "4. Fosse sans dalle"
+          },
+          {
+            "code": "type_latrine5",
+            "name": "5. Toilette \u00e0 compostage"
+          }
+        ],
+        "id": "zperWNGb0Kh"
+      }
+    },
+    "BCZS_414": {
+      "code": "BCZS_414",
+      "name": "EDL - BCZS - 414. Infrastructures - WASH : Poubelles en plastique avec couvercles en bon \u00e9tat au BCZ",
+      "id": "QLN1wOUCg1O",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_415": {
+      "code": "BCZS_415",
+      "name": "EDL - BCZS - 415. Infrastructures - Energie : Le BCZ est-il approvisionn\u00e9e Electricit\u00e9 ?",
+      "id": "RvSUn6EMjxO",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_416": {
+      "code": "BCZS_416",
+      "name": "EDL - BCZS - 416. Infrastructures - Energie : Si Oui quelle est la source principale d'\u00e9lectricit\u00e9 du BCZ",
+      "id": "J6sVEDRFqph",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_elect1",
+            "name": "1. Reseau Public ( Socit\u00e9 National d'\u00e9lectricit\u00e9 )"
+          },
+          {
+            "code": "source_elect2",
+            "name": "2. Reseau Priv\u00e9"
+          },
+          {
+            "code": "source_elect3",
+            "name": "3. Groupe electrog\u00e8ne ( g\u00e9n\u00e9rateur )"
+          },
+          {
+            "code": "source_elect4",
+            "name": "4. Syt\u00e8me solaire  ( Panneau  solaire et accessoires)"
+          },
+          {
+            "code": "source_elect5",
+            "name": "5. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "gw4l1qahuvU"
+      }
+    },
+    "BCZS_417": {
+      "code": "BCZS_417",
+      "name": "EDL - BCZS - 417. Infrastructures - S\u00e9curit\u00e9 : Paratonnerre install\u00e9 en etat de fonctionnement?",
+      "id": "WO3aVuc2DYb",
+      "valueType": "INTEGER"
+    },
+    "BCZS_418": {
+      "code": "BCZS_418",
+      "name": "EDL - BCZS - 418. Infrastructures - S\u00e9curit\u00e9 : Extincteur en \u00e9tat fonctionnel",
+      "id": "jE0lCVuSnGC",
+      "valueType": "INTEGER"
+    },
+    "BCZS_419": {
+      "type": "multiple",
+      "values": {
+        "reseaux1": {
+          "code": "BCZS_419_reseaux1",
+          "comment": "1.Vodacom,",
+          "name": "EDL - BCZS - 419. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 1.Vodacom",
+          "id": "SocC84yXiP2",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux2": {
+          "code": "BCZS_419_reseaux2",
+          "comment": "2. Airtel,",
+          "name": "EDL - BCZS - 419. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 2. Airtel",
+          "id": "TKgBD5C1EPh",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux3": {
+          "code": "BCZS_419_reseaux3",
+          "comment": "3. Tigo, Orange,",
+          "name": "EDL - BCZS - 419. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 3. Tigo, Orange",
+          "id": "E30Faxf9VJN",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux4": {
+          "code": "BCZS_419_reseaux4",
+          "comment": "4. Africel",
+          "name": "EDL - BCZS - 419. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 4. Africel",
+          "id": "Bd3KOj6zpqy",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux5": {
+          "code": "BCZS_419_reseaux5",
+          "comment": "5. Pas de reseau disponible",
+          "name": "EDL - BCZS - 419. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 5. pas de reseaux",
+          "id": "qrhfXyjTpVU",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_420": {
+      "code": "BCZS_420",
+      "name": "EDL - BCZS - 420. Infrastructures - Connectivit\u00e9 : Si reseau disponible, quelle est le niveau de disponibilit\u00e9 ",
+      "id": "SUaNPhiNZGs",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "reseau_dispo1",
+            "name": "a. Disponible 24 heures sur 24"
+          },
+          {
+            "code": "reseau_dispo2",
+            "name": "b. Disponible quelques heures par jour (instable)"
+          }
+        ],
+        "id": "IZJNKzL9KpH"
+      }
+    },
+    "BCZS_421": {
+      "code": "BCZS_421",
+      "name": "EDL - BCZS - 421. Infrastructures - Connectivit\u00e9 : Disponibilit\u00e9 de l'internet au BCZ",
+      "id": "ym6EhnRiYiw",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Modem"
+          },
+          {
+            "code": "2",
+            "name": "2. V-sat"
+          }
+        ],
+        "id": "pJHYoxrF2XZ"
+      }
+    },
+    "BCZS_422": {
+      "code": "BCZS_422",
+      "name": "EDL - BCZS - 422. Infrastructures - Connectivit\u00e9 : Si modem determiner le type de signal re\u00e7u par la FOSA",
+      "id": "S9PMzEITZMP",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_signal1",
+            "name": "a. 2 G"
+          },
+          {
+            "code": "type_signal2",
+            "name": "b. 3G"
+          },
+          {
+            "code": "type_signal3",
+            "name": "c. 4G"
+          }
+        ],
+        "id": "tfNUs9F7a8q "
+      }
+    },
+    "BCZS_423": {
+      "code": "BCZS_423",
+      "name": "EDL - BCZS - 423. Infrastructures - Connectivit\u00e9 : V-Sat au BCZ operationel ?",
+      "id": "qGlIUdIULIM",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_424": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "BCZS_424_1",
+          "comment": "1. RTNC",
+          "name": "EDL - BCZS - 424. Infrastructures - Connectivit\u00e9 : Quelles sont les chaines TV pouvant \u00eatre capt\u00e9es dans la zone de sant\u00e9 ? 1. RTNC",
+          "id": "CFHtV5fzKRa",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "BCZS_424_2",
+          "comment": "2. autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - BCZS - 424. Infrastructures - Connectivit\u00e9 : Quelles sont les chaines TV pouvant \u00eatre capt\u00e9es dans la zone de sant\u00e9? 2. autres \u00e0 pr\u00e9ciser",
+          "id": "GXrElNQdatp",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_425": {
+      "code": "BCZS_425",
+      "name": "EDL - BCZS - 425. Infrastructures - Connectivit\u00e9 : Autre chaine",
+      "id": "CUtqK9KbhX5",
+      "valueType": "TEXT"
+    },
+    "BCZS_426": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "BCZS_426_1",
+          "comment": "1. RTNC",
+          "name": "EDL - BCZS - 426. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9? 1. RTNC",
+          "id": "HaiQgiW3Vs1",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "BCZS_426_2",
+          "comment": "2. Radio communautaire",
+          "name": "EDL - BCZS - 426. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9? 2. Radio communautaire",
+          "id": "FeMkgCgH6HU",
+          "valueType": "BOOLEAN"
+        },
+        "3": {
+          "code": "BCZS_426_3",
+          "comment": "3. Autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - BCZS - 426. Infrastructures - Connectivit\u00e9 : Quelles sont les radio pouvant \u00eatre capt\u00e9es dans l'aire de sant\u00e9? 3. Autres \u00e0 pr\u00e9ciser",
+          "id": "tb7FVoQW7tE",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_427": {
+      "code": "BCZS_427",
+      "name": "EDL - BCZS - 427. Infrastructures - Connectivit\u00e9 : Si autre radio, pr\u00e9cisez :",
+      "id": "clMchGbDDLP",
+      "valueType": "TEXT"
+    },
+    "BCZS_428": {
+      "code": "BCZS_428",
+      "name": "EDL - BCZS - 428. Equipement - Cha\u00eene de froid : Combien des refrigirateur PEV y a-t-il au BCZS ?",
+      "id": "qMXdgDRzCez",
+      "valueType": "INTEGER"
+    },
+    "BCZS_429": {
+      "code": "BCZS_429",
+      "name": "EDL - BCZS - 429. Equipement - Cha\u00eene de froid : Les refrigerateurs disponibles ont quelle capacite?",
+      "id": "LLXtt3AxtAk",
+      "valueType": "INTEGER"
+    },
+    "CZS_430_1": {
+      "code": "CZS_430_1",
+      "name": "EDL - BCZS - 430.1 Equipement - Cha\u00eene de froid : Combien de refrig\u00e9rateurs par type? 1. Solaire :",
+      "id": "VS91K708cO2",
+      "valueType": "INTEGER"
+    },
+    "CZS_430_2": {
+      "code": "CZS_430_2",
+      "name": "EDL - BCZS - 430.2 Equipement - Cha\u00eene de froid : Combien de refrig\u00e9rateurs par type? 2. Petrole :",
+      "id": "j26XBUimo3g",
+      "valueType": "INTEGER"
+    },
+    "CZS_430_3": {
+      "code": "CZS_430_3",
+      "name": "EDL - BCZS - 430.3 Equipement - Cha\u00eene de froid : Combien de refrig\u00e9rateurs par type? 3. Electrique :",
+      "id": "IrgjmgY16S1",
+      "valueType": "INTEGER"
+    },
+    "BCZS_433": {
+      "code": "BCZS_433",
+      "name": "EDL - BCZS - 433. Equipement - Cha\u00eene de froid : Les frigos fonctionnels sont tous dot\u00e9s de fridge tag ou de fiche de suivi de temp\u00e9rature \u00e0 jour ?",
+      "id": "K6Il3owna79",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_434": {
+      "code": "BCZS_434",
+      "name": "EDL - BCZS - 434. Equipement - Cha\u00eene de froid : Y a t'il des bo\u00eetes isothermes?",
+      "id": "SUb2mqPbRDt",
+      "valueType": "INTEGER"
+    },
+    "BCZS_434_2": {
+      "code": "BCZS_434_2",
+      "name": "EDL - BCZS - 434.2 Equipement - Cha\u00eene de froid : Y a t'il des glacieres avec accumulateurs",
+      "id": "lIp1qs2dPq8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_435": {
+      "code": "BCZS_435",
+      "name": "EDL - BCZS - 435. Equipement - Mat\u00e9riel roulant : V\u00e9hicule",
+      "id": "Mk8ORmmA89Y",
+      "valueType": "INTEGER"
+    },
+    "BCZS_436": {
+      "code": "BCZS_436",
+      "name": "EDL - BCZS - 436. Equipement - Mat\u00e9riel roulant : Hors-Bord",
+      "id": "k15HAtF7WBG",
+      "valueType": "INTEGER"
+    },
+    "BCZS_436_1": {
+      "code": "BCZS_436_1",
+      "name": "EDL - BCZS - 436.1 Equipement - Mat\u00e9riel roulant : B\u00e2teau",
+      "id": "MB2Ftr9pxWy",
+      "valueType": "INTEGER"
+    },
+    "BCZS_436_2": {
+      "code": "BCZS_436_2",
+      "name": "EDL - BCZS - 436.2 Equipement - Mat\u00e9riel roulant : Baleiniere",
+      "id": "Y3cNsrpWPJt",
+      "valueType": "INTEGER"
+    },
+    "BCZS_436_3": {
+      "code": "BCZS_436_3",
+      "name": "EDL - BCZS - 436.3 Equipement - Mat\u00e9riel roulant : Pirogue",
+      "id": "iWpmLNlvWiN",
+      "valueType": "INTEGER"
+    },
+    "BCZS_437": {
+      "code": "BCZS_437",
+      "name": "EDL - BCZS - 437. Equipement - Mat\u00e9riel roulant : Moto",
+      "id": "UFBtRUDez4R",
+      "valueType": "INTEGER"
+    },
+    "BCZS_438": {
+      "code": "BCZS_438",
+      "name": "EDL - BCZS - 438. Equipement - Mat\u00e9riel roulant : V\u00e9los",
+      "id": "v7SnW2lssG2",
+      "valueType": "INTEGER"
+    },
+    "BCZS_439": {
+      "code": "BCZS_439",
+      "name": "EDL - BCZS - 439. Equipement - Mat\u00e9riel informatique : Laptop",
+      "id": "ifYYaoz8Wg9",
+      "valueType": "INTEGER"
+    },
+    "BCZS_440": {
+      "code": "BCZS_440",
+      "name": "EDL - BCZS - 440. Equipement - Mat\u00e9riel informatique : Desktop",
+      "id": "EnHwdEu0fAA",
+      "valueType": "INTEGER"
+    },
+    "BCZS_441": {
+      "code": "BCZS_441",
+      "name": "EDL - BCZS - 441. Equipement - Mat\u00e9riel informatique : Ondulaire",
+      "id": "kousJb85DQM",
+      "valueType": "INTEGER"
+    },
+    "BCZS_442": {
+      "code": "BCZS_442",
+      "name": "EDL - BCZS - 442. Equipement - Mat\u00e9riel informatique : Imprimante",
+      "id": "R7u3H3saRC5",
+      "valueType": "INTEGER"
+    },
+    "BCZS_443": {
+      "code": "BCZS_443",
+      "name": "EDL - BCZS - 443. Equipement - Mat\u00e9riel informatique : Photocopieuse",
+      "id": "qsi9vCGcbJ3",
+      "valueType": "INTEGER"
+    },
+    "BCZS_444": {
+      "code": "BCZS_444",
+      "name": "EDL - BCZS - 444. Equipement - Mat\u00e9riel informatique : Risographe",
+      "id": "yZHFDoBChyK",
+      "valueType": "INTEGER"
+    },
+    "BCZS_444_1": {
+      "code": "BCZS_444_1",
+      "name": "EDL - BCZS - 444.1 Equipement - Mat\u00e9riel informatique : Flash disk/cle USB",
+      "id": "Do5yfFWLYQ5",
+      "valueType": "INTEGER"
+    },
+    "BCZS_445": {
+      "code": "BCZS_445",
+      "name": "EDL - BCZS - 445. Equipement - Mat\u00e9riel informatique : Disque Dur Externe de plus de 500 GB",
+      "id": "AI5ft8JcTXY",
+      "valueType": "INTEGER"
+    },
+    "BCZS_601": {
+      "code": "BCZS_601",
+      "name": "EDL - BCZS - 601. Guides et fiches techniques : Disponibilit\u00e9 de Strat\u00e9gie de Renforcement du syst\u00e8me de sant\u00e9 Deuxi\u00e8me g\u00e9n\u00e9ration",
+      "id": "Z5Ro1qTGbG7",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_602": {
+      "code": "BCZS_602",
+      "name": "EDL - BCZS - 602 Guides et fiches techniques : Disponibilit\u00e9 de Plan National de D\u00e9veloppement Sanitaire 2019-2022",
+      "id": "dHyqkAq0J3Z",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_602_1": {
+      "code": "BCZS_602_1",
+      "name": "EDL - BCZS - 602.1 Guides et fiches techniques : PPDS",
+      "id": "l6nxV0qrdJo",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_602_2": {
+      "code": "BCZS_602_2",
+      "name": "EDL - BCZS - 602.2 Guides et fiches techniques : PDZS",
+      "id": "luuPoTBhrBN",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_602_3": {
+      "code": "BCZS_602_3",
+      "name": "EDL - BCZS - 602.3 Guides et fiches techniques : PAO",
+      "id": "hxRt8W3e59E",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_603": {
+      "code": "BCZS_603",
+      "name": "EDL - BCZS - 603. Guides et fiches techniques : Disponibilit\u00e9 de Normes de recueil de fonctionnment des ZS",
+      "id": "qSDsQzYY0cK",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_604": {
+      "code": "BCZS_604",
+      "name": "EDL - BCZS - 604. Guides et fiches techniques : Ordinogramme des soins",
+      "id": "EDZbJavyxGv",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_605": {
+      "code": "BCZS_605",
+      "name": "EDL - BCZS - 605. Guides et fiches techniques : Guides cliniques et th\u00e9rapeutiques",
+      "id": "w6cFovvYHcx",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_606": {
+      "code": "BCZS_606",
+      "name": "EDL - BCZS - 606. Guides et fiches techniques : Livret des Tableaux PCIME ( communautaire, clinique et TETU)",
+      "id": "DZLWMdeUBNj",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_607": {
+      "code": "BCZS_607",
+      "name": "EDL - BCZS - 607. Guides et fiches techniques : Fiche technique PNLP",
+      "id": "X0xEoomBUVa",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_608": {
+      "code": "BCZS_608",
+      "name": "EDL - BCZS - 608. Guides et fiches techniques : Guide/protocole PNLS",
+      "id": "Qben78hwQ5u",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_609": {
+      "code": "BCZS_609",
+      "name": "EDL - BCZS - 609. Guides et fiches techniques : Fiches Techniques Prise en Charge Int\u00e9gr\u00e9 Malnutrition Aigue",
+      "id": "P6b2W3Anlk2",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_610": {
+      "code": "BCZS_610",
+      "name": "EDL - BCZS - 610. Guides et fiches techniques : Protocole pour la prise en Charge des Survivantes des Violences sexuelles",
+      "id": "vbOyimjJeHz",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_611": {
+      "code": "BCZS_611",
+      "name": "EDL - BCZS - 611. Guides et fiches techniques : Guide d'utilisation du Partograme",
+      "id": "EO5osLMSWDp",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_613": {
+      "code": "BCZS_613",
+      "name": "EDL - BCZS - 613. Guides et fiches techniques : Normes ZS relatives aux Interventions Integrees de SMNEA-",
+      "id": "jXnetkSVJDz",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_614": {
+      "code": "BCZS_614",
+      "name": "EDL - BCZS - 614. Guides et fiches techniques : Fiches techniques SRMNEA ( Assistance Qualifi\u00e9e \u00e0 l'accouchement, Consulatation Pr\u00e9natale, Consultation Post Natale, Soins Essentiels du nouveau-n\u00e9 , )",
+      "id": "F05TAhXmAJx",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_615": {
+      "code": "BCZS_615",
+      "name": "EDL - BCZS - 615. Guides et fiches techniques : Fiches techniques PF",
+      "id": "oN7hmCO2Cyb",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_616": {
+      "code": "BCZS_616",
+      "name": "EDL - BCZS - 616. Guides et fiches techniques : Affiche Protocole de la GATPA",
+      "id": "M4lvvbCl1TC",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_617": {
+      "code": "BCZS_617",
+      "name": "EDL - BCZS - 617. Guides et fiches techniques : Affiche Protocole Aider les b\u00e9b\u00e9s \u00e0 respirer",
+      "id": "RIB8uEVKTMm",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_618": {
+      "code": "BCZS_618",
+      "name": "EDL - BCZS - 618. Guides et fiches techniques : Affiche Protocole Aider les m\u00e8res \u00e0 survivre",
+      "id": "NWsDiuQVL2Z",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_619": {
+      "code": "BCZS_619",
+      "name": "EDL - BCZS - 619. Guides et fiches techniques : Affiche Keith Edouard",
+      "id": "AZyfuczYmFh",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_619_1": {
+      "code": "BCZS_619_1",
+      "name": "EDL - BCZS - 619.1 Guides et fiches techniques : Affiche PTME",
+      "id": "sp640nOjCtZ",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_620": {
+      "code": "BCZS_620",
+      "name": "EDL - BCZS - 620. Guides et fiches techniques : Affiche Tiarht",
+      "id": "PDWN9zYxRvh",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_701": {
+      "code": "BCZS_701",
+      "name": "EDL - BCZS - 701. Financement des soins : Existence d'une mutuelle de sant\u00e9",
+      "id": "tWyyJAjIiQt",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_702": {
+      "code": "BCZS_702",
+      "name": "EDL - BCZS - 702. Financement des soins : Type de mutuelle",
+      "id": "swK8EnTzIz7",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_mutuel1",
+            "name": "1. Communautaire,"
+          },
+          {
+            "code": "type_mutuel2",
+            "name": "2. Obligatoire"
+          },
+          {
+            "code": "type_mutuel3",
+            "name": "3. Corporative"
+          },
+          {
+            "code": "type_mutuel4",
+            "name": "4. Autres"
+          }
+        ],
+        "id": "dydsQz2cwwt"
+      }
+    },
+    "BCZS_703": {
+      "code": "BCZS_703",
+      "name": "EDL - BCZS - 703. Financement des soins : Est-ce que l'hopital ou le CSR utilise les Financement Bas\u00e9s sur les R\u00e9sultats ou achat des services",
+      "id": "yKlFQRR5JGg",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_704": {
+      "code": "BCZS_704",
+      "name": "EDL - BCZS - 704. Financement des soins : Quel est le type de tarif pratiqu\u00e9 \u00e0 la FOSA?",
+      "id": "gnAzbggD22I",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_tarif1",
+            "name": "1. Forfaitaire"
+          },
+          {
+            "code": "type_tarif2",
+            "name": "2. Par Acte"
+          },
+          {
+            "code": "type_tarif3",
+            "name": "3. Par Episode"
+          }
+        ],
+        "id": "EJ0Pz1OIob0"
+      }
+    },
+    "BCZS_705": {
+      "code": "BCZS_705",
+      "name": "EDL - BCZS - 705. Financement des soins : Contribution financi\u00e8re du Gouvernement Central et provincial \u00e0 la mise en \u0153uvre de PAO de l'ann\u00e9e pass\u00e9e (2018)",
+      "id": "AzPWzbogheq",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "part_contrib1",
+            "name": "1. 0%"
+          },
+          {
+            "code": "part_contrib2",
+            "name": "2. moins de 10%"
+          },
+          {
+            "code": "part_contrib3",
+            "name": "3. 10%-20%"
+          },
+          {
+            "code": "part_contrib4",
+            "name": "4. 21%-30%"
+          },
+          {
+            "code": "part_contrib5",
+            "name": "5. 31%-40%"
+          },
+          {
+            "code": "part_contrib6",
+            "name": "6. 41%- 50%"
+          },
+          {
+            "code": "part_contrib7",
+            "name": "7. 51%-60%"
+          },
+          {
+            "code": "part_contrib8",
+            "name": "8. 61%-70%"
+          },
+          {
+            "code": "part_contrib9",
+            "name": "9. 71%-80%"
+          },
+          {
+            "code": "part_contrib10",
+            "name": "10. 81%-90%"
+          },
+          {
+            "code": "part_contrib11",
+            "name": "11. 91%-100%"
+          }
+        ],
+        "id": "rt54NUYUSlt"
+      }
+    },
+    "BCZS_706": {
+      "code": "BCZS_706",
+      "name": "EDL - BCZS - 706. Financement des soins : Application de la tarification preferentielle en cas de reference dans la zone de sant\u00e9",
+      "id": "CCydTGcjuxV",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_801": {
+      "type": "multiple",
+      "values": {
+        "confessions_religieuses1": {
+          "code": "BCZS_801_confessions_religieuses1",
+          "comment": "1. Catholique",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS :1. Catholique",
+          "id": "chkCCO1y1S1",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses2": {
+          "code": "BCZS_801_confessions_religieuses2",
+          "comment": "2. Protestante",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS : 2. Protestante",
+          "id": "t95OFN5fxm9",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses3": {
+          "code": "BCZS_801_confessions_religieuses3",
+          "comment": "3. Reveil",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS : 3. Reveil",
+          "id": "gsL0nwzURed",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses4": {
+          "code": "BCZS_801_confessions_religieuses4",
+          "comment": "3. Kimbaguiste",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS : 3. Kimbaguiste",
+          "id": "BGa83MUDLNa",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses5": {
+          "code": "BCZS_801_confessions_religieuses5",
+          "comment": "4. Musulmane",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS:  4. Musulmane",
+          "id": "p2Wbabf71qw",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses6": {
+          "code": "BCZS_801_confessions_religieuses6",
+          "comment": "6. Secte",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS : 6. Secte",
+          "id": "PX6X00XPIda",
+          "valueType": "BOOLEAN"
+        },
+        "confessions_religieuses7": {
+          "code": "BCZS_801_confessions_religieuses7",
+          "comment": "7. Autres",
+          "name": "EDL - BCZS - 801. Partenariat : Confessions Religieuses actives dans la ZS : 7. Autres",
+          "id": "XyeR1YvrjGQ",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_802": {
+      "code": "BCZS_802",
+      "name": "EDL - BCZS - 802. Partenariat : Les confessions r\u00e9ligieuses sont elles repr\u00e9sent\u00e9es activement dans les organes de gestion (COGE/CA)",
+      "id": "n1x64FImlqp",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_901": {
+      "code": "BCZS_901",
+      "name": "EDL - BCZS - 901. Participation communautaire : Pouvez vous nous donner les rapports du comit\u00e9 de gestion les 3 derniers mois?",
+      "id": "aNb8VcdNIGR",
+      "valueType": "INTEGER"
+    },
+    "BCZS_902.1": {
+      "code": "BCZS_902.1",
+      "name": "EDL - BCZS - 902.1 Participation communautaire : Nombre de membre(s) du COGE Homme :",
+      "id": "T4EsKGKvEv8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_902.2": {
+      "code": "BCZS_902.2",
+      "name": "EDL - BCZS - 902.2 Participation communautaire : Nombre de membre(s) du COGE Femme :",
+      "id": "j3wGFAKZHto",
+      "valueType": "INTEGER"
+    },
+    "BCZS_904": {
+      "code": "BCZS_904",
+      "name": "EDL - BCZS - 904. Participation communautaire : La zone de sant\u00e9 a-t-il un plan d'action valid\u00e9 par le conseil d'administration?",
+      "id": "TKiWXUXMSUy",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_905.1": {
+      "code": "BCZS_905.1",
+      "name": "EDL - BCZS - 905.1 Participation communautaire : Nombre de membre(s) du Conseil d'Administration Homme",
+      "id": "dmGkP8kkToI",
+      "valueType": "INTEGER"
+    },
+    "BCZS_905.2": {
+      "code": "BCZS_905.2",
+      "name": "EDL - BCZS - 905.2 Participation communautaire : Nombre de membre(s) du Conseil d'Administration Femme",
+      "id": "R8LOJvCaisD",
+      "valueType": "INTEGER"
+    }
+  }
+}

@@ -1,0 +1,446 @@
+div,
+section,
+article {
+    box-sizing: border-box;
+}
+
+.content {
+    padding: $padding-unit;
+}
+
+.container--main {
+    flex: 1;
+    padding-left: $navigation-width;
+}
+
+.body--banner {
+    padding-top: $banner-height;
+}
+
+@mixin text--error {
+    color: $red;
+}
+
+@mixin text--warning {
+    color: $orange;
+}
+
+@mixin text--success {
+    color: $green;
+}
+
+.banner--stage-warning,
+#banner--warning {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: $z-index-banner--stage-warning;
+    height: $banner-height;
+    line-height: $banner-height;
+    font-size: $font-size-s;
+    color: white;
+    padding: 0 $padding-unit;
+    background-color: $orange;
+    text-align: center;
+    font-weight: bold;
+    -webkit-font-smoothing: antialiased;
+    -webkit-transition: top 0.5s ease-in-out;
+    transition: top 0.5s ease-in-out;
+    z-index: 1002;
+
+    a {
+        color: white;
+    }
+
+    &.no-animation {
+        -webkit-transition: none;
+        transition: none;
+    }
+
+    &.closed {
+        top: - 100%;
+    }
+}
+
+#banner--warning {
+    cursor: pointer;
+    font-size: $font-size-m;
+    padding: 10px $padding-unit;
+    height: auto;
+    line-height: $font-size-m;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    i {
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    span {
+        display: inline-block;
+        max-width: 80%;
+        text-align: justify;
+    }
+
+    .fa-warning {
+        margin: 0 15px 0 0;
+        color: red;
+        position: relative;
+
+        &:after {
+            display: block;
+            content: '';
+            position: absolute;
+            top: 6px;
+            left: 6px;
+            background-color: white;
+            width: 7px;
+            height: 13px;
+            z-index: -1;
+        }
+
+        &.second {
+            margin: 0 0 0 15px;
+        }
+    }
+
+    .fa-times {
+        position: absolute;
+        right: $padding-unit / 2;
+        top: $padding-unit / 2;
+    }
+}
+
+/* margin classes */
+
+$directions: left right top bottom;
+
+@each $direction in $directions {
+    .block--margin-#{$direction}--none {
+        margin-#{$direction}: 0;
+    }
+
+    .block--margin-#{$direction}--xxs {
+        margin-#{$direction}: $padding-unit/4;
+    }
+
+    .block--margin-#{$direction}--xs {
+        margin-#{$direction}: $padding-unit/2;
+    }
+
+    .block--margin-#{$direction}--small {
+        margin-#{$direction}: $padding-unit;
+    }
+
+    .block--margin-#{$direction}--med {
+        margin-#{$direction}: $padding-unit*2;
+    }
+}
+
+// extremely simple grid system with flexbox
+// give a div a class .column--2 for 20% width (for example)
+// no spacing between columns, you could do that with padding
+.wrapper__column {
+    display: flex;
+    justify-content: space-between;
+    align-items: stretch;
+}
+
+@for $i from 1 through 10 {
+    .column--#{$i} {
+        box-sizing: border-box;
+        width: #{$i}0%;
+    }
+}
+
+.no-padding-bottom {
+    padding-bottom: 0 !important;
+}
+
+.no-padding-top {
+    padding-top: 0 !important;
+}
+
+.no-padding-right {
+    padding-right: 0 !important;
+}
+
+.no-padding-left {
+    padding-left: 0 !important;
+}
+
+.no-padding {
+    padding: 0 !important;
+}
+
+.align-right {
+    text-align: right;
+}
+
+.align-left {
+    text-align: left;
+}
+
+.align-center {
+    text-align: center;
+}
+
+.display-flex {
+    display: flex ! important;
+}
+
+.flex-center {
+    justify-content: center;
+    align-items: center;
+}
+
+.display-inline-block {
+    display: inline-block !important;
+}
+
+.float-right {
+    float: right;
+}
+
+.float-left {
+    float: left;
+}
+
+.large-text {
+    font-size: 0.9vw;
+    line-height: 22px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}
+
+.hidden-opacity {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    width: 100%;
+    z-index: -100;
+    opacity: 0;
+}
+
+.border-top {
+    border-top: 1px solid $gray;
+}
+
+.border-bottom {
+    border-bottom: 1px solid $gray;
+}
+
+.flex-container {
+    display: flex;
+}
+
+.split-map {
+    height: 600px;
+    width: 80%;
+
+    &.big {
+        height: 800px;
+    }
+}
+
+.split-selector-container {
+    padding: $padding-unit;
+    width: 20%;
+}
+
+.padding {
+    padding: $padding-unit/2;
+}
+
+.padding-bottom {
+    padding-bottom: $padding-unit/2 !important;
+}
+
+.padding-top {
+    padding-top: $padding-unit/2;
+}
+
+.small-padding-top {
+    padding-top: $padding-unit/4;
+}
+
+.padding-right {
+    padding-right: $padding-unit/2;
+}
+
+.big-padding-right {
+    padding-right: $padding-unit;
+}
+
+.small-padding-right {
+    padding-right: $padding-unit/4;
+}
+
+.margin-right {
+    margin-right: $padding-unit/2;
+}
+
+.margin-right--tiny {
+    margin-right: $padding-unit/4;
+}
+
+.margin-left {
+    margin-left: $padding-unit/2;
+}
+
+.margin-left--tiny {
+    margin-left: $padding-unit/4;
+}
+
+.margin-left--tiny--tiny {
+    margin-left: $padding-unit/8;
+}
+
+.margin-bottom {
+    margin-bottom: $padding-unit/2 !important;
+}
+
+.margin-bottom--tiny {
+    margin-bottom: $padding-unit/5 !important;
+}
+
+.big-margin-bottom {
+    margin-bottom: $padding-unit !important;
+}
+
+.margin-top {
+    margin-top: $padding-unit/2;
+}
+
+.inline-block {
+    display: inline-block !important;
+}
+
+.width-auto {
+    width: auto !important;
+}
+
+.width-full {
+    width: 100% !important;
+}
+
+
+.text-padding-left {
+    display: inline-block;
+    padding-left: 5px;
+}
+
+.no-cursor {
+    cursor: default !important;
+}
+
+.margin {
+    margin: $padding-unit/2 !important;
+}
+
+.no-margin {
+    margin: 0 !important;
+}
+
+
+.bold-subtitle {
+    font-weight: bold;
+    color: $mid-gray;
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+.green-icon {
+    color: green;
+}
+
+.relative {
+    position: relative;
+    ;
+}
+
+.no-button {
+    outline: none;
+    box-shadow: none;
+}
+
+.split-bottom {
+    border-bottom: 1px solid $gray;
+    margin-bottom: $padding-unit;
+
+    &:last-child {
+        border-bottom: none;
+        margin-bottom: 0px;
+    }
+}
+
+.home-login-button {
+    position: absolute;
+    top: $padding-unit;
+    right: $padding-unit;
+}
+
+.middle-align {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.stars {
+    color: $yellow;
+
+    &>span {
+        color: $gray;
+        font-size: 12px;
+        display: inline-block;
+        margin-left: 10px;
+    }
+}
+
+.initial-white-space {
+    white-space: initial !important;
+}
+
+.error-text {
+    background: transparent;
+    color: red !important;
+}
+
+.success-text {
+    background: transparent;
+    color: green !important;
+}
+
+.error-icon {
+    fill: $red !important;
+}
+
+.success-icon {
+    fill: $green !important;
+}
+
+.bordered {
+    border: 1px solid $gray;
+
+    &.round {
+        border-radius: 5px;
+    }
+}
+
+.MuiSnackbar-root {
+    z-index: 999999 !important;
+}
+
+
+.line-height {
+    line-height: 15px !important;
+}

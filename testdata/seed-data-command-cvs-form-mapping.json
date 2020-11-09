@@ -1,0 +1,23 @@
+{
+  "formId": "cvs_2.31.8",
+  "aggregations": [
+    {
+      "id": "cs_304_avg",
+      "name": "Average statisfaction score",
+      "questionName": "cs_304",
+      "aggregationType": "avg"
+    },
+    {
+      "id": "cs_304_count",
+      "name": "Number of submissions with answered survey",
+      "questionName": "cs_304",
+      "aggregationType": "count"
+    },
+    {
+      "id": "cs_304_sum",
+      "name": "sum of budget",
+      "questionName": "cs_304",
+      "aggregationType": "sum"
+    }
+  ]
+}

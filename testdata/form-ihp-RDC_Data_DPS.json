@@ -1,0 +1,1260 @@
+{
+  "type": "simple_event",
+  "program_id": "Wl7hl6eQJCb",
+  "question_mappings": {
+    "BCZS_101": {
+      "code": "DPS_101",
+      "name": "EDL - DPS - 101. Informations generales : Adresse Physique de la DPS :",
+      "id": "h25ovmcoXgp",
+      "valueType": "TEXT"
+    },
+    "BCZS_103": {
+      "code": "DPS_103",
+      "name": "EDL - DPS - 103. Informations generales : Nom de Chef de la DPS   :",
+      "id": "YIkA0pfrfnO",
+      "valueType": "TEXT"
+    },
+    "BCZS_104": {
+      "code": "DPS_104",
+      "name": "EDL - DPS - 104. Informations generales : Sexe du  Chef de Division de la DPS  :",
+      "id": "FnBJdJUom6V",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "BCZS_105": {
+      "code": "DPS_105",
+      "name": "EDL - DPS - 105. Informations generales : Qualification du Chef de Division Provinciale de la Sant\u00e9 :",
+      "id": "gC1WFaDldxl",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Docteur en m\u00e9decin"
+          },
+          {
+            "code": "2",
+            "name": "2. Docteur en medicine avec master en sant\u00e9 publique"
+          },
+          {
+            "code": "3",
+            "name": "3. Autres \u00e0 sp\u00e9cifier"
+          }
+        ],
+        "id": "KkTUBuZBaWR"
+      }
+    },
+    "BCZS_108": {
+      "code": "DPS_108",
+      "name": "EDL - DPS - 108. Informations generales : Superficie (Aire de la Province)",
+      "id": "QiIlKaEhqN6",
+      "valueType": "INTEGER"
+    },
+    "num_compte": {
+      "code": "num_compte",
+      "name": "EDL - DPS - 109.2 Informations generales : N\u00b0 du compte bancaire",
+      "id": "CQOrcMuJkHI",
+      "valueType": "TEXT"
+    },
+    "BCZS_110": {
+      "code": "DPS_110",
+      "name": "EDL - DPS - 110. Informations generales :Existence d'une  radiophonie fonctionnelle",
+      "id": "Mmxmj0LG71L",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_111": {
+      "code": "DPS_111",
+      "name": "EDL - DPS - 111. Informations generales : Fr\u00e9quence de la radiophonie  utilis\u00e9e",
+      "id": "wiIqWYOUf4q",
+      "valueType": "TEXT"
+    },
+    "BCZS_112": {
+      "code": "DPS_112",
+      "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie",
+      "id": "e4aju21Rbrg",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "heure_contact_phonie1",
+            "name": "1. 7h00-8h00"
+          },
+          {
+            "code": "heure_contact_phonie2",
+            "name": "2. 9h00-10h00"
+          },
+          {
+            "code": "heure_contact_phonie3",
+            "name": "3. 11h00-12h00"
+          },
+          {
+            "code": "heure_contact_phonie4",
+            "name": "4. 13h00-14h00"
+          },
+          {
+            "code": "heure_contact_phonie5",
+            "name": "5. 14h00-15h00"
+          }
+        ],
+        "id": "MVPDR8bWggT"
+      }
+    },
+    "heure_deb": {
+      "code": "heure_deb",
+      "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : semaine: Heure debut",
+      "id": "Bez7tvQwvgV",
+      "valueType": "TIME"
+    },
+    "heure_fin": {
+      "code": "heure_fin",
+      "name": "EDL - DPS -112. Informations generales : Heure de Contact pour la phonie : semaine:  Heure fin",
+      "id": "UPQzayJHuUn",
+      "valueType": "TIME"
+    },
+    "heure_deb_sam": {
+      "code": "heure_deb_sam",
+      "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : samedi : Heure debut",
+      "id": "hSLbwrRVSPj",
+      "valueType": "TIME"
+    },
+    "heure_fin_sam": {
+      "code": "heure_fin_sam",
+      "name": "EDL - DPS - 112. Informations generales : Heure de Contact pour la phonie : samedi : Heure fin",
+      "id": "PDarGpBGeTS",
+      "valueType": "TIME"
+    },
+    "BCZS_114": {
+      "code": "DPS_114",
+      "name": "EDL - DPS - 114. Informations generales : Nombre des Zones de sant\u00e9 dans la province",
+      "id": "ZRJeSSsqKZb",
+      "valueType": "INTEGER"
+    },
+    "BCZS_115": {
+      "code": "DPS_115",
+      "name": "EDL - DPS - 115. Informations generales : Exite t il un HGR provincial?",
+      "id": "ds61RsU1EFP",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_116": {
+      "code": "DPS_116",
+      "name": "EDL - DPS - 116. Informations generales : Population couverte",
+      "id": "qNflf0AUAPi",
+      "valueType": "INTEGER"
+    },
+    "BCZS_201_Homme": {
+      "code": "DPS_201_Homme",
+      "name": "EDL - DPS - 201. RH - Nombre de m\u00e9decin(s) sp\u00e9cialis\u00e9 (s) homme :",
+      "id": "pDVeXrlq3Y6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_201_Femme": {
+      "code": "DPS_201_Femme",
+      "name": "EDL - DPS - 201. RH - Nombre de m\u00e9decin(s) sp\u00e9cialis\u00e9 (s) femme :",
+      "id": "l9AugPV9Lvv",
+      "valueType": "INTEGER"
+    },
+    "BCZS_202_Homme": {
+      "code": "DPS_202_Homme",
+      "name": "EDL - DPS - 202. RH - Nombre de M\u00e9decin(s) g\u00e9n\u00e9raliste(s) homme :",
+      "id": "Xjxykg6ld9a",
+      "valueType": "INTEGER"
+    },
+    "BCZS_202_Femme": {
+      "code": "DPS_202_Femme",
+      "name": "EDL - DPS - 202. RH - Nombre de de M\u00e9decin(s) g\u00e9n\u00e9raliste(s) femme :",
+      "id": "qPcvxbIeqdD",
+      "valueType": "INTEGER"
+    },
+    "BCZS_203_Homme": {
+      "code": "DPS_203_Homme",
+      "name": "EDL - DPS - 203. RH - Nombre de Pharmacien(s) homme :",
+      "id": "sAyyu9m1obj",
+      "valueType": "INTEGER"
+    },
+    "BCZS_203_Femme": {
+      "code": "DPS_203_Femme",
+      "name": "EDL - DPS - 203. RH - Nombre de Pharmacien(s) femme :",
+      "id": "yh229EdjSK6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_204_Homme": {
+      "code": "DPS_204_Homme",
+      "name": "EDL - DPS - 204. RH - Nombre d'Assistant(s) en Pharmacie Homme :",
+      "id": "xubHyCDBkxA",
+      "valueType": "INTEGER"
+    },
+    "BCZS_204_Femme": {
+      "code": "DPS_204_Femme",
+      "name": "EDL - DPS - 204. RH - Nombre d'Assistant(s) en Pharmacie femme :",
+      "id": "oruBJTybKL7",
+      "valueType": "INTEGER"
+    },
+    "BCZS_205_Homme": {
+      "code": "DPS_205_Homme",
+      "name": "EDL - DPS - 205. RH - Nombre de Nutritionniste(s) Homme :",
+      "id": "lDGpySH1qft",
+      "valueType": "INTEGER"
+    },
+    "BCZS_205_Femme": {
+      "code": "DPS_205_Femme",
+      "name": "EDL - DPS - 205. RH - Nombre de Nutritionniste(s) Femme :",
+      "id": "b0gGotkYzzB",
+      "valueType": "INTEGER"
+    },
+    "BCZS_206_Homme": {
+      "code": "DPS_206_Homme",
+      "name": "EDL - DPS - 206. RH - Nombre d'Infirmier(s)  A0 ou A1 Homme :",
+      "id": "UTNR39SbJsz",
+      "valueType": "INTEGER"
+    },
+    "BCZS_206_Femme": {
+      "code": "DPS_206_Femme",
+      "name": "EDL - DPS - 206. RH - Nombre d'Infirmier(s)  A0 ou A1 Femme :",
+      "id": "Qq3UE0t2Nov",
+      "valueType": "INTEGER"
+    },
+    "BCZS_207_Homme": {
+      "code": "DPS_207_Homme",
+      "name": "EDL - DPS - 207. RH - Nombre dInfirmier(s)  A2 Homme  :",
+      "id": "SxbYB0FuvPR",
+      "valueType": "INTEGER"
+    },
+    "BCZS_207_Femme": {
+      "code": "DPS_207_Femme",
+      "name": "EDL - DPS - 207. RH - Nombre dInfirmier(s)  A2 Femme  :",
+      "id": "pxv5kbENQmj",
+      "valueType": "INTEGER"
+    },
+    "BCZS_208_Homme": {
+      "code": "DPS_208_Homme",
+      "name": "EDL - DPS - 208. RH - Nombre de Charg\u00e9(s) de Sant\u00e9 Communautaire (L2 ou G3 TDR) Homme :",
+      "id": "PZpyb534rqL",
+      "valueType": "INTEGER"
+    },
+    "BCZS_208_Femme": {
+      "code": "DPS_208_Femme",
+      "name": "EDL - DPS - 208. RH - Nombre de Charg\u00e9(s) de Sant\u00e9 Communautaire (L2 ou G3 TDR) Femme :",
+      "id": "LsjfUzl3q65",
+      "valueType": "INTEGER"
+    },
+    "BCZS_209_Homme": {
+      "code": "DPS_209_Homme",
+      "name": "EDL - DPS - 209. RH - Nombre d'Administrateur(s) Gestionnaire(s) niveau L2 Homme :",
+      "id": "m9Cmqipgc0V",
+      "valueType": "INTEGER"
+    },
+    "BCZS_209_Femme": {
+      "code": "DPS_209_Femme",
+      "name": "EDL - DPS - 209. RH - Nombre d'Administrateur(s) Gestionnaire(s) niveau L2 Femme :",
+      "id": "CfYOJcrRbiQ",
+      "valueType": "INTEGER"
+    },
+    "BCZS_210_Homme": {
+      "code": "DPS_210_Homme",
+      "name": "EDL - DPS - 210. RH - Nombre d'Administrateur(s) Gestionnaire(s) niveau G3 Homme :",
+      "id": "R4ObITv5eJ0",
+      "valueType": "INTEGER"
+    },
+    "BCZS_210_Femme": {
+      "code": "DPS_210_Femme",
+      "name": "EDL - DPS - 210. RH - Nombre d'Administrateur(s) Gestionnaire(s) niveau G3 Femme :",
+      "id": "JzmRVSbzIQl",
+      "valueType": "INTEGER"
+    },
+    "BCZS_211_Homme": {
+      "code": "DPS_211_Homme",
+      "name": "EDL - DPS - 211. RH - Nombre de Gestionnaire(s) des donn\u00e9es form\u00e9s en SNIS Homme :",
+      "id": "e22WbJ3Tmmn",
+      "valueType": "INTEGER"
+    },
+    "BCZS_211_Femme": {
+      "code": "DPS_211_Femme",
+      "name": "EDL - DPS - 211.RH - Nombre de Gestionnaire(s) des donn\u00e9es form\u00e9s en SNIS Femme :",
+      "id": "QXyB8VqsxQt",
+      "valueType": "INTEGER"
+    },
+    "BCZS_212_Homme": {
+      "code": "DPS_212_Homme",
+      "name": "EDL - DPS - 212. RH - Nombre de Personnel administratif  Homme :",
+      "id": "BMmcpjBE9ND",
+      "valueType": "INTEGER"
+    },
+    "BCZS_212_Femme": {
+      "code": "DPS_212_Femme",
+      "name": "EDL - DPS - 212. RH - Nombre de Personnel administratif  Femme :",
+      "id": "LNIJbBL9NZm",
+      "valueType": "INTEGER"
+    },
+    "BCZS_213_Homme": {
+      "code": "DPS_213_Homme",
+      "name": "EDL - DPS \u2013 213. RH - total homme",
+      "id": "C2v604rWnY3",
+      "valueType": "INTEGER"
+    },
+    "BCZS_213_Femme": {
+      "code": "DPS_213_Femme",
+      "name": "EDL - DPS \u2013 213. RH - total femme",
+      "id": "tKlyLwfEkGq",
+      "valueType": "INTEGER"
+    },
+    "BCZS_215": {
+      "code": "DPS_215",
+      "name": "EDL - DPS - 215. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Management de Soins de Sant\u00e9 Primaires",
+      "id": "DkYv8H8h9d5",
+      "valueType": "INTEGER"
+    },
+    "BCZS_216": {
+      "code": "DPS_216",
+      "name": "EDL - DPS - 216. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Surveillance Int\u00e9gr\u00e9e des maladies et riposte",
+      "id": "u0KdS1a3xdr",
+      "valueType": "INTEGER"
+    },
+    "BCZS_217": {
+      "code": "DPS_217",
+      "name": "EDL - DPS - 217. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re et  Nouveau (SMN)  approche par comp\u00e9tence MN)  approche par comp\u00e9tence",
+      "id": "umNLZu4wrms",
+      "valueType": "INTEGER"
+    },
+    "BCZS_218": {
+      "code": "DPS_218",
+      "name": "EDL - DPS - 218. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence complet",
+      "id": "Yddaqf7SHaU",
+      "valueType": "INTEGER"
+    },
+    "BCZS_219": {
+      "code": "DPS_219",
+      "name": "EDL - DPS - 219. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : R\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 restpirer",
+      "id": "FoarqDIWN2g",
+      "valueType": "INTEGER"
+    },
+    "BCZS_220": {
+      "code": "DPS_220",
+      "name": "EDL - DPS - 220. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prevention et Prise en charge de l'hemorragie en post partum : Aider les m\u00e8res \u00e0 survivre",
+      "id": "N3ajEAQBpM8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_221": {
+      "code": "DPS_221",
+      "name": "EDL - DPS - 221. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Planification Familiale",
+      "id": "nWQR0JKRyDp",
+      "valueType": "INTEGER"
+    },
+    "BCZS_222": {
+      "code": "DPS_222",
+      "name": "EDL - DPS - 222. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Guides cliniques et th\u00e9rapeutiques",
+      "id": "dtqokcrqPXK",
+      "valueType": "INTEGER"
+    },
+    "BCZS_223": {
+      "code": "DPS_223",
+      "name": "EDL - DPS - 223. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : En transfusion  sanguine",
+      "id": "tjg7Om9uiY8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_224": {
+      "code": "DPS_224",
+      "name": "EDL - DPS - 224. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge Int\u00e9gr\u00e9e de Malnutrition Aigue (PCIMA)",
+      "id": "nEMl46ojltR",
+      "valueType": "INTEGER"
+    },
+    "BCZS_225": {
+      "code": "DPS_225",
+      "name": "EDL - DPS - 225. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Tri- Evaluation-Traitement-D'urgence ( PCIME-TETU)",
+      "id": "gjeJe1I1FFs",
+      "valueType": "INTEGER"
+    },
+    "BCZS_226": {
+      "code": "DPS_226",
+      "name": "EDL - DPS - 226. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Programme Elargie de Vaccination ( PEV)",
+      "id": "RpyVDKGfxfw",
+      "valueType": "INTEGER"
+    },
+    "BCZS_227": {
+      "code": "DPS_227",
+      "name": "EDL - DPS - 227. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge du  paludisme",
+      "id": "DiIQlLCPN2S",
+      "valueType": "INTEGER"
+    },
+    "BCZS_228": {
+      "code": "DPS_228",
+      "name": "EDL - DPS - 228. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge du  paludisme chez la femme enceinte",
+      "id": "uc9xG5rptit",
+      "valueType": "INTEGER"
+    },
+    "BCZS_229": {
+      "code": "DPS_229",
+      "name": "EDL - DPS - 229. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge  m\u00e9dicale des survivantes  des violences sexuelles",
+      "id": "hgmPJaE1S6z",
+      "valueType": "INTEGER"
+    },
+    "BCZS_230": {
+      "code": "DPS_230",
+      "name": "EDL - DPS - 230. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes ( SSRAJ)",
+      "id": "zF9gwKUAc2k",
+      "valueType": "INTEGER"
+    },
+    "BCZS_231": {
+      "code": "DPS_231",
+      "name": "EDL - DPS - 231. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge de Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V ( PATI V )",
+      "id": "f1sHIfTTAzM",
+      "valueType": "INTEGER"
+    },
+    "BCZS_232": {
+      "code": "DPS_232",
+      "name": "EDL - DPS - 232. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion des Medicaments",
+      "id": "rQ5KgwvxY5b",
+      "valueType": "INTEGER"
+    },
+    "BCZS_233": {
+      "code": "DPS_233",
+      "name": "EDL - DPS - 233. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Pr\u00e9vention et contr\u00f4le de l'infection",
+      "id": "d60bGQvcNK6",
+      "valueType": "INTEGER"
+    },
+    "BCZS_234": {
+      "code": "DPS_234",
+      "name": "EDL - DPS - 234. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Demarche Qualit\u00e9 Integr\u00e9e",
+      "id": "YIXBU3WVnqE",
+      "valueType": "INTEGER"
+    },
+    "BCZS_234_2": {
+      "code": "DPS_234_2",
+      "name": "EDL - DPS - 234.2 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Supervision Int\u00e9gr\u00e9e",
+      "id": "fEJNNlhCQ4l",
+      "valueType": "INTEGER"
+    },
+    "BCZS_235": {
+      "code": "DPS_235",
+      "name": "EDL - DPS - 235. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion SNIS / cadre Normatif",
+      "id": "bhehzOStyOh",
+      "valueType": "INTEGER"
+    },
+    "BCZS_235_2": {
+      "code": "DPS_235_2",
+      "name": "EDL - DPS - 235.2 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en :DHIS2",
+      "id": "dDlnFMTOdDm",
+      "valueType": "INTEGER"
+    },
+    "BCZS_236": {
+      "code": "DPS_236",
+      "name": "EDL - DPS - 236. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : PICAL (auto-\u00e9valuation)",
+      "id": "OtqcLGS2rju",
+      "valueType": "INTEGER"
+    },
+    "autress_form": {
+      "code": "autress_form",
+      "name": "EDL - DPS - Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Pr\u00e9ciser la formation",
+      "id": "ViFy1AGlpY4",
+      "valueType": "TEXT"
+    },
+    "BCZS_301": {
+      "code": "DPS_301",
+      "name": "EDL - DPS - 301.  Gestion des m\u00e9dicaments : Existe - t-il  une  CDR pour le stockage et distribution des medicaments dans la province ?",
+      "id": "Z0jH756u7AV",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_302": {
+      "code": "DPS_302",
+      "name": "EDL - DPS - 302.  Gestion des m\u00e9dicaments : Si non, la DPS loue t-il ou utilise un autre depot/local pour le stockage des medicaments ?",
+      "id": "aedXqYJEeOi",
+      "valueType": "BOOLEAN"
+    },
+    "BCZS_303": {
+      "code": "DPS_303",
+      "name": "EDL - DPS - 303.  Gestion des m\u00e9dicaments : A quelle distance est-elle  situ\u00e9e  par rapport au bureau de la DPS ?",
+      "id": "QhUbeCOGbeq",
+      "valueType": "INTEGER"
+    },
+    "BCZS_304": {
+      "code": "DPS_304",
+      "name": "EDL - DPS - 304.  Gestion des m\u00e9dicaments : Quelle est la capacit\u00e9 de stockage ?",
+      "id": "XOYTMyafaAy",
+      "valueType": "INTEGER"
+    },
+    "BCZS_401": {
+      "code": "DPS_401",
+      "name": "EDL - DPS - 401. Infrastructures batiments : Nombre de b\u00e2timent(s) existant(s)",
+      "id": "RoArFrWXdA1",
+      "valueType": "INTEGER"
+    },
+    "BCZS_402": {
+      "code": "DPS_402",
+      "name": "EDL - DPS - 402.  Infrastructures batiments :  Appartenance batiment de la DPS",
+      "id": "ULuBiVdF2E8",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "appartenance_bat.1",
+            "name": "1. Batiment propre au BCZ"
+          },
+          {
+            "code": "appartenance_bat.2",
+            "name": "2. Batiment de l'h\u00f4pital"
+          },
+          {
+            "code": "appartenance_bat.3",
+            "name": "3. Batiment  en location"
+          },
+          {
+            "code": "appartenance_bat.4",
+            "name": "3. Autres"
+          }
+        ],
+        "id": "hsGEVZeOOYB"
+      }
+    },
+    "BCZS_403": {
+      "code": "DPS_403",
+      "name": "EDL - DPS - 403.  Infrastructures batiments : Bureau de chef de Division",
+      "id": "pihrkFSU9nL",
+      "valueType": "TEXT"
+    },
+    "BCZS_404": {
+      "code": "DPS_404",
+      "name": "EDL - DPS - 404.  Infrastructures batiments : Secretariat de la DPS",
+      "id": "Yla5yHA4Fj4",
+      "valueType": "TEXT"
+    },
+    "BCZS_405": {
+      "code": "DPS_405",
+      "name": "EDL - DPS - 405.  Infrastructures batiments : Bureau pour les Informations Sanitaires",
+      "id": "jwhG8YwpfRC",
+      "valueType": "TEXT"
+    },
+    "BCZS_406": {
+      "code": "DPS_406",
+      "name": "EDL - DPS - 406.  Infrastructures batiments : Bureau pour Gestion de ressources",
+      "id": "RfcLyhVobow",
+      "valueType": "TEXT"
+    },
+    "BCZS_407": {
+      "code": "DPS_407",
+      "name": "EDL - DPS - 407.  Infrastructures batiments : Bureau Appui technique",
+      "id": "g6Gr2lIj7ke",
+      "valueType": "TEXT"
+    },
+    "BCZS_407_1": {
+      "code": "DPS_407_1",
+      "name": "EDL - DPS - 407.1  Infrastructures batiments : Bureau Inspection-controle",
+      "id": "ZrGTUm5Vqek",
+      "valueType": "TEXT"
+    },
+    "BCZS_407_2": {
+      "code": "DPS_407_2",
+      "name": "EDL - DPS - 407.2  Infrastructures batiments : Bureau Hygiene",
+      "id": "wWg56QMGjve",
+      "valueType": "TEXT"
+    },
+    "BCZS_407_3": {
+      "code": "DPS_407_3",
+      "name": "EDL - DPS - 407.3  Infrastructures batiments : Bureau Enseignement des Sciences de la sante",
+      "id": "q2L3aLkClh7",
+      "valueType": "TEXT"
+    },
+    "BCZS_408": {
+      "code": "DPS_408",
+      "name": "EDL - DPS - 408. Infrastructures batiments : Coordination du Programme de sant\u00e9 de Reproduction",
+      "id": "xN57InlPKFu",
+      "valueType": "TEXT"
+    },
+    "BCZS_409": {
+      "code": "DPS_409",
+      "name": "EDL - DPS - 409. Infrastructures batiments : Coordination du Programme  Elargi de vaccination",
+      "id": "qHBFopaEGCy",
+      "valueType": "TEXT"
+    },
+    "BCZS_410": {
+      "code": "DPS_410",
+      "name": "EDL - DPS - 410. Infrastructures batiments : Coordination du Programme de Lutte contre le Paludisme",
+      "id": "qrXDygQcbEl",
+      "valueType": "TEXT"
+    },
+    "BCZS_411": {
+      "code": "DPS_411",
+      "name": "EDL - DPS - 411. Infrastructures batiments : Coordination du Programme de lutte contre la Tuberculose",
+      "id": "Wb2Q836gN7v",
+      "valueType": "TEXT"
+    },
+    "BCZS_411_1": {
+      "code": "DPS_411_1",
+      "name": "EDL - DPS - 411.2 Infrastructures batiments : Coordination  Pronanut",
+      "id": "JWidJXOT35g",
+      "valueType": "TEXT"
+    },
+    "BCZS_412": {
+      "code": "DPS_412",
+      "name": "EDL - DPS - 412. Infrastructures batiments : Salle des r\u00e9unions",
+      "id": "oswZb8ZzwIe",
+      "valueType": "TEXT"
+    },
+    "BCZS_413": {
+      "code": "DPS_413",
+      "name": "EDL - DPS - 413. Infrastructures batiments : Bibliotheque",
+      "id": "GKpTI1mzWzf",
+      "valueType": "TEXT"
+    },
+    "BCZS_414": {
+      "code": "DPS_414",
+      "name": "EDL - DPS - 414. Infrastructures batiments : D\u00e9pot g\u00e9n\u00e9ral",
+      "id": "kmsM4Qizt4f",
+      "valueType": "TEXT"
+    },
+    "BCZS_415": {
+      "code": "DPS_415",
+      "name": "EDL - DPS - 415. Infrastructure de batiments: Type de batiments ",
+      "id": "vjcp3U1ElnD",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type-batiment1",
+            "name": "1. Durables ( Murs en briques cuites ou en cimen; Toiture en t\u00f4les/tuile;    pavement au sol ( carrelage ou enduit en ciment)"
+          },
+          {
+            "code": "type-batiment2",
+            "name": "2. Semi-durables ( Toiture en t\u00f4les/tuile,  Murs en briques non  cuites ou bois, . Pavement au sol ( carrelage ou enduit en ciment)"
+          },
+          {
+            "code": "type-batiment3",
+            "name": "3. En pis\u00e9 ( Toiture en chaume,  Murs en briques non  cuites ou la boue,  Terre battue)"
+          }
+        ],
+        "id": "TM07k1FPact"
+      }
+    },
+    "BCZS_416": {
+      "code": "DPS_416",
+      "name": "EDL - DPS - 416.  Infrastructures batiments :  Type de b\u00e2timent principal de la DPS : Une r\u00e9habilitation leg\u00e8re (Portes, fenetres, pavement, peinture)",
+      "id": "uHqac7k7lAl",
+      "valueType": "INTEGER"
+    },
+    "BCZS_417": {
+      "code": "DPS_417",
+      "name": "EDL - DPS - 417.  Infrastructures batiments :  Type de b\u00e2timent principal de la DPS : Une r\u00e9habilitation lourde (toiture, murs, autres)",
+      "id": "jSqxMC3UOPX",
+      "valueType": "INTEGER"
+    },
+    "BCZS_418": {
+      "code": "DPS_418",
+      "name": "EDL - DPS - 418.  Infrastructures batiments :  Type de b\u00e2timent principal de la DPS: Une construction",
+      "id": "ZLEutyRAEQo",
+      "valueType": "INTEGER"
+    },
+    "BCZS_419": {
+      "code": "DPS_419",
+      "name": "EDL - DPS - 419. Infrastructures - WASH : Quelle est la source d'eau la plus couramment utilis\u00e9e pour la formation sanitaire en ce moment ?",
+      "id": "NW5g0Fz5Crz",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_eau1",
+            "name": "1. Eau courante dans les locaux"
+          },
+          {
+            "code": "source_eau2",
+            "name": "2. Eaux raccord\u00e9es  dans la parcelle"
+          },
+          {
+            "code": "source_eau3",
+            "name": "3. Borne Fontaine, Forage, puits tub\u00e9"
+          },
+          {
+            "code": "source_eau4",
+            "name": "4. Puits ordinaires prot\u00e9g\u00e9s"
+          },
+          {
+            "code": "source_eau5",
+            "name": "5. Collecte d'eau de pluie"
+          },
+          {
+            "code": "source_eau6",
+            "name": "6. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "SXACQsfSvzW"
+      }
+    },
+    "BCZS_420": {
+      "code": "DPS_420",
+      "name": "EDL - DPS - 420. Infrastructures - WASH : L'approvionnment en eau \u00e0 partir de cette  source  est disponible au sein du BCZ, ou \u00e0 distance?",
+      "id": "AhRBHnVydUx",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "dispo_appro_eau1",
+            "name": "1. Au sein de la DPS"
+          },
+          {
+            "code": "dispo_appro_eau2",
+            "name": "2. A moins de  500 m\u00e8tres de la DPS"
+          },
+          {
+            "code": "dispo_appro_eau3",
+            "name": "3. A plus de 500 \u00e8tres de la DPS"
+          }
+        ],
+        "id": "djXbDPiptGi"
+      }
+    },
+    "BCZS_421": {
+      "code": "DPS_421",
+      "name": "EDL - DPS - 421. Infrastructures - WASH : Latrines hygi\u00e9niques au niveau \u00e0 la DPS",
+      "id": "ZKGAixzQaxs",
+      "valueType": "TEXT"
+    },
+    "BCZS_422": {
+      "code": "DPS_422",
+      "name": "EDL - DPS - 422. Infrastructures - WASH : Si Oui d\u00e9terminer  le type de latrine",
+      "id": "WZGYHuOuTEC",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_latrine1",
+            "name": "1. Toilette \u00e0 chasse d'eau"
+          },
+          {
+            "code": "type_latrine2",
+            "name": "2. Latrines ventil\u00e9e Am\u00e9lior\u00e9es"
+          },
+          {
+            "code": "type_latrine3",
+            "name": "3. Fosse avec dalle"
+          },
+          {
+            "code": "type_latrine4",
+            "name": "4. Fosse sans dalle"
+          },
+          {
+            "code": "type_latrine5",
+            "name": "5. Toilette \u00e0 compostage"
+          }
+        ],
+        "id": "zperWNGb0Kh"
+      }
+    },
+    "BCZS_423": {
+      "code": "DPS_423",
+      "name": "EDL - DPS - 423. Infrastructures - WASH : Poubelles en plastique avec couvercles en bon \u00e9tat \u00e0 la DPS",
+      "id": "lInq6TYpsVC",
+      "valueType": "TEXT"
+    },
+    "BCZS_424": {
+      "code": "DPS_424",
+      "name": "EDL - DPS - 424.  Infrastructures - Energie : La DPS est-elle aliment\u00e9e en Electricit\u00e9 ?",
+      "id": "TZhhy6sKMGy",
+      "valueType": "TEXT"
+    },
+    "BCZS_425": {
+      "code": "DPS_425",
+      "name": "EDL - DPS - 425.  Infrastructures - Energie : Si Oui quelle est la source principale d'\u00e9lectricit\u00e9 de la DPS",
+      "id": "cL1Pp1os8lB",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_elect1",
+            "name": "1. Reseau Public ( Socit\u00e9 National d'\u00e9lectricit\u00e9 )"
+          },
+          {
+            "code": "source_elect2",
+            "name": "2. Reseau Priv\u00e9"
+          },
+          {
+            "code": "source_elect3",
+            "name": "3. Groupe electrog\u00e8ne ( g\u00e9n\u00e9rateur )"
+          },
+          {
+            "code": "source_elect4",
+            "name": "4. Syt\u00e8me solaire  ( Panneau  solaire et accessoires)"
+          },
+          {
+            "code": "source_elect5",
+            "name": "5. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "gw4l1qahuvU"
+      }
+    },
+    "BCZS_426": {
+      "code": "DPS_426",
+      "name": "EDL - DPS - 426.  Infrastructures - Energie : Paratonnerre install\u00e9 en etat de fonctionnement?",
+      "id": "G4bvRifr2t9",
+      "valueType": "INTEGER"
+    },
+    "BCZS_427": {
+      "code": "DPS_427",
+      "name": "EDL - DPS - 427.  Infrastructures - Energie : Extincteur en \u00e9tat fonctionnel",
+      "id": "nOpgK8lYlnP",
+      "valueType": "INTEGER"
+    },
+    "BCZS_428": {
+      "type": "multiple",
+      "values": {
+        "reseaux1": {
+          "code": "DPS_428_reseaux1",
+          "comment": "1.Vodacom,",
+          "name": "EDL - DPS - 428.  Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 1.Vodacom, ",
+          "id": "MszpKI1eyOn",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux2": {
+          "code": "DPS_428_reseaux2",
+          "comment": "2. Airtel,",
+          "name": "EDL - DPS - 428.  Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 2. Airtel,",
+          "id": "SjclmfUKA6A",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux3": {
+          "code": "DPS_428_reseaux3",
+          "comment": "3. Tigo, Orange,",
+          "name": "EDL - DPS - 428.  Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 3. Tigo, Orange, ",
+          "id": "fnRMyBs6NDU",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux4": {
+          "code": "DPS_428_reseaux4",
+          "comment": "4. Africel",
+          "name": "EDL - DPS - 428.  Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 4. Africel",
+          "id": "lZh7yL8zeaA",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux5": {
+          "code": "DPS_428_reseaux5",
+          "comment": "5. Pas de reseau disponible",
+          "name": "EDL - DPS - 428.  Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 5. Pas de reseau disponible",
+          "id": "vmhcpamELhB",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_429": {
+      "code": "DPS_429",
+      "name": "EDL - DPS - 429.  Infrastructures - Connectivit\u00e9 : Si reseau disponible, quelle est le niveau de disponibilit\u00e9 ",
+      "id": "ArW2bCpOO3J",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "reseau_dispo1",
+            "name": "a. Disponible 24 heures sur 24"
+          },
+          {
+            "code": "reseau_dispo2",
+            "name": "b. Disponible quelques heures par jour"
+          }
+        ],
+        "id": "IZJNKzL9KpH"
+      }
+    },
+    "BCZS_430": {
+      "code": "DPS_430",
+      "name": "EDL - DPS - 430.  Infrastructures - Connectivit\u00e9 : Disponibilit\u00e9 de l'internet \u00e0 la DPS",
+      "id": "hnXHBeXI4Ln",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Modem"
+          },
+          {
+            "code": "2",
+            "name": "2. V-sat"
+          }
+        ],
+        "id": "pJHYoxrF2XZ"
+      }
+    },
+    "BCZS_431": {
+      "code": "DPS_431",
+      "name": "EDL - DPS - 431.  Infrastructures - Connectivit\u00e9 : Si internet disponible via modem  determiner  2G ou 3G",
+      "id": "peev3KKdgvq",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_signal1",
+            "name": "a. 2G"
+          },
+          {
+            "code": "type_signal2",
+            "name": "b. 3G"
+          },
+          {
+            "code": "type_signal3",
+            "name": "c. 4G"
+          }
+        ],
+        "id": "tfNUs9F7a8q "
+      }
+    },
+    "BCZS_432": {
+      "code": "DPS_432",
+      "name": "EDL - DPS - 432.  Infrastructures - Connectivit\u00e9 : V-Sat \u00e0 la DPS op\u00e9rationel ?",
+      "id": "HpLbb6KXGxh",
+      "valueType": "TEXT"
+    },
+    "BCZS_433": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "DPS_433_1",
+          "comment": "1. RTNC",
+          "name": "EDL - DPS - 433.  Infrastructures - Connectivit\u00e9 : Chaines TV pouvant \u00eatre capt\u00e9es au siege de la  DPS - 1. RTNC",
+          "id": "RRZHtZCixpZ",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "DPS_433_2",
+          "comment": "2. autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - DPS - 433.  Infrastructures - Connectivit\u00e9 : Chaines TV pouvant \u00eatre capt\u00e9es au siege de la  DPS - 2. autres \u00e0 pr\u00e9ciser",
+          "id": "xQ2h0Rv8kIw",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_435": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "DPS_435_1",
+          "comment": "1. RTNC",
+          "name": "EDL - DPS - 435.  Infrastructures - Connectivit\u00e9 : Radio pouvant \u00eatre capt\u00e9es au siege de la  DPS - 1. RTNC",
+          "id": "mD0BOA99Qx5",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "DPS_435_2",
+          "comment": "2. Radio communautaire",
+          "name": "EDL - DPS - 435.  Infrastructures - Connectivit\u00e9 : Radio pouvant \u00eatre capt\u00e9es au siege de la  DPS - 2. Radio communautaire",
+          "id": "PjyXJ3g9ynA",
+          "valueType": "BOOLEAN"
+        },
+        "3": {
+          "code": "DPS_435_3",
+          "comment": "3. Autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - DPS - 435.  Infrastructures - Connectivit\u00e9 : Radio pouvant \u00eatre capt\u00e9es au siege de la  DPS - 3. Autres \u00e0 pr\u00e9ciser",
+          "id": "r4wwRcVY28O",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "BCZS_437": {
+      "code": "DPS_437",
+      "name": "EDL - DPS - 437.  Equipement - Mat\u00e9riel roulant : V\u00e9hicule",
+      "id": "dgQYKJoi79s",
+      "valueType": "INTEGER"
+    },
+    "BCZS_438": {
+      "code": "DPS_438",
+      "name": "EDL - DPS - 438. Equipement - Mat\u00e9riel roulant : Hors-Bord",
+      "id": "q0cd1130nte",
+      "valueType": "INTEGER"
+    },
+    "BCZS_439": {
+      "code": "DPS_439",
+      "name": "EDL - DPS - 439. Equipement - Mat\u00e9riel roulant : Moto",
+      "id": "rprtHibArKN",
+      "valueType": "INTEGER"
+    },
+    "BCZS_440": {
+      "code": "DPS_440",
+      "name": "EDL - DPS - 440. Equipement - Mat\u00e9riel roulant : Barque  / Baleiniere",
+      "id": "oBpEUKRZeRG",
+      "valueType": "INTEGER"
+    },
+    "BCZS_440_2": {
+      "code": "DPS_440_2",
+      "name": "EDL - DPS - 440.2  Equipement - Mat\u00e9riel roulant : B\u00e2teau",
+      "id": "Cxz4BLPjrlT",
+      "valueType": "INTEGER"
+    },
+    "BCZS_441": {
+      "code": "DPS_441",
+      "name": "EDL - DPS - 441. Equipement - Mat\u00e9riel informatique : Laptop",
+      "id": "AWh0s8eYzJe",
+      "valueType": "INTEGER"
+    },
+    "BCZS_442": {
+      "code": "DPS_442",
+      "name": "EDL - DPS - 442.Equipement - Mat\u00e9riel informatique : Desktop",
+      "id": "Qit1gpliT5M",
+      "valueType": "INTEGER"
+    },
+    "BCZS_443": {
+      "code": "DPS_443",
+      "name": "EDL - DPS - 443. Equipement - Mat\u00e9riel informatique : Ondulaire",
+      "id": "eO3ZGvNsov8",
+      "valueType": "INTEGER"
+    },
+    "BCZS_444": {
+      "code": "DPS_444",
+      "name": "EDL - DPS - 444.  Equipement - Mat\u00e9riel informatique : Imprimante",
+      "id": "RTzLpAHJa5z",
+      "valueType": "INTEGER"
+    },
+    "BCZS_445": {
+      "code": "DPS_445",
+      "name": "EDL - DPS - 445. Equipement - Mat\u00e9riel informatique : Photocopieuse",
+      "id": "vrTgt67FMqM",
+      "valueType": "INTEGER"
+    },
+    "BCZS_446": {
+      "code": "DPS_446",
+      "name": "EDL - DPS - 446. Equipement - Mat\u00e9riel informatique : Risographe",
+      "id": "sp2OmhGsl4f",
+      "valueType": "INTEGER"
+    },
+    "BCZS_447": {
+      "code": "DPS_447",
+      "name": "EDL - DPS - 447. Equipement - Mat\u00e9riel informatique : Disque Dur Externe de plus de 500 GB",
+      "id": "WeB0r6gyOaJ",
+      "valueType": "INTEGER"
+    },
+    "BCZS_447_2": {
+      "code": "DPS_447_2",
+      "name": "EDL - DPS - 447.2  Equipement - Mat\u00e9riel informatique : Scanner",
+      "id": "yJJlOfeyAld",
+      "valueType": "INTEGER"
+    },
+    "BCZS_601": {
+      "code": "DPS_601",
+      "name": "EDL - DPS - 601. Guides et fiches techniques : Disponibilit\u00e9 de SRSS Deuxi\u00e8me g\u00e9n\u00e9ration",
+      "id": "s4c510WrYvn",
+      "valueType": "TEXT"
+    },
+    "BCZS_602": {
+      "code": "DPS_602",
+      "name": "EDL - DPS - 602. Guides et fiches techniques : Disponibilit\u00e9 de PNDS 2019-2022",
+      "id": "bhgK6D0ozuq",
+      "valueType": "TEXT"
+    },
+    "BCZS_603": {
+      "code": "DPS_603",
+      "name": "EDL - DPS - 603. Guides et fiches techniques : Disponibilit\u00e9 des Directives relatives au fonctionnement de la DPS",
+      "id": "tucQh9F7SQ4",
+      "valueType": "TEXT"
+    },
+    "BCZS_604": {
+      "code": "DPS_604",
+      "name": "EDL - DPS - 604. Guides et fiches techniques : Disponibilite du manuel des procedures financi\u00e8res",
+      "id": "g7nHo516Ye0",
+      "valueType": "TEXT"
+    },
+    "BCZS_701": {
+      "code": "DPS_701",
+      "name": "EDL - DPS - 701.  Financement des soins : Subvention financi\u00e8re du Gouvernement Central \u00e0 la mise en \u0153uvre de PAO de l'ann\u00e9e pass\u00e9e (2018)",
+      "id": "EAm8aOgAw3S",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "part_contrib1",
+            "name": "1. 0%"
+          },
+          {
+            "code": "part_contrib2",
+            "name": "2. moins de 10%"
+          },
+          {
+            "code": "part_contrib3",
+            "name": "3. 10%-20%"
+          },
+          {
+            "code": "part_contrib4",
+            "name": "4. 21%-30%"
+          },
+          {
+            "code": "part_contrib5",
+            "name": "5. 31%-40%"
+          },
+          {
+            "code": "part_contrib6",
+            "name": "6. 41%- 50%"
+          },
+          {
+            "code": "part_contrib7",
+            "name": "7. 51%-60%"
+          },
+          {
+            "code": "part_contrib8",
+            "name": "8. 61%-70%"
+          },
+          {
+            "code": "part_contrib9",
+            "name": "9. 71%-80%"
+          },
+          {
+            "code": "part_contrib10",
+            "name": "10. 81%-90%"
+          },
+          {
+            "code": "part_contrib11",
+            "name": "11. 91%-100%"
+          }
+        ],
+        "id": "rt54NUYUSlt"
+      }
+    },
+    "BCZS_702": {
+      "code": "DPS_702",
+      "name": "EDL - DPS - 702.  Financement des soins : Contribution financi\u00e8re des partenaires \u00e0 la mise en \u0153uvre de PAO de l'ann\u00e9e pass\u00e9e (2018)",
+      "id": "gi7mrQJJ2Ii",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "part_contrib1",
+            "name": "1. 0%"
+          },
+          {
+            "code": "part_contrib2",
+            "name": "2. moins de 10%"
+          },
+          {
+            "code": "part_contrib3",
+            "name": "3. 10%-20%"
+          },
+          {
+            "code": "part_contrib4",
+            "name": "4. 21%-30%"
+          },
+          {
+            "code": "part_contrib5",
+            "name": "5. 31%-40%"
+          },
+          {
+            "code": "part_contrib6",
+            "name": "6. 41%- 50%"
+          },
+          {
+            "code": "part_contrib7",
+            "name": "7. 51%-60%"
+          },
+          {
+            "code": "part_contrib8",
+            "name": "8. 61%-70%"
+          },
+          {
+            "code": "part_contrib9",
+            "name": "9. 71%-80%"
+          },
+          {
+            "code": "part_contrib10",
+            "name": "10. 81%-90%"
+          },
+          {
+            "code": "part_contrib11",
+            "name": "11. 91%-100%"
+          }
+        ],
+        "id": "rt54NUYUSlt"
+      }
+    },
+    "BCZS_703": {
+      "code": "DPS_703",
+      "name": "EDL - DPS - 703.  Financement des soins : Existence d'une f\u00e9d\u00e9ration des mutuelles de sant\u00e9 dans la province",
+      "id": "m0tTMszL0AO",
+      "valueType": "TEXT"
+    },
+    "BCZS_704": {
+      "code": "DPS_704",
+      "name": "EDL - DPS - 704.  Financement des soins : Quel est le type de tarif pratiqu\u00e9 dans la province?",
+      "id": "CIAqeRD53nh",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_tarif1",
+            "name": "1. Forfaitaire"
+          },
+          {
+            "code": "type_tarif2",
+            "name": "2. Par Acte"
+          },
+          {
+            "code": "type_tarif3",
+            "name": "3. Par Episode"
+          }
+        ],
+        "id": "EJ0Pz1OIob0"
+      }
+    },
+    "BCZS_901": {
+      "code": "DPS_901",
+      "name": "EDL - DPS - 901. Participation communautaire : Disponibilit\u00e9 de PPDS",
+      "id": "rSuQvilPwZJ",
+      "valueType": "TEXT"
+    },
+    "BCZS_901_2": {
+      "code": "DPS_901_2",
+      "name": "EDL - DPS - 901.2 Participation communautaire : Disponibilit\u00e9 du Plan d'actions op\u00e9rationnel de l'ann\u00e9e en cours",
+      "id": "dN90poqTSne",
+      "valueType": "TEXT"
+    },
+    "BCZS_902": {
+      "code": "DPS_902",
+      "name": "EDL - DPS - 902. Participation communautaire : Disponibilit\u00e9 du rapport d'audit financier le dernier semestre 2018",
+      "id": "EYZCDrWdcCC",
+      "valueType": "TEXT"
+    },
+    "BCZS_903": {
+      "code": "DPS_903",
+      "name": "EDL - DPS - 903. Participation communautaire : Disponibilit\u00e9 du rapport de supervision Niveau Central dernier semestre 2018",
+      "id": "vaUysSkt24n",
+      "valueType": "TEXT"
+    },
+    "BCZS_904": {
+      "code": "DPS_904",
+      "name": "EDL - DPS - 904. Participation communautaire : La commission Gouvernance est elle fonctionnelle dans la province?",
+      "id": "E9w7RrFX4mZ",
+      "valueType": "TEXT"
+    },
+    "BCZS_905": {
+      "code": "DPS_905",
+      "name": "EDL - DPS - 905. Participation communautaire : La commission financement  est elle fonctionnelle dans la province?",
+      "id": "FcRe8hqIdQF",
+      "valueType": "TEXT"
+    },
+    "BCZS_906": {
+      "code": "DPS_906",
+      "name": "EDL - DPS - 906. Participation communautaire : La commission prestataion et suivi evaluation  est elle fonctionnelle dans la province?",
+      "id": "gbhn1lh2hn5",
+      "valueType": "TEXT"
+    },
+    "BCZS_907": {
+      "code": "DPS_907",
+      "name": "EDL - DPS - 907. Participation communautaire : La commission Ressources humaines  est elle fonctionnelle dans la province?",
+      "id": "FehUy5CmLAW",
+      "valueType": "TEXT"
+    },
+    "BCZS_908": {
+      "code": "DPS_908",
+      "name": "EDL - DPS - 908. Participation communautaire : La commission lutte contre la maladie  est elle fonctionnelle dans la province?",
+      "id": "UAiCqL9Ijcx",
+      "valueType": "TEXT"
+    },
+    "BCZS_909": {
+      "code": "DPS_909",
+      "name": "EDL - DPS - 909. Participation communautaire : La commission m\u00e9dicaments  est elle fonctionnelle dans la province?",
+      "id": "nrrgYYBFs9B",
+      "valueType": "TEXT"
+    }
+  }
+}

@@ -1,0 +1,77 @@
+version: '3'
+services:
+  iaso:
+    stdin_open: true
+    tty: true
+    build:
+      context: .
+      args:
+        NODE_ENV: ""
+    image: iaso
+    ports:
+      - "8081:8080"
+    volumes: &hat_volumes
+      - ./hat:/opt/app/hat
+      - ./iaso:/opt/app/iaso
+      - ./media:/opt/app/media
+      - ./scripts:/opt/app/scripts
+      - ./entrypoint.sh:/opt/app/entrypoint.sh
+      - ./docs:/opt/app/docs
+      - ./README.rst:/opt/app/README.rst
+      # shared dir between containers
+      - ./shared:/opt/shared
+      # build scripts for testing prod version
+      - ./build_scripts:/opt/app/build_scripts
+      # test data
+      - ./testdata:/opt/app/testdata
+      # jupyter notebooks
+      - ./notebooks:/opt/notebooks
+    links: &hat_links
+      - db
+    environment: &hat_environment
+      IASO_ENVIRONMENT: 'development'
+      FLAVOR: iaso
+      RDS_HOSTNAME: db
+      RDS_DB_NAME: iaso
+      RDS_USERNAME: postgres
+      DEBUG: 'true'
+      TEST_PROD:
+      SECRET_KEY: secret
+      GOOGLE_CLIENT_ID:
+      AWS_STORAGE_BUCKET_NAME:
+      AWS_ACCESS_KEY_ID:
+      AWS_SECRET_ACCESS_KEY:
+      PYTHONUNBUFFERED: 'true'
+      ENKETO_DEV: 'true'
+      ENKETO_API_TOKEN: AZE78974654azeAZE
+      ENKETO_URL: ${ENKETO_URL}
+    # Limit logging in dev to not overflow terminal
+    logging: &iaso_logging
+      driver: "json-file"
+      options:
+        max-size: "5k"
+
+    command: start_dev
+
+  db:
+    image: mdillon/postgis:10
+    logging: *iaso_logging
+    ports:
+      - "5433:5432"
+    volumes:
+      - ../pgdata-iaso:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${RDS_DB_NAME}
+      POSTGRES_USER: postgres
+
+  # the webpack dev server
+  webpack:
+    depends_on:
+      - iaso
+    image: iaso
+    ports:
+      - "3000:3000"
+    volumes: *hat_volumes
+    environment: *hat_environment
+    logging: *iaso_logging
+    command: start_webpack

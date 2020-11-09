@@ -1,0 +1,29 @@
+.iaso {
+    .ReactTable .rt-tbody .rt-td {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &.justify-left {
+            justify-content: flex-start;
+        }
+    }
+
+    .ReactTable .rt-tr {
+        background-color: white;
+    }
+
+    .filter__container__select.date-select .filter__container__select__label {
+        width: 75px;
+    }
+
+    &.instances {
+        .ReactTable .rt-tbody {
+            padding-bottom: 16px;
+        }
+    }
+
+    .ReactTable .rt-thead.-header {
+        z-index: 100;
+    }
+}

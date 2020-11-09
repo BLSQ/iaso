@@ -1,0 +1,160 @@
+body {
+  font-family: $body-font-family;
+  color: $text-color;
+}
+
+a {
+  color: $blue;
+}
+
+b, strong {
+  font-weight: bold;
+}
+
+i, em {
+  font-style: italic;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-weight: bold;
+}
+
+h1 {
+  font-size: $font-size-xl;
+}
+
+h2 {
+  font-size: $font-size-l;
+}
+
+h3 {
+  font-size: $font-size-m;
+}
+
+h4, h5, h6 {
+  font-size: $font-size-standard;
+}
+
+p {
+  max-width: 40em; /* maybe this is too much of a blunt instrument? rethink if problematic */
+  line-height: 1.4;
+  margin-bottom: 1em;
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}
+
+@mixin text--error {
+  color: $red;
+}
+
+@mixin text--warning {
+  color: $orange;
+}
+
+@mixin text--success {
+  color: $green;
+}
+
+@mixin text--standard { /* useful for resetting text in e.g. form elements */
+  font-family: $body-font-family;
+  font-size: $font-size-standard;
+  color: $text-color;
+}
+
+@mixin text--label {
+  font-size: $font-size-xs;
+  color: $mid-gray;
+  text-transform: uppercase;
+  letter-spacing: 0.7px;
+}
+
+@mixin text--caption {
+  font-size: $font-size-xs;
+  font-style: normal;
+  font-weight: normal;
+}
+
+@mixin white-text-dark-background {
+  color: white;
+  -webkit-font-smoothing: antialiased;
+}
+
+@mixin text--center {
+  text-align: center;
+}
+
+@mixin text--x-small {
+  font-size: $font-size-xs;
+}
+
+@mixin text--small {
+  font-size: $font-size-s;
+}
+
+@mixin heading--small {
+  font-size: $font-size-s;
+  font-weight: bold;
+}
+
+@mixin heading--medium {
+  font-size: $font-size-standard;
+  font-weight: bold;
+}
+
+.text--error {
+  @include text--error;
+}
+
+.text--warning {
+  @include text--warning;
+}
+
+.text--success {
+  @include text--success;
+}
+
+.text--label {
+  @include text--label;
+}
+
+.text--small {
+  font-size: $font-size-s;
+}
+
+.text--explanation {
+  font-size: $font-size-s;
+  font-style: italic;
+}
+
+.divider {
+  display: block;
+  margin-top: $padding-unit;
+  margin-bottom: $padding-unit;
+  border-bottom: 1px solid $gray;
+}
+
+.text--marked {
+  background-color: $background-highlight-gray;
+  border: 1px solid $gray;
+  padding: 5px;
+  border-radius: 5px;
+}
+
+.error {
+  color: red;
+  padding: 10px 0;
+}
+
+.pointer {
+  cursor: pointer;
+}
+
+.forbid-pointer {
+  cursor: not-allowed;
+}
+
+.success {
+  color: green;
+  padding: 10px 0;
+}

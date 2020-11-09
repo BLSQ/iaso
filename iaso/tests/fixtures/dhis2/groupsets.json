@@ -1,0 +1,43 @@
+{
+  "organisationUnitGroupSets": [
+    {
+      "name": "Area",
+      "id": "uIuxlbV1vRT",
+      "organisationUnitGroups": [
+        { "name": "Eastern Area", "id": "nlX2VoouN63" },
+        { "name": "Southern Area", "id": "jqBqIXoXpfy" },
+        { "name": "Northern Area", "id": "J40PpdN4Wkk" },
+        { "name": "Western Area", "id": "b0EsAxm8Nge" }
+      ]
+    },
+    {
+      "name": "Facility Ownership",
+      "id": "Bpx0589u8y0",
+      "organisationUnitGroups": [
+        { "name": "NGO", "id": "PVLOW4bCshG" },
+        { "name": "Private Clinic", "id": "MAs88nJc9nL" },
+        { "name": "Public facilities", "id": "oRVt7g429ZO" },
+        { "name": "Mission", "id": "w0gFTTmsUcF" }
+      ]
+    },
+    {
+      "name": "Facility Type",
+      "id": "J5jldMd8OHv",
+      "organisationUnitGroups": [
+        { "name": "CHP", "id": "uYxK4wmcPqA" },
+        { "name": "MCHP", "id": "EYbopBOJWsW" },
+        { "name": "Clinic", "id": "RXL3lPSK8oG" },
+        { "name": "Hospital", "id": "tDZVQ1WtwpA" },
+        { "name": "CHC", "id": "CXw2yu5fodb" }
+      ]
+    },
+    {
+      "name": "Location Rural/Urban",
+      "id": "Cbuj0VCyDjL",
+      "organisationUnitGroups": [
+        { "name": "Urban", "id": "f25dqv3Y7Z0" },
+        { "name": "Rural", "id": "GGghZsfu7qV" }
+      ]
+    }
+  ]
+}

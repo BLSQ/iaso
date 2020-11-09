@@ -1,0 +1,233 @@
+body {
+    &.trypelim {
+        .ReactTable {
+
+            .rt-thead .rt-th.-sort-asc,
+            .rt-thead .rt-td.-sort-asc {
+                box-shadow: inset 0 3px 0 0 $blue;
+            }
+
+            .rt-thead .rt-th.-sort-desc,
+            .rt-thead .rt-td.-sort-desc {
+                box-shadow: inset 0 -3px 0 0 $blue;
+            }
+        }
+    }
+
+    .ReactTable {
+        border: 1px solid $gray;
+
+        &.no-border {
+            border: none;
+        }
+
+        .bullet {
+            background-color: red;
+            width: 20px;
+            height: 20px;
+            border-radius: 20px;
+            display: inline-block;
+
+            &.normalized {
+                background-color: green;
+            }
+        }
+
+        .rt-noData {
+            top: 80px;
+        }
+
+        .rt-th,
+        .rt-td {
+            padding: 10px;
+
+            &.small {
+                font-size: 12px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+
+                .not-located {
+                    margin: -5px 0;
+                }
+            }
+
+            &.align-left {
+                justify-content: flex-start !important;
+            }
+
+            &.select {
+                overflow: visible !important;
+
+                .Select {
+                    text-align: left;
+                }
+            }
+
+            &.action-zone {
+                padding: 0;
+                align-items: center;
+                display: flex;
+                justify-content: center;
+            }
+        }
+
+        .rt-thead .rt-th,
+        .rt-thead .rt-td {
+            border-right: 1px solid $gray;
+            outline: none;
+            box-shadow: none;
+        }
+
+        .rt-thead .rt-th {
+            height: 40px;
+            padding-top: 9px;
+            box-sizing: border-box;
+        }
+
+        .rt-thead.-filters {
+            .rt-th {
+                height: 50px;
+
+                input {
+                    box-shadow: none;
+                    outline: none;
+                }
+            }
+        }
+
+        .-pagination .-previous,
+        .-pagination .-next {
+            .-btn {
+                display: inline-block;
+                font-size: 0;
+                width: auto;
+                padding-left: 15px;
+                padding-right: 15px;
+                float: right;
+                color: white;
+                background: $blue;
+
+                &:hover {
+                    background: darken($blue, 10%);
+                }
+
+                &:before {
+                    font: normal normal normal 14px/1 FontAwesome;
+                    font-size: inherit;
+                    text-rendering: auto;
+                    -webkit-font-smoothing: antialiased;
+                    -moz-osx-font-smoothing: grayscale;
+                    position: relative;
+                    font-size: 14px;
+                    display: block;
+                    content: "\f048";
+                }
+            }
+        }
+
+        .-pagination .-next {
+            .-btn {
+                float: left;
+
+                &:before {
+                    content: "\f051";
+                }
+            }
+        }
+
+        .rt-thead.-header {
+            .rt-th {
+                font-size: 12px;
+                padding-top: 12px;
+            }
+        }
+
+        .rt-tbody .rt-th,
+        .rt-tbody .rt-td {
+            text-align: center;
+        }
+
+        .rt-tfoot {
+            text-align: center;
+            font-weight: bold;
+        }
+    }
+
+    .custom-table-container {
+        position: relative;
+
+        &.no-pagination {
+            padding-bottom: 40px;
+        }
+
+        .count-container {
+            position: absolute;
+            right: 20px;
+            bottom: 14px;
+        }
+
+        .rt-tr-group {
+            cursor: pointer;
+            min-height: 35px;
+        }
+
+        &.header-fixed {
+            .rt-tbody {
+                padding-top: 40px;
+            }
+
+            .rt-thead.-header {
+                position: fixed;
+                top: 0;
+                width: 100%;
+                background-color: white;
+                z-index: 1000;
+            }
+
+            .count-container {
+                bottom: 15px;
+            }
+        }
+    }
+}
+
+.count-container-alone {
+    display: block;
+    width: 100%;
+    text-align: right;
+    padding: $padding-unit / 2;
+    border: 1px solid $gray;
+    border-top: none;
+}
+
+.edit-modal {
+    table {
+        tr {
+            td {
+                overflow: visible;
+                padding: 3px 4px;
+
+                &.small {
+                    font-size: 12px;
+                }
+
+                input[type="text"],
+                input[type="number"],
+                input[type="email"],
+                input[type="password"],
+                textarea,
+                input[type="date"] {
+                    background-color: white;
+                }
+            }
+
+            th {
+                &.small {
+                    padding: 4px;
+                    font-size: 14px;
+                }
+            }
+        }
+    }
+}

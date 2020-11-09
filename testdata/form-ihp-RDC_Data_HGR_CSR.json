@@ -1,0 +1,2903 @@
+{
+  "type": "simple_event",
+  "program_id": "hrGXtuFpuFq",
+  "question_mappings": {
+    "CS_105": {
+      "code": "CSR_105",
+      "name": "EDL - CSR - 105. Type de structure :",
+      "id": "jBKMhYV3XK0",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_structure.1",
+            "name": "1. HGR"
+          },
+          {
+            "code": "type_structure.2",
+            "name": "2. Hopital secondaire/ Centre Hospitalier/ Clinique"
+          },
+          {
+            "code": "type_structure.3",
+            "name": "3. CSR"
+          }
+        ],
+        "id": "Ev9g1R73Hld"
+      }
+    },
+    "CS_108": {
+      "code": "CSR_108",
+      "name": "EDL - CSR - 108. Appartenance (Public, Priv\u00e9) :",
+      "id": "Wxb7AkvtIC2",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Publique"
+          },
+          {
+            "code": "2",
+            "name": "2. Organisation Non Gouvernementale / Priv\u00e9e non lucratif"
+          },
+          {
+            "code": "3",
+            "name": "3. Priv\u00e9 lucratif"
+          },
+          {
+            "code": "4",
+            "name": "4. Confessionnelle"
+          }
+        ],
+        "id": "epY8yyw4AxA"
+      }
+    },
+    "CS_109_1": {
+      "code": "CSR_109_1",
+      "name": "EDL - CSR - 109.1 Si structure confessionnelle, laquelle ?",
+      "id": "DJtXYQaaavZ",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_confessionnel1",
+            "name": "1. Catholique"
+          },
+          {
+            "code": "type_confessionnel2",
+            "name": "2. Protestante"
+          },
+          {
+            "code": "type_confessionnel3",
+            "name": "3. Kimbaguiste"
+          },
+          {
+            "code": "type_confessionnel4",
+            "name": "4. Musulmane"
+          },
+          {
+            "code": "type_confessionnel5",
+            "name": "5. Eglise de reveil"
+          },
+          {
+            "code": "type_confessionnel7",
+            "name": "6. Autres"
+          }
+        ],
+        "id": "JQgXuiaX04k"
+      }
+    },
+    "CS_109_2": {
+      "code": "CSR_109_2",
+      "name": "EDL - CSR - 109.2 Si FOSA publique, existence d'une convention de cession en gestion avec le  Minist\u00e8re de la Sant\u00e9  ",
+      "id": "w3E9XdpHHfT",
+      "valueType": "BOOLEAN"
+    },
+    "CS_109_3": {
+      "code": "CSR_109_3",
+      "name": "EDL - CSR - 109.3 Si FOSA priv\u00e9e , existence d'une convention d'int\u00e9gration \u00e0 la politique sanitaire nationale ou d'appui au  cession en gestion avec le MSP ",
+      "id": "pHmgEhTaHie",
+      "valueType": "BOOLEAN"
+    },
+    "CS_110.1": {
+      "code": "CSR_110.1",
+      "name": "EDL - CSR - 110.1 La FOSA est-elle propri\u00e9taire des batiments?",
+      "id": "lwT5Zmi29Ki",
+      "valueType": "BOOLEAN"
+    },
+    "CS_110.2": {
+      "code": "CSR_110.2",
+      "name": "EDL - CSR - 110.2 Existe-t-il un titre foncier (certificat d'enregistrement) officiels attestant la propri\u00e9t\u00e9 de la FOSA?) ",
+      "id": "q8DfZPI5Cw1",
+      "valueType": "BOOLEAN"
+    },
+    "CS_111": {
+      "code": "CSR_111",
+      "name": "EDL - CSR - 111. Nom complet du M\u00e9decin Directeur",
+      "id": "Ob0qrFRImyy",
+      "valueType": "TEXT"
+    },
+    "CS_112": {
+      "code": "CSR_112",
+      "name": "EDL - CSR - 112. Sexe du M\u00e9decin Directeur",
+      "id": "W2RKgeoAwAV",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Masculin"
+          },
+          {
+            "code": "2",
+            "name": "F\u00e9minin"
+          }
+        ],
+        "id": "ZDtoq0ykM1M"
+      }
+    },
+    "CS_113": {
+      "code": "CSR_113",
+      "name": "EDL - CSR - 113. Qualification du M\u00e9decin Directeur",
+      "id": "QjxhpFpscux",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Docteur en M\u00e9decine"
+          },
+          {
+            "code": "2",
+            "name": "2. Docteur en M\u00e9decine avec Master en Sant\u00e9 Publique"
+          },
+          {
+            "code": "3",
+            "name": "3. Autres \u00e0 sp\u00e9cifier"
+          }
+        ],
+        "id": "KkTUBuZBaWR"
+      }
+    },
+    "CS_114": {
+      "code": "CSR_114",
+      "name": "EDL - CSR - 114. Num\u00e9ro de  contact de l'HGR/CSR",
+      "id": "KiME02BP8qk",
+      "valueType": "TEXT"
+    },
+    "CS_115": {
+      "code": "CSR_115",
+      "name": "EDL - CSR - 115. Adresse Email de l'HGR/CSR",
+      "id": "v0tZyKTuFm1",
+      "valueType": "TEXT"
+    },
+    "CS_116": {
+      "code": "CSR_116",
+      "name": "EDL - CSR - 116. Ouverte 24h/24h pour prendre en charge tous les cas y compris les cas d'urgence?",
+      "id": "iq8Z7l1BK8M",
+      "valueType": "BOOLEAN"
+    },
+    "CS_117.1": {
+      "code": "CSR_117.1",
+      "name": "EDL - CSR - 117.1. Nom de la banque/coop\u00e9ration",
+      "id": "K2gQVwYCEK4",
+      "valueType": "TEXT"
+    },
+    "CS_117.2": {
+      "code": "CSR_117.2",
+      "name": "EDL - CSR - 117.2. Num\u00e9ro du Compte Bancaire",
+      "id": "rD8deG8GKX6",
+      "valueType": "TEXT"
+    },
+    "CS_201_Homme": {
+      "code": "CSR_201_Homme",
+      "name": "EDL - CSR - 201. RH au CSR : Nombre de m\u00e9decin(s) sp\u00e9cialiste Homme :",
+      "id": "tvCjcblYyc0",
+      "valueType": "INTEGER"
+    },
+    "CS_201_Femme": {
+      "code": "CSR_201_Femme",
+      "name": "EDL - CSR - 201. RH au CSR : Nombre de m\u00e9decin(s) sp\u00e9cialiste Femme :",
+      "id": "lYct63YQ3GI",
+      "valueType": "INTEGER"
+    },
+    "CS_202": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "CSR_202_1",
+          "comment": "1. Chirurgien",
+          "name": "EDL - CSR - 202. RH au CSR : Sp\u00e9cialit\u00e9s disponibles : 1. Chirurgien",
+          "id": "dCnCxy0ELmS",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "CSR_202_2",
+          "comment": "2. Interniste",
+          "name": "EDL - CSR - 202. RH au CSR : Sp\u00e9cialit\u00e9s disponibles : 2. Interniste",
+          "id": "YhFG3n064rB",
+          "valueType": "BOOLEAN"
+        },
+        "3": {
+          "code": "CSR_202_3",
+          "comment": "3. Gyn\u00e9cologue Obst\u00e9tricien",
+          "name": "EDL - CSR - 202. RH au CSR : Sp\u00e9cialit\u00e9s disponibles : 3. Gyn\u00e9cologue Obst\u00e9tricien",
+          "id": "yssgUxdHMPn",
+          "valueType": "BOOLEAN"
+        },
+        "4": {
+          "code": "CSR_202_4",
+          "comment": "4. P\u00e9diatre",
+          "name": "EDL - CSR - 202. RH au CSR : Sp\u00e9cialit\u00e9s disponibles : 4. P\u00e9diatre",
+          "id": "UZC1ILcwGy0",
+          "valueType": "BOOLEAN"
+        },
+        "5": {
+          "code": "CSR_202_5",
+          "comment": "5. Autres \u00e0 pr\u00e9ciser",
+          "name": "EDL - CSR - 202. RH au CSR : Sp\u00e9cialit\u00e9s disponibles : 5. Autres \u00e0 pr\u00e9ciser",
+          "id": "y89g98eYtLD",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_203_Homme": {
+      "code": "CSR_203_Homme",
+      "name": "EDL - CSR - 203. RH au CSR : Nombre de Chirurgien Dentiste Homme :",
+      "id": "pjsqjK730Oo",
+      "valueType": "INTEGER"
+    },
+    "CS_203_Femme": {
+      "code": "CSR_203_Femme",
+      "name": "EDL - CSR - 203. RH au CSR : Nombre de Chirurgien Dentiste Femme :",
+      "id": "CfjmQgNoOUi",
+      "valueType": "INTEGER"
+    },
+    "CS_204_Homme": {
+      "code": "CSR_204_Homme",
+      "name": "EDL - CSR - 204. RH au CSR : Nombre de M\u00e9decin g\u00e9n\u00e9raliste Homme :",
+      "id": "DUhwheNV9H6",
+      "valueType": "INTEGER"
+    },
+    "CS_204_Femme": {
+      "code": "CSR_204_Femme",
+      "name": "EDL - CSR - 204.RH au CSR : Nombre de M\u00e9decin g\u00e9n\u00e9raliste Femme :",
+      "id": "ChfdXl9lbhi",
+      "valueType": "INTEGER"
+    },
+    "CS_205_Homme": {
+      "code": "CSR_205_Homme",
+      "name": "EDL - CSR - 205. RH au CSR : Nombre de pharmacien(s) Homme :",
+      "id": "G3CF4XKB8b1",
+      "valueType": "INTEGER"
+    },
+    "CS_205_Femme": {
+      "code": "CSR_205_Femme",
+      "name": "EDL - CSR - 205. RH au CSR : Nombre de pharmacien(s) Femme :",
+      "id": "xPbkxOzoAx8",
+      "valueType": "INTEGER"
+    },
+    "CS_206_Homme": {
+      "code": "CSR_206_Homme",
+      "name": "EDL - CSR - 206. RH au CSR : Nombre d'Assistant en Pharmacie Homme :",
+      "id": "Eqrhdvz7n02",
+      "valueType": "INTEGER"
+    },
+    "CS_206_Femme": {
+      "code": "CSR_206_Femme",
+      "name": "EDL - CSR - 206. RH au CSR : Nombre d'Assistant en Pharmacie Femme :",
+      "id": "hjfvDeegLkY",
+      "valueType": "INTEGER"
+    },
+    "CS_207_Homme": {
+      "code": "CSR_207_Homme",
+      "name": "EDL - CSR - 207. RH au CSR : Nombre d'Anesthesiste Homme :",
+      "id": "Qy5k9L6sMdj",
+      "valueType": "INTEGER"
+    },
+    "CS_207_Femme": {
+      "code": "CSR_207_Femme",
+      "name": "EDL - CSR - 207. RH au CSR : Nombre d'Anesthesiste Femme :",
+      "id": "uPbOUhz3062",
+      "valueType": "INTEGER"
+    },
+    "CS_208_Homme": {
+      "code": "CSR_208_Homme",
+      "name": "EDL - CSR - 208. RH au CSR : Nombre d'Infirmier L2, A1, A2 Homme :",
+      "id": "U7ZPTCIjk7T",
+      "valueType": "INTEGER"
+    },
+    "CS_208_Femme": {
+      "code": "CSR_208_Femme",
+      "name": "EDL - CSR - 208. RH au CSR : Nombre d'Infirmier L2, A1, A2 Femme :",
+      "id": "ZgfwQWUnaXd",
+      "valueType": "INTEGER"
+    },
+    "CS_209_Homme": {
+      "code": "CSR_209_Homme",
+      "name": "EDL - CSR - 209. RH au CSR : Nombre d'Infirmier A3 Homme :",
+      "id": "Nkj4JwU4Ahi",
+      "valueType": "INTEGER"
+    },
+    "CS_209_Femme": {
+      "code": "CSR_209_Femme",
+      "name": "EDL - CSR - 209. RH au CSR : Nombre d'Infirmier A3 Femme :",
+      "id": "zAh5r87X05h",
+      "valueType": "INTEGER"
+    },
+    "CS_210_Homme": {
+      "code": "CSR_210_Homme",
+      "name": "EDL - CSR - 210. RH au CSR : Nombre d'Accoucheuses/sage-Femme (A1) Homme :",
+      "id": "bmLoywS6vcQ",
+      "valueType": "INTEGER"
+    },
+    "CS_210_Femme": {
+      "code": "CSR_210_Femme",
+      "name": "EDL - CSR - 210. RH au CSR : Nombre d'Accoucheuses/sage-Femme (A1) Femme :",
+      "id": "kCF91Pn55PD",
+      "valueType": "INTEGER"
+    },
+    "CS_211_Homme": {
+      "code": "CSR_211_Homme",
+      "name": "EDL - CSR - 211. RH au CSR : Nombre d'Accoucheuse ( A2) Homme :",
+      "id": "Aygrp5jP6yL",
+      "valueType": "INTEGER"
+    },
+    "CS_211_Femme": {
+      "code": "CSR_211_Femme",
+      "name": "EDL - CSR - 211. RH au CSR : Nombre d'Accoucheuse ( A2) Femme :",
+      "id": "lTzwSPi4J3b",
+      "valueType": "INTEGER"
+    },
+    "CS_212_Homme": {
+      "code": "CSR_212_Homme",
+      "name": "EDL - CSR - 212. RH au CSR : Nombre de Technicien de Labo A1, A2 Homme :",
+      "id": "OS0G9cF4Pf4",
+      "valueType": "INTEGER"
+    },
+    "CS_212_Femme": {
+      "code": "CSR_212_Femme",
+      "name": "EDL - CSR - 212. RH au CSR : Nombre de Technicien de Labo A1, A2 Femme :",
+      "id": "bjFc4y4Pl2j",
+      "valueType": "INTEGER"
+    },
+    "CS_213_Homme": {
+      "code": "CSR_213_Homme",
+      "name": "EDL - CSR - 213. RH au CSR : Nombre de Bilogiste m\u00e9dicale Homme :",
+      "id": "frlbAOdehOu",
+      "valueType": "INTEGER"
+    },
+    "CS_213_Femme": {
+      "code": "CSR_213_Femme",
+      "name": "EDL - CSR - 213. RH au CSR : Nombre de Bilogiste m\u00e9dicale Femme :",
+      "id": "Tn2ZmOhwZhx",
+      "valueType": "INTEGER"
+    },
+    "CS_214_Homme": {
+      "code": "CSR_214_Homme",
+      "name": "EDL - CSR - 214. RH au CSR : Nombre de Kinesitherapeute A1, A2 Homme :",
+      "id": "Zit2HrjrTn9",
+      "valueType": "INTEGER"
+    },
+    "CS_214_Femme": {
+      "code": "CSR_214_Femme",
+      "name": "EDL - CSR - 214. RH au CSR : Nombre de Kinesitherapeute A1, A2 Femme :",
+      "id": "jA8UYGSkh6t",
+      "valueType": "INTEGER"
+    },
+    "CS_215_Homme": {
+      "code": "CSR_215_Homme",
+      "name": "EDL - CSR - 215. RH au CSR : Nombre de Techniciens de Radiologie  A1, L2 Homme :",
+      "id": "mzHYOoqdm5m",
+      "valueType": "INTEGER"
+    },
+    "CS_215_Femme": {
+      "code": "CSR_215_Femme",
+      "name": "EDL - CSR - 215. RH au CSR : Nombre de Techniciens de Radiologie  A1, L2 Femme :",
+      "id": "l7RPVbQqRqR",
+      "valueType": "INTEGER"
+    },
+    "CS_216_Homme": {
+      "code": "CSR_216_Homme",
+      "name": "EDL - CSR - 216. RH au CSR : Nombre de Techniciens Bucco-dentaire Homme :",
+      "id": "eVcVWRptwCX",
+      "valueType": "INTEGER"
+    },
+    "CS_216_Femme": {
+      "code": "CSR_216_Femme",
+      "name": "EDL - CSR - 216. RH au CSR : Nombre de Techniciens Bucco-dentaire Femme :",
+      "id": "wYFTHhn254l",
+      "valueType": "INTEGER"
+    },
+    "CS_217_Homme": {
+      "code": "CSR_217_Homme",
+      "name": "EDL - CSR - 217. RH au CSR : Nombre de Nutritionniste A1, A2, L2  Homme :",
+      "id": "i2hAB7KODPS",
+      "valueType": "INTEGER"
+    },
+    "CS_217_Femme": {
+      "code": "CSR_217_Femme",
+      "name": "EDL - CSR - 217. RH au CSR : Nombre de Nutritionniste A1, A2, L2  Femme :",
+      "id": "WA1GBfFNF4W",
+      "valueType": "INTEGER"
+    },
+    "CS_218_Homme": {
+      "code": "CSR_218_Homme",
+      "name": "EDL - CSR - 218. RH au CSR : Nombre d'Administrateur Gestionnaire niveau L2, G3 Homme :",
+      "id": "C6mCSRuMcAC2",
+      "valueType": "INTEGER"
+    },
+    "CS_218_Femme": {
+      "code": "CSR_218_Femme",
+      "name": "EDL - CSR - 218. RH au CSR : Nombre d'Administrateur Gestionnaire niveau L2, G3 Femme :",
+      "id": "Bf6brqy3wXv",
+      "valueType": "INTEGER"
+    },
+    "CS_219_Homme": {
+      "code": "CSR_219_Homme",
+      "name": "EDL - CSR - 219. RH au CSR : Nombre de Charg\u00e9 de Sant\u00e9 Communautaire (L2 ou G3 TDR) Homme :",
+      "id": "Rs6juHCUsLs",
+      "valueType": "INTEGER"
+    },
+    "CS_219_Femme": {
+      "code": "CSR_219_Femme",
+      "name": "EDL - CSR - 219. RH au CSR : Nombre de Charg\u00e9 de Sant\u00e9 Communautaire (L2 ou G3 TDR) Femme :",
+      "id": "Wxmg9OkC5be",
+      "valueType": "INTEGER"
+    },
+    "CS_220_Homme": {
+      "code": "CSR_220_Homme",
+      "name": "EDL - CSR - 220. RH au CSR : Autres professionnels de sant\u00e9 Homme :",
+      "id": "WW5PewWyOuN",
+      "valueType": "INTEGER"
+    },
+    "CS_220_Femme": {
+      "code": "CSR_220_Femme",
+      "name": "EDL - CSR - 220. RH au CSR : Autres professionnels de sant\u00e9 Femme :",
+      "id": "XewjZsmTvHY",
+      "valueType": "INTEGER"
+    },
+    "CS_221_Homme": {
+      "code": "CSR_221_Homme",
+      "name": "EDL - CSR - 221. RH au CSR : Nombre de Personnel d'administratif Homme :",
+      "id": "ANIuzaURTfJ",
+      "valueType": "INTEGER"
+    },
+    "CS_221_Femme": {
+      "code": "CSR_221_Femme",
+      "name": "EDL - CSR - 221. RH au CSR : Nombre de Personnel d'administratif Femme :",
+      "id": "zAd7wwXD70n",
+      "valueType": "INTEGER"
+    },
+    "CS_222_Homme": {
+      "code": "CSR_222_Homme",
+      "name": "EDL - CSR - 222. RH au CSR : Nombre de Sans qualification Homme :",
+      "id": "ki0zKG2auRe",
+      "valueType": "INTEGER"
+    },
+    "CS_222_Femme": {
+      "code": "CSR_222_Femme",
+      "name": "EDL - CSR - 222. RH au CSR : Nombre de Sans qualification Femme :",
+      "id": "ki5tQodjfTG",
+      "valueType": "INTEGER"
+    },
+    "CS_225_1": {
+      "code": "CSR_225_1",
+      "name": "EDL - CSR - 225.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Management de Soins de Sant\u00e9 Primaires  Nombre d'Hommes :",
+      "id": "zjZphYw3x0J",
+      "valueType": "INTEGER"
+    },
+    "CS_225_2": {
+      "code": "CSR_225_2",
+      "name": "EDL - CSR - 225.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Management de Soins de Sant\u00e9 Primaires  Nombre de Femmes :",
+      "id": "szXt9LLLbVJ",
+      "valueType": "INTEGER"
+    },
+    "CS_226.1": {
+      "code": "CSR_226.1",
+      "name": "EDL - CSR - 226.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Fomation en Surveillance Int\u00e9gr\u00e9e des maladies et riposte :Nombre d'Hommes :",
+      "id": "RSvOO8X7uAy",
+      "valueType": "INTEGER"
+    },
+    "CS_226.2": {
+      "code": "CSR_226.2",
+      "name": "EDL - CSR - 226.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en :  Fomation en Surveillance Int\u00e9gr\u00e9e des maladies et riposte : 226.2 Nombre de Femmes :",
+      "id": "xOJGeEb6PG0",
+      "valueType": "INTEGER"
+    },
+    "CS_227.1": {
+      "code": "CSR_227.1",
+      "name": "EDL - CSR - 227.1 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re et du Nouveau (SMN)  approche par comp\u00e9tence :Nombre d'hommes :",
+      "id": "RYU45ANMEfU",
+      "valueType": "INTEGER"
+    },
+    "CS_227.2": {
+      "code": "CSR_227.2",
+      "name": "EDL - CSR - 227.2 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge int\u00e9gr\u00e9e de la Sant\u00e9 de la M\u00e8re et du Nouveau (SMN)  approche par comp\u00e9tence : Nombre de Femmes :",
+      "id": "BnQjvH4XLPY",
+      "valueType": "INTEGER"
+    },
+    "CS_228.1": {
+      "code": "CSR_228.1",
+      "name": "EDL - CSR - 228.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence complet  :Nombre d'hommes :",
+      "id": "h0tPksRKvW3",
+      "valueType": "INTEGER"
+    },
+    "CS_228.2": {
+      "code": "CSR_228.2",
+      "name": "EDL - CSR - 228.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Soins Obstr\u00e9tricaux et N\u00e9onataux d'Urgence complet  : Nombre de Femmes :",
+      "id": "qT4LNhfxM4H",
+      "valueType": "INTEGER"
+    },
+    "CS_229.1": {
+      "code": "CSR_229.1",
+      "name": "EDL - CSR - 229.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : R\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 respirer : Nombre d'hommes :",
+      "id": "MwFIYoXnrJn",
+      "valueType": "INTEGER"
+    },
+    "CS_229.2": {
+      "code": "CSR_229.2",
+      "name": "EDL - CSR - 229.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : R\u00e9animation n\u00e9onatale : Aider les b\u00e9b\u00e9s \u00e0 respirer  -  Nombre de Femmes :",
+      "id": "PaAZp9vCUwg",
+      "valueType": "INTEGER"
+    },
+    "CS_230.1": {
+      "code": "CSR_230.1",
+      "name": "EDL - CSR - 230.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prevention et Prise en charge de l'hemorragie du post partum : \"Aider les m\u00e8res \u00e0 survivre\"  : Nombre d'hommes ",
+      "id": "unUjnF8gOfR",
+      "valueType": "INTEGER"
+    },
+    "CS_230.2": {
+      "code": "CSR_230.2",
+      "name": "EDL - CSR - 230.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prevention et Prise en charge de l'hemorragie du post partum : \"Aider les m\u00e8res \u00e0 survivre\"  : Nombre de Femmes ",
+      "id": "tsBa881LQT1",
+      "valueType": "INTEGER"
+    },
+    "CS_231.1": {
+      "code": "CSR_231.1",
+      "name": "EDL - CSR - 231.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Planification Familiale - Nombre d'hommes :",
+      "id": "XIzCSRoMOkuE",
+      "valueType": "INTEGER"
+    },
+    "CS_231.2": {
+      "code": "CSR_231.2",
+      "name": "EDL - CSR - 231.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Planification Familiale - Nombre de Femmes :",
+      "id": "PxOyTrqcrEA",
+      "valueType": "INTEGER"
+    },
+    "CS_232.1": {
+      "code": "CSR_232.1",
+      "name": "EDL - CSR - 232.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Utilisation des Guides cliniques et th\u00e9rapeutiques des soins - Nombre d'hommes :",
+      "id": "CXPTj8foKrE",
+      "valueType": "INTEGER"
+    },
+    "CS_232.2": {
+      "code": "CSR_232.2",
+      "name": "EDL - CSR - 232.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Utilisation des Guides cliniques et th\u00e9rapeutiques des soins - Nombre de Femmes :",
+      "id": "BVPbul3AK2M",
+      "valueType": "INTEGER"
+    },
+    "CS_233.1": {
+      "code": "CSR_233.1",
+      "name": "EDL - CSR - 233.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Renforcement des capacit\u00e9s  en pratique des  c\u00e9sarienne  - Nombre d'hommes :",
+      "id": "ZIvI2rCiM55",
+      "valueType": "INTEGER"
+    },
+    "CS_233.2": {
+      "code": "CSR_233.2",
+      "name": "EDL - CSR - 233.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Renforcement des capacit\u00e9s  en pratique des  c\u00e9sarienne - Nombre de Femmes",
+      "id": "DJDJu43CcQr",
+      "valueType": "INTEGER"
+    },
+    "CS_234.1": {
+      "code": "CSR_234.1",
+      "name": "EDL - CSR - 234.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : En transfusion  sanguine  - Nombre d'hommes",
+      "id": "H0ypmjlcuzQ",
+      "valueType": "INTEGER"
+    },
+    "CS_234.2": {
+      "code": "CSR_234.2",
+      "name": "EDL - CSR - 234.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : En transfusion  sanguine  - Nombre de Femmes",
+      "id": "Q3mQ11V9G2X",
+      "valueType": "INTEGER"
+    },
+    "CS_235.1": {
+      "code": "CSR_235.1",
+      "name": "EDL - CSR - 235.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge Int\u00e9gr\u00e9e de la Malnutrition Aigue (PCIMA) - Nombre d'hommes :",
+      "id": "KieJExluuSe",
+      "valueType": "INTEGER"
+    },
+    "CS_235.2": {
+      "code": "CSR_235.2",
+      "name": "EDL - CSR - 235.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge Int\u00e9gr\u00e9e de la Malnutrition Aigue (PCIMA) - Nombre de Femmes :",
+      "id": "Ea1U0B9AwBd",
+      "valueType": "INTEGER"
+    },
+    "CS_236.1": {
+      "code": "CSR_236.1",
+      "name": "EDL - CSR - 236.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Tri- Evaluation-Traitement-D'urgence ( PCIME-TETU) - Nombre d'hommes",
+      "id": "NAZkklxu8i5",
+      "valueType": "INTEGER"
+    },
+    "CS_236.2": {
+      "code": "CSR_236.2",
+      "name": "EDL - CSR - 236.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge Int\u00e9gr\u00e9 des Maladies de l'enfance- Tri- Evaluation-Traitement-D'urgence ( PCIME-TETU)  - Nombre de Femmes",
+      "id": "NXcZC20U8y3",
+      "valueType": "INTEGER"
+    },
+    "CS_237.1": {
+      "code": "CSR_237.1",
+      "name": "EDL - CSR - 237.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Programme Elargie de Vaccination ( PEV)  - Nombre d'hommes",
+      "id": "x2mNRwPsR9w",
+      "valueType": "INTEGER"
+    },
+    "CS_237.2": {
+      "code": "CSR_237.2",
+      "name": "EDL - CSR - 237.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Programme Elargie de Vaccination ( PEV) - Nombre de Femmes",
+      "id": "c34FZT6homf",
+      "valueType": "INTEGER"
+    },
+    "CS_238.1": {
+      "code": "CSR_238.1",
+      "name": "EDL - CSR - 238.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Microscopie pour le  paludisme  - Nombre d'hommes",
+      "id": "ECSRlZDX0IHf",
+      "valueType": "INTEGER"
+    },
+    "CS_238.2": {
+      "code": "CSR_238.2",
+      "name": "EDL - CSR - 238.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Microscopie pour le  paludisme - Nombre de Femmes",
+      "id": "zHjdpEpA8D1",
+      "valueType": "INTEGER"
+    },
+    "CS_239.1": {
+      "code": "CSR_239.1",
+      "name": "EDL - CSR - 239.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge (PEC) du  paludisme  - Nombre d'hommes",
+      "id": "DPYT36nDhGL",
+      "valueType": "INTEGER"
+    },
+    "CS_239.2": {
+      "code": "CSR_239.2",
+      "name": "EDL - CSR - 239.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en Charge (PEC) du  paludisme  - Nombre de Femmes :",
+      "id": "UI753khN0Di",
+      "valueType": "INTEGER"
+    },
+    "CS_240.1": {
+      "code": "CSR_240.1",
+      "name": "EDL - CSR - 240.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge du  paludisme chez la femme enceinte  - Nombre d'hommes",
+      "id": "c0eQHK6YROD",
+      "valueType": "INTEGER"
+    },
+    "CS_240.2": {
+      "code": "CSR_240.2",
+      "name": "EDL - CSR - 240.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge du  paludisme chez la femme enceinte  - Nombre de Femmes",
+      "id": "rvU0aadvjCSR",
+      "valueType": "INTEGER"
+    },
+    "CS_241.1": {
+      "code": "CSR_241.1",
+      "name": "EDL - CSR - 241.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge  m\u00e9dicale des survivantes  des violences sexuelles - Nombre d'hommes :",
+      "id": "LVAa92OQ8RQ",
+      "valueType": "INTEGER"
+    },
+    "CS_241.2": {
+      "code": "CSR_241.2",
+      "name": "EDL - CSR - 241.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge  m\u00e9dicale des survivantes  des violences sexuelles - Nombre de Femmes",
+      "id": "jB5trOr2FcN",
+      "valueType": "INTEGER"
+    },
+    "CS_242.1": {
+      "code": "CSR_242.1",
+      "name": "EDL - CSR - 242.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en :  Sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes ( SSRAJ) - Nombre d'hommes",
+      "id": "sOML1KPGHvs",
+      "valueType": "INTEGER"
+    },
+    "CS_242.2": {
+      "code": "CSR_242.2",
+      "name": "EDL - CSR - 242.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Sant\u00e9 Sexuelle et de la Reproduction adapt\u00e9e aux Adolescents et Jeunes ( SSRAJ) - Nombre de Femmes",
+      "id": "qmgVUgxxYXG",
+      "valueType": "INTEGER"
+    },
+    "CS_243.1": {
+      "code": "CSR_243.1",
+      "name": "EDL - CSR - 243.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge de Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V ( PATI V ) -  Nombre d'hommes :",
+      "id": "Anxm40ZMln9",
+      "valueType": "INTEGER"
+    },
+    "CS_243.2": {
+      "code": "CSR_243.2",
+      "name": "EDL - CSR - 243.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Prise en charge de Tuberculose selon le Programme Anti Tuberculeux Int\u00e9gr\u00e9 V ( PATI V ) - Nombre de Femmes :",
+      "id": "ltBl8OfIt7r",
+      "valueType": "INTEGER"
+    },
+    "CS_244.1": {
+      "code": "CSR_244.1",
+      "name": "EDL - CSR - 244.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Technicien de Labo/microscopiste form\u00e9s en TB - Nombre d'hommes",
+      "id": "ed65i3zQnxc",
+      "valueType": "INTEGER"
+    },
+    "CS_244.2": {
+      "code": "CSR_244.2",
+      "name": "EDL - CSR - 244.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Technicien de Labo/microscopiste form\u00e9s en TB - Nombre de Femmes",
+      "id": "pA6bLyPurHK",
+      "valueType": "INTEGER"
+    },
+    "CS_245.1": {
+      "code": "CSR_245.1",
+      "name": "EDL - CSR - 245.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Technicien de Labo  form\u00e9s en GeneXpert - Nombre d'hommes :",
+      "id": "NdHLUTUjfV8",
+      "valueType": "INTEGER"
+    },
+    "CS_245.2": {
+      "code": "CSR_245.2",
+      "name": "EDL - CSR - 245.2 . Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Technicien de Labo  form\u00e9s en GeneXpert - Nombre de Femmes :",
+      "id": "J0IRRrsNm5D",
+      "valueType": "INTEGER"
+    },
+    "CS_246.1": {
+      "code": "CSR_246.1",
+      "name": "EDL - CSR - 246.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion des Medicaments - Nombre d'hommes",
+      "id": "Sqn8wFevpNi",
+      "valueType": "INTEGER"
+    },
+    "CS_246.2": {
+      "code": "CSR_246.2",
+      "name": "EDL - CSR - 246.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion des Medicaments - Nombre de Femmes",
+      "id": "Fz3U217d9ed",
+      "valueType": "INTEGER"
+    },
+    "CS_247.1": {
+      "code": "CSR_247.1",
+      "name": "EDL - CSR - 247.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Pr\u00e9vention et contr\u00f4le de l'infection  (PCI) - Nombre d'hommes",
+      "id": "epj8jvBgEol",
+      "valueType": "INTEGER"
+    },
+    "CS_247.2": {
+      "code": "CSR_247.2",
+      "name": "EDL - CSR - 247.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Pr\u00e9vention et contr\u00f4le de l'infection  (PCI) - Nombre de Femmes",
+      "id": "HiV4TbIw0Hz",
+      "valueType": "INTEGER"
+    },
+    "CS_247.1_1": {
+      "code": "CSR_247.1_1",
+      "name": "EDL - CSR - 247.1.1 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Supervision int\u00e9gr\u00e9e -  Nombre d'hommes",
+      "id": "rs6WZPeM557",
+      "valueType": "INTEGER"
+    },
+    "CS_247.2_1": {
+      "code": "CSR_247.2_1",
+      "name": "EDL - CSR - 247.2.1 Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Supervision int\u00e9gr\u00e9e - Nombre de Femmes",
+      "id": "APefzgM2kWw",
+      "valueType": "INTEGER"
+    },
+    "CS_248.1": {
+      "code": "CSR_248.1",
+      "name": "EDL - CSR - 248.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : D\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e (DQI)  - Nombre d'hommes",
+      "id": "q4ASIKGZ0qp",
+      "valueType": "INTEGER"
+    },
+    "CS_248.2": {
+      "code": "CSR_248.2",
+      "name": "EDL - CSR - 248.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : D\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e (DQI)  - Nombre de Femmes",
+      "id": "yK4ybwOmvQI",
+      "valueType": "INTEGER"
+    },
+    "CS_249.1": {
+      "code": "CSR_249.1",
+      "name": "EDL - CSR - 249.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion SNIS / Cadre normatif, DHIS2 - Nombre d'hommes",
+      "id": "mO0FKnDbkaQ",
+      "valueType": "INTEGER"
+    },
+    "CS_249.2": {
+      "code": "CSR_249.2",
+      "name": "EDL - CSR - 249.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : Gestion SNIS / Cadre normatif, DHIS2 - Nombre de Femmes ",
+      "id": "eSaCSRZMRP67",
+      "valueType": "INTEGER"
+    },
+    "CS_250.1": {
+      "code": "CSR_250.1",
+      "name": "EDL - CSR - 250.1. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : PICAL (auto-\u00e9valuation) - Nombre d'hommes",
+      "id": "IOFa4uJCdkh",
+      "valueType": "INTEGER"
+    },
+    "CS_250.2": {
+      "code": "CSR_250.2",
+      "name": "EDL - CSR - 250.2. Formation re\u00e7ue dans le cadre du PCA/PMA (entre 2017 et aujourd'hui) en : PICAL (auto-\u00e9valuation) - Nombre de Femmes",
+      "id": "IxCx1bVyF8G",
+      "valueType": "INTEGER"
+    },
+    "CS_301": {
+      "code": "CSR_301",
+      "name": "EDL - CSR - 301. Gestion des m\u00e9dicaments : Existe-t-il  un d\u00e9p\u00f4t/local pour le stockage des m\u00e9dicaments \u00e0 l'HGR/CSR ( s\u00e9par\u00e9 de celui du BCZS)",
+      "id": "YzvW0DdJBUX",
+      "valueType": "BOOLEAN"
+    },
+    "CS_302": {
+      "code": "CSR_302",
+      "name": "EDL - CSR - 302. Gestion des m\u00e9dicaments : Capacit\u00e9 de stockage du d\u00e9p\u00f4t/local pour le stockage des m\u00e9dicaments \u00e0 l'HGR/CSR ?",
+      "id": "xXpQ37f8nbb",
+      "valueType": "INTEGER"
+    },
+    "CS_303": {
+      "code": "CSR_303",
+      "name": "EDL - CSR - 303. Gestion des m\u00e9dicaments : Les M\u00e9dicaments sont ils  stock\u00e9s dans une sall\u00e9 ferm\u00e9e ?",
+      "id": "BlSo0OXjq5n",
+      "valueType": "BOOLEAN"
+    },
+    "CS_304": {
+      "code": "CSR_304",
+      "name": "EDL - CSR - 304. Gestion des m\u00e9dicaments : Si les m\u00e9dicaments sont stock\u00e9s dans une salle, Est que la salle  de stockage des m\u00e9dicaments est dot\u00e9e d'un   plafond et de  pavement au sol  ? ",
+      "id": "YMKZLq4sAMP",
+      "valueType": "BOOLEAN"
+    },
+    "CS_305": {
+      "code": "CSR_305",
+      "name": "EDL - CSR - 305. Gestion des m\u00e9dicaments : Avez-vous des armoires avec cl\u00e9s pour le stockage des medicaments ( \u00e0 mettre sous scell\u00e9s)",
+      "id": "I6j3D0y2H1o",
+      "valueType": "BOOLEAN"
+    },
+    "CS_305_1": {
+      "code": "CSR_305_1",
+      "name": "EDL - CSR - 305.1 Gestion des m\u00e9dicaments : Existence des \u00e9tag\u00e8res et palettes",
+      "id": "kumYQXPP7yu",
+      "valueType": "BOOLEAN"
+    },
+    "CS_305_2": {
+      "code": "CSR_305_2",
+      "name": "EDL - CSR - 305.2 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont class\u00e9s par l'approche FEFO (first expired first out)",
+      "id": "qEJj2gEfMcL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_305_3": {
+      "code": "CSR_305_3",
+      "name": "EDL - CSR - 305.3 Gestion des m\u00e9dicaments : Existe t-il des produits p\u00e9rim\u00e9s dans la structure?",
+      "id": "koq70iD6TQC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.1": {
+      "code": "CSR_306.1",
+      "name": "EDL - CSR - 306.1 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Chaleur",
+      "id": "dCtOMnx4p8q",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.2": {
+      "code": "CSR_306.2",
+      "name": "EDL - CSR - 306.2 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Lumi\u00e8re directe du soleil",
+      "id": "zivVNahecnL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.3": {
+      "code": "CSR_306.3",
+      "name": "EDL - CSR - 306.3 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 l'Humidit\u00e9",
+      "id": "fBLe6gOg30O",
+      "valueType": "BOOLEAN"
+    },
+    "CS_306.4": {
+      "code": "CSR_306.4",
+      "name": "EDL - CSR - 306.4 Gestion des m\u00e9dicaments : Les m\u00e9dicaments sont expos\u00e9s \u00e0 la Poussi\u00e8re",
+      "id": "D8vCFUFOYIB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_307": {
+      "code": "CSR_307",
+      "name": "EDL - CSR - 307. Gestion des m\u00e9dicaments : L'\u00e9clairage est il suffisant dans le lieu  de stockage?",
+      "id": "B6s2s50zslt",
+      "valueType": "BOOLEAN"
+    },
+    "CS_308": {
+      "code": "CSR_308",
+      "name": "EDL - CSR - 308. Gestion des m\u00e9dicaments : Avez-vous  au moins un refrigerateur pour la conservation des medicaments?",
+      "id": "POQbEeaC8IM",
+      "valueType": "BOOLEAN"
+    },
+    "CS_309": {
+      "code": "CSR_309",
+      "name": "EDL - CSR - 309. Gestion des m\u00e9dicaments : Les refrigerateurs  fonctionnels  sont tous dot\u00e9s de fridge tag et des fiches de temp\u00e9rature?",
+      "id": "B5ljpBjm2JX",
+      "valueType": "BOOLEAN"
+    },
+    "CS_310": {
+      "code": "CSR_310",
+      "name": "EDL - CSR - 310. Gestion des m\u00e9dicaments : Quelle est la source principale d'approvisionnement en M\u00e9dicament?",
+      "id": "cAhLuJzLHjt",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "cdr",
+            "name": "1. CDR"
+          },
+          {
+            "code": "zs",
+            "name": "2. ZS"
+          },
+          {
+            "code": "marche_loc",
+            "name": "3. March\u00e9 local"
+          },
+          {
+            "code": "part",
+            "name": "4. Partenaire"
+          }
+        ],
+        "id": "Ch5RQ92Pz3E"
+      }
+    },
+    "CS_311": {
+      "code": "CSR_311",
+      "name": "EDL - CSR - 311. Gestion des m\u00e9dicaments : Quel est le co\u00fbt moyen mensuel de transport pour les m\u00e9dicaments?",
+      "id": "ORiSz41Vk3r",
+      "valueType": "TEXT"
+    },
+    "CS_401": {
+      "code": "CSR_401",
+      "name": "EDL - CSR - 401. Infrastructures : Nombre des Batiments existants",
+      "id": "jtgx7Ttl7wX",
+      "valueType": "INTEGER"
+    },
+    "CS_401_1": {
+      "code": "CSR_401_1",
+      "name": "EDL - CSR - 401.1 Infrastructures : Existe-t-il au moins une salle ou espace d'attente avec si\u00e8ge pour les patients/clients",
+      "id": "HDpjrQ7kPX4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_402": {
+      "code": "CSR_402",
+      "name": "EDL - CSR - 402. Infrastructures : Existe-t-il un local  pour le Service de consultation externe?",
+      "id": "qFJmkMrJBbM",
+      "valueType": "BOOLEAN"
+    },
+    "CS_402_1": {
+      "code": "CSR_402_1",
+      "name": "EDL - CSR - 402.1 Infrastructures : Existe t-il un local pour le Service des Urgences?",
+      "id": "KFmFo0dVY2k",
+      "valueType": "BOOLEAN"
+    },
+    "CS_403": {
+      "code": "CSR_403",
+      "name": "EDL - CSR - 403. Infrastructures : Existe-t-il un b\u00e2timent/local  pour le  Service de m\u00e9decine interne",
+      "id": "tIXtpg3qnXg",
+      "valueType": "BOOLEAN"
+    },
+    "CS_404": {
+      "code": "CSR_404",
+      "name": "EDL - CSR - 404. Infrastructures  : Existe-t-il un b\u00e2timent/local  pour le  Service de P\u00e9diatrie",
+      "id": "Kkxhv1rURTm",
+      "valueType": "BOOLEAN"
+    },
+    "CS_405": {
+      "code": "CSR_405",
+      "name": "EDL - CSR - 405. Infrastructures : Existe-t-il un b\u00e2timent/local  pour le  du Service des soins int\u00e9nsifs  de la p\u00e9diatrie",
+      "id": "ha5HojsqTDP",
+      "valueType": "BOOLEAN"
+    },
+    "CS_406": {
+      "code": "CSR_406",
+      "name": "EDL - CSR - 406. Infrastructures : Existe-t-il un b\u00e2timent/local  pour le  Service de chirurgie",
+      "id": "tlCGOLWmLso",
+      "valueType": "BOOLEAN"
+    },
+    "CS_407": {
+      "code": "CSR_407",
+      "name": "EDL - CSR - 407. Infrastructures : Existe-t-il un b\u00e2timent/local  pour la  Gyn\u00e9co-obst\u00e9trique",
+      "id": "K0MlxX2MTwd",
+      "valueType": "BOOLEAN"
+    },
+    "CS_408": {
+      "code": "CSR_408",
+      "name": "EDL - CSR - 408. Infrastructures : Existe-t-il un local  pour la maternit\u00e9",
+      "id": "LccQbrpojB4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_409": {
+      "code": "CSR_409",
+      "name": "EDL - CSR - 409. Infrastructures : Existe -t-il un bloc op\u00e9ratoire",
+      "id": "pDK8p6vjgxS",
+      "valueType": "BOOLEAN"
+    },
+    "CS_410": {
+      "code": "CSR_410",
+      "name": "EDL - CSR - 410. Infrastructures : Existe-t-il un b\u00e2timent/local pour  de la pharmacie",
+      "id": "H1nFCavEtBx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_411": {
+      "code": "CSR_411",
+      "name": "EDL - CSR - 411. Infrastructures : Existe-t-il un b\u00e2timent/local pour  la Radiologie",
+      "id": "D10t8TO2hj0",
+      "valueType": "BOOLEAN"
+    },
+    "CS_412": {
+      "code": "CSR_412",
+      "name": "EDL - CSR - 412. Infrastructures : Existe-t-il un b\u00e2timent/local pour  la Buanderie",
+      "id": "UROj0jaFonY",
+      "valueType": "BOOLEAN"
+    },
+    "CS_413": {
+      "code": "CSR_413",
+      "name": "EDL - CSR - 413. Infrastructures : Existe-t-il un b\u00e2timent/local pour  la cuisine centrale",
+      "id": "Ide3Vj5Hwg1",
+      "valueType": "BOOLEAN"
+    },
+    "CS_414": {
+      "code": "CSR_414",
+      "name": "EDL - CSR - 414. Infrastructures : Existe-t-il une morgue \u00e0 l'h\u00f4pital",
+      "id": "DqHuhrIYLwR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_415": {
+      "code": "CSR_415",
+      "name": "EDL - CSR - 415. Infrastructures : Existe-t-il un local d'attente pour l'accouchement",
+      "id": "sN8wp1xnWKb",
+      "valueType": "BOOLEAN"
+    },
+    "CS_416": {
+      "code": "CSR_416",
+      "name": "EDL - CSR - 416. Infrastructures : Existe-t-il une salle pour les soins M\u00e8re Kangourou",
+      "id": "f6WCcinlhOH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_418": {
+      "code": "CSR_418",
+      "name": "EDL - CSR - 418. Infrastructures : Le CSR a besoin de r\u00e9habilitation leg\u00e8re (Portes, fen\u00eatres, pavement, peinture)",
+      "id": "SBya3AEtyAL",
+      "valueType": "INTEGER"
+    },
+    "CS_419": {
+      "code": "CSR_419",
+      "name": "EDL - CSR - 419. Infrastructures : Le CSR a besoin de r\u00e9habilitation lourde (toiture, murs, autres)",
+      "id": "gUagzDHdV9A",
+      "valueType": "INTEGER"
+    },
+    "CS_420": {
+      "code": "CSR_420",
+      "name": "EDL - CSR - 420. Infrastructures : Le CSR a besoin de construction",
+      "id": "DvxidhlEOOW",
+      "valueType": "INTEGER"
+    },
+    "CS_421": {
+      "code": "CSR_421",
+      "name": "EDL - CSR - 421. Infrastructures - Capacit\u00e9s d'accueil : Combien y a t-il des lits metaliques mont\u00e9s avec mat\u00e9las proteg\u00e9 par  toile cir\u00e9 pour chaque service",
+      "id": "tsqXsiBwUvz",
+      "valueType": "INTEGER"
+    },
+    "CS_422": {
+      "code": "CSR_422",
+      "name": "EDL - CSR - 422. Infrastructures - Capacit\u00e9s d'accueil : Combien y a t-il des lits metaliques mont\u00e9s avec  mat\u00e9las proteg\u00e9 par toile cir\u00e9 \u00e0 la maternit\u00e9",
+      "id": "bNADY3lkCgk",
+      "valueType": "INTEGER"
+    },
+    "CS_423": {
+      "code": "CSR_423",
+      "name": "EDL - CSR - 423. Infrastructures - Capacit\u00e9s d'accueil : Combien y a t-il des lits mont\u00e9s avec matelas non prot\u00e9g\u00e9  par  toile cir\u00e9",
+      "id": "GcyvKSEUryj",
+      "valueType": "INTEGER"
+    },
+    "CS_424": {
+      "code": "CSR_424",
+      "name": "EDL - CSR - 424. Infrastructures - Capacit\u00e9s d'accueil : Combien y a t-il des lits mont\u00e9s \u00e0 la maternit\u00e9 avec matelas non prot\u00e9g\u00e9  par  toile cir\u00e9",
+      "id": "Q9nQPtjG4gp",
+      "valueType": "INTEGER"
+    },
+    "CS_425": {
+      "code": "CSR_425",
+      "name": "EDL - CSR - 425. Infrastructures - Capacit\u00e9s d'accueil : Combien y a t-il des lits sans mat\u00e9las \u00e0 l'h\u00f4pital ou CSR",
+      "id": "LMsbQOe5W5d",
+      "valueType": "INTEGER"
+    },
+    "CS_426": {
+      "code": "CSR_426",
+      "name": "EDL - CSR - 426. Infrastructures - WASH : Quelle est la source d'approvisionnement en eau la plus couramment utilis\u00e9e pour le HGR ou CSR  en ce moment",
+      "id": "Xx5pV8uZ7my",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_eau1",
+            "name": "1. Eau courante dans les locaux"
+          },
+          {
+            "code": "source_eau2",
+            "name": "2. Eaux raccord\u00e9es  dans la parcelle"
+          },
+          {
+            "code": "source_eau3",
+            "name": "3. Borne Fontaine, Forage, puits tub\u00e9"
+          },
+          {
+            "code": "source_eau4",
+            "name": "4. Puits ordinaires prot\u00e9g\u00e9s"
+          },
+          {
+            "code": "source_eau5",
+            "name": "5. Collecte d'eau de pluie (impluvium)"
+          },
+          {
+            "code": "source_eau6",
+            "name": "6. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "SXACQsfSvzW"
+      }
+    },
+    "CS_427": {
+      "code": "CSR_427",
+      "name": "EDL - CSR - 427. Infrastructures - WASH : L'approvionnement en eau \u00e0 partir de cette  source  est disponible au sein de l'HGR, ou \u00e0 distance ",
+      "id": "LL5b72lnmg1",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "dispo_appro_eau1",
+            "name": "1. Au sein de l'HGR/CSR"
+          },
+          {
+            "code": "dispo_appro_eau2",
+            "name": "2. A moins de  500 m\u00e8tres de l'HGR/CSR"
+          },
+          {
+            "code": "dispo_appro_eau3",
+            "name": "3. A plus de 500 \u00e8tres de l'HGR/CSR"
+          }
+        ],
+        "id": "djXbDPiptGi"
+      }
+    },
+    "CS_428": {
+      "code": "CSR_428",
+      "name": "EDL - CSR - 428. Infrastructures - WASH : Latrines hygi\u00e9niques  fonctionnelles pour les malades  dans chaque service ?",
+      "id": "CgFXqg0zSvy",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428_1": {
+      "code": "CSR_428_1",
+      "name": "EDL - CSR - 425.1. Infrastructures - WASH : Si Oui, ces latrines sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "zBubBgaMOZS",
+      "valueType": "BOOLEAN"
+    },
+    "CS_429": {
+      "code": "CSR_429",
+      "name": "EDL - CSR - 429. Infrastructures - WASH : Si latrine existe, d\u00e9terminer le type de latrine  ",
+      "id": "AwwQH5FaXC7",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_latrine1",
+            "name": "1. Toilette \u00e0 chasse d'eau"
+          },
+          {
+            "code": "type_latrine2",
+            "name": "2. Latrines ventil\u00e9e Am\u00e9lior\u00e9es"
+          },
+          {
+            "code": "type_latrine3",
+            "name": "3. Fosse avec dalle"
+          },
+          {
+            "code": "type_latrine4",
+            "name": "4. Fosse sans dalle"
+          },
+          {
+            "code": "type_latrine5",
+            "name": "5. Toilette \u00e0 compostage"
+          }
+        ],
+        "id": "zperWNGb0Kh"
+      }
+    },
+    "CS_429_2": {
+      "code": "CSR_429_2",
+      "name": "EDL - CSR - 429.2. Infrastructures - WASH : Latrines hygi\u00e9niques  fonctionnelles pour le personnel  dans chaque service?",
+      "id": "YIlR7XkAjvU",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428_2": {
+      "code": "CSR_428_2",
+      "name": "EDL - CSR - 428.2. Infrastructures - WASH : Existe-t-il des douches hygi\u00e9niques  fonctionnelles pour les malades au niveau de l'HGR/CSR ?",
+      "id": "lEUOdrdksS2",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428_3": {
+      "code": "CSR_428_3",
+      "name": "EDL - CSR - 428.3. Infrastructures - WASH : Si Oui, ces douches sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "aVXDMqLT4wL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428_2.2": {
+      "code": "CSR_428_2.2",
+      "name": "EDL - CSR - 428.2.2. Infrastructures - WASH : Existe-t-il des douches hygi\u00e9niques  fonctionnelles pourle personnel de l'HGR/CSR ?",
+      "id": "hxm3Q4IhKtR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_428_3.2": {
+      "code": "CSR_428_3.2",
+      "name": "EDL - CSR - 428.3.3. Infrastructures - WASH : Si Oui, ces douches sont - elles s\u00e9par\u00e9es selon le sexe?",
+      "id": "RP2ne5ef0Ke",
+      "valueType": "BOOLEAN"
+    },
+    "CS_430": {
+      "code": "CSR_430",
+      "name": "EDL - CSR - 430. Infrastructures - WASH : Existe t-il un incin\u00e9rateur fonctionnel",
+      "id": "UQqrK6X0emz",
+      "valueType": "BOOLEAN"
+    },
+    "CS_431": {
+      "code": "CSR_431",
+      "name": "EDL - CSR - 431. Infrastructures - WASH : Existe t-il une Fosse \u00e0 placenta fonctionnel",
+      "id": "JsjVGLZvKKS",
+      "valueType": "BOOLEAN"
+    },
+    "CS_432": {
+      "code": "CSR_432",
+      "name": "EDL - CSR - 431. Infrastructures - WASH : Existe t-il un Trou \u00e0 ordures",
+      "id": "ZYhWLG7pBkJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_433": {
+      "code": "CSR_433",
+      "name": "EDL - CSR - 432. Infrastructures - WASH : Existe-t-il des Poubelles/conteneurs selon les cat\u00e9gorie des d\u00e9chets avec couvercle et en bon etat dans chaque service",
+      "id": "oVh95PsDX0q",
+      "valueType": "BOOLEAN"
+    },
+    "CS_434": {
+      "code": "CSR_434",
+      "name": "EDL - CSR - 434. Infrastructures - Energie : L'h\u00f4pital ou CSR  est il  aliment\u00e9 en Electricit\u00e9 ?",
+      "id": "ZsPemOLYNFQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_435": {
+      "code": "CSR_435",
+      "name": "EDL - CSR - 435. Infrastructures - Energie : Si Oui quelle est la source principale d'approvisionnement en \u00e9lectricit\u00e9 de l' h\u00f4pital ou CSR",
+      "id": "Y0MT8812YrI",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "source_elect1",
+            "name": "1. Reseau Public ( Soci\u00e9t\u00e9 Nationale d'\u00e9lectricit\u00e9 )"
+          },
+          {
+            "code": "source_elect2",
+            "name": "2. Reseau Priv\u00e9"
+          },
+          {
+            "code": "source_elect3",
+            "name": "3. Groupe electrog\u00e8ne ( g\u00e9n\u00e9rateur )"
+          },
+          {
+            "code": "source_elect4",
+            "name": "4. Panneaux  solaires et accessoires)"
+          },
+          {
+            "code": "source_elect5",
+            "name": "5. Autres \u00e0 pr\u00e9ciser"
+          }
+        ],
+        "id": "gw4l1qahuvU"
+      }
+    },
+    "CS_436": {
+      "code": "CSR_436",
+      "name": "EDL - CSR - 436. Infrastructures - S\u00e9curit\u00e9 : Paratonnerre install\u00e9e en \u00e9tat de fonctionnement",
+      "id": "YQexYXdMD0D",
+      "valueType": "BOOLEAN"
+    },
+    "CS_437": {
+      "code": "CSR_437",
+      "name": "EDL - CSR - 437. Infrastructures - S\u00e9curit\u00e9 :  Extincteur en \u00e9tat fonctionnel",
+      "id": "TIxfFwSw6Vu",
+      "valueType": "BOOLEAN"
+    },
+    "CS_438": {
+      "type": "multiple",
+      "values": {
+        "reseaux1": {
+          "code": "CSR_438_reseaux1",
+          "comment": "1.Vodacom,",
+          "name": "EDL - CSR - 438. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 1.Vodacom, ",
+          "id": "Hae1sJAcLMs",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux2": {
+          "code": "CSR_438_reseaux2",
+          "comment": "2. Airtel,",
+          "name": "EDL - CSR - 438. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 2. Airtel,",
+          "id": "vzU6JEKWPhZ",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux3": {
+          "code": "CSR_438_reseaux3",
+          "comment": "3. Tigo/Orange",
+          "name": "EDL - CSR - 438. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 3. Tigo/Orange",
+          "id": "cH1MtE6CpTP",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux4": {
+          "code": "CSR_438_reseaux4",
+          "comment": "4. Africel",
+          "name": "EDL - CSR - 438. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 4. Africel",
+          "id": "jk6QT9aMqzb",
+          "valueType": "BOOLEAN"
+        },
+        "reseaux5": {
+          "code": "CSR_438_reseaux5",
+          "comment": "5. Pas de reseau disponible",
+          "name": "EDL - CSR - 438. Infrastructures - Connectivit\u00e9 : Quels sont les reseaux t\u00e9l\u00e9phoniques disponibles? 5. Pas de reseau disponible",
+          "id": "ZX78Ylr3q7S",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_439": {
+      "code": "CSR_439",
+      "name": "EDL - CSR - 439. Infrastructures - Connectivit\u00e9 : Si reseau disponible, quelle est le niveau de disponibilit\u00e9 ",
+      "id": "rknCaJhA99I",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "reseau_dispo1",
+            "name": "a. Disponible 24 heures sur 24"
+          },
+          {
+            "code": "reseau_dispo2",
+            "name": "b. Disponible quelques heures par jour"
+          },
+          {
+            "code": "reseau_dispo3",
+            "name": "c. Disponible moins de deux heures par jour"
+          }
+        ],
+        "id": "IZJNKzL9KpH"
+      }
+    },
+    "CS_440": {
+      "code": "CSR_440",
+      "name": "EDL - CSR - 440. Infrastructures - Connectivit\u00e9 : Disponibilit\u00e9 de l'internet \u00e0 l'HGR/CSR (propri\u00e9t\u00e9 de la FOSA)",
+      "id": "IyszWqEScCU",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "1. Modem"
+          },
+          {
+            "code": "2",
+            "name": "2. V-sat"
+          }
+        ],
+        "id": "pJHYoxrF2XZ"
+      }
+    },
+    "CS_441": {
+      "code": "CSR_441",
+      "name": "EDL - CSR - 441. Infrastructures - Connectivit\u00e9 : Si modem  determiner le type de signal re\u00e7u par la FOSA",
+      "id": "ERc2D6i7Fsj",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_signal1",
+            "name": "a. 2 G"
+          },
+          {
+            "code": "type_signal2",
+            "name": "b. 3G"
+          },
+          {
+            "code": "type_signal3",
+            "name": "c. 4G"
+          }
+        ],
+        "id": "tfNUs9F7a8q "
+      }
+    },
+    "CS_441_1": {
+      "code": "CSR_441_1",
+      "name": "EDL - CSR - 441.1 Infrastructures - Connectivit\u00e9 : Disponibilit\u00e9 d'une \"Phonie\" fonctionnelle",
+      "id": "IBP7tM5kvFV",
+      "valueType": "BOOLEAN"
+    },
+    "CS_442": {
+      "type": "multiple",
+      "values": {}
+    },
+    "CS_443": {
+      "type": "multiple",
+      "values": {}
+    },
+    "CS_444": {
+      "code": "CSR_444",
+      "name": "EDL - CSR - 444. Equipement - Mat\u00e9riel: Echographe fonctionnelle",
+      "id": "PestrrfreCQ",
+      "valueType": "INTEGER"
+    },
+    "CS_445": {
+      "code": "CSR_445",
+      "name": "EDL - CSR - 445. Equipement - Mat\u00e9riel: Appareil de Radiographie fonctionnelle",
+      "id": "eGLPE89I6V4",
+      "valueType": "INTEGER"
+    },
+    "CS_446": {
+      "code": "CSR_446",
+      "name": "EDL - CSR - 446. Equipement - Mat\u00e9riel: Aspirateur \u00e9lectrique avec bocal de rechange pour l'aspiration des liquides lors des interventions majeures",
+      "id": "vglgPht7ADx",
+      "valueType": "INTEGER"
+    },
+    "CS_447": {
+      "code": "CSR_447",
+      "name": "EDL - CSR - 447. Equipement - Mat\u00e9riel: Aspirateur(manuel) pour salle d'operation",
+      "id": "GFqGkz8zs4c",
+      "valueType": "INTEGER"
+    },
+    "CS_448": {
+      "code": "CSR_448",
+      "name": "EDL - CSR - 448. Equipement - Mat\u00e9riel: Poupinel",
+      "id": "UiQGN5raTJ1",
+      "valueType": "INTEGER"
+    },
+    "CS_449": {
+      "code": "CSR_449",
+      "name": "EDL - CSR - 449. Equipement - Mat\u00e9riel: Autoclave",
+      "id": "IL2JOjDNtWy",
+      "valueType": "INTEGER"
+    },
+    "CS_449.2": {
+      "code": "CSR_449.2",
+      "name": "EDL - CSR - 449.2 Equipement - Mat\u00e9riel: Marmites \u00e0 pression",
+      "id": "u99ryy8RGJU",
+      "valueType": "INTEGER"
+    },
+    "CS_450": {
+      "code": "CSR_450",
+      "name": "EDL - CSR - 450. Equipement - Mat\u00e9riel: Appareil d'anesthesie",
+      "id": "UKkt1oOvfdP",
+      "valueType": "INTEGER"
+    },
+    "CS_451": {
+      "code": "CSR_451",
+      "name": "EDL - CSR - 451. Equipement - Mat\u00e9riel: Oxyg\u00e9nateur",
+      "id": "YALQHyMhwIO",
+      "valueType": "INTEGER"
+    },
+    "CS_452": {
+      "code": "CSR_452",
+      "name": "EDL - CSR - 452. Equipement - Mat\u00e9riel: Microscope binoculaire pour diagnostic TB",
+      "id": "dptTpenGJJn",
+      "valueType": "INTEGER"
+    },
+    "CS_453": {
+      "code": "CSR_453",
+      "name": "EDL - CSR - 453. Equipement - Mat\u00e9riel: Centrifugeuse \u00e9lectrique",
+      "id": "Fd66GhwvEdX",
+      "valueType": "INTEGER"
+    },
+    "CS_454": {
+      "code": "CSR_454",
+      "name": "EDL - CSR - 454. Equipement - Mat\u00e9riel: Couveuse",
+      "id": "tU6DTA8h0uC",
+      "valueType": "INTEGER"
+    },
+    "CS_455": {
+      "code": "CSR_455",
+      "name": "EDL - CSR - 455. Equipement - Mat\u00e9riel: Aspirateur manuel  ou \u00e9lectrique a pression \u2264 130 mm/Hg",
+      "id": "CJqvsydYYOY",
+      "valueType": "INTEGER"
+    },
+    "CS_456": {
+      "code": "CSR_456",
+      "name": "EDL - CSR - 456. Equipement - Mat\u00e9riel: Ballon autogonflable avec masques N\u00b0 0 ou 1",
+      "id": "thuo3sZlvJs",
+      "valueType": "INTEGER"
+    },
+    "CS_457": {
+      "code": "CSR_457",
+      "name": "EDL - CSR - 457. Equipement - Mat\u00e9riel: Table pour soin du Nouveau-n\u00e9",
+      "id": "EWZMN4mdvt7",
+      "valueType": "INTEGER"
+    },
+    "CS_458": {
+      "code": "CSR_458",
+      "name": "EDL - CSR - 458. Equipement - Mat\u00e9riel: Table chauffante pour Nouveau-n\u00e9",
+      "id": "p2UJlcNhAUR",
+      "valueType": "INTEGER"
+    },
+    "CS_459": {
+      "code": "CSR_459",
+      "name": "EDL - CSR - 459. Equipement - Mat\u00e9riel: Balance P\u00e8se b\u00e9b\u00e9",
+      "id": "HeEqc0XVbxy",
+      "valueType": "INTEGER"
+    },
+    "CS_460": {
+      "code": "CSR_460",
+      "name": "EDL - CSR - 460. Equipement - Mat\u00e9riel: Balance enfant",
+      "id": "gvhOIZeze6N",
+      "valueType": "INTEGER"
+    },
+    "CS_461": {
+      "code": "CSR_461",
+      "name": "EDL - CSR - 461. Equipement - Mat\u00e9riel: Balance adulte",
+      "id": "zZKeRMHk3Ju",
+      "valueType": "INTEGER"
+    },
+    "CS_462": {
+      "code": "CSR_462",
+      "name": "EDL - CSR - 462. Equipement - Mat\u00e9riel: Centrifugeuse manuelle",
+      "id": "XPKy5shg7YX",
+      "valueType": "INTEGER"
+    },
+    "CS_463": {
+      "code": "CSR_463",
+      "name": "EDL - CSR - 463. Equipement - Mat\u00e9riel: Ballon \u00e0 pipeter pour examen formule leucocytaire",
+      "id": "a6Wm3gF6p3Y",
+      "valueType": "INTEGER"
+    },
+    "CS_464": {
+      "code": "CSR_464",
+      "name": "EDL - CSR - 464. Equipement - Mat\u00e9riel: Bassin r\u00e9niforme",
+      "id": "EkFxxDhrCUa",
+      "valueType": "INTEGER"
+    },
+    "CS_465": {
+      "code": "CSR_465",
+      "name": "EDL - CSR - 465. Equipement - Mat\u00e9riel: Boite \u00e0 pansement",
+      "id": "dtl46iaUznV",
+      "valueType": "INTEGER"
+    },
+    "CS_466": {
+      "code": "CSR_466",
+      "name": "EDL - CSR - 466. Equipement - Mat\u00e9riel: Boite \u00e0 C\u00e9sarienne",
+      "id": "y8qfNuvlR9S",
+      "valueType": "INTEGER"
+    },
+    "CS_467": {
+      "code": "CSR_467",
+      "name": "EDL - CSR - 467. Equipement - Mat\u00e9riel: Boite \u00e0 Curetage/ Seringue AMIU",
+      "id": "xEDAas01NtD",
+      "valueType": "INTEGER"
+    },
+    "CS_468": {
+      "code": "CSR_468",
+      "name": "EDL - CSR - 468. Equipement - Mat\u00e9riel: Boite d'accouchement",
+      "id": "WyCL9JMXcqr",
+      "valueType": "INTEGER"
+    },
+    "CS_468_1": {
+      "code": "CSR_468_1",
+      "name": "EDL - CSR - 468.1. Equipement - Mat\u00e9riel: Boite d'\u00e9pisiotomie",
+      "id": "aA1JHMj15OA",
+      "valueType": "INTEGER"
+    },
+    "CS_469": {
+      "code": "CSR_469",
+      "name": "EDL - CSR - 469. Equipement - Mat\u00e9riel: Boite d'herniorraphie",
+      "id": "xgQYyMf6E1E",
+      "valueType": "INTEGER"
+    },
+    "CS_470": {
+      "code": "CSR_470",
+      "name": "EDL - CSR - 470. Equipement - Mat\u00e9riel: Bo\u00eete de laparotomie",
+      "id": "NqEVt1JJEhN",
+      "valueType": "INTEGER"
+    },
+    "CS_471": {
+      "code": "CSR_471",
+      "name": "EDL - CSR - 471. Equipement - Mat\u00e9riel: Brancard simple",
+      "id": "KJTg1RzAFix",
+      "valueType": "INTEGER"
+    },
+    "CS_472": {
+      "code": "CSR_472",
+      "name": "EDL - CSR - 472. Equipement - Mat\u00e9riel: Chaise roulante",
+      "id": "jkOYiVMX86U",
+      "valueType": "INTEGER"
+    },
+    "CS_473": {
+      "code": "CSR_473",
+      "name": "EDL - CSR - 473. Equipement - Mat\u00e9riel: Chariot pour anesth\u00e9sie",
+      "id": "O8MUxTfzuVJ",
+      "valueType": "INTEGER"
+    },
+    "CS_474": {
+      "code": "CSR_474",
+      "name": "EDL - CSR - 474. Equipement - Mat\u00e9riel: Chariot pour instruments",
+      "id": "uxr82C28bSY",
+      "valueType": "INTEGER"
+    },
+    "CS_475": {
+      "code": "CSR_475",
+      "name": "EDL - CSR - 475. Equipement - Mat\u00e9riel: Escabot",
+      "id": "Abmk0CZyKh2",
+      "valueType": "INTEGER"
+    },
+    "CS_476": {
+      "code": "CSR_476",
+      "name": "EDL - CSR - 476. Equipement - Mat\u00e9riel: Lampe flexible  (source de lumiere) pour examen gynecologique",
+      "id": "e9GOqmsOKdW",
+      "valueType": "INTEGER"
+    },
+    "CS_477": {
+      "code": "CSR_477",
+      "name": "EDL - CSR - 477. Equipement - Mat\u00e9riel: Lampe scialytique, ",
+      "id": "bZei0pUyARy",
+      "valueType": "INTEGER"
+    },
+    "CS_478": {
+      "code": "CSR_478",
+      "name": "EDL - CSR - 478. Equipement - Mat\u00e9riel: Potence",
+      "id": "eKGIFtIgaYS",
+      "valueType": "INTEGER"
+    },
+    "CS_479": {
+      "code": "CSR_479",
+      "name": "EDL - CSR - 479. Equipement - Mat\u00e9riel: Table d'accouchement",
+      "id": "hXh32UTh75P",
+      "valueType": "INTEGER"
+    },
+    "CS_480": {
+      "code": "CSR_480",
+      "name": "EDL - CSR - 480. Equipement - Mat\u00e9riel: Table d'examen",
+      "id": "bFmuNCEzlns",
+      "valueType": "INTEGER"
+    },
+    "CS_481": {
+      "code": "CSR_481",
+      "name": "EDL - CSR - 481. Equipement - Mat\u00e9riel: Table Gyn\u00e9cologique",
+      "id": "jvl18mI7Cgh",
+      "valueType": "INTEGER"
+    },
+    "CS_482": {
+      "code": "CSR_482",
+      "name": "EDL - CSR - 482. Equipement - Mat\u00e9riel: Table  op\u00e9ratoire",
+      "id": "LX7IyiJpHDH",
+      "valueType": "INTEGER"
+    },
+    "CS_483": {
+      "code": "CSR_483",
+      "name": "EDL - CSR - 483. Equipement - Mat\u00e9riel: Tabouret pivotant",
+      "id": "TmNTl8Qawkx",
+      "valueType": "INTEGER"
+    },
+    "CS_484": {
+      "code": "CSR_484",
+      "name": "EDL - CSR - 484. Equipement - Mat\u00e9riel: Tambour",
+      "id": "b9SWe6okYtB",
+      "valueType": "INTEGER"
+    },
+    "CS_485": {
+      "code": "CSR_485",
+      "name": "EDL - CSR - 485. Equipement - Mat\u00e9riel: Panne de lit",
+      "id": "sMS6gniKblv",
+      "valueType": "INTEGER"
+    },
+    "CS_486": {
+      "code": "CSR_486",
+      "name": "EDL - CSR - 486. Equipement - Mat\u00e9riel: Paravent",
+      "id": "gF8TQ5yVLd8",
+      "valueType": "INTEGER"
+    },
+    "CS_487": {
+      "code": "CSR_487",
+      "name": "EDL - CSR - 487. Equipement - Mat\u00e9riel: Tensiom\u00e8tre",
+      "id": "k758ZBj7zWX",
+      "valueType": "INTEGER"
+    },
+    "CS_488": {
+      "code": "CSR_488",
+      "name": "EDL - CSR - 488. Equipement - Mat\u00e9riel: Sthetoscope",
+      "id": "Q0LdyWr2R5L",
+      "valueType": "INTEGER"
+    },
+    "CS_489": {
+      "code": "CSR_489",
+      "name": "EDL - CSR - 489. Equipement - Mat\u00e9riel: Foetoscope",
+      "id": "JKle0kOuiUj",
+      "valueType": "INTEGER"
+    },
+    "CS_490": {
+      "code": "CSR_490",
+      "name": "EDL - CSR - 490. Equipement - Mat\u00e9riel: Ophtalmoscope",
+      "id": "DuUHM3Qfe1S",
+      "valueType": "INTEGER"
+    },
+    "CS_491": {
+      "code": "CSR_491",
+      "name": "EDL - CSR - 491. Equipement - Mat\u00e9riel: Otoscope",
+      "id": "MjRYE9Ypt7e",
+      "valueType": "INTEGER"
+    },
+    "CS_492": {
+      "code": "CSR_492",
+      "name": "EDL - CSR - 492. Equipement - Mat\u00e9riel: Laryngoscope",
+      "id": "ihjFDCcz9vZ",
+      "valueType": "INTEGER"
+    },
+    "CS_493": {
+      "code": "CSR_493",
+      "name": "EDL - CSR - 493. Equipement - Mat\u00e9riel: M\u00e8tre ruban",
+      "id": "YYrYBAiU3iI",
+      "valueType": "INTEGER"
+    },
+    "CS_494": {
+      "code": "CSR_494",
+      "name": "EDL - CSR - 494. Equipement - Mat\u00e9riel: Thermom\u00e8tre",
+      "id": "HS1IGXNildI",
+      "valueType": "INTEGER"
+    },
+    "CS_495": {
+      "code": "CSR_495",
+      "name": "EDL - CSR - 495. Equipement - Mat\u00e9riel: Horloge mural \u00e0 la maternit\u00e9 avec trotteuse",
+      "id": "HZSkp1VJqV9",
+      "valueType": "INTEGER"
+    },
+    "CS_496": {
+      "code": "CSR_496",
+      "name": "EDL - CSR - 496. Equipement - Mat\u00e9riel: Spectrophotom\u00e8tre",
+      "id": "l0OaGEwAz0J",
+      "valueType": "INTEGER"
+    },
+    "CS_497": {
+      "code": "CSR_497",
+      "name": "EDL - CSR - 497. Equipement - Mat\u00e9riel: Glucom\u00e8tre",
+      "id": "DreG5Aj3Jxs",
+      "valueType": "INTEGER"
+    },
+    "CS_498": {
+      "code": "CSR_498",
+      "name": "EDL - CSR - 498. Equipement - Mat\u00e9riel: h\u00e9moglobinom\u00e8tre",
+      "id": "cREJrFzh6RO",
+      "valueType": "INTEGER"
+    },
+    "CS_499": {
+      "code": "CSR_499",
+      "name": "EDL - CSR - 499. Equipement - Mat\u00e9riel: Panneau de signalisation",
+      "id": "O9f682toHmp",
+      "valueType": "INTEGER"
+    },
+    "CS_500": {
+      "code": "CSR_500",
+      "name": "EDL - CSR - 500. Equipement - PF : Kit Insertion/Retrait des Dispositif Intra uterin (DIU)",
+      "id": "lqGMqtT6Fgg",
+      "valueType": "INTEGER"
+    },
+    "CS_501": {
+      "code": "CSR_501",
+      "name": "EDL - CSR - 501. Equipement - PF : Kit Insertion/Retrait des Implants",
+      "id": "ZzGctyfhNKX",
+      "valueType": "INTEGER"
+    },
+    "CS_502": {
+      "code": "CSR_502",
+      "name": "EDL - CSR - 502. Equipement - PF : Bo\u00eete de Mini laparatomie pour ligature/vasectomie",
+      "id": "ajY55APmiYo",
+      "valueType": "INTEGER"
+    },
+    "CS_503": {
+      "code": "CSR_503",
+      "name": "EDL - CSR - 503. Equipement - Cha\u00eene de froid : Combien  des  refrig\u00e9rateur y a-t-il dans cet \u00e0 l'HGR/CSR?",
+      "id": "P9AHm64ghWu",
+      "valueType": "INTEGER"
+    },
+    "CS_504_1": {
+      "code": "CSR_504_1",
+      "name": "EDL - CSR - 504. Equipement - Cha\u00eene de froid : R\u00e9frig\u00e9rateur de type Solaire",
+      "id": "NSFLcLDVLND",
+      "valueType": "INTEGER"
+    },
+    "CS_504_2": {
+      "code": "CSR_504_2",
+      "name": "EDL - CSR - 504. Equipement - Cha\u00eene de froid : R\u00e9frig\u00e9rateur de type P\u00e9trole",
+      "id": "t5yV6Qs5Reb",
+      "valueType": "INTEGER"
+    },
+    "CS_504_3": {
+      "code": "CSR_504_3",
+      "name": "EDL - CSR - 504. Equipement - Cha\u00eene de froid : R\u00e9frig\u00e9rateur de type Electrique",
+      "id": "qenCB76P9LN",
+      "valueType": "INTEGER"
+    },
+    "CS_506": {
+      "code": "CSR_506",
+      "name": "EDL - CSR - 506. Equipement - Cha\u00eene de froid : Les frigos fonctionnels sont tous dot\u00e9s de fridge tag et des fiches de suivi de temp\u00e9rature \u00e0 jour ?",
+      "id": "Xj7YyHWRSyS",
+      "valueType": "BOOLEAN"
+    },
+    "CS_506.2": {
+      "code": "CSR_506.2",
+      "name": "EDL - CSR - 506.2 Equipement - Cha\u00eene de froid : Y a-t-il des Boites isothermes avec accumulateurs de froid ?",
+      "id": "FitG5M2ZDOS",
+      "valueType": "INTEGER"
+    },
+    "CS_507": {
+      "code": "CSR_507",
+      "name": "EDL - CSR - 507. Equipement - Mat\u00e9riel roulant : L'HGR/CSR dispose-t-il  d'un moyen de transport d'urgence des malades ?",
+      "id": "lJred6k2EEG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_508": {
+      "code": "CSR_508",
+      "name": "EDL - CSR - 508. Equipement - Mat\u00e9riel roulant : V\u00e9hicule",
+      "id": "dWHwIr6K6z0",
+      "valueType": "INTEGER"
+    },
+    "CS_509": {
+      "code": "CSR_509",
+      "name": "EDL - CSR - 509. Equipement - Mat\u00e9riel roulant : Hors-Bord",
+      "id": "waWzgwrIRhN",
+      "valueType": "INTEGER"
+    },
+    "CS_510": {
+      "code": "CSR_510",
+      "name": "EDL - CSR - 510. Equipement - Mat\u00e9riel roulant : Moto",
+      "id": "qI3cOXXymFL",
+      "valueType": "INTEGER"
+    },
+    "CS_511": {
+      "code": "CSR_511",
+      "name": "EDL - CSR - 511. Equipement - Mat\u00e9riel roulant : V\u00e9los",
+      "id": "asbvwWC2ikC",
+      "valueType": "INTEGER"
+    },
+    "CS_512": {
+      "code": "CSR_512",
+      "name": "EDL - CSR - 512. Equipement - Mat\u00e9riel informatique : Laptop",
+      "id": "XvztxXate0g",
+      "valueType": "INTEGER"
+    },
+    "CS_513": {
+      "code": "CSR_513",
+      "name": "EDL - CSR - 513. Equipement - Mat\u00e9riel informatique : Desktop",
+      "id": "NoOCpkD52VV",
+      "valueType": "INTEGER"
+    },
+    "CS_513_1": {
+      "code": "CSR_513_1",
+      "name": "EDL - CSR - 513.1. Equipement - Mat\u00e9riel informatique : Scanner",
+      "id": "PQZaz6i5Ub9",
+      "valueType": "INTEGER"
+    },
+    "CS_513_2": {
+      "code": "CSR_513_2",
+      "name": "EDL - CSR - 513.2. Equipement - Mat\u00e9riel informatique : Onduleur",
+      "id": "mpFfY80Tf7t",
+      "valueType": "INTEGER"
+    },
+    "CS_514": {
+      "code": "CSR_514",
+      "name": "EDL - CSR - 514. Equipement - Mat\u00e9riel informatique : Imprimante",
+      "id": "lmvPDnau5hA",
+      "valueType": "INTEGER"
+    },
+    "CS_515": {
+      "code": "CSR_515",
+      "name": "EDL - CSR - 515. Equipement - Mat\u00e9riel informatique : Photocopieuse",
+      "id": "LoUXVdyHGy0",
+      "valueType": "INTEGER"
+    },
+    "CS_516": {
+      "code": "CSR_516",
+      "name": "EDL - CSR - 516. Equipement - Mat\u00e9riel informatique : Disque Dur Externe d'au moins 500 GB",
+      "id": "iukKdssMlJs",
+      "valueType": "INTEGER"
+    },
+    "CS_601_1": {
+      "code": "CSR_601_1",
+      "name": "EDL - CSR - 601.1. Outils disponibles : Partogramme",
+      "id": "Zrlx8so6l5o",
+      "valueType": "INTEGER"
+    },
+    "CS_601_2": {
+      "code": "CSR_601_2",
+      "name": "EDL - CSR - 601.2. Outils disponibles : Fiches CPN",
+      "id": "dkBQHxf4AvU",
+      "valueType": "INTEGER"
+    },
+    "CS_601_3": {
+      "code": "CSR_601_3",
+      "name": "EDL - CSR - 601.3. Outils disponibles : Cartes CPS",
+      "id": "Ja9YHMd1TSW",
+      "valueType": "INTEGER"
+    },
+    "CS_601_4": {
+      "code": "CSR_601_4",
+      "name": "EDL - CSR - 601.4. Outils disponibles : Fiche d'hospitalisstion enfant  pour pneumonie sev\u00e8re",
+      "id": "ivSG4q5fwmL",
+      "valueType": "INTEGER"
+    },
+    "CS_601_5": {
+      "code": "CSR_601_5",
+      "name": "EDL - CSR - 601.5. Outils disponibles : Fiche d'hospitalisstion  enfant  pour paludisme grave",
+      "id": "jgAZSnbabO1",
+      "valueType": "INTEGER"
+    },
+    "CS_601_6": {
+      "code": "CSR_601_6",
+      "name": "EDL - CSR - 601.6. Outils disponibles : Fiche d'hospitalisstion  enfant  pour diarh\u00e9e avec deshydratation s\u00e9v\u00e8re",
+      "id": "Wtx6D2XbuuG",
+      "valueType": "INTEGER"
+    },
+    "CS_601_7": {
+      "code": "CSR_601_7",
+      "name": "EDL - CSR - 601.7. Outils disponibles : Fiches CPoN d'il y a au moins 2 mois",
+      "id": "gikub4DeyNG",
+      "valueType": "INTEGER"
+    },
+    "CS_601_8": {
+      "code": "CSR_601_8",
+      "name": "EDL - CSR - 601.8. Outils disponibles : Fiches PF d'il y a au moins 1 mois",
+      "id": "myqS4FUzbq6",
+      "valueType": "INTEGER"
+    },
+    "CS_601_9": {
+      "code": "CSR_601_9",
+      "name": "EDL - CSR - 601.9. Outils disponibles : Fiches de patient TB",
+      "id": "GoRzOCYeKuX",
+      "valueType": "INTEGER"
+    },
+    "CS_601_10": {
+      "code": "CSR_601_10",
+      "name": "EDL - CSR - 601.10. Outils disponibles : Jetons de r\u00e9f\u00e9rence pour vaccination",
+      "id": "DdXOb7uHqpC",
+      "valueType": "INTEGER"
+    },
+    "CS_602": {
+      "code": "CSR_602",
+      "name": "EDL - CSR - 602. L'HGR/CSR r\u00e9alise-t-il la communication ( sensiblisation communautaire ou Counseling des clients) pour la PF ?",
+      "id": "NXdEnzKh7nx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_1": {
+      "code": "CSR_603_1",
+      "name": "EDL - CSR - 603.1. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : pr\u00e9servatifs masculins",
+      "id": "YkWFNUwwDO1",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_2": {
+      "code": "CSR_603_2",
+      "name": "EDL - CSR - 603.2. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Pr\u00e9servatifs  f\u00e9minins",
+      "id": "mPmJ5wCe7aQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_3": {
+      "code": "CSR_603_3",
+      "name": "EDL - CSR - 603.3. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : contraceptif Oral combin\u00e9 ( COC)",
+      "id": "lC10JWtCbUB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_4": {
+      "code": "CSR_603_4",
+      "name": "EDL - CSR - 603.4. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Contraceptif Oral Progestatif (POP)",
+      "id": "u6WnxZz5mn5",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_5": {
+      "code": "CSR_603_5",
+      "name": "EDL - CSR - 603.5 L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Contraceptif injectable en Intramusculaire  ( Depo provera)",
+      "id": "PeeNeWgBTk8",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_6": {
+      "code": "CSR_603_6",
+      "name": "EDL - CSR - 603.6. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Contraceptif injectable en Intramusculaire  ( NET-EN)",
+      "id": "sjH85Wz71m6",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_7": {
+      "code": "CSR_603_7",
+      "name": "EDL - CSR - 603.7. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Contraceptif injectable esn sous cutan\u00e9 -(sayana press)",
+      "id": "Pltnuh7rt1l",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_8": {
+      "code": "CSR_603_8",
+      "name": "EDL - CSR - 603.8. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes :  Implants ( Jadelle )",
+      "id": "aSdiBm0DZon",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_9": {
+      "code": "CSR_603_9",
+      "name": "EDL - CSR - 603.9. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Implants  Implanon NxT)",
+      "id": "mPZZgfjjCBi",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_10": {
+      "code": "CSR_603_10",
+      "name": "EDL - CSR - 603.10. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Dispositif Intra Ut\u00e9rin",
+      "id": "ZoYQWLeJEJ4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_11": {
+      "code": "CSR_603_11",
+      "name": "EDL - CSR - 603.11. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Collier  du Cycle",
+      "id": "K8LN8lJ29vQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_12": {
+      "code": "CSR_603_12",
+      "name": "EDL - CSR - 603.12. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Vasectomie",
+      "id": "hXQYoYIax95",
+      "valueType": "BOOLEAN"
+    },
+    "CS_603_13": {
+      "code": "CSR_603_13",
+      "name": "EDL - CSR - 603.13. L'h\u00f4pital/CSR offre des m\u00e9thode contraceptives modernes : Sterilisation feminine",
+      "id": "fmHvDVkut80",
+      "valueType": "TEXT"
+    },
+    "CS_604": {
+      "code": "CSR_604",
+      "name": "EDL - CSR - 604. L'HGR/CSR suit-t-il des clients/clientes sous m\u00e9thodes contraceptives?",
+      "id": "yISt6QVncv2",
+      "valueType": "INTEGER"
+    },
+    "CS_605": {
+      "code": "CSR_605",
+      "name": "EDL - CSR - 605. La FOSA dispose-t-elle d'un espace convivial avec  avec des boite \u00e0 image, poster, video  pour  les activit\u00e9s de communication  \u00e0 l'intentions des  jeunes  et adolescents ( 10 -24 ans)?",
+      "id": "JRVTxjgsY42",
+      "valueType": "BOOLEAN"
+    },
+    "CS_606": {
+      "code": "CSR_606",
+      "name": "EDL - CSR - 606. Y a-t-il  un prestataire  form\u00e9  en Sant\u00e9 de Sexuelle et de la Reproduction adapt\u00e9e aux jeunes dans L'H\u00f4pital ou Centre de sant\u00e9 de reference ?",
+      "id": "XUaOM4s5Kzv",
+      "valueType": "BOOLEAN"
+    },
+    "CS_607": {
+      "code": "CSR_607",
+      "name": "EDL - CSR - 607. Les jeunes et  les adolescent utilisent -t-ils le service de Sant\u00e9 de la Reproduction adapt\u00e9s aux  Jeunes et adolescents ?",
+      "id": "J3o4V7ga0kZ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_608": {
+      "code": "CSR_608",
+      "name": "EDL - CSR - 608. Y a-t-il  un prestataire form\u00e9 sur la prise en charge des survivantes de violences sexuelles \u00e0 l'HGR/CSR? ",
+      "id": "DKh6TOm6wvk",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.1": {
+      "code": "CSR_609.1",
+      "name": "EDL - CSR - 609.1 L'h\u00f4pital/CSR dispo de Pep kit : Test de grossesse",
+      "id": "TiVVo0MtA09",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.2": {
+      "code": "CSR_609.2",
+      "name": "EDL - CSR - 609.2. L'h\u00f4pital/CSR dispo de Pep kit : Test Hepatite",
+      "id": "Az4t53nEPVq",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.3": {
+      "code": "CSR_609.3",
+      "name": "EDL - CSR - 609.3. L'h\u00f4pital/CSR dispo de Pep kit :  C\u00e9fixime",
+      "id": "SAS5jcTNq7X",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.4": {
+      "code": "CSR_609.4",
+      "name": "EDL - CSR - 609.4 L'h\u00f4pital/CSR dispo de Pep kit : Azithromycine",
+      "id": "TvNf5bUgWyl",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.5": {
+      "code": "CSR_609.5",
+      "name": "EDL - CSR - 609.5. L'h\u00f4pital/CSR dispo de Pep kit : Antiretroviraux ",
+      "id": "HFiBD0ehqXZ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_609.6": {
+      "code": "CSR_609.6",
+      "name": "EDL - CSR - 609.6. L'h\u00f4pital/CSR dispo de Pep kit :  Contraception d'urgence",
+      "id": "pTNTY3FdqQ7",
+      "valueType": "BOOLEAN"
+    },
+    "CS_610": {
+      "code": "CSR_610",
+      "name": "EDL - CSR - 610. L'H\u00f4pital ou Centre de sant\u00e9 de reference fournit-il de counselling  aux survivantes des violences sexuelles (SVS)?",
+      "id": "MQFieRLbnfR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_611": {
+      "code": "CSR_611",
+      "name": "EDL - CSR - 611. Les survivantes des violences sexuelles  recoivent-elles  les soins pr\u00e9ventifs et  curatifs ?",
+      "id": "H71HOGngyWR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_1": {
+      "code": "CSR_612_1",
+      "name": "EDL - CSR - 612.1. Commodit\u00e9s disponibles dans l'HGR/CSR : pr\u00e9servatifs masculins",
+      "id": "QRYHFoM4owL",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_2": {
+      "code": "CSR_612_2",
+      "name": "EDL - CSR - 612.2. Commodit\u00e9s disponibles dans l'HGR/CSR : Pr\u00e9servatif  f\u00e9minin",
+      "id": "rcWbi7e1bXO",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_3": {
+      "code": "CSR_612_3",
+      "name": "EDL - CSR - 612.3. Commodit\u00e9s disponibles dans l'HGR/CSR : contraceptif oral combin\u00e9 ( COC)",
+      "id": "QiYbLnW68l5",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_4": {
+      "code": "CSR_612_4",
+      "name": "EDL - CSR - 612.4. Commodit\u00e9s disponibles dans l'HGR/CSR : Contractif oral progestatif (POP)",
+      "id": "uWOi19jdIhC",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_5": {
+      "code": "CSR_612_5",
+      "name": "EDL - CSR - 612.5. Commodit\u00e9s disponibles dans l'HGR/CSR : Contraceptif d'urgence",
+      "id": "GaJiJCH66CSR",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_6": {
+      "code": "CSR_612_6",
+      "name": "EDL - CSR - 612.6. Commodit\u00e9s disponibles dans l'HGR/CSR : Contraceptif injectable en Intramusculaire ( Depo provera)",
+      "id": "LWi3vwWO2qG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_7": {
+      "code": "CSR_612_7",
+      "name": "EDL - CSR - 612.7. Commodit\u00e9s disponibles dans l'HGR/CSR : Contraceptif injectable esn sous cutan\u00e9 -(sayana press)",
+      "id": "CXqgE1DHMOJ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_8": {
+      "code": "CSR_612_8",
+      "name": "EDL - CSR - 612.8. Commodit\u00e9s disponibles dans l'HGR/CSR : Implants (Jadelle)",
+      "id": "fXp81YW3WcT",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_9": {
+      "code": "CSR_612_9",
+      "name": "EDL - CSR - 612.9. Commodit\u00e9s disponibles dans l'HGR/CSR : Implants (Implanon NxT)",
+      "id": "ALkN3DzwAar",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_10": {
+      "code": "CSR_612_10",
+      "name": "EDL - CSR - 612.10. Commodit\u00e9s disponibles dans l'HGR/CSR : Dispositif Intra Ut\u00e9rin (DIU)",
+      "id": "xj98SgEoQWx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_612_11": {
+      "code": "CSR_612_11",
+      "name": "EDL - CSR - 612.11. Commodit\u00e9s disponibles dans l'HGR/CSR : Collier pour les m\u00e9thode des jours fixes",
+      "id": "kFVR2NMuTtb",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_1": {
+      "code": "CSR_613_1",
+      "name": "EDL - CSR - 613.1. Intrants disponibles dans l'HGR/CSR : Test de prot\u00e9inurie",
+      "id": "zM9AO6ijoJf",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_2": {
+      "code": "CSR_613_2",
+      "name": "EDL - CSR - 613.2. Intrants disponibles dans l'HGR/CSR : SP (Sulfadoxine Pyrim\u00e9tamine)",
+      "id": "YQNzzSQTbVh",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_3": {
+      "code": "CSR_613_3",
+      "name": "EDL - CSR - 613.3. Intrants disponibles dans l'HGR/CSR : Fer et acide folique",
+      "id": "ljIr9HHCP1u",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_4": {
+      "code": "CSR_613_4",
+      "name": "EDL - CSR - 613.4. Intrants disponibles dans l'HGR/CSR : Mebendazole",
+      "id": "YfZVkKsqP9I",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_5": {
+      "code": "CSR_613_5",
+      "name": "EDL - CSR - 613.5. Intrants disponibles dans l'HGR/CSR : VAT",
+      "id": "S7dU55d9H5r",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_6": {
+      "code": "CSR_613_6",
+      "name": "EDL - CSR - 613.6. Intrants disponibles dans l'HGR/CSR : Ocytocine",
+      "id": "ZmX3e7bWS8u",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_7": {
+      "code": "CSR_613_7",
+      "name": "EDL - CSR - 613.7. Intrants disponibles dans l'HGR/CSR : Sulfate de magn\u00e9sium",
+      "id": "vzyyRhIBSFr",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_8": {
+      "code": "CSR_613_8",
+      "name": "EDL - CSR - 613.8. Intrants disponibles dans l'HGR/CSR : chlorhexidine digluconate 7,1%",
+      "id": "IfLgQIYfhCA",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_9": {
+      "code": "CSR_613_9",
+      "name": "EDL - CSR - 613.9. Intrants disponibles dans l'HGR/CSR : Pommade t\u00e9tracycline",
+      "id": "Ii64sUyQ4hW",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_10": {
+      "code": "CSR_613_10",
+      "name": "EDL - CSR - 613.10. Intrants disponibles dans l'HGR/CSR :Vitamine K1",
+      "id": "k5O2EaS1TkW",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_11": {
+      "code": "CSR_613_11",
+      "name": "EDL - CSR - 613.11. Intrants disponibles dans l'HGR/CSR : Amoxicilline 250 mg dispersible",
+      "id": "NveECkk3K5m",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_12": {
+      "code": "CSR_613_12",
+      "name": "EDL - CSR - 613.12. Intrants disponibles dans l'HGR/CSR : Ceftriaxone injectable",
+      "id": "MKhhbsoxlSQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_13": {
+      "code": "CSR_613_13",
+      "name": "EDL - CSR - 613.13. Intrants disponibles dans l'HGR/CSR : ACT 1-5 ans",
+      "id": "ujcgkj6tbC1",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_14": {
+      "code": "CSR_613_14",
+      "name": "EDL - CSR - 613.14. Intrants disponibles dans l'HGR/CSR : MIILDA",
+      "id": "agQ5795TfiI",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_15": {
+      "code": "CSR_613_15",
+      "name": "EDL - CSR - 613.15. Intrants disponibles dans l'HGR/CSR : TDR",
+      "id": "wgOd3hT3mqp",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_16": {
+      "code": "CSR_613_16",
+      "name": "EDL - CSR - 613.16. Intrants disponibles dans l'HGR/CSR : Quinine",
+      "id": "jHYhK5ey5Ql",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_17": {
+      "code": "CSR_613_17",
+      "name": "EDL - CSR - 613.17. Intrants disponibles dans l'HGR/CSR :Solut\u00e9 : Ringer lactate",
+      "id": "XPJuQId137l",
+      "valueType": "BOOLEAN"
+    },
+    "CS_613_18": {
+      "code": "CSR_613_18",
+      "name": "EDL - CSR - 613.18. Intrants disponibles dans l'HGR/CSR : Solut\u00e9 : Glucose 5%",
+      "id": "krtexb5nFJW",
+      "valueType": "BOOLEAN"
+    },
+    "CS_614": {
+      "code": "CSR_614",
+      "name": "EDL - CSR - 614. L'HGR/CSR Organise les CPN  pour les cas r\u00e9f\u00e9r\u00e9s des CSR",
+      "id": "XdKlUPvyeFH",
+      "valueType": "BOOLEAN"
+    },
+    "CS_616.1": {
+      "code": "CSR_616.1",
+      "name": "EDL - CSR - 616.1. Nombre d\u2019accouchements v\u00e9rifi\u00e9s dans le registre :",
+      "id": "YdPIvBwz5RC",
+      "valueType": "INTEGER"
+    },
+    "CS_616.2": {
+      "code": "CSR_616.2",
+      "name": "EDL - CSR - 616.2. Nombre d'accouchement pour lequel un partogramme a \u00e9t\u00e9 utilis\u00e9 :",
+      "id": "kput3qJDhqW",
+      "valueType": "INTEGER"
+    },
+    "CS_617.1": {
+      "code": "CSR_617.1",
+      "name": "EDL - CSR - 617.1. Nombre de partogrammes utilis\u00e9s pour la v\u00e9rification :",
+      "id": "CYRuoCjQi3b",
+      "valueType": "INTEGER"
+    },
+    "CS_617.2": {
+      "code": "CSR_617.2",
+      "name": "EDL - CSR - 617.2. Nombre d'accouchements pour lequel \u00a0l'ocytocine a \u00e9t\u00e9 administr\u00e9e :",
+      "id": "eVhAsLvN8uV",
+      "valueType": "INTEGER"
+    },
+    "CS_618": {
+      "code": "CSR_618",
+      "name": "EDL - CSR - 618. L'H\u00f4pital ou Centre de sant\u00e9 de reference dirige-t-il des accouchements par voie basse \u00e0 l'aide des ventouses ou des forceps ?",
+      "id": "eRyyik7kSSx",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_619": {
+      "code": "CSR_619",
+      "name": "EDL - CSR - 619. L'H\u00f4pital ou Centre de sant\u00e9 de reference administre-t-il des antibiotiques en injectable   (Intramusculaire  ou Intraveineuse) pour la gestion des infections s\u00e9v\u00e8res pendant  la grossesse ou  l'accouchement ou  le post partum?",
+      "id": "JG5Ru1wVakW",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_620": {
+      "code": "CSR_620",
+      "name": "EDL - CSR - 620. L'H\u00f4pital ou Centre de sant\u00e9 de r\u00e9f\u00e9rence administre-t-il le  Sulfate de Magnesium par voie parenterale (Intramusculaire  ou Intraveineuse) pour le traitement de la pr\u00e9 \u00e9clampsie sev\u00e8re  ou de l'\u00e9clampsie",
+      "id": "jYLuXGOxyrd",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_621": {
+      "code": "CSR_621",
+      "name": "EDL - CSR - 621. L'H\u00f4pital ou Centre de sant\u00e9 de reference fait-elle  l'extration  manuelle de placenta  ?",
+      "id": "L3YCwRURxaz",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_622": {
+      "code": "CSR_622",
+      "name": "EDL - CSR - 622. L'H\u00f4pital ou Centre de sant\u00e9 de reference r\u00e9alise-t-il des \u00e9vacuations des produits r\u00e9siduels ut\u00e9rins (post- avortement)",
+      "id": "Mf1uBl1N2Sf",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_625": {
+      "code": "CSR_625",
+      "name": "EDL - CSR - 625. L'h\u00f4pital ou le centre de sant\u00e9 r\u00e9alise-t-il des c\u00e9sarienne ?",
+      "id": "uirnt06E8QQ",
+      "valueType": "BOOLEAN"
+    },
+    "CS_626_1": {
+      "code": "CSR_626_1",
+      "name": "EDL - CSR - 626.1. Nombre de partogramme avec les visites \u00e0 la  6i\u00e8me heure r\u00e9alis\u00e9e",
+      "id": "jQgrSfTjIbX",
+      "valueType": "INTEGER"
+    },
+    "CS_626_2": {
+      "code": "CSR_626_2",
+      "name": "EDL - CSR - 626.2. Nombre de partogramme utilis\u00e9 pour le depouillement",
+      "id": "RGwpdj8stLV",
+      "valueType": "INTEGER"
+    },
+    "CS_627_1": {
+      "code": "CSR_627_1",
+      "name": "EDL - CSR - 627.1. Nombre de visites  au  6i\u00e8me jour r\u00e9alis\u00e9es",
+      "id": "YT0r5YuJbA9",
+      "valueType": "INTEGER"
+    },
+    "CS_627_2": {
+      "code": "CSR_627_2",
+      "name": "EDL - CSR - 627.2. Nombre de visites  \u00e0 la  6i\u00e8me semaine r\u00e9alis\u00e9es",
+      "id": "wpcNumBcfid",
+      "valueType": "INTEGER"
+    },
+    "CS_629": {
+      "type": "multiple",
+      "values": {
+        "1": {
+          "code": "CSR_629_1",
+          "comment": "1. M\u00e9thode soins m\u00e8re kangourou (peau \u00e0 peau) :  v\u00e9rifier registre soins m\u00e8re Kangourou  au courant des 3 derniers mois si enfants ont \u00e9t\u00e9  suivis",
+          "name": "EDL - CSR - 629. L'h\u00f4pital ou le CSR  prend-t-il en charge  des nouveaux-n\u00e9s de faible poids de naissance?1. M\u00e9thode soins m\u00e8re kangourou (peau \u00e0 peau) :  v\u00e9rifier registre soins m\u00e8re Kangourou  au courant des 3 derniers mois si enfants ont \u00e9t\u00e9  suivis",
+          "id": "OmlGoWolZM5",
+          "valueType": "BOOLEAN"
+        },
+        "2": {
+          "code": "CSR_629_2",
+          "comment": "2. Couveuse  ( verifier le registre  de pr\u00e9matur\u00e9s ou registre d'accouchment si  des nouveau-n\u00e9  ont mis dans la couveuse  les 3 derniers mois)",
+          "name": "EDL - CSR - 629. L'h\u00f4pital ou le CSR  prend-t-il en charge  des nouveaux-n\u00e9s de faible poids de naissance?2. Couveuse  ( verifier le registre  de pr\u00e9matur\u00e9s ou registre d'accouchment si  des nouveau-n\u00e9  ont mis dans la couveuse  les 3 derniers mois)",
+          "id": "dCz8pJn4TK1",
+          "valueType": "BOOLEAN"
+        },
+        "3": {
+          "code": "CSR_629_3",
+          "comment": "3. Aucun de deux",
+          "name": "EDL - CSR - 629. L'h\u00f4pital ou le CSR  prend-t-il en charge  des nouveaux-n\u00e9s de faible poids de naissance?",
+          "id": "uqYdrCejdLU",
+          "valueType": "BOOLEAN"
+        }
+      }
+    },
+    "CS_630": {
+      "code": "CSR_630",
+      "name": "EDL - CSR - 630. L'H\u00f4pital ou Centre de sant\u00e9 de reference reanime-t-il les nouveaux-n\u00e9s pr\u00e9sentant une asphyxie \u00e0 la naissance suivant la m\u00e9thode ABR ( Aider les b\u00e9b\u00e9s \u00e0 Respirer) ?",
+      "id": "nV8ZusayboR",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "oui_non_nesaitpas1",
+            "name": "Oui"
+          },
+          {
+            "code": "oui_non_nesaitpas2",
+            "name": "Non"
+          },
+          {
+            "code": "oui_non_nesaitpas3",
+            "name": "Ne sait pas"
+          }
+        ],
+        "id": "YprlxN9P21O"
+      }
+    },
+    "CS_631": {
+      "code": "CSR_631",
+      "name": "EDL - CSR - 631. L'H\u00f4pital ou Centre de sant\u00e9 de reference assure-t-il la prise en charge des infections n\u00e9onatales  selon le protocole national",
+      "id": "kEzd5cAGS6P",
+      "valueType": "BOOLEAN"
+    },
+    "CS_632": {
+      "code": "CSR_632",
+      "name": "EDL - CSR - 632. L'h\u00f4pital ou le centre de sant\u00e9 organise-t-il  la prise en charge de cas de diarrh\u00e9e avec deshydratation s\u00e8v\u00e8re  selon le protocole national",
+      "id": "l2c9yBIR15a",
+      "valueType": "INTEGER"
+    },
+    "CS_634": {
+      "code": "CSR_634",
+      "name": "EDL - CSR - 634. L'h\u00f4pital recherche-t-il de l'information sur  le statut vaccinal des enfants de 0-11 mois  hospitalis\u00e9s",
+      "id": "A80r9YN6AZW",
+      "valueType": "INTEGER"
+    },
+    "CS_635": {
+      "code": "CSR_635",
+      "name": "EDL - CSR - 635. L'HGR/CSR r\u00e9f\u00e8re-t-il les enfants de 0-11mois hospitalis\u00e9 non en ordre avec la vaccination (non ou insuffisamment vaccin\u00e9s)  au site de vaccination?",
+      "id": "UzYywlEs3p7",
+      "valueType": "INTEGER"
+    },
+    "CS_636": {
+      "code": "CSR_636",
+      "name": "EDL - CSR - 636. L'HGR/CSR offre t-il le service de la prise en charge de la malnutrition aigue sev\u00e8re avec complication?",
+      "id": "jRHpKELP3Zc",
+      "valueType": "BOOLEAN"
+    },
+    "CS_637": {
+      "code": "CSR_637",
+      "name": "EDL - CSR - 637. L'H\u00f4pital ou Centre de sant\u00e9 de reference  fait la promotion de l'allaitement optimal ( initiation \u00e0 l'allaitement pr\u00e9coce dans l'heure qui suit la naissance, l'allaitement maternel exclusif jusqu'\u00e0 l'age de 6 mois; Alimentation de compl\u00e9ment jusqu'\u00e0 l'age de 24 mois?",
+      "id": "IR87MOFJzFn",
+      "valueType": "BOOLEAN"
+    },
+    "CS_640": {
+      "code": "CSR_640",
+      "name": "EDL - CSR - 640. L'H\u00f4pital ou Centre de sant\u00e9 de reference assure-t-il  le diagnostic bacteriologique de la TB (Ziehl )?",
+      "id": "kgCA5cncyUY",
+      "valueType": "BOOLEAN"
+    },
+    "CS_641": {
+      "code": "CSR_641",
+      "name": "EDL - CSR - 641. L'H\u00f4pital ou Centre de sant\u00e9 de reference envoie-t-il les \u00e9chantillons des cas pr\u00e9sum\u00e9s de  tuberculose multi r\u00e9sistante (TB-MR) vers le  laboratoire de reference de GeneXpert?",
+      "id": "qHGOoQEm4Ik",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "1",
+            "name": "Oui"
+          },
+          {
+            "code": "2",
+            "name": "Non"
+          },
+          {
+            "code": "3",
+            "name": "Non applicable"
+          }
+        ],
+        "id": "p8lZtOtggXP "
+      }
+    },
+    "CS_642_1": {
+      "code": "CSR_642_1",
+      "name": "EDL - CSR - 642.1. Traitement et suivi de patient MDR-TB selon SN : Nombre total des patients tuberculeux",
+      "id": "xruixdDTzsl",
+      "valueType": "INTEGER"
+    },
+    "CS_642_2": {
+      "code": "CSR_642_2",
+      "name": "EDL - CSR - 642.2. Traitement et suivi de patient MDR-TB selon SN : Nombre de ceux qui  prennent  quotidiennement  les m\u00e9dicaments sous observation dir\u00e9cte du  prestataire",
+      "id": "N3b9BtYjf4s",
+      "valueType": "INTEGER"
+    },
+    "CS_642_3": {
+      "code": "CSR_642_3",
+      "name": "EDL - CSR - 642.3. Traitement et suivi de patient MDR-TB selon SN : Nombre des patients inscrit sur l'\u00e9ch\u00e9ancier pour les examens de controle",
+      "id": "al47ev73zcM",
+      "valueType": "INTEGER"
+    },
+    "CS_643_1": {
+      "code": "CSR_643_1",
+      "name": "EDL - CSR - 643.1. Traitement et suivi de patient TB-VIH :  Nombre total des patients tuberculeux avec VIH",
+      "id": "AX4qZSEMjfv",
+      "valueType": "INTEGER"
+    },
+    "CS_643_2": {
+      "code": "CSR_643_2",
+      "name": "EDL - CSR - 643.2. Traitement et suivi de patient TB-VIH : Nombre de ceux avec VIH qui  prennent  quotidiennement  les m\u00e9dicaments sous observation dir\u00e9cte du  prestataire",
+      "id": "jePlRaTv2Pa",
+      "valueType": "INTEGER"
+    },
+    "CS_643_3": {
+      "code": "CSR_643_3",
+      "name": "EDL - CSR - 643.3. Traitement et suivi de patient TB-VIH : Nombre des patients avec VIH inscrits sur l' \u00e9chancier pour les examens de controle",
+      "id": "HWpyljVgWig",
+      "valueType": "INTEGER"
+    },
+    "CS_644": {
+      "code": "CSR_644",
+      "name": "EDL - CSR - 644. L'HGR/CSR assure-t-il des activit\u00e9s de monitorage ou  validation des donn\u00e9es  TB  avec les CSRT satellites",
+      "id": "wqlIgx8rtC2",
+      "valueType": "BOOLEAN"
+    },
+    "CS_645": {
+      "code": "CSR_645",
+      "name": "EDL - CSR - 645. L'HGR/CSR Organise les r\u00e9unions de validations des donn\u00e9es g\u00e9n\u00e9rales ?",
+      "id": "vXuozDsbvM6",
+      "valueType": "BOOLEAN"
+    },
+    "CS_646": {
+      "code": "CSR_646",
+      "name": "EDL - CSR - 646. L'HGR/CSR utilise -t-il la D\u00e9marche Qualit\u00e9 Int\u00e9gr\u00e9e ( DQI)  pour evaluer la qualit\u00e9 des soins et des services",
+      "id": "QGEXSi4opOt",
+      "valueType": "BOOLEAN"
+    },
+    "CS_701": {
+      "code": "CSR_701",
+      "name": "EDL - CSR - 701. Guides et fiches techniques : Guides cliniques et th\u00e9rapeutiques",
+      "id": "eJt4eLbcKhv",
+      "valueType": "BOOLEAN"
+    },
+    "CS_702": {
+      "code": "CSR_702",
+      "name": "EDL - CSR - 702. Guides et fiches techniques : Fiches techniques PNLP",
+      "id": "N5e4mX9Ie0A",
+      "valueType": "BOOLEAN"
+    },
+    "CS_703": {
+      "code": "CSR_703",
+      "name": "EDL - CSR - 703. Guides et fiches techniques : Guide/protocole/ordinogramme PNLS",
+      "id": "FOaSAdtszQx",
+      "valueType": "BOOLEAN"
+    },
+    "CS_704": {
+      "code": "CSR_704",
+      "name": "EDL - CSR - 704. Guides et fiches techniques : Fiche Technique/Protocole  PCIMA(rehabilitation nutritionnelle)",
+      "id": "iqaOZb4AJVv",
+      "valueType": "BOOLEAN"
+    },
+    "CS_705": {
+      "code": "CSR_705",
+      "name": "EDL - CSR - 705. Guides et fiches techniques : Protocole pour la Prise en Charge des SVS",
+      "id": "B6079LBQ0BU",
+      "valueType": "BOOLEAN"
+    },
+    "CS_706": {
+      "code": "CSR_706",
+      "name": "EDL - CSR - 706. Guides et fiches techniques : Guide d'utilisation du Partogramme",
+      "id": "gpIwn3uDUtz",
+      "valueType": "BOOLEAN"
+    },
+    "CS_707": {
+      "code": "CSR_707",
+      "name": "EDL - CSR - 707. Guides et fiches techniques : Fiche Technique/Protocole de la GATPA",
+      "id": "JKFTBeONDx4",
+      "valueType": "BOOLEAN"
+    },
+    "CS_708": {
+      "code": "CSR_708",
+      "name": "EDL - CSR - 708. Guides et fiches techniques : Livret des Tableaux  PCIME Clinique & TETU",
+      "id": "ghTruynCqb6",
+      "valueType": "BOOLEAN"
+    },
+    "CS_709": {
+      "code": "CSR_709",
+      "name": "EDL - CSR - 709. Guides et fiches techniques : Normes ZS relatives aux Interventions Integrees de SRMNEA-",
+      "id": "cqPhGSkSgMG",
+      "valueType": "BOOLEAN"
+    },
+    "CS_710": {
+      "code": "CSR_710",
+      "name": "EDL - CSR - 710. Guides et fiches techniques : Fiches techniques SRMNEA ( Assistance Qualifi\u00e9e \u00e0 l'Accouchement, Consultation Pr\u00e9natale (AQA), Consultation Post Natale, Soins Essentiels aux Nouveau-n\u00e9s (SEN), )",
+      "id": "iyQKQVAiM2q",
+      "valueType": "BOOLEAN"
+    },
+    "CS_711": {
+      "code": "CSR_711",
+      "name": "EDL - CSR - 711. Guides et fiches techniques : Fiches techniques PF",
+      "id": "vJYCI1hiSv9",
+      "valueType": "BOOLEAN"
+    },
+    "CS_712": {
+      "code": "CSR_712",
+      "name": "EDL - CSR - 712. Guides et fiches techniques : Affiche Protocole de la Gestion Active de Troisi\u00e8me P\u00e9riode d'Accouchement (GATPA)",
+      "id": "HCZOiApHAAz",
+      "valueType": "BOOLEAN"
+    },
+    "CS_713": {
+      "code": "CSR_713",
+      "name": "EDL - CSR - 713. Guides et fiches techniques : Affiche Protocole Aider les b\u00e9b\u00e9s \u00e0 respirer",
+      "id": "uSAAiyu2GVb",
+      "valueType": "BOOLEAN"
+    },
+    "CS_714": {
+      "code": "CSR_714",
+      "name": "EDL - CSR - 714. Guides et fiches techniques : Affiche Keith Edouard",
+      "id": "PldSXWSQMAB",
+      "valueType": "BOOLEAN"
+    },
+    "CS_715": {
+      "code": "CSR_715",
+      "name": "EDL - CSR - 715. Guides et fiches techniques : Affiche Tiarht",
+      "id": "cNe2nf8QBRK",
+      "valueType": "BOOLEAN"
+    },
+    "CS_716": {
+      "code": "CSR_716",
+      "name": "EDL - CSR - 716. Guides et fiches techniques : Affiche Protocole Aider les m\u00e8res \u00e0 survivre",
+      "id": "uKH0uLGOYyo",
+      "valueType": "BOOLEAN"
+    },
+    "CS_717": {
+      "code": "CSR_717",
+      "name": "EDL - CSR - 717. Guides et fiches techniques : Protocole pour la gestion des d\u00e9chets biom\u00e9dicaux",
+      "id": "AdFLaMSs1Gh",
+      "valueType": "BOOLEAN"
+    },
+    "CS_801": {
+      "code": "CSR_801",
+      "name": "EDL - CSR - 801. Financement des soins : Existence d'une mutuelle de sant\u00e9",
+      "id": "rV2SSv4iptT",
+      "valueType": "BOOLEAN"
+    },
+    "CS_802": {
+      "code": "CSR_802",
+      "name": "EDL - CSR - 802. Financement des soins : Type de mutuelle",
+      "id": "AXeMezqPh0B",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_mutuel1",
+            "name": "1. Communautaire,"
+          },
+          {
+            "code": "type_mutuel2",
+            "name": "2. Obligatoire"
+          },
+          {
+            "code": "type_mutuel3",
+            "name": "3. Corporative"
+          },
+          {
+            "code": "type_mutuel4",
+            "name": "4. Autres"
+          }
+        ],
+        "id": "dydsQz2cwwt"
+      }
+    },
+    "CS_803": {
+      "code": "CSR_803",
+      "name": "EDL - CSR - 803. Financement des soins : Est-ce que l'hopital ou  le CSR  applique le  Financement Bas\u00e9 sur les R\u00e9sultats  ou achat des services",
+      "id": "J9thnlyvmYn",
+      "valueType": "BOOLEAN"
+    },
+    "CS_803_2": {
+      "code": "CSR_803_2",
+      "name": "EDL - CSR - 803.2 Financement des soins : Est-ce que l'hopital ou  le CSR  applique la m\u00eame tarification dans tous les services",
+      "id": "MiqRSS17egy",
+      "valueType": "BOOLEAN"
+    },
+    "CS_804": {
+      "code": "CSR_804",
+      "name": "EDL - CSR - 804. Financement des soins : Existence d'une initiative communautaire de financement de l'H\u00f4pital",
+      "id": "yZGhrEh8g7Q",
+      "valueType": "BOOLEAN"
+    },
+    "CS_805": {
+      "code": "CSR_805",
+      "name": "EDL - CSR - 804. Financement des soins : Quel est le type de tarification appliqu\u00e9e ?",
+      "id": "AQIMVF44nPf",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "type_tarif1",
+            "name": "1. Forfaitaire"
+          },
+          {
+            "code": "type_tarif2",
+            "name": "2. Par Acte"
+          },
+          {
+            "code": "type_tarif3",
+            "name": "3. Par Episode"
+          }
+        ],
+        "id": "EJ0Pz1OIob0"
+      }
+    },
+    "CS_806": {
+      "code": "CSR_806",
+      "name": "EDL - CSR - 806. Financement des soins : Est-ce que le tarif de soins est il affich\u00e9 \u00e0 l'H\u00f4pital ou CSR?",
+      "id": "VOQcxNVB9XE",
+      "valueType": "BOOLEAN"
+    },
+    "CS_807": {
+      "code": "CSR_807",
+      "name": "EDL - CSR - 807. Financement des soins : Application de la tarification pr\u00e9ferentielle en cas de reference",
+      "id": "Le9p3HrBLEd",
+      "valueType": "BOOLEAN"
+    },
+    "CS_808": {
+      "code": "CSR_808",
+      "name": "EDL - CSR - 808. Financement des soins : Subvention financi\u00e8re du Gouvernement Central et provincial  \u00e0 la mise en \u0153uvre de Plan d'Action Op\u00e9rationnelle de l'ann\u00e9e pass\u00e9e (2018)",
+      "id": "JXBubyojNRW",
+      "valueType": "TEXT",
+      "optionSet": {
+        "options": [
+          {
+            "code": "part_contrib1",
+            "name": "1. 0%"
+          },
+          {
+            "code": "part_contrib2",
+            "name": "2. moins de 10%"
+          },
+          {
+            "code": "part_contrib3",
+            "name": "3. 10%-20%"
+          },
+          {
+            "code": "part_contrib4",
+            "name": "4. 21%-30%"
+          },
+          {
+            "code": "part_contrib5",
+            "name": "5. 31%-40%"
+          },
+          {
+            "code": "part_contrib6",
+            "name": "6. 41%- 50%"
+          },
+          {
+            "code": "part_contrib7",
+            "name": "7. 51%-60%"
+          },
+          {
+            "code": "part_contrib8",
+            "name": "8. 61%-70%"
+          },
+          {
+            "code": "part_contrib9",
+            "name": "9. 71%-80%"
+          },
+          {
+            "code": "part_contrib10",
+            "name": "10. 81%-90%"
+          },
+          {
+            "code": "part_contrib11",
+            "name": "11. 91%-100%"
+          }
+        ],
+        "id": "rt54NUYUSlt"
+      }
+    },
+    "CS_904": {
+      "code": "CSR_904",
+      "name": "EDL - CSR - 904. Partenariat : Est-ce que les partenaires participent aux r\u00e9unions des organes de gestion (CODI)",
+      "id": "RX76vRTVlCX",
+      "valueType": "BOOLEAN"
+    },
+    "CS_1001": {
+      "code": "CSR_1001",
+      "name": "EDL - CSR - 1001. Participation communautaire : Le CODI est il fonctionnel au niveau de l'HGR/CSR?",
+      "id": "VtiOCMKHXxa",
+      "valueType": "BOOLEAN"
+    },
+    "CS_1002": {
+      "code": "CSR_1002",
+      "name": "EDL - CSR - 1002. Participation communautaire : Pouvez vous nous donner les rapports du comit\u00e9 directeur des 3 derniers mois?",
+      "id": "Fe177mFD5kp",
+      "valueType": "INTEGER"
+    },
+    "CS_1003_1": {
+      "code": "CSR_1003_1",
+      "name": "EDL - CSR - 1003.1 Participation communautaire : 1. Comite directeur nombre d'Homme",
+      "id": "OhuORwaG5yG",
+      "valueType": "INTEGER"
+    },
+    "CS_1003_2": {
+      "code": "CSR_1003_2",
+      "name": "EDL - CSR - 1003.2 Participation communautaire : 2. Comite directeur nombre de Femme",
+      "id": "gOU6uUvqzeS",
+      "valueType": "INTEGER"
+    },
+    "CS_1004": {
+      "code": "CSR_1004",
+      "name": "EDL - CSR - 1004 Participation communautaire :  Y a t il une gestion  financi\u00e8re transparente  pour l'HGR/CSR?",
+      "id": "nhBBhJgvx97",
+      "valueType": "BOOLEAN"
+    }
+  }
+}

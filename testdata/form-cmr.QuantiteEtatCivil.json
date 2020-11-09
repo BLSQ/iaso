@@ -1,0 +1,43 @@
+{
+  "type": "aggregate",
+  "data_set_id": "aGpq6G0J1wG",
+  "data_set_name": "Iaso - Etat civil",
+  "question_mappings": {
+    "lLC26FoM7vI": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-1-declaration-Naissances  déclarées",
+      "id": "lLC26FoM7vI",
+      "valueType": "NUMBER"
+    },
+    "UtxcFP7Iewl": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-1-validation-Naissances  déclarées",
+      "id": "UtxcFP7Iewl",
+      "valueType": "NUMBER"
+    },
+    "NrijU6LcEMA": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-2-declaration-Décès déclarées ",
+      "id": "NrijU6LcEMA",
+      "valueType": "NUMBER"
+    },
+    "CDccyPG60WE": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-2-validation-Décès déclarées ",
+      "id": "CDccyPG60WE",
+      "valueType": "NUMBER"
+    },
+    "kYJm37Bbw0g": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-3-declaration-Certificat d’âge apparent délivré",
+      "id": "kYJm37Bbw0g",
+      "valueType": "NUMBER"
+    },
+    "D5qYfkGcKsg": {
+      "status": "mapped",
+      "name": "EtatCivil-FOSA-3-validation-Certificat d’âge apparent délivré",
+      "id": "D5qYfkGcKsg",
+      "valueType": "NUMBER"
+    }
+  }
+}

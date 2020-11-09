@@ -1,0 +1,77 @@
+{
+  "httpStatus": "Conflict",
+  "httpStatusCode": 409,
+  "status": "ERROR",
+  "message": "An error occurred, please check import summary.",
+  "response": {
+    "responseType": "ImportSummaries",
+    "status": "ERROR",
+    "imported": 0,
+    "updated": 2,
+    "deleted": 0,
+    "ignored": 1,
+    "importOptions": {
+      "idSchemes": {},
+      "dryRun": false,
+      "async": false,
+      "importStrategy": "CREATE_AND_UPDATE",
+      "mergeMode": "REPLACE",
+      "reportMode": "FULL",
+      "skipExistingCheck": false,
+      "sharing": false,
+      "skipNotifications": false,
+      "skipAudit": false,
+      "datasetAllowsPeriods": false,
+      "strictPeriods": false,
+      "strictDataElements": false,
+      "strictCategoryOptionCombos": false,
+      "strictAttributeOptionCombos": false,
+      "strictOrganisationUnits": false,
+      "requireCategoryOptionCombo": false,
+      "requireAttributeOptionCombo": false,
+      "skipPatternValidation": false,
+      "ignoreEmptyCollection": false,
+      "force": false,
+      "skipLastUpdated": false
+    },
+    "importSummaries": [
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Program is not assigned to this organisation unit: YuQRtpLP10I",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "yXO23VBVtuy"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "SUCCESS",
+        "importCount": {
+          "imported": 0,
+          "updated": 1,
+          "ignored": 0,
+          "deleted": 0
+        },
+        "reference": "r3yThmKXwyb",
+        "href": "https://play.dhis2.org/2.31.8/api/events/r3yThmKXwyb"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "SUCCESS",
+        "importCount": {
+          "imported": 0,
+          "updated": 1,
+          "ignored": 0,
+          "deleted": 0
+        },
+        "reference": "ezEJxAlj4w1",
+        "href": "https://play.dhis2.org/2.31.8/api/events/ezEJxAlj4w1"
+      }
+    ],
+    "total": 3
+  }
+}

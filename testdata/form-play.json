@@ -1,0 +1,200 @@
+{
+    "type": "simple_event",
+    "program_id": "q04UBOqq3rp",
+    "question_mappings": {
+        "cs_457": {
+            "code": "DE_223562",
+            "name": "IC Activity",
+            "id": "f3Rn9XPEQuv",
+            "valueType": "TEXT",
+            "optionSet": {
+                "name": "Information Campaign Topic",
+                "id": "s3GoZHCmXL2",
+                "options": [
+                    {
+                        "code": "HIV prevention",
+                        "name": "HIV prevention",
+                        "id": "wV2lLYVCKw6",
+                        "odk": "1"
+                    },
+                    {
+                        "code": "Malaria preventation",
+                        "name": "Malaria preventation",
+                        "id": "H5xbyQ1a5gR",
+                        "odk": "20"
+                    },
+                    {
+                        "code": "Child survival",
+                        "name": "Child survival",
+                        "id": "oui4Ets5U4u",
+                        "odk": "8"
+                    },
+                    {
+                        "code": "Family planning",
+                        "name": "Family planning",
+                        "id": "v1hUH8vUP3d",
+                        "odk": "3"
+                    }
+                ]
+            }
+        },
+        "DE_223563": {
+            "code": "DE_223563",
+            "name": "IC Age",
+            "id": "Dv7iIitX44Y",
+            "valueType": "TEXT",
+            "optionSet": {
+                "name": "Age category",
+                "id": "VQ2lai3OfVG",
+                "options": [
+                    {
+                        "code": "0-14 years",
+                        "name": "0-14 years",
+                        "id": "Y1ILwhy5VDY"
+                    },
+                    {
+                        "code": "15-19 years",
+                        "name": "15-19 years",
+                        "id": "egT1YqFWsVk"
+                    },
+                    {
+                        "code": "20-24 years",
+                        "name": "20-24 years",
+                        "id": "WckXGsyYola"
+                    },
+                    {
+                        "code": "25 years and above",
+                        "name": "25 years and above",
+                        "id": "EmQGvSlg0GD"
+                    }
+                ]
+            }
+        },
+        "DE_223560": {
+            "code": "DE_223560",
+            "name": "IC Group Type",
+            "id": "UuL3eX8KJHY",
+            "valueType": "TEXT",
+            "optionSet": {
+                "name": "Formal/Informal",
+                "id": "PmE3Ev4ZcHX",
+                "options": [
+                    {
+                        "code": "Formal",
+                        "name": "Formal",
+                        "id": "koZkOwyJbSQ"
+                    },
+                    {
+                        "code": "Informal",
+                        "name": "Informal",
+                        "id": "uODmvdTEeMr"
+                    }
+                ]
+            }
+        },
+        "DE_223564": {
+            "code": "DE_223564",
+            "name": "IC Topic",
+            "id": "deQEw93Vr4j",
+            "valueType": "TEXT",
+            "optionSet": {
+                "name": "Information Campaign Topic",
+                "id": "s3GoZHCmXL2",
+                "options": [
+                    {
+                        "code": "HIV prevention",
+                        "name": "HIV prevention",
+                        "id": "wV2lLYVCKw6"
+                    },
+                    {
+                        "code": "Malaria preventation",
+                        "name": "Malaria preventation",
+                        "id": "H5xbyQ1a5gR"
+                    },
+                    {
+                        "code": "Child survival",
+                        "name": "Child survival",
+                        "id": "oui4Ets5U4u"
+                    },
+                    {
+                        "code": "Family planning",
+                        "name": "Family planning",
+                        "id": "v1hUH8vUP3d"
+                    }
+                ]
+            }
+        },
+        "cs_108": {
+            "code": "DE_223561",
+            "name": "IC Venue",
+            "id": "DvrjjquRrvF",
+            "valueType": "TEXT",
+            "optionSet": {
+                "name": "Venue",
+                "id": "Da7byW1wGzq",
+                "options": [
+                    {
+                        "code": "Bar",
+                        "name": "Bar",
+                        "id": "Zh9muH3HeXX",
+                        "odk": "1"
+                    },
+                    {
+                        "code": "Religious institution",
+                        "name": "Religious institution",
+                        "id": "VeQ9zrQvigp",
+                        "odk": "2"
+                    },
+                    {
+                        "code": "Gym",
+                        "name": "Gym",
+                        "id": "XoziIP5f35q",
+                        "odk": "3"
+                    },
+                    {
+                        "code": "Health facility",
+                        "name": "Health facility",
+                        "id": "FCv1KhAlpsD",
+                        "odk": "4"
+                    },
+                    {
+                        "code": "Market place",
+                        "name": "Market place",
+                        "id": "Oa13XGCzTHS"
+                    },
+                    {
+                        "code": "Primary school",
+                        "name": "Primary school",
+                        "id": "ysLhfeWP9nP"
+                    },
+                    {
+                        "code": "Public beach",
+                        "name": "Public beach",
+                        "id": "ycVR9tyXbg8"
+                    },
+                    {
+                        "code": "Social hall",
+                        "name": "Social hall",
+                        "id": "uEcEKSkG6H8"
+                    },
+                    {
+                        "code": "Sports ground",
+                        "name": "Sports ground",
+                        "id": "BowCRP26uqV"
+                    },
+                    {
+                        "code": "Town hall",
+                        "name": "Town hall",
+                        "id": "zjmISEovEJF"
+                    }
+                ]
+            }
+        },
+        "cs_116": {
+            "code": "DE_223565",
+            "name": "IC People reached",
+            "id": "lsJCUffec9h",
+            "valueType": "INTEGER_POSITIVE"
+        }
+    }
+}

@@ -1,0 +1,678 @@
+{
+  "httpStatus": "Conflict",
+  "httpStatusCode": 409,
+  "status": "ERROR",
+  "message": "An error occurred, please check import summary.",
+  "response": {
+    "responseType": "ImportSummaries",
+    "status": "ERROR",
+    "imported": 0,
+    "updated": 0,
+    "deleted": 0,
+    "ignored": 53,
+    "importOptions": {
+      "idSchemes": {},
+      "dryRun": false,
+      "async": false,
+      "importStrategy": "CREATE_AND_UPDATE",
+      "mergeMode": "REPLACE",
+      "reportMode": "FULL",
+      "skipExistingCheck": false,
+      "sharing": false,
+      "skipNotifications": false,
+      "skipAudit": false,
+      "datasetAllowsPeriods": false,
+      "strictPeriods": false,
+      "strictDataElements": false,
+      "strictCategoryOptionCombos": false,
+      "strictAttributeOptionCombos": false,
+      "strictOrganisationUnits": false,
+      "requireCategoryOptionCombo": false,
+      "requireAttributeOptionCombo": false,
+      "skipPatternValidation": false,
+      "ignoreEmptyCollection": false,
+      "force": false,
+      "firstRowIsHeader": true,
+      "skipLastUpdated": false
+    },
+    "importSummaries": [
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: kPxpcEPkYsA",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "ocuCG01OkkK"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: iA3y8AyMTG2",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "lsCN8pNw8hy"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: eJeQ5wPXomW",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "GVYlDHA7Q4t"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: n70URgReK6k",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "yxElMQlu2XV"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: n70URgReK6k",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "pA70rIpY65P"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: dnh9QeJao3A",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "spuKbfkq6IL"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: d0qQ5MKiBw3",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "Jp8Pdhu7iyz"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: qOUQMshy7oC",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "OD9gGjgtx7P"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: pLA2xoHfMet",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "uCj0s4x0APj"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: Lh7L2zraeea",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "skR99bzSw4V"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: DMWMdIUnKma",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "BlrApzjxWZO"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: um16KOocM9T",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "DUNJMZWdv3U"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: d0qQ5MKiBw3",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "EONU79DCSOe"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: d0qQ5MKiBw3",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "HC3SwqjIiNA"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: bjvgyqTsaLD",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "WvgCtBPaBIi"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: CzUSO0b1wzx",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "N9APVKsWnuk"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: zoYeJLoTkAV",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "w4WC2nyr3AE"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: OJxH4cRI04O",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "aRloZivcQDm"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: Lh7L2zraeea",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "g0FZSuDG2IL"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: rt2mgvSSASc",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "dO6nq4Ks3Zz"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: fB15016f7TN",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "IihGb8eboW9"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: tSHo3EhpcaL",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "h7fcWsuwTis"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: BGONaqrcHUH",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "JvONmA0gZbj"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: CzUSO0b1wzx",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "LzcALCyBsFK"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: Inw5GRD4Gsm",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "cXxqqG4kmON"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: KwOsksY8GNa",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "hi86Yu0aSfJ"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: J8Ykbzd9bL8",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "OtiHgb4a2IY"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: wyCGWhhzwFa",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "HFo9nKyPNbL"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: JpMxVy4pOcw",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "EraY1rBe1N8"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: C68ahXoKNuC",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "EVZhDXgkqMV"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: ocuiHfBQ94O",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "sc54K2NUEUm"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: n9wX120AyXo",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "wda8MuoZnZ8"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: d2uWCdrQ8J6",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "mBG7tMrIrRZ"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: kuI8GRXP7Wg",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "HZNEHyXfDOB"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: GWtOUfboSit",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "drBUd5QUajf"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: iMjxYfUo2Rn",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "X9nmih7GfKl"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: r9uuXeTkDK8",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "NJkzheSnLKi"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: xXrQvItfIAk",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "xLZMuYmWd1T"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: ocuiHfBQ94O",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "utEQyb3pX3e"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: kvnz1BCE262",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "BgbgioPAyA4"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: LmJwQ3QJslY",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "YZgxNBl0Z9v"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: yxR3v1fBB9h",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "McTjahNQi71"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: c1s9WlvtZxd",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "cT9mCWcmOkx"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: WGnAt2PA8ba",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "TiOD3Uixf4S"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: Inw5GRD4Gsm",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "W6vVlUuL5lC"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: ywUAjDWcUrK",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "WuccBaaTJgM"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: vtwnTOeLAqy",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "IovjYFo2g9u"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: PJzLtFJnWRr",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "o7sawA4TopW"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: FEZjSgy9YnR",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "pi4ZHCxgyT8"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: t2gQZ8v8iel",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "SNcLQK3Dlvr"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: R2KSmeCzBOL",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "ugMDyOu5clS"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: kH9XaP6eoDo",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "T36O4167oKs"
+      },
+      {
+        "responseType": "ImportSummary",
+        "status": "ERROR",
+        "description": "Event.orgUnit does not point to a valid organisation unit: tWjjp2PmJyX",
+        "importCount": {
+          "imported": 0,
+          "updated": 0,
+          "ignored": 1,
+          "deleted": 0
+        },
+        "reference": "y0pYcG2CPPa"
+      }
+    ],
+    "total": 53
+  }
+}

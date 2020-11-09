@@ -1,0 +1,2678 @@
+{
+  "payment_rules": {
+    "total_payment_pma": {
+      "name": "Total payment- PMA",
+      "frequency": "monthly",
+      "formulas": {
+        "total_pma_with_equity": {
+          "short_name": "total pma with equity",
+          "description": "total pma with equity",
+          "expression": "pma_equity_bonus + pma_quantity_total",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "gPdPOZmqryt"
+        },
+        "total_quality_score_pma": {
+          "short_name": "Total quality score- %",
+          "description": "Total quality score- %",
+          "expression": "pma_total_technical_quality_weighted + pma_amount_patient_satisfaction_weighted + amount_index_tool_weighted",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "dFAzNKMKyuI"
+        },
+        "pma_equity_bonus": {
+          "short_name": "pma equity bonus",
+          "description": "pma equity bonus",
+          "expression": "(equity_bonus/100) * pma_quantity_total",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "xXP2goPPWKr"
+        },
+        "total_payment_pma": {
+          "short_name": "total payment",
+          "description": "total payment",
+          "expression": "pma_total_quality_and_quantity + amount_baq_pma",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "oHwtD7Lfn2g"
+        },
+        "total_quality_score_decimal_pma": {
+          "short_name": "total quality score- decimal",
+          "description": "total quality score- decimal",
+          "expression": "total_quality_score_pma * 1",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "ZGLTp7rfLVK"
+        },
+        "pma_total_quality_and_quantity": {
+          "short_name": "Total payment for quantity and quality, without BAQ",
+          "description": "Total payment for quantity and quality, without BAQ",
+          "expression": "total_pma_with_equity + pma_quality_bonus",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "rCFdcPEN0c2"
+        },
+        "pma_quality_bonus": {
+          "short_name": "Pma quality bonus",
+          "description": "Pma quality bonus",
+          "expression": "0.15 * total_quality_score_decimal_pma* quaterly_quantity_production",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "iG63LeHusW3"
+        },
+        "quaterly_quantity_production": {
+          "short_name": "quaterly_quantity_production",
+          "description": "quaterly_quantity_production",
+          "expression": "SUM(%{total_pma_with_equity_previous_values}, total_pma_with_equity )",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "cs4e1kOnmpp"
+        },
+        "pma_total_technical_quality_weighted": {
+          "short_name": "pma_total_technical_quality_weighted",
+          "description": "pma_total_technical_quality_weighted",
+          "expression": ".35 * pma_total_technical_quality",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "thMvDBttFko"
+        },
+        "amount_index_tool_weighted": {
+          "short_name": "amount_index_tool_weighted",
+          "description": "amount_index_tool_weighted",
+          "expression": ".3 * amount_index_tool",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "DxP7eUKXfZs"
+        },
+        "pma_amount_patient_satisfaction_weighted": {
+          "short_name": "pma_amount_patient_satisfaction_weighted",
+          "description": "pma_amount_patient_satisfaction_weighted",
+          "expression": ".35 * pma_amount_patient_satisfaction",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "qmrBCjHt2UL"
+        }
+      },
+      "packages": {
+        "quality_pma_satisfaction_du_patient": {
+          "name": "Quality- PMA- Satisfaction du Patient",
+          "description": null,
+          "code": "quality_pma_satisfaction_du_patient",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality- PMA- Satisfaction du Patient",
+              "code": "quality_pma_satisfaction_du_patient",
+              "verified": "tMLFyuggLmB"
+            }
+          ],
+          "data_set_ids": ["BMSAf9anFMf"],
+          "data_element_group_ids": ["mvceaGtZAcd"],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount_percent": {
+              "short_name": "% patient satisfaction",
+              "description": "% patient satisfaction",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pma_amount_patient_satisfaction": {
+              "short_name": "% patient satisfaction score",
+              "description": "% patient satisfaction score",
+              "expression": "MAX( %{amount_percent_values} )",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "jsgRgA3fvkH"
+            }
+          }
+        },
+        "outil_indice": {
+          "name": "Outil Indice",
+          "description": null,
+          "code": "outil_indice",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Outil Indice",
+              "code": "outil_indice",
+              "verified": "mJubyzLqUjO"
+            }
+          ],
+          "data_set_ids": ["b0KTJoASI0i"],
+          "data_element_group_ids": ["EZYJvxAfMfb"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_index_tool": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "MAX(%{amount_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "k86dy3r7dNy"
+            }
+          }
+        },
+        "baq_pma": {
+          "name": "BAQ- PMA",
+          "description": null,
+          "code": "baq_pma",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "BAQ- PMA",
+              "code": "baq_pma",
+              "verified": "dMBQ02gak2v",
+              "amount": "O29uHOHTixP",
+              "price_unit": "h0igoumgTG4"
+            }
+          ],
+          "data_set_ids": ["lBF34qCW1SZ", "rO6fBy9BMXs"],
+          "data_element_group_ids": ["gjxfrafZeIB", "dwIdQEy1I9w"],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "total paid for BAQ",
+              "description": "total paid for BAQ",
+              "expression": "verified * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "baq pma price_unit",
+              "description": "baq pma price_unit",
+              "expression": "tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_baq_pma": {
+              "short_name": "total BAQ payment",
+              "description": "total BAQ payment",
+              "expression": "SUM ( %{amount_values} )",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "UR9e9lRCFYL"
+            }
+          }
+        },
+        "equity_bonus": {
+          "name": "Equity Bonus",
+          "description": null,
+          "code": "equity_bonus",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Equity Bonus",
+              "code": "equity_bonus",
+              "verified": "oBR9k79Sw5O"
+            }
+          ],
+          "data_set_ids": ["P4VcVFuJwnL"],
+          "data_element_group_ids": ["aR2zhUjYz0y"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "equity_bonus": {
+              "short_name": "equity_bonus",
+              "description": "equity_bonus",
+              "expression": "verified",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {}
+        },
+        "total_technical_quality__pma": {
+          "name": "Total Technical Quality - PMA",
+          "description": null,
+          "code": "total_technical_quality__pma",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality - PMA - Technical Quality Score (%)",
+              "code": "quality__pma__technical_quality_score",
+              "verified": "d5Ngfxa7lQ2"
+            }
+          ],
+          "data_set_ids": ["MEnI9J38WTc"],
+          "data_element_group_ids": ["gLjV4tpKVKm"],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "pma_technical_quality_score": {
+              "short_name": "verified value",
+              "description": "verified value",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pma_total_technical_quality": {
+              "short_name": "verified value",
+              "description": "verified value",
+              "expression": "max(%{pma_technical_quality_score_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "HXXIlvPZsiK"
+            }
+          }
+        },
+        "quantity_pma": {
+          "name": "Quantity- PMA",
+          "description": "",
+          "code": "quantity_pma",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quantity- PMA- 23.1 Cas référés relais communautaire et arrivé (plafond 5Percent des CE)",
+              "code": "quantity_pma_23_1_cas_referes_relais_communautaire_et_arrive_plafond_5percent_des_ce",
+              "claimed": "u9CvRPjdC69",
+              "verified": "SEOSbjfYQKr",
+              "amount": "mqigh4a6Y5l",
+              "price_unit": "lX8X9ll79kn",
+              "difference_percentage": "qy4YK4zupqm"
+            },
+            {
+              "name": "11.0-Cheque Santé vendu",
+              "code": "11_0_cheque_sante_vendu",
+              "claimed": "sk0qaGG7Xuz",
+              "verified": "cPQs0K96TfA",
+              "amount": "oTsDmkDByTv",
+              "price_unit": "dpPY88RAYIv",
+              "difference_percentage": "As0QXDYBsAP"
+            },
+            {
+              "name": "13.1-Soins après avortement spontané",
+              "code": "13_1_soins_apres_avortement",
+              "claimed": "p0GuGW2NNL5",
+              "verified": "E2Snr6kwFeq",
+              "amount": "RjLhoXYOrns",
+              "price_unit": "AE6o20h5gT9",
+              "difference_percentage": "kaa5qcSql17"
+            },
+            {
+              "name": "14.1-Consultation postnatale Mère et Enfant",
+              "code": "14_1_cpon_mere_et_enfant",
+              "claimed": "BUwdXNNcDQh",
+              "verified": "S70Fr8MYELP",
+              "amount": "fcoF7nub14V",
+              "price_unit": "xICUUz9gcQk",
+              "difference_percentage": "nhFaZmn2W0m"
+            },
+            {
+              "name": "18.1-Nouveaux cas de VIH mis sous ARV y compris les femmes enceintes",
+              "code": "18_1_nouveaux_cas_de_vih__mis_sous_arv",
+              "claimed": "AKD3DOSqWw5",
+              "verified": "HmESaHzwEZT",
+              "amount": "N0hIdcthtKq",
+              "price_unit": "YelKn0Dkvmj",
+              "difference_percentage": "PHq2LK3RLVA"
+            },
+            {
+              "name": "18.2-Patients sous ARV suivis pendant les 6 premiers mois après l’initiation",
+              "code": "18_2_patients_sous_arv_suivi_les_6",
+              "claimed": "yrWYPjAEDrF",
+              "verified": "nFXnPzQhFzk",
+              "amount": "LYdXxRWPgqT",
+              "price_unit": "Uja44J2a9ZN",
+              "difference_percentage": "NDvlqqDnJxI"
+            },
+            {
+              "name": "18.3-Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable",
+              "code": "18_3_patients_sous_arv_suivis_les_12",
+              "claimed": "x9C7rNvTVU5",
+              "verified": "SNa1S8Apa5t",
+              "amount": "AcVZjufgi0n",
+              "price_unit": "lAj0GZUHAR7",
+              "difference_percentage": "ZwYLJPJ4zad"
+            },
+            {
+              "name": "19.1 Prise en charge du nouveau-né d'une femme VIH+ y compris le dépistage précoce à la PCR",
+              "code": "19_1_pec_nouveau_ne_femme_vih",
+              "claimed": "g4c7sByj2vP",
+              "verified": "di70edcYLlZ",
+              "amount": "U590oKiKfBj",
+              "price_unit": "wGpPbSO91fJ",
+              "difference_percentage": "w0TdqxYwgc0"
+            },
+            {
+              "name": "26.0-Enfant de 6-59 mois dépistés pour Malnutrition aiguë modérée ou sévère",
+              "code": "26_0_enfant_6_59_mois_depistes_mam_ou_mas",
+              "claimed": "R1t4iuusQe3",
+              "verified": "hiGZzNVWV5e",
+              "amount": "entW4HxAn6U",
+              "price_unit": "WpdjTaa5h5X",
+              "difference_percentage": "XLpRuJHJTLb"
+            },
+            {
+              "name": "Etat civil 1 - Naissances déclarées",
+              "code": "etat_civil_1",
+              "claimed": "lLC26FoM7vI",
+              "verified": "UtxcFP7Iewl",
+              "amount": "BzdAB3dGDCZ",
+              "price_unit": "tMqJTHQ0KDP",
+              "difference_percentage": "VsPJaHMIF4D"
+            },
+            {
+              "name": "Etat civil 2 - Décès déclarés",
+              "code": "etat_civil_2",
+              "claimed": "NrijU6LcEMA",
+              "verified": "CDccyPG60WE",
+              "amount": "UCNTj6qSnlg",
+              "price_unit": "zEXKRTSCSnS",
+              "difference_percentage": "zfHiPKh7q9j"
+            },
+            {
+              "name": "Etat civil 3 - Certificat d’âge apparent délivré",
+              "code": "etat_civil_3",
+              "claimed": "kYJm37Bbw0g",
+              "verified": "D5qYfkGcKsg",
+              "amount": "o0xl98Iapne",
+              "price_unit": "LrcGEjh4ldF",
+              "difference_percentage": "bXfw8eRHMQ3"
+            },
+            {
+              "name": "6.1 -Enfant ayant reçu tous les vaccins d’un contact",
+              "code": "pma_06_1",
+              "claimed": "gIccNciUJ2x",
+              "verified": "CA8nNEeqz7S",
+              "amount": "x4OEedPY4mY",
+              "price_unit": "pDtADnx2MYD",
+              "difference_percentage": "orB8rl8xi2D"
+            },
+            {
+              "name": "6.2 TD2 ou TD3 ou TD4 ou TD5",
+              "code": "pma_06_2",
+              "claimed": "i9jileBYh4y",
+              "verified": "q4HuF1HNsCs",
+              "amount": "Vr3AJuoIJYQ",
+              "price_unit": "Xz8rh9MuM6O",
+              "difference_percentage": "SXpraUem4Fp"
+            },
+            {
+              "name": "7.1-TPI1 ou TPI2 ou TPI3 ou TPI4",
+              "code": "pma_07_1",
+              "claimed": "tc8TyEkf8TA",
+              "verified": "fi7PQd0NsAu",
+              "amount": "Aq0v9GiCwUs",
+              "price_unit": "hnzHYW7OGc6",
+              "difference_percentage": "ay9vqbwPrk4"
+            },
+            {
+              "name": "9.2-Déparasitage des enfants de 6 à 59 mois",
+              "code": "pma_09_2",
+              "claimed": "GaZmjaDVSJu",
+              "verified": "MartWsMiOmn",
+              "amount": "p0X4Xst4pLm",
+              "price_unit": "ikkZa8wNzPW",
+              "difference_percentage": "m4MuUGHFmK3"
+            },
+            {
+              "name": "10.1-CPN 1 à CPN 8",
+              "code": "pma_10_1",
+              "claimed": "aPrKzZir9sh",
+              "verified": "IrkNBz42hND",
+              "amount": "Iw5kN0chVYB",
+              "price_unit": "TnPAY6kUUH9",
+              "difference_percentage": "Tg98C7IYdIp"
+            },
+            {
+              "name": "Quantity- PMA- 11.1 Accouchement eutociques",
+              "code": "quantity_pma_11_1_accouchement_eutociques",
+              "claimed": "pzWtrJXrYYI",
+              "verified": "SbhKv1FFN2S",
+              "amount": "ZbBdVSKAWRB",
+              "price_unit": "lzblgyZsuUJ",
+              "difference_percentage": "dpR0lz2yUF5"
+            },
+            {
+              "name": "Quantity- PMA- 11.2 Accouchement eutociques - indigent",
+              "code": "quantity_pma_11_2_accouchement_eutociques__indigent",
+              "claimed": "KTjB9kegMwy",
+              "verified": "pjagAx2ZbPH",
+              "amount": "dQkFdmR4GrQ",
+              "price_unit": "Hl8BVyiWztl",
+              "difference_percentage": "vMX7hxigf8Y"
+            },
+            {
+              "name": "Quantity- PMA- 12.2 Accouchement dystociques - indigent",
+              "code": "quantity_pma_12_2_accouchement_dystociques__indigent",
+              "claimed": "LLc78x5o4Xw",
+              "verified": "K37g4ivKZFt",
+              "amount": "M1qWDSeNs4w",
+              "price_unit": "a2zRCijmnul",
+              "difference_percentage": "DTMyueyuWRd"
+            },
+            {
+              "name": "Quantity- PMA- 1.2 Cons externe nvv - médecin",
+              "code": "quantity_pma_1_2_cons_externe_nvv__medecin",
+              "claimed": "r6NG3gn0suZ",
+              "verified": "XfzKkEhrjAX",
+              "amount": "KM6k2ZrBoLo",
+              "price_unit": "LIDJgrRiKvq",
+              "difference_percentage": "lpudGjrLrxO"
+            },
+            {
+              "name": "Quantity- PMA- 1.3.1 Cons externe nv - indigent- épidémie/Crise humanitaire",
+              "code": "quantity_pma_1_3_cons_externe_nv__indigent_epidemie_crise_humanitaire",
+              "claimed": "ruIasl6zphN",
+              "verified": "ZVdBYablBlX",
+              "amount": "rx9bPtK4k8R",
+              "price_unit": "tVeaVOM0RVc",
+              "difference_percentage": "gu7o3HFIGTJ"
+            },
+            {
+              "name": "Quantity - PMA - 1.4 Consultation externe, nouveaux cas de malnutrition aigüe sévère MAS",
+              "code": "quantity__pma__1_4_consultation_externe_nouveaux_cas_de_malnutrition_aigue_severe_mas",
+              "claimed": "u31Mr8cDKAR",
+              "verified": "rcqrbJeYwci",
+              "amount": "kvUmYFz6owe",
+              "price_unit": "TN9C7oK8pEX",
+              "difference_percentage": "nK92kNYHg6a"
+            },
+            {
+              "name": "Quantity- PMA- 17.1 Dépistage volontaire VIH/SIDA y compris femmes enceintes",
+              "code": "quantity_pma_17_1_depistage_volontaire_vih_sida_y_compris_femmes_enceintes",
+              "claimed": "mkv1L7Rx2SG",
+              "verified": "F69Ld79A6lV",
+              "amount": "VCWmRgjqNxE",
+              "price_unit": "c3o1pYWse5r",
+              "difference_percentage": "M80tStnqzBJ"
+            },
+            {
+              "name": "Quantity- PMA- 20.1 Dépistage des cas TBC positifs par mois",
+              "code": "quantity_pma_20_1_depistage_des_cas_tbc_positifs_par_mois",
+              "claimed": "hGnW1ltJaS6",
+              "verified": "IA5uKOjI9F2",
+              "amount": "sLIW3ckSRXx",
+              "price_unit": "H2J1v9L0LWO",
+              "difference_percentage": "xRMPwlauMV1"
+            },
+            {
+              "name": "Quantity- PMA- 21.1 Cas TBC traités et guéris",
+              "code": "quantity_pma_21_1_cas_tbc_traites_et_gueris",
+              "claimed": "kRhs5zFrcGK",
+              "verified": "M1fe7D3GdFB",
+              "amount": "nBi7rS2eKL8",
+              "price_unit": "beZd79g1lCd",
+              "difference_percentage": "wNItcjBMath"
+            },
+            {
+              "name": "Quantity- PMA- 22.1 Visite à domicile selon protocole",
+              "code": "quantity_pma_22_1_visite_a_domicile_selon_protocole",
+              "claimed": "NpV1ek5asMh",
+              "verified": "Oprm8IBzzZv",
+              "amount": "a6ejlRk1eSd",
+              "price_unit": "W5SX92R3cTR",
+              "difference_percentage": "nzTzNiNYJa4"
+            },
+            {
+              "name": "Quantity - PMA - 23.2 Références communautaires des cas de fistules obstétricales arrivés à l'hôpital de District",
+              "code": "quantity__pma__23_2_references_communautaires_des_cas_de_fistules_obstetricales_arrives_a_l_hopital_de_district",
+              "claimed": "sFz30WEsnd6",
+              "verified": "kzW3SqskXT5",
+              "amount": "eAqeKPww2DV",
+              "price_unit": "u0X5LV19OvP",
+              "difference_percentage": "vJbsJrElOLE"
+            },
+            {
+              "name": "Quantity- PMA- 24.1 Cas abandon récupérés relais communautaires (plafond 2Percent CE)",
+              "code": "quantity_pma_24_1_cas_abandon_recuperes_relais_communautaires_plafond_2percent_ce",
+              "claimed": "SVh2i9rKa00",
+              "verified": "fy41vyAEsb0",
+              "amount": "k2bfh96L01K",
+              "price_unit": "jYVnDxEozbn",
+              "difference_percentage": "eamLsEUEWs6"
+            },
+            {
+              "name": "Quantity - PMA - 24.2 Cas d’abandon de MAS récupérée (plafond 2% CE)",
+              "code": "quantity_pma_24_2_cas_dabandon_de_mas_recuperee_plafond_2_percent_ce",
+              "claimed": "NtlBqnN61aO",
+              "verified": "LijGCzQpxvB",
+              "amount": "yDcNhTjuv67",
+              "price_unit": "H9fZFSlG7tm",
+              "difference_percentage": "Ke9CoEkioYj"
+            },
+            {
+              "name": "Quantity- PMA- 3.1 Petite chirurgie",
+              "code": "quantity_pma_3_1_petite_chirurgie",
+              "claimed": "JjXmbxgIGoi",
+              "verified": "kkanscjGYYe",
+              "amount": "LnjL0fBM8N0",
+              "price_unit": "jZzVpYocuxw",
+              "difference_percentage": "geGRoUv5x3d"
+            },
+            {
+              "name": "Quantity- PMA- 3.2 Petite chirurgie - indigent",
+              "code": "quantity_pma_3_2_petite_chirurgie__indigent",
+              "claimed": "MI81fnsHqzb",
+              "verified": "tjd10veh8Ve",
+              "amount": "pMgxxh7nKFe",
+              "price_unit": "RHplaY7c9Xl",
+              "difference_percentage": "LtOFyvtLVAQ"
+            },
+            {
+              "name": "Quantity - PMA - 4.2 Références arrivées à l’hôpital cas de MAS",
+              "code": "quantity_pma_4_2_references_arrivees_a_lhopital_cas_de_mas",
+              "claimed": "oJHArZ2Fu7O",
+              "verified": "OMRSAZ2RL4g",
+              "amount": "EWQec2wDbaF",
+              "price_unit": "Eg23CyTjI4U",
+              "difference_percentage": "v6rwVlmc1BK"
+            },
+            {
+              "name": "Quantity- PMA- 27.1 Suivi de la croissance des enfants de 0 à 24 mois",
+              "code": "quantity_pma_suivi_de_la_croissance_des_enfants_",
+              "claimed": "BhOm84HRWTJ",
+              "verified": "RVAFAEOZnKj",
+              "amount": "PlR5jgL7MIk",
+              "price_unit": "K1X6xQ9MKjQ",
+              "difference_percentage": "ztQsRMnazFc"
+            },
+            {
+              "name": "Quantity- PMA- 15.1 PF: Nouvelles ou ancienne acceptantes pilules ou injectables",
+              "code": "quantity_pma_15_1_pf_nouvelles_ou_ancienne_acceptantes_pilules_ou_injectables",
+              "claimed": "o3eVfwlwT12",
+              "verified": "RRdUDNXHdL8",
+              "amount": "Q3sRjGvKRGz",
+              "price_unit": "CqMZslXNPe4",
+              "difference_percentage": "pDnIsJuYod7"
+            },
+            {
+              "name": "Quantity- PMA- 12.1 Accouchement dystociques",
+              "code": "quantity_pma_12_1_accouchement_dystociques",
+              "claimed": "CZxmsKDkVJc",
+              "verified": "b2BMjHV3ibG",
+              "amount": "RseVGvEkhI4",
+              "price_unit": "EcUQs8tvgdZ",
+              "difference_percentage": "Vv9EaDY1tYk"
+            },
+            {
+              "name": "Quantity- PMA- 9.1 Distribution VIT A",
+              "code": "quantity_pma_9_1_distribution_vit_a",
+              "claimed": "jRyJZZ7QHJP",
+              "verified": "imRzE5nOnrP",
+              "amount": "VakLAF5vTYG",
+              "price_unit": "i4Aq3TvNuwl",
+              "difference_percentage": "z2ylz7zoQHW"
+            },
+            {
+              "name": "Quantity- PMA- 5.1 Cas IST traité selon le protocole",
+              "code": "quantity_pma_5_1_cas_ist_traite_selon_le_protocole",
+              "claimed": "ZzvPeVHAW8r",
+              "verified": "YtrcJfMKQlJ",
+              "amount": "gAXSCfSdIGi",
+              "price_unit": "U2pmFTrQQFk",
+              "difference_percentage": "ZrpWsLViYrU"
+            },
+            {
+              "name": "Quantity- PMA- 4.1 Références arrivées à l'hôpital",
+              "code": "quantity_pma_4_1_references_arrivees_a_l_hopital",
+              "claimed": "tcZMCN0evf6",
+              "verified": "dSLDSPw5DSC",
+              "amount": "LO1FArnV0QR",
+              "price_unit": "mvffmKJXMEv",
+              "difference_percentage": "kMUUp4HKY0y"
+            },
+            {
+              "name": "Quantity- PMA- 2.1 Journée hospitalisation-indigent- épidémie-crise humanitaire",
+              "code": "quantity_pma_2_1_journee_hospitalisation_indigent_epidemie_crise_humanitaire",
+              "claimed": "l3o58RDuZzC",
+              "verified": "ciKTwhqSQmc",
+              "amount": "jZnupcfQeab",
+              "price_unit": "wF9DQvkDLlr",
+              "difference_percentage": "ogvzNs9lQep"
+            },
+            {
+              "name": "Quantity- PMA- 2.1 Journée d'hospitalisation",
+              "code": "quantity_pma_2_1_journee_d_hospitalisation",
+              "claimed": "LrVuWmabWat",
+              "verified": "fmbxJN7I6Gd",
+              "amount": "R3GUuDbShMn",
+              "price_unit": "Xo1oMJfqeHV",
+              "difference_percentage": "wx9ecFyAWTp"
+            },
+            {
+              "name": "Quantity- PMA- 1.1 Consultation externe nvx - infirmier",
+              "code": "quantity_pma_1_1_consultation_externe_nvx__infirmier",
+              "claimed": "I961i90uUz1",
+              "verified": "FwBl7khxY1h",
+              "amount": "Cbl2tyV4QzQ",
+              "price_unit": "dlCWZolKtrN",
+              "difference_percentage": "t3ZKr6EusoE"
+            },
+            {
+              "name": "Quantity- PMA- 26.1 Enfant 6-59 mois PEC malnutrition aigüe sévère (MAS) ",
+              "code": "quantity_pma_26_1_enfant_6_59_mois_pec_malnutrition_aigue_severe_mas",
+              "claimed": "zPLPrRRzFte",
+              "verified": "Sd9yAMPJDmQ",
+              "amount": "Yfaf7bboL0z",
+              "price_unit": "gYwbKqVS3Jm",
+              "difference_percentage": "XDKdpsD9STd"
+            },
+            {
+              "name": "Quantity- PMA- 25.1 Enfant 6-59 mois PEC pour malnutrition aigüe modérée (MAM)",
+              "code": "quantity_pma_25_1_enfant_6_59_mois_pec_pour_malnutrition_aigue_moderee_mam",
+              "claimed": "DkpoYp11Gmv",
+              "verified": "GjL2sn7q1hW",
+              "amount": "hDvLWid0a9J",
+              "price_unit": "H2lwsdMELSK",
+              "difference_percentage": "SOXS5ZZ1FNS"
+            },
+            {
+              "name": "Quantity- PMA- 16.1 PF: implants ou DIU",
+              "code": "quantity_pma_16_1_pf_implants_ou_diu",
+              "claimed": "PNlIvVdaT3Y",
+              "verified": "ZLazfwgskO6",
+              "amount": "ONgyt6d2eLt",
+              "price_unit": "kXyC8GOCH2V",
+              "difference_percentage": "TJzDx6xuZUw"
+            }
+          ],
+          "data_set_ids": ["IPz4hXirYXo", "rP3Fg3KAlF6", "PvfbZP0uKfb"],
+          "data_element_group_ids": [
+            "BhVQN83sycc",
+            "Pl8R9daxNCd",
+            "iQzAMcosi37"
+          ],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "payment per indicator",
+              "description": "payment per indicator",
+              "expression": "quantity * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "quantity": {
+              "short_name": "quantity to be payed",
+              "description": "quantity to be payed",
+              "expression": "IF (ABS(difference_percentage) <= 10, verified , 0.0)",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "price unit",
+              "description": "price unit",
+              "expression": "tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "difference_percentage": {
+              "short_name": "Difference in percent between declared and verified",
+              "description": "Difference in percent between declared and verified",
+              "expression": "safe_div (claimed - verified , verified ) * 100.0\r\n",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pma_quantity_total": {
+              "short_name": "Payment for all indicators",
+              "description": "Payment for all indicators",
+              "expression": "SUM(%{amount_values})",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "JruU6iWuQRA"
+            }
+          }
+        }
+      },
+      "output_data_sets": [
+        { "frequency": "monthly", "id": "Ln7Ck4DSxmM" },
+        { "frequency": "quarterly", "id": "gwmjnxq4Y7n" }
+      ]
+    },
+    "total_payment_pma_subcontract": {
+      "name": "Total Payment- PMA- Subcontract",
+      "frequency": "monthly",
+      "formulas": {
+        "total_quality_score_pma_synth": {
+          "short_name": "Total quality score- %",
+          "description": "Total quality score- %",
+          "expression": "pma_total_technical_quality_weighted + pma_amount_patient_satisfaction_weighted + amount_index_tool_weighted",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "WfWndcRtDrA"
+        },
+        "pma_equity_bonus_synth": {
+          "short_name": "pma equity bonus",
+          "description": "pma equity bonus",
+          "expression": "(equity_bonus/100) * amount_subcontract_pma",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "ziIlbUNy0ic"
+        },
+        "total_pma_with_equity_synth": {
+          "short_name": "total pma with equity",
+          "description": "total pma with equity",
+          "expression": "pma_equity_bonus_synth + amount_subcontract_pma",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "ehmcb82PH7F"
+        },
+        "total_payment_pma_subcontract": {
+          "short_name": "total payment",
+          "description": "total payment",
+          "expression": "pma_total_quantity_and_quality_synth + amount_baq_pma_synth ",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "fAUaK8yG7d4"
+        },
+        "pma_total_quantity_and_quality_synth": {
+          "short_name": "Total payment quantity and quality, without BAQ",
+          "description": "Total payment quantity and quality, without BAQ",
+          "expression": " total_pma_with_equity_synth + pma_quality_bonus_synth",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "p0alAzCslFh"
+        },
+        "pma_quality_bonus_synth": {
+          "short_name": "Pma quality bonus",
+          "description": "Pma quality bonus",
+          "expression": "0.15 * total_quality_score_decimal_pma_synth * quarterly_quantity_and_equity",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "C7GLeNUflqs"
+        },
+        "pma_total_technical_quality_weighted": {
+          "short_name": "pma_total_technical_quality_weighted",
+          "description": "pma_total_technical_quality_weighted",
+          "expression": ".35 * pma_total_technical_quality",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "ZXaO0xUDE1P"
+        },
+        "pma_amount_patient_satisfaction_weighted": {
+          "short_name": "pma_amount_patient_satisfaction_weighted",
+          "description": "pma_amount_patient_satisfaction_weighted",
+          "expression": ".35 * pma_amount_patient_satisfaction",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "o4zlEhdF7R7"
+        },
+        "amount_index_tool_weighted": {
+          "short_name": "amount_index_tool_weighted",
+          "description": "amount_index_tool_weighted",
+          "expression": ".3 * amount_index_tool",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "xfZMMb6oCx2"
+        },
+        "quarterly_quantity_and_equity": {
+          "short_name": "Quarterly production",
+          "description": "Quarterly production",
+          "expression": "SUM(%{total_pma_with_equity_synth_previous_values}, total_pma_with_equity_synth)",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "wG4Me6ZV7EZ"
+        },
+        "total_quality_score_decimal_pma_synth": {
+          "short_name": "total quality score- decimal",
+          "description": "total quality score- decimal",
+          "expression": "total_quality_score_pma_synth *1\r\n",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "VGGLB8UzXdg"
+        }
+      },
+      "packages": {
+        "quality_pma_satisfaction_du_patient": {
+          "name": "Quality- PMA- Satisfaction du Patient",
+          "description": null,
+          "code": "quality_pma_satisfaction_du_patient",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality- PMA- Satisfaction du Patient",
+              "code": "quality_pma_satisfaction_du_patient",
+              "verified": "tMLFyuggLmB"
+            }
+          ],
+          "data_set_ids": ["BMSAf9anFMf"],
+          "data_element_group_ids": ["mvceaGtZAcd"],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount_percent": {
+              "short_name": "% patient satisfaction",
+              "description": "% patient satisfaction",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pma_amount_patient_satisfaction": {
+              "short_name": "% patient satisfaction score",
+              "description": "% patient satisfaction score",
+              "expression": "MAX( %{amount_percent_values} )",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "jsgRgA3fvkH"
+            }
+          }
+        },
+        "outil_indice": {
+          "name": "Outil Indice",
+          "description": null,
+          "code": "outil_indice",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Outil Indice",
+              "code": "outil_indice",
+              "verified": "mJubyzLqUjO"
+            }
+          ],
+          "data_set_ids": ["b0KTJoASI0i"],
+          "data_element_group_ids": ["EZYJvxAfMfb"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_index_tool": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "MAX(%{amount_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "k86dy3r7dNy"
+            }
+          }
+        },
+        "baq__pma__subcontract": {
+          "name": "BAQ - PMA - Subcontract",
+          "description": null,
+          "code": "baq__pma__subcontract",
+          "frequency": "monthly",
+          "kind": "multi-groupset",
+          "activities": [
+            {
+              "name": "BAQ- PMA",
+              "code": "baq_pma",
+              "verified": "dMBQ02gak2v",
+              "amount": "vxRrKMC90LH",
+              "synth_verified": "hs6cph2oBS7"
+            }
+          ],
+          "data_set_ids": ["Q2Mj2lETLLD", "CvQPUjVkoGz"],
+          "data_element_group_ids": ["jjbnt1KZIOc", "mo2h25ON8UL"],
+          "main_org_unit_group_ids": ["g5G55uqglob"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": "pHH6kYd3i98",
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "total paid for BAQ",
+              "description": "total paid for BAQ",
+              "expression": "verified * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "synth_verified": {
+              "short_name": "synth_verified",
+              "description": "synth_verified",
+              "expression": "verified",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_baq_pma_synth": {
+              "short_name": "total BAQ payment",
+              "description": "total BAQ payment",
+              "expression": "SUM (  %{amount_values} )",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "eLwa6CU493t"
+            }
+          }
+        },
+        "equity_bonus": {
+          "name": "Equity Bonus",
+          "description": null,
+          "code": "equity_bonus",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Equity Bonus",
+              "code": "equity_bonus",
+              "verified": "oBR9k79Sw5O"
+            }
+          ],
+          "data_set_ids": ["P4VcVFuJwnL"],
+          "data_element_group_ids": ["aR2zhUjYz0y"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "equity_bonus": {
+              "short_name": "equity_bonus",
+              "description": "equity_bonus",
+              "expression": "verified",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {}
+        },
+        "total_technical_quality__pma": {
+          "name": "Total Technical Quality - PMA",
+          "description": null,
+          "code": "total_technical_quality__pma",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality - PMA - Technical Quality Score (%)",
+              "code": "quality__pma__technical_quality_score",
+              "verified": "d5Ngfxa7lQ2"
+            }
+          ],
+          "data_set_ids": ["MEnI9J38WTc"],
+          "data_element_group_ids": ["gLjV4tpKVKm"],
+          "main_org_unit_group_ids": ["g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "pma_technical_quality_score": {
+              "short_name": "verified value",
+              "description": "verified value",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pma_total_technical_quality": {
+              "short_name": "verified value",
+              "description": "verified value",
+              "expression": "max(%{pma_technical_quality_score_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "HXXIlvPZsiK"
+            }
+          }
+        },
+        "quantity__pma_subcontract": {
+          "name": "Quantity - PMA- Subcontract",
+          "description": "",
+          "code": "quantity__pma_subcontract",
+          "frequency": "monthly",
+          "kind": "multi-groupset",
+          "activities": [
+            {
+              "name": "Quantity- PMA- 23.1 Cas référés relais communautaire et arrivé (plafond 5Percent des CE)",
+              "code": "quantity_pma_23_1_cas_referes_relais_communautaire_et_arrive_plafond_5percent_des_ce",
+              "claimed": "u9CvRPjdC69",
+              "verified": "SEOSbjfYQKr",
+              "amount": "xAiYQy2QTy3",
+              "synth_claimed": "hjKbdqMvYUt",
+              "synth_verified": "JvTG8j3Q3m2",
+              "difference_percentage": "ytCamV8Pm9L"
+            },
+            {
+              "name": "11.0-Cheque Santé vendu",
+              "code": "11_0_cheque_sante_vendu",
+              "claimed": "sk0qaGG7Xuz",
+              "verified": "cPQs0K96TfA",
+              "amount": "t832wIF8NCy",
+              "synth_claimed": "XIFFZWObtdq",
+              "synth_verified": "o1k8ZysFK7i",
+              "difference_percentage": "ET1MYzulOee"
+            },
+            {
+              "name": "13.1-Soins après avortement spontané",
+              "code": "13_1_soins_apres_avortement",
+              "claimed": "p0GuGW2NNL5",
+              "verified": "E2Snr6kwFeq",
+              "amount": "KcpG61vMTNS",
+              "synth_claimed": "VDQ1Exkc6KN",
+              "synth_verified": "BEeFvuQRtTe",
+              "difference_percentage": "XNm5Vt05bfm"
+            },
+            {
+              "name": "14.1-Consultation postnatale Mère et Enfant",
+              "code": "14_1_cpon_mere_et_enfant",
+              "claimed": "BUwdXNNcDQh",
+              "verified": "S70Fr8MYELP",
+              "amount": "mmbSnQM0txu",
+              "synth_claimed": "mSjsaxdWNjU",
+              "synth_verified": "QYAdRm22kUX",
+              "difference_percentage": "NGgiV673lsF"
+            },
+            {
+              "name": "18.1-Nouveaux cas de VIH mis sous ARV y compris les femmes enceintes",
+              "code": "18_1_nouveaux_cas_de_vih__mis_sous_arv",
+              "claimed": "AKD3DOSqWw5",
+              "verified": "HmESaHzwEZT",
+              "amount": "gCiG05tE9DN",
+              "synth_claimed": "rZG3Uuhdrhd",
+              "synth_verified": "Plv0LEXwad4",
+              "difference_percentage": "NUbcVf3gWJh"
+            },
+            {
+              "name": "18.2-Patients sous ARV suivis pendant les 6 premiers mois après l’initiation",
+              "code": "18_2_patients_sous_arv_suivi_les_6",
+              "claimed": "yrWYPjAEDrF",
+              "verified": "nFXnPzQhFzk",
+              "amount": "NA4u9F8dAsV",
+              "synth_claimed": "klGvxTo0jXP",
+              "synth_verified": "hbc6rGNm1A2",
+              "difference_percentage": "UPU7bCETwbX"
+            },
+            {
+              "name": "18.3-Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable",
+              "code": "18_3_patients_sous_arv_suivis_les_12",
+              "claimed": "x9C7rNvTVU5",
+              "verified": "SNa1S8Apa5t",
+              "amount": "zhTUhvZczQo",
+              "synth_claimed": "BJhQYFFFm9X",
+              "synth_verified": "eQvgrv6SzsX",
+              "difference_percentage": "aNPgiHfNPtm"
+            },
+            {
+              "name": "19.1 Prise en charge du nouveau-né d'une femme VIH+ y compris le dépistage précoce à la PCR",
+              "code": "19_1_pec_nouveau_ne_femme_vih",
+              "claimed": "g4c7sByj2vP",
+              "verified": "di70edcYLlZ",
+              "amount": "tWMnTe82LLI",
+              "synth_claimed": "CjxhNWid4lc",
+              "synth_verified": "P56fqH6ekBX",
+              "difference_percentage": "rknESHCbiOB"
+            },
+            {
+              "name": "26.0-Enfant de 6-59 mois dépistés pour Malnutrition aiguë modérée ou sévère",
+              "code": "26_0_enfant_6_59_mois_depistes_mam_ou_mas",
+              "claimed": "R1t4iuusQe3",
+              "verified": "hiGZzNVWV5e",
+              "amount": "Q8ZoOUAPMeE",
+              "synth_claimed": "m2s5YD49jVW",
+              "synth_verified": "gCmobcOqJ4b",
+              "difference_percentage": "i8iyUaQ5D5X"
+            },
+            {
+              "name": "Etat civil 1 - Naissances déclarées",
+              "code": "etat_civil_1",
+              "claimed": "lLC26FoM7vI",
+              "verified": "UtxcFP7Iewl",
+              "amount": "sPOlj5NqiI1",
+              "synth_claimed": "lJK2EeM1cyp",
+              "synth_verified": "NRctbtZZpO7",
+              "difference_percentage": "wAgW3sTm2fW"
+            },
+            {
+              "name": "Etat civil 2 - Décès déclarés",
+              "code": "etat_civil_2",
+              "claimed": "NrijU6LcEMA",
+              "verified": "CDccyPG60WE",
+              "amount": "LsIpxn4k7Of",
+              "synth_claimed": "fwHSkO1A66m",
+              "synth_verified": "HKQiMVAxBoh",
+              "difference_percentage": "pZEg6B3KKa4"
+            },
+            {
+              "name": "Etat civil 3 - Certificat d’âge apparent délivré",
+              "code": "etat_civil_3",
+              "claimed": "kYJm37Bbw0g",
+              "verified": "D5qYfkGcKsg",
+              "amount": "YnGwcbIi4hG",
+              "synth_claimed": "a5gH9MelVPy",
+              "synth_verified": "DC02z6u4kcQ",
+              "difference_percentage": "mqDOwoFQEoR"
+            },
+            {
+              "name": "6.1 -Enfant ayant reçu tous les vaccins d’un contact",
+              "code": "pma_06_1",
+              "claimed": "gIccNciUJ2x",
+              "verified": "CA8nNEeqz7S",
+              "amount": "UrWBABr2ajV",
+              "synth_claimed": "Z6n1okpTcI6",
+              "synth_verified": "ilvnu4Xeiem",
+              "difference_percentage": "SEV0Tdoc77I"
+            },
+            {
+              "name": "6.2 TD2 ou TD3 ou TD4 ou TD5",
+              "code": "pma_06_2",
+              "claimed": "i9jileBYh4y",
+              "verified": "q4HuF1HNsCs",
+              "amount": "yOYRDJRJh5J",
+              "synth_claimed": "ZBf6V3JdBYQ",
+              "synth_verified": "VtIECwij5n3",
+              "difference_percentage": "iocl2Jg0xk6"
+            },
+            {
+              "name": "7.1-TPI1 ou TPI2 ou TPI3 ou TPI4",
+              "code": "pma_07_1",
+              "claimed": "tc8TyEkf8TA",
+              "verified": "fi7PQd0NsAu",
+              "amount": "WitHAcdAZpH",
+              "synth_claimed": "bMQchcd1Q46",
+              "synth_verified": "eCcekoq5hQO",
+              "difference_percentage": "XPlVYK82WHf"
+            },
+            {
+              "name": "9.2-Déparasitage des enfants de 6 à 59 mois",
+              "code": "pma_09_2",
+              "claimed": "GaZmjaDVSJu",
+              "verified": "MartWsMiOmn",
+              "amount": "DTn4HkQjpqB",
+              "synth_claimed": "tCQbBvDooqu",
+              "synth_verified": "lhGviWS9sB8",
+              "difference_percentage": "c8atjHZTt49"
+            },
+            {
+              "name": "10.1-CPN 1 à CPN 8",
+              "code": "pma_10_1",
+              "claimed": "aPrKzZir9sh",
+              "verified": "IrkNBz42hND",
+              "amount": "xBdgYnS92lg",
+              "synth_claimed": "sFQeNKH7scs",
+              "synth_verified": "mR03yf3i2CL",
+              "difference_percentage": "HuXx5gMKCXX"
+            },
+            {
+              "name": "Quantity- PMA- 11.1 Accouchement eutociques",
+              "code": "quantity_pma_11_1_accouchement_eutociques",
+              "claimed": "pzWtrJXrYYI",
+              "verified": "SbhKv1FFN2S",
+              "amount": "PhfGvpA5Soo",
+              "synth_claimed": "ERY2UEWdQqI",
+              "synth_verified": "iOz7ZXBRXBH",
+              "difference_percentage": "TH8RbBQWYxS"
+            },
+            {
+              "name": "Quantity- PMA- 11.2 Accouchement eutociques - indigent",
+              "code": "quantity_pma_11_2_accouchement_eutociques__indigent",
+              "claimed": "KTjB9kegMwy",
+              "verified": "pjagAx2ZbPH",
+              "amount": "BPGF6Z134ce",
+              "synth_claimed": "xHRbcLqbFW5",
+              "synth_verified": "DOMVjcWLABz",
+              "difference_percentage": "rFWgQ69lkTN"
+            },
+            {
+              "name": "Quantity- PMA- 12.2 Accouchement dystociques - indigent",
+              "code": "quantity_pma_12_2_accouchement_dystociques__indigent",
+              "claimed": "LLc78x5o4Xw",
+              "verified": "K37g4ivKZFt",
+              "amount": "ovAPIWmNnvW",
+              "synth_claimed": "Ia8MvcVYFhx",
+              "synth_verified": "UXdOoCONfZT",
+              "difference_percentage": "Y7EAHN5VFPV"
+            },
+            {
+              "name": "Quantity- PMA- 1.2 Cons externe nvv - médecin",
+              "code": "quantity_pma_1_2_cons_externe_nvv__medecin",
+              "claimed": "r6NG3gn0suZ",
+              "verified": "XfzKkEhrjAX",
+              "amount": "ggCGHJFbfe9",
+              "synth_claimed": "gAuVX5VjLF3",
+              "synth_verified": "ouXhBlVBy7S",
+              "difference_percentage": "xDyoNSwIklt"
+            },
+            {
+              "name": "Quantity- PMA- 1.3.1 Cons externe nv - indigent- épidémie/Crise humanitaire",
+              "code": "quantity_pma_1_3_cons_externe_nv__indigent_epidemie_crise_humanitaire",
+              "claimed": "ruIasl6zphN",
+              "verified": "ZVdBYablBlX",
+              "amount": "a9a3aTD96GI",
+              "synth_claimed": "evP0y3GU169",
+              "synth_verified": "vD1aZtP1nXz",
+              "difference_percentage": "Ch5RCCKVocN"
+            },
+            {
+              "name": "Quantity - PMA - 1.4 Consultation externe, nouveaux cas de malnutrition aigüe sévère MAS",
+              "code": "quantity__pma__1_4_consultation_externe_nouveaux_cas_de_malnutrition_aigue_severe_mas",
+              "claimed": "u31Mr8cDKAR",
+              "verified": "rcqrbJeYwci",
+              "amount": "FTZOnyW1X7X",
+              "synth_claimed": "WahWIgCXuub",
+              "synth_verified": "TiNDmN0gLVm",
+              "difference_percentage": "RDeQ0QRa0up"
+            },
+            {
+              "name": "Quantity- PMA- 17.1 Dépistage volontaire VIH/SIDA y compris femmes enceintes",
+              "code": "quantity_pma_17_1_depistage_volontaire_vih_sida_y_compris_femmes_enceintes",
+              "claimed": "mkv1L7Rx2SG",
+              "verified": "F69Ld79A6lV",
+              "amount": "QsfrAvdW7my",
+              "synth_claimed": "g9dPk9At45S",
+              "synth_verified": "Ce3G9X3aVoX",
+              "difference_percentage": "XX0OnN2jteT"
+            },
+            {
+              "name": "Quantity- PMA- 20.1 Dépistage des cas TBC positifs par mois",
+              "code": "quantity_pma_20_1_depistage_des_cas_tbc_positifs_par_mois",
+              "claimed": "hGnW1ltJaS6",
+              "verified": "IA5uKOjI9F2",
+              "amount": "LBmMrMOWFsz",
+              "synth_claimed": "LozJGELa7PV",
+              "synth_verified": "pkIP5BcRgBn",
+              "difference_percentage": "Pyums1axjeL"
+            },
+            {
+              "name": "Quantity- PMA- 21.1 Cas TBC traités et guéris",
+              "code": "quantity_pma_21_1_cas_tbc_traites_et_gueris",
+              "claimed": "kRhs5zFrcGK",
+              "verified": "M1fe7D3GdFB",
+              "amount": "krCZNAqIsM1",
+              "synth_claimed": "kpm0jQyvDRT",
+              "synth_verified": "D0LW7hXp8dq",
+              "difference_percentage": "doCRqjSRSxV"
+            },
+            {
+              "name": "Quantity- PMA- 22.1 Visite à domicile selon protocole",
+              "code": "quantity_pma_22_1_visite_a_domicile_selon_protocole",
+              "claimed": "NpV1ek5asMh",
+              "verified": "Oprm8IBzzZv",
+              "amount": "h1HapyqeE1Q",
+              "synth_claimed": "MjzyvlPLx8c",
+              "synth_verified": "Xb4yDQTi1ZI",
+              "difference_percentage": "INMOR6tBXWZ"
+            },
+            {
+              "name": "Quantity - PMA - 23.2 Références communautaires des cas de fistules obstétricales arrivés à l'hôpital de District",
+              "code": "quantity__pma__23_2_references_communautaires_des_cas_de_fistules_obstetricales_arrives_a_l_hopital_de_district",
+              "claimed": "sFz30WEsnd6",
+              "verified": "kzW3SqskXT5",
+              "amount": "aKM2uSY7yFu",
+              "synth_claimed": "sN6h7vG8GRa",
+              "synth_verified": "hau5WCR1FeY",
+              "difference_percentage": "D2eQgBk7tvW"
+            },
+            {
+              "name": "Quantity- PMA- 24.1 Cas abandon récupérés relais communautaires (plafond 2Percent CE)",
+              "code": "quantity_pma_24_1_cas_abandon_recuperes_relais_communautaires_plafond_2percent_ce",
+              "claimed": "SVh2i9rKa00",
+              "verified": "fy41vyAEsb0",
+              "amount": "IyQ9WnDAZx1",
+              "synth_claimed": "bLZhX1JeHo3",
+              "synth_verified": "TJdMENcCpbE",
+              "difference_percentage": "qxcVEcJuuBN"
+            },
+            {
+              "name": "Quantity - PMA - 24.2 Cas d’abandon de MAS récupérée (plafond 2% CE)",
+              "code": "quantity_pma_24_2_cas_dabandon_de_mas_recuperee_plafond_2_percent_ce",
+              "claimed": "NtlBqnN61aO",
+              "verified": "LijGCzQpxvB",
+              "amount": "p02eNy4gyoY",
+              "synth_claimed": "X9ZIgbFhDiy",
+              "synth_verified": "lNpmcuRH1qN",
+              "difference_percentage": "bEH1t2kn0Wg"
+            },
+            {
+              "name": "Quantity- PMA- 3.1 Petite chirurgie",
+              "code": "quantity_pma_3_1_petite_chirurgie",
+              "claimed": "JjXmbxgIGoi",
+              "verified": "kkanscjGYYe",
+              "amount": "wItKUYFoGkn",
+              "synth_claimed": "ajWdoMiRpQn",
+              "synth_verified": "dPqnLlykVxY",
+              "difference_percentage": "uKYlZSmd3td"
+            },
+            {
+              "name": "Quantity- PMA- 3.2 Petite chirurgie - indigent",
+              "code": "quantity_pma_3_2_petite_chirurgie__indigent",
+              "claimed": "MI81fnsHqzb",
+              "verified": "tjd10veh8Ve",
+              "amount": "o0EPpnhS4fY",
+              "synth_claimed": "OxL5C1YKlP1",
+              "synth_verified": "LzGme9vrgXt",
+              "difference_percentage": "wMdOQAFju9H"
+            },
+            {
+              "name": "Quantity - PMA - 4.2 Références arrivées à l’hôpital cas de MAS",
+              "code": "quantity_pma_4_2_references_arrivees_a_lhopital_cas_de_mas",
+              "claimed": "oJHArZ2Fu7O",
+              "verified": "OMRSAZ2RL4g",
+              "amount": "JvrKzBwjdzn",
+              "synth_claimed": "v3OxyaF22x2",
+              "synth_verified": "GMvw3N996a8",
+              "difference_percentage": "f4NK6W7tNie"
+            },
+            {
+              "name": "Quantity- PMA- 27.1 Suivi de la croissance des enfants de 0 à 24 mois",
+              "code": "quantity_pma_suivi_de_la_croissance_des_enfants_",
+              "claimed": "BhOm84HRWTJ",
+              "verified": "RVAFAEOZnKj",
+              "amount": "NVc9x23lWdh",
+              "synth_claimed": "Rt2JyPI9zZa",
+              "synth_verified": "xDOgMT6Z0IX",
+              "difference_percentage": "f45ZTBE4GFU"
+            },
+            {
+              "name": "Quantity- PMA- 16.1 PF: implants ou DIU",
+              "code": "quantity_pma_16_1_pf_implants_ou_diu",
+              "claimed": "PNlIvVdaT3Y",
+              "verified": "ZLazfwgskO6",
+              "amount": "O3TJ2qexybb",
+              "synth_claimed": "ot8BuDeHk4e",
+              "synth_verified": "efGrz0QXf68",
+              "difference_percentage": "QeUB3zXu949"
+            },
+            {
+              "name": "Quantity- PMA- 15.1 PF: Nouvelles ou ancienne acceptantes pilules ou injectables",
+              "code": "quantity_pma_15_1_pf_nouvelles_ou_ancienne_acceptantes_pilules_ou_injectables",
+              "claimed": "o3eVfwlwT12",
+              "verified": "RRdUDNXHdL8",
+              "amount": "WTy8CPoHUJz",
+              "synth_claimed": "ivprOw947hT",
+              "synth_verified": "W6kM0TwlImf",
+              "difference_percentage": "l4G1FXk5ff3"
+            },
+            {
+              "name": "Quantity- PMA- 12.1 Accouchement dystociques",
+              "code": "quantity_pma_12_1_accouchement_dystociques",
+              "claimed": "CZxmsKDkVJc",
+              "verified": "b2BMjHV3ibG",
+              "amount": "L6apNiZU0sG",
+              "synth_claimed": "RaUuJ7tT2v3",
+              "synth_verified": "pDwoqCa9d8p",
+              "difference_percentage": "k2OUAc45czn"
+            },
+            {
+              "name": "Quantity- PMA- 9.1 Distribution VIT A",
+              "code": "quantity_pma_9_1_distribution_vit_a",
+              "claimed": "jRyJZZ7QHJP",
+              "verified": "imRzE5nOnrP",
+              "amount": "HSKzc2OhcSl",
+              "synth_claimed": "FcLnNZL4rGN",
+              "synth_verified": "EdGtnigfZBH",
+              "difference_percentage": "bHOb7lF22wt"
+            },
+            {
+              "name": "Quantity- PMA- 5.1 Cas IST traité selon le protocole",
+              "code": "quantity_pma_5_1_cas_ist_traite_selon_le_protocole",
+              "claimed": "ZzvPeVHAW8r",
+              "verified": "YtrcJfMKQlJ",
+              "amount": "GZL7xTTtu76",
+              "synth_claimed": "VIVJvo3QQ7r",
+              "synth_verified": "LkE9WgcBCWz",
+              "difference_percentage": "ZuyqWwxIjqA"
+            },
+            {
+              "name": "Quantity- PMA- 4.1 Références arrivées à l'hôpital",
+              "code": "quantity_pma_4_1_references_arrivees_a_l_hopital",
+              "claimed": "tcZMCN0evf6",
+              "verified": "dSLDSPw5DSC",
+              "amount": "n06Jb69catv",
+              "synth_claimed": "oYXq9Pv0xtc",
+              "synth_verified": "EynqGiGZ9jG",
+              "difference_percentage": "csfTefxvuzA"
+            },
+            {
+              "name": "Quantity- PMA- 25.1 Enfant 6-59 mois PEC pour malnutrition aigüe modérée (MAM)",
+              "code": "quantity_pma_25_1_enfant_6_59_mois_pec_pour_malnutrition_aigue_moderee_mam",
+              "claimed": "DkpoYp11Gmv",
+              "verified": "GjL2sn7q1hW",
+              "amount": "CwW2MDMRQCi",
+              "synth_claimed": "OTKlMW5Iwcf",
+              "synth_verified": "n6c4bkpeq9Z",
+              "difference_percentage": "g0Uvorhtd0k"
+            },
+            {
+              "name": "Quantity- PMA- 26.1 Enfant 6-59 mois PEC malnutrition aigüe sévère (MAS) ",
+              "code": "quantity_pma_26_1_enfant_6_59_mois_pec_malnutrition_aigue_severe_mas",
+              "claimed": "zPLPrRRzFte",
+              "verified": "Sd9yAMPJDmQ",
+              "amount": "jfafTzheDJ0",
+              "synth_claimed": "PqGkNTrFmA1",
+              "synth_verified": "nv7hJp8iIWv",
+              "difference_percentage": "XOglphzRY6m"
+            },
+            {
+              "name": "Quantity- PMA- 2.1 Journée hospitalisation-indigent- épidémie-crise humanitaire",
+              "code": "quantity_pma_2_1_journee_hospitalisation_indigent_epidemie_crise_humanitaire",
+              "claimed": "l3o58RDuZzC",
+              "verified": "ciKTwhqSQmc",
+              "amount": "Y5cMcZvY3lb",
+              "synth_claimed": "PUzCNIdnr60",
+              "synth_verified": "UiBvbxsm061",
+              "difference_percentage": "XOLNgxIcNqn"
+            },
+            {
+              "name": "Quantity- PMA- 2.1 Journée d'hospitalisation",
+              "code": "quantity_pma_2_1_journee_d_hospitalisation",
+              "claimed": "LrVuWmabWat",
+              "verified": "fmbxJN7I6Gd",
+              "amount": "nZ5quai1Gk7",
+              "synth_claimed": "nLiZ8LHi00h",
+              "synth_verified": "lvOzlcL21Xo",
+              "difference_percentage": "Ol4gAwC998d"
+            },
+            {
+              "name": "Quantity- PMA- 1.1 Consultation externe nvx - infirmier",
+              "code": "quantity_pma_1_1_consultation_externe_nvx__infirmier",
+              "claimed": "I961i90uUz1",
+              "verified": "FwBl7khxY1h",
+              "amount": "iBrRQNGUPUS",
+              "synth_claimed": "hZqQXAH4OIR",
+              "synth_verified": "bpBLSI3611X",
+              "difference_percentage": "gFPeguj7TbZ"
+            }
+          ],
+          "data_set_ids": ["eMU2L6A5fVC", "aIY3yGcNSxk", "Kif6sCvLdZg"],
+          "data_element_group_ids": [
+            "ihAO2OCcLmp",
+            "iYDwcwybHJs",
+            "U84pzsEW7N6"
+          ],
+          "main_org_unit_group_ids": ["g5G55uqglob"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": "pHH6kYd3i98",
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "payment per indicator",
+              "description": "payment per indicator",
+              "expression": "quantity * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "price unit",
+              "description": "price unit",
+              "expression": "tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "synth_claimed": {
+              "short_name": "synth_claimed",
+              "description": "synth_claimed",
+              "expression": "claimed",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "synth_verified": {
+              "short_name": "synth_verified",
+              "description": "synth_verified",
+              "expression": "verified",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "quantity": {
+              "short_name": "quantity to be payed",
+              "description": "quantity to be payed",
+              "expression": "IF(ABS(difference_percentage) <= 10, verified , 0.0)",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "difference_percentage": {
+              "short_name": "SynthPercenError",
+              "description": "Difference in percent between declared and verified",
+              "expression": "safe_div(claimed - verified, verified ) * 100.0",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_subcontract_pma": {
+              "short_name": "amount subcontract pma",
+              "description": "amount subcontract pma",
+              "expression": "SUM(%{amount_values})",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "AdfbD27TJKD"
+            }
+          }
+        }
+      },
+      "output_data_sets": [
+        { "frequency": "monthly", "id": "eEfm6BAq51h" },
+        { "frequency": "quarterly", "id": "NYVhTOoYGOV" }
+      ]
+    },
+    "total_payment_pca": {
+      "name": "Total Payment- PCA",
+      "frequency": "monthly",
+      "formulas": {
+        "pca_equity_bonus": {
+          "short_name": "pca equity bonus",
+          "description": "pca equity bonus",
+          "expression": "(equity_bonus/100) * pca_quantity_total",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "SQb2hr4rUcd"
+        },
+        "total_pca_with_equity": {
+          "short_name": "total indicator payment + equity bonus",
+          "description": "total indicator payment + equity bonus",
+          "expression": "pca_equity_bonus + pca_quantity_total",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "FsjlT9lCJ0m"
+        },
+        "total_payment_pca": {
+          "short_name": "total payment",
+          "description": "total payment",
+          "expression": "pca_total_payment_quantity_and_quality + amount_baq_pca",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "TYhT8KBBqzf"
+        },
+        "total_quality_score_pca": {
+          "short_name": "Total quality score- %",
+          "description": "Total quality score- %",
+          "expression": "pca_total_score_weighted + pca_amount_patient_satisfaction_weighted + amount_index_tool_weighted",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "DgnNXVLYdbX"
+        },
+        "total_quality_score_decimal_pca": {
+          "short_name": "total quality score- decimal",
+          "description": "total quality score- decimal",
+          "expression": "total_quality_score_pca*1",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "Ot0bN1Sdgqe"
+        },
+        "pca_total_payment_quantity_and_quality": {
+          "short_name": "Total payment quantity and quality without BAQ",
+          "description": "Total payment quantity and quality without BAQ",
+          "expression": " total_pca_with_equity + pca_quality_bonus",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "hL2rdaSdRsG"
+        },
+        "pca_quality_bonus": {
+          "short_name": "pca_quality_bonus",
+          "description": "pca_quality_bonus",
+          "expression": "0.15 * total_quality_score_decimal_pca * quarterly_quantity_production",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "XAtVbyMKitP"
+        },
+        "quarterly_quantity_production": {
+          "short_name": "quarterly_quantity_production",
+          "description": "quarterly_quantity_production",
+          "expression": "SUM(%{total_pca_with_equity_previous_values}, total_pca_with_equity )",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "oEdCyqLB6Z6"
+        },
+        "pca_amount_patient_satisfaction_weighted": {
+          "short_name": "pca_amount_patient_satisfaction_weighted",
+          "description": "pca_amount_patient_satisfaction_weighted",
+          "expression": "(.35 * pca_amount_patient_satisfaction)",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "keqFXmP2K3l"
+        },
+        "amount_index_tool_weighted": {
+          "short_name": "amount_index_tool_weighted",
+          "description": "amount_index_tool_weighted",
+          "expression": "(.3 * amount_index_tool)",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "ZKfqAExjO71"
+        },
+        "pca_total_score_weighted": {
+          "short_name": "pca_total_score_weighted",
+          "description": "pca_total_score_weighted",
+          "expression": "(.35 * pca_total_score)",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "PAd7lqwo08l"
+        }
+      },
+      "packages": {
+        "quantity_pca": {
+          "name": "Quantity- PCA",
+          "description": null,
+          "code": "quantity_pca",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "52.3 Journée d’hospitalisation – MAS avec complication médicale (limite à 14 jours)",
+              "code": "52_3_journee_d_hospitalisation_mas_avec_complication_medicale_limite_a_14_jours",
+              "claimed": "vtpnpjGx6hL",
+              "verified": "A1Q31PxiTku",
+              "amount": "PhINI4rGwja",
+              "price_unit": "Y3kw5uoFPFA",
+              "difference_percentage": "gWTAYaEMZi1"
+            },
+            {
+              "name": "53.2 Contre référence de MAS arrives au CS",
+              "code": "53_2_contre_reference_de_mas_arrives_au_cs",
+              "claimed": "iQqHwpGtdPm",
+              "verified": "LWP5QtAsBJp",
+              "amount": "fCN8Gm2pVyS",
+              "price_unit": "KSMVKWKRBWo",
+              "difference_percentage": "yJpZ4b7IcRH"
+            },
+            {
+              "name": "60.0-Consulation Post Natale (CPON) Mère et Enfant",
+              "code": "60_0_cpon_mere_et_enfant",
+              "claimed": "ArY3huoGmny",
+              "verified": "z4C0X2GE05g",
+              "amount": "CAB5sW6M6mM",
+              "price_unit": "qFEd35cUj6x",
+              "difference_percentage": "m5vQVs5ZPm0"
+            },
+            {
+              "name": "73.1-Patients sous ARV suivis pendant les 6 premiers mois après l’initiation",
+              "code": "73_1_patients_sous_arv_suivis_les_6",
+              "claimed": "rZnkMEehwvH",
+              "verified": "w5XC7nHaexS",
+              "amount": "EfAbymUpBbD",
+              "price_unit": "zxjaEvdKgTD",
+              "difference_percentage": "ihkilbK8A62"
+            },
+            {
+              "name": "73.2-Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable",
+              "code": "73_2_patients_arv_suivis_les_12",
+              "claimed": "YhyhfApHNaX",
+              "verified": "T3x98vlrAZY",
+              "amount": "sBRnMdsP9KU",
+              "price_unit": "RL7NLPUjIlD",
+              "difference_percentage": "MbOEBUMv861"
+            },
+            {
+              "name": "75.1 Référence des cas de fistule arrivée à l'hôpital Régional de Bertoua",
+              "code": "75_1_reference_des_cas_de_fistule_arrivee_a_l_hopital_regional_de_bertoua",
+              "claimed": "NyFuXadKK0V",
+              "verified": "oSArPENebVF",
+              "amount": "ztYkrAR8wgh",
+              "price_unit": "VIUfV28cAbk",
+              "difference_percentage": "FdJ6v8O5Ped"
+            },
+            {
+              "name": "76.1-Patients victimes de viols pris en charge",
+              "code": "76_1_patients_victimes_de_viols_pec",
+              "claimed": "HcePs1Pl7rb",
+              "verified": "ErsreBf8Sft",
+              "amount": "qT8wU56RXnn",
+              "price_unit": "F33WDjpzS52",
+              "difference_percentage": "OiZ4d0fqz9A"
+            },
+            {
+              "name": "76.1 Prise en charge médicale et psychosociale des victimes de viol suivant le protocole national",
+              "code": "76_1_prise_en_charge_medicale_et_psychosociale_des_victimes_de_viol_suivant_le_protocole_national",
+              "claimed": "FVLaGr3HEPN",
+              "verified": "fzV3WcX3oPH",
+              "amount": "schAgieJYw4",
+              "price_unit": "IiMKWcvAQL0",
+              "difference_percentage": "MhzymNKRmqJ"
+            },
+            {
+              "name": "Etat civil 1 - Naissances déclarées",
+              "code": "etat_civil_1",
+              "claimed": "lLC26FoM7vI",
+              "verified": "UtxcFP7Iewl",
+              "amount": "dMkWACm5VgQ",
+              "price_unit": "GC2u7HbRRXq",
+              "difference_percentage": "ejRbYjHl1gA"
+            },
+            {
+              "name": "Etat civil 2 - Décès déclarés",
+              "code": "etat_civil_2",
+              "claimed": "NrijU6LcEMA",
+              "verified": "CDccyPG60WE",
+              "amount": "EkwA93uSs7Q",
+              "price_unit": "RT37qW0Fkyc",
+              "difference_percentage": "r3wvNnpzhQ5"
+            },
+            {
+              "name": "Etat civil 3 - Certificat d’âge apparent délivré",
+              "code": "etat_civil_3",
+              "claimed": "kYJm37Bbw0g",
+              "verified": "D5qYfkGcKsg",
+              "amount": "pb8ljdbsd2q",
+              "price_unit": "BC6JlxZEc5v",
+              "difference_percentage": "eggDKDNzsRB"
+            },
+            {
+              "name": "Quantity -PCA -51.3 Nouvelle consultation curative-médecin (nouveau cas) malnutris aigue sévère avec complications médicales MAS",
+              "code": "quantity_pca_51_3_nouvelle_consultation_curative_medecin_nouveau_cas_malnutris_aigue_severe_avec_complications_medicales_mas",
+              "claimed": "wHNxK5WOpBy",
+              "verified": "xIbj52TkT53",
+              "amount": "XDMkPFGUyqG",
+              "price_unit": "knwLdaOPObW",
+              "difference_percentage": "ZWOOc1V4v5N"
+            },
+            {
+              "name": "Quantity- PCA- 54.1 CAS IST traité selon le protocole",
+              "code": "quantity_pca_54_1_cas_ist_traite_selon_le_protocole",
+              "claimed": "nRFvsUZo4RG",
+              "verified": "kKOFv5OIv7E",
+              "amount": "GRhY2KN3cbY",
+              "price_unit": "kjsGPvfHOdX",
+              "difference_percentage": "pvKCBOorass"
+            },
+            {
+              "name": "Quantity- PCA- 55.1 Dépistage des cas TBC positifs par mois",
+              "code": "quantity_pca_55_1_depistage_des_cas_tbc_positifs_par_mois",
+              "claimed": "jCQHdlhDLeD",
+              "verified": "qmweNbtDfCL",
+              "amount": "jU6PnVAjD34",
+              "price_unit": "CwXFSS0d1RW",
+              "difference_percentage": "WIYmpTkOTLO"
+            },
+            {
+              "name": "Quantity- PCA- 56.1 Cas TBC traités et guéris",
+              "code": "quantity_pca_56_1_cas_tbc_traites_et_gueris",
+              "claimed": "gAVeyX6pzpq",
+              "verified": "zgzwf9WWxz4",
+              "amount": "aaEzzLkIbnM",
+              "price_unit": "bb2ph8WvhCw",
+              "difference_percentage": "F99RkvgZZQU"
+            },
+            {
+              "name": "Quantity- PCA- 57.1 Chirurgie Majeure (non césariennes + fistules)",
+              "code": "quantity_pca_57_1_chirurgie_majeure_non_cesariennes_fistules",
+              "claimed": "mn1qDLHo0yV",
+              "verified": "oXXWrzShchd",
+              "amount": "V8zyNFiHZnU",
+              "price_unit": "qDDsUAQwSOU",
+              "difference_percentage": "ph70TAwIhz0"
+            },
+            {
+              "name": "Quantity- PCA- 57.2 Chirurgie Majeure (non césariennes + fistules) - indigent",
+              "code": "quantity_pca_57_2_chirurgie_majeure_non_cesariennes_fistules__indigent",
+              "claimed": "oOPr4qqNtmq",
+              "verified": "S0d8984L17s",
+              "amount": "reqecIeOw5h",
+              "price_unit": "CsTz8HbGkrZ",
+              "difference_percentage": "Mp34Z8rOkpM"
+            },
+            {
+              "name": "Quantity- PCA- 60.1  Accouchement eutociques",
+              "code": "quantity_pca_60_1_accouchement_eutociques",
+              "claimed": "zcLHFrEBXwk",
+              "verified": "sahjkXnM2Nx",
+              "amount": "aX4JUKjxhVm",
+              "price_unit": "LCCCxcIUG3m",
+              "difference_percentage": "V2rUgAvk77i"
+            },
+            {
+              "name": "Quantity- PCA- 60.2 Accouchement eutociques - indigent",
+              "code": "quantity_pca_60_2_accouchement_eutociques__indigent",
+              "claimed": "n90mUAfgZjm",
+              "verified": "YQkhjgy5HHj",
+              "amount": "NSZxQm7ybAf",
+              "price_unit": "QdBwBFWWr25",
+              "difference_percentage": "yGICxwHhOvo"
+            },
+            {
+              "name": "Quantity- PCA- 61.1 Césariennes",
+              "code": "quantity_pca_61_1_cesariennes",
+              "claimed": "yULuxgcBS3s",
+              "verified": "W8y2xNr5Y1x",
+              "amount": "Zq9zzZyLUiF",
+              "price_unit": "w48jOcKPn5u",
+              "difference_percentage": "wh6d7VBpghF"
+            },
+            {
+              "name": "Quantity- PCA- 61.2 Césariennes - indigent",
+              "code": "quantity_pca_61_2_cesariennes__indigent",
+              "claimed": "n4Bss9m5ZHZ",
+              "verified": "bO9aarUMgHg",
+              "amount": "fn6OLI4lZYZ",
+              "price_unit": "iYlYJPrDduV",
+              "difference_percentage": "EeSrudhPPtw"
+            },
+            {
+              "name": "Quantity- PCA- 62.1  Accouchement dystocique (ventouse, forceps)",
+              "code": "quantity_pca_62_1_accouchement_dystocique_ventouse_forceps",
+              "claimed": "w2nVK4znip4",
+              "verified": "cEuGoAHzgN5",
+              "amount": "YgVgJ5QELMe",
+              "price_unit": "daqn8FXYqqT",
+              "difference_percentage": "Xf7zzR7oHBk"
+            },
+            {
+              "name": "Quantity- PCA- 62.2 Accouchement dystocique (ventouse, forceps) - indigent",
+              "code": "quantity_pca_62_2_accouchement_dystocique_ventouse_forceps__indigent",
+              "claimed": "zG7gh7pJEFX",
+              "verified": "DwsTSPYSm10",
+              "amount": "Y0Ov00OoHZK",
+              "price_unit": "DN71mUaD7iG",
+              "difference_percentage": "UjOlNBrIRX4"
+            },
+            {
+              "name": "Quantity- PCA- 67.1 CPN",
+              "code": "quantity_pca_67_1_cpn",
+              "claimed": "dq9PUiAuiBP",
+              "verified": "IHyQPiCFNDA",
+              "amount": "Qpm9kZvuduc",
+              "price_unit": "bCfm9F4N1vA",
+              "difference_percentage": "hRvs0SXWR9L"
+            },
+            {
+              "name": "Quantity- PCA- 68.1 TPI1 ou TPI2 ou TPI3 ou TPI 4",
+              "code": "quantity_pca_68_1_tpi1_ou_tpi2_ou_tpi3_ou_tpi4",
+              "claimed": "Aoj58U1bJRQ",
+              "verified": "H1xPNLbEm7W",
+              "amount": "HXH6PM3IeIj",
+              "price_unit": "FWdPsm9ERec",
+              "difference_percentage": "LpSo2Wwk9GU"
+            },
+            {
+              "name": "Quantity- PCA- 69.1 Dépistage volontaire VIH/SIDA y compris femmes enceintes",
+              "code": "quantity_pca_69_1_depistage_volontaire_vih_sida_y_compris_femmes_enceintes",
+              "claimed": "FVhaCK82xU4",
+              "verified": "jzZ6wm1CZwE",
+              "amount": "Yf4MkWZ48xE",
+              "price_unit": "J0YsWsWLPPm",
+              "difference_percentage": "qXyJYNaYNv7"
+            },
+            {
+              "name": "Quantity- PCA-71.1- Prise en charge du nouveau-né d’une femme VIH + y compris le Dépistage précoce à la PCR",
+              "code": "quantity_pca_71_1_prise_en_charge_du_nouveau_ne_d_une_femme_vih_y_compris_le_depistage_precoce_a_la_pcr",
+              "claimed": "WuMTDsGrIzX",
+              "verified": "VLW1r0QQosR",
+              "amount": "iQYeFTcPdRo",
+              "price_unit": "yYphMvnRYl2",
+              "difference_percentage": "AbAcb6tgzgy"
+            },
+            {
+              "name": "Quantity- PCA- 51.1 Nouvelle consultation curative - médecin (nvx cas)",
+              "code": "quantity_pca_51_1_nouvelle_consultation_curative__medecin_nvx_cas",
+              "claimed": "eQUIqPAZNm7",
+              "verified": "ND1C1slE15c",
+              "amount": "TgIpJ7VmQco",
+              "price_unit": "oDjVkevcjTp",
+              "difference_percentage": "A1A7aGmV53Z"
+            },
+            {
+              "name": "Quantity- PCA- 63.1 PF:Nvlle ou ancienne acceptantes pilules ou injectables",
+              "code": "quantity_pca_63_1_pf_nvlle_ou_ancienne_acceptantes_pilules_ou_injectables",
+              "claimed": "xDYfn8smwHB",
+              "verified": "VDbAfc4OlXP",
+              "amount": "qBXFMw48ogp",
+              "price_unit": "N3hrc3H1Vgw",
+              "difference_percentage": "LRJerB0DWKc"
+            },
+            {
+              "name": "Quantity- PCA- 64.1 PF: implants ou DIU",
+              "code": "quantity_pca_64_1_pf_implants_ou_diu",
+              "claimed": "DX85SRMeEC5",
+              "verified": "lEildRTZgil",
+              "amount": "j4i5Q1wMI9b",
+              "price_unit": "hRHTZPWIxxC",
+              "difference_percentage": "aZ8ha4dzQs0"
+            },
+            {
+              "name": "Quantity- PCA- 65.1 PF: Méthode définitive-vasectomie-ligature trompes",
+              "code": "quantity_pca_65_1_pf_methode_definitive_vasectomie_ligature_trompes",
+              "claimed": "hFu2tsx49pu",
+              "verified": "qigL85pPRns",
+              "amount": "bRRN8gpWMR3",
+              "price_unit": "GF93mioyBEZ",
+              "difference_percentage": "mF9fuqndVIu"
+            },
+            {
+              "name": "Quantity- PCA- 66.1 Curetage après avortement spontané (ou indication médicale)",
+              "code": "quantity_pca_66_1_curetage_apres_avortement_spontane_ou_indication_medicale",
+              "claimed": "yLxX2aOklvC",
+              "verified": "gHxwAGHP57E",
+              "amount": "jA7X56cWze3",
+              "price_unit": "WR4fjIcFUKO",
+              "difference_percentage": "QUcr4grfhIu"
+            },
+            {
+              "name": "Quantity- PCA- 70.1 Femme enceinte VIH+ sous protocole ARV prophylaxie",
+              "code": "quantity_pca_70_1_femme_enceinte_vih_sous_protocole_arv_prophylaxie",
+              "claimed": "T8ljuDTZTWr",
+              "verified": "nBjdEumfCRk",
+              "amount": "e1UAoUG0Wyy",
+              "price_unit": "v4MFOBCgUDy",
+              "difference_percentage": "l9lpuzcZZgn"
+            },
+            {
+              "name": "Quantity- PCA- 72.1 Nouveaux cas de VIH mis sous ARV",
+              "code": "quantity_pca_72_1_nouveaux_cas_de_vih_mis_sous_arv",
+              "claimed": "FyXM2vhk8DF",
+              "verified": "qtnSTNzYRPN",
+              "amount": "zWOtYUo2GQd",
+              "price_unit": "vqAYGMNmDeI",
+              "difference_percentage": "vHdecb0tpbI"
+            },
+            {
+              "name": "Quantity- PCA- 58.2 Petite Chirurgie - indigent",
+              "code": "quantity_pca_58_2_petite_chirurgie__indigent",
+              "claimed": "rQSDWmHDvlc",
+              "verified": "Ej7UxSy4Mq0",
+              "amount": "orGLkWqePML",
+              "price_unit": "lLFQXdZdxT0",
+              "difference_percentage": "ZAe3N4UOZ27"
+            },
+            {
+              "name": "Quantity- PCA- 73.1 Patients sous ARV suivis semestriellement",
+              "code": "quantity_pca_73_1_patients_sous_arv_suivis_semestriellement",
+              "claimed": "SHt9ANalgeP",
+              "verified": "kUeuuFNDtbA",
+              "amount": "Nti4BamoUQb",
+              "price_unit": "wVKsOK4ii0f",
+              "difference_percentage": "p7yoneCvvHD"
+            },
+            {
+              "name": "Quantity- PCA- 58.1 Petite Chirurgie",
+              "code": "quantity_pca_58_1_petite_chirurgie",
+              "claimed": "P686uy4tLVA",
+              "verified": "BgewwCL4qFL",
+              "amount": "xNo5QYeMblG",
+              "price_unit": "zQGJOzLzW5a",
+              "difference_percentage": "aQnpXg4cVUu"
+            },
+            {
+              "name": "Quantity- PCA- 59.1 Transfusion Sanguine",
+              "code": "quantity_pca_59_1_transfusion_sanguine",
+              "claimed": "agK4hlSsMxi",
+              "verified": "TiIa6CaIuBR",
+              "amount": "vSAWZOD5C3j",
+              "price_unit": "wcZsg68bZDn",
+              "difference_percentage": "waQboVidQnw"
+            },
+            {
+              "name": "Quantity- PCA- 74.1 Séance de dialyse",
+              "code": "quantity_pca_74_1_seance_de_dialyse",
+              "claimed": "yOZyBbNYrYj",
+              "verified": "mrQMkTgWXD6",
+              "amount": "XyyFH5Q0dBa",
+              "price_unit": "j0PuzCtoAwP",
+              "difference_percentage": "YAoGpXOxliz"
+            },
+            {
+              "name": "Quantity- PCA- 53.1 Contre référence arrive au CS",
+              "code": "quantity_pca_53_1_contre_reference_arrive_au_cs",
+              "claimed": "XSMlSkdljbx",
+              "verified": "pPFuUyOVwHj",
+              "amount": "ZEwxMbcaNFR",
+              "price_unit": "UAw3IChcdN2",
+              "difference_percentage": "bpIwkV95bFN"
+            },
+            {
+              "name": "Quantity- PCA- 52.2 Journée d hospitalisation - indigents + cas d'épidémie",
+              "code": "quantity_pca_52_2_journee_d_hospitalisation__indigents_cas_d_epidemie",
+              "claimed": "qy3Ez3aJa8P",
+              "verified": "N6AenWac9OO",
+              "amount": "nd1KVElVBGm",
+              "price_unit": "JoT8uJbFeIq",
+              "difference_percentage": "XR1QpwXUuOD"
+            },
+            {
+              "name": "Quantity- PCA- 52.1 Journée d'hospitalisation",
+              "code": "quantity_pca_52_1_journee_d_hospitalisation",
+              "claimed": "RMkFpyIygNm",
+              "verified": "lFS0OO7hN7B",
+              "amount": "RgOQMHApF2P",
+              "price_unit": "a5upYzO6vqr",
+              "difference_percentage": "yeiBO1xTmCS"
+            },
+            {
+              "name": "Quantity- PCA- 51.2 Nouvelle consultation curative - médecin - indigents",
+              "code": "quantity_pca_51_2_nouvelle_consultation_curative__medecin__indigents",
+              "claimed": "NDNBzH5uUtv",
+              "verified": "UBf3ACJVN2K",
+              "amount": "ARg8rWm8kcI",
+              "price_unit": "Oqpxleo0nLv",
+              "difference_percentage": "kZLqBKK64Nz"
+            }
+          ],
+          "data_set_ids": ["iIQRG8FDFrx", "krSPstjPsi3", "XYHTW4smXoy"],
+          "data_element_group_ids": [
+            "FE9zhhx6RXS",
+            "BJl6vA3TWUI",
+            "i3FjQ7G38tm"
+          ],
+          "main_org_unit_group_ids": ["yNNcJybATnM"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "payment per indicator",
+              "description": "payment per indicator",
+              "expression": "quantity * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "price unit",
+              "description": "price unit",
+              "expression": "tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "difference_percentage": {
+              "short_name": "Difference in percent between declared and verified",
+              "description": "Difference in percent between declared and verified",
+              "expression": "safe_div (claimed - verified , verified ) * 100.0",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "quantity": {
+              "short_name": "quantity to be payed",
+              "description": "quantity to be payed",
+              "expression": "IF (ABS(difference_percentage) <= 10, verified , 0.0)",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pca_quantity_total": {
+              "short_name": "Payment for all indicators",
+              "description": "Payment for all indicators",
+              "expression": "SUM(%{amount_values})",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "oENNV1azhr3"
+            }
+          }
+        },
+        "quality_pca_satisfaction_du_patient": {
+          "name": "Quality- PCA- Satisfaction du Patient",
+          "description": null,
+          "code": "quality_pca_satisfaction_du_patient",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality- PCA- Satisfaction du Patient",
+              "code": "quality_pca_satisfaction_du_patient",
+              "verified": "tMLFyuggLmB"
+            }
+          ],
+          "data_set_ids": ["owyysskhhDd"],
+          "data_element_group_ids": ["vP1R4PuBGz3"],
+          "main_org_unit_group_ids": ["yNNcJybATnM"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "percent_amount": {
+              "short_name": "% patient satisfaction",
+              "description": "% patient satisfaction",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pca_amount_patient_satisfaction": {
+              "short_name": "% patient satisfaction score",
+              "description": "% patient satisfaction score",
+              "expression": "MAX ( %{percent_amount_values} )",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "QUdChalXYGk"
+            }
+          }
+        },
+        "outil_indice": {
+          "name": "Outil Indice",
+          "description": null,
+          "code": "outil_indice",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Outil Indice",
+              "code": "outil_indice",
+              "verified": "mJubyzLqUjO"
+            }
+          ],
+          "data_set_ids": ["b0KTJoASI0i"],
+          "data_element_group_ids": ["EZYJvxAfMfb"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_index_tool": {
+              "short_name": "Index tool %",
+              "description": "Index tool %",
+              "expression": "MAX(%{amount_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "k86dy3r7dNy"
+            }
+          }
+        },
+        "baq_pca": {
+          "name": "BAQ- PCA",
+          "description": null,
+          "code": "baq_pca",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "BAQ- PCA",
+              "code": "baq_pca",
+              "verified": "shB6bxuZqyJ",
+              "amount": "i7cLhX7CF89",
+              "price_unit": "pod2VnrrrLG"
+            }
+          ],
+          "data_set_ids": ["SAGd5uCtkJ5", "wDCMGqjJsVE"],
+          "data_element_group_ids": ["RTma78DDqRG", "vBegGYAJYfG"],
+          "main_org_unit_group_ids": ["yNNcJybATnM"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount": {
+              "short_name": "total paid for BAQ",
+              "description": "total paid for BAQ",
+              "expression": "verified * tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "BAQ- PCA price unit",
+              "description": "BAQ- PCA price unit",
+              "expression": "tarif",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "amount_baq_pca": {
+              "short_name": "total BAQ payment",
+              "description": "total BAQ payment",
+              "expression": "SUM ( %{amount_values} )",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "mEGh22w9bdR"
+            }
+          }
+        },
+        "equity_bonus": {
+          "name": "Equity Bonus",
+          "description": null,
+          "code": "equity_bonus",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Equity Bonus",
+              "code": "equity_bonus",
+              "verified": "oBR9k79Sw5O"
+            }
+          ],
+          "data_set_ids": ["P4VcVFuJwnL"],
+          "data_element_group_ids": ["aR2zhUjYz0y"],
+          "main_org_unit_group_ids": ["yNNcJybATnM", "g3sUUjQLxlK"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "equity_bonus": {
+              "short_name": "equity_bonus",
+              "description": "equity_bonus",
+              "expression": "verified",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {}
+        },
+        "total_technical_quality__pca": {
+          "name": "Total Technical Quality - PCA",
+          "description": null,
+          "code": "total_technical_quality__pca",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality - PCA - Technical Quality Score (%)",
+              "code": "quality__pca__technical_quality_score",
+              "verified": "fFd5hGDroLk"
+            }
+          ],
+          "data_set_ids": ["nPCpwszGZQS"],
+          "data_element_group_ids": ["T6J1qCyyizU"],
+          "main_org_unit_group_ids": ["yNNcJybATnM"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "pca_technical_quality_score": {
+              "short_name": "verified",
+              "description": "verified",
+              "expression": "verified/100",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "pca_total_score": {
+              "short_name": "verified value",
+              "description": "verified value",
+              "expression": "max(%{pca_technical_quality_score_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "lSsuOqelL36"
+            }
+          }
+        }
+      },
+      "output_data_sets": [
+        { "frequency": "quarterly", "id": "cY9RQhFv4IG" },
+        { "frequency": "monthly", "id": "WohBESlWQG6" }
+      ]
+    },
+    "drsp_payement_rule": {
+      "name": "drsp payement rule",
+      "frequency": "quarterly",
+      "formulas": {
+        "drsp_quality_bonus": {
+          "short_name": "drsp_quality_bonus",
+          "description": "drsp_quality_bonus",
+          "expression": "drsp_total_quantity_with_equity_amount* 0.15 * (drsp_quality_score/100)",
+          "frequency": "quarterly",
+          "exportable_formula_code": null,
+          "de_id": "NHzNTEvq2Mm"
+        },
+        "drsp_total_amount": {
+          "short_name": "Total ",
+          "description": "Total ",
+          "expression": "drsp_quality_bonus + drsp_total_quantity_with_equity_amount",
+          "frequency": "quarterly",
+          "exportable_formula_code": null,
+          "de_id": "Hdsve1AbcAF"
+        }
+      },
+      "packages": {
+        "evaluation_drsp": {
+          "name": "Evaluation DRSP",
+          "description": "",
+          "code": "evaluation_drsp",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "contre-evaluation d’une FOSA PMA",
+              "code": "contre_evaluation_d_une_fosa_pma",
+              "claimed": "gWJMYilYc2K",
+              "verified": "MCdmLw8gzlW",
+              "equity_bonus": "oBR9k79Sw5O",
+              "amount_equity": "FzQb5mzSbWH",
+              "amount_with_equity": "lmAlheQsmeH",
+              "amount": "LwmE7yOaIfo",
+              "unit_price": "YKxvxoOzdxg"
+            },
+            {
+              "name": "Bonus d'equité trimestriel",
+              "code": "equity_bonus_quaterly",
+              "equity_bonus": "oBR9k79Sw5O"
+            },
+            {
+              "name": "evaluation de la qualité d’un hôpital par les Pairs",
+              "code": "evaluation_de_la_qualite_d_un_hopital_par_les_pairs",
+              "claimed": "VO3J7bHiFZo",
+              "verified": "EZz2fPkE5R2",
+              "equity_bonus": "oBR9k79Sw5O",
+              "amount_equity": "QPPrTyHgADa",
+              "amount_with_equity": "aq1EHSBdlUe",
+              "amount": "PXFjkRb2tkW",
+              "unit_price": "ZKZfHWZfOwj"
+            },
+            {
+              "name": "Evaluation d'une équipe cadre de district ECD",
+              "code": "evaluation_d_une_equipe_cadre_de_district_ecd",
+              "claimed": "SBLMq4kLKdA",
+              "verified": "Ae4N6snnqI8",
+              "equity_bonus": "oBR9k79Sw5O",
+              "amount_equity": "wo6ZsY9ttbM",
+              "amount_with_equity": "GtSb1dcj7Sb",
+              "amount": "bdkpda0mic2",
+              "unit_price": "pUg4YqRJytR"
+            },
+            {
+              "name": "inspection d’un grossiste pharmaceutique de la région",
+              "code": "inspection_d_un_grossiste_pharmaceutique_de_la_region",
+              "claimed": "WCEEICior1V",
+              "verified": "yG9kMTb8F8X",
+              "equity_bonus": "oBR9k79Sw5O",
+              "amount_equity": "Bce91DzS9nC",
+              "amount_with_equity": "OnfckPD5mMH",
+              "amount": "c0cix0FSfIB",
+              "unit_price": "zpIeqH0KIiS"
+            }
+          ],
+          "data_set_ids": [
+            "Cy3KeXKDbJy",
+            "zLORoodIaaA",
+            "ljEFl8Hcj5Z",
+            "rLVifYid8bd"
+          ],
+          "data_element_group_ids": [
+            "UV4eViJzUCJ",
+            "brJi7NZg296",
+            "psxIWBEzqcz",
+            "Y8ALLzwQoEx"
+          ],
+          "main_org_unit_group_ids": ["IhABhME4DOb"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "amount_equity": {
+              "short_name": "amount_equity",
+              "description": "amount_equity",
+              "expression": "(equity_bonus /100) * amount",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            },
+            "amount_with_equity": {
+              "short_name": "amount_final",
+              "description": "amount_final",
+              "expression": "amount_equity + amount",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            },
+            "amount": {
+              "short_name": "montant à payer",
+              "description": "montant à payer",
+              "expression": "verified * tarif",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            },
+            "unit_price": {
+              "short_name": "unit price",
+              "description": "unit price",
+              "expression": "tarif",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "drsp_total_quantity_amount": {
+              "short_name": "drsp_quantity_amount",
+              "description": "drsp_quantity_amount",
+              "expression": "sum(%{amount_values})",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "EUPqjzNW6mP"
+            },
+            "drsp_total_equity_amount": {
+              "short_name": "drsp_total_equity_amount",
+              "description": "drsp_total_equity_amount",
+              "expression": "SUM(%{amount_equity_values} )",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "NtRIB1leIMy"
+            },
+            "drsp_total_quantity_with_equity_amount": {
+              "short_name": "drsp_total_quantity_with_equity_amount",
+              "description": "drsp_total_quantity_with_equity_amount",
+              "expression": "drsp_total_quantity_amount+drsp_total_equity_amount",
+              "frequency": "quarterly",
+              "exportable_formula_code": null,
+              "de_id": "OmSjf09bkX1"
+            }
+          }
+        },
+        "quality__drsp": {
+          "name": "Quality - DRSP",
+          "description": null,
+          "code": "quality__drsp",
+          "frequency": "quarterly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "Quality - DRSP - Quality Score (%)",
+              "code": "quality__drsp__quality_score",
+              "verified": "xhYidfomoJW"
+            }
+          ],
+          "data_set_ids": ["XFIAlgY44Rd"],
+          "data_element_group_ids": ["YDlZ6oqVePs"],
+          "main_org_unit_group_ids": ["IhABhME4DOb"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "score": {
+              "short_name": "Score qualité des DRSP",
+              "description": "Score qualité des DRSP",
+              "expression": "verified",
+              "frequency": "quarterly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {}
+        }
+      },
+      "output_data_sets": [{ "frequency": "quarterly", "id": "ztQ72sxaAzp" }]
+    },
+    "services_vih_gratuits": {
+      "name": "Services VIH gratuits",
+      "frequency": "monthly",
+      "formulas": {
+        "total_payment_vih": {
+          "short_name": "Total Payment VIH",
+          "description": "Total Payment",
+          "expression": "total_amount_uf",
+          "frequency": "monthly",
+          "exportable_formula_code": null,
+          "de_id": "nQNFNlOyqOU"
+        }
+      },
+      "packages": {
+        "services_vih_gratuits": {
+          "name": "Services VIH gratuits",
+          "description": "Services VIH gratuits",
+          "code": "services_vih_gratuits",
+          "frequency": "monthly",
+          "kind": "single",
+          "activities": [
+            {
+              "name": "UF-Consultation VIH",
+              "code": "uf1",
+              "claimed": "kVJWetc9nNM",
+              "verified": "PZY4E2P6d3s",
+              "tarif": "Drx8iEJzQER",
+              "uf_amount": "yOHIqoEx48l",
+              "price_unit": "AOdTrhKEXyv"
+            },
+            {
+              "name": "UF10 CV",
+              "code": "uf10",
+              "claimed": "DUa7tJxE5kX",
+              "verified": "ZNEerVx1sqV",
+              "tarif": "uTrlBIQzXUl",
+              "uf_amount": "BiKqd1Mw4Qj",
+              "price_unit": "Ix7BiwWWFmj"
+            },
+            {
+              "name": "UF11 CD4 NP",
+              "code": "uf11",
+              "claimed": "SolWvsGu40V",
+              "verified": "ZE2dzwdZrX9",
+              "tarif": "e3Ec1HVELCt",
+              "uf_amount": "XLZaL75gILe",
+              "price_unit": "ZQY6lK2HQcg"
+            },
+            {
+              "name": "UF12 Test de la tuberculose",
+              "code": "uf12",
+              "claimed": "EEQYAnwvdmE",
+              "verified": "mgnscxEfSfY",
+              "tarif": "ErCEQbFLVwT",
+              "uf_amount": "kL1IZCbU08A",
+              "price_unit": "LAP7qv5801m"
+            },
+            {
+              "name": "UF Consultation prénatale (CPN 1)",
+              "code": "uf2",
+              "claimed": "uIHu4R0rfMC",
+              "verified": "cKGoaacNTE8",
+              "tarif": "JIlExuCxeE0",
+              "uf_amount": "hy38g3aTZ0T",
+              "price_unit": "qDL4JpkqS2D"
+            },
+            {
+              "name": "UF3 Consultation prénatale (CPN 2,3 & 4)",
+              "code": "uf3",
+              "claimed": "XN5fljp9rdh",
+              "verified": "yLWGLXKopNe",
+              "tarif": "iGXCaUD4D1f",
+              "uf_amount": "xRflpGY14gt",
+              "price_unit": "RGkqG01Rlo6"
+            },
+            {
+              "name": "UF4 Carnet medical",
+              "code": "uf4",
+              "claimed": "KIpI28vPzx2",
+              "verified": "HgMgzCPzIeS",
+              "tarif": "HrSEx4srxdc",
+              "uf_amount": "vxPdnw5aNJy",
+              "price_unit": "V0jXlTHGINV"
+            },
+            {
+              "name": "UF5 Les tests de VIH ciblés chez adolescents et adultes qui ont été faits suivant les ‘Screening Tool’",
+              "code": "uf5",
+              "claimed": "LunHNLOb001",
+              "verified": "luiSpZjoMUR",
+              "tarif": "ceUFX9aoC4s",
+              "uf_amount": "RvrRulu5PZo",
+              "price_unit": "RFLFsWbtyxs"
+            },
+            {
+              "name": "UF6 NFS (FEC )",
+              "code": "uf6",
+              "claimed": "dwNEEqpHmBx",
+              "verified": "WddQvQf1tjI",
+              "tarif": "uJ3SSOTs0bf",
+              "uf_amount": "v56Th60C0qt",
+              "price_unit": "omru9XG6siD"
+            },
+            {
+              "name": "UF7 Examen de l`urine (Albumine, sucre) (FEC)",
+              "code": "uf7",
+              "claimed": "kl48xLRkr29",
+              "verified": "vq5aHFHOFJN",
+              "tarif": "dbS7DMl2ePV",
+              "uf_amount": "y14YDrHnUce",
+              "price_unit": "LRVjepUBwfs"
+            },
+            {
+              "name": "UF8 Creatinine (FEC )",
+              "code": "uf8",
+              "claimed": "ciLEpzihH9T",
+              "verified": "MRqWEWfyqu4",
+              "tarif": "EpoU60MiZ1H",
+              "uf_amount": "nhZe3WQJYVB",
+              "price_unit": "n6jTfjO5GoE"
+            },
+            {
+              "name": "UF9 Glycémie (FEC )",
+              "code": "uf9",
+              "claimed": "uqfXdqeKVX6",
+              "verified": "T3wcRYtSrzB",
+              "tarif": "wVDV7ziK43c",
+              "uf_amount": "lAjQ46C6abb",
+              "price_unit": "EySXyL27FX1"
+            }
+          ],
+          "data_set_ids": ["wa3fZd69M5f", "bvaaYM63fTw", "JrQUlY8k2mk"],
+          "data_element_group_ids": [
+            "HGNDg4pjvS9",
+            "xrfzcjothYo",
+            "AGfGtG0iiWs"
+          ],
+          "main_org_unit_group_ids": ["HG2bpIRYUoc"],
+          "target_org_unit_group_ids": [],
+          "groupset_ext_id": null,
+          "matching_groupset_ids": [],
+          "activity_formulas": {
+            "uf_amount": {
+              "short_name": "UF_amount",
+              "description": "UF_amount",
+              "expression": "verified  * tarif_level_1_quarterly",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            },
+            "price_unit": {
+              "short_name": "Price Unit",
+              "description": "Price Unit",
+              "expression": "tarif_level_1_quarterly",
+              "frequency": "monthly",
+              "exportable_formula_code": null
+            }
+          },
+          "formulas": {
+            "total_amount_uf": {
+              "short_name": "Total  amount UF",
+              "description": "Total  amount UF",
+              "expression": "sum(%{uf_amount_values})",
+              "frequency": "monthly",
+              "exportable_formula_code": null,
+              "de_id": "e14CA20QEoJ"
+            }
+          }
+        }
+      },
+      "output_data_sets": [{ "frequency": "monthly", "id": "YDWfzvP3W25" }]
+    }
+  },
+  "entity_group": { "id": "WHdJlwRgg8z", "name": "RBF /PBF Facilities" }
+}

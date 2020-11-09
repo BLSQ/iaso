@@ -1,0 +1,252 @@
+$input-inner-shadow: inset 0px 1px 3px 0px rgba(black, .2);
+
+.trypelim,
+.login__container {
+
+    input[type="text"],
+    input[type="time"],
+    input[type="number"],
+    input[type="email"],
+    input[type="password"],
+    textarea,
+    input[type="date"] {
+        width: 320px;
+        padding: 0.5em;
+        // background: $background-gray;
+        border: 1px solid $gray;
+        box-shadow: $input-inner-shadow;
+        border-radius: 4px;
+        font-family: $body-font-family;
+        font-size: $font-size-standard !important;
+        color: $dark-blue;
+        line-height: 1;
+
+        &:focus {
+            outline: 0;
+            border: 1px solid $blue;
+            box-shadow: $input-inner-shadow, 0 0 1px 1px rgba($dark-blue, 0.15);
+        }
+
+        &:disabled {
+            background-color: $gray !important;
+            opacity: 0.8;
+        }
+
+        &.form-error {
+            border-color: $red;
+        }
+    }
+
+    textarea {
+        min-height: 100px;
+        &.small {
+            min-height: 50px;
+        }
+    }
+
+    input[type="date"] {
+        width: 200px;
+    }
+
+    input[type="time"] {
+        width: 65px;
+    }
+
+    input[type="time"]::-webkit-clear-button {
+        display: none;
+    }
+
+    input[type="time"]::-webkit-inner-spin-button {
+        opacity: 1
+    }
+
+    input[type="time"]::-ms-clear {
+        display: none;
+    }
+
+    form {
+        margin: 0;
+    }
+
+    fieldset {
+        border: none;
+        padding: 0;
+    }
+
+    label {
+        display: block;
+        font-size: $font-size-s;
+        font-weight: bold;
+        margin-bottom: $padding-unit/4;
+
+        &.inline {
+            display: inline-block;
+        }
+    }
+
+    .form__wrapper {
+        margin-bottom: $padding-unit;
+    }
+
+    form.inline {
+        label {
+            display: inline-block;
+            margin-right: $padding-unit/4;
+        }
+    }
+
+    input.small {
+        font-size: $font-size-xs;
+        height: 15px;
+        width: 50px;
+        margin: 0 $padding-unit/5;
+    }
+
+    .Select {
+        &.is-open {
+            z-index: 1001;
+        }
+
+        &.only-one {
+            .Select-value-icon {
+                display: none;
+            }
+
+            .Select-value {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
+
+        &.form-error .Select-control {
+            border-color: $red !important;
+        }
+    }
+
+    .button--export {
+        padding: $padding-unit/4;
+        width: ($map-sidebar-width - $padding-unit*2);
+        font-size: $font-size-xs;
+    }
+
+    .button--print {
+        margin-top: 4px;
+        width: ($map-sidebar-width - 50);
+        font-size: $font-size-xs;
+    }
+
+    .button--small {
+        font-size: $font-size-xs;
+    }
+
+    .button--save,
+    .button--edit {
+        margin-bottom: 4px;
+        width: ($map-sidebar-width - 50);
+        font-size: $font-size-xs;
+
+        &.small {
+            width: auto;
+            display: inline-block;
+            margin-left: 10px;
+            padding-left: 10px;
+            padding-right: 4px;
+        }
+
+        &:disabled {
+            background-color: #3f51b5 !important;
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+
+    .button--delete {
+        background-color: $red !important;
+
+        &--tiny {
+            padding: 0.5em;
+            font-size: $font-size-xs;
+
+            &:disabled {
+                background-color: $red !important;
+                cursor: default;
+                opacity: 0.6;
+            }
+        }
+
+        &:disabled {
+            background-color: $red !important;
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+
+
+    .button--edit--tiny {
+        padding: 0.5em;
+        font-size: $font-size-xs;
+    }
+
+    .button--delete--tiny {
+        background-color: $red ! important;
+        padding: 0.5em;
+        font-size: $font-size-xs;
+    }
+
+    button {
+        &:disabled {
+            background-color: #3f51b5 !important;
+            cursor: default;
+            opacity: 0.6;
+        }
+    }
+
+    .check-box__container {
+        display: inline-block;
+
+        label {
+            display: inline-block !important;
+            font-size: 12px;
+        }
+
+        >span {
+            display: inline-block;
+            position: relative;
+        }
+    }
+
+    .check-box__icon {
+        position: relative;
+        top: 6px;
+        margin-left: 10px;
+        fill: $gray;
+
+        &.primary {
+            fill: $blue;
+        }
+    }
+
+    .check-box__input_hidden {
+        position: absolute !important;
+        opacity: 0 !important;
+        top: 0 !important;
+        right: 0 !important;
+        height: 100% !important;
+        width: 30px !important;
+        cursor: pointer;
+
+
+        &.disabled {
+
+            cursor: not-allowed;
+        }
+    }
+
+    .icon-green {
+        fill: $green;
+    }
+
+    .icon-error {
+        fill: $red;
+    }
+}

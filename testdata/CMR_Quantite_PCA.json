@@ -1,0 +1,405 @@
+{
+  "data_set_id": "IFnt9efNlOt",
+  "question_mappings": {
+    "leildrtzgil": {
+      "id": "lEildRTZgil",
+      "valueType": "NUMBER",
+      "name": "64,1 Verified- PF: implants ou DIU"
+    },
+    "tiia6caiubr": {
+      "id": "TiIa6CaIuBR",
+      "valueType": "NUMBER",
+      "name": "59,1 Verified- Transfusion Sanguine"
+    },
+    "n90muafgzjm": {
+      "id": "n90mUAfgZjm",
+      "valueType": "NUMBER",
+      "name": "60.2 Declared- Accouchement eutociques - indigent"
+    },
+    "ppfuuyovwhj": {
+      "id": "pPFuUyOVwHj",
+      "valueType": "NUMBER",
+      "name": "53,1 Verified- Contre référence arrive au CS"
+    },
+    "n4bss9m5zhz": {
+      "id": "n4Bss9m5ZHZ",
+      "valueType": "NUMBER",
+      "name": "61.2 Declared- Césariennes - indigent"
+    },
+    "equiqpaznm7": {
+      "id": "eQUIqPAZNm7",
+      "valueType": "NUMBER",
+      "name": "51.1 Declared- Nouvelle consultation curative - médecin (nvx cas)"
+    },
+    "vtpnpjgx6hl": {
+      "id": "vtpnpjGx6hL",
+      "valueType": "NUMBER",
+      "name": "52.3 Declared-Journée d’hospitalisation – MAS avec complication médicale (limite à 14 jours)"
+    },
+    "hfu2tsx49pu": {
+      "id": "hFu2tsx49pu",
+      "valueType": "NUMBER",
+      "name": "65.1 Declared- PF: Méthode définitive-vasectomie-ligature trompes"
+    },
+    "qy3ez3aja8p": {
+      "id": "qy3Ez3aJa8P",
+      "valueType": "NUMBER",
+      "name": "52.2 Declared- Journée d hospitalisation - indigents + cas d'épidémie"
+    },
+    "dx85srmeec5": {
+      "id": "DX85SRMeEC5",
+      "valueType": "NUMBER",
+      "name": "64.1 Declared- PF: implants ou DIU"
+    },
+    "hceps1pl7rb": {
+      "id": "HcePs1Pl7rb",
+      "valueType": "NUMBER",
+      "name": "76.1 Declared- Patiets victimes de viols pris en charge"
+    },
+    "nriju6lcema": {
+      "id": "NrijU6LcEMA",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-2-declaration-Décès déclarées "
+    },
+    "ubf3acjvn2k": {
+      "id": "UBf3ACJVN2K",
+      "valueType": "NUMBER",
+      "name": "51,2 Verified- Nouvelle consultation curative - médecin - indigents"
+    },
+    "yqkhjgy5hhj": {
+      "id": "YQkhjgy5HHj",
+      "valueType": "NUMBER",
+      "name": "60,2 Verified- Accouchement eutociques - indigent"
+    },
+    "ylxx2aoklvc": {
+      "id": "yLxX2aOklvC",
+      "valueType": "NUMBER",
+      "name": "66.1 Declared- Curetage après avortement spontané (ou indication médicale)"
+    },
+    "z4c0x2ge05g": {
+      "id": "z4C0X2GE05g",
+      "valueType": "NUMBER",
+      "name": "60,0 Verified- CPON Mère et Enfant"
+    },
+    "llc26fom7vi": {
+      "id": "lLC26FoM7vI",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-1-declaration-Naissances  déclarées"
+    },
+    "aoj58u1bjrq": {
+      "id": "Aoj58U1bJRQ",
+      "valueType": "NUMBER",
+      "name": "68.1 Declared- TPI1 ou TPI2 ou TPI3"
+    },
+    "ersrebf8sft": {
+      "id": "ErsreBf8Sft",
+      "valueType": "NUMBER",
+      "name": "76.1 Validated Patiets victimes de viols pris en charge"
+    },
+    "rqsdwmhdvlc": {
+      "id": "rQSDWmHDvlc",
+      "valueType": "NUMBER",
+      "name": "58.2 Declared- Petite Chirurgie - indigent"
+    },
+    "yhyhfaphnax": {
+      "id": "YhyhfApHNaX",
+      "valueType": "NUMBER",
+      "name": "73.2 Declared- Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable"
+    },
+    "kkofv5oiv7e": {
+      "id": "kKOFv5OIv7E",
+      "valueType": "NUMBER",
+      "name": "54,1 Verified- CAS IST traité selon le protocole"
+    },
+    "bgewwcl4qfl": {
+      "id": "BgewwCL4qFL",
+      "valueType": "NUMBER",
+      "name": "58,1 Verified- Petite Chirurgie"
+    },
+    "ej7uxsy4mq0": {
+      "id": "Ej7UxSy4Mq0",
+      "valueType": "NUMBER",
+      "name": "58,2 Verified- Petite Chirurgie - indigent"
+    },
+    "d5qyfkgcksg": {
+      "id": "D5qYfkGcKsg",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-3-validation-Certificat d’âge apparent délivré"
+    },
+    "rznkmeehwvh": {
+      "id": "rZnkMEehwvH",
+      "valueType": "NUMBER",
+      "name": "73.1 Declared- Patients sous ARV suivis pendant les 6 premiers mois après l'initiation"
+    },
+    "cdccypg60we": {
+      "id": "CDccyPG60WE",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-2-validation-Décès déclarées "
+    },
+    "gaveyx6pzpq": {
+      "id": "gAVeyX6pzpq",
+      "valueType": "NUMBER",
+      "name": "56.1 Declared- Cas TBC traités et guéris"
+    },
+    "p686uy4tlva": {
+      "id": "P686uy4tLVA",
+      "valueType": "NUMBER",
+      "name": "58.1 Declared- Petite Chirurgie"
+    },
+    "qtnstnzyrpn": {
+      "id": "qtnSTNzYRPN",
+      "valueType": "NUMBER",
+      "name": "72,1 Verified- Nouveaux cas de VIH mis sous ARV"
+    },
+    "xibj52tkt53": {
+      "id": "xIbj52TkT53",
+      "valueType": "NUMBER",
+      "name": "51,3 Verified - Nouvelle consultation curative-médecin (nouveau cas) malnutris aigue sévère avec complications médicales MAS"
+    },
+    "jzz6wm1czwe": {
+      "id": "jzZ6wm1CZwE",
+      "valueType": "NUMBER",
+      "name": "69,1 Verified- Dépistage volontaire VIH/SIDA y compris femmes enceintes"
+    },
+    "zgzwf9wwxz4": {
+      "id": "zgzwf9WWxz4",
+      "valueType": "NUMBER",
+      "name": "56,1 Verified- Cas TBC traités et guéris"
+    },
+    "h1xpnlbem7w": {
+      "id": "H1xPNLbEm7W",
+      "valueType": "NUMBER",
+      "name": "68,1 Verified- TPI1 ou TPI2 ou TPI3"
+    },
+    "nd1c1sle15c": {
+      "id": "ND1C1slE15c",
+      "valueType": "NUMBER",
+      "name": "51,1 Verified- Nouvelle consultation curative - médecin (nvx cas)"
+    },
+    "lwp5qtasbjp": {
+      "id": "LWP5QtAsBJp",
+      "valueType": "NUMBER",
+      "name": "53,2 Verified-Contre référence de MAS arrives au CS"
+    },
+    "dq9puiauibp": {
+      "id": "dq9PUiAuiBP",
+      "valueType": "NUMBER",
+      "name": "67.1 Declared- CPN"
+    },
+    "xdyfn8smwhb": {
+      "id": "xDYfn8smwHB",
+      "valueType": "NUMBER",
+      "name": "63.1 Declared- PF:Nvlle ou ancienne acceptantes pilules ou injectables"
+    },
+    "xsmlskdljbx": {
+      "id": "XSMlSkdljbx",
+      "valueType": "NUMBER",
+      "name": "53.1 Declared- Contre référence arrive au CS"
+    },
+    "qmwenbtdfcl": {
+      "id": "qmweNbtDfCL",
+      "valueType": "NUMBER",
+      "name": "55,1 Verified- Dépistage des cas TBC positifs par mois"
+    },
+    "vlw1r0qqosr": {
+      "id": "VLW1r0QQosR",
+      "valueType": "NUMBER",
+      "name": "71.1 Validated Prise en charge du nouveau né d'une femme VIH+ y compris le dépistage précoce à la PCR"
+    },
+    "n6aenwac9oo": {
+      "id": "N6AenWac9OO",
+      "valueType": "NUMBER",
+      "name": "52,2 Verified- Journée d hospitalisation - indigents + cas d'épidémie"
+    },
+    "a1q31pxitku": {
+      "id": "A1Q31PxiTku",
+      "valueType": "NUMBER",
+      "name": "52,3 Verified-Journée d’hospitalisation – MAS avec complication médicale (limite à 14 jours)"
+    },
+    "ihyqpicfnda": {
+      "id": "IHyQPiCFNDA",
+      "valueType": "NUMBER",
+      "name": "67,1 Verified- CPN"
+    },
+    "wumtdsgrizx": {
+      "id": "WuMTDsGrIzX",
+      "valueType": "NUMBER",
+      "name": "71.1 Declared Prise en charge du nouveau né d'une femme VIH+ y compris le dépistage précoce à la PCR"
+    },
+    "ghxwaghp57e": {
+      "id": "gHxwAGHP57E",
+      "valueType": "NUMBER",
+      "name": "66,1 Verified- Curetage après avortement spontané (ou indication médicale)"
+    },
+    "fvhack82xu4": {
+      "id": "FVhaCK82xU4",
+      "valueType": "NUMBER",
+      "name": "69.1 Declared- Dépistage volontaire VIH/SIDA y compris femmes enceintes"
+    },
+    "mrqmktgwxd6": {
+      "id": "mrQMkTgWXD6",
+      "valueType": "NUMBER",
+      "name": "74,1 Verified- Séance de dialyse"
+    },
+    "bo9aarumghg": {
+      "id": "bO9aarUMgHg",
+      "valueType": "NUMBER",
+      "name": "61,2 Verified- Césariennes - indigent"
+    },
+    "ary3huogmny": {
+      "id": "ArY3huoGmny",
+      "valueType": "NUMBER",
+      "name": "60.0 Declared- CPON Mère et Enfant"
+    },
+    "oxxwrzshchd": {
+      "id": "oXXWrzShchd",
+      "valueType": "NUMBER",
+      "name": "57,1 Verified- Chirurgie Majeure (non césariennes + fistules)"
+    },
+    "shb6bxuzqyj": {
+      "id": "shB6bxuZqyJ",
+      "valueType": "NUMBER",
+      "name": "81,1 Verified- Bonus d'Amélioration de Qualité"
+    },
+    "w2nvk4znip4": {
+      "id": "w2nVK4znip4",
+      "valueType": "NUMBER",
+      "name": "62.1 Declared- Accouchement dystocique (ventouse, forceps)"
+    },
+    "lfs0oo7hn7b": {
+      "id": "lFS0OO7hN7B",
+      "valueType": "NUMBER",
+      "name": "52,1 Verified- Journée d'hospitalisation"
+    },
+    "t3x98vlrazy": {
+      "id": "T3x98vlrAZY",
+      "valueType": "NUMBER",
+      "name": "73.2 Validated- Patients sous ARV suivis pendant les 12 premiers mois après initiation avec charge virale indétectable"
+    },
+    "s0d8984l17s": {
+      "id": "S0d8984L17s",
+      "valueType": "NUMBER",
+      "name": "57,2 Verified- Chirurgie Majeure (non césariennes + fistules) - indigent"
+    },
+    "nrfvsuzo4rg": {
+      "id": "nRFvsUZo4RG",
+      "valueType": "NUMBER",
+      "name": "54.1 Declared- CAS IST traité selon le protocole"
+    },
+    "whnxk5wopby": {
+      "id": "wHNxK5WOpBy",
+      "valueType": "NUMBER",
+      "name": "51.3 Declared - Nouvelle consultation curative-médecin (nouveau cas) malnutris aigue sévère avec complications médicales MAS"
+    },
+    "vdbafc4olxp": {
+      "id": "VDbAfc4OlXP",
+      "valueType": "NUMBER",
+      "name": "63,1 Verified- PF:Nvlle ou ancienne acceptantes pilules ou injectables"
+    },
+    "iqqhwpgtdpm": {
+      "id": "iQqHwpGtdPm",
+      "valueType": "NUMBER",
+      "name": "53.2 Declared-Contre référence de MAS arrives au CS"
+    },
+    "ndnbzh5uutv": {
+      "id": "NDNBzH5uUtv",
+      "valueType": "NUMBER",
+      "name": "51.2 Declared- Nouvelle consultation curative - médecin - indigents"
+    },
+    "agk4hlssmxi": {
+      "id": "agK4hlSsMxi",
+      "valueType": "NUMBER",
+      "name": "59.1 Declared- Transfusion Sanguine"
+    },
+    "qigl85pprns": {
+      "id": "qigL85pPRns",
+      "valueType": "NUMBER",
+      "name": "65,1 Verified- PF: Méthode définitive-vasectomie-ligature trompes"
+    },
+    "utxcfp7iewl": {
+      "id": "UtxcFP7Iewl",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-1-validation-Naissances  déclarées"
+    },
+    "dwstspysm10": {
+      "id": "DwsTSPYSm10",
+      "valueType": "NUMBER",
+      "name": "62,2 Verified- Accouchement dystocique (ventouse, forceps) - indigent"
+    },
+    "w5xc7nhaexs": {
+      "id": "w5XC7nHaexS",
+      "valueType": "NUMBER",
+      "name": "73.1 Validated- Patients sous ARV suivis pendant les 6 premiers mois après l'initiation"
+    },
+    "sahjkxnm2nx": {
+      "id": "sahjkXnM2Nx",
+      "valueType": "NUMBER",
+      "name": "60,1 Verified- Accouchement eutociques"
+    },
+    "zclhfrebxwk": {
+      "id": "zcLHFrEBXwk",
+      "valueType": "NUMBER",
+      "name": "60.1 Declared- Accouchement eutociques"
+    },
+    "fyxm2vhk8df": {
+      "id": "FyXM2vhk8DF",
+      "valueType": "NUMBER",
+      "name": "72.1 Declared- Nouveaux cas de VIH mis sous ARV"
+    },
+    "b8k3efsdzv0": {
+      "id": "b8k3efsDZV0",
+      "valueType": "NUMBER",
+      "name": "81.1 Declared- Bonus d'Amélioration de Qualité"
+    },
+    "w8y2xnr5y1x": {
+      "id": "W8y2xNr5Y1x",
+      "valueType": "NUMBER",
+      "name": "61,1 Verified- Césariennes"
+    },
+    "kyjm37bbw0g": {
+      "id": "kYJm37Bbw0g",
+      "valueType": "NUMBER",
+      "name": "EtatCivil-FOSA-3-declaration-Certificat d’âge apparent délivré"
+    },
+    "oopr4qqntmq": {
+      "id": "oOPr4qqNtmq",
+      "valueType": "NUMBER",
+      "name": "57.2 Declared- Chirurgie Majeure (non césariennes + fistules) - indigent"
+    },
+    "ceugoahzgn5": {
+      "id": "cEuGoAHzgN5",
+      "valueType": "NUMBER",
+      "name": "62,1 Verified- Accouchement dystocique (ventouse, forceps)"
+    },
+    "yozybbnyryj": {
+      "id": "yOZyBbNYrYj",
+      "valueType": "NUMBER",
+      "name": "74.1 Declared- Séance de dialyse"
+    },
+    "jcqhdlhdled": {
+      "id": "jCQHdlhDLeD",
+      "valueType": "NUMBER",
+      "name": "55.1 Declared- Dépistage des cas TBC positifs par mois"
+    },
+    "mn1qdlho0yv": {
+      "id": "mn1qDLHo0yV",
+      "valueType": "NUMBER",
+      "name": "57.1 Declared- Chirurgie Majeure (non césariennes + fistules)"
+    },
+    "rmkfpyiygnm": {
+      "id": "RMkFpyIygNm",
+      "valueType": "NUMBER",
+      "name": "52.1 Declared- Journée d'hospitalisation"
+    },
+    "zg7gh7pjefx": {
+      "id": "zG7gh7pJEFX",
+      "valueType": "NUMBER",
+      "name": "62.2 Declared- Accouchement dystocique (ventouse, forceps) - indigent"
+    },
+    "yuluxgcbs3s": {
+      "id": "yULuxgcBS3s",
+      "valueType": "NUMBER",
+      "name": "61.1 Declared- Césariennes"
+    }
+  }
+}

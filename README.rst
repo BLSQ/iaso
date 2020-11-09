@@ -70,10 +70,6 @@ file describes the setup of the containers.
 
 The web server should be reachable at ``http://localhost:8081``.
 
-.. code:: bash
-
-    docker-compose run iaso gen_docs
-
 
 Create a user
 -------------

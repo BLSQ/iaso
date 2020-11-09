@@ -66,7 +66,6 @@ def enketo_create_url(request):
         return JsonResponse({"error": str(error)}, status=409)
 
 
-@api_view(["GET"])
 def enketo_public_launch(request, form_uuid, org_unit_id, period=None):
     form = get_object_or_404(Form, uuid=form_uuid)
 

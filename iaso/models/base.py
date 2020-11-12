@@ -798,6 +798,7 @@ class InstanceFile(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     name = models.TextField(null=True, blank=True)
     file = models.FileField(upload_to=UPLOADED_TO, null=True, blank=True)
+    deleted = models.BooleanField(default=False)
 
     def __str__(self):
         return "%s " % (self.name,)

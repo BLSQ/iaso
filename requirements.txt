@@ -3,6 +3,7 @@ django==3.0.7
 django-cors-headers==3.2.1
 djangorestframework==3.11.0
 pandas==1.0.1
+pyproj==2.6.1
 geopandas==0.8.0
 numpy==1.18.1
 Pillow==7.0.0

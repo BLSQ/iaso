@@ -12,8 +12,9 @@ import {
     Grid,
     Typography,
 } from '@material-ui/core';
-
+import { baseUrls } from '../../../constants/urls';
 import LinksValue from './LinksValueComponent';
+import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 
 import MESSAGES from '../messages';
 
@@ -35,18 +36,24 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
     return (
         <Paper className={classes.paper}>
             {!isEqual(link, compareLink) && (
-                <Grid container spacing={0} className={classes.title}>
-                    <Grid
-                        container
-                        item
-                        xs={6}
-                        justify="flex-start"
-                        alignItems="center"
-                    >
+                <Grid
+                    container
+                    spacing={0}
+                    alignItems="center"
+                    justify="flex-start"
+                    className={classes.title}
+                >
+                    <Grid item xs={11}>
                         <Typography variant="h6" component="h6" color="primary">
-                            {title} -
-{link.source}
+                            {`${title} - ${link.source}`}
                         </Typography>
+                    </Grid>
+                    <Grid item xs={1}>
+                        <IconButtonComponent
+                            url={`${baseUrls.orgUnitDetails}/orgUnitId/${link.id}/tab/infos`}
+                            icon="orgUnit"
+                            tooltipMessage={MESSAGES.details}
+                        />
                     </Grid>
                 </Grid>
             )}
@@ -67,6 +74,7 @@ const LinksCompare = ({ link, compareLink, classes, title, validated }) => {
                                 return (
                                     <LinksValue
                                         key={key}
+                                        link={link}
                                         linkKey={key}
                                         value={value}
                                         isDifferent={isDifferent}

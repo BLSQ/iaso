@@ -20,7 +20,7 @@ class DataSourceSerializer(serializers.ModelSerializer):
 
     @staticmethod
     def get_versions(obj: DataSource):
-        return ([v.as_dict_without_data_source() for v in obj.versions.all()],)
+        return [v.as_dict_without_data_source() for v in obj.versions.all()]
 
     @staticmethod
     def get_projects(obj: DataSource):

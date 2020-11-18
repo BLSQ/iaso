@@ -37,6 +37,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.forms.source',
         defaultMessage: 'Source',
     },
+    parent: {
+        defaultMessage: 'Parent(s)',
+        id: 'iaso.orgUnits.parentsMulti',
+    },
     level: {
         id: 'iaso.forms.level',
         defaultMessage: 'Level',

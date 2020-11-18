@@ -143,13 +143,11 @@ const formsTableColumns = (
 
             return (
                 <section>
-                    {settings.original.instances_count > 0 && (
-                        <IconButtonComponent
-                            url={`${urlToInstances}`}
-                            icon="remove-red-eye"
-                            tooltipMessage={MESSAGES.view}
-                        />
-                    )}
+                    <IconButtonComponent
+                        url={`${urlToInstances}`}
+                        icon="remove-red-eye"
+                        tooltipMessage={MESSAGES.view}
+                    />
                     {showEditAction && (
                         <FormDialogComponent
                             renderTrigger={({ openDialog }) => (

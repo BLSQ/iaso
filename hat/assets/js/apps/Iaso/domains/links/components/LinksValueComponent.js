@@ -7,6 +7,7 @@ import { withStyles, TableCell, TableRow } from '@material-ui/core';
 
 import GeoJsonMap from '../../../components/maps/GeoJsonMapComponent';
 import { textPlaceholder } from '../../../constants/uiConstants';
+import { getOrgUnitParentsString } from '../../orgUnits/utils';
 
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LINKS_MESSAGES } from '../messages';
@@ -35,14 +36,12 @@ const ignoredKeys = [
     'org_unit_type_id',
     'has_geo_json',
     'org_unit_type',
-    'parent',
     'parent_id',
     'sub_source',
     'source',
-    'source_ref',
 ];
 
-const renderValue = (linkKey, value, classes) => {
+const renderValue = (linkKey, link, value, classes) => {
     if (!value || value.toString().length === 0) return textPlaceholder;
     switch (linkKey) {
         case 'geo_json': {
@@ -66,6 +65,9 @@ const renderValue = (linkKey, value, classes) => {
         case 'updated_at': {
             return moment.unix(value).format('DD/MM/YYYY HH:mm');
         }
+        case 'parent': {
+            return getOrgUnitParentsString(link);
+        }
 
         default:
             return value.toString();
@@ -75,6 +77,7 @@ const renderValue = (linkKey, value, classes) => {
 const LinksValue = ({
     linkKey,
     value,
+    link,
     isDifferent,
     classes,
     intl,
@@ -93,7 +96,7 @@ const LinksValue = ({
                 {!MESSAGES[linkKey] && linkKey}
             </TableCell>
             <TableCell className={isDifferent ? differentClass : null}>
-                {renderValue(linkKey, value, classes)}
+                {renderValue(linkKey, link, value, classes)}
             </TableCell>
         </TableRow>
     );
@@ -101,6 +104,7 @@ const LinksValue = ({
 
 LinksValue.defaultProps = {
     value: null,
+    link: null,
     validated: false,
 };
 
@@ -109,6 +113,7 @@ LinksValue.propTypes = {
     classes: PropTypes.object.isRequired,
     linkKey: PropTypes.string.isRequired,
     value: PropTypes.any,
+    link: PropTypes.any,
     isDifferent: PropTypes.bool.isRequired,
     validated: PropTypes.bool,
 };

@@ -32,6 +32,7 @@ from .api.derived_instances import DerivedInstancesViewSet
 from .api.hesabu_descriptors import HesabuDescriptorsViewSet
 from .api.dhis2_resources import DHIS2_VIEWSETS
 from .api.permissions import PermissionsViewSet
+from .api.feature_flags import FeatureFlagViewSet
 from iaso import matching
 import pkgutil
 
@@ -64,6 +65,7 @@ router.register(r"mappingversions", MappingVersionsViewSet, basename="mappingver
 router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
+router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 
 urlpatterns = [
     url(r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$", view=enketo_public_launch, name="enketo_public_launch"),

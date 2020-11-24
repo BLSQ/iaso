@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/1.9/ref/settings/
 """
 
 import os
+import sentry_sdk
 from datetime import timedelta
 
 STAGING = os.environ.get("STAGING", "").lower() == "true"
@@ -28,7 +29,7 @@ DEBUG = os.environ.get("DEBUG", "").lower() == "true"
 USE_CACHE = os.environ.get("CACHE", "").lower() == "true"
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
-
+SENTRY_URL = os.environ.get("SENTRY_URL", "")
 
 ALLOWED_HOSTS = ["*"]
 
@@ -304,3 +305,9 @@ CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
 
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
+
+if SENTRY_URL:
+    sentry_sdk.init(
+        SENTRY_URL,
+        traces_sample_rate=1.0
+    )

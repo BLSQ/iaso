@@ -68,3 +68,5 @@ djangorestframework-simplejwt==4.4.0
 
 #JSON5 is used for the export_json_for_mobile_app
 json5==0.9.5
+
+sentry-sdk==0.19.4

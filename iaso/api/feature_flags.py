@@ -13,12 +13,6 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
-    def create(self, validated_data):
-        ff = FeatureFlag(**validated_data)
-        ff.save()
-        return ff
-
-
 class FeatureFlagViewSet(ModelViewSet):
     """ Feature flag API
 
@@ -29,7 +23,6 @@ class FeatureFlagViewSet(ModelViewSet):
     """
 
     permission_classes = [permissions.IsAuthenticated]
-    # permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_forms")]
     serializer_class = FeatureFlagsSerializer
     results_key = "featureflags"
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]

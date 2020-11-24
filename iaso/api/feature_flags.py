@@ -25,7 +25,7 @@ class FeatureFlagViewSet(ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = FeatureFlagsSerializer
     results_key = "featureflags"
-    http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]
+    http_method_names = ["get", "head", "options"]
 
     def get_queryset(self):
         featureflags = FeatureFlag.objects.all()

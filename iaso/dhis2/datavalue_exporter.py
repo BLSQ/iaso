@@ -406,7 +406,7 @@ class EventTrackerHandler(BaseHandler):
             if len(event["dataValues"]) > 0:
                 events.append(event)
             else:
-                self.logger.error(f"skipping event for stage {program_stage_id} in #{instance.id} no data")
+                self.logger.debug(f"skipping event for stage {program_stage_id} in #{instance.id} no data")
 
         tracked_entity_with_events = {
             "orgUnit": orgunit_id,

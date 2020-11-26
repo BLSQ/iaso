@@ -45,7 +45,7 @@ describe('Forms config', () => {
         });
     });
     describe('action colmumn', () => {
-        it('should not display buttons if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
+        it('should only display eye icon button if instances_count = 0,showEditAction = false, showMappingAction = false', () => {
             const tempForm = { ...fakeForm };
             columns = formsTableColumns(() => null, defaultProps, false, false);
             tempForm.instances_count = 0;
@@ -55,7 +55,14 @@ describe('Forms config', () => {
                     original: tempForm,
                 }),
             );
-            expect(wrapper.find(IconButtonComponent)).to.have.lengthOf(0);
+
+            const redEyeIcon = wrapper.find('[icon="remove-red-eye"]');
+            expect(redEyeIcon).to.have.lengthOf(1);
+            const editIcon = wrapper.find('[icon="edit"]');
+            expect(editIcon).to.have.lengthOf(0);
+            const dhisIcon = wrapper.find('[icon="dhis"]');
+            expect(dhisIcon).to.have.lengthOf(0);
+            expect(wrapper.find(IconButtonComponent)).to.have.lengthOf(1);
         });
         it('should change url if currentOrg unit is defined and display red eye icon', () => {
             const tempForm = { ...fakeForm };

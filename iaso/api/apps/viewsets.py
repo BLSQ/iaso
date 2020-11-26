@@ -43,3 +43,5 @@ class AppsViewSet(ModelViewSet):
 
     # def list(self, request: Request, *args, **kwargs):
     #     raise Http404
+    def perform_create(self, serializer):
+        serializer.save(account=self.request.user.iaso_profile.account)

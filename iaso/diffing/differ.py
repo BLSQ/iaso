@@ -26,9 +26,6 @@ class Differ:
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
             .select_related("org_unit_type")
-            .select_related("parent")
-            .select_related("parent__parent")
-            .select_related("parent__parent__parent")
             .filter(version=version)
         )
         if validation_status:

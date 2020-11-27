@@ -52,10 +52,8 @@ export class Period {
                 return _.range(this.month - 2, this.month + 1);
             case PERIOD_TYPE_SIX_MONTH:
                 return _.range(this.month - 5, this.month + 1);
-            case PERIOD_TYPE_YEAR:
-                return _.range(this.month - 11, this.month + 1);
             default:
-                throw new Error(`Invalid period type ${this.periodType}`);
+                return _.range(this.month - 11, this.month + 1);
         }
     }
 
@@ -67,10 +65,8 @@ export class Period {
                 return `Q${this.quarter}/${this.year}`;
             case PERIOD_TYPE_SIX_MONTH:
                 return `S${this.semester}/${this.year}`;
-            case PERIOD_TYPE_YEAR:
-                return `${this.year}`;
             default:
-                throw new Error(`Invalid period type ${this.periodType}`);
+                return `${this.year}`;
         }
     }
 
@@ -267,7 +263,7 @@ export class Period {
             return this.nextFinancialJuly(period);
         }
 
-        throw new Error(`unsupported period format${period}`);
+        throw new Error(`unsupported period format ${period}`);
     }
 
     previous(period) {
@@ -286,19 +282,19 @@ export class Period {
         if (period.includes('July')) {
             return this.previousFinancialJuly(period);
         }
-
-        throw new Error(`unsupported period format${period}`);
+        throw new Error(`unsupported period format ${period}`);
     }
 
     previousPeriods(numberOfPeriods) {
         let previous = '';
         const previousPeriods = [];
+        let tempPeriodString = this.periodString;
 
-        for (let i = 0; i < numberOfPeriods; i++) {
+        for (let i = 0; i < numberOfPeriods; i += 1) {
             if (i > 0) {
-                this.periodString = previousPeriods[i - 1];
+                tempPeriodString = previousPeriods[i - 1];
             }
-            previous = this.previous(this.periodString);
+            previous = this.previous(tempPeriodString);
             previousPeriods.push(previous);
         }
         return previousPeriods.reverse();
@@ -307,12 +303,13 @@ export class Period {
     nextPeriods(numberOfPeriods) {
         let next = '';
         const nextPeriods = [];
+        let tempPeriodString = this.periodString;
 
-        for (let i = 0; i < numberOfPeriods; i++) {
+        for (let i = 0; i < numberOfPeriods; i += 1) {
             if (i > 0) {
-                this.periodString = nextPeriods[i - 1];
+                tempPeriodString = nextPeriods[i - 1];
             }
-            next = this.next(this.periodString);
+            next = this.next(tempPeriodString);
             nextPeriods.push(next);
         }
         return nextPeriods;

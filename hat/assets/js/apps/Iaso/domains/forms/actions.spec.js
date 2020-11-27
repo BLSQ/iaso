@@ -1,4 +1,3 @@
-import isEqual from 'lodash/isEqual';
 import {
     SET_FORMS,
     SET_CURRENT_FORM,

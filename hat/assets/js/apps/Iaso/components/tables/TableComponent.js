@@ -218,7 +218,8 @@ class Table extends Component {
             params[getParamsKey(paramsPrefix, 'pageSize')],
             10,
         );
-        let pageSize = urlPageSize || extraProps.defaultPageSize;
+        let pageSize =
+            urlPageSize || (extraProps && extraProps.defaultPageSize);
         const showPagination = !(pageSize >= count && page === 0);
         pageSize = pageSize < count ? pageSize : count;
         if (count === 0) {

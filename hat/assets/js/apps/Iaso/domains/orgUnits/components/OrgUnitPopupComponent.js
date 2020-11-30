@@ -132,18 +132,22 @@ class OrgUnitPopupComponent extends Component {
                                     alignItems="center"
                                 >
                                     {displayUseLocation && (
-                                        <ConfirmDialog
-                                            btnMessage={formatMessage(
-                                                MESSAGES.associate,
-                                            )}
-                                            question={formatMessage(
-                                                MESSAGES.question,
-                                            )}
-                                            message={formatMessage(
-                                                MESSAGES.message,
-                                            )}
-                                            confirm={() => this.confirmDialog()}
-                                        />
+                                        <Box mb={1}>
+                                            <ConfirmDialog
+                                                btnMessage={formatMessage(
+                                                    MESSAGES.associate,
+                                                )}
+                                                question={formatMessage(
+                                                    MESSAGES.question,
+                                                )}
+                                                message={formatMessage(
+                                                    MESSAGES.message,
+                                                )}
+                                                confirm={() =>
+                                                    this.confirmDialog()
+                                                }
+                                            />
+                                        </Box>
                                     )}
                                     <Button
                                         className={classes.marginLeft}

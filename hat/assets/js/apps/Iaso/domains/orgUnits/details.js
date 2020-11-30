@@ -21,6 +21,7 @@ import {
     setFetchingDetail,
     saveOrgUnit as saveOrgUnitAction,
     createOrgUnit as createOrgUnitAction,
+    setSourcesSelected,
 } from './actions';
 import { setAlgorithms, setAlgorithmRuns } from '../links/actions';
 
@@ -41,8 +42,13 @@ import {
     fetchAlgorithms,
     fetchAlgorithmRuns,
     saveLink,
+    fetchAssociatedOrgUnits,
 } from '../../utils/requests';
-import { getAliasesArrayFromString, getOrgUnitsTree } from './utils';
+import {
+    getAliasesArrayFromString,
+    getOrgUnitsTree,
+    getSourcesWithoutCurrentSource,
+} from './utils';
 import { fetchUsersProfiles as fetchUsersProfilesAction } from '../users/actions';
 
 import TopBar from '../../components/nav/TopBarComponent';
@@ -114,6 +120,7 @@ class OrgUnitDetail extends Component {
             dispatch,
             params: { orgUnitId },
             fetchUsersProfiles,
+            setSelectedSources,
         } = this.props;
         this.props.resetOrgUnitsLevels();
         dispatch(setFetching(true));
@@ -155,9 +162,9 @@ class OrgUnitDetail extends Component {
                 ),
             );
         }
+        const sources = [];
         if (orgUnitId !== '0') {
             fetchAssociatedDataSources(dispatch, orgUnitId).then(data => {
-                const sources = [];
                 data.forEach((s, i) => {
                     sources.push({
                         ...s,
@@ -172,11 +179,48 @@ class OrgUnitDetail extends Component {
             this.setState({
                 fetchingFilters: false,
             });
-            this.fetchDetail().then(() => {
+            this.fetchDetail().then(async currentOrgUnit => {
                 if (this.state.tab !== 'map') {
                     dispatch(setFetching(false));
                 }
                 dispatch(setFetchingDetail(false));
+                const { links } = await fetchLinks(
+                    dispatch,
+                    `/api/links/?orgUnitId=${orgUnitId}`,
+                );
+                let selectedSources = [];
+                links.forEach(l => {
+                    const tempSources = getSourcesWithoutCurrentSource(
+                        sources,
+                        currentOrgUnit.source_id,
+                    );
+                    const linkSources = tempSources.filter(
+                        s =>
+                            (s.id === l.source.source_id &&
+                                !selectedSources.find(
+                                    ss => ss.id === l.source.source_id,
+                                )) ||
+                            (s.id === l.destination.source_id &&
+                                !selectedSources.find(
+                                    ss => ss.id === l.destination.source_id,
+                                )),
+                    );
+                    if (linkSources.length > 0) {
+                        selectedSources = selectedSources.concat(linkSources);
+                    }
+                });
+                const fullSelectedSources = [];
+                selectedSources.forEach(async (ss, index) => {
+                    const detail = await fetchAssociatedOrgUnits(
+                        dispatch,
+                        ss,
+                        currentOrgUnit,
+                    );
+                    fullSelectedSources.push(detail);
+                    if (index === selectedSources.length - 1) {
+                        setSelectedSources(fullSelectedSources);
+                    }
+                });
             });
         });
     }
@@ -244,6 +288,7 @@ class OrgUnitDetail extends Component {
                 this.setState({
                     currentOrgUnit: orgUnit,
                 });
+                return orgUnit;
             });
         }
         this.props.setCurrentOrgUnit(initialOrgUnit);
@@ -680,6 +725,7 @@ OrgUnitDetail.propTypes = {
     algorithms: PropTypes.array.isRequired,
     algorithmRuns: PropTypes.array.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
+    setSelectedSources: PropTypes.func.isRequired,
 };
 
 const MapStateToProps = state => ({
@@ -711,6 +757,7 @@ const MapDispatchToProps = dispatch => ({
     setGroups: groups => dispatch(setGroups(groups)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setAlgorithmRuns: algoRunsList => dispatch(setAlgorithmRuns(algoRunsList)),
+    setSelectedSources: sources => dispatch(setSourcesSelected(sources)),
     ...bindActionCreators(
         {
             setForms: setFormsAction,

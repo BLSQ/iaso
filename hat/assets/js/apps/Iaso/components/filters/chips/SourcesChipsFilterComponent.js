@@ -64,7 +64,7 @@ function SourcesChipsFilterComponent(props) {
                         fitToBounds,
                     )
                 }
-                setSelectedItems={props.setFormsSelected}
+                setSelectedItems={props.setSelectedItems}
                 selectedItems={sourcesSelected}
                 currentItems={sources}
             />
@@ -81,7 +81,7 @@ SourcesChipsFilterComponent.propTypes = {
     currentSources: PropTypes.any,
     currentOrgUnit: PropTypes.object.isRequired,
     sourcesSelected: PropTypes.array.isRequired,
-    setFormsSelected: PropTypes.func.isRequired,
+    setSelectedItems: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,
 };
@@ -94,7 +94,7 @@ const MapStateToProps = state => ({
 
 const MapDispatchToProps = dispatch => ({
     dispatch,
-    setFormsSelected: sources => dispatch(setSourcesSelected(sources)),
+    setSelectedItems: sources => dispatch(setSourcesSelected(sources)),
 });
 
 export default connect(

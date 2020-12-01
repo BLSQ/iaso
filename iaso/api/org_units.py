@@ -36,7 +36,7 @@ class HasOrgUnitPermission(permissions.BasePermission):
         ):
             return False
 
-        if obj.version.data_source.read_only and request.method != 'GET':
+        if obj.version.data_source.read_only and request.method != "GET":
             return False
         # TODO: can be handled with get_queryset()
         user_account = request.user.iaso_profile.account
@@ -394,7 +394,9 @@ class OrgUnitViewSet(viewsets.ViewSet):
             errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
 
         if org_unit.version.data_source.read_only:
-            errors.append({"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"})
+            errors.append(
+                {"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"}
+            )
 
         org_unit.name = name
         source_ref = request.data.get("source_ref", None)
@@ -505,10 +507,13 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = queryset.union(additional_queryset)
                 search_index += 1
         if queryset.count() > 0:
-            data_sources = DataSource.objects.filter(id__in=queryset.values_list('version__data_source', flat=True))
+            data_sources = DataSource.objects.filter(id__in=queryset.values_list("version__data_source", flat=True))
             for source in data_sources:
                 if source.read_only:
-                    return Response({"message": "Modification on read only source is not allowed"}, status=status.HTTP_401_UNAUTHORIZED)
+                    return Response(
+                        {"message": "Modification on read only source is not allowed"},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
 
             with transaction.atomic():
                 for org_unit in queryset.iterator():

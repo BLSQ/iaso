@@ -20,7 +20,7 @@ class AlgorithmsViewSet(viewsets.ModelViewSet):
     GET /api/algorithms/
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_links")]
+    permission_classes = [permissions.IsAuthenticated]
 
     serializer_class = AlgorithmsSerializer
     http_method_names = ["get", "post", "put", "head", "options", "trace", "delete"]

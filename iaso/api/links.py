@@ -47,7 +47,7 @@ class LinkViewSet(viewsets.ViewSet):
     PATCH /api/links/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_links")]
+    permission_classes = [permissions.IsAuthenticated]
 
     def list(self, request):
         limit = request.GET.get("limit", None)

@@ -83,7 +83,7 @@ class Account(models.Model):
 
 class DataSource(models.Model):
     name = models.CharField(max_length=255, unique=True)
-    read_only = models.BooleanField(default=True)
+    read_only = models.BooleanField(default=False)
     projects = models.ManyToManyField("Project", related_name="data_sources", blank=True)
     credentials = models.ForeignKey(
         "ExternalCredentials", on_delete=models.SET_NULL, related_name="data_sources", null=True, blank=True

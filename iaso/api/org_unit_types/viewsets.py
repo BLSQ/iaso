@@ -1,5 +1,5 @@
-from rest_framework import permissions
-
+from rest_framework.response import Response
+from rest_framework import status, permissions
 from django.db.models import Q
 from iaso.models import OrgUnitType, Project
 from .serializers import OrgUnitTypeSerializer
@@ -18,6 +18,12 @@ class OrgUnitTypeViewSet(ModelViewSet):
     serializer_class = OrgUnitTypeSerializer
     results_key = "orgUnitTypes"
     http_method_names = ["get", "post", "patch", "put", "delete", "head", "options", "trace"]
+
+    def destroy(self, request, pk):
+        t = OrgUnitType.objects.get(pk=pk)
+        if t.orgunit_set.count() > 0:
+            return Response("You can't delete a type that still has org units", status=status.HTTP_401_UNAUTHORIZED)
+        return super(OrgUnitTypeViewSet, self).destroy(request, pk)
 
     def get_queryset(self):
         queryset = OrgUnitType.objects.filter_for_user_and_app_id(

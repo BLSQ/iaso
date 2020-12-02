@@ -5,19 +5,11 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0064_instance_deleted'),
-    ]
+    dependencies = [("iaso", "0064_instance_deleted")]
 
     operations = [
         migrations.AlterField(
-            model_name='featureflag',
-            name='code',
-            field=models.CharField(max_length=30, unique=True),
+            model_name="featureflag", name="code", field=models.CharField(max_length=30, unique=True)
         ),
-        migrations.AlterField(
-            model_name='project',
-            name='name',
-            field=models.TextField(),
-        ),
+        migrations.AlterField(model_name="project", name="name", field=models.TextField()),
     ]

@@ -37,14 +37,24 @@ class AppsViewSet(ModelViewSet):
     def get_object(self):
         """Override to handle GET /api/app/current/?app_id=some.app.id"""
         if self.kwargs["app_id"] == "current":
+            app_id = self.request.query_params.get("app_id", None)
+            if app_id is None:
+                raise Http404
+            if self.request.user.is_anonymous:
+                try:
+                    p = Project.objects.get(app_id=app_id)
+                    account = p.account
+                except Project.DoesNotExist:
+                    raise Http404
+            else:
+                account = self.request.user.iaso_profile.account
+
             return get_object_or_404(
                 self.get_queryset(),
-                account=self.request.user.iaso_profile.account,
-                app_id=self.request.query_params.get("app_id"),
+                account=account,
+                app_id=app_id,
             )
         return super().get_object()
 
-    # def list(self, request: Request, *args, **kwargs):
-    #     raise Http404
-    # def perform_create(self, serializer):
-    #     serializer.save(account=self.request.user.iaso_profile.account)
+    def list(self, request: Request, *args, **kwargs):
+        raise Http404

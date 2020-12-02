@@ -9,12 +9,12 @@ class FeatureFlagSerializer(serializers.Serializer):
         model = FeatureFlag
         fields = ["id", "code", "name", "description", "created_at", "updated_at"]
 
+    id = serializers.IntegerField()
+    name = serializers.CharField(max_length=200)
+    code = serializers.CharField(max_length=200, required=True)
+    description = serializers.CharField(max_length=200, required=False, allow_blank=True)
     created_at = TimestampField(read_only=True, required=False)
     updated_at = TimestampField(read_only=True, required=False)
-    name = serializers.CharField(max_length=200)
-    code = serializers.CharField(max_length=200)
-    description = serializers.CharField(max_length=200, required=False, allow_blank=True)
-    id = serializers.IntegerField()
 
     def validate_code(self, data):
         if FeatureFlag.objects.filter(code=data).count() == 1:

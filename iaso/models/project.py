@@ -37,7 +37,7 @@ class ProjectQuerySet(models.QuerySet):
 class Project(models.Model):
     """A data collection project, associated with a single mobile application"""
 
-    name = models.TextField(null=True, blank=True)
+    name = models.TextField(null=False, blank=False)
     forms = models.ManyToManyField("Form", blank=True, related_name="projects")
     account = models.ForeignKey("Account", on_delete=models.DO_NOTHING, null=True, blank=True)
     app_id = models.TextField(null=True, blank=True)

@@ -153,14 +153,22 @@ class OrgUnitMapComponent extends Component {
         }
     }
 
-    componentWillReceiveProps(newProps) {
-        if (!isEqual(newProps.orgUnit.geo_json, this.props.orgUnit.geo_json)) {
-            mapShape(newProps.orgUnit.geo_json, 'location');
+    componentDidUpdate(prevProps) {
+        if (!isEqual(prevProps.orgUnit.geo_json, this.props.orgUnit.geo_json)) {
+            mapShape(prevProps.orgUnit.geo_json, 'location');
         }
         if (
-            !isEqual(newProps.orgUnit.catchment, this.props.orgUnit.catchment)
+            !isEqual(prevProps.orgUnit.catchment, this.props.orgUnit.catchment)
         ) {
-            mapShape(newProps.orgUnit.catchment, 'catchment');
+            mapShape(prevProps.orgUnit.catchment, 'catchment');
+        }
+        if (
+            this.props.sourcesSelected &&
+            this.props.orgUnitTypesSelected &&
+            (this.props.sourcesSelected.length > 0 ||
+                this.props.orgUnitTypesSelected.length > 0)
+        ) {
+            this.fitToBounds();
         }
     }
 
@@ -204,9 +212,11 @@ class OrgUnitMapComponent extends Component {
         const { editGeoJson } = this.state;
 
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
-            orgUnitTypesSelected,
+            orgUnitTypesSelected || [],
         );
-        const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
+        const mappedSourcesSelected = mapOrgUnitByLocation(
+            sourcesSelected || [],
+        );
         const editLocationEnabled = editGeoJson.location;
 
         const groups = [];
@@ -362,9 +372,11 @@ class OrgUnitMapComponent extends Component {
             this.map.leafletElement.options.maxZoom = currentTile.maxZoom;
         }
         const mappedOrgUnitTypesSelected = mapOrgUnitByLocation(
-            orgUnitTypesSelected,
+            orgUnitTypesSelected || [],
         );
-        const mappedSourcesSelected = mapOrgUnitByLocation(sourcesSelected);
+        const mappedSourcesSelected = mapOrgUnitByLocation(
+            sourcesSelected || [],
+        );
         const showEditComponent = hasMarker || !orgUnit.geo_json;
 
         return (
@@ -579,6 +591,10 @@ class OrgUnitMapComponent extends Component {
         );
     }
 }
+OrgUnitMapComponent.defaultProps = {
+    sourcesSelected: undefined,
+    orgUnitTypesSelected: undefined,
+};
 
 OrgUnitMapComponent.propTypes = {
     intl: PropTypes.object.isRequired,
@@ -588,11 +604,14 @@ OrgUnitMapComponent.propTypes = {
     onChangeLocation: PropTypes.func.isRequired,
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
-    orgUnitTypesSelected: PropTypes.array.isRequired,
     formsSelected: PropTypes.array.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
-    sourcesSelected: PropTypes.array.isRequired,
+    sourcesSelected: PropTypes.oneOfType([PropTypes.number, PropTypes.array]),
+    orgUnitTypesSelected: PropTypes.oneOfType([
+        PropTypes.number,
+        PropTypes.array,
+    ]),
     resetOrgUnit: PropTypes.func.isRequired,
     saveOrgUnit: PropTypes.func.isRequired,
     setOrgUnitLocationModified: PropTypes.func.isRequired,

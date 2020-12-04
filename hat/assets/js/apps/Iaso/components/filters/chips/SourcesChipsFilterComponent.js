@@ -74,13 +74,14 @@ function SourcesChipsFilterComponent(props) {
 
 SourcesChipsFilterComponent.defaultProps = {
     currentSources: null,
+    sourcesSelected: [],
 };
 
 SourcesChipsFilterComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     currentSources: PropTypes.any,
     currentOrgUnit: PropTypes.object.isRequired,
-    sourcesSelected: PropTypes.array.isRequired,
+    sourcesSelected: PropTypes.array,
     setSelectedItems: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fitToBounds: PropTypes.func.isRequired,

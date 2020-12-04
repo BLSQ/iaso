@@ -94,7 +94,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 orgUnitTypesSelected,
             );
         });
-        this.updateOrgUnitTypesSelected(orgUnitTypesSelected);
+        this.updateOrgUnitTypesSelected(orgUnitTypesSelected, false);
         this.setState({
             orgUnitTypesList,
         });
@@ -148,7 +148,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         });
     }
 
-    updateOrgUnitTypesSelected(orgUnitTypesSelected) {
+    updateOrgUnitTypesSelected(orgUnitTypesSelected, fitToBounds = true) {
         const { dispatch, currentOrgUnit } = this.props;
         const { orgUnitTypesList } = this.state;
         const promisesArray = [];
@@ -174,7 +174,9 @@ class OrgUnitTypeChipsFilterComponent extends Component {
                 orgUnitTypesList,
             );
             this.props.setFetching(false);
-            this.props.fitToBounds();
+            if (fitToBounds) {
+                this.props.fitToBounds();
+            }
         });
     }
 
@@ -238,11 +240,15 @@ class OrgUnitTypeChipsFilterComponent extends Component {
     }
 }
 
+OrgUnitTypeChipsFilterComponent.defaultProps = {
+    orgUnitTypesSelected: [],
+};
+
 OrgUnitTypeChipsFilterComponent.propTypes = {
     classes: PropTypes.object.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,
     currentOrgUnit: PropTypes.object.isRequired,
-    orgUnitTypesSelected: PropTypes.array.isRequired,
+    orgUnitTypesSelected: PropTypes.array,
     setCurrentSubOrgUnitTypesSelected: PropTypes.func.isRequired,
     setFetching: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,

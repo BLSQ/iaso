@@ -53,11 +53,16 @@ class ProfileAPITestCase(APITestCase):
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
-    def test_profile_list_wrong_permissions(self):
-        """GET /profiles/ with auth (user has wrong permissions)"""
+    def test_profile_list_read_only_permissions(self):
+        """GET /profiles/ with auth (user has read only permissions)"""
 
         self.client.force_authenticate(self.jane)
         response = self.client.get("/api/profiles/")
+        self.assertJSONResponse(response, 200)
+        profile_url = "/api/profiles/%s/" % self.jane.iaso_profile.id
+        response = self.client.get(profile_url)
+        self.assertJSONResponse(response, 200)
+        response = self.client.patch(profile_url)
         self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")

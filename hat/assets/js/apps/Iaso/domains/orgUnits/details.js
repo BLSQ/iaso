@@ -523,7 +523,11 @@ class OrgUnitDetail extends Component {
                                 />
                             </Box>
                         )}
-                        {tab === 'map' && !fetchingFilters && (
+                        <div
+                            className={
+                                tab === 'map' ? '' : classes.hiddenOpacity
+                            }
+                        >
                             <Box className={classes.containerFullHeight}>
                                 <OrgUnitMap
                                     setOrgUnitLocationModified={() =>
@@ -547,7 +551,7 @@ class OrgUnitDetail extends Component {
                                     }
                                 />
                             </Box>
-                        )}
+                        </div>
                         {tab === 'history' && (
                             <Box className={classes.containerFullHeightPadded}>
                                 <Logs

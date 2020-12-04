@@ -22,11 +22,11 @@ import {
 export const orgUnitsInitialState = {
     current: null,
     currentSubOrgUnit: null,
-    currentSubOrgUnitsTypesSelected: [],
+    currentSubOrgUnitsTypesSelected: undefined,
     currentSubOrgUnitsTypesList: [],
     currentForms: null,
     currentFormsSelected: [],
-    currentSourcesSelected: [],
+    currentSourcesSelected: undefined,
     fetchingList: false,
     fetchingDetail: true,
     fetchingSubOrgUnits: false,

@@ -7,7 +7,7 @@ from django.utils.translation import gettext as _
 import re
 from iaso.api.common import safe_api_import
 from iaso.gpkg import org_units_to_gpkg
-from iaso.models import OrgUnit, OrgUnitType, Instance, Group, Project, BulkOperation, SourceVersion
+from iaso.models import OrgUnit, OrgUnitType, Instance, Group, Project, BulkOperation, SourceVersion, DataSource
 from django.contrib.gis.geos import Point
 from django.db import connection
 
@@ -36,6 +36,8 @@ class HasOrgUnitPermission(permissions.BasePermission):
         ):
             return False
 
+        if obj.version.data_source.read_only and request.method != "GET":
+            return False
         # TODO: can be handled with get_queryset()
         user_account = request.user.iaso_profile.account
         projects = obj.version.data_source.projects.all()
@@ -248,6 +250,7 @@ class OrgUnitViewSet(viewsets.ViewSet):
     def partial_update(self, request, pk=None):
         errors = []
         org_unit = get_object_or_404(self.get_queryset(), id=pk)
+
         self.check_object_permissions(request, org_unit)
 
         original_copy = deepcopy(org_unit)
@@ -390,6 +393,11 @@ class OrgUnitViewSet(viewsets.ViewSet):
         if not name:
             errors.append({"errorKey": "name", "errorMessage": _("Org unit name is required")})
 
+        if org_unit.version.data_source.read_only:
+            errors.append(
+                {"errorKey": "name", "errorMessage": "Creation of org unit not authorized on read only data source"}
+            )
+
         org_unit.name = name
         source_ref = request.data.get("source_ref", None)
         if source_ref:
@@ -484,7 +492,6 @@ class OrgUnitViewSet(viewsets.ViewSet):
 
         # Restrict qs to org units accessible to the authenticated user
         queryset = self.get_queryset()
-
         if not select_all:
             queryset = queryset.filter(pk__in=selected_ids)
         else:
@@ -500,6 +507,14 @@ class OrgUnitViewSet(viewsets.ViewSet):
                     queryset = queryset.union(additional_queryset)
                 search_index += 1
         if queryset.count() > 0:
+            data_sources = DataSource.objects.filter(id__in=queryset.values_list("version__data_source", flat=True))
+            for source in data_sources:
+                if source.read_only:
+                    return Response(
+                        {"message": "Modification on read only source is not allowed"},
+                        status=status.HTTP_401_UNAUTHORIZED,
+                    )
+
             with transaction.atomic():
                 for org_unit in queryset.iterator():
                     OrgUnit.objects.update_single_unit_from_bulk(
@@ -524,7 +539,8 @@ class OrgUnitViewSet(viewsets.ViewSet):
 def import_data(org_units, user, app_id):
     new_org_units = []
     project = Project.objects.get_for_user_and_app_id(user, app_id)
-
+    if project.account.default_version.data_source.read_only:
+        raise Exception("Creation of org unit not authorized on default data source")
     for org_unit in org_units:
         uuid = org_unit.get("id", None)
         latitude = org_unit.get("latitude", None)

@@ -19,8 +19,9 @@ class HasProfilePermission(permissions.BasePermission):
     def has_permission(self, request, view):
         if view.action == "retrieve" and view.kwargs.get("pk") == "me":
             return True
-
-        return request.user.has_perm("menupermissions.iaso_users")
+        if (not request.user.has_perm("menupermissions.iaso_users")) and request.method != "GET":
+            return False
+        return True
 
 
 class ProfilesViewSet(viewsets.ViewSet):

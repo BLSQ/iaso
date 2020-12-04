@@ -6,6 +6,18 @@ from iaso.models import Group
 from .common import ModelViewSet, TimestampField, HasPermission
 
 
+class HasGroupPermission(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if obj.source_version.data_source.read_only and request.method != "GET":
+            return False
+
+        user_account = request.user.iaso_profile.account
+        projects = obj.source_version.data_source.projects.all()
+        account_ids = [p.account_id for p in projects]
+
+        return user_account.id in account_ids
+
+
 class GroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = Group
@@ -44,7 +56,11 @@ class GroupsViewSet(ModelViewSet):
     DELETE /api/groups/<id>
     """
 
-    permission_classes = [permissions.IsAuthenticated, HasPermission("menupermissions.iaso_org_units")]
+    permission_classes = [
+        permissions.IsAuthenticated,
+        HasPermission("menupermissions.iaso_org_units"),
+        HasGroupPermission,
+    ]
     serializer_class = GroupSerializer
     results_key = "groups"
     http_method_names = ["get", "post", "patch", "delete", "head", "options", "trace"]

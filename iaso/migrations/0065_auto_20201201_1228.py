@@ -4,21 +4,15 @@ from django.db import migrations, models
 
 
 def set_all_writeable(apps, schema_editor):
-    DataSource = apps.get_model('iaso', 'DataSource')
+    DataSource = apps.get_model("iaso", "DataSource")
     DataSource.objects.update(read_only=False)
 
 
 class Migration(migrations.Migration):
 
-    dependencies = [
-        ('iaso', '0064_instance_deleted'),
-    ]
+    dependencies = [("iaso", "0064_instance_deleted")]
 
     operations = [
-        migrations.AlterField(
-            model_name='datasource',
-            name='read_only',
-            field=models.BooleanField(default=False),
-        ),
+        migrations.AlterField(model_name="datasource", name="read_only", field=models.BooleanField(default=False)),
         migrations.RunPython(set_all_writeable),
     ]

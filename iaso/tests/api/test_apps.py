@@ -15,11 +15,11 @@ class AppsAPITestCase(APITestCase):
         cls.flag_1 = m.FeatureFlag.objects.create(
             code="send_location", name="Send GPS location", description="Send GPS location every time etc"
         )
-        cls.flag_2 = m.FeatureFlag.objects.create(code="another_feature", name="Anotther feature")
+        cls.flag_2 = m.FeatureFlag.objects.create(code="another_feature", name="Another feature")
         cls.flag_3 = m.FeatureFlag.objects.create(
             code="REQUIRE_AUTHENTICATION",
-            name="Exige l'authentification pour téléchager",
-            description="Exige l'authentification pour téléchager"
+            name="Exige l'authentification pour télécharger",
+            description="Exige l'authentification pour télécharger",
         )
         cls.project_2.feature_flags.set([cls.flag_1, cls.flag_2])
 
@@ -28,7 +28,7 @@ class AppsAPITestCase(APITestCase):
         """DELETE /apps/<app_id>/ without auth should result in a 405 response"""
 
         response = self.client.delete("/api/apps/org.ghi.p1/")
-        self.assertJSONResponse(response, 405)
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_apps_list(self):
@@ -105,37 +105,28 @@ class AppsAPITestCase(APITestCase):
     @tag("iaso_only")
     def test_app_create_ok_with_auth(self):
         candidated_app = {
-        "name": "This is a new app",
-        "app_id": "com.this.is.new.app",
-        "feature_flags":[{
-                        "id": self.flag_1.id,
-                        "name": self.flag_1.name,
-                        "code": self.flag_1.code
-                        }],
-        "needs_authentication": False
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
+            "needs_authentication": False,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            f"/api/apps/", candidated_app, format="json"
-        )
+        response = self.client.post(f"/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertValidAppData(response_data)
         self.assertEqual(1, len(response_data["feature_flags"]))
 
-
     @tag("iaso_only")
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
         candidated_app = {
-        "name": "This is a new app",
-        "app_id": "com.this.is.new.app",
-        "feature_flags":[],
-        "needs_authentication": True
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [],
+            "needs_authentication": True,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.post(
-            f"/api/apps/", candidated_app, format="json"
-        )
+        response = self.client.post(f"/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 201)
         response_data = response.json()
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
@@ -143,43 +134,29 @@ class AppsAPITestCase(APITestCase):
     @tag("iaso_only")
     def test_app_create_without_auth(self):
         candidated_app = {
-        "name": "This is a new app",
-        "app_id": "com.this.is.new.app",
-        "feature_flags":[{
-                        "id": self.flag_1.id,
-                        "name": self.flag_1.name,
-                        "code": self.flag_1.code
-                        }],
-        "needs_authentication": False
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
+            "needs_authentication": False,
         }
 
-        response = self.client.post(
-            f"/api/apps/", candidated_app, format="json"
-        )
-        self.assertJSONResponse(response, 404)
+        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        self.assertJSONResponse(response, 403)
 
     @tag("iaso_only")
     def test_app_update_and_commit_require_auth_ok_with_auth(self):
         candidated_app = {
-        "name": "This is a newly updated app",
-        "feature_flags":[{
-                        "id": self.flag_1.id,
-                        "name": self.flag_1.name,
-                        "code": self.flag_1.code
-                        }],
-        "needs_authentication": True
+            "name": "This is a newly updated app",
+            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
+            "needs_authentication": True,
         }
         self.client.force_authenticate(self.yoda)
-        response = self.client.put(
-            f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json"
-        )
+        response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
         self.assertJSONResponse(response, 200)
         response_data = response.json()
         self.assertValidAppData(response_data)
         self.assertGreaterEqual(2, len(response_data["feature_flags"]))
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
-
-
 
     def assertValidAppData(self, app_data: typing.Mapping):
         self.assertHasField(app_data, "id", str)

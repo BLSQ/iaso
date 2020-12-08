@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from django.http import Http404
+from rest_framework import status
 from rest_framework.response import Response
 from ..projects import ProjectSerializer
 from iaso.models import Project, FeatureFlag, Form
@@ -36,14 +37,7 @@ class AppSerializer(ProjectSerializer):
         request = self.context["request"]
         app_id = validated_data.get("app_id", None)
 
-        if request.user.is_anonymous:
-            try:
-                p = Project.objects.get(app_id=app_id)
-                account = p.account
-            except Project.DoesNotExist:
-                raise Http404
-        else:
-            account = request.user.iaso_profile.account
+        account = request.user.iaso_profile.account
 
         name = validated_data.get("name", None)
         forms = validated_data.get("forms", None)
@@ -73,6 +67,7 @@ class AppSerializer(ProjectSerializer):
         return new_app
 
     def update(self, instance, validated_data):
+
         feature_flags = validated_data.pop("feature_flags", None)
         needs_authentication = validated_data.pop("needs_authentication", None)
         forms = validated_data.pop("forms", None)

@@ -23,7 +23,7 @@ class AppsViewSet(ModelViewSet):
     GET /api/apps/<app_id>/
     """
 
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     serializer_class = AppSerializer
     lookup_field = "app_id"
     lookup_value_regex = r"[\w.]+"  # allow dots in the pk url param
@@ -49,11 +49,7 @@ class AppsViewSet(ModelViewSet):
             else:
                 account = self.request.user.iaso_profile.account
 
-            return get_object_or_404(
-                self.get_queryset(),
-                account=account,
-                app_id=app_id,
-            )
+            return get_object_or_404(self.get_queryset(), account=account, app_id=app_id)
         return super().get_object()
 
     def list(self, request: Request, *args, **kwargs):

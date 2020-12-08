@@ -28,7 +28,7 @@ from .models import (
     ExportRequest,
     ExportStatus,
     ExportLog,
-    DevicePosition
+    DevicePosition,
 )
 
 
@@ -132,6 +132,7 @@ class MappingVersionAdmin(admin.GeoModelAdmin):
 class GroupAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)
     search_fields = ("name",)
+
 
 class ProfileAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("org_units",)

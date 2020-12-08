@@ -1,9 +1,5 @@
 from django.views.decorators.csrf import csrf_exempt
-from rest_framework.decorators import (
-    api_view,
-    permission_classes,
-    authentication_classes,
-)
+from rest_framework.decorators import api_view, permission_classes, authentication_classes
 from django.http.request import HttpRequest
 from django.http import HttpResponse
 from django.http import JsonResponse
@@ -22,7 +18,12 @@ logger = logging.getLogger(__name__)
 @permission_classes([])
 def form_upload(request: HttpRequest) -> HttpResponse:
     main_file = request.FILES["xml_submission_file"]
-    i, created = Instance.objects.get_or_create(file_name=main_file.name)
+    instances = Instance.objects.filter(file_name=main_file.name)
+    if instances:
+        i = instances.first()
+    else:
+        i = Instance(file_name=main_file.name)
+
     i.file = request.FILES["xml_submission_file"]
     i.save()
 

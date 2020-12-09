@@ -38,18 +38,20 @@ class DevicesPositionAPITestCase(APITestCase):
 
         devices_position_body = [
             {
-                "captured_at": 1590506880,
-                "uuid": "d31d0c7b-632b-4944-8fda-ca3688153ef9",
-                "device_id": self.device_1.pk,
-                "latitude": 0.4,
-                "longitude": 44.56,
-                "altitude": 33.1,
-                "accuracy": 22.5,
+                "device_id": "372",
+                "transport": "car",
+                "uuid": "4fafc197-054c-4b41-a527-47299f88f9fa",
+                "latitude": 6.0,
+                "longitude": 2.0,
+                "altitude": 115.0,
+                "accuracy": 14.6,
+                "captured_at": 120000.0,
             }
         ]
         response = self.client.post(
             f"/api/devicesposition/?app_id={self.project_1.app_id}", devices_position_body, format="json"
         )
+
         self.assertJSONResponse(response, 201)
         self.assertValidDevicePositionListData(response.json(), 1, with_result_key=False)
         self.assertAPIImport("devicesposition", request_body=devices_position_body, has_problems=False)
@@ -62,11 +64,12 @@ class DevicesPositionAPITestCase(APITestCase):
             {
                 "captured_at": 1590506880 + i,
                 "uuid": str(uuid4()),
-                "device_id": self.device_1.pk,
+                "device_id": str(uuid4()),
                 "latitude": 0.4,
                 "longitude": 44.56,
                 "altitude": 33.1,
                 "accuracy": 22.5,
+                "transport": "foot",
             }
             for i in range(50)
         ]
@@ -83,13 +86,14 @@ class DevicesPositionAPITestCase(APITestCase):
 
         devices_position_body = [
             {
-                "captured_at": 1590506880,
-                "uuid": "06248c2d-545a-4a6b-9135-fb0fc750e956",
-                "device_id": self.device_2.pk,
-                "latitude": 0.4,
-                "longitude": 44.56,
-                "altitude": 33.1,
-                "accuracy": 22.5,
+                "device_id": "f1fe21c6-f23d-4d0f-97c7-c2b8b19c8adb",
+                "transport": "car",
+                "uuid": "e0acfadf-cd17-42c4-8513-a545c767eaad",
+                "latitude": 5.0,
+                "longitude": 5.0,
+                "altitude": 125.0,
+                "accuracy": 10.0,
+                "captured_at": 120000.0,
             }
         ]
         response = self.client.post(
@@ -108,13 +112,14 @@ class DevicesPositionAPITestCase(APITestCase):
     def test_post_ok_with_auth(self):
         devices_position_body = [
             {
-                "captured_at": 1590506880,
-                "uuid": "06248c2d-545a-4a6b-9135-fb0fc750e956",
-                "device_id": self.device_2.pk,
-                "latitude": 0.4,
-                "longitude": 44.56,
-                "altitude": 33.1,
-                "accuracy": 22.5,
+                "device_id": "f1fe21c6-f23d-4d0f-97c7-c2b8b19c8adb",
+                "transport": "car",
+                "uuid": "e0acfadf-cd17-42c4-8513-a545c767eaad",
+                "latitude": 5.0,
+                "longitude": 5.0,
+                "altitude": 125.0,
+                "accuracy": 10.0,
+                "captured_at": 120000.0,
             }
         ]
         self.client.force_authenticate(self.yoda)
@@ -128,13 +133,14 @@ class DevicesPositionAPITestCase(APITestCase):
     def test_post_ko_invalid_device_id(self):
         devices_position_body = [
             {
-                "captured_at": 1590506880,
-                "uuid": "d31d0c7b-632b-4944-8fda-ca3688153ef9",
-                "device_id": 9999,
-                "latitude": 0.4,
-                "longitude": 44.56,
-                "altitude": 33.1,
-                "accuracy": 22.5,
+                "device_id": "",
+                "transport": "car",
+                "uuid": "e0acfadf-cd17-42c4-8513-a545c767eaad",
+                "latitude": 5.0,
+                "longitude": 5.0,
+                "altitude": 125.0,
+                "accuracy": 10.0,
+                "captured_at": 120000.0,
             }
         ]
         response = self.client.post(
@@ -162,13 +168,11 @@ class DevicesPositionAPITestCase(APITestCase):
             self.assertValidDevicePositionData(form_data)
 
     def assertValidDevicePositionData(self, form_data: typing.Mapping):
-        self.assertHasField(form_data, "id", int)
         self.assertHasField(form_data, "uuid", str)
-        self.assertHasField(form_data, "device_id", int)
+        self.assertHasField(form_data, "transport", str)
+        self.assertHasField(form_data, "device_id", str)
         self.assertHasField(form_data, "latitude", float)
         self.assertHasField(form_data, "longitude", float)
         self.assertHasField(form_data, "altitude", float)
         self.assertHasField(form_data, "accuracy", float)
         self.assertHasField(form_data, "captured_at", float)
-        self.assertHasField(form_data, "created_at", float)
-        self.assertHasField(form_data, "updated_at", float)

@@ -1,36 +1,18 @@
 from django.contrib.gis.geos import Point
 from rest_framework import permissions, serializers
-from rest_framework.exceptions import PermissionDenied
-
 from .common import ModelViewSet, TimestampField, safe_api_import
-from iaso.models import Device, DevicePosition, Project
+from iaso.models import Device, DevicePosition, Project, DeviceOwnership
 
 
-class DevicePositionSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = DevicePosition
-        fields = [
-            "id",
-            "uuid",
-            "device_id",
-            "latitude",
-            "longitude",
-            "altitude",
-            "accuracy",
-            "captured_at",
-            "created_at",
-            "updated_at",
-        ]
-        read_only_fields = ["id", "created_at", "updated_at"]
-
-    device_id = serializers.PrimaryKeyRelatedField(source="device", queryset=Device.objects.all())
+class DevicePositionSerializer(serializers.Serializer):
+    device_id = serializers.CharField(allow_blank=False)
+    transport = serializers.CharField()
+    uuid = serializers.UUIDField()
     latitude = serializers.FloatField()
     longitude = serializers.FloatField()
     altitude = serializers.FloatField()
     accuracy = serializers.FloatField()
     captured_at = TimestampField()
-    created_at = TimestampField(read_only=True)
-    updated_at = TimestampField(read_only=True)
 
     def validate(self, attrs):
         validated_data = super().validate(attrs)
@@ -43,29 +25,53 @@ class DevicePositionSerializer(serializers.ModelSerializer):
 
         return validated_data
 
+    def create(self, validated_data):
+        request = self.context["request"]
+
+        device_id = validated_data.pop("device_id")
+        p = Project.objects.get_for_user_and_app_id(request.user, request.query_params.get("app_id"))
+        d, created = Device.objects.get_or_create(imei=device_id)
+
+        if created and not request.user.is_anonymous:
+            DeviceOwnership.objects.get_or_create(device=d, project=p, user=request.user)
+        uuid = validated_data["uuid"]
+        positions = DevicePosition.objects.filter(uuid=uuid)
+        if not positions.exists():
+            dp = DevicePosition()
+            dp.device = d
+            dp.uuid = uuid
+            dp.location = validated_data.get("location")
+            dp.accuracy = validated_data.get("accuracy")
+            dp.captured_at = validated_data.get("captured_at")
+            dp.transport = validated_data.get("transport")
+            dp.save()
+        else:
+            dp = positions.first()
+        return dp
+
 
 class DevicesPositionViewSet(ModelViewSet):
     """Iaso Devices position API
 
-    This API is open to anonymous users (if the project allows it).
+    This API is open to anonymous users on write (if the project allows it).
 
     GET /api/devicesposition/
+    POST /api/devicesposition/
     """
 
     permission_classes = [permissions.AllowAny]
 
-    http_method_names = ["post", "head", "options", "trace"]
+    http_method_names = ["get", "post", "head", "options", "trace"]
     results_key = "devicesposition"
     queryset = DevicePosition.objects.all()
+    serializer_class = DevicePositionSerializer
 
     @safe_api_import("devicesposition", fallback_status=201)
     def create(self, api_import, request, *args, **kwargs):
-        # We need to check the project linked to the app_id: it might requires authentication
-        Project.objects.get_for_user_and_app_id(request.user, request.query_params.get("app_id"))
-
         return super().create(request, *args, **kwargs)
 
     def get_serializer(self, *args, **kwargs):
-        """Override serializer getter to force many to True: device positions are created in bulk"""
+        if isinstance(kwargs.get("data", {}), list):
+            kwargs["many"] = True
 
-        return DevicePositionSerializer(*args, many=True, **kwargs)
+        return super().get_serializer(*args, **kwargs)

@@ -10,6 +10,7 @@ import InstanceDetail from '../domains/instances/details';
 import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
+import Projects from '../domains/projects';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
@@ -360,6 +361,13 @@ export const usersPath = {
     ],
 };
 
+export const projectsPath = {
+    baseUrl: baseUrls.projects,
+    permission: 'iaso_projects',
+    component: props => <Projects {...props} />,
+    params: [...paginationPathParams],
+};
+
 export const groupsPath = {
     baseUrl: baseUrls.groups,
     permission: 'iaso_org_units',
@@ -421,6 +429,7 @@ export const routeConfigs = [
     algosPath,
     completenessPath,
     usersPath,
+    projectsPath,
     groupsPath,
     orgUnitTypesPath,
     page401,

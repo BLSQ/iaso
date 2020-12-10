@@ -4,6 +4,7 @@ import Link from '@material-ui/icons/Link';
 import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
+import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
@@ -91,6 +92,12 @@ const menuItems = [
         key: 'settings',
         icon: props => <Settings {...props} />,
         subMenu: [
+            {
+                label: MESSAGES.projects,
+                key: 'projects',
+                permission: paths.projectsPath.permission,
+                icon: props => <PhonelinkSetupIcon {...props} />,
+            },
             {
                 label: MESSAGES.users,
                 key: 'users',

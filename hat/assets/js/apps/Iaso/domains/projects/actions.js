@@ -1,4 +1,8 @@
-import { fetchAction } from '../../redux/actions/formsActions';
+import {
+    fetchAction,
+    updateAction,
+    createAction,
+} from '../../redux/actions/formsActions';
 
 export const SET_ALL_PROJECTS = 'PROJECTS/SET_ALL_PROJECTS';
 export const SET_ALL_FEATURE_FLAGS = 'PROJECTS/SET_ALL_FEATURE_FLAGS';
@@ -54,20 +58,22 @@ export const fetchAllFeatureFlags = () => dispatch =>
         'featureflags',
     );
 
-export const saveProject = () => dispatch =>
-    fetchAction(
+export const updateProject = project => dispatch =>
+    updateAction(
         dispatch,
-        apiKey,
-        setAllProjects,
-        'fetchProjectsError',
-        'projects',
+        project,
+        'apps',
+        'successful',
+        'error',
+        setIsFetching,
     );
 
-export const createProject = () => dispatch =>
-    fetchAction(
+export const createProject = project => dispatch =>
+    createAction(
         dispatch,
-        apiKey,
-        setAllProjects,
-        'fetchProjectsError',
-        'projects',
+        project,
+        'apps',
+        'successful',
+        'error',
+        setIsFetching,
     );

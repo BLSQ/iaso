@@ -13,7 +13,7 @@ import ProjectsInfos from './ProjectsInfos';
 import ProjectFeatureFlags from './ProjectFeatureFlags';
 
 import {
-    saveProject as saveProjectAction,
+    updateProject as updateProjectAction,
     fetchAllApps as fetchAllAppsAction,
     createProject as createProjectAction,
 } from '../actions';
@@ -61,23 +61,29 @@ class ProjectDialogComponent extends Component {
         const {
             params,
             fetchAllApps,
-            saveProject,
+            updateProject,
             createProject,
             initialData,
+            featureFlags,
         } = this.props;
-        const currentUser = {};
+        const currentProject = {};
         Object.keys(this.state.project).forEach(key => {
-            currentUser[key] = this.state.project[key].value;
+            currentProject[key] = this.state.project[key].value;
         });
 
-        let saveUser;
+        currentProject.id = get(initialData, 'app_id', '');
+        currentProject.feature_flags = featureFlags.filter(fF =>
+            this.state.project.feature_flags.value.includes(fF.id),
+        );
+
+        let saveApp;
 
         if (initialData) {
-            saveUser = saveProject(currentUser);
+            saveApp = updateProject(currentProject);
         } else {
-            saveUser = createProject(currentUser);
+            saveApp = createProject(currentProject);
         }
-        saveUser
+        saveApp
             .then(() => {
                 closeDialog();
                 this.handleChangeTab('infos');
@@ -87,7 +93,6 @@ class ProjectDialogComponent extends Component {
                 fetchAllApps(params);
             })
             .catch(error => {
-                // console.log('error', error);
                 if (error.status === 400) {
                     this.setFieldErrors(
                         error.details.errorKey,
@@ -117,6 +122,7 @@ class ProjectDialogComponent extends Component {
 
     setFieldErrors(fieldName, fieldError) {
         const { project } = this.state;
+
         this.setState({
             project: {
                 ...project,
@@ -147,11 +153,11 @@ class ProjectDialogComponent extends Component {
                 errors: [],
             },
             needs_authentication: {
-                value: get(initialData, 'needs_authentication', ''),
+                value: get(initialData, 'needs_authentication', false),
                 errors: [],
             },
             feature_flags: {
-                value: get(initialData, 'feature_flags', []),
+                value: get(initialData, 'feature_flags', []).map(v => v.id),
                 errors: [],
             },
         };
@@ -222,8 +228,8 @@ class ProjectDialogComponent extends Component {
                     )}
                     {tab === 'feature_flags' && (
                         <ProjectFeatureFlags
-                            setFieldValue={ouList =>
-                                this.setFieldValue('feature_flags', ouList)
+                            setFieldValue={(key, value) =>
+                                this.setFieldValue('feature_flags', value)
                             }
                             currentProject={project}
                             featureFlags={featureFlags}
@@ -244,7 +250,7 @@ ProjectDialogComponent.propTypes = {
     renderTrigger: PropTypes.func.isRequired,
     initialData: PropTypes.object,
     fetchAllApps: PropTypes.func.isRequired,
-    saveProject: PropTypes.func.isRequired,
+    updateProject: PropTypes.func.isRequired,
     createProject: PropTypes.func.isRequired,
     params: PropTypes.object.isRequired,
     featureFlags: PropTypes.array.isRequired,
@@ -263,7 +269,7 @@ const mapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             fetchAllApps: fetchAllAppsAction,
-            saveProject: saveProjectAction,
+            updateProject: updateProjectAction,
             createProject: createProjectAction,
         },
         dispatch,

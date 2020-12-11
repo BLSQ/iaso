@@ -45,17 +45,9 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Edit',
         id: 'iaso.label.edit',
     },
-    addOrgnit: {
-        defaultMessage: 'Add org unit',
-        id: 'iaso.orgUnits.add',
-    },
     infos: {
         defaultMessage: 'Infos',
         id: 'iaso.orgUnits.infos',
-    },
-    location: {
-        defaultMessage: 'location',
-        id: 'iaso.map.location',
     },
     cancel: {
         id: 'iaso.label.cancel',
@@ -64,14 +56,6 @@ const MESSAGES = defineMessages({
     save: {
         id: 'iaso.label.save',
         defaultMessage: 'Save',
-    },
-    selectedOrgUnits: {
-        id: 'iaso.users.selectedOrgUnits',
-        defaultMessage: 'Org units selected',
-    },
-    addOrgUnit: {
-        defaultMessage: 'Add org unit',
-        id: 'iaso.orgUnits.add',
     },
 });
 

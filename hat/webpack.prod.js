@@ -12,7 +12,7 @@ module.exports = {
   bail: true,
   context: __dirname,
   mode: 'production',
-
+  target: ['web', 'es2017'],
   entry: {
     'common': ['react', 'react-dom', 'react-intl'],
     'styles': './assets/css/index.scss',
@@ -23,7 +23,8 @@ module.exports = {
     library: ['HAT', '[name]'],
     libraryTarget: 'var',
     path: path.resolve(__dirname, './assets/webpack'),
-    filename: '[name]-[chunkhash].js'
+    filename: '[name]-[chunkhash].js',
+    publicPath: ''
   },
 
   plugins: [
@@ -66,7 +67,6 @@ module.exports = {
 
   optimization: {
     minimize: true, // old UglifyJsPlugin
-    namedModules: true, // old NamedModulesPlugin()
     splitChunks: { // old CommonsChunkPlugin
       cacheGroups: {
         commons: {
@@ -168,10 +168,13 @@ module.exports = {
   },
 
   // https://github.com/SheetJS/js-xlsx/issues/285
-  node: { fs: 'empty' },
+
   externals: [{ './cptable': 'var cptable' }],
 
   resolve: {
+    fallback: {
+      fs: false
+    },
     modules: ['node_modules'],
     extensions: ['.js']
   }

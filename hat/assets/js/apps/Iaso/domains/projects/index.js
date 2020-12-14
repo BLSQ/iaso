@@ -105,10 +105,6 @@ class Projects extends Component {
     }
 }
 
-Projects.defaultProps = {
-    count: 0,
-};
-
 Projects.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
@@ -117,7 +113,7 @@ Projects.propTypes = {
     fetchAllFeatureFlags: PropTypes.func.isRequired,
     apps: PropTypes.array.isRequired,
     featureFlags: PropTypes.array.isRequired,
-    count: PropTypes.number,
+    count: PropTypes.number.isRequired,
     fetching: PropTypes.bool.isRequired,
     pages: PropTypes.number.isRequired,
     redirectTo: PropTypes.func.isRequired,

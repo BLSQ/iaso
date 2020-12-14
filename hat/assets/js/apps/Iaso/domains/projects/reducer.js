@@ -8,6 +8,11 @@ import {
 export const projectsInitialState = {
     allProjects: [],
     allFeatureFlags: [],
+    list: [],
+    current: null,
+    fetching: false,
+    count: 0,
+    pages: 1,
 };
 
 export const projectsReducer = (state = projectsInitialState, action = {}) => {

@@ -19,7 +19,7 @@ const MESSAGES = defineMessages({
     },
     needsAuthentication: {
         defaultMessage: 'Requires Authentication',
-        id: 'iaso.projects.needs_authentication',
+        id: 'iaso.projects.needsAuthentication',
     },
     true: {
         defaultMessage: 'User needs authentication',
@@ -29,9 +29,9 @@ const MESSAGES = defineMessages({
         defaultMessage: "User doesn't need authentication",
         id: 'iaso.projects.false',
     },
-    feature_flags: {
+    featureFlags: {
         defaultMessage: 'Feature flags',
-        id: 'iaso.label.feature_flags',
+        id: 'iaso.label.featureFlags',
     },
     updateProject: {
         defaultMessage: 'Update project',

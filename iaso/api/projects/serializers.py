@@ -29,6 +29,6 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "app_id", "feature_flags", "created_at", "updated_at", "needs_authentication"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    feature_flags = FeatureFlagSerializer(many=True, required=False)
+    feature_flags = FeatureFlagSerializer(many=True, required=True, allow_empty=False)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

@@ -25,7 +25,7 @@ const ProjectFeatureFlags = ({
                 label: fF.name,
                 value: fF.id,
             }))}
-            label={MESSAGES.feature_flags}
+            label={MESSAGES.featureFlags}
             required
         />
     );

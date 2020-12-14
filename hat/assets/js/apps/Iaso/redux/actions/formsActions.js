@@ -2,6 +2,7 @@ import {
     getRequest,
     patchRequest,
     postRequest,
+    putRequest,
     deleteRequest,
 } from '../../libs/Api';
 import { enqueueSnackbar } from '../snackBarsReducer';
@@ -107,6 +108,42 @@ export const retrieveAction = (
  * @param {Function} setIsLoading The loading action to display the loading state
  * @param {Array} ignoredErrorCodes array of status error code to ignore while displaying snackbars
  */
+
+export const updateAction = (
+    dispatch,
+    item,
+    apiPath,
+    successKeyMessage,
+    errorKeyMessage,
+    setIsLoading = null,
+    ignoredErrorCodes,
+) => {
+    if (setIsLoading !== null) {
+        dispatch(setIsLoading(true));
+    }
+    return putRequest(`/api/${apiPath}/${item.id}/`, item, true)
+        .then(res => {
+            dispatch(enqueueSnackbar(succesfullSnackBar(successKeyMessage)));
+            return res;
+        })
+        .catch(err => {
+            if (
+                !ignoredErrorCodes ||
+                (ignoredErrorCodes && !ignoredErrorCodes.includes(err.status))
+            ) {
+                dispatch(
+                    enqueueSnackbar(errorSnackBar(errorKeyMessage, null, err)),
+                );
+            }
+            throw err;
+        })
+        .finally(() => {
+            if (setIsLoading !== null) {
+                dispatch(setIsLoading(false));
+            }
+        });
+};
+
 export const saveAction = (
     dispatch,
     item,

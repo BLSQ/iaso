@@ -12,6 +12,7 @@ export const baseUrls = {
     algos: 'orgunits/links/runs',
     completeness: 'forms/completeness',
     users: 'settings/users',
+    projects: 'settings/projects',
     error401: '401',
     error404: '404',
     error500: '500',

@@ -10,6 +10,7 @@ var WEBPACK_URL = 'http://localhost:3000'
 module.exports = {
   context: __dirname,
   mode: 'development',
+  target: ['web', 'es2017'],
   entry: {
     // use same settings as in Prod
     'common': ['react', 'react-dom', 'react-intl'],
@@ -70,7 +71,7 @@ module.exports = {
         use: [
           { loader: 'react-hot-loader/webpack' },
           {
-            loader: 'babel-loader',
+            loader: 'babel-loader'
           }
         ]
       },
@@ -137,7 +138,7 @@ module.exports = {
       },
       // videos
       {
-        test:  /\.mp4$/,
+        test: /\.mp4$/,
         loader: 'url-loader',
         options: {
           limit: 10000,
@@ -155,12 +156,12 @@ module.exports = {
       }
     ]
   },
-
-  // https://github.com/SheetJS/js-xlsx/issues/285
-  node: { fs: 'empty' },
   externals: [{ './cptable': 'var cptable' }],
 
   resolve: {
+    fallback: {
+      fs: false
+    },
     modules: ['node_modules'],
     extensions: ['.js']
   }

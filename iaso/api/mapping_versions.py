@@ -95,8 +95,10 @@ class MappingVersionSerializer(DynamicFieldsModelSerializer):
 
         datasource = None
         try:
-            datasource = m.DataSource.objects.filter(projects__account=profile.account).get(
-                pk=data["mapping"]["datasource"]["id"]
+            datasource = (
+                m.DataSource.objects.filter(projects__account=profile.account)
+                .distinct()
+                .get(pk=data["mapping"]["datasource"]["id"])
             )
         except ObjectDoesNotExist:
             raise serializers.ValidationError({"mapping.datasource": "object doesn't exist"})

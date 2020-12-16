@@ -24,14 +24,6 @@ const ProjectInfos = ({ setFieldValue, currentProject }) => (
             type="text"
             label={MESSAGES.appId}
         />
-        <InputComponent
-            keyValue="needs_authentication"
-            onChange={(key, value) => setFieldValue(key, value)}
-            value={currentProject.needs_authentication.value}
-            errors={currentProject.needs_authentication.errors}
-            type="checkbox"
-            label={MESSAGES.needsAuthentication}
-        />
     </>
 );
 

@@ -66,6 +66,7 @@ class ProjectDialogComponent extends Component {
             initialData,
             featureFlags,
         } = this.props;
+
         const currentProject = {};
         Object.keys(this.state.project).forEach(key => {
             currentProject[key] = this.state.project[key].value;
@@ -152,10 +153,6 @@ class ProjectDialogComponent extends Component {
                 value: get(initialData, 'name', ''),
                 errors: [],
             },
-            needs_authentication: {
-                value: get(initialData, 'needs_authentication', false),
-                errors: [],
-            },
             feature_flags: {
                 value: get(initialData, 'feature_flags', []).map(v => v.id),
                 errors: [],
@@ -213,7 +210,7 @@ class ProjectDialogComponent extends Component {
                             root: classes.tab,
                         }}
                         value="feature_flags"
-                        label={formatMessage(MESSAGES.feature_flags)}
+                        label={formatMessage(MESSAGES.featureFlags)}
                     />
                 </Tabs>
                 <div className={classes.root}>

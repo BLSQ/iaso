@@ -48,6 +48,10 @@ class AppSerializer(ProjectSerializer):
         new_app.name = name
         new_app.account = account
         new_app.needs_authentication = False if needs_auth is None else needs_auth
+        if "REQUIRE_AUTHENTICATION" in list(f_f['code'] for f_f in feature_flags):
+            new_app.needs_authentication = True
+        else:
+            new_app.needs_authentication = False
 
         new_app.save()
 
@@ -59,10 +63,10 @@ class AppSerializer(ProjectSerializer):
             for f_f in feature_flags:
                 f_f_object = FeatureFlag.objects.get(code=f_f["code"])
                 new_app.feature_flags.add(f_f_object)
-            if needs_auth == True:
+            if needs_auth == True: # Line should be removed when this field is removed
                 new_app.feature_flags.add(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
-            else:
-                new_app.feature_flags.remove(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
+            # else:
+            #     new_app.feature_flags.remove(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
 
         return new_app
 
@@ -77,8 +81,13 @@ class AppSerializer(ProjectSerializer):
             instance.app_id = app_id
         if name is not None:
             instance.name = name
-        if needs_authentication is not None:
+        if needs_authentication is not None: # Line should be removed when this field is removed
             instance.needs_authentication = needs_authentication
+        if "REQUIRE_AUTHENTICATION" in list(f_f['code'] for f_f in feature_flags):
+            instance.needs_authentication = True
+        else:
+            instance.needs_authentication = False
+
         instance.save()
 
         if forms is not None:
@@ -91,9 +100,7 @@ class AppSerializer(ProjectSerializer):
             for f_f in feature_flags:
                 f_f_object = FeatureFlag.objects.get(code=f_f["code"])
                 instance.feature_flags.add(f_f_object)
-            if needs_authentication == True:
+            if needs_authentication == True: # Line should be removed when this field is removed
                 instance.feature_flags.add(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
-            else:
-                instance.feature_flags.remove(FeatureFlag.objects.get(code="REQUIRE_AUTHENTICATION"))
 
         return instance

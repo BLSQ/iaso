@@ -1,28 +1,9 @@
 import React from 'react';
-import PropTypes from 'prop-types';
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
-import CheckBoxOutlinedIcon from '@material-ui/icons/CheckBoxOutlined';
-import Tooltip from '@material-ui/core/Tooltip';
 import { textPlaceholder } from '../../constants/uiConstants';
 import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import ProjectsDialog from './components/ProjectsDialog';
 
 import MESSAGES from './messages';
-
-const NEEDS_AUTH_ICONS = {
-    false: CheckBoxOutlineBlankIcon,
-    true: CheckBoxOutlinedIcon,
-};
-
-function NeedsAuthIcon({ IconComponent, title }) {
-    return (
-        <div>
-            <Tooltip title={title}>
-                <IconComponent />
-            </Tooltip>
-        </div>
-    );
-}
 
 const projectsTableColumns = (formatMessage, component) => [
     {
@@ -42,14 +23,9 @@ const projectsTableColumns = (formatMessage, component) => [
         accessor: 'project__needs_authentication',
         Cell: settings => (
             <span>
-                <NeedsAuthIcon
-                    IconComponent={
-                        NEEDS_AUTH_ICONS[settings.original.needs_authentication]
-                    }
-                    title={formatMessage(
-                        MESSAGES[settings.original.needs_authentication],
-                    )}
-                />
+                {settings.original.feature_flags
+                    .map(fF => fF.name)
+                    .join(', ') || textPlaceholder}
             </span>
         ),
     },
@@ -77,10 +53,5 @@ const projectsTableColumns = (formatMessage, component) => [
         ),
     },
 ];
-
-NeedsAuthIcon.propTypes = {
-    title: PropTypes.string.isRequired,
-    IconComponent: PropTypes.object.isRequired,
-};
 
 export default projectsTableColumns;

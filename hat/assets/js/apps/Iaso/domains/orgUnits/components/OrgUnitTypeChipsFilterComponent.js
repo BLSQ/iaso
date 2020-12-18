@@ -78,6 +78,7 @@ class OrgUnitTypeChipsFilterComponent extends Component {
         let orgUnitTypesList = [];
         orgUnitTypes.forEach(ot => {
             if (
+                currentOrgUnit.org_unit_type &&
                 currentOrgUnit.org_unit_type.sub_unit_types.find(
                     o => o.id === ot.id,
                 )

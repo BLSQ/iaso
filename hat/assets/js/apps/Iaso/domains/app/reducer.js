@@ -10,7 +10,7 @@ function findLocale(code) {
     return locale;
 }
 
-function appInitialState() {
+export function appInitialState() {
     const storedLocaleCode = localStorage.getItem('iaso_locale');
     const code =
         storedLocaleCode !== null

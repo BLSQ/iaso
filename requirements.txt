@@ -11,7 +11,7 @@ django-storages==1.9.1
 boto3==1.12.1
 geopy==1.21.0
 Shapely==1.7.0
-tsp-solver2==0.3
+
 django-pg-utils==0.1.5
 gpxpy==1.4.0
 
@@ -30,15 +30,11 @@ django-ltree==0.5
 
 # importing tools
 jsonschema==3.2.0
-simpledbf==0.2.6
 
 # exporting tools
 xlsxwriter==1.2.7
 beautifulsoup4==4.7.1
 lxml==4.5.0
-
-# Documentation
-Sphinx==2.4.1
 
 # dhis2 api wrapper
 dhis2.py==2.0.2
@@ -63,8 +59,8 @@ ipython==7.12.0
 django-extensions==2.2.8
 lxml==4.5.0
 xlrd==1.2.0
-
-djangorestframework-simplejwt==4.4.0
+pyjwt==1.7.1
+djangorestframework_simplejwt==4.4.0
 
 #JSON5 is used for the export_json_for_mobile_app
 json5==0.9.5

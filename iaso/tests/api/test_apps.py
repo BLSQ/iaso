@@ -129,7 +129,7 @@ class AppsAPITestCase(APITestCase):
         response = self.client.post(f"/api/apps/", candidated_app, format="json")
         self.assertJSONResponse(response, 400)
         response_data = response.json()
-        self.assertEqual(['This list may not be empty.'], response_data['feature_flags']['non_field_errors'])
+        self.assertEqual(["This list may not be empty."], response_data["feature_flags"]["non_field_errors"])
 
     @tag("iaso_only")
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
@@ -158,7 +158,7 @@ class AppsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidAppData(response_data)
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
-        self.assertEqual(True,response_data["needs_authentication"])
+        self.assertEqual(True, response_data["needs_authentication"])
 
     @tag("iaso_only")
     def test_app_create_without_auth(self):
@@ -189,16 +189,12 @@ class AppsAPITestCase(APITestCase):
 
     @tag("iaso_only")
     def test_app_update_KO_without_feature_flags_with_auth(self):
-        candidated_app = {
-            "app_id":"self.project_1ddes.app_id",
-            "name": "This is an existing app",
-            "feature_flags": []
-        }
+        candidated_app = {"app_id": "self.project_1ddes.app_id", "name": "This is an existing app", "feature_flags": []}
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
         self.assertJSONResponse(response, 400)
         response_data = response.json()
-        self.assertEqual(['This list may not be empty.'], response_data['feature_flags']['non_field_errors'])
+        self.assertEqual(["This list may not be empty."], response_data["feature_flags"]["non_field_errors"])
 
     @tag("iaso_only")
     def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self):
@@ -213,7 +209,7 @@ class AppsAPITestCase(APITestCase):
         response_data = response.json()
         self.assertValidAppData(response_data)
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
-        self.assertEqual(True,response_data["needs_authentication"])
+        self.assertEqual(True, response_data["needs_authentication"])
 
     def assertValidAppData(self, app_data: typing.Mapping):
         self.assertHasField(app_data, "id", str)

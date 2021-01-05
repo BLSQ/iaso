@@ -8,7 +8,6 @@ ARG NODE_ENV=development
 
 # display git commit
 ARG git_commit
-ENV HAT_COMMIT "$git_commit"
 
 ################################################################################
 

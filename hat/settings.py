@@ -16,8 +16,7 @@ from datetime import timedelta
 
 STAGING = os.environ.get("STAGING", "").lower() == "true"
 TESTING = os.environ.get("TESTING", "").lower() == "true"
-FLAVOR = "iaso"
-print("FLAVOR", FLAVOR)
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -26,7 +25,8 @@ SECRET_KEY = os.environ.get("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.environ.get("DEBUG", "").lower() == "true"
-USE_CACHE = os.environ.get("CACHE", "").lower() == "true"
+USE_S3 = os.getenv("USE_S3") == "true"
+
 DEV_SERVER = os.environ.get("DEV_SERVER", "").lower() == "true"
 ENVIRONMENT = os.environ.get("IASO_ENVIRONMENT", "development").lower()
 SENTRY_URL = os.environ.get("SENTRY_URL", "")
@@ -39,12 +39,10 @@ USE_X_FORWARDED_HOST = True
 
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
-CLOUDFRONT_DOMAIN = os.environ.get("CLOUDFRONT_DOMAIN", "")
+
 AWS_ACCESS_KEY_ID = os.environ.get("AWS_ACCESS_KEY_ID", "")
 AWS_SECRET_ACCESS_KEY = os.environ.get("AWS_SECRET_ACCESS_KEY", "")
 
-# HSTS
-# SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 if not DEBUG:
     SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 
@@ -104,9 +102,7 @@ if os.path.isdir(AWS_LOG_FOLDER):
             logger["handlers"].append("file")
         LOGGING["loggers"]["hat"]["level"] = "DEBUG"
     else:
-        print(
-            f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions"
-        )
+        print(f"WARNING: we seem to be running on AWS but {AWS_LOG_FOLDER} is not writable, check ebextensions")
 
 # Application definition
 
@@ -119,7 +115,6 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.gis",
     "django.contrib.postgres",
-    # "django_rq",
     "storages",
     "corsheaders",
     "rest_framework",
@@ -203,9 +198,7 @@ def is_superuser(u):
 # Password validation
 
 AUTH_PASSWORD_VALIDATORS = [
-    {
-        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
-    },
+    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
     {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
     {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
@@ -214,7 +207,6 @@ AUTH_PASSWORD_VALIDATORS = [
 
 # Internationalization
 
-# switch webpack.dev and webpack.prod as well if changing here
 LANGUAGE_CODE = "en"
 
 LOCALE_PATHS = ["/opt/app/hat/locale/", "hat/locale/"]
@@ -236,28 +228,6 @@ LOGIN_REDIRECT_URL = "/"
 
 SHARED_DIR = "/opt/shared"
 
-# Version Display
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/1.9/howto/static-files/
-STATIC_URL = "/static/"
-STATIC_ROOT = os.path.join(PROJECT_ROOT, "assets/bundles")
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "hat/assets/webpack")]
-
-# Javascript/CSS Files:
-WEBPACK_LOADER = {
-    "DEFAULT": {
-        "BUNDLE_DIR_NAME": "/",  # used in prod
-        "STATS_FILE": os.path.join(
-            PROJECT_ROOT,
-            "assets/webpack",
-            "webpack-stats.json"
-            if DEBUG and not os.environ.get("TEST_PROD", None)
-            else "webpack-stats-prod.json",
-        ),
-    }
-}
-
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
@@ -270,44 +240,52 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {"anon": "200/day"},
 }
 
-SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=3650),
-    "REFRESH_TOKEN_LIFETIME": timedelta(days=3651),
-}
+SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
 
-MEDIA_ROOT = os.path.join(BASE_DIR, "media")
-if DEBUG:
+if USE_S3:
+    AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
+    AWS_IS_GZIPPED = True
+    AWS_S3_FILE_OVERWRITE = False
+    S3_USE_SIGV4 = True
+    AWS_S3_SIGNATURE_VERSION = "s3v4"
+    AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
+    AWS_S3_REGION_NAME = "eu-central-1"
+    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+    AWS_DEFAULT_ACL = None
+
+    # s3 static settings
+    STATIC_LOCATION = "iasostatics"
+    STATICFILES_STORAGE = "iaso.storage.StaticStorage"
+    STATIC_URL = "https://%s.s3.amazonaws.com/%s/" % (AWS_STORAGE_BUCKET_NAME, STATIC_LOCATION)
+    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME  # subdirectories will depend on field
+    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
+else:
     MEDIA_URL = "/media/"
     STATIC_URL = "/static/"
-else:
-    MEDIA_URL = "https://%s.s3.amazonaws.com/" % AWS_STORAGE_BUCKET_NAME
-    STATIC_URL = "https://s3.eu-central-1.amazonaws.com/%s/" % AWS_STORAGE_BUCKET_NAME
-AWS_S3_CUSTOM_DOMAIN = CLOUDFRONT_DOMAIN
+    STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+    MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
+STATICFILES_DIRS = (os.path.join(BASE_DIR, "iaso/static"), os.path.join(BASE_DIR, "hat/assets/webpack"))
+
+# Javascript/CSS Files:
+WEBPACK_LOADER = {
+    "DEFAULT": {
+        "BUNDLE_DIR_NAME": "",  # used in prod
+        "STATS_FILE": os.path.join(
+            PROJECT_ROOT,
+            "assets/webpack",
+            "webpack-stats.json"
+            if (DEBUG and not os.environ.get("TEST_PROD", None) and not USE_S3)
+            else "webpack-stats-prod.json",
+        ),
+    }
+}
+
 PREPEND_WWW = not DEBUG and not STAGING
 SECURE_SSL_REDIRECT = not DEBUG
-
-#############
-
-
-if not DEBUG:
-    DEFAULT_FILE_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-    STATICFILES_STORAGE = "storages.backends.s3boto3.S3Boto3Storage"
-
-AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
-
-AWS_S3_FILE_OVERWRITE = False
-S3_USE_SIGV4 = True
-AWS_S3_SIGNATURE_VERSION = "s3v4"
-AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
-AWS_S3_REGION_NAME = "eu-central-1"
-
-CACHES = {"default": {"BACKEND": "django.core.cache.backends.dummy.DummyCache"}}
-
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
 if SENTRY_URL:
-    sentry_sdk.init(
-        SENTRY_URL,
-        traces_sample_rate=1.0
-    )
+    sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)

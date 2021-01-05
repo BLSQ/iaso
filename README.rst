@@ -312,7 +312,9 @@ If you need to test s3 storage in development, you have to:
 
 1. Set the `AWS_STORAGE_BUCKET_NAME` env variable to a bucket created for such tests
 2. Set the `AWS_ACCESS_KEY_ID` and `AWS_SECRET_ACCESS_KEY` env variables appropriately
-3. Change the `DEFAULT_FILE_STORAGE` setting to `storages.backends.s3boto3.S3Boto3Storage`
+3. Set the `USE_S3` env variable to 'true'
+
+These are actually exactly the same steps we use on AWS.
 
 Enketo
 ======

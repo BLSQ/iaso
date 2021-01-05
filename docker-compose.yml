@@ -30,14 +30,12 @@ services:
       - db
     environment: &hat_environment
       IASO_ENVIRONMENT: 'development'
-      FLAVOR: iaso
       RDS_HOSTNAME: db
       RDS_DB_NAME: iaso
       RDS_USERNAME: postgres
       DEBUG: 'true'
       TEST_PROD:
       SECRET_KEY: secret
-      GOOGLE_CLIENT_ID:
       AWS_STORAGE_BUCKET_NAME:
       AWS_ACCESS_KEY_ID:
       AWS_SECRET_ACCESS_KEY:

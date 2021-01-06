@@ -17,8 +17,23 @@ function copyProps(src, target) {
 
 global.window = window;
 global.document = window.document;
+global.localStorage = {
+    getItem: () => null,
+    setItem: () => null,
+};
 global.navigator = {
     userAgent: 'node.js',
+    platform: 'Mac',
+    appName: 'Chrome',
+    language: 'en',
 };
+global.STATIC_URL = '';
+global.L = require('leaflet');
 
 copyProps(window, global);
+
+const doNothing = () => null;
+
+require.extensions['.css'] = doNothing;
+require.extensions['.less'] = doNothing;
+require.extensions['.scss'] = doNothing;

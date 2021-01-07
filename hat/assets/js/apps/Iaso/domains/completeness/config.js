@@ -99,9 +99,8 @@ export const getColumns = (
                         if (!value) return textPlaceholder;
                         return (
                             <Link
-                                className={`${classes.linkButton} ${
-                                    classes.cell
-                                } ${value ? classes[status] : ''}`}
+                                className={`${classes.linkButton}  
+                                ${value ? classes[status] : ''}`}
                                 to={getFormUrl(
                                     settings.original,
                                     status,

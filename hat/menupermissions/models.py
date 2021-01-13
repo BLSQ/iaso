@@ -11,6 +11,8 @@ COMPLETENESS = _("Complétude des données")
 ORG_UNITS = _("Unités d'organisations")
 LINKS = _("Correspondances sources")
 USERS = _("Utilisateurs")
+PROJECTS = _("Projets")
+SOURCES = _("Sources")
 
 
 class CustomPermissionSupport(models.Model):
@@ -29,4 +31,6 @@ class CustomPermissionSupport(models.Model):
             ("iaso_org_units", ORG_UNITS),
             ("iaso_links", LINKS),
             ("iaso_users", USERS),
+            ("iaso_projects", PROJECTS),
+            ("iaso_sources", SOURCES),
         )

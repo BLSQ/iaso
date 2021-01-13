@@ -42,13 +42,16 @@ QUEUED = "QUEUED"
 RUNNING = "RUNNING"
 ERRORED = "ERRORED"
 EXPORTED = "EXPORTED"
+SUCCESS = "SUCCESS"
+SKIPPED = "SKIPPED"
 
 STATUS_TYPE_CHOICES = (
     (QUEUED, _("Queued")),
     (RUNNING, _("Running")),
     (EXPORTED, _("Exported")),
     (ERRORED, _("Errored")),
-    ("SKIPPED", _("Skipped")),
+    (SKIPPED, _("Skipped")),
+    (SUCCESS, _("Success")),
 )
 ALIVE_STATUSES = [QUEUED, RUNNING]
 
@@ -230,6 +233,34 @@ class AlgorithmRun(models.Model):
             "id": self.id,
             "destination": self.version_1.as_list() if self.version_1 else None,
             "source": self.version_2.as_list() if self.version_2 else None,
+        }
+
+
+class Task(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    progress_value = models.IntegerField(default=0)
+    end_value = models.IntegerField(default=100)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    result = JSONField(null=True, blank=True)
+    status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
+    name = models.TextField()
+
+    def __str__(self):
+        return "%s - %s - %s -%s" % (self.name, self.launcher, self.status, self.created_at)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "ended_at": self.ended_at.timestamp() if self.ended_at else None,
+            "result": self.result,
+            "status": self.status,
+            "launcher": self.launcher.iaso_profile.as_dict() if self.launcher and self.launcher.iaso_profile else None,
+            "progress_value": self.progress_value,
+            "end_value": self.end_value,
+            "name": self.name,
         }
 
 

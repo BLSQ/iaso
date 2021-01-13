@@ -20,5 +20,7 @@ urlpatterns = [
     url(r"^sync/", include("hat.sync.urls")),
 ]
 
+if settings.BEANSTALK_WORKER or settings.DEBUG:
+    urlpatterns.append(url(r"^tasks/", include("beanstalk_worker.urls")))
 
 urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

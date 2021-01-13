@@ -1,4 +1,5 @@
 from django.conf.urls import url, include
+from django.contrib import auth
 from rest_framework import routers
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
@@ -13,6 +14,7 @@ from .api.devices import DevicesViewSet
 from .api.devices_ownership import DevicesOwnershipViewSet
 from .api.devices_position import DevicesPositionViewSet
 from .api.data_sources import DataSourceViewSet
+from .api.copysource import CopySourceViewSet
 from .api.source_versions import SourceVersionViewSet
 from .api.forms import FormsViewSet
 from .api.form_versions import FormVersionsViewSet
@@ -24,7 +26,14 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
-from .api.enketo import enketo_edit_url, enketo_create_url, enketo_form_list, EnketoSubmissionAPIView, enketo_form_download, enketo_public_launch
+from .api.enketo import (
+    enketo_edit_url,
+    enketo_create_url,
+    enketo_form_list,
+    EnketoSubmissionAPIView,
+    enketo_form_download,
+    enketo_public_launch,
+)
 from .api.mappings import MappingsViewSet
 from .api.mapping_versions import MappingVersionsViewSet
 from iaso.models import MatchingAlgorithm
@@ -66,14 +75,20 @@ router.register(r"permissions", PermissionsViewSet, basename="permissions")
 router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedinstances")
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
+router.register(r"copysource", CopySourceViewSet, basename="copysource")
 
 urlpatterns = [
-    url(r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$", view=enketo_public_launch, name="enketo_public_launch"),
+    url(
+        r"^fill/(?P<form_uuid>[a-z0-9-]+)/(?P<org_unit_id>[0-9-]+)/(?P<period>[a-z0-9-]+)?$",
+        view=enketo_public_launch,
+        name="enketo_public_launch",
+    ),
     url(r"^enketo/create/$", view=enketo_create_url, name="enketo-create-url"),
     url(r"^enketo/edit/(?P<instance_uuid>[a-z0-9-]+)/$", view=enketo_edit_url, name="enketo-edit-url"),
     url(r"^enketo/formList$", view=enketo_form_list, name="enketo-form-list"),
     url(r"^enketo/formDownload/$", view=enketo_form_download, name="enketo_form_download"),
     url(r"^enketo/submission$", view=EnketoSubmissionAPIView.as_view(), name="enketo-submission"),
+    url(r"^logout-iaso", auth.views.LogoutView.as_view(next_page="login"), name="logout-iaso"),
 ]
 
 

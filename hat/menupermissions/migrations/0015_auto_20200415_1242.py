@@ -49,7 +49,7 @@ class Migration(migrations.Migration):
                     ("iaso_forms", "Formulaires"),
                     ("iaso_mappings", "Correspondances avec DHIS2"),
                     ("iaso_completeness", "Complétude des données"),
-                    ("iaso_org_units", "Unités d'organistations"),
+                    ("iaso_org_units", "Unités d'organisations"),
                     ("iaso_links", "Correspondances sources"),
                     ("iaso_users", "Utilisateurs"),
                 ),

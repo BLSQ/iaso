@@ -29,6 +29,7 @@ from .models import (
     ExportStatus,
     ExportLog,
     DevicePosition,
+    Task,
 )
 
 
@@ -197,3 +198,4 @@ admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
+admin.site.register(Task)

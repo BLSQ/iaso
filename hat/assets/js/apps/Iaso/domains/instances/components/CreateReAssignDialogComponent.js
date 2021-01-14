@@ -41,9 +41,8 @@ const CreateReAssignDialogComponent = ({
     if (currentFormOrInstance.period === undefined || currentFormOrInstance.period === '') {
         const toDay = new Date();
         const period = new Period(
-            toDay.getFullYear() + `0${toDay.getMonth()}`.slice(-2),
+            toDay.getFullYear() + `0${toDay.getMonth()+1}`.slice(-2),
         );
-
         currentFormOrInstance.period =
             currentFormOrInstance.period_type !== null &&
             currentFormOrInstance.period_type !== undefined
@@ -79,14 +78,18 @@ const CreateReAssignDialogComponent = ({
 
     let period;
     let nextPeriods;
+    let allPeriods;
     let previousPeriods = [];
     if (
         currentFormOrInstance.period !== undefined &&
         currentFormOrInstance.period !== null
     ) {
         period = new Period(currentFormOrInstance.period);
+
         nextPeriods = period.nextPeriods(2);
         previousPeriods = period.previousPeriods(3);
+        previousPeriods.push(currentFormOrInstance.period);
+        allPeriods = previousPeriods.concat(nextPeriods);
     }
     const isPeriodDisabled = !currentFormOrInstance.period;
     return (
@@ -122,7 +125,7 @@ const CreateReAssignDialogComponent = ({
                 value={fieldValue.period.value}
                 errors={fieldValue.period.errors}
                 type="select"
-                options={previousPeriods.concat(nextPeriods).map(p => ({
+                options={allPeriods.map(p => ({
                     label: Period.getPrettyPeriod(p),
                     value: p,
                 }))}

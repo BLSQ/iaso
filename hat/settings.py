@@ -239,6 +239,10 @@ REST_FRAMEWORK = {
 
 SIMPLE_JWT = {"ACCESS_TOKEN_LIFETIME": timedelta(days=3650), "REFRESH_TOKEN_LIFETIME": timedelta(days=3651)}
 
+AWS_S3_REGION_NAME = "eu-central-1"
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+
 if USE_S3:
     AWS_S3_OBJECT_PARAMETERS = {"CacheControl": "max-age=86400"}
     AWS_IS_GZIPPED = True
@@ -246,9 +250,6 @@ if USE_S3:
     S3_USE_SIGV4 = True
     AWS_S3_SIGNATURE_VERSION = "s3v4"
     AWS_S3_HOST = "s3.eu-central-1.amazonaws.com"
-    AWS_S3_REGION_NAME = "eu-central-1"
-    AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-    AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
     AWS_DEFAULT_ACL = None
 
     # s3 static settings
@@ -287,11 +288,16 @@ if SENTRY_URL:
     sentry_sdk.init(SENTRY_URL, traces_sample_rate=1.0)
 
 # Workers configuration
+
 BEANSTALK_WORKER = bool(os.environ.get("WORKER", False))
-BEANSTALK_SQS_URL = "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
-BEANSTALK_SQS_REGION = "eu-central-1"
+BEANSTALK_SQS_URL = os.environ.get(
+    "BEANSTALK_SQS_URL", "https://sqs.eu-central-1.amazonaws.com/198293380284/iaso-staging-queue"
+)
+BEANSTALK_SQS_REGION = os.environ.get("BEANSTALK_SQS_URL", "eu-central-1")
 
 if DEBUG:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.FakeTaskService"
 else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+
+BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"

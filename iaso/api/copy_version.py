@@ -27,6 +27,7 @@ class CopyVersionSerializer(serializers.Serializer):
         possible_data_sources = (
             DataSource.objects.filter(projects__in=account.project_set.all()).distinct().values_list("id", flat=True)
         )
+        possible_data_sources = list(possible_data_sources)
         force = attrs["force"]
         source_source_id = attrs["source_source_id"]
         destination_source_id = attrs["destination_source_id"]
@@ -36,11 +37,15 @@ class CopyVersionSerializer(serializers.Serializer):
         destination_version = get_object_or_404(
             SourceVersion, data_source_id=destination_source_id, number=attrs["destination_version_number"]
         )
+
         if source_version.id == destination_version.id:
             raise serializers.ValidationError("Cannot copy a version to the same version")
         version_count = OrgUnit.objects.filter(version=destination_version).count()
         if version_count > 0 and not force:
-            raise serializers.ValidationError("Unauthorized source_source_id")
+            raise serializers.ValidationError(
+                "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
+            )
+
         if validated_data["source_source_id"] not in possible_data_sources:
             raise serializers.ValidationError("Unauthorized source_source_id")
         if validated_data["destination_source_id"] not in possible_data_sources:

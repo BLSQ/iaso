@@ -39,8 +39,6 @@ USE_X_FORWARDED_HOST = True
 
 AWS_STORAGE_BUCKET_NAME = os.environ.get("AWS_STORAGE_BUCKET_NAME", "")
 
-if not DEBUG:
-    SECURE_HSTS_SECONDS = 31_536_000  # 1 year
 
 # Logging
 
@@ -280,7 +278,6 @@ WEBPACK_LOADER = {
     }
 }
 
-SECURE_SSL_REDIRECT = not DEBUG
 
 AUTH_PROFILE_MODULE = "hat.users.Profile"
 
@@ -301,3 +298,8 @@ else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
 BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+
+SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
+if SSL_ON:
+    SECURE_HSTS_SECONDS = 31_536_000  # 1 year
+SECURE_SSL_REDIRECT = SSL_ON

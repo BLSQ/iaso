@@ -240,7 +240,7 @@ class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     progress_value = models.IntegerField(default=0)
-    end_value = models.IntegerField(default=100)
+    end_value = models.IntegerField(default=0)
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
     result = JSONField(null=True, blank=True)

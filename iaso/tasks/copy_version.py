@@ -1,10 +1,14 @@
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, Task, SUCCESS, ERRORED, RUNNING
 from beanstalk_worker import task
 from django.shortcuts import get_object_or_404
+import logging
+from django.utils import timezone
+
+logger = logging.getLogger(__name__)
 
 
 @task
-def copy_pyramid(
+def copy_version(
     source_source_id, source_version_number, destination_source_id, destination_version_number, force, task_id
 ):
     the_task = get_object_or_404(Task, id=task_id)
@@ -12,40 +16,39 @@ def copy_pyramid(
     the_task.save()
     source_source = DataSource.objects.get(id=source_source_id)
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)
-    print("source_version", source_version)
-
+    logger.debug("source_version", source_version)
+    logger.debug("copying source_version %s" % str(source_version))
     destination_source = DataSource.objects.get(id=destination_source_id)
     destination_version, created = SourceVersion.objects.get_or_create(
         number=destination_version_number, data_source=destination_source
     )
-
-    version_count = OrgUnit.objects.filter(version=destination_version).count()
-    if version_count > 0 and not force:
-        print(
+    source_version_count = OrgUnit.objects.filter(version=source_version).count()
+    the_task.end_value = source_version_count
+    destination_version_count = OrgUnit.objects.filter(version=destination_version).count()
+    if destination_version_count > 0 and not force:
+        res_string = (
             "This is going to delete %d org units records. If you want to proceed, add the -f option to the command"
-            % version_count
+            % destination_version_count
         )
+        logger.debug(res_string)
         the_task.status = ERRORED
-        the_task.result = {
-            "message": "This is going to delete %d org units records, add the force param to the proceed"
-            % version_count
-        }
+        the_task.result = {"message": res_string}
         return
     else:
         OrgUnit.objects.filter(version=destination_version).delete()
-        print(("%d org units records deleted" % version_count).upper())
+        logger.debug(("%d org units records deleted" % destination_version_count).upper())
 
     group_sets = GroupSet.objects.filter(source_version=source_version)
     group_set_matching = {}
-    print("********* Copying groupsets")
+    logger.debug("********* Copying groupsets")
     for gs in group_sets:
         old_id = gs.id
         gs.id = None
         gs.source_version = destination_version
         gs.save()
         group_set_matching[old_id] = gs.id
-    print("group_set_matching", group_set_matching)
-    print("********* Copying groups")
+    logger.debug("group_set_matching", group_set_matching)
+    logger.debug("********* Copying groups")
     groups = Group.objects.filter(source_version=source_version)
     group_matching = {}
     for g in groups:
@@ -56,7 +59,6 @@ def copy_pyramid(
         g.save()
 
         for gs in original_group_sets:
-            print(gs, gs.id)
             matching_gs = group_set_matching.get(gs.id)
             g.group_sets.add(matching_gs)
 
@@ -68,7 +70,7 @@ def copy_pyramid(
     new_units = []
     new_root_units = []
     index = 0
-    print("group_matching", group_matching)
+    logger.debug("group_matching", group_matching)
     for unit in source_units:
         original_groups = list(unit.groups.all())
         old_id = unit.id
@@ -84,7 +86,6 @@ def copy_pyramid(
             unit.groups.add(matching_group)
 
         if index % 100 == 0:
-            print("Copied:", index)
             the_task.progress_value = index
             the_task.save()
 
@@ -98,12 +99,13 @@ def copy_pyramid(
 
         index = index + 1
         if index % 100 == 0:
-            print("Parent fixed:", index)
+            logger.debug("Parent fixed: %d" % index)
 
     for unit in new_root_units:
-        print(f"Setting path for the hierarchy starting with org unit {unit.name}")
+        logger.debug(f"Setting path for the hierarchy starting with org unit {unit.name}")
         unit.save(update_fields=["path"])
 
     the_task.status = SUCCESS
-    the_task.result = {"result": "SUCCESS"}
+    the_task.ended_at = timezone.now()
+    the_task.result = {"result": "SUCCESS", "message": "%d copied" % source_version_count}
     the_task.save()

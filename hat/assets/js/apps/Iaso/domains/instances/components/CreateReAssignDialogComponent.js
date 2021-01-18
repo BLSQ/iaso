@@ -78,7 +78,7 @@ const CreateReAssignDialogComponent = ({
 
     let period;
     let nextPeriods;
-    let allPeriods;
+    let allPeriods = [];
     let previousPeriods = [];
     if (
         currentFormOrInstance.period !== undefined &&

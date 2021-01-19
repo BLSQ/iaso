@@ -297,7 +297,7 @@ if DEBUG:
 else:
     BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
-BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
+# BEANSTALK_TASK_SERVICE = "beanstalk_worker.services.TaskService"
 
 SSL_ON = (not DEBUG) and (not BEANSTALK_WORKER)
 if SSL_ON:

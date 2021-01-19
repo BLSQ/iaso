@@ -1,6 +1,6 @@
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, Task, SUCCESS, ERRORED, RUNNING
 from beanstalk_worker import task
-from django.shortcuts import get_object_or_404
+
 import logging
 from django.utils import timezone
 
@@ -9,11 +9,10 @@ logger = logging.getLogger(__name__)
 
 @task
 def copy_version(
-    source_source_id, source_version_number, destination_source_id, destination_version_number, force, task_id
+    source_source_id, source_version_number, destination_source_id, destination_version_number, force, task=None
 ):
-    the_task = get_object_or_404(Task, id=task_id)
-    the_task.status = RUNNING
-    the_task.save()
+    the_task = task
+
     source_source = DataSource.objects.get(id=source_source_id)
     source_version = SourceVersion.objects.get(number=source_version_number, data_source=source_source)
     logger.debug("source_version", source_version)
@@ -109,3 +108,4 @@ def copy_version(
     the_task.ended_at = timezone.now()
     the_task.result = {"result": "SUCCESS", "message": "%d copied" % source_version_count}
     the_task.save()
+    return the_task

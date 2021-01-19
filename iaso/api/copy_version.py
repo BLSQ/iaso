@@ -67,13 +67,13 @@ class CopyVersionViewSet(viewsets.ViewSet):
         destination_source_id = data["destination_source_id"]
         destination_version_number = data["destination_version_number"]
         force = data.get("force", False)
-        task = Task()
-        task.account = request.user.iaso_profile.account
-        task.launcher = request.user
-        task.name = "Copy pyramid by %s" % task.launcher
-        task.save()
 
-        copy_version(
-            source_source_id, source_version_number, destination_source_id, destination_version_number, force, task.id
+        task = copy_version(
+            source_source_id,
+            source_version_number,
+            destination_source_id,
+            destination_version_number,
+            force,
+            user=request.user,
         )
         return Response({"task": task.as_dict()})

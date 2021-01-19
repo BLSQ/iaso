@@ -238,6 +238,7 @@ class AlgorithmRun(models.Model):
 
 class Task(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
+    started_at = ended_at = models.DateTimeField(null=True, blank=True)
     ended_at = models.DateTimeField(null=True, blank=True)
     progress_value = models.IntegerField(default=0)
     end_value = models.IntegerField(default=0)
@@ -246,6 +247,8 @@ class Task(models.Model):
     result = JSONField(null=True, blank=True)
     status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
     name = models.TextField()
+    params = JSONField(null=True, blank=True)
+    queue_answer = JSONField(null=True, blank=True)
 
     def __str__(self):
         return "%s - %s - %s -%s" % (self.name, self.launcher, self.status, self.created_at)
@@ -254,13 +257,18 @@ class Task(models.Model):
         return {
             "id": self.id,
             "created_at": self.created_at.timestamp() if self.created_at else None,
+            "started_at": self.started_at.timestamp() if self.started_at else None,
             "ended_at": self.ended_at.timestamp() if self.ended_at else None,
+            "params": self.params,
             "result": self.result,
             "status": self.status,
-            "launcher": self.launcher.iaso_profile.as_dict() if self.launcher and self.launcher.iaso_profile else None,
+            "launcher": self.launcher.iaso_profile.as_short_dict()
+            if self.launcher and self.launcher.iaso_profile
+            else None,
             "progress_value": self.progress_value,
             "end_value": self.end_value,
             "name": self.name,
+            "queue_answer": self.queue_answer,
         }
 
 

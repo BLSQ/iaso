@@ -232,6 +232,7 @@
     "iaso.label.xls_form_file": "Fichier XLSForm",
     "iaso.label.year": "Année",
     "iaso.label.yes": "Oui",
+    "iaso.label.dataSources": "Sources de données",
     "iaso.links.title": "Validation correspondances",
     "iaso.logout": "Se déconnecter",
     "iaso.logs.goToRevision": "Retour à cette version",
@@ -293,6 +294,7 @@
     "iaso.orgUnits.titleMulti": "unités",
     "iaso.orgUnits.titleSingle": "unité",
     "iaso.orgUnits.type": "Type",
+    "iaso.orgUnits.dataSources": "Sources de données",
     "iaso.orgUnitsTypes.create": "Créer un type d'unité d'organisation",
     "iaso.orgUnitsTypes.dialog.delete": "Etes-vous certain de vouloir effacer ce type d'unité d'organisation ?",
     "iaso.orgUnitsTypes.projects": "Projets",
@@ -461,5 +463,8 @@
     "iaso.projects.needsAuthentication": "Nécessite une authentification",
     "iaso.label.featureFlags": "Options",
     "iaso.projects.true": "L'utilisateur a besoin d'une authentification",
-    "iaso.projects.false": "L'utilisateur n'a pas besoin d'authentification"
+    "iaso.projects.false": "L'utilisateur n'a pas besoin d'authentification",
+    "iaso.dataSources.name": "Nom de la source",
+    "iaso.dataSources.description": "Description",
+    "iaso.dataSources.dataSourceReadOnly": "Lecture seule"
 }

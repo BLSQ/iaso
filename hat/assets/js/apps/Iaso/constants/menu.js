@@ -5,6 +5,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
+import StorageRoundedIcon from '@material-ui/icons/StorageRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
@@ -66,22 +67,37 @@ const menuItems = [
                 icon: props => <CategoryIcon {...props} />,
             },
             {
-                label: MESSAGES.matching,
-                permission: paths.linksPath.permission,
-                key: 'links',
-                icon: props => <Link {...props} />,
+                label: MESSAGES.dataSources,
+                key: 'sources',
+                icon: props => <StorageRoundedIcon {...props} />,
                 subMenu: [
                     {
                         label: MESSAGES.list,
-                        permission: paths.linksPath.permission,
+                        permission: paths.dataSourcesPath.permission,
                         key: 'list',
                         icon: props => <FormatListBulleted {...props} />,
                     },
                     {
-                        label: MESSAGES.algorithmsRuns,
-                        permission: paths.algosPath.permission,
-                        key: 'runs',
-                        icon: props => <CompareArrows {...props} />,
+                        label: MESSAGES.matching,
+                        permission: paths.linksPath.permission,
+                        key: 'links',
+                        icon: props => <Link {...props} />,
+                        subMenu: [
+                            {
+                                label: MESSAGES.list,
+                                permission: paths.linksPath.permission,
+                                key: 'list',
+                                icon: props => (
+                                    <FormatListBulleted {...props} />
+                                ),
+                            },
+                            {
+                                label: MESSAGES.algorithmsRuns,
+                                permission: paths.algosPath.permission,
+                                key: 'runs',
+                                icon: props => <CompareArrows {...props} />,
+                            },
+                        ],
                     },
                 ],
             },

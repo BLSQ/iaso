@@ -7,7 +7,7 @@ from django.utils import timezone
 logger = logging.getLogger(__name__)
 
 
-@task
+@task(task_name="copy_version")
 def copy_version(
     source_source_id, source_version_number, destination_source_id, destination_version_number, force, task=None
 ):

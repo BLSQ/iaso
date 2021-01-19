@@ -61,8 +61,8 @@ lxml==4.6.2
 xlrd==1.2.0
 pyjwt==1.7.1
 djangorestframework_simplejwt==4.4.0
-django-beanstalk-worker==0.0.2
 #JSON5 is used for the export_json_for_mobile_app
 json5==0.9.5
 
 sentry-sdk==0.19.4
+django-lazy-services==0.0.3

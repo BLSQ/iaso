@@ -26,6 +26,7 @@ from .api.groups import GroupsViewSet
 from .api.periods import PeriodsViewSet
 from .api.completeness import CompletenessViewSet
 from .api.export_requests import ExportRequestsViewSet
+from .api.tasks import TaskSourceViewSet
 from .api.enketo import (
     enketo_edit_url,
     enketo_create_url,
@@ -76,6 +77,7 @@ router.register(r"derivedinstances", DerivedInstancesViewSet, basename="derivedi
 router.register(r"mobile/orgunits", MobileOrgUnitViewSet, basename="orgunitsmobile")
 router.register(r"featureflags", FeatureFlagViewSet, basename="featureflags")
 router.register(r"copyversion", CopyVersionViewSet, basename="copyversion")
+router.register(r"tasks", TaskSourceViewSet, basename="tasks")
 
 urlpatterns = [
     url(

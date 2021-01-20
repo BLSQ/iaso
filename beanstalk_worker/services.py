@@ -3,7 +3,7 @@ import importlib
 import json
 from datetime import datetime
 from unittest import mock
-from iaso.models.base import Task, RUNNING
+from iaso.models.base import Task, RUNNING, QUEUED
 import boto3
 import dateparser
 from django.conf import settings
@@ -41,13 +41,15 @@ class _TaskServiceBase:
         """ run a task, called by the view that receives them from the queue """
         kwargs["_immediate"] = True
         task = Task.objects.get(id=task_id)
-        task.status = RUNNING
-        task.started_at = timezone.now()
-        task.save()
-        module = importlib.import_module(module_name)
-        method = getattr(module, method_name)
-        assert method._is_task
-        method(*args, task=task, **kwargs)
+        if task.status == QUEUED:  # ensure a task is only run once
+            task.status = RUNNING
+            task.started_at = timezone.now()
+            task.save()
+            module = importlib.import_module(module_name)
+            method = getattr(module, method_name)
+            assert method._is_task
+
+            method(*args, task=task, **kwargs)
 
     def enqueue(self, module_name, method_name, args, kwargs, task_id):
         body = json.dumps(
@@ -72,14 +74,16 @@ class FakeTaskService(_TaskServiceBase):
     def run_all(self):
         """ run everything in the test queue """
         # clear on_commit stuff
-        print("self.queue", self.queue)
+
         if connection.in_atomic_block:
             while connection.run_on_commit:
                 sids, func = connection.run_on_commit.pop(0)
                 func()
 
         while self.queue:
-            self.run_task(self.queue.pop(0))
+            b = self.queue.pop(0)
+
+            self.run_task(b)
 
     def run_task(self, body):
         with mock.patch("django.conf.settings.BEANSTALK_WORKER", True):

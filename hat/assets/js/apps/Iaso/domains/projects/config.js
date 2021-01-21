@@ -19,7 +19,7 @@ const projectsTableColumns = (formatMessage, component) => [
         ),
     },
     {
-        Header: formatMessage(MESSAGES.needsAuthentication),
+        Header: formatMessage(MESSAGES.featureFlags),
         accessor: 'project__needs_authentication',
         Cell: settings => (
             <span>

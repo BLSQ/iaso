@@ -2,8 +2,7 @@ import { SET_ALL_SOURCES, SET_IS_FETCHING_SOURCES } from './actions';
 
 export const dataSourcesInitialState = {
     list: [],
-    current: null,
-    fetching: false,
+    fetching: true,
     count: 0,
     pages: 1,
 };

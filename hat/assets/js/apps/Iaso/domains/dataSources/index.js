@@ -115,7 +115,11 @@ DataSources.propTypes = {
 
 const MapStateToProps = state => {
     return {
-        fetching: state.dataSources.fetching,
+        fetching:
+            state.dataSources !== undefined &&
+            state.dataSources.fetching !== undefined
+                ? state.dataSources.fetching
+                : false,
         reduxPage: {
             ...state.dataSources,
             params: {},

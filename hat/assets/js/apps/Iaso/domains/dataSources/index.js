@@ -113,19 +113,17 @@ DataSources.propTypes = {
     reduxPage: PropTypes.object,
 };
 
-const MapStateToProps = state => {
-    return {
-        fetching:
-            state.dataSources !== undefined &&
-            state.dataSources.fetching !== undefined
-                ? state.dataSources.fetching
-                : false,
-        reduxPage: {
-            ...state.dataSources,
-            params: {},
-        },
-    };
-};
+const MapStateToProps = state => ({
+    fetching:
+        state.dataSources !== undefined &&
+        state.dataSources.fetching !== undefined
+            ? state.dataSources.fetching
+            : false,
+    reduxPage: {
+        ...state.dataSources,
+        params: {},
+    },
+});
 
 const mapDispatchToProps = dispatch => ({
     dispatch,

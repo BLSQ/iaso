@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 
 from ..tasks.copy_version import copy_version
+from .tasks import TaskSerializer
 from ..models import DataSource, SourceVersion, Task, OrgUnit
 from rest_framework import viewsets, permissions, serializers
 from .common import HasPermission
@@ -76,4 +77,4 @@ class CopyVersionViewSet(viewsets.ViewSet):
             force,
             user=request.user,
         )
-        return Response({"task": task.as_dict()})
+        return Response({"task": TaskSerializer(instance=task).data})

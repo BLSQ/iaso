@@ -1,8 +1,9 @@
 from iaso.models import OrgUnit, DataSource, SourceVersion, Group, GroupSet, Task, SUCCESS, ERRORED, RUNNING
 from beanstalk_worker import task
+from django.utils.translation import gettext as _
 
 import logging
-from django.utils import timezone
+
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +22,8 @@ def copy_version(
         number=destination_version_number, data_source=destination_source
     )
     source_version_count = OrgUnit.objects.filter(version=source_version).count()
-    the_task.end_value = source_version_count
+
+    the_task.report_progress_and_stop_if_killed(progress_value=source_version_count, progress_message=_("Starting"))
     destination_version_count = OrgUnit.objects.filter(version=destination_version).count()
     if destination_version_count > 0 and not force:
         res_string = (
@@ -45,7 +47,8 @@ def copy_version(
         gs.source_version = destination_version
         gs.save()
         group_set_matching[old_id] = gs.id
-    logger.debug("group_set_matching", group_set_matching)
+    the_task.report_progress_and_stop_if_killed(progress_message=_("Copying groups"))
+
     logger.debug("********* Copying groups")
     groups = Group.objects.filter(source_version=source_version)
     group_matching = {}
@@ -84,8 +87,7 @@ def copy_version(
             unit.groups.add(matching_group)
 
         if index % 100 == 0:
-            the_task.progress_value = index
-            the_task.save()
+            the_task.report_progress_and_stop_if_killed(progress_value=index, progress_message=_("Copying org units"))
 
     index = 0
     for unit in new_units:
@@ -98,13 +100,12 @@ def copy_version(
         index = index + 1
         if index % 100 == 0:
             logger.debug("Parent fixed: %d" % index)
+            the_task.report_progress_and_stop_if_killed(progress_message=_("Fixing parents"))
 
     for unit in new_root_units:
         logger.debug(f"Setting path for the hierarchy starting with org unit {unit.name}")
         unit.save(update_fields=["path"])
 
-    the_task.status = SUCCESS
-    the_task.ended_at = timezone.now()
-    the_task.result = {"result": "SUCCESS", "message": "%d copied" % source_version_count}
-    the_task.save()
+    the_task.report_success(message="%d copied" % source_version_count)
+
     return the_task

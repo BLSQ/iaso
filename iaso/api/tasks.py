@@ -1,8 +1,15 @@
 from rest_framework import viewsets, permissions, serializers
 from rest_framework.response import Response
+from django.contrib.auth.models import User
 
 from .common import HasPermission, ModelViewSet, TimestampField
 from iaso.models import Task
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["first_name", "last_name", "username"]
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -21,8 +28,13 @@ class TaskSerializer(serializers.ModelSerializer):
             "status",
             "name",
             "params",
+            "should_be_killed",
+            "progress_message",
         ]
 
+        read_only_fields = ["launcher_name"]
+
+    launcher = UserSerializer(read_only=True)
     ended_at = TimestampField(read_only=True)
     created_at = TimestampField(read_only=True)
     started_at = TimestampField(read_only=True)

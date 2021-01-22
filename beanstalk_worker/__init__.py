@@ -13,7 +13,7 @@ def task(task_name=""):
 
         @wraps(func)
         def wrapper(*args, **kwargs):
-            from iaso.models.base import Task, RUNNING, QUEUED, ERRORED
+            from iaso.models.base import Task, RUNNING, QUEUED, ERRORED, KilledException
 
             immediate = kwargs.pop("_immediate", False)  # if true, we need to run the task now, we are a worker
             if immediate:
@@ -25,6 +25,8 @@ def task(task_name=""):
                     the_task.save()
                 try:
                     func(*args, task=the_task, **kwargs)
+                except KilledException as e:
+                    pass
                 except Exception as e:
                     the_task.status = ERRORED
                     the_task.ended_at = timezone.now()

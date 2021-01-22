@@ -1,4 +1,4 @@
-from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource
+from ...models import OrgUnit, OrgUnitType, Account, Project, SourceVersion, DataSource, Task
 from iaso.test import APITestCase
 
 
@@ -23,6 +23,10 @@ class CopyVersionTestCase(APITestCase):
         cls.source = source
         cls.johnny = cls.create_user_with_profile(username="johnny", account=account, permissions=["iaso_sources"])
         cls.miguel = cls.create_user_with_profile(username="miguel", account=account, permissions=[])
+
+        from beanstalk_worker import task_service
+
+        task_service.clear()
 
     def test_copy_version(self):
         """Copying a version through the api"""
@@ -87,3 +91,35 @@ class CopyVersionTestCase(APITestCase):
         response = self.client.post("/api/copyversion/", data=data, format="json")
 
         self.assertEqual(response.status_code, 400)  # it's a bad idea to copy a version on itself
+
+    def test_copy_version_kill(self):
+        """Copying a version through the api"""
+
+        self.client.force_authenticate(self.johnny)
+
+        data = {
+            "source_source_id": self.source.id,
+            "destination_source_id": self.source.id,
+            "source_version_number": 1,
+            "destination_version_number": 2,
+        }
+
+        response = self.client.post("/api/copyversion/", data=data, format="json")
+        body = response.json()
+        task = body["task"]
+
+        self.assertEqual(task["status"], "QUEUED")
+
+        task_model = Task.objects.get(id=task["id"])
+        task_model.should_be_killed = True
+        task_model.save()
+
+        from beanstalk_worker import task_service
+
+        task_service.run_all()
+
+        response = self.client.get("/api/tasks/%d/" % task["id"])
+
+        self.assertEqual(response.status_code, 200)
+        body = response.json()
+        self.assertEqual(body["status"], "KILLED")

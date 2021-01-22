@@ -13,6 +13,7 @@ class FeatureFlagsSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)
 
+
 class FeatureFlagViewSet(ModelViewSet):
     """ Feature flag API
 

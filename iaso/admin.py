@@ -29,6 +29,7 @@ from .models import (
     ExportStatus,
     ExportLog,
     DevicePosition,
+    Task,
 )
 
 
@@ -36,7 +37,6 @@ class OrgUnitAdmin(admin.GeoModelAdmin):
     raw_id_fields = ("parent",)
     list_filter = ("org_unit_type", "custom", "validated", "sub_source", "version")
     search_fields = ("name", "source_ref", "uuid")
-    ordering = ("name",)
     readonly_fields = ("path",)
 
 
@@ -45,7 +45,6 @@ admin.site.register(OrgUnit, OrgUnitAdmin)
 
 class OrgUnitTypeAdmin(admin.GeoModelAdmin):
     search_fields = ("name",)
-    ordering = ("name",)
     list_display = ("name", "projects_list", "short_name", "depth")
 
     def projects_list(self, obj):
@@ -60,7 +59,6 @@ admin.site.register(OrgUnitType, OrgUnitTypeAdmin)
 
 class FormAdmin(admin.GeoModelAdmin):
     search_fields = ("name", "form_id")
-    ordering = ("name",)
     list_display = (
         "name",
         "form_id",
@@ -173,6 +171,12 @@ class ExportStatusAdmin(admin.GeoModelAdmin):
         ) or mark_safe("<span>no logs available.</span>")
 
 
+class TaskAdmin(admin.ModelAdmin):
+    readonly_fields = ("created_at",)
+    list_display = ("name", "account", "status", "created_at")
+    list_filter = ("account", "status", "name")
+
+
 admin.site.register(Link, LinkAdmin)
 admin.site.register(Form, FormAdmin)
 admin.site.register(Instance, InstanceAdmin)
@@ -197,3 +201,4 @@ admin.site.register(ExportRequest, ExportRequestAdmin)
 admin.site.register(ExportStatus, ExportStatusAdmin)
 admin.site.register(ExportLog, ExportLogAdmin)
 admin.site.register(DevicePosition)
+admin.site.register(Task, TaskAdmin)

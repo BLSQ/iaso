@@ -29,6 +29,16 @@ class ProjectSerializer(serializers.ModelSerializer):
         fields = ["id", "name", "app_id", "feature_flags", "created_at", "updated_at", "needs_authentication"]
         read_only_fields = ["id", "created_at", "updated_at"]
 
-    feature_flags = FeatureFlagSerializer(many=True, required=True, allow_empty=False)
+    def validate_app_id(self, data):
+        data = data.strip()
+        request = self.context["request"]
+        if not data:
+            raise serializers.ValidationError("An App id is necessary")
+        if data != "" and data != request.data.get("id"):
+            if Project.objects.filter(app_id=data).count() > 0:
+                raise serializers.ValidationError("App id already used")
+        return data
+
+    feature_flags = FeatureFlagSerializer(many=True, required=True, allow_empty=True)
     created_at = TimestampField(read_only=True)
     updated_at = TimestampField(read_only=True)

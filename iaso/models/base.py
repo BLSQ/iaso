@@ -16,6 +16,7 @@ from django.utils.translation import ugettext_lazy as _
 from hat.audit.models import log_modification, INSTANCE_API
 from iaso.utils import flat_parse_xml_soup, as_soup, extract_form_version_id
 from django.db.models import Q
+from django.utils import timezone
 
 from .device import DeviceOwnership, Device
 from .forms import Form, FormVersion
@@ -42,15 +43,24 @@ QUEUED = "QUEUED"
 RUNNING = "RUNNING"
 ERRORED = "ERRORED"
 EXPORTED = "EXPORTED"
+SUCCESS = "SUCCESS"
+SKIPPED = "SKIPPED"
+KILLED = "KILLED"
 
 STATUS_TYPE_CHOICES = (
     (QUEUED, _("Queued")),
     (RUNNING, _("Running")),
     (EXPORTED, _("Exported")),
     (ERRORED, _("Errored")),
-    ("SKIPPED", _("Skipped")),
+    (SKIPPED, _("Skipped")),
+    (KILLED, _("Killed")),
+    (SUCCESS, _("Success")),
 )
 ALIVE_STATUSES = [QUEUED, RUNNING]
+
+
+class KilledException(Exception):
+    pass
 
 
 def generate_id_for_dhis_2():
@@ -231,6 +241,69 @@ class AlgorithmRun(models.Model):
             "destination": self.version_1.as_list() if self.version_1 else None,
             "source": self.version_2.as_list() if self.version_2 else None,
         }
+
+
+class Task(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    started_at = ended_at = models.DateTimeField(null=True, blank=True)
+    ended_at = models.DateTimeField(null=True, blank=True)
+    progress_value = models.IntegerField(default=0)
+    end_value = models.IntegerField(default=0)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE)
+    launcher = models.ForeignKey(User, null=True, blank=True, on_delete=models.SET_NULL)
+    result = JSONField(null=True, blank=True)
+    status = models.CharField(choices=STATUS_TYPE_CHOICES, max_length=40, default=QUEUED)
+    name = models.TextField()
+    params = JSONField(null=True, blank=True)
+    queue_answer = JSONField(null=True, blank=True)
+    progress_message = models.TextField(null=True, blank=True)
+    should_be_killed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return "%s - %s - %s -%s" % (self.name, self.launcher, self.status, self.created_at)
+
+    def as_dict(self):
+        return {
+            "id": self.id,
+            "created_at": self.created_at.timestamp() if self.created_at else None,
+            "started_at": self.started_at.timestamp() if self.started_at else None,
+            "ended_at": self.ended_at.timestamp() if self.ended_at else None,
+            "params": self.params,
+            "result": self.result,
+            "status": self.status,
+            "launcher": self.launcher.iaso_profile.as_short_dict()
+            if self.launcher and self.launcher.iaso_profile
+            else None,
+            "progress_value": self.progress_value,
+            "end_value": self.end_value,
+            "name": self.name,
+            "queue_answer": self.queue_answer,
+            "progress_message": self.progress_message,
+            "should_be_killed": self.should_be_killed,
+        }
+
+    def report_progress_and_stop_if_killed(self, progress_value=None, progress_message=None, end_value=None):
+        self.refresh_from_db()
+        if self.should_be_killed:
+            self.status = KILLED
+            self.ended_at = timezone.now()
+            self.result = {"result": KILLED, "message": "Killed"}
+            self.save()
+            raise KilledException("Killed by user")
+
+        if progress_value:
+            self.progress_value = progress_value
+        if progress_message:
+            self.progress_message = progress_message
+        if end_value:
+            self.end_value = end_value
+        self.save()
+
+    def report_success(self, message=None):
+        self.status = SUCCESS
+        self.ended_at = timezone.now()
+        self.result = {"result": SUCCESS, "message": message}
+        self.save()
 
 
 class Link(models.Model):

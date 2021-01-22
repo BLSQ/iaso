@@ -118,6 +118,27 @@ class AppsAPITestCase(APITestCase):
         self.assertEqual(1, len(response_data["feature_flags"]))
 
     @tag("iaso_only")
+    def test_app_create_ok_with_auth(self):
+        candidated_app = {
+            "name": "This is a new app",
+            "app_id": "com.this.is.new.app",
+            "feature_flags": [{"id": self.flag_1.id, "name": self.flag_1.name, "code": self.flag_1.code}],
+            "needs_authentication": False,
+        }
+        self.client.force_authenticate(self.yoda)
+        response = self.client.post(f"/api/apps/", candidated_app, format="json")
+        self.assertJSONResponse(response, 201)
+        response_data = response.json()
+        self.assertValidAppData(response_data)
+        self.assertEqual(1, len(response_data["feature_flags"]))
+
+        candidated_app_2 = {"name": "This is a new app 2", "app_id": "com.this.is.new.app", "feature_flags": []}
+        response = self.client.post(
+            f"/api/apps/", candidated_app_2, format="json"
+        )  # "can't create two apps with the same id"
+        self.assertJSONResponse(response, 400)
+
+    @tag("iaso_only")
     def test_app_create_ok_without_feature_flags_with_auth(self):
         candidated_app = {
             "name": "This is a new app",
@@ -127,9 +148,9 @@ class AppsAPITestCase(APITestCase):
         }
         self.client.force_authenticate(self.yoda)
         response = self.client.post(f"/api/apps/", candidated_app, format="json")
-        self.assertJSONResponse(response, 400)
+        self.assertJSONResponse(response, 201)
         response_data = response.json()
-        self.assertEqual(["This list may not be empty."], response_data["feature_flags"]["non_field_errors"])
+        print("response_data", response_data)
 
     @tag("iaso_only")
     def test_app_create_auto_commit_require_auth_ok_with_auth(self):
@@ -188,13 +209,11 @@ class AppsAPITestCase(APITestCase):
         self.assertTrue("REQUIRE_AUTHENTICATION" in list(ff["code"] for ff in response_data["feature_flags"]))
 
     @tag("iaso_only")
-    def test_app_update_KO_without_feature_flags_with_auth(self):
+    def test_app_update_OK_without_feature_flags_with_auth(self):
         candidated_app = {"app_id": "self.project_1ddes.app_id", "name": "This is an existing app", "feature_flags": []}
         self.client.force_authenticate(self.yoda)
         response = self.client.put(f"/api/apps/{self.project_1.app_id}/", candidated_app, format="json")
-        self.assertJSONResponse(response, 400)
-        response_data = response.json()
-        self.assertEqual(["This list may not be empty."], response_data["feature_flags"]["non_field_errors"])
+        self.assertJSONResponse(response, 200)
 
     @tag("iaso_only")
     def test_app_update_auto_commit_require_auth_true_when_flag_auth_ok(self):

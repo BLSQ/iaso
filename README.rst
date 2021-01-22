@@ -204,29 +204,6 @@ Tests can be executed with
 
     docker-compose run iaso test
 
-Fixtures
---------
-
-User fixtures can be loaded when testing. This is the list (<name>:<password>) of users:
-
-- ``admin:adminadmin``
-- ``supervisor:supervisorsupervisor``
-- ``importer:importerimporter``
-- ``full-exporter:exporterexporter``
-- ``anon-exporter:exporterexporter``
-
-To export some data from the database to create fixtures run e.g.:
-
-.. code:: bash
-
-    docker-compose run iaso manage dumpdata auth.User --indent 2
-
-To load some fixture into the database manually run e.g.:
-
-.. code:: bash
-
-    docker-compose run iaso manage loaddata users
-
 
 Code reloading
 ==============
@@ -274,11 +251,12 @@ Here is an example of pre-commit-config.yaml:
 
 ..
 
+Another good way to have it working is to set it up in your code editor. Pycharm, for example, has good support for this.
 
 React Intl
 ===============
 
-if often block the deployment.
+It often blocks the deployment.
 
 you can test the default message extraction with
 
@@ -316,6 +294,13 @@ If you need to test s3 storage in development, you have to:
 
 These are actually exactly the same steps we use on AWS.
 
+Testing prod js assets in development
+=================================
+Run `TEST_PROD=true docker-compose up`
+
+to have a local environment serving you the production assets (minified and with the same compilation option as in production).
+This can be useful to reproduce production only bugs.
+
 Enketo
 ======
 
@@ -334,3 +319,10 @@ Then, you need to make sure your `.env` file is properly configured.
 
     docker-compose up
     docker exec iaso_iaso_1  ./manage.py seed_test_data --mode=seed --dhis2version=2.32.6
+
+
+Workers
+======
+
+We use Elastic Beanstalk workers with SQS using a fork of the library [django-beanstalk-worker](https://pypi.org/project/django-beanstalk-worker/)
+The endpoint `/api/copy_version/` is a good example of how to create a task and to plug it to the api.

@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Map, TileLayer } from 'react-leaflet';
 import Control from 'react-leaflet-control';
-import { injectIntl, intlShape, FormattedMessage } from 'react-intl';
+import { injectIntl, FormattedMessage } from 'react-intl';
 import L from 'leaflet';
 
 import { withStyles, Dialog, DialogActions, Button } from '@material-ui/core';
@@ -158,7 +158,7 @@ MarkerMap.propTypes = {
     classes: PropTypes.object.isRequired,
     latitude: PropTypes.any.isRequired,
     longitude: PropTypes.any.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(MarkerMap));

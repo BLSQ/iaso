@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 
@@ -91,7 +91,7 @@ class GeoJsonMap extends Component {
 GeoJsonMap.propTypes = {
     classes: PropTypes.object.isRequired,
     geoJson: PropTypes.object.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(GeoJsonMap));

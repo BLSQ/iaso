@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { Map, TileLayer, Polygon } from 'react-leaflet';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 
@@ -74,7 +74,7 @@ class PolygonMap extends Component {
 PolygonMap.propTypes = {
     classes: PropTypes.object.isRequired,
     polygonPositions: PropTypes.array.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(PolygonMap));

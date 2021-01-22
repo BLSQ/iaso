@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import { Grid, withStyles, Tabs, Tab } from '@material-ui/core';
 
@@ -230,7 +230,7 @@ InstancesFilesList.defaultProps = {
 InstancesFilesList.propTypes = {
     files: PropTypes.any,
     classes: PropTypes.object.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
     fetching: PropTypes.bool.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetchDetails: PropTypes.bool,

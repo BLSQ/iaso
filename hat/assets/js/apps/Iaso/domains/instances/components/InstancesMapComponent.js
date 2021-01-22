@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl, intlShape } from 'react-intl';
+import { injectIntl } from 'react-intl';
 
 import { Grid, Divider } from '@material-ui/core';
 
@@ -168,7 +168,7 @@ InstancesMap.propTypes = {
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
     setCurrentInstance: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,

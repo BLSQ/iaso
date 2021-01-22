@@ -5,7 +5,7 @@ import FormatListBulleted from '@material-ui/icons/FormatListBulleted';
 import CompareArrows from '@material-ui/icons/CompareArrows';
 import SupervisorAccount from '@material-ui/icons/SupervisorAccount';
 import PhonelinkSetupIcon from '@material-ui/icons/PhonelinkSetup';
-import StorageRoundedIcon from '@material-ui/icons/StorageRounded';
+import DnsRoundedIcon from '@material-ui/icons/DnsRounded';
 import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
@@ -69,7 +69,7 @@ const menuItems = [
             {
                 label: MESSAGES.dataSources,
                 key: 'sources',
-                icon: props => <StorageRoundedIcon {...props} />,
+                icon: props => <DnsRoundedIcon {...props} />,
                 subMenu: [
                     {
                         label: MESSAGES.list,

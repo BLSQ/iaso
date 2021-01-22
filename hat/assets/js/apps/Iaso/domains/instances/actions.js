@@ -156,10 +156,13 @@ export const reAssignInstance = (currentInstance, payload) => dispatch => {
 export const createInstance = (currentForm, payload) => dispatch => {
     dispatch(setInstancesFetching(true));
     // if (!payload.period) delete payload.period;
-        return postRequest('/api/enketo/create/', { 'org_unit_id': payload.org_unit, 'form_id': currentForm.id, 'period': payload.period })
-        .then(createRequest => {
-            window.location = createRequest.edit_url;
-        })
+    return postRequest('/api/enketo/create/', {
+        org_unit_id: payload.org_unit,
+        form_id: currentForm.id,
+        period: payload.period,
+    }).then(createRequest => {
+        window.location = createRequest.edit_url;
+    });
 };
 
 export const createExportRequest = filterParams => dispatch => {

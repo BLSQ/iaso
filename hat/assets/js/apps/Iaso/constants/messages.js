@@ -29,6 +29,10 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.orgUnitsTypes',
         defaultMessage: 'Organisation unit type',
     },
+    dataSources: {
+        id: 'iaso.orgUnits.dataSources',
+        defaultMessage: 'Data Sources',
+    },
     matching: {
         defaultMessage: 'Matching',
         id: 'iaso.matching.title',

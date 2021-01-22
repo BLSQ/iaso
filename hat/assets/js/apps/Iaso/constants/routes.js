@@ -11,6 +11,7 @@ import Mappings from '../domains/mappings';
 import MappingDetails from '../domains/mappings/details';
 import Users from '../domains/users';
 import Projects from '../domains/projects';
+import DataSources from '../domains/dataSources';
 import Groups from '../domains/orgUnits/groups';
 import Types from '../domains/orgUnits/types';
 import PageError from '../components/errors/PageError';
@@ -368,6 +369,13 @@ export const projectsPath = {
     params: [...paginationPathParams],
 };
 
+export const dataSourcesPath = {
+    baseUrl: baseUrls.sources,
+    permission: 'iaso_data_sources',
+    component: props => <DataSources {...props} />,
+    params: [...paginationPathParams],
+};
+
 export const groupsPath = {
     baseUrl: baseUrls.groups,
     permission: 'iaso_org_units',
@@ -430,6 +438,7 @@ export const routeConfigs = [
     completenessPath,
     usersPath,
     projectsPath,
+    dataSourcesPath,
     groupsPath,
     orgUnitTypesPath,
     page401,

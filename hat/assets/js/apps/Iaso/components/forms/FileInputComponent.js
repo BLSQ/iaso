@@ -1,11 +1,11 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import OutlinedInput from '@material-ui/core/OutlinedInput';
 
 import FormControlComponent from './FormControlComponent';
 import InputLabelComponent from './InputLabelComponent';
 import MESSAGES from '../../domains/forms/messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 function FileInputComponent({
     intl,

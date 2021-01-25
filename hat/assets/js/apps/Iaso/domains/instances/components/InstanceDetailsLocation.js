@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import { withStyles } from '@material-ui/core';
 
 import MarkerMap from '../../../components/maps/MarkerMapComponent';
@@ -13,6 +12,7 @@ import InstanceDetailsField from './InstanceDetailsField';
 
 import { INSTANCE_METAS_FIELDS } from '../constants';
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     infosContainer: {

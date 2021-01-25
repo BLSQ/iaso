@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import { makeStyles } from '@material-ui/core/styles';
 import { KeyboardDatePicker } from '@material-ui/pickers';
 import { FormControl, Grid, Tooltip, IconButton } from '@material-ui/core';
 import Clear from '@material-ui/icons/Clear';
 
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     formControl: {

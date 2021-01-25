@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Map, TileLayer } from 'react-leaflet';
 import Control from 'react-leaflet-control';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import L from 'leaflet';
 
 import { withStyles, Dialog, DialogActions, Button } from '@material-ui/core';
@@ -18,6 +18,8 @@ import TileSwitch from './tools/TileSwitchComponent';
 import commonStyles from '../../styles/common';
 
 import MESSAGES from './messages';
+
+import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [500, 500] };
 

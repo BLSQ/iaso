@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { withStyles, Box, Grid } from '@material-ui/core';
 
 import {
@@ -24,6 +23,7 @@ import usersTableColumns from './config';
 import MESSAGES from './messages';
 
 import { redirectTo as redirectToAction } from '../../routing/actions';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.users;
 

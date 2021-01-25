@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -35,6 +35,8 @@ import { createUrl } from '../../../utils/fetchData';
 import { decodeSearch, encodeUriSearches } from '../utils';
 import { baseUrls } from '../../../constants/urls';
 import MESSAGES from '../messages';
+
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -162,8 +164,9 @@ class OrgUnitsFiltersComponent extends Component {
                         />
                         <div className={classes.colorContainer}>
                             <FormLabel className={classes.marginBottom}>
-                                <FormattedMessage {...MESSAGES.color} />:
-                            </FormLabel>
+                                <FormattedMessage {...MESSAGES.color} />
+:
+</FormLabel>
                             <CirclePicker
                                 width="100%"
                                 colors={chipColors}

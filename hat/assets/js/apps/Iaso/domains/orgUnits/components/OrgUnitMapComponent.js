@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import 'react-leaflet-draw';
-import { injectIntl } from 'react-intl';
 
 import { Grid } from '@material-ui/core';
 
@@ -42,6 +41,7 @@ import {
 } from '../../../utils/requests';
 
 import 'leaflet-draw/dist/leaflet.draw.css';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const zoom = 5;
 const padding = [75, 75];

@@ -2,12 +2,13 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { replace } from 'react-router-redux';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import ReactTable, { ReactTableDefaults } from 'react-table';
 import ReactResizeDetector from 'react-resize-detector';
 import { getRequest, createUrl } from '../utils/fetchData';
 import customTableTranslations from '../constants/customTableTranslations';
 import { formatThousand } from '../utils';
+import injectIntl from '../libs/intl/injectIntl';
 
 const getOrderValue = obj => (!obj.desc ? obj.id : `-${obj.id}`);
 

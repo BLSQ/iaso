@@ -1,5 +1,5 @@
 import React, { Component, Fragment } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -20,6 +20,7 @@ import FiltersComponent from '../../../components/filters/FiltersComponent';
 import { createUrl } from '../../../utils/fetchData';
 
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

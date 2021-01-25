@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import isEqual from 'lodash/isEqual';
-import { injectIntl } from 'react-intl';
 
 import { Grid, withStyles, Tabs, Tab } from '@material-ui/core';
 
@@ -17,6 +16,7 @@ import InstancePopover from './InstancePopoverComponent';
 import { sortFilesType } from '../../../utils/filesUtils';
 import { fetchInstanceDetail } from '../../../utils/requests';
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const minTabHeight = 'calc(100vh - 500px)';
 

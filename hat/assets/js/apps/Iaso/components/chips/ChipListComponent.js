@@ -1,5 +1,4 @@
 import React, { useCallback } from 'react';
-import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import { Chip, withStyles } from '@material-ui/core';
 import Add from '@material-ui/icons/Add';
@@ -7,6 +6,7 @@ import Cancel from '@material-ui/icons/Cancel';
 
 import { translateOptions } from '../../utils/intlUtil';
 import commonStyles from '../../styles/common';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

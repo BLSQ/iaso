@@ -1,6 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import { withStyles, Container, Grid, Divider } from '@material-ui/core';
 
@@ -13,6 +13,7 @@ import commonStyles from '../../styles/common';
 
 import { fetchLogDetail } from '../../utils/requests';
 
+import injectIntl from '../../libs/intl/injectIntl';
 import MESSAGES from './messages';
 
 const styles = theme => ({

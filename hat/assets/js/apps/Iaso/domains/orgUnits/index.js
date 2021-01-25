@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 
 import { withStyles, Grid, Box, Tabs, Tab } from '@material-ui/core';
@@ -65,6 +64,7 @@ import DynamicTabsComponent from '../../components/nav/DynamicTabsComponent';
 
 import { baseUrls } from '../../constants/urls';
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.orgUnits;
 let warningDisplayed = false;

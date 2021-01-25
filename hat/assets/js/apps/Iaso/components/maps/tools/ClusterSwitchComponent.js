@@ -1,12 +1,12 @@
 import React from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 
 import { withStyles, Grid, Box, Switch, Typography } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
 import MESSAGES from '../messages';
 import { toggleCluster } from '../../../redux/mapReducer';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     title: {

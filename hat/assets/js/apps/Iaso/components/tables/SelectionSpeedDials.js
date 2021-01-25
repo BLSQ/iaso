@@ -1,7 +1,6 @@
 import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 
 import { ClickAwayListener } from '@material-ui/core';
 import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
@@ -9,6 +8,7 @@ import { SpeedDial, SpeedDialAction } from '@material-ui/lab';
 import CheckBoxIcon from '@material-ui/icons/CheckBox';
 
 import MESSAGES from '../../domains/orgUnits/messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     speedDial: {

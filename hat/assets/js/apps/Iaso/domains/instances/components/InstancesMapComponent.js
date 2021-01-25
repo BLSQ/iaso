@@ -3,7 +3,6 @@ import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
 import { Map, TileLayer } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl } from 'react-intl';
 
 import { Grid, Divider } from '@material-ui/core';
 
@@ -28,6 +27,7 @@ import {
 } from '../../../redux/snackBarsReducer';
 
 import { fetchInstanceDetail } from '../../../utils/requests';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [50, 50] };
 

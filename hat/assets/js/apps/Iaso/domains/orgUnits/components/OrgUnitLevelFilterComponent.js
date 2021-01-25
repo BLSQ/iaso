@@ -1,12 +1,12 @@
 import React, { Component, Fragment } from 'react';
 import Grid from '@material-ui/core/Grid';
-import { injectIntl } from 'react-intl';
 
 import PropTypes from 'prop-types';
 
 import FiltersComponent from '../../../components/filters/FiltersComponent';
 
 import { orgUnitLevel, status } from '../../../constants/filters';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 class OrgUnitLevelFilterComponent extends Component {
     render() {
@@ -68,12 +68,16 @@ class OrgUnitLevelFilterComponent extends Component {
                         />
                     </Grid>
                     <Grid item xs={1}>
-                        <a href={'/dashboard/orgunits/detail/orgUnitId/' + currentLevelId}>{validationStatus &&
-                        statusIcons.find(
-                          icon =>
-                            icon.value ===
-                            validationStatus.validation_status,
-                        ).icon}</a>
+                        <a
+                            href={`/dashboard/orgunits/detail/orgUnitId/${currentLevelId}`}
+                        >
+                            {validationStatus &&
+                                statusIcons.find(
+                                    icon =>
+                                        icon.value ===
+                                        validationStatus.validation_status,
+                                ).icon}
+                        </a>
                     </Grid>
                 </Grid>
             </Fragment>

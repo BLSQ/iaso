@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { Map, TileLayer, Polygon } from 'react-leaflet';
-import { injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 
@@ -9,6 +8,7 @@ import PropTypes from 'prop-types';
 import { getLatLngBounds, customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [10, 10] };
 

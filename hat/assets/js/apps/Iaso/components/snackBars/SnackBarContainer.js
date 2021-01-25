@@ -2,12 +2,12 @@ import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 
 import { withSnackbar } from 'notistack';
 import { removeSnackbar } from '../../redux/snackBarsReducer';
 import SnackBarButton from './SnackBarButton';
 import SnackBarErrorMessage from './SnackBarErrorMessage';
+import injectIntl from '../../libs/intl/injectIntl';
 
 import MESSAGES from './messages';
 

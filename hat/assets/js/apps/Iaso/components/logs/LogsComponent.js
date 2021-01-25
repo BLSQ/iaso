@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 
@@ -15,6 +14,7 @@ import commonStyles from '../../styles/common';
 
 import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
+import injectIntl from '../../libs/intl/injectIntl';
 import MESSAGES from './messages';
 
 const baseUrl = baseUrls.orgUnitDetails;

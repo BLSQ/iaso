@@ -1,7 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { InView } from 'react-intersection-observer';
-import { injectIntl } from 'react-intl';
 
 import {
     withStyles,
@@ -22,6 +21,7 @@ import IconButtonComponent from '../buttons/IconButtonComponent';
 import BlockPlaceholder from '../placeholders/BlockPlaceholder';
 
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const filterResults = (searchString, options) => {
     let displayedOptions = [...options];

@@ -1,7 +1,6 @@
 import React, { Component, Fragment } from 'react';
 import omit from 'lodash/omit';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { push, replace } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
@@ -73,6 +72,7 @@ import {
 } from '../../constants/filters';
 import { orgUnitsTableColumns } from './config';
 import { linksTableColumns } from '../links/config';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.orgUnitDetails;
 

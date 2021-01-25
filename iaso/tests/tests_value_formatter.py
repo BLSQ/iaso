@@ -111,5 +111,18 @@ class ValueFormatterTests(TestCase):
 
             with self.assertRaises(Exception) as context:
                 value_formatter.format_value(de, "a bad string", orgunit_resolver)
+            print(str(context.exception))
+            print(testcase[1])
+            self.assertTrue(str(context.exception).startswith(testcase[1]))
 
-            self.assertEqual(str(context.exception), testcase[1])
+    def test_dont_fail_fast_on_int_or_float(self):
+
+        testcases = (
+            ("INTEGER", 0),
+            ("NUMBER", 0.0),
+            ("NUMBER", 1.2),
+        )
+
+        for testcase in testcases:
+            de = buid_de(testcase[0])
+            value_formatter.format_value(de, testcase[1], orgunit_resolver)

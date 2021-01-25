@@ -61,11 +61,17 @@ def format_value(data_element, raw_value, orgunit_resolver):
         if translated_value == "":
             return None
         try:
+            if isinstance(translated_value, float):
+                return translated_value
+            if isinstance(translated_value, int):
+                return translated_value
             if "." in translated_value:
                 return float(translated_value)
             else:
                 return int(translated_value)
-        except:
+        except Exception as e:
+            import traceback
+
             raise Exception("Bad value for float '" + str(raw_value) + "'", data_element)
 
     if (

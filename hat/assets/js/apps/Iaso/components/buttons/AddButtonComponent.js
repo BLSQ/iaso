@@ -1,8 +1,8 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import Add from '@material-ui/icons/Add';
 import { withStyles, Button } from '@material-ui/core';
+import injectIntl from '../../libs/injectIntl';
 
 import commonStyles from '../../styles/common';
 import MESSAGES from './messages';

@@ -3,6 +3,7 @@ import { defineMessages } from 'react-intl';
 const MESSAGES = defineMessages({
     create: {
         id: 'iaso.label.create',
+        defaultMessage: 'Create',
     },
     back: {
         id: 'iaso.label.back',

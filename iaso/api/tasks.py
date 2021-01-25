@@ -49,7 +49,7 @@ class TaskSourceViewSet(ModelViewSet):
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TaskSerializer
-    results_key = "sources"
+    results_key = "tasks"
     queryset = Task.objects.all()
     http_method_names = ["get", "head", "options", "trace"]
 

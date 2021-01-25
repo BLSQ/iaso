@@ -2,16 +2,18 @@ import React from 'react';
 import PropTypes from 'prop-types';
 import Add from '@material-ui/icons/Add';
 import { withStyles, Button } from '@material-ui/core';
-import injectIntl from '../../libs/intl/injectIntl';
 
 import commonStyles from '../../styles/common';
+import { useSafeIntl } from '../../hooks/intl';
+
 import MESSAGES from './messages';
 
 const styles = theme => ({
     ...commonStyles(theme),
 });
 
-function AddButtonComponent({ classes, intl, onClick, message }) {
+function AddButtonComponent({ classes, onClick, message }) {
+    const intl = useSafeIntl();
     return (
         <Button
             variant="contained"
@@ -28,9 +30,8 @@ AddButtonComponent.defaultProps = {
     message: MESSAGES.create,
 };
 AddButtonComponent.propTypes = {
-    intl: PropTypes.object.isRequired,
     classes: PropTypes.object.isRequired,
     onClick: PropTypes.func.isRequired,
     message: PropTypes.object, // TODO: make a message prop type
 };
-export default withStyles(styles)(injectIntl(AddButtonComponent));
+export default withStyles(styles)(AddButtonComponent);

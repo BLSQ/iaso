@@ -1,20 +1,17 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { useIntl } from 'react-intl';
+import { patchIntl } from './utils';
 
 const FakeComponent = props => {
+    const propsCopy = { ...props };
     const Component = props.component;
-    const intl = useIntl();
-    const intlCopy = { ...intl };
-    const formatMessage = message => {
-        if (message && message.id && message.defaultMessage) {
-            return intlCopy.formatMessage(message);
-        }
-        console.warn('Warning: Message object is not defined properly!');
-        return null;
-    };
-    intl.formatMessage = formatMessage;
-    return <Component {...props} intl={intl} forwardedRef={props.ref} />;
+    const intlCopy = patchIntl(useIntl());
+    delete propsCopy.component;
+    delete propsCopy.ref;
+    return (
+        <Component {...propsCopy} intl={intlCopy} forwardedRef={props.ref} />
+    );
 };
 
 FakeComponent.defaultProps = {

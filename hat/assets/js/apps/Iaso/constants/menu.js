@@ -10,6 +10,7 @@ import DoneAll from '@material-ui/icons/DoneAll';
 import Settings from '@material-ui/icons/Settings';
 import GroupWork from '@material-ui/icons/GroupWork';
 import CategoryIcon from '@material-ui/icons/Category';
+import AssignmentRoundedIcon from '@material-ui/icons/AssignmentRounded';
 
 import OrgUnitSvg from '../components/svg/OrgUnitSvgComponent';
 import DHIS2Svg from '../components/svg/DHIS2SvgComponent';
@@ -108,6 +109,12 @@ const menuItems = [
         key: 'settings',
         icon: props => <Settings {...props} />,
         subMenu: [
+            {
+                label: MESSAGES.tasks,
+                key: 'tasks',
+                permission: paths.tasksPath.permission,
+                icon: props => <AssignmentRoundedIcon {...props} />,
+            },
             {
                 label: MESSAGES.projects,
                 key: 'projects',

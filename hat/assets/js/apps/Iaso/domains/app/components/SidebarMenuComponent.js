@@ -30,7 +30,7 @@ import menuItems from '../../../constants/menu';
 
 import MESSAGES from './messages';
 
-import { userHasPermission, userHasOneOfPermissions } from '../../users/utils';
+import { listMenuPermission, userHasOneOfPermissions } from '../../users/utils';
 
 const styles = theme => ({
     ...commonStyles(theme),
@@ -94,17 +94,12 @@ class SidebarMenu extends PureComponent {
                 <Divider />
                 <List className={classes.list}>
                     {menuItems.map(menuItem => {
+                        const permissionsList = listMenuPermission(menuItem);
                         if (
-                            (menuItem.permission &&
-                                userHasPermission(
-                                    menuItem.permission,
-                                    currentUser,
-                                )) ||
-                            (menuItem.subMenu &&
-                                userHasOneOfPermissions(
-                                    menuItem.subMenu.map(sm => sm.permission),
-                                    currentUser,
-                                ))
+                            userHasOneOfPermissions(
+                                permissionsList,
+                                currentUser,
+                            )
                         ) {
                             return (
                                 <MenuItem

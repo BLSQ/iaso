@@ -17,6 +17,8 @@ import * as paths from './routes';
 
 import MESSAGES from './messages';
 
+// !! remove permission property if the menu has a subMenu !!
+
 const menuItems = [
     {
         label: MESSAGES.formsTitle,
@@ -79,7 +81,6 @@ const menuItems = [
                     },
                     {
                         label: MESSAGES.matching,
-                        permission: paths.linksPath.permission,
                         key: 'links',
                         icon: props => <Link {...props} />,
                         subMenu: [

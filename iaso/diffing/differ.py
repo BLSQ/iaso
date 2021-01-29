@@ -20,8 +20,8 @@ class Differ:
     def __init__(self, logger):
         self.iaso_logger = logger
 
-    def load_pyramid(self, version, validation_status=None):
-        self.iaso_logger.info("loading pyramid ", version.data_source, version)
+    def load_pyramid(self, version, validation_status=None, top_org_unit=None, org_unit_types=None):
+        self.iaso_logger.info("loading pyramid ", version.data_source, version, top_org_unit, org_unit_types)
         queryset = (
             OrgUnit.objects.prefetch_related("groups")
             .prefetch_related("groups__group_sets")
@@ -30,7 +30,11 @@ class Differ:
         )
         if validation_status:
             queryset = queryset.filter(validation_status=validation_status)
-
+        if top_org_unit:
+            parent = OrgUnit.objects.get(id=top_org_unit)
+            queryset = queryset.hierarchy(parent)
+        if org_unit_types:
+            queryset = queryset.filter(org_unit_type__in=org_unit_types)
         return queryset
 
     def diff(
@@ -41,6 +45,10 @@ class Differ:
         show_deleted_org_units=False,
         validation_status=None,
         validation_status_ref=None,
+        top_org_unit=None,
+        top_org_unit_ref=None,
+        org_unit_types=None,
+        org_unit_types_ref=None
     ):
         field_names = ["name", "geometry", "parent"]
         if not ignore_groups:
@@ -49,8 +57,8 @@ class Differ:
         self.iaso_logger.info("will compare the following fields ", field_names)
         field_types = as_field_types(field_names)
 
-        orgunits_dhis2 = self.load_pyramid(version, validation_status=validation_status)
-        orgunit_refs = self.load_pyramid(version_ref, validation_status=validation_status_ref)
+        orgunits_dhis2 = self.load_pyramid(version, validation_status=validation_status, top_org_unit=top_org_unit, org_unit_types=org_unit_types)
+        orgunit_refs = self.load_pyramid(version_ref, validation_status=validation_status_ref, top_org_unit=top_org_unit_ref, org_unit_types=org_unit_types_ref)
         self.iaso_logger.info(
             "comparing ", version_ref, "(", len(orgunits_dhis2), ")", " and ", version, "(", len(orgunit_refs), ")"
         )

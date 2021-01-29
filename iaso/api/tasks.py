@@ -39,19 +39,25 @@ class TaskSerializer(serializers.ModelSerializer):
     created_at = TimestampField(read_only=True)
     started_at = TimestampField(read_only=True)
 
+    def update(self, task, validated_data):
+        if validated_data["should_be_killed"] is not None:
+            task.should_be_killed = validated_data["should_be_killed"]
+            task.save()
+        return task
 
 class TaskSourceViewSet(ModelViewSet):
     """ Task API
 
     GET /api/tasks/
     GET /api/tasks/<id>
+    PATCH /api/tasks/<id>
     """
 
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = TaskSerializer
     results_key = "tasks"
     queryset = Task.objects.all()
-    http_method_names = ["get", "head", "options", "trace"]
+    http_method_names = ["get", "patch", "head", "options", "trace"]
 
     def get_queryset(self):
         profile = self.request.user.iaso_profile

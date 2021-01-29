@@ -1,5 +1,4 @@
 import React from 'react';
-import { injectIntl } from 'react-intl';
 
 import Grid from '@material-ui/core/Grid';
 
@@ -11,6 +10,7 @@ import OrgUnitsLevelsFiltersComponent from './OrgUnitsLevelsFiltersComponent';
 import { commaSeparatedIdsToArray } from '../../../utils/forms';
 
 import MESSAGES from '../../forms/messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const OrgUnitInfosComponent = ({
     orgUnit,

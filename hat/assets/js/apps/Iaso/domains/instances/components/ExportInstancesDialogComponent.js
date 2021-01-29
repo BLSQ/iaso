@@ -1,5 +1,4 @@
 import React from 'react';
-import { injectIntl } from 'react-intl';
 import { bindActionCreators } from 'redux';
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -10,6 +9,8 @@ import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCan
 import { createExportRequest as createExportRequestAction } from '../actions';
 
 import MESSAGES from '../messages';
+
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const ExportInstancesDialogComponent = ({
     isInstancesFilterUpdated,

@@ -1,7 +1,6 @@
 import React from 'react';
 import moment from 'moment';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 
 import { makeStyles } from '@material-ui/core/styles';
 import Popover from '@material-ui/core/Popover';
@@ -13,6 +12,7 @@ import MESSAGES from '../messages';
 import PopupItemComponent from '../../../components/maps/popups/PopupItemComponent';
 
 import { getOrgUnitsTree } from '../../orgUnits/utils';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     popoverPaper: {

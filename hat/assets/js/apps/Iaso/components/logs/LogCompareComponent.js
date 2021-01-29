@@ -1,6 +1,6 @@
 import React, { Fragment } from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
 
 import isEqual from 'lodash/isEqual';
@@ -30,6 +30,8 @@ import { textPlaceholder } from '../../constants/uiConstants';
 
 import MESSAGES from '../../domains/forms/messages';
 import { MESSAGES as LOG_MESSAGES } from './messages';
+
+import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

@@ -2,7 +2,6 @@ import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
 import MarkerClusterGroup from 'react-leaflet-markercluster';
-import { injectIntl, intlShape } from 'react-intl';
 import camelCase from 'lodash/camelCase';
 import isEqual from 'lodash/isEqual';
 
@@ -35,6 +34,7 @@ import { getChipColors } from '../../../constants/chipColors';
 import commonStyles from '../../../styles/common';
 import { getColorsFromParams, decodeSearch } from '../utils';
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const boundsOptions = {
     padding: [50, 50],
@@ -331,7 +331,7 @@ OrgunitsMap.propTypes = {
     currentTile: PropTypes.object.isRequired,
     resetMapReducer: PropTypes.func.isRequired,
     isClusterActive: PropTypes.bool.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
     setCurrentSubOrgUnit: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
     orgUnitTypes: PropTypes.array.isRequired,

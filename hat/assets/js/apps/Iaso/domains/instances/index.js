@@ -1,8 +1,6 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { injectIntl } from 'react-intl';
-
 import { withStyles, Tabs, Grid, Tab, Box } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
@@ -64,6 +62,7 @@ import getTableUrl from '../../utils/tableUtils';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.instances;
 

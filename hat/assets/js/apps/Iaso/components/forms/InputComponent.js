@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import Select from 'react-select';
 import SearchIcon from '@material-ui/icons/Search';
 import Edit from '@material-ui/icons/Edit';
@@ -22,6 +21,7 @@ import ArrayFieldInput from './ArrayFieldInput';
 import InputLabelComponent from './InputLabelComponent';
 import FormControlComponent from './FormControlComponent';
 import { translateOptions } from '../../utils/intlUtil';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     select: {

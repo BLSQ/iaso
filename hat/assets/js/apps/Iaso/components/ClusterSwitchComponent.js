@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import PropTypes from 'prop-types';
-import { defineMessages, FormattedMessage, injectIntl } from 'react-intl';
+import { defineMessages, FormattedMessage } from 'react-intl';
 
 const MESSAGES = defineMessages({
     withCluster: {
@@ -58,4 +58,4 @@ ClusterSwitchComponent.propTypes = {
     message: PropTypes.string.isRequired,
 };
 
-export default injectIntl(ClusterSwitchComponent);
+export default ClusterSwitchComponent;

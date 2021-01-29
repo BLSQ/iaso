@@ -1,6 +1,5 @@
 import React, { Component, Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
@@ -43,6 +42,7 @@ import commonStyles from '../../styles/common';
 import { baseUrls } from '../../constants/urls';
 
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const baseUrl = baseUrls.links;
 

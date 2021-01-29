@@ -1,6 +1,6 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import moment from 'moment';
 
 import { withStyles, TableCell, TableRow } from '@material-ui/core';
@@ -11,6 +11,7 @@ import { getOrgUnitParentsString } from '../../orgUnits/utils';
 
 import MESSAGES from '../../forms/messages';
 import { MESSAGES as LINKS_MESSAGES } from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     cell: {

@@ -2,10 +2,10 @@ import React from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import SpeedDial from '@material-ui/lab/SpeedDial';
 import SpeedDialAction from '@material-ui/lab/SpeedDialAction';
-import { injectIntl } from 'react-intl';
 import PropTypes from 'prop-types';
 import EditIcon from '@material-ui/icons/Edit';
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     speedDial: {

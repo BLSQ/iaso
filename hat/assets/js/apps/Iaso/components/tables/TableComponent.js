@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { withStyles, Checkbox } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import ReactTable, { ReactTableDefaults } from 'react-table';
@@ -21,6 +21,7 @@ import commonStyles from '../../styles/common';
 import customTableTranslations from '../../constants/customTableTranslations';
 import SelectionSpeedDials from './SelectionSpeedDials';
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 /**
  * Table component, no redux, no fetch, just displaying.

@@ -1,6 +1,5 @@
 import React, { Fragment } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 
 import List from '@material-ui/core/List';
 import ListItem from '@material-ui/core/ListItem';
@@ -16,6 +15,7 @@ import { setCurrentTile } from '../../../redux/mapReducer';
 
 import tiles from '../../../constants/mapTiles';
 import commonStyles from '../../../styles/common';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 import MESSAGES from '../messages';
 

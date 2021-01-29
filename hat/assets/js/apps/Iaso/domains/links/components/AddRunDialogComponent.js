@@ -1,7 +1,7 @@
 import React, { Fragment, Component } from 'react';
 
 import PropTypes from 'prop-types';
-import { FormattedMessage, injectIntl } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 import { connect } from 'react-redux';
 
 import Add from '@material-ui/icons/Add';
@@ -19,6 +19,7 @@ import commonStyles from '../../../styles/common';
 import InputComponent from '../../../components/forms/InputComponent';
 
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

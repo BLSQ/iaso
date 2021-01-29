@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import PropTypes from 'prop-types';
 import { connect } from 'react-redux';
@@ -33,6 +33,7 @@ import { getOrgUnitParentsIds } from '../../orgUnits/utils';
 import { INSTANCE_STATUSES } from '../constants';
 import { setInstancesFilterUpdated as setInstancesFilterAction } from '../actions';
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 export const instanceStatusOptions = INSTANCE_STATUSES.map(status => ({
     value: status,

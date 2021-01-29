@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
-import { injectIntl } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 import Box from '@material-ui/core/Paper';
@@ -24,6 +23,7 @@ import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import LoadingSpinner from '../../components/LoadingSpinnerComponent';
 
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 import { baseUrls } from '../../constants/urls';
 

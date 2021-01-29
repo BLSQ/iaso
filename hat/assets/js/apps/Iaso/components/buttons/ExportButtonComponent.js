@@ -1,12 +1,12 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import CallMade from '@material-ui/icons/CallMade';
 
 import { withStyles, Button } from '@material-ui/core';
 
 import commonStyles from '../../styles/common';
 import MESSAGES from './messages';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

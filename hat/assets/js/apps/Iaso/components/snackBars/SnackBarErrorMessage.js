@@ -2,12 +2,12 @@ import React from 'react';
 import { Button, Tooltip, makeStyles } from '@material-ui/core';
 
 import PropTypes from 'prop-types';
-import { injectIntl } from 'react-intl';
 import { useDispatch } from 'react-redux';
 
 import MESSAGES from './messages';
 import commonStyles from '../../styles/common';
 import { closeFixedSnackbar } from '../../redux/snackBarsReducer';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const useStyles = makeStyles(theme => ({
     ...commonStyles(theme),

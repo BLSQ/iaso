@@ -1,5 +1,4 @@
 import React from 'react';
-import { injectIntl } from 'react-intl';
 import { Divider } from '@material-ui/core';
 import PropTypes from 'prop-types';
 import moment from 'moment';
@@ -9,6 +8,7 @@ import { textPlaceholder } from '../../../constants/uiConstants';
 import IconButtonComponent from '../../../components/buttons/IconButtonComponent';
 import WidgetPaper from '../../../components/papers/WidgetPaperComponent';
 import InstanceDetailsField from './InstanceDetailsField';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const formatUnixTimestamp = unix =>
     unix ? moment.unix(unix).format('DD/MM/YYYY HH:mm') : textPlaceholder;

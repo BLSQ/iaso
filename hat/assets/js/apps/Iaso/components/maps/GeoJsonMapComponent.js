@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import L from 'leaflet';
 import { Map, TileLayer, GeoJSON } from 'react-leaflet';
-import { injectIntl, intlShape } from 'react-intl';
 
 import { withStyles } from '@material-ui/core';
 
@@ -11,6 +10,7 @@ import { customZoomBar } from '../../utils/mapUtils';
 
 import tiles from '../../constants/mapTiles';
 import commonStyles from '../../styles/common';
+import injectIntl from '../../libs/intl/injectIntl';
 
 const boundsOptions = { padding: [20, 20] };
 
@@ -91,7 +91,7 @@ class GeoJsonMap extends Component {
 GeoJsonMap.propTypes = {
     classes: PropTypes.object.isRequired,
     geoJson: PropTypes.object.isRequired,
-    intl: intlShape.isRequired,
+    intl: PropTypes.object.isRequired,
 };
 
 export default withStyles(styles)(injectIntl(GeoJsonMap));

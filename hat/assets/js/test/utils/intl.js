@@ -7,8 +7,6 @@ const mock = require('mock-require');
 export const mockMessages = () => {
     mock('__intl/messages/fr', []);
     mock('__intl/messages/en', []);
-    mock('__intl/localeData/fr', []);
-    mock('__intl/localeData/en', []);
 };
 
 export const renderWithIntl = component => (

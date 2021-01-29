@@ -58,7 +58,7 @@ case "$1" in
       ./manage.py migrate --noinput
       npm run webpack-prod
       ./manage.py collectstatic --noinput
-      ./scripts/start_web.sh
+      ./manage.py runserver 0.0.0.0:8080
     else
       export DEV_SERVER=true
       export SHOW_DEBUG_TOOLBAR=true

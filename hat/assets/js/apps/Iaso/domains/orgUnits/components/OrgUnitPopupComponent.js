@@ -3,7 +3,7 @@ import { connect } from 'react-redux';
 
 import { Popup } from 'react-leaflet';
 import { Link } from 'react-router';
-import { injectIntl, FormattedMessage } from 'react-intl';
+import { FormattedMessage } from 'react-intl';
 
 import {
     withStyles,
@@ -29,6 +29,7 @@ import mapPopupStyles from '../../../styles/mapPopup';
 import { baseUrls } from '../../../constants/urls';
 
 import MESSAGES from '../messages';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

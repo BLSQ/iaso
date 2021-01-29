@@ -1,5 +1,4 @@
 import React, { Fragment } from 'react';
-import { injectIntl } from 'react-intl';
 import { Link } from 'react-router';
 
 import {
@@ -18,6 +17,7 @@ import PropTypes from 'prop-types';
 import commonStyles from '../../../styles/common';
 import muiTheme from '../../../utils/theme';
 import { userHasPermission } from '../../users/utils';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     ...commonStyles(theme),

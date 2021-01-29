@@ -5,7 +5,6 @@ import { connect } from 'react-redux';
 import PropTypes from 'prop-types';
 import { bindActionCreators } from 'redux';
 import { Tabs, Tab, withStyles } from '@material-ui/core';
-import { injectIntl } from 'react-intl';
 
 import ConfirmCancelDialogComponent from '../../../components/dialogs/ConfirmCancelDialogComponent';
 
@@ -19,6 +18,7 @@ import MESSAGES from '../messages';
 import UsersLocations from './UsersLocations';
 
 import PermissionsSwitches from './PermissionsSwitches';
+import injectIntl from '../../../libs/intl/injectIntl';
 
 const styles = theme => ({
     tabs: {

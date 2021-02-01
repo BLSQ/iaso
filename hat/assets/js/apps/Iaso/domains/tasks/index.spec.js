@@ -5,12 +5,13 @@ import TasksList from './index';
 
 import { mockGetRequestsList } from '../../../../test/utils/requests';
 import { renderWithStore } from '../../../../test/utils/redux';
+import { renderWithMuiTheme } from '../../../../test/utils/muiTheme';
 
 const requests = [
     {
         url: '/api/tasks/?order=created_at&limit=20&page=1',
         body: {
-            sources: [],
+            tasks: [],
         },
     },
 ];
@@ -24,7 +25,7 @@ describe('Tasks component', () => {
 
     it('mounts properly', () => {
         const connectedWrapper = mount(
-            renderWithStore(<TasksList params={{}} />),
+            renderWithMuiTheme(renderWithStore(<TasksList params={{}} />)),
         );
         expect(connectedWrapper.exists()).to.equal(true);
     });

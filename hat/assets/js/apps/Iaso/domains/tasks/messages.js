@@ -33,21 +33,17 @@ const MESSAGES = defineMessages({
         defaultMessage: 'UNKNOWN',
         id: 'iaso.tasks.unknown',
     },
-    progressLabel: {
-        defaultMessage: 'lignes copiées',
-        id: 'iaso.tasks.progressLabel',
-    },
     timeCreated: {
         defaultMessage: 'Date de création',
-        id: 'iaso.tasks.dateStart',
+        id: 'iaso.tasks.timeCreated',
     },
     timeStart: {
         defaultMessage: 'Date de début',
-        id: 'iaso.tasks.dateStart',
+        id: 'iaso.tasks.timeStart',
     },
     timeEnd: {
         defaultMessage: 'Date de fin',
-        id: 'iaso.tasks.dateEnd',
+        id: 'iaso.tasks.timeEnd',
     },
     tasks: {
         defaultMessage: 'Tasks',
@@ -60,6 +56,14 @@ const MESSAGES = defineMessages({
     progress: {
         defaultMessage: 'Progress',
         id: 'iaso.tasks.progress',
+    },
+    refresh: {
+        defaultMessage: 'Refresh',
+        id: 'iaso.label.refresh',
+    },
+    actions: {
+        defaultMessage: 'Action(s)',
+        id: 'iaso.label.actions',
     },
     message: {
         defaultMessage: 'Message',

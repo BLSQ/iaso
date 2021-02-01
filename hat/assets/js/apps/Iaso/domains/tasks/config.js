@@ -1,5 +1,6 @@
 import React from 'react';
 import Chip from '@material-ui/core/Chip';
+import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import MESSAGES from './messages';
 
@@ -34,10 +35,15 @@ const tasksTableColumns = (formatMessage, component) => [
         accessor: 'progress',
         Cell: settings => (
             <span>
-                {settings.original.status === 'RUNNING'
+                {settings.original.status === 'RUNNING' &&
+                settings.original.end_value > 0
                     ? `${settings.original.progress_value}/${
                           settings.original.end_value
-                      } ${formatMessage(MESSAGES.progressLabel)}`
+                      } (${Math.round(
+                          (settings.original.progress_value /
+                              settings.original.end_value) *
+                              100,
+                      )}%)`
                     : '-'}
             </span>
         ),
@@ -58,9 +64,7 @@ const tasksTableColumns = (formatMessage, component) => [
         accessor: 'created_at',
         Cell: settings => (
             <span>
-                {settings.original.started_at === null
-                    ? '-'
-                    : displayDateFromTimestamp(settings.original.created_at)}
+                {displayDateFromTimestamp(settings.original.created_at)}
             </span>
         ),
     },
@@ -88,6 +92,25 @@ const tasksTableColumns = (formatMessage, component) => [
                     : displayDateFromTimestamp(settings.original.ended_at)}
             </span>
         ),
+    },
+    {
+        Header: formatMessage(MESSAGES.actions),
+        resizable: false,
+        sortable: false,
+        width: 150,
+        Cell: settings => {
+            return (
+                <section>
+                    <IconButtonComponent
+                        onClick={() =>
+                            component.refreshTask(settings.original.id)
+                        }
+                        icon="refresh"
+                        tooltipMessage={MESSAGES.refresh}
+                    />
+                </section>
+            );
+        },
     },
 ];
 export default tasksTableColumns;

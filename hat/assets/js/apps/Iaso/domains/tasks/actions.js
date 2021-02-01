@@ -1,5 +1,6 @@
-import { fetchAction } from '../../redux/actions/formsActions';
+import { fetchAction, retrieveAction } from '../../redux/actions/formsActions';
 
+export const SET_CURRENT_TASK = 'SET_CURRENT_TASK';
 export const SET_ALL_TASKS = 'SET_ALL_TASKS';
 export const SET_IS_FETCHING_TASKS = 'SET_IS_FETCHING_TASKS';
 
@@ -10,6 +11,11 @@ export const setAllTasks = (list, { count, pages }) => ({
         count,
         pages,
     },
+});
+
+export const setCurrentTask = payload => ({
+    type: SET_CURRENT_TASK,
+    payload,
 });
 
 export const setIsFetching = fetching => ({
@@ -27,5 +33,15 @@ export const fetchAllTasks = params => dispatch =>
         'fetchTasksError',
         'tasks',
         params,
+        setIsFetching,
+    );
+
+export const refreshTask = id => dispatch =>
+    retrieveAction(
+        dispatch,
+        apiKey,
+        id,
+        setCurrentTask,
+        'retrieveTaskError',
         setIsFetching,
     );

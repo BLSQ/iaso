@@ -10,6 +10,7 @@ import RemoveRedEye from '@material-ui/icons/RemoveRedEye';
 import Edit from '@material-ui/icons/Edit';
 import History from '@material-ui/icons/History';
 import Map from '@material-ui/icons/Map';
+import CachedRoundedIcon from '@material-ui/icons/CachedRounded';
 import XmlSvg from '../svg/XmlSvgComponent';
 import DHIS2Svg from '../svg/DHIS2SvgComponent';
 import OrgUnitSvg from '../svg/OrgUnitSvgComponent';
@@ -27,6 +28,7 @@ const ICON_VARIANTS = {
     xml: XmlSvg,
     dhis: DHIS2Svg,
     orgUnit: OrgUnitSvg,
+    refresh: CachedRoundedIcon,
 };
 
 const styles = theme => ({

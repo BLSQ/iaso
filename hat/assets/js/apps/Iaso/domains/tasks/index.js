@@ -5,7 +5,10 @@ import { connect } from 'react-redux';
 import { injectIntl } from 'react-intl';
 import { withStyles, Box } from '@material-ui/core';
 
-import { fetchAllTasks as fetchAllTasksAction } from './actions';
+import {
+    fetchAllTasks as fetchAllTasksAction,
+    refreshTask as refreshTaskAction,
+} from './actions';
 
 import CustomTableComponent from '../../components/CustomTableComponent';
 import TopBar from '../../components/nav/TopBarComponent';
@@ -28,7 +31,7 @@ const styles = theme => ({
     },
 });
 
-class DataSources extends Component {
+class Tasks extends Component {
     componentDidMount() {
         const { params, fetchAllTasks } = this.props;
 
@@ -56,6 +59,10 @@ class DataSources extends Component {
 
             fetchAllTasks(requestParams);
         }
+    }
+
+    refreshTask(id) {
+        return this.props.refreshTask(id);
     }
 
     render() {
@@ -97,15 +104,16 @@ class DataSources extends Component {
     }
 }
 
-DataSources.defaultProps = {
+Tasks.defaultProps = {
     reduxPage: undefined,
 };
 
-DataSources.propTypes = {
+Tasks.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
     params: PropTypes.object.isRequired,
     fetchAllTasks: PropTypes.func.isRequired,
+    refreshTask: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     reduxPage: PropTypes.object,
 };
@@ -126,11 +134,12 @@ const mapDispatchToProps = dispatch => ({
     ...bindActionCreators(
         {
             fetchAllTasks: fetchAllTasksAction,
+            refreshTask: refreshTaskAction,
         },
         dispatch,
     ),
 });
 
 export default withStyles(styles)(
-    connect(MapStateToProps, mapDispatchToProps)(injectIntl(DataSources)),
+    connect(MapStateToProps, mapDispatchToProps)(injectIntl(Tasks)),
 );

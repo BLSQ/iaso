@@ -33,6 +33,10 @@ const SingleTable = ({
     fetchItems,
     subComponent,
     defaultSorted,
+    dataKey,
+    exportButtons,
+    forceRefresh,
+    onForceRefreshDone,
 }) => {
     const [loading, setLoading] = useState(false);
     const [tableResults, setTableResults] = useState(tableInitialResult);
@@ -55,7 +59,7 @@ const SingleTable = ({
         fetchItems(dispatch, url).then(res => {
             setLoading(false);
             setTableResults({
-                data: res[endPointPath],
+                data: res[dataKey !== '' ? dataKey : endPointPath],
                 count: res.count,
                 pages: res.pages,
             });
@@ -72,6 +76,13 @@ const SingleTable = ({
         params[getParamsKey(paramsPrefix, 'page')],
         params[getParamsKey(paramsPrefix, 'order')],
     ]);
+
+    useEffect(() => {
+        if (forceRefresh) {
+            handleFetch();
+            onForceRefreshDone();
+        }
+    }, [forceRefresh]);
 
     const { data, pages, count } = tableResults;
     const { limit } = tableParams;
@@ -98,7 +109,7 @@ const SingleTable = ({
                     filters={filters}
                 />
             )}
-            {count > 0 && (
+            {count > 0 && exportButtons && (
                 <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
                     <DownloadButtonsComponent
                         csvUrl={getExportUrl('csv')}
@@ -134,6 +145,10 @@ SingleTable.defaultProps = {
     defaultSorted: [{ id: 'name', desc: false }],
     subComponent: null,
     columns: [],
+    dataKey: '',
+    exportButtons: true,
+    forceRefresh: false,
+    onForceRefreshDone: () => null,
 };
 
 SingleTable.propTypes = {
@@ -147,6 +162,10 @@ SingleTable.propTypes = {
     filters: PropTypes.array,
     columns: PropTypes.oneOfType([PropTypes.array, PropTypes.func]),
     defaultSorted: PropTypes.array,
+    dataKey: PropTypes.string,
+    exportButtons: PropTypes.bool,
+    forceRefresh: PropTypes.bool,
+    onForceRefreshDone: PropTypes.func,
 };
 
 export default withRouter(SingleTable);

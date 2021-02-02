@@ -161,6 +161,17 @@ export const fetchOrgUnitsList = (dispatch, url) =>
             throw error;
         });
 
+export const fetchLogs = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(errorSnackBar('fetchLogsError', null, error)),
+            );
+            console.error('Error while fetching logs list:', error);
+            throw error;
+        });
+
 export const fetchInstancesAsLocationsByForm = (
     dispatch,
     form,

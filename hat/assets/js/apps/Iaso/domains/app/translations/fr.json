@@ -321,6 +321,7 @@
     "iaso.snackBar.deleteUserError": "Une erreur est survenue en effaçant un groupe",
     "iaso.snackBar.deleteUserSuccessful": "Profil effacé avec succès",
     "iaso.snackBar.error": "Impossible de sauvegarder",
+    "iaso.snackBar.fetchLogsError": "Une erreur est survenue en récupérant la liste des logs",
     "iaso.snackBar.fetchAlgorithmsError": "Une erreur est survenue en récupérant la liste des algorithmes",
     "iaso.snackBar.fetchCompletenessError": "Une erreur est survenue en récupérant la complétude des données",
     "iaso.snackBar.fetchCurrentUser": "Une erreur est survenue en récupérant l'utilisateur",

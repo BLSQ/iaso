@@ -320,6 +320,8 @@
     "iaso.snackBar.deleteOrgUnitTypeError": "An error occurred while deleting org unit type",
     "iaso.snackBar.deleteOrgUnitTypeSuccesfull": "Org unit type deleted successfully",
     "iaso.snackBar.deleteRun": "An error occurred while deleting algorithms run",
+    "iaso.snackBar.fetchMappingsError": "An error occurred while fetching mappings",
+    "iaso.snackBar.fetchLogsError": "An error occurred while fetching logs",
     "iaso.snackBar.deleteUserError": "An error occurred while deleting user profile",
     "iaso.snackBar.deleteUserSuccessful": "User deleted",
     "iaso.snackBar.error": "An error occurred while saving",

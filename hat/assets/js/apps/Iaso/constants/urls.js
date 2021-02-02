@@ -14,6 +14,7 @@ export const baseUrls = {
     users: 'settings/users',
     projects: 'settings/projects',
     sources: 'orgunits/sources/list',
+    tasks: 'settings/tasks',
     error401: '401',
     error404: '404',
     error500: '500',

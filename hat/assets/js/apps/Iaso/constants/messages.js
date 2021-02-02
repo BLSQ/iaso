@@ -42,7 +42,7 @@ const MESSAGES = defineMessages({
         id: 'iaso.label.algorithmsRuns',
     },
     config: {
-        defaultMessage: 'Configuration',
+        defaultMessage: 'Admin',
         id: 'iaso.label.config',
     },
     users: {
@@ -52,6 +52,10 @@ const MESSAGES = defineMessages({
     projects: {
         defaultMessage: 'Projects',
         id: 'iaso.label.projects',
+    },
+    tasks: {
+        defaultMessage: 'Tasks',
+        id: 'iaso.label.tasks',
     },
 });
 

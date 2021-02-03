@@ -35,8 +35,6 @@ const Logs = ({ goToRevision, logObjectId }) => {
                 objectId: logObjectId,
                 source: 'org_unit_api',
             }}
-            filters={[]}
-            paramsPrefix=""
             baseUrl={baseUrl}
             endPointPath="logs"
             exportButtons={false}

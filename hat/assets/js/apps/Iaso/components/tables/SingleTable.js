@@ -149,10 +149,15 @@ SingleTable.defaultProps = {
     exportButtons: true,
     forceRefresh: false,
     onForceRefreshDone: () => null,
+    params: {
+        pageSize: 10,
+        page: 1,
+        order: '-created_at',
+    },
 };
 
 SingleTable.propTypes = {
-    params: PropTypes.object.isRequired,
+    params: PropTypes.object,
     paramsPrefix: PropTypes.string,
     baseUrl: PropTypes.string,
     fetchItems: PropTypes.func.isRequired,

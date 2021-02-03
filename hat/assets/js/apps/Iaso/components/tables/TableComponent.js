@@ -321,12 +321,17 @@ Table.defaultProps = {
     setTableSelection: () => null,
     extraProps: null,
     paramsPrefix: '',
+    params: {
+        pageSize: 10,
+        page: 1,
+        order: '-created_at',
+    },
 };
 
 Table.propTypes = {
     classes: PropTypes.object.isRequired,
     intl: PropTypes.object.isRequired,
-    params: PropTypes.object.isRequired,
+    params: PropTypes.object,
     count: PropTypes.number,
     pages: PropTypes.number.isRequired,
     defaultSorted: PropTypes.array,

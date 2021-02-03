@@ -172,6 +172,19 @@ export const fetchLogs = (dispatch, url) =>
             throw error;
         });
 
+export const fetchAllDataSources = (dispatch, url) =>
+    getRequest(url)
+        .then(data => data)
+        .catch(error => {
+            dispatch(
+                enqueueSnackbar(
+                    errorSnackBar('fetchDataSourcesError', null, error),
+                ),
+            );
+            console.error('Error while fetching data sources list:', error);
+            throw error;
+        });
+
 export const fetchInstancesAsLocationsByForm = (
     dispatch,
     form,

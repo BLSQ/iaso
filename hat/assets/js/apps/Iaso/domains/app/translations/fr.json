@@ -366,6 +366,9 @@
     "iaso.snackBar.updateFormError": "Une erreur est survenue en sauvant le formulaire",
     "iaso.snackBar.fetchTasksError": "Une erreur est survenue en récupérant la liste des tâches",
     "iaso.snackBar.retrieveTaskError": "Une erreur est survenue en récupérant une tâche",
+    "iaso.snackBar.patchTaskSuccess": "La tâche a été mise à jour.",
+    "iaso.snackBar.patchTaskError": "Erreur survenue lors de la mise à jour de la tâche.",
+    "iaso.snackBar.ignoredTaskErrorCode": "Mise à jour ignoré",
     "iaso.SSC": "Site de santé communautaire",
     "iaso.table.columnSelect.tooltip": "Colonnes visibles",
     "iaso.tile.arcgis.satellite": "ArcGIS Satellite Map",
@@ -484,5 +487,7 @@
     "iaso.label.tasks": "Tâches",
     "iaso.tasks.status": "Nom & état",
     "iaso.tasks.progress": "Avancement",
-    "iaso.tasks.message": "Message"
+    "iaso.tasks.message": "Message",
+    "iaso.tasks.killTask": "Arrêter la tâche",
+    "iaso.tasks.killSignalSent": "Signal d'arrêt envoyé"
 }

@@ -662,6 +662,7 @@ class Instance(models.Model):
     objects = InstanceQuerySet.as_manager()
 
     deleted = models.BooleanField(default=False)
+    to_export = models.BooleanField(default=False)
 
     def convert_location_from_field(self, field_name=None):
         f = field_name
@@ -880,7 +881,7 @@ class InstanceFile(models.Model):
 class Profile(models.Model):
     account = models.ForeignKey(Account, on_delete=models.CASCADE)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="iaso_profile")
-
+    external_user_id = models.CharField(max_length=512, null=True, blank=True)
     org_units = models.ManyToManyField("OrgUnit", blank=True, related_name="iaso_profile")
 
     def __str__(self):

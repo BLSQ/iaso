@@ -1,6 +1,7 @@
 import typing
 from django.contrib.auth.models import User
 from django.db import models
+from uuid import uuid4
 
 
 class ProjectQuerySet(models.QuerySet):
@@ -45,7 +46,7 @@ class Project(models.Model):
     feature_flags = models.ManyToManyField("FeatureFlag", related_name="+", blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
+    external_token = models.UUIDField(default=uuid4, null=True)
     objects = ProjectQuerySet.as_manager()
 
     def __str__(self):

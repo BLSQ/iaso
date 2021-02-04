@@ -5,8 +5,6 @@ export const formsInitialState = {
     isLoading: false,
     formsPage: {
         list: null,
-        showPagination: false,
-        params: {},
         count: 0,
         pages: 0,
     },
@@ -15,19 +13,11 @@ export const formsInitialState = {
 export const formsReducer = (state = formsInitialState, action = {}) => {
     switch (action.type) {
         case SET_FORMS: {
-            const {
-                list,
-                showPagination,
-                params,
-                count,
-                pages,
-            } = action.payload;
+            const { list, count, pages } = action.payload;
             return {
                 ...state,
                 formsPage: {
                     list,
-                    showPagination,
-                    params,
                     count,
                     pages,
                 },

@@ -90,11 +90,12 @@ const styles = theme => ({
 });
 
 class Table extends Component {
-    componentWillMount() {
+    constructor(props) {
+        super(props);
         const {
             intl: { formatMessage },
             setTableSelection,
-        } = this.props;
+        } = props;
         setTableSelection('reset');
         Object.assign(
             ReactTableDefaults,

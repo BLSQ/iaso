@@ -37,8 +37,14 @@ const SingleTable = ({
     exportButtons,
     forceRefresh,
     onForceRefreshDone,
+    extraComponent,
+    hideGpkg,
+    onDataLoaded,
+    results,
+    defaultPageSize,
 }) => {
     const [loading, setLoading] = useState(false);
+    const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const [expanded, setExpanded] = useState({});
 
@@ -51,19 +57,30 @@ const SingleTable = ({
         filters,
         apiParams,
         defaultSorted,
+        defaultPageSize,
     );
 
     const handleFetch = () => {
-        const url = getTableUrl(endPointPath, tableParams);
-        setLoading(true);
-        fetchItems(dispatch, url).then(res => {
-            setLoading(false);
-            setTableResults({
-                data: res[dataKey !== '' ? dataKey : endPointPath],
-                count: res.count,
-                pages: res.pages,
+        if (results && results.list && firstLoad) {
+            setTableResults(results);
+        } else {
+            const url = getTableUrl(endPointPath, tableParams);
+            setLoading(true);
+            fetchItems(dispatch, url).then(res => {
+                setLoading(false);
+                const r = {
+                    list: res[dataKey !== '' ? dataKey : endPointPath],
+                    count: res.count,
+                    pages: res.pages,
+                };
+                onDataLoaded(r);
+                setTableResults(r);
             });
-        });
+        }
+
+        if (firstLoad) {
+            setfFrstLoad(false);
+        }
     };
 
     const getExportUrl = exportType =>
@@ -84,11 +101,11 @@ const SingleTable = ({
         }
     }, [forceRefresh]);
 
-    const { data, pages, count } = tableResults;
+    const { list, pages, count } = tableResults;
     const { limit } = tableParams;
     let extraProps = {
         loading,
-        defaultPageSize: limit,
+        defaultPageSize: defaultPageSize || limit,
     };
     if (subComponent) {
         extraProps = {
@@ -111,16 +128,17 @@ const SingleTable = ({
             )}
             {count > 0 && exportButtons && (
                 <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
+                    {extraComponent}
                     <DownloadButtonsComponent
                         csvUrl={getExportUrl('csv')}
                         xlsxUrl={getExportUrl('xlsx')}
-                        gpkgUrl={getExportUrl('gpkg')}
+                        gpkgUrl={!hideGpkg ? getExportUrl('gpkg') : null}
                     />
                 </Box>
             )}
             <Table
                 count={count}
-                data={data}
+                data={list || []}
                 pages={pages}
                 defaultSorted={defaultSorted}
                 columns={
@@ -154,6 +172,11 @@ SingleTable.defaultProps = {
         page: 1,
         order: '-created_at',
     },
+    extraComponent: <></>,
+    hideGpkg: false,
+    onDataLoaded: () => null,
+    results: undefined,
+    defaultPageSize: 0,
 };
 
 SingleTable.propTypes = {
@@ -170,7 +193,12 @@ SingleTable.propTypes = {
     dataKey: PropTypes.string,
     exportButtons: PropTypes.bool,
     forceRefresh: PropTypes.bool,
+    hideGpkg: PropTypes.bool,
     onForceRefreshDone: PropTypes.func,
+    extraComponent: PropTypes.node,
+    onDataLoaded: PropTypes.func,
+    results: PropTypes.object,
+    defaultPageSize: PropTypes.number,
 };
 
 export default withRouter(SingleTable);

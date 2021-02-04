@@ -10,8 +10,6 @@ describe('Forms reducer', () => {
     it('should respond to SET_FORMS', () => {
         const payload = {
             list: [],
-            showPagination: true,
-            params: {},
             count: 0,
             pages: 1,
         };

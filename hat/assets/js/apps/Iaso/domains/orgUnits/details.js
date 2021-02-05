@@ -553,15 +553,13 @@ class OrgUnitDetail extends Component {
                             </Box>
                         </div>
                         {tab === 'history' && (
-                            <Box className={classes.containerFullHeightPadded}>
-                                <Logs
-                                    params={params}
-                                    logObjectId={currentOrgUnit.id}
-                                    goToRevision={orgUnitRevision =>
-                                        this.goToRevision(orgUnitRevision)
-                                    }
-                                />
-                            </Box>
+                            <Logs
+                                params={params}
+                                logObjectId={currentOrgUnit.id}
+                                goToRevision={orgUnitRevision =>
+                                    this.goToRevision(orgUnitRevision)
+                                }
+                            />
                         )}
                         {tab === 'forms' && (
                             <Box className={classes.containerFullHeightPadded}>

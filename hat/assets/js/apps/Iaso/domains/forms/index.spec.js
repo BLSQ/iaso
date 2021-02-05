@@ -1,9 +1,9 @@
 import React from 'react';
 import nock from 'nock';
-import { Provider, connect } from 'react-redux';
-import { defineMessages, injectIntl } from 'react-intl';
+// import { Provider, connect } from 'react-redux';
+// import { defineMessages, injectIntl } from 'react-intl';
 
-import { shallow } from 'enzyme';
+// import { shallow } from 'enzyme';
 import Forms from './index';
 import TopBar from '../../components/nav/TopBarComponent';
 import SingleTable from '../../components/tables/SingleTable';
@@ -33,9 +33,9 @@ const requests = [
 
 let connectedWrapper;
 
-const mock = require('mock-require');
+// const mock = require('mock-require');
 
-describe.only('Forms connected component', () => {
+describe('Forms connected component', () => {
     before(() => {
         nock.cleanAll();
         nock.abortPendingRequests();

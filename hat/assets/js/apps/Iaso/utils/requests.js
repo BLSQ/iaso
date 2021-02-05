@@ -396,8 +396,8 @@ export const fetchLinks = (dispatch, url) =>
             throw error;
         });
 
-export const fetchAlgorithmRuns = dispatch =>
-    getRequest('/api/algorithmsruns/')
+export const fetchAlgorithmRuns = (dispatch, url = '/api/algorithmsruns/') =>
+    getRequest(url)
         .then(algorithms => algorithms)
         .catch(error => {
             dispatch(

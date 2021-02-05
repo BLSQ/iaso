@@ -38,12 +38,16 @@ const SingleTable = ({
     forceRefresh,
     onForceRefreshDone,
     extraComponent,
+    searchExtraComponent,
     hideGpkg,
     onDataLoaded,
     results,
     defaultPageSize,
+    searchActive,
+    toggleActiveSearch,
 }) => {
     const [loading, setLoading] = useState(false);
+    const [didFetchData, setDidFetchData] = useState(false);
     const [firstLoad, setfFrstLoad] = useState(true);
     const [tableResults, setTableResults] = useState(tableInitialResult);
     const [expanded, setExpanded] = useState({});
@@ -75,6 +79,7 @@ const SingleTable = ({
                 };
                 onDataLoaded(r);
                 setTableResults(r);
+                setDidFetchData(true);
             });
         }
 
@@ -87,7 +92,11 @@ const SingleTable = ({
         getTableUrl(endPointPath, tableParams, true, exportType);
 
     useEffect(() => {
-        handleFetch();
+        if (!firstLoad || (searchActive && firstLoad)) {
+            handleFetch();
+        } else if (!searchActive && firstLoad) {
+            setfFrstLoad(false);
+        }
     }, [
         params[getParamsKey(paramsPrefix, 'pageSize')],
         params[getParamsKey(paramsPrefix, 'page')],
@@ -124,33 +133,46 @@ const SingleTable = ({
                     onSearch={() => handleFetch()}
                     paramsPrefix={paramsPrefix}
                     filters={filters}
+                    defaultFiltersUpdated={searchActive}
+                    toggleActiveSearch={toggleActiveSearch}
+                    extraComponent={searchExtraComponent}
                 />
             )}
-            {count > 0 && exportButtons && (
+            {((count > 0 && exportButtons) || extraComponent) && (
                 <Box mb={2} mt={2} display="flex" justifyContent="flex-end">
                     {extraComponent}
-                    <DownloadButtonsComponent
-                        csvUrl={getExportUrl('csv')}
-                        xlsxUrl={getExportUrl('xlsx')}
-                        gpkgUrl={!hideGpkg ? getExportUrl('gpkg') : null}
-                    />
+
+                    {count > 0 && exportButtons && (
+                        <DownloadButtonsComponent
+                            csvUrl={getExportUrl('csv')}
+                            xlsxUrl={getExportUrl('xlsx')}
+                            gpkgUrl={!hideGpkg ? getExportUrl('gpkg') : null}
+                        />
+                    )}
                 </Box>
             )}
-            <Table
-                count={count}
-                data={list || []}
-                pages={pages}
-                defaultSorted={defaultSorted}
-                columns={
-                    Array.isArray(columns) ? columns : columns(handleFetch)
-                }
-                extraProps={extraProps}
-                baseUrl={baseUrl}
-                redirectTo={(key, newParams) =>
-                    dispatch(redirectToReplace(key, newParams))
-                }
-                paramsPrefix={paramsPrefix}
-            />
+            {(didFetchData || searchActive) && (
+                <Table
+                    count={count}
+                    data={list || []}
+                    pages={pages}
+                    defaultSorted={defaultSorted}
+                    columns={
+                        Array.isArray(columns) ? columns : columns(handleFetch)
+                    }
+                    extraProps={extraProps}
+                    baseUrl={baseUrl}
+                    redirectTo={(key, newParams) =>
+                        dispatch(redirectToReplace(key, newParams))
+                    }
+                    marginTop={Boolean(
+                        filters.length > 0 ||
+                            (count > 0 && exportButtons) ||
+                            extraComponent,
+                    )}
+                    paramsPrefix={paramsPrefix}
+                />
+            )}
         </Box>
     );
 };
@@ -172,11 +194,14 @@ SingleTable.defaultProps = {
         page: 1,
         order: '-created_at',
     },
-    extraComponent: <></>,
+    extraComponent: null,
+    searchExtraComponent: <></>,
     hideGpkg: false,
     onDataLoaded: () => null,
     results: undefined,
-    defaultPageSize: 0,
+    defaultPageSize: 10,
+    searchActive: true,
+    toggleActiveSearch: false,
 };
 
 SingleTable.propTypes = {
@@ -196,9 +221,12 @@ SingleTable.propTypes = {
     hideGpkg: PropTypes.bool,
     onForceRefreshDone: PropTypes.func,
     extraComponent: PropTypes.node,
+    searchExtraComponent: PropTypes.node,
     onDataLoaded: PropTypes.func,
     results: PropTypes.object,
     defaultPageSize: PropTypes.number,
+    searchActive: PropTypes.bool,
+    toggleActiveSearch: PropTypes.bool,
 };
 
 export default withRouter(SingleTable);

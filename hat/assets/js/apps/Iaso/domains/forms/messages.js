@@ -377,6 +377,22 @@ const MESSAGES = defineMessages({
         id: 'iaso.orgUnits.onlyDirectChildren',
         defaultMessage: 'Only Direct children',
     },
+    launcher: {
+        defaultMessage: 'Launcher',
+        id: 'iaso.label.launcher',
+    },
+    sourceoriginversion: {
+        id: 'iaso.label.sourceoriginversion',
+        defaultMessage: 'Origin source version',
+    },
+    sourcedestination: {
+        id: 'iaso.label.sourcedestination',
+        defaultMessage: 'Destination source',
+    },
+    sourcedestinationversion: {
+        id: 'iaso.label.sourcedestinationversion',
+        defaultMessage: 'Destination source version',
+    },
 });
 
 export default MESSAGES;

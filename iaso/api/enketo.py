@@ -68,6 +68,7 @@ def enketo_create_url(request):
 
 
 @api_view(["GET"])
+@permission_classes([permissions.AllowAny])
 def enketo_public_create_url(request):
     token = request.GET.get("token")
     form_id = request.GET.get("form_id")

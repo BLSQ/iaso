@@ -747,6 +747,7 @@ class Instance(models.Model):
             )
 
             DataValueExporter().export_instances(export_request, True)
+            self.refresh_from_db()
         except NothingToExportError as error:
             print("Export failed for instance", self)
 

@@ -125,7 +125,7 @@ const SingleTable = ({
         };
     }
     return (
-        <Box className={classes.containerFullHeightPadded}>
+        <Box className={classes.containerFullHeightNoTabPadded}>
             {filters.length > 0 && (
                 <Filters
                     baseUrl={baseUrl}

@@ -579,3 +579,95 @@ export const runsFilters = (
     ];
     return filters;
 };
+
+export const linksFilters = (
+    formatMessage = () => null,
+    algorithmRuns = [],
+    orgUnitTypes = [],
+    profiles = [],
+    algorithms = [],
+    sources = [],
+    currentOrigin = null,
+    currentDestination = null,
+) => {
+    const filters = [
+        {
+            ...search(),
+            column: 1,
+        },
+        {
+            ...algoRun(algorithmRuns, formatMessage),
+            column: 1,
+        },
+        {
+            ...orgUnitType(orgUnitTypes),
+            column: 1,
+        },
+        {
+            ...status(formatMessage),
+            column: 1,
+        },
+        {
+            ...validator(profiles),
+            column: 2,
+        },
+        {
+            ...algo(algorithms),
+            column: 2,
+        },
+        {
+            ...score(),
+            column: 2,
+        },
+        {
+            ...source(
+                sources || [],
+                false,
+                false,
+                'origin',
+                formatMessage(MESSAGES.sourceorigin),
+            ),
+            column: 3,
+        },
+        {
+            ...version(
+                formatMessage,
+                currentOrigin ? currentOrigin.versions : [],
+                Boolean(
+                    !currentOrigin ||
+                        (currentOrigin && currentOrigin.versions.length === 0),
+                ),
+                false,
+                'originVersion',
+                formatMessage(MESSAGES.sourceoriginversion),
+            ),
+            column: 3,
+        },
+        {
+            ...source(
+                sources || [],
+                false,
+                false,
+                'destination',
+                formatMessage(MESSAGES.sourcedestination),
+            ),
+            column: 3,
+        },
+        {
+            ...version(
+                formatMessage,
+                currentDestination ? currentDestination.versions : [],
+                Boolean(
+                    !currentDestination ||
+                        (currentDestination &&
+                            currentDestination.versions.length === 0),
+                ),
+                false,
+                'destinationVersion',
+                formatMessage(MESSAGES.sourcedestinationversion),
+            ),
+            column: 3,
+        },
+    ];
+    return filters;
+};

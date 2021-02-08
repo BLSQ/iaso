@@ -385,7 +385,7 @@ export const fetchLinkDetail = (dispatch, linkId) =>
             throw error;
         });
 
-export const fetchLinks = (dispatch, url) =>
+export const fetchLinks = (dispatch, url = '/api/links/') =>
     getRequest(url)
         .then(links => links)
         .catch(error => {

@@ -4,7 +4,7 @@ import { FormattedMessage } from 'react-intl';
 import { push } from 'react-router-redux';
 import { bindActionCreators } from 'redux';
 
-import { withStyles, Box, Button } from '@material-ui/core';
+import { withStyles, Button } from '@material-ui/core';
 import Autorenew from '@material-ui/icons/Autorenew';
 
 import PropTypes from 'prop-types';
@@ -17,7 +17,7 @@ import {
     fetchSources,
 } from '../../utils/requests';
 
-import { setIsFetching, setAlgorithms } from './actions';
+import { setAlgorithms } from './actions';
 
 import { setSources } from '../orgUnits/actions';
 
@@ -85,7 +85,6 @@ class Runs extends Component {
 
     deleteRuns(run) {
         const { dispatch } = this.props;
-        dispatch(this.props.setIsFetching(true));
         return deleteAlgorithmRun(dispatch, run.id).then(() => {
             this.onRefresh();
         });
@@ -190,7 +189,6 @@ Runs.propTypes = {
     params: PropTypes.object.isRequired,
     redirectTo: PropTypes.func.isRequired,
     dispatch: PropTypes.func.isRequired,
-    setIsFetching: PropTypes.func.isRequired,
     setAlgorithms: PropTypes.func.isRequired,
     setSources: PropTypes.func.isRequired,
     fetchUsersProfiles: PropTypes.func.isRequired,
@@ -210,7 +208,6 @@ const MapDispatchToProps = dispatch => ({
     dispatch,
     redirectTo: (key, params) =>
         dispatch(push(`${key}${createUrl(params, '')}`)),
-    setIsFetching: isFetching => dispatch(setIsFetching(isFetching)),
     setAlgorithms: algoList => dispatch(setAlgorithms(algoList)),
     setSources: sources => dispatch(setSources(sources)),
     ...bindActionCreators(

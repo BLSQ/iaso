@@ -18,7 +18,7 @@ class CompletenessViewSet(viewsets.ViewSet):
 
     def list(self, request):
         profile = request.user.iaso_profile
-        queryset = Instance.objects.filter(project__account=profile.account).exclude(deleted=True).with_status()
+        queryset = Instance.objects.filter(project__account=profile.account).exclude(deleted=True).exclude(file="").with_status()
         counts = [to_completeness(count) for count in queryset.counts_by_status()]
         form_ids = [count["form"]["form_id"] for count in counts]
 

@@ -4,7 +4,7 @@ import IconButtonComponent from '../../components/buttons/IconButtonComponent';
 import { displayDateFromTimestamp } from '../../utils/intlUtil';
 import MESSAGES from './messages';
 
-const tasksTableColumns = (formatMessage, component) => [
+const tasksTableColumns = (formatMessage, killTaskAction) => [
     {
         Header: formatMessage(MESSAGES.status),
         accessor: 'status',
@@ -103,22 +103,11 @@ const tasksTableColumns = (formatMessage, component) => [
                 <section>
                     {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
                         settings.original.status,
-                    ) === true && (
-                        <IconButtonComponent
-                            onClick={() =>
-                                component.refreshTask(settings.original.id)
-                            }
-                            icon="refresh"
-                            tooltipMessage={MESSAGES.refresh}
-                        />
-                    )}
-                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
-                        settings.original.status,
                     ) === true &&
                         settings.original.should_be_killed === false && (
                             <IconButtonComponent
                                 onClick={() =>
-                                    component.killTask({
+                                    killTaskAction({
                                         id: settings.original.id,
                                         should_be_killed: true,
                                     })

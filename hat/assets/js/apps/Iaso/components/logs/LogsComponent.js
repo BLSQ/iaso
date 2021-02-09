@@ -40,7 +40,7 @@ const Logs = ({ goToRevision, logObjectId }) => {
             exportButtons={false}
             dataKey="list"
             forceRefresh={forceRefresh}
-            setForceRefresh={setForceRefresh}
+            onForceRefreshDone={() => setForceRefresh(false)}
             fetchItems={fetchLogs}
             defaultSorted={[{ id: 'created_at', desc: true }]}
             columns={orgUnitsLogsColumns(intl.formatMessage, classes)}

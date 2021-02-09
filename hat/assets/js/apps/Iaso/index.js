@@ -27,7 +27,6 @@ import {
     projectsReducer,
     projectsInitialState,
 } from './domains/projects/reducer';
-import { tasksReducer, tasksInitialState } from './domains/tasks/reducer';
 import { mapReducer, mapInitialState } from './redux/mapReducer';
 import {
     instancesReducer,
@@ -145,7 +144,6 @@ export default function iasoApp(element, baseUrl) {
             periods: periodsInitialState,
             completeness: completenessInitialState,
             projects: projectsInitialState,
-            tasks: tasksInitialState,
             mappings: mappingsInitialState,
             groups: groupsInitialState,
             orgUnitsTypes: orgUnitsTypesInitialState,
@@ -168,7 +166,6 @@ export default function iasoApp(element, baseUrl) {
             periods: periodsReducer,
             completeness: completenessReducer,
             projects: projectsReducer,
-            tasks: tasksReducer,
             mappings: mappingReducer,
             groups: groupsReducer,
             orgUnitsTypes: orgUnitsTypesReducer,

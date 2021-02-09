@@ -31,6 +31,7 @@ const Logs = ({ goToRevision, logObjectId }) => {
     const [forceRefresh, setForceRefresh] = useState(false);
     return (
         <SingleTable
+            paramsPrefix="logsParams"
             apiParams={{
                 objectId: logObjectId,
                 source: 'org_unit_api',

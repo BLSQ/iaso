@@ -1,4 +1,8 @@
-import { fetchAction, retrieveAction } from '../../redux/actions/formsActions';
+import {
+    fetchAction,
+    retrieveAction,
+    saveAction,
+} from '../../redux/actions/formsActions';
 
 export const SET_CURRENT_TASK = 'SET_CURRENT_TASK';
 export const SET_ALL_TASKS = 'SET_ALL_TASKS';
@@ -45,3 +49,14 @@ export const refreshTask = id => dispatch =>
         'retrieveTaskError',
         setIsFetching,
     );
+
+export const killTask = task => dispatch =>
+    saveAction(
+        dispatch,
+        task,
+        apiKey,
+        'patchTaskSuccess',
+        'patchTaskError',
+        setIsFetching,
+        'ignoredTaskErrorCode',
+    ).then(res => dispatch(setCurrentTask(res)));

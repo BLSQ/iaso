@@ -101,13 +101,35 @@ const tasksTableColumns = (formatMessage, component) => [
         Cell: settings => {
             return (
                 <section>
-                    <IconButtonComponent
-                        onClick={() =>
-                            component.refreshTask(settings.original.id)
-                        }
-                        icon="refresh"
-                        tooltipMessage={MESSAGES.refresh}
-                    />
+                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                        settings.original.status,
+                    ) === true && (
+                        <IconButtonComponent
+                            onClick={() =>
+                                component.refreshTask(settings.original.id)
+                            }
+                            icon="refresh"
+                            tooltipMessage={MESSAGES.refresh}
+                        />
+                    )}
+                    {['QUEUED', 'RUNNING', 'UNKNOWN'].includes(
+                        settings.original.status,
+                    ) === true &&
+                        settings.original.should_be_killed === false && (
+                            <IconButtonComponent
+                                onClick={() =>
+                                    component.killTask({
+                                        id: settings.original.id,
+                                        should_be_killed: true,
+                                    })
+                                }
+                                icon="stop"
+                                tooltipMessage={MESSAGES.killTask}
+                            />
+                        )}
+                    {settings.original.should_be_killed === true &&
+                        settings.original.status === 'RUNNING' &&
+                        formatMessage(MESSAGES.killSignalSent)}
                 </section>
             );
         },

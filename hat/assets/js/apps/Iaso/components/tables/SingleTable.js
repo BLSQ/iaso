@@ -45,6 +45,8 @@ const SingleTable = ({
     defaultPageSize,
     searchActive,
     toggleActiveSearch,
+    isFullHeight,
+    setIsLoading,
 }) => {
     const [loading, setLoading] = useState(false);
     const [didFetchData, setDidFetchData] = useState(false);
@@ -69,18 +71,19 @@ const SingleTable = ({
             setTableResults(results);
         } else {
             const url = getTableUrl(endPointPath, tableParams);
-            setLoading(true);
-            fetchItems(dispatch, url).then(res => {
-                setLoading(false);
-                const r = {
-                    list: res[dataKey !== '' ? dataKey : endPointPath],
-                    count: res.count,
-                    pages: res.pages,
-                };
-                onDataLoaded(r);
-                setTableResults(r);
-                setDidFetchData(true);
-            });
+            setIsLoading && setLoading(true);
+            fetchItems &&
+                fetchItems(dispatch, url).then(res => {
+                    setIsLoading && setLoading(false);
+                    const r = {
+                        list: res[dataKey !== '' ? dataKey : endPointPath],
+                        count: res.count,
+                        pages: res.pages,
+                    };
+                    onDataLoaded(r);
+                    setTableResults(r);
+                    setDidFetchData(true);
+                });
         }
 
         if (firstLoad) {
@@ -125,7 +128,11 @@ const SingleTable = ({
         };
     }
     return (
-        <Box className={classes.containerFullHeightNoTabPadded}>
+        <Box
+            className={
+                isFullHeight ? classes.containerFullHeightNoTabPadded : ''
+            }
+        >
             {filters.length > 0 && (
                 <Filters
                     baseUrl={baseUrl}
@@ -202,13 +209,16 @@ SingleTable.defaultProps = {
     defaultPageSize: 10,
     searchActive: true,
     toggleActiveSearch: false,
+    fetchItems: null,
+    isFullHeight: true,
+    setIsLoading: true,
 };
 
 SingleTable.propTypes = {
     params: PropTypes.object,
     paramsPrefix: PropTypes.string,
     baseUrl: PropTypes.string,
-    fetchItems: PropTypes.func.isRequired,
+    fetchItems: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     apiParams: PropTypes.object,
     subComponent: PropTypes.oneOfType([PropTypes.object, PropTypes.func]),
     endPointPath: PropTypes.string.isRequired,
@@ -227,6 +237,8 @@ SingleTable.propTypes = {
     defaultPageSize: PropTypes.number,
     searchActive: PropTypes.bool,
     toggleActiveSearch: PropTypes.bool,
+    isFullHeight: PropTypes.bool,
+    setIsLoading: PropTypes.bool,
 };
 
 export default withRouter(SingleTable);

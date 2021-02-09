@@ -115,10 +115,6 @@ describe('Forms connected component', () => {
 //     expect(wrapperForm.find(TopBar)).to.have.lengthOf(1);
 // });
 
-// it('render CustomTableComponent', () => {
-//     expect(wrapperForm.find(CustomTableComponent)).to.have.lengthOf(1);
-// });
-
 // it('render FormDialogComponent', () => {
 //     expect(wrapperForm.find(FormDialogComponent)).to.have.lengthOf(1);
 // });

@@ -45,7 +45,6 @@ import {
 import { fetchLatestOrgUnitLevelId } from '../orgUnits/utils';
 
 import TopBar from '../../components/nav/TopBarComponent';
-import CustomTableComponent from '../../components/CustomTableComponent';
 import DownloadButtonsComponent from '../../components/buttons/DownloadButtonsComponent';
 import InstancesMap from './components/InstancesMapComponent';
 import InstancesFilesList from './components/InstancesFilesListComponent';
@@ -55,6 +54,7 @@ import ColumnsSelectDrawerComponent from '../../components/tables/ColumnsSelectD
 import ExportInstancesDialogComponent from './components/ExportInstancesDialogComponent';
 import AddButtonComponent from '../../components/buttons/AddButtonComponent';
 import CreateReAssignDialogComponent from './components/CreateReAssignDialogComponent';
+import SingleTable from '../../components/tables/SingleTable';
 
 import commonStyles from '../../styles/common';
 
@@ -245,7 +245,7 @@ class Instances extends Component {
         const urlSmall = this.getEndpointUrl(false, '', true);
 
         dispatch(this.props.setInstancesFetching(true));
-        Promise.all([
+        return Promise.all([
             fetchInstancesAsDict(dispatch, url),
             fetchInstancesAsSmallDict(dispatch, urlSmall),
         ]).then(([instancesData, smallInstancesData]) => {
@@ -257,6 +257,11 @@ class Instances extends Component {
             );
             this.props.setInstancesSmallDict(smallInstancesData);
             dispatch(this.props.setInstancesFetching(false));
+            return {
+                list: instancesData.instances,
+                count: instancesData.count,
+                pages: instancesData.pages,
+            };
         });
     }
 
@@ -380,39 +385,6 @@ class Instances extends Component {
                         params={params}
                         onSearch={() => this.fetchInstances()}
                     />
-                    {tab === 'list' && tableColumns.length > 0 && (
-                        <div className={classes.reactTable}>
-                            <CustomTableComponent
-                                isSortable
-                                pageSize={20}
-                                showPagination
-                                columns={tableColumns}
-                                defaultSorted={[
-                                    { id: defaultOrder, desc: false },
-                                ]}
-                                params={params}
-                                defaultPath={baseUrl}
-                                dataKey="instances"
-                                multiSort={false}
-                                fetchDatas={false}
-                                canSelect
-                                reduxPage={reduxPage}
-                                onRowClicked={instance =>
-                                    this.openInstanceDetails(instance)
-                                }
-                            />
-                        </div>
-                    )}
-                    {!fetching && tab === 'map' && (
-                        <div className={classes.containerMarginNeg}>
-                            <InstancesMap instances={instancesSmall} />
-                        </div>
-                    )}
-                    {tab === 'files' && (
-                        <InstancesFilesList
-                            files={getInstancesFilesList(instancesSmall)}
-                        />
-                    )}
                     {tab === 'list' && (
                         <Grid
                             container
@@ -461,6 +433,38 @@ class Instances extends Component {
                                 </div>
                             </Grid>
                         </Grid>
+                    )}
+                    {tab === 'list' && tableColumns.length > 0 && (
+                        <SingleTable
+                            apiParams={{
+                                ...params,
+                            }}
+                            setIsLoading={false}
+                            baseUrl={baseUrl}
+                            results={reduxPage}
+                            endPointPath="instances"
+                            dataKey="list"
+                            columns={tableColumns}
+                            defaultPageSize={20}
+                            fetchItems={() =>
+                                this.fetchInstances().then(
+                                    instancesPages => instancesPages,
+                                )
+                            }
+                            hideGpkg
+                            exportButtons={false}
+                            isFullHeight={false}
+                        />
+                    )}
+                    {!fetching && tab === 'map' && (
+                        <div className={classes.containerMarginNeg}>
+                            <InstancesMap instances={instancesSmall} />
+                        </div>
+                    )}
+                    {tab === 'files' && (
+                        <InstancesFilesList
+                            files={getInstancesFilesList(instancesSmall)}
+                        />
                     )}
                 </Box>
             </section>

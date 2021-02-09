@@ -441,7 +441,6 @@ class OrgUnitDetail extends Component {
             currentOrgUnit,
             orgUnitModified,
             orgUnitLocationModified,
-            fetchingFilters,
         } = this.state;
         const isNewOrgunit = params.orgUnitId === '0';
         let title = '';

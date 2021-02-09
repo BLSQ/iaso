@@ -257,6 +257,18 @@ const MESSAGES = defineMessages({
         defaultMessage: 'An error occurred while deleting group',
         id: 'iaso.snackBar.deleteGroupError',
     },
+    ignoredTaskErrorCode: {
+        defaultMessage: 'Patching ignored',
+        id: 'iaso.snackBar.ignoredTaskErrorCode',
+    },
+    patchTaskError: {
+        defaultMessage: 'Error Patching task',
+        id: 'iaso.snackBar.patchTaskError',
+    },
+    patchTaskSuccess: {
+        defaultMessage: 'Task patched successfully',
+        id: 'iaso.snackBar.patchTaskSuccess',
+    },
 });
 
 export default MESSAGES;

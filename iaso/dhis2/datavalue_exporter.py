@@ -762,6 +762,7 @@ class DataValueExporter:
         for export_status in export_statuses:
             instance = export_status.instance
             instance.last_export_success_at = timezone.now()
+            instance.to_export = False
             instance.save()
 
         export_request.errored_count = stats["errored_count"]

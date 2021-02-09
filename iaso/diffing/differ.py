@@ -1,7 +1,7 @@
 from django.db.models.query import prefetch_related_objects
 from iaso.models import OrgUnit, GroupSet
 from .comparisons import as_field_types, Diff, Comparison
-import json
+
 
 
 def index_pyramid(orgunits):
@@ -114,7 +114,7 @@ class Differ:
                 diff = Diff(orgunit_dhis2, status=status, comparisons=comparisons)
                 diffs.append(diff)
 
-        return (diffs, field_names)
+        return diffs, field_names
 
     def compare_fields(self, orgunit_dhis2, orgunit_ref, field_types):
         comparisons = []

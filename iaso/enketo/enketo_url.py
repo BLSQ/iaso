@@ -70,7 +70,7 @@ def enketo_url_for_edition(
 def get_url_from_enketo(url, data):
     try:
         settings = enketo_settings()
-        print(url, data)
+
         response = requests.post(
             url, data=data, auth=(settings["ENKETO_API_TOKEN"], ""), verify=True
         )

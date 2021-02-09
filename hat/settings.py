@@ -140,7 +140,8 @@ ROOT_URLCONF = "hat.urls"
 
 # Allow cors for all origins but only for the sync endpoint
 CORS_ORIGIN_ALLOW_ALL = True
-CORS_URLS_REGEX = r"^/sync/.*$"
+CORS_ALLOW_ALL_ORIGINS = True
+#CORS_URLS_REGEX = r"^/sync/.*$"
 
 
 TEMPLATES = [

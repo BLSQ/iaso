@@ -69,6 +69,14 @@ const MESSAGES = defineMessages({
         defaultMessage: 'Message',
         id: 'iaso.tasks.message',
     },
+    killTask: {
+        defaultMessage: 'Arrêter la tâche',
+        id: 'iaso.tasks.killTask',
+    },
+    killSignalSent: {
+        defaultMessage: "Signal d'arrêt envoyé",
+        id: 'iaso.tasks.killSignalSent',
+    },
 });
 
 export default MESSAGES;

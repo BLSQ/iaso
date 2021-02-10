@@ -8,6 +8,7 @@ import { withStyles, Box } from '@material-ui/core';
 import {
     fetchAllTasks as fetchAllTasksAction,
     refreshTask as refreshTaskAction,
+    killTask as killTaskAction,
 } from './actions';
 
 import CustomTableComponent from '../../components/CustomTableComponent';
@@ -65,6 +66,10 @@ class Tasks extends Component {
         return this.props.refreshTask(id);
     }
 
+    killTask(task) {
+        return this.props.killTask(task);
+    }
+
     render() {
         const {
             classes,
@@ -114,6 +119,7 @@ Tasks.propTypes = {
     params: PropTypes.object.isRequired,
     fetchAllTasks: PropTypes.func.isRequired,
     refreshTask: PropTypes.func.isRequired,
+    killTask: PropTypes.func.isRequired,
     fetching: PropTypes.bool.isRequired,
     reduxPage: PropTypes.object,
 };
@@ -135,6 +141,7 @@ const mapDispatchToProps = dispatch => ({
         {
             fetchAllTasks: fetchAllTasksAction,
             refreshTask: refreshTaskAction,
+            killTask: killTaskAction,
         },
         dispatch,
     ),

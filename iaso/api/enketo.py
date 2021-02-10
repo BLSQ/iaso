@@ -301,7 +301,7 @@ class EnketoSubmissionAPIView(APIView):
 
             log_modification(original, instance, source=INSTANCE_API, user=user)
             if instance.to_export:
-                instance.export()
+                instance.export(force_export=True)
             return Response({"result": "success"}, status=status.HTTP_201_CREATED)
 
         return Response()

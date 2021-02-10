@@ -737,13 +737,13 @@ class Instance(models.Model):
         except (KeyError, FormVersion.DoesNotExist):
             return None
 
-    def export(self, launcher=None):
+    def export(self, launcher=None, force_export=False):
         from iaso.dhis2.datavalue_exporter import DataValueExporter
         from iaso.dhis2.export_request_builder import ExportRequestBuilder, NothingToExportError
 
         try:
             export_request = ExportRequestBuilder().build_export_request(
-                filters={"instance_id": self.id}, launcher=None
+                filters={"instance_id": self.id}, launcher=launcher, force_export=force_export
             )
 
             DataValueExporter().export_instances(export_request, True)

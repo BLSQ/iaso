@@ -236,6 +236,8 @@ def dhis2_ou_importer(
     version, _created = SourceVersion.objects.get_or_create(number=source_version_number, data_source=source)
 
     version_count = OrgUnit.objects.filter(version=version).count()
+
+
     logger.debug("Orgunits in db for source and version ", source, version, version_count)
     if version_count > 0 and not force:
         res_string = ("This is going to delete %d org units records. If you want to proceed, add the -f option"  % version_count)
@@ -272,9 +274,11 @@ def dhis2_ou_importer(
             map_geometry(row, org_unit)
             org_unit.save()
 
+            res_string = "%s sec, processed %i org units" % (time.time() - start, index)
+            the_task.report_progress_and_stop_if_killed(progress_message=res_string)
             # log progress
             if index % 100 == 0:
-                logger.debug("%.2f" % (time.time() - start), "sec, processed", index)
+                logger.debug(res_string)
 
             # org_unit should be saved before filling the groups
             map_groups(row, org_unit, group_dict, version)

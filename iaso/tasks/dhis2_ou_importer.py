@@ -1,7 +1,6 @@
 from iaso.models import OrgUnit, OrgUnitType, DataSource, SourceVersion, Group, GroupSet, Task, SUCCESS, ERRORED, RUNNING
 from beanstalk_worker import task
 from django.contrib.gis.geos import Point, MultiPolygon, Polygon
-from django.utils.translation import gettext as _
 
 import logging
 import csv
@@ -205,7 +204,7 @@ def dhis2_ou_importer(
     the_task = task
     logger.debug("********* Starting import")
     source = DataSource.objects.get(id=source_id)
-    source_version = SourceVersion.objects.get(number=source_version_number, data_source=source)
+    source_version, _created = SourceVersion.objects.get_or_create(number=int(source_version_number), data_source=source)
     start = time.time()
 
     logger.debug("source", source)
@@ -303,5 +302,6 @@ def dhis2_ou_importer(
     )
 
     the_task.report_success(message=res_string)
+    logger.debug("********* Finishing import")
 
     return the_task

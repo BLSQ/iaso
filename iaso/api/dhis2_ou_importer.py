@@ -34,16 +34,16 @@ class Dhis2OuImporterSerializer(serializers.Serializer):
         possible_data_sources = list(possible_data_sources)
         force = attrs["force"]
         source_id = attrs["source_id"]
-        source_version = get_object_or_404(
-            SourceVersion, data_source_id=source_id, number=attrs["source_version_number"]
-        )
 
-
-        version_count = OrgUnit.objects.filter(version=source_version).count()
-        if version_count > 0 and not force:
-            raise serializers.ValidationError(
-                "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
-            )
+        existing_version = list(SourceVersion.objects.filter(data_source_id=source_id, number=attrs["source_version_number"]).distinct())
+        if len(existing_version) > 0:
+            source_version = SourceVersion.objects.get(data_source_id=source_id, number=attrs["source_version_number"])
+            if source_version:
+                version_count = OrgUnit.objects.filter(version=source_version).count()
+                if version_count > 0 and not force:
+                    raise serializers.ValidationError(
+                        "This is going to delete %d org units records. Use the force parameter to proceed" % version_count
+                    )
 
         if validated_data["source_id"] not in possible_data_sources:
             raise serializers.ValidationError("Unauthorized source_id")

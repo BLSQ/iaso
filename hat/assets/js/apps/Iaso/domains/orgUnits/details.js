@@ -81,6 +81,7 @@ const styles = theme => ({
         position: 'absolute',
         top: '0px',
         left: '0px',
+        width: '100vw',
         zIndex: '-100',
         opacity: '0',
     },

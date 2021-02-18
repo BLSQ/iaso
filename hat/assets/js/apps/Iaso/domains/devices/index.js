@@ -11,7 +11,6 @@ import { useSafeIntl } from '../../hooks/intl';
 import { fetchDevicesAsDict } from '../../utils/requests';
 
 const baseUrl = baseUrls.devices;
-const defaultOrder = 'synched_at';
 
 const Devices = () => {
     const intl = useSafeIntl();
@@ -27,7 +26,6 @@ const Devices = () => {
                 endPointPath="devices"
                 dataKey="devices"
                 fetchItems={fetchDevicesAsDict}
-                defaultSorted={[{ id: defaultOrder, desc: true }]}
                 columns={devicesTableColumns(intl.formatMessage)}
                 hideGpkg
                 exportButtons={false}

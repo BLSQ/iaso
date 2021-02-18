@@ -5,13 +5,16 @@ import MESSAGES from './messages';
 const devicesTableColumns = formatMessage => [
     {
         Header: formatMessage(MESSAGES.imei),
+        sortable: false,
         accessor: 'imei',
+
         Cell: settings => {
             return <span>{settings.original.imei}</span>;
         },
     },
     {
         Header: formatMessage(MESSAGES.test_device),
+        sortable: false,
         accessor: 'test_device',
         Cell: settings => {
             return (
@@ -27,6 +30,7 @@ const devicesTableColumns = formatMessage => [
     },
     {
         Header: formatMessage(MESSAGES.last_owner),
+        sortable: false,
         accessor: 'last_owner',
         Cell: settings => (
             <span>
@@ -37,6 +41,7 @@ const devicesTableColumns = formatMessage => [
     },
     {
         Header: formatMessage(MESSAGES.timeSynched),
+        sortable: false,
         accessor: 'synched_at',
         Cell: settings => (
             <span>
@@ -47,6 +52,7 @@ const devicesTableColumns = formatMessage => [
     },
     {
         Header: formatMessage(MESSAGES.timeCreated),
+        sortable: false,
         accessor: 'created_at',
         Cell: settings => (
             <span>
@@ -56,6 +62,7 @@ const devicesTableColumns = formatMessage => [
     },
     {
         Header: formatMessage(MESSAGES.timeUpdated),
+        sortable: false,
         accessor: 'updated_at',
         Cell: settings => (
             <span>
